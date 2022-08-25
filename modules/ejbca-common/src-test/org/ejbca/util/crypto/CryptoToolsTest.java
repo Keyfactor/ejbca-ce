@@ -103,7 +103,7 @@ public class CryptoToolsTest {
      */
     @Test
     public void testEncryptDecryptRsaKeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
         final String alias = "alias";
@@ -114,7 +114,7 @@ public class CryptoToolsTest {
         final KeyPair keypair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
-        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), keypair.getPublic(), encryptedBytes);
+        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
         // Throws exception is testing does not work
         KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
@@ -135,7 +135,7 @@ public class CryptoToolsTest {
      */
     @Test
     public void testEncryptDecryptP256KeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
         final String alias = "alias";
@@ -147,7 +147,7 @@ public class CryptoToolsTest {
         final KeyPair keypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
-        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), keypair.getPublic(), encryptedBytes);
+        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
         // Throws exception is testing does not work
         KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
@@ -167,7 +167,7 @@ public class CryptoToolsTest {
      */
     @Test
     public void testEncryptDecryptKeyPairWithEccDhP224() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException {   
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {   
         final String curveName = "secp224r1";
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
@@ -183,7 +183,7 @@ public class CryptoToolsTest {
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(encAlias),
-                endEntityKeypair.getPublic(), encryptedBytes);
+                encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
         assertEquals("The same private key was not returned.", endEntityKeypair.getPrivate(), keys.getPrivate());
         try {
@@ -206,7 +206,7 @@ public class CryptoToolsTest {
      */
     @Test
     public void testEncryptDecryptKeyPairWithEccDhP384() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException {   
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {   
         final String curveName = "secp384r1";
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
@@ -222,7 +222,7 @@ public class CryptoToolsTest {
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(encAlias),
-                endEntityKeypair.getPublic(), encryptedBytes);
+                encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
         assertEquals("The same private key was not returned.", endEntityKeypair.getPrivate(), keys.getPrivate());
         try {
@@ -246,7 +246,7 @@ public class CryptoToolsTest {
      */
     @Test
     public void testEncryptDecryptDsaKeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
         final String alias = "alias";
@@ -258,7 +258,7 @@ public class CryptoToolsTest {
         final KeyPair keypair = KeyTools.genKeys("DSA1024", AlgorithmConstants.KEYALGORITHM_DSA);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
-        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), keypair.getPublic(), encryptedBytes);
+        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
         // Throws exception is testing does not work
         KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
@@ -278,7 +278,7 @@ public class CryptoToolsTest {
      */
     @Test
     public void testEncryptDecryptEd25519KeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
 
         final String bCEdDSAPublicKey;
         final String bCEdDSAPrivateKey;
@@ -302,7 +302,7 @@ public class CryptoToolsTest {
         final KeyPair keypair = KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
-        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), keypair.getPublic(), encryptedBytes);
+        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
         // Throws exception is testing does not work
         KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
@@ -322,7 +322,7 @@ public class CryptoToolsTest {
      */
     @Test
     public void testEncryptDecryptEd448KeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
 
         final String bCEdDSAPublicKey;
         final String bCEdDSAPrivateKey;
@@ -346,7 +346,7 @@ public class CryptoToolsTest {
         final KeyPair keypair = KeyTools.genKeys("Ed448", AlgorithmConstants.KEYALGORITHM_ED448);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
-        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), keypair.getPublic(), encryptedBytes);
+        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
         // Throws exception is testing does not work
         KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
