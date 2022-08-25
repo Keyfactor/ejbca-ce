@@ -44,8 +44,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.persistence.criteria.CriteriaBuilder.Case;
-
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -119,7 +117,7 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1
     );
-    @SuppressWarnings("unchecked")
+
     public static final List<String> SIG_ALGS_RSA = Collections.unmodifiableList(ListUtils.union(SIG_ALGS_RSA_SHA1_INTERNAL, SIG_ALGS_RSA_NOSHA1_INTERNAL));
 
     /** Signature algorithms supported by DSA keys */
