@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -720,7 +721,7 @@ public final class StringTools {
      * Retrieves the clear text from a string obfuscated with the obfuscate methods
      *
      * @param in obfuscated string, usually (but not necessarily) starts with OBF:
-     * @return plain text string, or original if it was empty
+     * @return plain text string, UTF-8 encoded, or original if it was empty
      */
     public static String deobfuscate(final String in) {
         String s = in;
@@ -739,8 +740,7 @@ public final class StringTools {
             final int i2 = (i0 % 256);
             b[l++] = (byte) ((i1 + i2 - 254) / 2);
         }
-
-        return new String(b, 0, l);
+        return new String(b, 0, l, Charset.forName("UTF-8"));
     }
 
     private static String getEncryptionVersion() {
