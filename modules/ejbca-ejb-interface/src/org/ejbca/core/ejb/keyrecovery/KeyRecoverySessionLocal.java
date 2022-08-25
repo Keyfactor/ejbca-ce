@@ -50,7 +50,7 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
             String keyAlias);
 
     /**
-     * Returns the keyrecovery data for a user. Observe only one certificates
+     * Returns the keyrecovery data for a user. Observe only one certificate's
      * key can be recovered for every user at the time.
      * 
      * <p>This method expects the caller to do the authorization checks, using the authorization

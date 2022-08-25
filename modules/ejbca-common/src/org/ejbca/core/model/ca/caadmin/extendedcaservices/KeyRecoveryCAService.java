@@ -142,7 +142,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 				            log.debug("Trying to decrypt using alias '"+keyAlias+"' from crypto token " +cryptoToken.getId());
 				        }
                         keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), (X509Certificate) getCa().getCACertificate(),
-                                cryptoToken.getPrivateKey(keyAlias), serviceReq.getPublicKey(), serviceReq.getKeyData());
+                                cryptoToken.getPrivateKey(keyAlias), serviceReq.getKeyData());
 			
 				    } catch (Exception e) { // NOPMD: we have to catch wide here, using the wrong key to decrypt can result in several different errors
 				        if (log.isDebugEnabled()) {
@@ -154,7 +154,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	                            log.debug("Trying to decrypt using default alias '"+defaultAlias+"' from crypto token "+cryptoToken.getId());
 	                        }
 	                        keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), (X509Certificate) getCa().getCACertificate(),
-	                                cryptoToken.getPrivateKey(defaultAlias), serviceReq.getPublicKey(), serviceReq.getKeyData());
+	                                cryptoToken.getPrivateKey(defaultAlias), serviceReq.getKeyData());
                    
 				        } else {
 				            // Just re-throw if we have nothing to test here
