@@ -15,7 +15,6 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 import java.security.KeyPair;
-import java.security.PublicKey;
 
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
@@ -37,16 +36,14 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
     private KeyPair keypair;
     private int cryptoTokenId;
     private String keyAlias;
-    private final PublicKey publicKey;
     
     /** Constructor for KeyRecoveryCAServiceRequest used to decrypt data
      */                   
-    public KeyRecoveryCAServiceRequest(int command, byte[] keydata, int cryptoTokenId, String keyAlias, final PublicKey publicKey) {
+    public KeyRecoveryCAServiceRequest(int command, byte[] keydata, int cryptoTokenId, String keyAlias) {
         this.command = command;
         this.keydata = keydata;
         this.cryptoTokenId = cryptoTokenId;
         this.keyAlias = keyAlias;
-        this.publicKey = publicKey;
     }
 
     /** Constructor for KeyRecoveryCAServiceRequest used to encrypt data
@@ -54,7 +51,6 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
     public KeyRecoveryCAServiceRequest(int command, KeyPair keypair) {
     	this.command = command;
     	this.keypair = keypair;
-    	this.publicKey = null;
     }
     
     public int getCommand(){
@@ -97,9 +93,5 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
 	public int getServiceType() {
 		return ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE;
 	}
-
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
 
 }
