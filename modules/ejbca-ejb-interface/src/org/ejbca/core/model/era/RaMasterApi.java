@@ -461,6 +461,12 @@ public interface RaMasterApi {
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
     CertificateProfile getCertificateProfile(int id);
+    
+    /**
+     * @param ProfileName Name of the certificate profile
+     * @return Certificate profile info for profile with specified name
+     */
+    RaCertificateProfileResponseV2 getCertificateProfileInfo(AuthenticationToken authenticationToken, String profileName);
 
     /**
      * Adds (end entity) user.
