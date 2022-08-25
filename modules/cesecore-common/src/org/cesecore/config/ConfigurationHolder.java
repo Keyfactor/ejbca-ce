@@ -41,8 +41,8 @@ import org.apache.commons.configuration2.builder.ConfigurationBuilderResultCreat
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
-import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.convert.LegacyListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.ReloadingController;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -429,7 +429,7 @@ public final class ConfigurationHolder {
                 new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
                 .configure(new Parameters().properties().setURL(url)
                     .setThrowExceptionOnMissing(false)
-                    .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
+                    .setListDelimiterHandler(new LegacyListDelimiterHandler(','))
                     .setIncludesAllowed(false));
         final PropertiesConfiguration config = builder.getConfiguration();
         return config;
@@ -448,7 +448,7 @@ public final class ConfigurationHolder {
                 new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
                 .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false)
                         .setFile(file)
-                        .setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
+                        .setListDelimiterHandler(new LegacyListDelimiterHandler(',')));
         
         builder.addEventListener(ConfigurationBuilderResultCreatedEvent.RESULT_CREATED,
             new EventListener<ConfigurationBuilderEvent>() {

@@ -35,6 +35,8 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private boolean includeObjectGuidInSubjectSAN;
     private String additionalSubjectDNAttributes;
     private boolean publishToActiveDirectory;
+    
+    private boolean excludeObjectSidInNtdsSecurityExtension;
 
     public MSAutoEnrollmentSettingsTemplate() {
         init();
@@ -59,6 +61,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         setIncludeObjectGuidInSubjectSAN(false);
         setAdditionalSubjectDNAttributes("");
         setPublishToActiveDirectory(false);
+        setExcludeObjectSidInNtdsSecurityExtension(false);
     }
 
 
@@ -208,6 +211,14 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         this.publishToActiveDirectory = publishToActiveDirectory;
     }
 
+    public boolean isExcludeObjectSidInNtdsSecurityExtension() {
+        return excludeObjectSidInNtdsSecurityExtension;
+    }
+
+    public void setExcludeObjectSidInNtdsSecurityExtension(boolean excludeObjectSidInNtdsSecurityExtension) {
+        this.excludeObjectSidInNtdsSecurityExtension = excludeObjectSidInNtdsSecurityExtension;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -247,6 +258,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         "\nIncludeDomainInSubjectSAN: " + isIncludeDomainInSubjectSAN() + 
         "\nIncludeObjectGuidInSubjectSAN: " + isIncludeObjectGuidInSubjectSAN() +
         "\nAdditionalSubjectDNAttributes: " + getAdditionalSubjectDNAttributes() + 
-        "\nPublishToActiveDirectory: " + isPublishToActiveDirectory();
+        "\nPublishToActiveDirectory: " + isPublishToActiveDirectory() +
+        "\nExcludeObjectSidInNtdsSecurityExtension: " + isExcludeObjectSidInNtdsSecurityExtension();
     }
 }
