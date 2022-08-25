@@ -17,13 +17,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,7 +54,11 @@ import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientId;
 import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
@@ -230,14 +237,17 @@ public class CryptoTools {
     /**
      * Decryption method used to decrypt a key pair using a CA
      *
-     * @param cryptoToken the crypto token where the decryption key is
-     * @param alias the alias of the key on the crypto token to use for decryption
-     * @param data the data to decrypt
-     * @return a KeyPair
+     * @param provider the provider used to encrypt this keypair, e.g. BouncyCastle 
+     * @param cacCertificate the certificate of the signing CA
+     * @param decryptionKey the decryption key
+     * @param data the encrypted blob of data
+     *
+     * @return the decrypted KeyPair
      * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
      * @throws IOException In case reading/writing data streams failed during decryption, or parsing decrypted data into KeyPair.
+     * @throws NoSuchProviderException if the sought provider was not found
      */
-    public static final KeyPair decryptKeys(final String provider, final X509Certificate cacCertificate, final PrivateKey decryptionKey, final PublicKey endEntityKey, final byte[] data) throws IOException, CryptoTokenOfflineException {
+    public static final KeyPair decryptKeys(final String provider, final X509Certificate cacCertificate, final PrivateKey decryptionKey, final byte[] data) throws IOException, CryptoTokenOfflineException, NoSuchProviderException {
         KeyPair result;       
         switch (decryptionKey.getAlgorithm()) {
         case AlgorithmConstants.KEYALGORITHM_RSA:
@@ -245,7 +255,25 @@ public class CryptoTools {
             break;
         case AlgorithmConstants.KEYALGORITHM_EC:
         case AlgorithmConstants.KEYALGORITHM_ECDSA:
-            result = new KeyPair(endEntityKey, decryptPrivateKeyWithEccDH(provider, cacCertificate, decryptionKey, data));
+            final ECPrivateKey privateKey = decryptPrivateKeyWithEccDH(provider, cacCertificate, decryptionKey, data);
+            ECParameterSpec ecParams = privateKey.getParameters();
+            ECPoint q = ecParams.getG().multiply(privateKey.getD());
+
+            ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(q, ecParams);
+            KeyFactory keyFactory;
+            try {
+                keyFactory = KeyFactory.getInstance("EC", provider);
+            } catch (NoSuchAlgorithmException e) {         
+                throw new IllegalStateException("ECDH was not a known algorithm for provider.", e);
+            } 
+            PublicKey publicKey;
+            try {
+                publicKey = keyFactory.generatePublic(publicKeySpec);
+            } catch (InvalidKeySpecException e) {
+                throw new IOException("Could not recreate public key.", e);
+            }
+           
+            result = new KeyPair(publicKey, privateKey);
             break;    
             
         default:
@@ -255,7 +283,7 @@ public class CryptoTools {
 
     }
     
-    private static final PrivateKey decryptPrivateKeyWithEccDH(final String provider, final X509Certificate caCertificate, final PrivateKey decryptionKey, byte[] data) throws IOException {
+    private static final ECPrivateKey decryptPrivateKeyWithEccDH(final String provider, final X509Certificate caCertificate, final PrivateKey decryptionKey, byte[] data) throws IOException {
         CMSEnvelopedData cmsEnvelopedData;
         try {
             cmsEnvelopedData = new CMSEnvelopedData(data);          
@@ -266,7 +294,7 @@ public class CryptoTools {
             byte[] content = recipientInformation.getContent(recipient);
             EncKeyWithID encKeyWithID = EncKeyWithID.getInstance(content);
             PrivateKeyInfo privateKeyInfo = encKeyWithID.getPrivateKey();
-            return BouncyCastleProvider.getPrivateKey(privateKeyInfo);            
+            return (ECPrivateKey) BouncyCastleProvider.getPrivateKey(privateKeyInfo);            
         } catch (CMSException e) {
             throw new IOException("Could not parse encrypted data: " + e.getMessage(), e);
         }   

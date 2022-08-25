@@ -325,7 +325,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         				certificate = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(krd.getIssuerDN(), krd.getCertificateSN());
                         final KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
                                 new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray(),
-                                        krd.getCryptoTokenId(), krd.getKeyAlias(), certificate.getPublicKey()));
+                                        krd.getCryptoTokenId(), krd.getKeyAlias()));
                         final KeyPair keys = response.getKeyPair();
         				
         				returnval = new KeyRecoveryInformation(krd.getCertificateSN(), krd.getIssuerDN(),
@@ -370,15 +370,9 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             String logMsg = null;
             for (final KeyRecoveryData krd : result) {
                 if (returnval == null) {
-                    final Certificate endEntityCertificate = certificateStoreSession
-                            .findCertificateByIssuerAndSerno(CertTools.getSubjectDN(caCertificate), krd.getCertificateSN());
-                    if(endEntityCertificate == null ) {
-                        throw new IllegalStateException("End entity certificate for keys to be recovered not found. Issuer: "
-                                + CertTools.getSubjectDN(caCertificate) + ", SN: " + krd.getCertificateSN().toString(16));
-                    }
                     final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
                     final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
-                    final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(keyAlias), endEntityCertificate.getPublicKey(), krd.getKeyDataAsByteArray());
+                    final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(keyAlias), krd.getKeyDataAsByteArray());
                     returnval = new KeyRecoveryInformation(krd.getCertificateSN(), krd.getIssuerDN(),
                             krd.getUsername(), krd.getMarkedAsRecoverable(), keys, null);
                     certSerialNumber = krd.getCertificateSN().toString(16);
