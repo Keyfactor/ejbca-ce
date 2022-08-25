@@ -86,6 +86,22 @@
 					</h:panelGroup>
 
 					<h:panelGroup layout="block" styleClass="internal-frame">
+					<!--Either render the fields for algorithm selection if no algorithm has been set, or render the field for CSR upload/paste -->
+						<h:panelGroup layout="block"
+							rendered="#{!enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
+							<h:panelGroup id="enteredkeyAlg" layout="block"
+								styleClass="pure-control-group"
+								rendered="#{enrollWithUsernameBean.selectKeyAlgorithmRendered}">
+								<h:outputLabel for="selectAlgorithmOneMenu"
+									value="#{msg.enroll_key_algorithm}" />
+								<h:selectOneMenu id="selectAlgorithmOneMenu"
+									styleClass="jsAutoFocusLast"
+									value="#{enrollWithUsernameBean.selectedAlgorithm}">
+									<f:selectItems
+										value="#{enrollWithUsernameBean.availableAlgorithmSelectItems}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
 							<h:panelGroup layout="block"
 								rendered="#{enrollWithUsernameBean.renderGenerateCertificate}" id="uploadCsrOuterPanel" styleClass="pure-control-group">
 								<h:panelGroup layout="block" rendered="#{!enrollWithUsernameBean.uploadCsrDoneRendered}">
