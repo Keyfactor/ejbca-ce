@@ -851,7 +851,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         boolean missingAudienceFound = false;
         for (OAuthKeyInfo oAuthKeyInfo : oAuthConfiguration.getOauthKeys().values()) {
             if (!oAuthKeyInfo.isAudienceCheckDisabled() && (oAuthKeyInfo.getAudience() == null || oAuthKeyInfo.getAudience().trim().isEmpty())) {
-                log.info("OAuth configuration " + oAuthKeyInfo.getLabel()
+                log.error("OAuth configuration " + oAuthKeyInfo.getLabel()
                         + " has an empty Audience value.  This is less secure and should be set."
                         + "  Go to \"System Configuration / Trusted OAuth Providers\" and configure Audience for "
                         + oAuthKeyInfo.getLabel() + " or de-select Enable Audience Check (not recommended).");

@@ -20,6 +20,7 @@ import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.config.ConfigurationHolder;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -61,7 +62,7 @@ public class UploadFileCommand extends BaseEstConfigCommand {
         try {
             f = new File(filename);
             config = new CompositeConfiguration();
-            config.addConfiguration(loadReloadingProperties(f));
+            config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
             log.info("Reading EST configuration from file: " + f.getAbsolutePath());
         } catch (ConfigurationException e) {
             log.error("Failed to load configuration from file " + f.getAbsolutePath());
