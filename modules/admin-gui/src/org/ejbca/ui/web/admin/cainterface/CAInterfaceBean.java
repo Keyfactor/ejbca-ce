@@ -391,6 +391,10 @@ public class CAInterfaceBean implements Serializable {
                         log.error("No matching curve for signing algorithm: " + caInfoDto.getSignatureAlgorithmParam());
                         throw new Exception("No matching curve for ECDSA signing algorithm.");
                     }
+                } else if(AlgorithmConstants.KEYALGORITHM_ED25519.equals(caSignKeyAlgo)) {
+                    caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED25519;
+                } else if(AlgorithmConstants.KEYALGORITHM_ED448.equals(caSignKeyAlgo)) {
+                    caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED448;
                 } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
                 } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
