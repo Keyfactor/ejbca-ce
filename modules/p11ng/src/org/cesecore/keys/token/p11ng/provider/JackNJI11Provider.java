@@ -64,6 +64,7 @@ import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKK;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.CKO;
+import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
 
@@ -239,7 +240,7 @@ public class JackNJI11Provider extends Provider {
         @Override
         protected void engineInitSign(PrivateKey pk) throws InvalidKeyException {
             if (!(pk instanceof NJI11Object)) {
-                throw new InvalidKeyException("Not a NJI11Object: " + pk.getClass().getName());
+                throw new InvalidKeyException("Not a NJI11Object: " + (pk == null ? "null" : pk.getClass().getName()));
             }
             myKey = (NJI11Object) pk;
             
@@ -388,6 +389,15 @@ public class JackNJI11Provider extends Provider {
                             myKey.getSlot().getCryptoki().Sign(session.getId(), sigInput, rawSig, new LongRef(bufLen));
                             session.markOperationSignFinished();
                         } catch (CKRException e) {
+                            // If you use a GCP KMS, there is a transaction limit on the account, if you sign too fast you will be throttled
+                            // and get a CKR_DEVICE_ERROR back. If this happened the signing operation is cancelled and the following will 
+                            // return a CKR_OPERATION_NOT_INITIALIZED. The real reason will be visible in the libkmsp11 log file as 
+                            // a RESOURCE_EXHAUSTED. There is no way to try again here if this happens, but can only be done by starting over
+                            // with InitSign.
+                            // If it is a DEVICE_ERROR it doesn't make sense to try again here, we should bail out with that error
+                            if (e.getCKR() == CKR.DEVICE_ERROR) {
+                                throw e;
+                            }
                             // Assuming CKR_BUFFER_TOO_SMALL, fallback to multi-call, where the first call asks the HSM 
                             // for the size of buffer needed, and the second call calls with that size of a buffer 
                             // (handled internally in JackNJI11) 
