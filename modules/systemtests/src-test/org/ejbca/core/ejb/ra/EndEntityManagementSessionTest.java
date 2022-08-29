@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
@@ -54,6 +55,8 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -64,6 +67,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -804,24 +808,22 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             profile.addField(DnComponents.ORGANIZATIONALUNIT);
             profile.setValue(DnComponents.ORGANIZATIONALUNIT, 4, "OrgUnit23");
             endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+            // changeEndEntity will only merge with previously created DN but not the current end entity profile
             
             addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho3");
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=FooOrgUnit,"
-                    + "OU=OrgUnit22,OU=OrgUnit23,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,O=AnaTom,C=SE", dataMulti.getDN());
             
             addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho3,OU=hoho4");
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=hoho4,"
-                    + "OU=OrgUnit22,OU=OrgUnit23,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=hoho4,O=AnaTom,C=SE", dataMulti.getDN());
             
             addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho5");
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho5,OU=hoho4,"
-                    + "OU=OrgUnit22,OU=OrgUnit23,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho5,OU=hoho4,O=AnaTom,C=SE", dataMulti.getDN());
             
             //Skip this test on Community
             if (DnComponents.enterpriseMappingsExist()) {
@@ -861,7 +863,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         + "OU=FooOrgUnit,OU=OrgUnit22,OU=OrgUnit23,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
-                assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com", data.getSubjectAltName());
+                assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
                 // Try with some altName value to merge
                 endEntityManagementSession.deleteUser(admin, username);
                 profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
@@ -877,8 +879,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         + "OU=FooOrgUnit,OU=OrgUnit22,OU=OrgUnit23,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
-                assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,"
-                        + "DNSNAME=server.bad.com,DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com", data.getSubjectAltName());
+                assertEquals("DNSNAME=server.bad.com,DNSNAME=server.superbad.com,"
+                        + "dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
             } else {
                 log.debug("Skipped test related to Enterprise DN properties.");
             }
@@ -1146,6 +1148,64 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 internalCertStoreSession.removeCertificate(cdw.getCertificateData().getFingerprint());
             }
         }
+    }
+    
+    /** Test to ensure added ObjectSid standard certificate extension does not interfere with 
+     * custom extension with same OID. Only relevant for enrollment in Microsoft environemnts.*/
+    @Test
+    public void testCustomExtensionMicrosoftObjectSid() throws Exception {
+        
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
+        
+        Properties props = new Properties();
+        props.put("translatable", "FALSE");
+        props.put("encoding", "DEROCTETSTRING");
+        cceConfig.addCustomCertExtension(1000, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT, 
+                "ObjectSid", BasicCertificateExtension.class.getName(), false, false, props);
+        globalConfSession.saveConfiguration(admin, cceConfig);
+      
+        // ee cert profile
+        CertificateProfile endEntityCertprofile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        List<Integer> usedExtensions = new ArrayList<>();
+        usedExtensions.add(1000);
+        endEntityCertprofile.setUsedCertificateExtensions(usedExtensions);
+        int endEntityCertificateProfileId = certificateProfileSession.addCertificateProfile(admin, "CertProfileObjectSid", endEntityCertprofile);
+        log.info("created end entity certificate profile id: " + endEntityCertificateProfileId);
+
+        // end entity profile
+        EndEntityProfile endEntityProfile = new EndEntityProfile();
+        List<Integer> availableCertProfiles = endEntityProfile.getAvailableCertificateProfileIds();
+        availableCertProfiles.add(endEntityCertificateProfileId);
+        endEntityProfile.setAvailableCertificateProfileIds(availableCertProfiles);
+        endEntityProfile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+
+        int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(admin, "EEProfileObjectSid", endEntityProfile);
+        log.info("Created end entity profile id: " + endEntityProfileId);
+        
+        String username =  genRandomUserName();
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.setExtensionData(CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT, "0123456789abcdef");
+        EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, caId, null, null, 
+                EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, 
+                endEntityCertificateProfileId, SecConst.TOKEN_SOFT_P12, ei);
+        endEntityInformation.setPassword(username);
+        endEntityManagementSession.addUser(admin, endEntityInformation, false);
+       
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
+        assertNotNull(data);
+        assertEquals(username, data.getUsername());  
+        assertNotNull(data.getExtendedInformation().getExtensionDataOids());
+        assertEquals(data.getExtendedInformation().getExtensionData(
+                                CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT),"0123456789abcdef");  
+        
+        endEntityManagementSession.deleteUser(admin, username);
+        endEntityProfileSession.removeEndEntityProfile(admin, "EEProfileObjectSid");
+        certificateProfileSession.removeCertificateProfile(admin, "CertProfileObjectSid");
+        
+        cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
+        cceConfig.removeCustomCertExtension(1000);
+        globalConfSession.saveConfiguration(admin, cceConfig);
+        
     }
     
     
