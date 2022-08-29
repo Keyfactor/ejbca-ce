@@ -86,15 +86,22 @@
 					</h:panelGroup>
 
 					<h:panelGroup layout="block" styleClass="internal-frame">
-							<!--Either render the fields for algorithm selection, or render the field for CSR upload/paste -->
-							<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
+					<!--Either render the fields for algorithm selection if no algorithm has been set, or render the field for CSR upload/paste -->
+						<h:panelGroup layout="block"
+							rendered="#{!enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
+							<h:panelGroup id="enteredkeyAlg" layout="block"
+								styleClass="pure-control-group"
 								rendered="#{enrollWithUsernameBean.selectKeyAlgorithmRendered}">
-								<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
-								<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast" value="#{enrollWithUsernameBean.selectedAlgorithm}">
-									<f:selectItems value="#{enrollWithUsernameBean.availableAlgorithmSelectItems}" />
+								<h:outputLabel for="selectAlgorithmOneMenu"
+									value="#{msg.enroll_key_algorithm}" />
+								<h:selectOneMenu id="selectAlgorithmOneMenu"
+									styleClass="jsAutoFocusLast"
+									value="#{enrollWithUsernameBean.selectedAlgorithm}">
+									<f:selectItems
+										value="#{enrollWithUsernameBean.availableAlgorithmSelectItems}" />
 								</h:selectOneMenu>
 							</h:panelGroup>
-
+						</h:panelGroup>
 							<h:panelGroup layout="block"
 								rendered="#{enrollWithUsernameBean.renderGenerateCertificate}" id="uploadCsrOuterPanel" styleClass="pure-control-group">
 								<h:panelGroup layout="block" rendered="#{!enrollWithUsernameBean.uploadCsrDoneRendered}">
@@ -130,7 +137,13 @@
 									</h:commandButton>
 								    </h:panelGroup>
 							</h:panelGroup>
-							
+						<!-- Render delete Public access role after initial superadmin enrollment-->
+						<h:panelGroup id="deletePublicAccessRole" layout="block" styleClass="pure-control-group"
+									  rendered="#{enrollWithUsernameBean.deletePublicAccessRoleRendered}">
+							<h:outputLabel for="deletePublicRole" value="#{msg.enroll_delete_public_role}"/>
+							<h:selectBooleanCheckbox id="deletePublicRole" value="#{enrollWithUsernameBean.deletePublicAccessRole}" />
+						</h:panelGroup>
+
 							<!-- Render different buttons depending on if we enroll for a server generated keystore or a user generated with CSR-->
 							<h:panelGroup id="requestIdButtons" layout="block" styleClass="keygeneration-button-group">
 								<h:commandButton id="generatePem"
