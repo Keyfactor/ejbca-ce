@@ -76,6 +76,14 @@
     <target name="build" description="Build this module" depends="compile">
 		<war destfile="${mod.ejbca-rest-api.war}" webxml="${ejbca-rest-api.resources.dir}/WEB-INF/web.xml" basedir="${ejbca-rest-api.build.dir}">
             <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
+			<lib file="${mod.ejbca-rest-common.lib}"/>
+			<lib file="${mod.ejbca-rest-certificate.lib}"/>
+			<lib file="${mod.ejbca-rest-configdump.lib}"/>
+			<lib file="${mod.ejbca-rest-ca.lib}"/>
+			<lib file="${mod.ejbca-rest-cryptotoken.lib}"/>
+			<lib file="${mod.ejbca-rest-camanagement.lib}"/>
+			<lib file="${mod.ejbca-rest-endentity.lib}"/>
+			<lib file="${mod.ejbca-rest-ssh.lib}"/>
     	</war>
     </target>
 

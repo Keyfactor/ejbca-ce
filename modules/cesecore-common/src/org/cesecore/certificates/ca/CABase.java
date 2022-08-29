@@ -111,14 +111,16 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
         setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
-        
+
         List<Integer> extendedservicetypes = new ArrayList<>();
-        for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
-            createExtendedCAService(next);
-            if (log.isDebugEnabled()) {
-                log.debug("Adding extended service to CA '"+cainfo.getName()+"': "+next.getType()+", "+next.getImplClass());
+        if (cainfo.getExtendedCAServiceInfos() != null) {
+            for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
+                createExtendedCAService(next);
+                if (log.isDebugEnabled()) {
+                    log.debug("Adding extended service to CA '"+cainfo.getName()+"': "+next.getType()+", "+next.getImplClass());
+                }
+                extendedservicetypes.add(next.getType());
             }
-            extendedservicetypes.add(next.getType());
         }
         data.put(EXTENDEDCASERVICES, extendedservicetypes);
         setApprovals(cainfo.getApprovals());

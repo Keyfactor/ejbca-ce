@@ -64,6 +64,7 @@ import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKK;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.CKO;
+import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
 
@@ -112,6 +113,7 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED25519, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED448, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "NONEwithECDSA", MySignature.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA256", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA384", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA512", MyMessageDigiest.class.getName()));
@@ -238,7 +240,7 @@ public class JackNJI11Provider extends Provider {
         @Override
         protected void engineInitSign(PrivateKey pk) throws InvalidKeyException {
             if (!(pk instanceof NJI11Object)) {
-                throw new InvalidKeyException("Not a NJI11Object: " + pk.getClass().getName());
+                throw new InvalidKeyException("Not a NJI11Object: " + (pk == null ? "null" : pk.getClass().getName()));
             }
             myKey = (NJI11Object) pk;
             
@@ -324,6 +326,31 @@ public class JackNJI11Provider extends Provider {
             }
         }
 
+        byte[] derEncodeEllipticCurve(final byte[] rawSig) throws IOException {
+            final BigInteger[] sig = new BigInteger[2];
+            final byte[] first = new byte[rawSig.length / 2];
+            final byte[] second = new byte[rawSig.length / 2];
+
+            System.arraycopy(rawSig, 0, first, 0, first.length);
+            System.arraycopy(rawSig, first.length, second, 0, second.length);
+            sig[0] = new BigInteger(1, first);
+            sig[1] = new BigInteger(1, second);
+
+            if (log.isDebugEnabled()) {
+                log.debug("Parsed signature: " +  System.lineSeparator() +
+                               "   X: " + sig[0].toString() + System.lineSeparator() +
+                               "   Y: " + sig[1].toString());
+            }
+
+            // DER encode the elliptic curve point as a DER sequence with two integers (X, Y)
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final DERSequenceGenerator seq = new DERSequenceGenerator(baos);
+            seq.addObject(new ASN1Integer(sig[0]));
+            seq.addObject(new ASN1Integer(sig[1]));
+            seq.close();
+            return baos.toByteArray();
+        }
+
         @Override
         protected byte[] engineSign() throws SignatureException {
             if (myKey instanceof NJI11ReleasebleSessionPrivateKey && !hasActiveSession) {
@@ -362,6 +389,15 @@ public class JackNJI11Provider extends Provider {
                             myKey.getSlot().getCryptoki().Sign(session.getId(), sigInput, rawSig, new LongRef(bufLen));
                             session.markOperationSignFinished();
                         } catch (CKRException e) {
+                            // If you use a GCP KMS, there is a transaction limit on the account, if you sign too fast you will be throttled
+                            // and get a CKR_DEVICE_ERROR back. If this happened the signing operation is cancelled and the following will 
+                            // return a CKR_OPERATION_NOT_INITIALIZED. The real reason will be visible in the libkmsp11 log file as 
+                            // a RESOURCE_EXHAUSTED. There is no way to try again here if this happens, but can only be done by starting over
+                            // with InitSign.
+                            // If it is a DEVICE_ERROR it doesn't make sense to try again here, we should bail out with that error
+                            if (e.getCKR() == CKR.DEVICE_ERROR) {
+                                throw e;
+                            }
                             // Assuming CKR_BUFFER_TOO_SMALL, fallback to multi-call, where the first call asks the HSM 
                             // for the size of buffer needed, and the second call calls with that size of a buffer 
                             // (handled internally in JackNJI11) 
@@ -386,37 +422,7 @@ public class JackNJI11Provider extends Provider {
                     }
                     // If not RSA, assume it's EC/Ed and continue here to assemble the signature as ECDSA HSM 
                     // signing returns the raw signature, but what is put in signed objects is an ASN.1 encoded version
-                    final BigInteger[] sig = new BigInteger[2];
-                    final byte[] first = new byte[rawSig.length / 2];
-                    final byte[] second = new byte[rawSig.length / 2];
-
-                    System.arraycopy(rawSig, 0, first, 0, first.length);
-                    System.arraycopy(rawSig, first.length, second, 0, second.length);
-                    sig[0] = new BigInteger(1, first);
-                    sig[1] = new BigInteger(1, second);
-
-                    if (log.isDebugEnabled()) {
-                        log.debug("Parsed EC signature: " +  System.lineSeparator() +
-                                "   X: " + sig[0].toString() + System.lineSeparator() +
-                                "   Y: " + sig[1].toString());
-                    }
-
-                    // DER encode the elliptic curve point as a DER sequence with two integers (X, Y)
-                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    final DERSequenceGenerator seq = new DERSequenceGenerator(baos);
-                    // For RSA and EdDSA the signature lengths are fixed - with RSA it's the size of the modulus, 
-                    // Ed25519 is 64 bytes, Ed448 is 114 bytes.
-                    // ECDSA/DSA is a bit tricky though - they're both ASN.1 encoded, for DSA it's defined as:
-                    // Dss-Sig-Value  ::=  SEQUENCE  {
-                    //    r       INTEGER,
-                    //    s       INTEGER  }
-                    // ECDSA is the same. This means they can vary, INTEGER is signed, so if r or s encode to bits where the top bit is 1, 
-                    // the rules require adding 8 bits of zero as a pad byte.
-                    // Using ASN1Integer, it will automatically add the padding when necessary
-                    seq.addObject(new ASN1Integer(sig[0]));
-                    seq.addObject(new ASN1Integer(sig[1]));
-                    seq.close();
-                    return baos.toByteArray();
+                    return derEncodeEllipticCurve(rawSig);
                 } else { // T_RAW
                     // Ed25519 and Ed448 uses T_RAW
                     // Make the signature, see if we have cached the length of the signature for this key and algorithm
@@ -447,7 +453,13 @@ public class JackNJI11Provider extends Provider {
                         // Add the signature length to the cache
                         bufLenCache.put(key, rawSig.length);
                     }
-                    return rawSig;
+
+                    if (MechanismNames.longFromSigAlgoName(this.algorithm).get() == CKM.ECDSA) {
+                        // assemble the signature as ECDSA HSM signing returns the raw signature, but what is put in signed objects is an ASN.1 encoded version
+                        return derEncodeEllipticCurve(rawSig);
+                    } else {
+                        return rawSig;
+                    }
                 }
                 // An Exception during signing can result in canceling this signing, while C_SignInit has still been called,
                 // re-using this session can then later result in CKR_OPERATION_ACTIVE, so upon failure it's better to close 

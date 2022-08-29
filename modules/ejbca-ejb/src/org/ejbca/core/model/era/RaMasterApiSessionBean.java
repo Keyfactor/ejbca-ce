@@ -1057,7 +1057,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final List<String> issuerDns = new ArrayList<>();
         for (final int caId : authorizedLocalCaIds) {
-            final String caInfoIssuerDn = StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN());
+            final CAInfo caInfo = caSession.getCAInfoInternal(caId);
+            final String caInfoIssuerDn = caInfo != null ? StringTools.strip(caInfo.getSubjectDN()) : "";
             if(caInfoIssuerDn.startsWith(CAInfo.CITS_SUBJECTDN_PREFIX)) {
                 continue; // skip CITS CAs
             }
@@ -1896,7 +1897,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = getAuthorizedCertificateProfiles(authenticationToken, CertificateConstants.CERTTYPE_UNKNOWN);
         return authorizedCertificateProfiles;
     }
-
+    
+    @Override    
+    public RaCertificateProfileResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName) {
+        final CertificateProfile profile = certificateProfileSession.getCertificateProfile(profileName);
+        if (profile!=null) {
+            final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
+            return RaCertificateProfileResponseV2.converter().toRaResponse(profile, caInfos);
+        }
+        return null;
+    }
+    
     @Override
     public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken){
         IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = getAuthorizedCertificateProfiles(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
@@ -1947,8 +1958,25 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean isClearPwd) throws AuthorizationDeniedException,
+    public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, boolean isClearPwd) throws AuthorizationDeniedException,
             EjbcaException, WaitingForApprovalException{
+        // only for REST to avoid fetching end entity profile contents to RA
+        if(endEntity.getExtendedInformation()!=null && 
+                endEntity.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE)!=null) {
+            EndEntityProfile endEntityProfile = 
+                    endEntityProfileSession.getEndEntityProfileNoClone(endEntity.getEndEntityProfileId());
+            if(endEntityProfile==null) {
+                throw new EjbcaException("End Entity Profile is invalid.");
+            }
+            if(endEntityProfile.isSendNotificationUsed()) {
+                if(StringUtils.isNotEmpty(endEntity.getEmail()) && endEntityProfile.isSendNotificationDefault()) {
+                    endEntity.setSendNotification(true);
+                }
+            }
+            isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
+            endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA +
+                    ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+        }
         try {
             endEntityManagementSession.addUser(admin, endEntity, isClearPwd);
         } catch (CesecoreException e) {
@@ -2503,6 +2531,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // If called from the wrong instance, return to proxybean and try next implementation
             return false;
         } else {
+            // only for REST to avoid fetching end entity profile contents to RA
+            if(endEntityInformation.getExtendedInformation()!=null && 
+                    endEntityInformation.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE)!=null) {
+                EndEntityProfile endEntityProfile = 
+                        endEntityProfileSession.getEndEntityProfileNoClone(endEntityInformation.getEndEntityProfileId());
+                isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
+                endEntityInformation.getExtendedInformation().getRawData().remove(
+                        ExtendedInformation.CUSTOMDATA + ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+            }
             if (newUsername == null)
                 endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
             else
@@ -3441,5 +3478,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             userData.getExtendedInformation().setKeyStoreAlgorithmSubType(renewCertificateData.getKeySpec());
         }
         return generateKeyStoreWithoutViewEndEntityAccessRule(admin, userData);
+    }
+
+    @Override
+    public RaEndEntityProfileResponse getEndEntityProfile(AuthenticationToken authenticationToken, final String profileName) throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(profileName);
+        if (endEntityProfileSession.isAuthorizedToView(authenticationToken, endEntityProfileId)) {
+            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(profileName);
+            RaEndEntityProfileResponse.RaEndEntityProfileResponseConverter converter = RaEndEntityProfileResponse.converter();
+            return converter.toRaResponse(profileName, endEntityProfile, caSession.getCAIdToNameMap(),
+                    certificateProfileSession.getCertificateProfileIdToNameMap());
+        } else {
+            throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to view certificate profile " + profileName);
+        }
     }
 }

@@ -21,6 +21,8 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBMPString;
 import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DLSequence;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -113,6 +115,7 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
+import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
@@ -375,6 +378,51 @@ public final class KeyTools {
         System.arraycopy(encodedKey, 1, x, 0, length);
         System.arraycopy(encodedKey, length + 1, y, 0, length);
         return new ECPoint(new BigInteger(1,x), new BigInteger(1,y));
+    }
+    
+    /**
+     * Takes a Ed25519 public key and encodes it
+     * 
+     * @param edPublicKey a Ed25519 public key
+     * @return the resulting byte array
+     */
+    public static byte[] encodeEd25519PublicKey(final PublicKey edPublicKey) {
+        try {
+            ASN1InputStream asn1InputStream = new ASN1InputStream(edPublicKey.getEncoded());
+            try {
+                DLSequence id = (DLSequence) asn1InputStream.readObject();
+                DERBitString raw = (DERBitString) id.getObjectAt(1).toASN1Primitive();
+                return raw.getBytes();
+            } finally {
+                asn1InputStream.close();
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("IOException encountered when encoding Ed25519 key.");
+        }
+    }
+
+    /**
+     * Takes an encoded Ed25519 public key and returns it as a PublicKey
+     * 
+     * @param keyBody the encoded public key
+     * @return the public key as a PublicKey object
+     */
+    public static PublicKey decodeEd25519PublicKey(final byte[] keyBody) {
+        KeyFactory keyFactory;
+        try {
+            keyFactory = KeyFactory.getInstance(EdECObjectIdentifiers.id_Ed25519.getId(), BouncyCastleProvider.PROVIDER_NAME);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Ed25519 was not found as an algorithm", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+        }
+        SubjectPublicKeyInfo pubKeyInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(EdECObjectIdentifiers.id_Ed25519), keyBody);
+        try {
+            EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(pubKeyInfo.getEncoded());
+            return keyFactory.generatePublic(x509KeySpec);
+        } catch (IOException | InvalidKeySpecException e) {
+            throw new IllegalStateException("Couldn't decode Ed25519 public key", e);
+        }
     }
     
     /**

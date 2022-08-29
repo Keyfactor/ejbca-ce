@@ -191,7 +191,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             removeCertificateProfileIfExist(TEST_CP_NAME);
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
         } finally {
-            // Be sure to to this, even if the above fails
+            // Be sure to do this, even if the above fails
             tearDownRemoveRole();
         }
         log.trace("<tearDown()");

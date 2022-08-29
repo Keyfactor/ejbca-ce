@@ -12,12 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * A container for end entity extended information
  */
 public class ExtendedInformationRestRequestComponent {
 
+    @ApiModelProperty(value = "Certificate Extension Object Identifier (OID)", example = "1.3.6.1.5.5.7.1.24")
 	private String name;
+    @ApiModelProperty(value = "OID value", example = "3003020105")
     private String value;
 
     private ExtendedInformationRestRequestComponent() {}

@@ -56,16 +56,17 @@ import java.util.EnumSet;
 @ValidSearchCertificateCriteriaRestRequest
 public class SearchCertificateCriteriaRestRequest {
 
-    @ApiModelProperty(value = "A search property",
+    @ApiModelProperty(value = "A search property", example = "CERTIFICATE_PROFILE",
             allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE"
     )
     private String property;
 
     @ApiModelProperty(value = "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA",
-            example = "'SuperCA', '2018-06-15T14:07:09Z', 'MyEndEntityProfile'")
+            example = "ENDUSER")
     private String value;
 
     @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
+            example = "EQUAL",
             allowableValues = "EQUAL, LIKE, BEFORE, AFTER",
             dataType = "java.lang.String")
     private String operation;
