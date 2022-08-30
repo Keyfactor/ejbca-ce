@@ -16,9 +16,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,17 +80,6 @@ public class RaRenewBean implements Serializable {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
-    private enum FileType {
-        PEM("Pem", ".pem"),
-        DER("Der", ".der");
-        private String label;
-        private String extension;
-
-        FileType(String label, String extension) {
-            this.label = label;
-            this.extension = extension;
-        }
-    };
     private boolean initialized = false;
     private boolean continuePressed = false;
     private boolean notificationConfigured = false;
@@ -108,13 +94,13 @@ public class RaRenewBean implements Serializable {
     private String newSubjectDn;
     private boolean subjectDnChanged;
     private byte[] newToken;
-    private String newTokenContentType;
-    private String newTokenFileExtension;
+    private String tokenContentType;
+    private String tokenFileExtension;
+
     private Integer newApprovalRequestId;
     private boolean certGenerationDone;
     private String enrollmentCode;
     private String confirmPassword;
-    private FileType fileType;
     private String selectedAlgorithm;
     private boolean keyAlgorithmPreSet;
     private List<String> availableKeyAlgorithms;
@@ -180,21 +166,11 @@ public class RaRenewBean implements Serializable {
     public void setEnrollmentCode(String enrollmentCode) { this.enrollmentCode = enrollmentCode; }
     public String getConfirmPassword() { return confirmPassword; }
     public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
-    public FileType getFileType() { return fileType; }
-    public void setFileType(FileType fileType) { this.fileType = fileType; }
     public boolean isNotificationConfigured() { return notificationConfigured; }
     public String getSelectedAlgorithm() { return selectedAlgorithm; }
     public void setSelectedAlgorithm(String selectedAlgorithm) { this.selectedAlgorithm = selectedAlgorithm; }
     public UIComponent getConfirmPasswordComponent() { return confirmPasswordComponent; }
     public void setConfirmPasswordComponent(UIComponent confirmPasswordComponent) { this.confirmPasswordComponent = confirmPasswordComponent; }
-
-    public List<SelectItem> getFileTypeSelectItems(){
-        List<SelectItem> fileTypeSelectItems = new ArrayList<>();
-        for(FileType type : FileType.values()){
-            fileTypeSelectItems.add(new SelectItem(type, type.label));
-        }
-        return fileTypeSelectItems;
-    }
 
     public boolean isRequestRenewalButtonShown() {
         return continuePressed;
@@ -204,12 +180,14 @@ public class RaRenewBean implements Serializable {
             certGenerationDone = true; // Don't generate certificate twice, if the user retries the download (or double clicks the button)
             if (newToken != null) {
                 log.debug("Admin client certificate renewal was successful. Sending token file to browser.");
+                tokenContentType = "application/x-pkcs12";
+                tokenFileExtension = ".p12";       
                 String name = CertTools.getPartFromDN(newSubjectDn, "CN");
                 if (name == null){
                     name = "certificate";
                 }
                 try {
-                    DownloadHelper.sendFile(newToken, newTokenContentType, name + newTokenFileExtension);
+                    DownloadHelper.sendFile(newToken, tokenContentType, name + tokenFileExtension);
                 } catch (IOException e) {
                     log.info("Token " + name + " could not be downloaded", e);
                     raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", name);
@@ -278,25 +256,6 @@ public class RaRenewBean implements Serializable {
                 log.error("Failed to renew certificate for user " + username + " with serial number " + currentSerialNumber
                 + " and issuer " + currentIssuerDn, e);
                 raLocaleBean.addMessageError("renewcertificate_page_certificate_renew_error");
-            }
-
-            if (newToken != null) {
-                newTokenFileExtension = getFileType().extension;
-                switch (getFileType()) {
-                    case PEM: {
-                        newTokenContentType = "application/octet-stream";
-                        try {
-                            Certificate certificate = CertTools.getCertfromByteArray(newToken, Certificate.class);
-                            newToken = CertTools.getPemFromCertificateChain(Collections.singletonList(certificate));
-                        } catch (CertificateParsingException | CertificateEncodingException e) {
-                            log.info(e);
-                        }
-                        break;
-                    }
-                    case DER: {
-                        newTokenContentType = "application/pkix-cert";
-                    }
-                }
             }
         }
         return true;
