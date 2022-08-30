@@ -13,6 +13,7 @@
     	<antcall target="optionalteststatedump" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestplugins" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestplugins-ee" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestssh-system" inheritall="true" inheritrefs="true"/>
@@ -50,6 +51,7 @@
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/p11ng" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -88,8 +90,12 @@
     <target name="optionaltestpeerconnector" if="${peerconnector.exists}">
         <ant antfile="build.xml" dir="modules/peerconnector" target="test" inheritall="true" inheritrefs="true"/>
     </target>
-    <condition property="ee-plugins.exist"><available file="modules/plugins-ee/build.xml" /></condition>
-    <target name="optionaltestplugins" if="${ee-plugins.exist}">
+    <condition property="plugins.exist"><available file="modules/plugins/build.xml" /></condition>
+    <target name="optionaltestplugins" if="${plugins.exist}">
+        <ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
+    <condition property="plugins-ee.exist"><available file="modules/plugins-ee/build.xml" /></condition>
+    <target name="optionaltestplugins-ee" if="${plugins-ee.exist}">
         <ant antfile="build.xml" dir="modules/plugins-ee" target="test" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="acme.exists"><available file="modules/acme"/></condition>
@@ -173,6 +179,7 @@
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-common/src-test/**/${test.runone}.java" />
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
+                    <include name="modules/plugins/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins-ee/src-test/**/${test.runone}.java" />
                     <include name="modules/cli-util/src-test/**/${test.runone}.java" />
                     <include name="modules/ejbca-ejb-cli/src-test/**/${test.runone}.java" />
@@ -265,6 +272,12 @@
         </condition>
         <condition property="module" value="modules/admin-gui">
             <matches string="${test-fullname}" pattern="^modules/admin-gui/.*$"/>
+        </condition>
+        <condition property="module" value="modules/plugins">
+            <matches string="${test-fullname}" pattern="^modules/plugins/.*$"/>
+        </condition>
+        <condition property="module" value="modules/plugins">
+            <matches string="${test-fullname}" pattern="^modules/plugins/.*$"/>
         </condition>
         <condition property="module" value="modules/plugins-ee">
             <matches string="${test-fullname}" pattern="^modules/plugins-ee/.*$"/>
