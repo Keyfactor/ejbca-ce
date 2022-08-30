@@ -276,9 +276,6 @@
         <condition property="module" value="modules/plugins">
             <matches string="${test-fullname}" pattern="^modules/plugins/.*$"/>
         </condition>
-        <condition property="module" value="modules/plugins">
-            <matches string="${test-fullname}" pattern="^modules/plugins/.*$"/>
-        </condition>
         <condition property="module" value="modules/plugins-ee">
             <matches string="${test-fullname}" pattern="^modules/plugins-ee/.*$"/>
         </condition>
