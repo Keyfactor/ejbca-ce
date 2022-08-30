@@ -203,7 +203,7 @@ public interface CaSession {
      * @throws AuthorizationDeniedException if the client does not fulfill the authorization requirements specified above.
      * @throws CADoesntExistsException if the CA with the CA name given as input does not exist.
      */
-    Collection<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
+    List<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException;
     
     /**
