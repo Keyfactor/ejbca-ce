@@ -832,7 +832,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             query.setParameter("authorizationId", authorizationId);
             int rowsUpdated = query.executeUpdate();
             if (rowsUpdated == 1) {
-                log.info("Upgraded ACME authorization with ID '" + authorizationId + "', status='" + status + "', identifier='" + identifier + "'.");
+                log.trace("Upgraded ACME authorization with ID '" + authorizationId + "', status='" + status + "', identifier='" + identifier + "'.");
             } else {
                 // Should never happen.
                 throw new IOException("Found '" + rowsUpdated + " for ACME authorizations with ID '" + authorizationId + "'.");
