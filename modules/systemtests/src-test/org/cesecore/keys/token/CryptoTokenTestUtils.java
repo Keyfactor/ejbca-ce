@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.security.InvalidKeyException;
 import java.security.Security;
 import java.util.Properties;
@@ -33,9 +35,6 @@ import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Utility methods for creating CAs and CryptoTokens for tests. Both soft and PKCS#11 tokens.
@@ -85,12 +84,12 @@ public class CryptoTokenTestUtils {
         return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec);
     }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
             String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec, "RSA1024", false);
+        return createCryptoTokenForCA(authenticationToken, pin, generateKeys, pkcs11, tokenName, signKeySpec, signKeySpec, false);
     }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
             String tokenName, String signKeySpec, String encKeySpec, boolean pkcs11ng) {
         if (authenticationToken == null) {
             authenticationToken = alwaysAllowToken;
@@ -144,7 +143,7 @@ public class CryptoTokenTestUtils {
         try {
             cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName,
                     cryptoTokenProperties, null, pin);
-            if (genenrateKeys) {
+            if (generateKeys) {
                 try {
                     cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, 
                             CAToken.SOFTPRIVATESIGNKEYALIAS, 
