@@ -26,6 +26,8 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.commons-beanutils.classpath"/>
+		<path refid="lib.commons-text.classpath"/>
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 	</path>
