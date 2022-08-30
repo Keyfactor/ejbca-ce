@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.ejb.keyrecovery;
 
+import java.security.cert.X509Certificate;
+import java.util.List;
+
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -33,6 +36,7 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
      * HashMaps available on the RA.
      *
      * @param admin the administrator calling the function (used for audit logging)
+     * @param caCertificate the certificate of the issuing CA
      * @param certificate the certificate used with the keypair.
      * @param username of the administrator
      * @param keypair the actual keypair to save.
@@ -42,11 +46,11 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
      * @return false if the certificates keyrecovery data already exists, or if the crypto token was offline.
      * @see KeyRecoverySession#addKeyRecoveryData
      */
-    boolean addKeyRecoveryDataInternal(AuthenticationToken admin, CertificateWrapper certificate, String username, KeyPairWrapper keypair, int cryptoTokenId,
+    boolean addKeyRecoveryDataInternal(AuthenticationToken admin, CertificateWrapper caCertificate, CertificateWrapper certificate, String username, KeyPairWrapper keypair, int cryptoTokenId,
             String keyAlias);
 
     /**
-     * Returns the keyrecovery data for a user. Observe only one certificates
+     * Returns the keyrecovery data for a user. Observe only one certificate's
      * key can be recovered for every user at the time.
      * 
      * <p>This method expects the caller to do the authorization checks, using the authorization
@@ -59,11 +63,12 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
      * @param username Username of the end entity
      * @param cryptoTokenId ID of crypto token to use to encrypt key.
      * @param keyAlias key alias in crypto token to use to encrypt key.
+     * @param caCertificate the certificate of the issuing/encrypting CA. 
      * @return the marked keyrecovery data or null if none can be found. Note that the certificate property will be null.
      * 
      * @see KeyRecoverySession#recoverKeys
      */
-    KeyRecoveryInformation recoverKeysInternal(AuthenticationToken admin, String username, int cryptoTokenId, String keyAlias);
+    KeyRecoveryInformation recoverKeysInternal(AuthenticationToken admin, String username, int cryptoTokenId, String keyAlias, X509Certificate caCertificate);
     
     /**
      * Marks a users certificate for key recovery. This method performs no authorization checks and should only be called
@@ -76,4 +81,13 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
      * @return true if flag was set in database successfully
      */
     boolean markAsRecoverableInternal(AuthenticationToken admin, CertificateWrapper certificate, String username);
+    
+    /** @return return the query results as a List. */
+    List<KeyRecoveryData> findByUserMark(final String usermark);
+    
+    /** @return the found entity instance or null if the entity does not exist */
+    KeyRecoveryData findByPK(final KeyRecoveryDataPK pk);
+    
+    /** @return return the query results as a List. */
+    List<KeyRecoveryData> findByUsername(final String username);
 }

@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.PublicKey;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -535,7 +536,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // Create the CA Token
             final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
             caToken.setSignatureAlgorithm(signAlg);
-            caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(signAlg));
             // Generate CA keys if it is a soft CryptoToken
             if ("soft".equals(catokentype)) {
                 final String signKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
@@ -563,6 +563,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 }
 
             }
+        
+            PublicKey encryptionPublicKey = cryptoTokenManagementSession
+                    .getPublicKey(getAuthenticationToken(), cryptoTokenId, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT))
+                    .getPublicKey();
+            caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(signAlg, encryptionPublicKey));
+           
+            
             // Create the CA Info
             CAInfo cainfo = null;
             switch (type) {

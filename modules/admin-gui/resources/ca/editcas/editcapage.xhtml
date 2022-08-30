@@ -318,6 +318,15 @@
 						<f:selectItems
 							value="#{editCAsMBean.getKeyAliasesListWithDefault('keyEncryptKey')}" />
 					</h:selectOneMenu>
+					<br />
+
+					<h:panelGroup style="overflow-y: auto; width: 500px; height: auto; max-height:75px; margin-bottom: 5px; margin-top: 5px"
+								  layout="block">
+						<h:outputLabel styleClass="help" value="#{web.text.KEY_ENCRYPT_KEY_RESTRICTIONS}" />		
+					</h:panelGroup>
+					
+					
+					
 				</h:panelGroup>
 
 
