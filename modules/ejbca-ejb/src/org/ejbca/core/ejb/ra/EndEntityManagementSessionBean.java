@@ -1105,13 +1105,16 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      */
     private String getAddDnsFromCnToAltName(final String subjectDn, String altName, final EndEntityProfile profile) {
         String dnsNameValueFromCn = EndEntityInformationFiller.copyDnsNameValueFromCn(profile, subjectDn);
+        if (StringUtils.isNotEmpty(dnsNameValueFromCn) && !altName.contains(dnsNameValueFromCn)) {
+       
+            if (StringUtils.isNotEmpty(altName)) {
+                altName += ", ";
+            }
+        altName += dnsNameValueFromCn;
+        }
         if (altName == null) {
             altName = "";
         }
-        if (StringUtils.isNotEmpty(altName) && StringUtils.isNotEmpty(dnsNameValueFromCn)) {
-            altName += ", ";
-        }
-        altName += dnsNameValueFromCn;
         return altName;
     }
 
