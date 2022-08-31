@@ -1026,7 +1026,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public void addEndEntityAndgenerateBcfks() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_BCFKS, null);
-        downloadToken(token, APPLICATION_X_PKCS12, ".p12");
+        downloadToken(token, APPLICATION_OCTET_STREAM, ".bcfks");
     }
 
     public void addEndEntityAndGenerateJks() {
