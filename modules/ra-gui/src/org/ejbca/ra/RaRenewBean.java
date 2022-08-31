@@ -94,9 +94,6 @@ public class RaRenewBean implements Serializable {
     private String newSubjectDn;
     private boolean subjectDnChanged;
     private byte[] newToken;
-    private String tokenContentType;
-    private String tokenFileExtension;
-
     private Integer newApprovalRequestId;
     private boolean certGenerationDone;
     private String enrollmentCode;
@@ -176,12 +173,12 @@ public class RaRenewBean implements Serializable {
         return continuePressed;
     }
     public String renewCertificate() {
+        final String tokenContentType = "application/x-pkcs12";
+        final String tokenFileExtension = ".p12"; 
         if (certGenerationDone || renewCertificate(false)) {
             certGenerationDone = true; // Don't generate certificate twice, if the user retries the download (or double clicks the button)
             if (newToken != null) {
                 log.debug("Admin client certificate renewal was successful. Sending token file to browser.");
-                tokenContentType = "application/x-pkcs12";
-                tokenFileExtension = ".p12";       
                 String name = CertTools.getPartFromDN(newSubjectDn, "CN");
                 if (name == null){
                     name = "certificate";
