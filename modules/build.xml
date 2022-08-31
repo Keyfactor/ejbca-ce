@@ -59,7 +59,7 @@
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
-        ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-ee-clean, 
+        ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
         cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cesecore-p11-clean, cits-clean, proxy-ca-clean"/>
 
   <target name="cesecore-p11-clean" if="build.cesecore.p11.jar">
@@ -176,12 +176,19 @@
 	<target name="cits-clean" if="${mod.cits.exists}">
 	    <ant antfile="${mod.cits.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
-	
-	<condition property="mod.plugins-ee.exists">
+
+	<condition property="mod.plugins.exists">
 		<available file="${mod.plugins.path}/build.xml" />
 	</condition>
-    <target name="plugins-ee-clean" if="${mod.plugins-ee.exists}">
+	<target name="plugins-clean" if="${mod.plugins.exists}">
 		<ant antfile="${mod.plugins.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<condition property="mod.plugins-ee.exists">
+		<available file="${mod.plugins-ee.path}/build.xml" />
+	</condition>
+    <target name="plugins-ee-clean" if="${mod.plugins-ee.exists}">
+		<ant antfile="${mod.plugins-ee.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 		
     <target name="peerconnectorclean" if="${mod.peerconnector.exists}">
@@ -246,7 +253,7 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb-cli" depends="ejbca-ejb-interface, peerconnector-cli, plugins-ee" description="Build EJBCA EJB CLI">
+	<target name="ejbca-ejb-cli" depends="ejbca-ejb-interface, peerconnector-cli, plugins, plugins-ee" description="Build EJBCA EJB CLI">
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -603,12 +610,16 @@
 	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme, cits, proxy-ca" if="${mod.edition-specific-ee.exists}">
 		<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
-	
-	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common" if="${mod.plugins-ee.exists}">
+
+	<target name="plugins" description="Builds the common plugin JAR" depends="ejbca-ejb-interface, ejbca-common" if="${mod.plugins.exists}">
 		<ant antfile="${mod.plugins.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="statedump" depends="ejbca-ejb-cli, plugins-ee, peerconnector, ejbca-ejb-interface">
+	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common" if="${mod.plugins-ee.exists}">
+		<ant antfile="${mod.plugins-ee.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="statedump" depends="ejbca-ejb-cli, plugins, plugins-ee, peerconnector, ejbca-ejb-interface">
 		<fail message="StateDump tool is not distributed with this version of EJBCA" unless="${mod.statedump.exists}"/>
 		<ant antfile="${mod.statedump.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
@@ -617,12 +628,12 @@
         <ant antfile="${mod.statedump.path}/build.xml" target="build-ejb" inheritall="true" inheritrefs="true"/>
     </target>
 	
-	<target name="configdump" depends="ejbca-ejb-interface, ejbca-ejb-cli, plugins-ee, peerconnector, caa">
+	<target name="configdump" depends="ejbca-ejb-interface, ejbca-ejb-cli, plugins, plugins-ee, peerconnector, caa">
 		<fail message="Configdump tool is not distributed with this version of EJBCA" unless="${mod.configdump.exists}"/>
 		<ant antfile="${mod.configdump.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-    <target name="configdump-ejb" depends="ejbca-ejb-cli, plugins-ee, peerconnector, caa" if="${mod.configdump.exists}">
+    <target name="configdump-ejb" depends="ejbca-ejb-cli, plugins, plugins-ee, peerconnector, caa" if="${mod.configdump.exists}">
         <ant antfile="${mod.configdump.path}/build.xml" target="build-ejb" inheritall="true" inheritrefs="true"/>
     </target>
 	
