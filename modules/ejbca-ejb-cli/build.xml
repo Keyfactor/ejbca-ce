@@ -42,6 +42,7 @@
 		<path location="${mod.peerconnector-interface.lib}"/>
 		<path location="${mod.peerconnector-common.lib}"/>
 		<path location="${mod.peerconnector-publ.lib}"/>
+        <path location="${mod.plugins.lib}"/>
         <path location="${mod.plugins-ee.lib}"/>
 		<path refid="lib.xstream.classpath"/>
 	</path>

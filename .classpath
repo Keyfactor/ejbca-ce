@@ -93,6 +93,8 @@
 	<classpathentry kind="src" path="modules/peerconnector/src-rar"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-test"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-war"/>
+	<classpathentry kind="src" path="modules/plugins/src"/>
+	<classpathentry kind="src" path="modules/plugins/src-test"/>
 	<classpathentry kind="src" path="modules/plugins-ee/src"/>
 	<classpathentry kind="src" path="modules/plugins-ee/src-test"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
