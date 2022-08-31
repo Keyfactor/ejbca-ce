@@ -260,9 +260,6 @@
                     <h2>
                         <h:outputText value="#{msg.enroll_provide_request_info}" />
                     </h2>
-					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{not enrollMakeNewRequestBean.requestInfoRendered}">
-						<h:outputText value="#{msg.enroll_no_required_subject_dn_field}" />
-					</h:panelGroup>
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.requestInfoRendered}">
 						<h:panelGroup id="subjectDNSection" layout="block">
 							<h3>
