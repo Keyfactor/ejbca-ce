@@ -149,14 +149,21 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     @Override
     public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
         boolean canApprove = false;
-        if (canAnyoneApprovePartition(approvalPartition)) {
-            return true;
-        }
-        List<Integer> roleIdsWhichCanApprove = getAllowedRoleIds(approvalPartition);
-        for (Role role: rolesTokenIsMemberOf) {
-            if (roleIdsWhichCanApprove.contains(role.getRoleId())) {
-                canApprove = true;
-                break;
+        if (approvalPartition != null) {
+            if (canAnyoneApprovePartition(approvalPartition)) {
+                return true;
+            }
+            List<Integer> roleIdsWhichCanApprove = getAllowedRoleIds(approvalPartition);
+            for (Role role: rolesTokenIsMemberOf) {
+                if (roleIdsWhichCanApprove.contains(role.getRoleId())) {
+                    canApprove = true;
+                    break;
+                }
+            }
+        } else {
+            if (log.isTraceEnabled()) {
+                log.trace("Approval partition is null, canApprove returns false");
+                return false;
             }
         }
         return canApprove;
@@ -165,15 +172,22 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     @Override
     public boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
         boolean canView = false;
-        if (canAnyoneApprovePartition(approvalPartition) || canAnyoneViewPartition(approvalPartition)) {
-            return true;
-        }
-        List<Integer> roleIdsWhichCanView = getAllowedRoleIdsForViewingPartition(approvalPartition);
-        List<Integer> roleIdsWhichCanApprove = getAllowedRoleIds(approvalPartition);
-        for (Role role: rolesTokenIsMemberOf) {
-            if (roleIdsWhichCanView.contains(role.getRoleId()) || roleIdsWhichCanApprove.contains(role.getRoleId())) {
-                canView = true;
-                break;
+        if (approvalPartition != null) {
+            if (canAnyoneApprovePartition(approvalPartition) || canAnyoneViewPartition(approvalPartition)) {
+                return true;
+            }
+            List<Integer> roleIdsWhichCanView = getAllowedRoleIdsForViewingPartition(approvalPartition);
+            List<Integer> roleIdsWhichCanApprove = getAllowedRoleIds(approvalPartition);
+            for (Role role: rolesTokenIsMemberOf) {
+                if (roleIdsWhichCanView.contains(role.getRoleId()) || roleIdsWhichCanApprove.contains(role.getRoleId())) {
+                    canView = true;
+                    break;
+                }
+            }
+        } else {
+            if (log.isTraceEnabled()) {
+                log.trace("Approval partition is null, canView returns false");
+                return false;
             }
         }
         return canView;
