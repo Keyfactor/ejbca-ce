@@ -1200,12 +1200,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             authorizedCpIds.add(CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         }
 
-        final Query countQuery = createQuery(authenticationToken, request, true, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
-        final Query query = createQuery(authenticationToken, request, false, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
-        int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
-        int offset = (request.getPageNumber() - 1) * maxResults;
-        query.setMaxResults(maxResults);
-        query.setFirstResult(offset);
+        final boolean countOnly = request.getPageNumber() == -1;
+        final Query query = createQuery(authenticationToken, request, countOnly, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);;
+        int maxResults = -1;
+        int offset = -1;
+        if (!countOnly) {
+            maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
+            offset = (request.getPageNumber() - 1) * maxResults;
+            query.setMaxResults(maxResults);
+            query.setFirstResult(offset);
+        }
 
         /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
          * - The hint is ignored
@@ -1214,23 +1218,24 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
          */
         final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
         if (queryTimeout>0L) {
-            countQuery.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
             query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
         }
-
+        final List<String> fingerprints;
         try {
-            final long total = (long) countQuery.getSingleResult();
-            response.setTotalCount(total);
-            if (log.isDebugEnabled()) {
-                log.debug("Certificate search total count: " + total + ". queryTimeout=" + queryTimeout + "ms");
-            }
-
-            final List<String> fingerprints = query.getResultList();
-            for (final String fingerprint : fingerprints) {
-                response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Certificate search query: page " + request.getPageNumber() + ", page size " + maxResults + ", count " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
+            if (countOnly) {
+                final long count = (long) query.getSingleResult();
+                response.setTotalCount(count);
+                if (log.isDebugEnabled()) {
+                    log.debug("Certificate search count: " + count + ". queryTimeout=" + queryTimeout + "ms");
+                }
+            } else {
+                fingerprints = query.getResultList();
+                for (final String fingerprint : fingerprints) {
+                    response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Certificate search query: page " + request.getPageNumber() + ", page size " + maxResults + ", count " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
+                }
             }
         } catch (QueryTimeoutException e) {
             // Query.toString() does not return the SQL query executed just a java object hash. If Hibernate is being used we can get it using:
