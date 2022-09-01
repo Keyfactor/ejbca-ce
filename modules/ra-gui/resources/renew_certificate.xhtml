@@ -30,11 +30,11 @@
 	<ui:define name="content">
 		<h:panelGroup layout="block" class="header" id="title">
 			<h1>
-				<h:outputText value="#{raAccessBean.authorizedToRenewClientCertificate eq true? msg.renewcertificate_page_title : msg.renewcertificate_page_role_not_authorized }" />
+			    <h:outputText value="#{msg.renewcertificate_page_title}" />
 			</h1>
 		</h:panelGroup>
 
-		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.certificateInRequest and raAccessBean.authorizedToRenewClientCertificate}">
+		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.certificateInRequest}">
 			<h:panelGroup layout="block" id="renewContentBody"
 				styleClass="content-body">
 
@@ -112,24 +112,15 @@
 						</h:inputSecret>
 						<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 					</h:panelGroup>
-					<h:panelGroup layout="block" styleClass="pure-control-group">
-						<h:outputLabel for="fileFormat" value="#{msg.renewcertificate_page_pem_or_der}" />
-						<h:selectOneMenu id="fileFormat" styleClass="jsAutoFocusLast"
-										 value="#{raRenewBean.fileType}" >
-							<f:selectItems value="#{raRenewBean.fileTypeSelectItems}" />
-							<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
-						</h:selectOneMenu>
-					</h:panelGroup>
+				    <h:panelGroup layout="block" id="navigationButtonGroup"
+						styleClass="navigation-button-group"
+						rendered="#{raRenewBean.requestRenewalButtonShown}">
+						<h:commandButton id="renewButton" value="#{msg.renewcertificate_page_confirm_request_p12}"
+							styleClass="pure-button ra-button executeActionButton"
+							action="#{raRenewBean.renewCertificate}" />
+				    </h:panelGroup>
 				</h:panelGroup>
-
-				<h:panelGroup layout="block" id="navigationButtonGroup"
-					styleClass="navigation-button-group"
-					rendered="#{raRenewBean.requestRenewalButtonShown}">
-					<h:commandButton id="renewButton" value="#{msg.renewcertificate_page_confirm_request}"
-						styleClass="pure-button ra-button"
-						action="#{raRenewBean.renewCertificate}" />
-				</h:panelGroup>
-
+              				
 				<h:panelGroup layout="block" id="requestIdBlock" styleClass="internal-frame-black" rendered="#{raRenewBean.newApprovalRequestId != null}">
 					<!-- copied from enrollmakenewrequest.xhtml -->
 					<h:panelGroup layout="block" styleClass="keygeneration-button-group">
@@ -146,10 +137,9 @@
 						</h:outputLink>
 					</h:panelGroup>
 				</h:panelGroup>
-
+              
 			</h:panelGroup>
 		</h:form>
 	</ui:define>
 </ui:composition>
 </html>
-
