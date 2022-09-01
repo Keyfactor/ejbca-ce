@@ -112,22 +112,6 @@ public class SearchCertificatesRestResponseV2UnitTest {
         assertPaginationSummary(restResponse, list.size());
         assertCertificateResultList(restResponse);
     }
-
-    @Test
-    public void testConvertRaCertificateSearchResponseWhenTotalZero() throws CertificateEncodingException, CertificateParsingException {
-
-        // given
-        final List<CertificateDataWrapper> list = new ArrayList<>();
-        final RaCertificateSearchResponseV2 raResponse = new RaCertificateSearchResponseV2();
-        raResponse.setTotalCount(0);
-
-        // when
-        final SearchCertificatesRestResponseV2 restResponse = SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, new Pagination(10, 1));
-
-        // then
-        assertPaginationSummary(restResponse, list.size());
-        assertCertificateResultList(restResponse);
-    }
     
     private final void assertPaginationSummary(final SearchCertificatesRestResponseV2 response, final int listSize) {
         final PaginationSummary summary = response.getPaginationSummary();
