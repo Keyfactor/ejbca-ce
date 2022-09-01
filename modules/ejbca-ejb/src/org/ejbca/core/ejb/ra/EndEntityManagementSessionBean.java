@@ -1108,10 +1108,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (altName == null) {
             altName = "";
         }
-        if (StringUtils.isNotEmpty(altName) && StringUtils.isNotEmpty(dnsNameValueFromCn)) {
-            altName += ", ";
-        }
+        if (StringUtils.isNotEmpty(dnsNameValueFromCn) && !altName.contains(dnsNameValueFromCn)) {
+       
+            if (StringUtils.isNotEmpty(altName)) {
+                altName += ", ";
+            }
         altName += dnsNameValueFromCn;
+        }
+        
         return altName;
     }
 
