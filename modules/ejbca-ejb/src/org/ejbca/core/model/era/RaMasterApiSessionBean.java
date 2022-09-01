@@ -3462,7 +3462,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         userData.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, userData, false);
-        userData.setTokenType(EndEntityConstants.TOKEN_SOFT_PEM);
+        userData.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
         if (userData.getExtendedInformation() == null || userData.getExtendedInformation().getKeyStoreAlgorithmType() == null) {
             if (userData.getExtendedInformation() == null) {
                 userData.setExtendedInformation(new ExtendedInformation());
