@@ -162,7 +162,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
             }
         } else {
             if (log.isTraceEnabled()) {
-                log.trace("Approval partition is null, canApprove returns false");
+                log.trace("Approval partition is null.");
                 return false;
             }
         }
@@ -186,7 +186,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
             }
         } else {
             if (log.isTraceEnabled()) {
-                log.trace("Approval partition is null, canView returns false");
+                log.trace("Approval partition is null.");
                 return false;
             }
         }
