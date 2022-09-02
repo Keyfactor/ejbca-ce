@@ -2417,6 +2417,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return authorizedCertificateProfiles;
     }
 
+    private boolean hasAnyField(RaAbstractDn subject) {
+        if (subject != null) {
+            return !subject.getFieldInstances().isEmpty();
+        }
+        return false;
+    }
+
     /**
      * Request info is rendered if any SDN or SAN fields exists
      *
@@ -2427,17 +2434,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * @return the if there is at least one field in subject dn that should be rendered as determined by state of dependencies
+     * @return the if there is at least one field in subject dn (required or optional)
      */
     public boolean isSubjectDnRendered() {
-        if (getSubjectDn() != null) {
-            for (final FieldInstance fieldInstance : getSubjectDn().getRequiredFieldInstances()) {
-                if (isFieldInstanceRendered(fieldInstance)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return hasAnyField(getSubjectDn());
     }
 
     /**
@@ -2466,22 +2466,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * @return the if there is at least one field in subjectAlternativeName that should be rendered as determined by state of dependencies
+     * @return the if there is at least one field in subjectAlternativeName (required or optional)
      */
     public boolean isSubjectAlternativeNameRendered() {
-        if (getSubjectAlternativeName() != null) {
-            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getRequiredFieldInstances()) {
-                if (isFieldInstanceRendered(fieldInstance)) {
-                    return true;
-                }
-            }
-            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getOptionalFieldInstances()) {
-                if (isFieldInstanceRendered(fieldInstance)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return hasAnyField(getSubjectAlternativeName());
     }
 
     /**
@@ -2511,19 +2499,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return the if there is at least one field (required or optional) in subject directory attributes that should be rendered
      */
     public boolean isSubjectDirectoryAttributesRendered() {
-        if (getSubjectDirectoryAttributes()!=null) {
-            for (final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getRequiredFieldInstances()) {
-                if (isFieldInstanceRendered(fieldInstance)) {
-                    return true;
-                }
-            }
-            for(final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getOptionalFieldInstances()) {
-                if (isFieldInstanceRendered(fieldInstance)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return hasAnyField(getSubjectDirectoryAttributes());
     }
 
     /**
