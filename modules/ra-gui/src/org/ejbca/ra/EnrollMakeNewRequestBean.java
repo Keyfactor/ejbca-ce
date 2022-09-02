@@ -2419,10 +2419,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private boolean hasAnyField(RaAbstractDn subject) {
         if (subject != null) {
-            if (subject.getFieldInstances().size() > 0) {
-                return true;
-            }
-            return false;
+            return !subject.getFieldInstances().isEmpty();
         }
         return false;
     }
