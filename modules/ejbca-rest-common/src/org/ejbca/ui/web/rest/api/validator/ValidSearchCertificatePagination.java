@@ -57,7 +57,7 @@ public @interface ValidSearchCertificatePagination {
 
         @Override
         public boolean isValid(final Pagination value, final ConstraintValidatorContext constraintValidatorContext) {
-            if(value != null && value.getCurrentPage() < 1) {
+            if(value != null && (value.getCurrentPage() < -1 || value.getCurrentPage() == 0)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificatePaginationCurrentPage.invalid.overflow}");
                 return false;
             }
