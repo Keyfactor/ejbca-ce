@@ -37,12 +37,14 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.jcajce.provider.asymmetric.dstu.BCDSTU4145PublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ecgost.BCECGOST3410PublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -89,6 +91,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
@@ -1358,6 +1361,19 @@ public class CAsTest extends CaTestCase {
             }
             final long beforeFirstCACert = System.currentTimeMillis();
             final X509Certificate oldCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            try {
+                caAdminSession.importCACertificate(admin, "", EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
+                fail("Import of CA with empty string as caName should fail.");
+            } catch (CertificateImportException e) {
+                // Expected
+            }
+            try {
+                caAdminSession.importCACertificate(admin, "  ", EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] { oldCaCertificate })));
+                fail("Import of CA with blankspaces as caName should fail.");
+            } catch (CertificateImportException e) {
+                // Expected
+            }
+
             caAdminSession.importCACertificate(admin, TEST_NAME, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
             final CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
             assertEquals("Wrong certificate profile.", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, caInfo.getCertificateProfileId());
@@ -1416,6 +1432,46 @@ public class CAsTest extends CaTestCase {
             CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
             if (caInfo != null) {
                 CaTestUtils.removeCa(admin, caInfo);
+            }
+        }
+    }
+
+    @Test
+    public void testItsCertificateImport() throws Exception {
+        final String TEST_NAME = this.getClass().getSimpleName() + "." + "testItsCaCertificateImport";
+        {
+            // Start with preemptive cleanup
+            final CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
+            if (caInfo != null) {
+                caSession.removeCA(admin, caInfo.getCAId());
+            }
+        }
+        try {
+            final ITSCertificate testCert = ECAUtils.parseItsCertificate(Hex.decode(
+                "800300810011810663616e616d650000000000223baae086000101028002026e8103020101800202708104030"
+                + "201380080846aa82ba41676535984d63f300f7e3bbd0f507149e7f4834d1c50be7af680c33da2c75b1366fe"
+                + "2b058ce264191387f90719c08026b464af5a6c3d3200a3ee8b628080847be8d553b2ebba78336360cef6f1b"
+                + "000fe209d73902d852779c2d0fc107e790416374ab9eaf1941d45d9f420658546af236068e61163c3c9e0a8"
+                + "b8534a92e23e8080f0cb9cae1e9e3f12bb997525ef4ea7b50afb594ae70ae864074fc1b5fc6004b67f24566"
+                + "2eda15ed94be5e0949aa246eb7b4fb2cf939f825618775c16e3a4b8be"));
+            final byte[] testCertBytes = testCert.getEncoded();
+            try {
+                caAdminSession.importItsCACertificate(admin, "", testCertBytes);
+                fail("Import of CA with empty string as caName should fail.");
+            } catch (CertificateImportException e) {
+                // Expected
+            }
+            try {
+                caAdminSession.importItsCACertificate(admin, "   ", testCertBytes);
+                fail("Import of CA with blankspaces as caName should fail.");
+            } catch (CertificateImportException e) {
+                // Expected
+            }
+            caAdminSession.importItsCACertificate(admin, TEST_NAME, testCertBytes);
+        } finally {
+            final CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
+            if (caInfo != null) {
+                caSession.removeCA(admin, caInfo.getCAId());
             }
         }
     }
