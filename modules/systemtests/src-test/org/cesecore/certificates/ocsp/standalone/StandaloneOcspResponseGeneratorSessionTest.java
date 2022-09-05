@@ -14,6 +14,7 @@ package org.cesecore.certificates.ocsp.standalone;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -98,6 +99,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
+import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -378,6 +380,33 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
         validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
     }
+    
+    /** Tests that the certhash extension, if activated in key binding, is always returned whether or not it was included in the request*/
+    @Test
+    public void testCertHashAlwaysReturned() throws Exception {
+        OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        //Add the extension to the ocsp responder
+        ocspKeyBinding.setOcspExtensions(Arrays.asList(OcspCertHashExtension.CERT_HASH_OID));
+        internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+        
+        //Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
+        // Do the OCSP request
+        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+        final OCSPResp response = sendRequest(ocspRequest);
+        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+        validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
+        BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        SingleResp[] singleResponses = basicOcspResponse.getResponses();
+        System.err.println( singleResponses[0].getExtensionOIDs().get(0));
+        System.err.println(OcspCertHashExtension.CERT_HASH_OID);
+        @SuppressWarnings("unchecked")
+        List<ASN1ObjectIdentifier> extensions = singleResponses[0].getExtensionOIDs();
+        assertTrue("Cert hash extension was not included in response",  extensions.stream().anyMatch(s -> s.equals(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID))));
+    }
+        
         
     @Test
     public void testStandAloneOcspResponseExternalCa() throws Exception {
