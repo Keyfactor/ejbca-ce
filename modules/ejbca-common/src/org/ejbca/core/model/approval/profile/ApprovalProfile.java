@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.profiles.Profile;
+import org.cesecore.roles.Role;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -28,7 +28,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 /**
  * An interface for approval profiles types.
  *
- * @version $Id$
  */
 public interface ApprovalProfile extends Profile, Serializable, Cloneable, Comparable<ApprovalProfile> {
 
@@ -108,7 +107,6 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
 
     /**
      * @param approvalsPerformed a Collection of approvals already performed.
-     *
      * @return true if this approval profile's criteria are fulfilled, allowing the approval to pass
      * @throws AuthenticationFailedException if any of the authentication tokens in the approval collection were faulty
      */
@@ -241,10 +239,12 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      *
      * @param approvalsPerformed the already registered approvals
      * @param approval the new approval
+     * @param rolesTokenIsMemberOf the list of roles which the authenticationtoken related to the approval is a member of
      * @return true if the given approval is authorized
      * @throws AuthenticationFailedException if the authentication token in the approval wasn't valid
      */
-    boolean isApprovalAuthorized(final Collection<Approval> approvalsPerformed, final Approval approval) throws AuthenticationFailedException;
+    boolean isApprovalAuthorized(final Collection<Approval> approvalsPerformed, final Approval approval, 
+            final List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException;
 
     /**
      * @return the number of steps in this profile
@@ -272,22 +272,20 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
     /**
      * Tests if an administrator can approve a particular partition
      *
-     * @param authenticationToken an authentication token
+     * @param rolesTokenIsMemberOf list of roles the administrator is a member of
      * @param approvalPartition an approval partition from an approval step
      * @return true if administrator has approval rights
-     * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
      */
-    boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
-
+    boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition);
+    
     /**
      * Tests if an administrator can view a particular partition. Approval rights automatically count as view rights.
      *
-     * @param authenticationToken an authentication token
+     * @param rolesTokenIsMemberOf list of roles the administrator is a member of
      * @param approvalPartition an approval partition from an approval step
      * @return true if administrator has view or approval rights
-     * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
      */
-    boolean canViewPartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
+    boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition);
 
     /**
      * Returns true if the given partition has been configured to allow any administrator to approve it.
@@ -295,6 +293,13 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      * @return true if any admin is allowed
      */
     boolean canAnyoneApprovePartition(final ApprovalPartition approvalPartition);
+    
+    /**
+     * Returns true if the given partition has been configured to allow any administrator to view it.
+     * @param approvalPartition the approval partition.
+     * @return true if any admin is allowed
+     */
+    boolean canAnyoneViewPartition(final ApprovalPartition approvalPartition);
 
     /**
      * Returns the list of roles which have been configured in the given partition to be allowed to approve it.
@@ -302,6 +307,20 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      * @return list of names of administrator roles. May return an empty list if canAnyoneApprovePartition returns true.
      */
     List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition);
+    
+    /**
+     * Returns the list of roles (in the form of ids) which have been configured in the given partition to be allowed to approve it.
+     * @param approvalPartition the approval partition.
+     * @return list of ids of administrator roles.
+     */
+    List<Integer> getAllowedRoleIds(final ApprovalPartition approvalPartition);
+    
+    /**
+     * Returns the list of roles (in the form of ids) which have been configured in the given partition to be allowed to view it.
+     * @param approvalPartition the approval partition.
+     * @return list of names of administrator roles.
+     */
+    List<Integer> getAllowedRoleIdsForViewingPartition(final ApprovalPartition approvalPartition);
 
     /**
      * @return a set of properties to hide at the approval screen.
