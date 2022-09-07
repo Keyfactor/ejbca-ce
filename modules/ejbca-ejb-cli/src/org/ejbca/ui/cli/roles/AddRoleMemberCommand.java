@@ -200,11 +200,6 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             }
             roleMemberSession.persist(getAuthenticationToken(), roleMember);
             getLogger().info("Role member was successfully added.");
-            try {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class).updateApprovalRights(getAuthenticationToken(), role.getRoleId(), roleName);
-            } catch (AuthorizationDeniedException e) {
-                getLogger().warn("Approval rights were not updated after adding role member due to insufficient rights. In most cases this is not a big problem.");
-            }
         } catch (AuthorizationDeniedException e) {
             getLogger().error("CLI user not authorized to edit role");
             return CommandResult.AUTHORIZATION_FAILURE;
