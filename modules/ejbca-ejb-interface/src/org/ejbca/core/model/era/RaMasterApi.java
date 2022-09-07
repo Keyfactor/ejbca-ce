@@ -223,6 +223,12 @@ public interface RaMasterApi {
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
     List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
+    
+    /**
+     * @return a list with roles that the caller is a member of.
+     * @since Master RA API version 15 (EJBCA 7.11.0)
+     */
+    List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken);
 
     /**
      * @return the Role with the given ID, or null if it does not exist

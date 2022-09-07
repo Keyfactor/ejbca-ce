@@ -164,11 +164,6 @@ public class RemoveAdminCommand extends BaseRolesCommand {
                     foundMatch = true;
                     getLogger().info("Removed role member: " + "'" + caName + "' " + accessMatchValue + " " + accessMatchType + " '" +
                             tokenMatchValue + "' from role " + super.getFullRoleName(namespace, roleName));
-                    try {
-                        EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class).updateApprovalRights(getAuthenticationToken(), role.getRoleId(), roleName);
-                    } catch (AuthorizationDeniedException e) {
-                        getLogger().warn("Approval rights were not updated after removing role member due to insufficient rights.");
-                    }
                 }
             }
             if (!foundMatch) {
