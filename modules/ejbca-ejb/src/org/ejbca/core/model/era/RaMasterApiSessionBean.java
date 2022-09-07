@@ -355,9 +355,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>12<td>=<td>7.5.1
      * <tr><th>13<td>=<td>7.9.0
      * <tr><th>14<td>=<td>7.10.0
+     * <tr><th>15<td>=<td>7.11.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 14;
+    private static final int RA_MASTER_API_VERSION = 15;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -465,6 +466,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
+    }
+    
+    @Override
+    public List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
+        return roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
     }
 
     @Override
@@ -702,9 +708,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         // Editable data
         final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
-
-        return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, approvalDataVO,
-                requestData, editableData);
+        final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, approvalDataVO, 
+                requestData, editableData, rolesTokenIsMemberOf);
     }
 
     @Override
@@ -891,13 +897,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setMightHaveMoreResults(true);
         }
 
+        final List<Role> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOf(authenticationToken);
         for (final ApprovalDataVO approvalDataVO : approvals) {
             final List<ApprovalDataText> requestDataLite = approvalDataVO.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
             // We don't pass the end entity profile or certificate profile details for each approval request, when searching.
             // That information is only needed when viewing the details or editing a request.
             final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(approvalDataVO.getCAId()), null, null, null,
-                    approvalDataVO, requestDataLite, editableData);
+                    approvalDataVO, requestDataLite, editableData, rolesTokenIsMemberOf);
 
             // Check if this approval should be included in the search results
             boolean include;
@@ -906,9 +913,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                         (request.isSearchingPending() && ari.isInProgress(now)) ||
                         (request.isSearchingHistorical() && ari.isProcessed()) ||
                         (request.isSearchingExpired() && ari.isExpired(now));
-            } else {
-                include = (request.isSearchingWaitingForMe() && ari.isWaitingForMe(authenticationToken)) ||
-                    (request.isSearchingPending() && ari.isPending(authenticationToken)) ||
+            } else {                
+                include = (request.isSearchingWaitingForMe() && ari.isWaitingForMe(rolesTokenIsMemberOf)) ||
+                    (request.isSearchingPending() && ari.isPending(rolesTokenIsMemberOf)) ||
                     (request.isSearchingHistorical() && ari.isProcessed()) ||
                     (request.isSearchingExpired() && ari.isExpired(now));
             }

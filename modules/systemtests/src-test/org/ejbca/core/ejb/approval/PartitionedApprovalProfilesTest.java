@@ -76,7 +76,6 @@ import static org.junit.Assert.fail;
 /**
  * System tests for partitioned approval profiles 
  * 
- * @version $Id$
  */
 public class PartitionedApprovalProfilesTest extends CaTestCase {
 
@@ -238,19 +237,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 //NOPMD: Expected result.
             }
             assertEquals("Approval should not have been executed with an incorrect sequence.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                    approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0).getStatus());
-            
-            //Another attempt. Right step/approval, but the wrong admin
-            Approval wrongAdmin = new Approval("wrongAdmin", executionStep.getStepIdentifier(), singlePartition.getPartitionIdentifier());
-            try {
-                approvalExecutionSessionRemote.approve(admin2, executableRequest.generateApprovalId(), wrongAdmin);
-                fail("Approval should not have been executed with an incorrect sequence.");
-            } catch (AuthorizationDeniedException e) {
-                //NOPMD: Expected result.
-            }
-            assertEquals("Approval should not have been executed with an incorrect sequence.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                    approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0).getStatus());
-            
+                    approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0).getStatus());            
             
             Approval correctApproval = new Approval("correctApproval", executionStep.getStepIdentifier(), singlePartition.getPartitionIdentifier());
             approvalExecutionSessionRemote.approve(admin1, executableRequest.generateApprovalId(), correctApproval);
