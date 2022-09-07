@@ -17,14 +17,29 @@ import java.io.File;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.SystemConfiguration;
+import org.apache.commons.configuration2.builder.ConfigurationBuilderEvent;
+import org.apache.commons.configuration2.builder.ConfigurationBuilderResultCreatedEvent;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.LegacyListDelimiterHandler;
+import org.apache.commons.configuration2.event.EventListener;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.reloading.ReloadingController;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.log4j.Logger;
 import org.cesecore.config.ConfigurationHolder;
 
@@ -100,7 +115,7 @@ public final class EjbcaConfigurationHolder {
 					File f = null;
 					try {
 						f = new File("conf"+File.separator+CONFIG_FILES[i]);
-						config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
+						config.addConfiguration(loadReloadingProperties(f));
 						log.info("Added file to configuration source: "+f.getAbsolutePath());
 					} catch (ConfigurationException e) {
 						log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -111,7 +126,7 @@ public final class EjbcaConfigurationHolder {
 					File f = null;
 					try {
 						f = new File("/etc/ejbca/conf/" + CONFIG_FILES[i]);
-						config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
+						config.addConfiguration(loadReloadingProperties(f));
 						log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
 					} catch (ConfigurationException e) {
 						log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -306,5 +321,249 @@ public final class EjbcaConfigurationHolder {
 		config.setProperty(key, value);
 		return true;
 	}
+	
+    /**
+     * Loads reloading properties by file.
+     * 
+     * @param file the properties file (external file, effective if allow.external-dynamic.configuration=true).
+     * @return the properties configuration for the given file or an empty properties configuration.
+     * 
+     * @throws ConfigurationException if the configuration exists and could not be loaded.
+     */
+    public static final PropertiesConfiguration loadReloadingProperties(final File file) throws ConfigurationException {
+        final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = 
+                new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
+                .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false)
+                        .setFile(file)
+                        .setListDelimiterHandler(new LegacyListDelimiterHandler(',')));
+        
+        builder.addEventListener(ConfigurationBuilderResultCreatedEvent.RESULT_CREATED,
+            new EventListener<ConfigurationBuilderEvent>() {
+                @SuppressWarnings("unchecked")
+                @Override
+                public void onEvent(ConfigurationBuilderEvent event) {
+                    log.info("Loaded external configuration file: " + ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource()).getFileHandler().getFile().getAbsolutePath());
+                }
+            }
+        );
+        
+        final InternalPeriodicReloadingTrigger trigger = new InternalPeriodicReloadingTrigger(builder, null, 1, TimeUnit.MINUTES);
+        trigger.start();
+        
+        final PropertiesConfiguration config = builder.getConfiguration();
+        return config;
+    }
+    
+    private static class InternalPeriodicReloadingTrigger
+    {
+        /** The executor service used by this trigger. */
+        private final ScheduledExecutorService executorService;
+
+        /** The associated reloading controller. */
+        private final ReloadingController controller;
+
+        /** The parameter to be passed to the controller. */
+        private final Object controllerParam;
+
+        /** The period. */
+        private final long period;
+
+        /** The time unit. */
+        private final TimeUnit timeUnit;
+
+        /** Stores the future object for the current trigger task. */
+        private ScheduledFuture<?> triggerTask;
+        
+        /** Reference to the builder. */
+        private ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder;
+
+        /**
+         * Creates a new instance of {@code PeriodicReloadingTrigger} and sets all
+         * parameters.
+         *
+         * @param builder the builder
+         * @param ctrlParam the optional parameter to be passed to the controller
+         *        when doing reloading checks
+         * @param triggerPeriod the period in which the controller is triggered
+         * @param unit the time unit for the period
+         * @param exec the executor service to use (can be <b>null</b>, then a
+         *        default executor service is created
+         * @throws IllegalArgumentException if a required argument is missing
+         */
+        public InternalPeriodicReloadingTrigger(final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder, final Object ctrlParam,
+                final long triggerPeriod, final TimeUnit unit, final ManagedScheduledExecutorService exec)
+        {
+            if (builder.getReloadingController() == null)
+            {
+                throw new IllegalArgumentException(
+                        "ReloadingController must not be null!");
+            }
+            this.builder = builder;
+            controller = builder.getReloadingController();
+            controllerParam = ctrlParam;
+            period = triggerPeriod;
+            timeUnit = unit;
+            executorService =
+                    exec != null ? exec : createDefaultExecutorService();
+        }
+
+        /**
+         * Creates a new instance of {@code PeriodicReloadingTrigger} with a default
+         * executor service.
+         *
+         * @param builder the builder
+         * @param ctrlParam the optional parameter to be passed to the controller
+         *        when doing reloading checks
+         * @param triggerPeriod the period in which the controller is triggered
+         * @param unit the time unit for the period
+         * @throws IllegalArgumentException if a required argument is missing
+         */
+        public InternalPeriodicReloadingTrigger(ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder, final Object ctrlParam,
+                final long triggerPeriod, final TimeUnit unit)
+        {
+            this(builder, ctrlParam, triggerPeriod, unit, null);
+        }
+
+        /**
+         * Starts this trigger. The associated {@code ReloadingController} will be
+         * triggered according to the specified period. The first triggering happens
+         * after a period. If this trigger is already started, this invocation has
+         * no effect.
+         */
+        public synchronized void start()
+        {
+            if (!isRunning())
+            {
+                triggerTask =
+                        getExecutorService().scheduleAtFixedRate(
+                                createTriggerTaskCommand(), period, period,
+                                timeUnit);
+            }
+        }
+
+        /**
+         * Stops this trigger. The associated {@code ReloadingController} is no more
+         * triggered. If this trigger is already stopped, this invocation has no
+         * effect.
+         */
+        public synchronized void stop()
+        {
+            if (isRunning())
+            {
+                triggerTask.cancel(false);
+                triggerTask = null;
+            }
+        }
+
+        /**
+         * Returns a flag whether this trigger is currently active.
+         *
+         * @return a flag whether this trigger is running
+         */
+        public synchronized boolean isRunning()
+        {
+            return triggerTask != null;
+        }
+
+        /**
+         * Shuts down this trigger and optionally shuts down the
+         * {@code ScheduledExecutorService} used by this object. This method should
+         * be called if this trigger is no more needed. It ensures that the trigger
+         * is stopped. If the parameter is <b>true</b>, the executor service is also
+         * shut down. This should be done if this trigger is the only user of this
+         * executor service.
+         *
+         * @param shutdownExecutor a flag whether the associated
+         *        {@code ScheduledExecutorService} is to be shut down
+         */
+        public void shutdown(final boolean shutdownExecutor)
+        {
+            stop();
+            if (shutdownExecutor)
+            {
+                if(log.isTraceEnabled()) {
+                    final String path = builder.getFileHandler().getFile().getAbsolutePath();
+                    log.trace("Shutdown executor service for external configuration '" + path + "'.");
+                }
+                getExecutorService().shutdown();
+            }
+        }
+
+        /**
+         * Shuts down this trigger and its {@code ScheduledExecutorService}. This is
+         * a shortcut for {@code shutdown(true)}.
+         *
+         * @see #shutdown(boolean)
+         */
+        public void shutdown() {
+            shutdown(true);
+        }
+
+        /**
+         * Returns the {@code ScheduledExecutorService} used by this object.
+         *
+         * @return the associated {@code ScheduledExecutorService}
+         */
+        ScheduledExecutorService getExecutorService() {
+            return executorService;
+        }
+
+        /**
+         * Creates the task which triggers the reloading controller.
+         *
+         * @return the newly created trigger task
+         */
+        private Runnable createTriggerTaskCommand()
+        {
+            return () -> {
+                final String path = builder.getFileHandler().getFile().getAbsolutePath();
+                final boolean reloadingRequired = controller.getDetector().isReloadingRequired();
+                if(log.isTraceEnabled()) {
+                    log.trace("External configuration '" + path + "' requires reload " + reloadingRequired);
+                }
+                controller.checkForReloading(controllerParam);
+                
+                if (reloadingRequired) {
+                    try {
+                        if(log.isDebugEnabled()) {
+                            // Successful reloading triggers the builders event listener (type RESULT_CREATED).
+                            log.debug("Try to reload external configuration '" + builder.getFileHandler().getFile().getAbsolutePath() + "'.");
+                        }
+                        builder.resetResult();
+                        config.copy(builder.getConfiguration());
+                        builder.getReloadingController().resetReloadingState();
+                        
+                        // Propagate properties to org.cesecore.config.ConfigurationHolder as in GlobalConfigurationCache.getAllProperties() 
+                        final Properties ejbca = EjbcaConfigurationHolder.getAsProperties();
+                        final Properties cesecore = ConfigurationHolder.getAsProperties();
+                        for (Iterator<Object> iterator = ejbca.keySet().iterator(); iterator.hasNext();) {
+                            String key = (String)iterator.next();
+                            cesecore.setProperty(key, ejbca.getProperty(key));
+                        }
+                    } catch (ConfigurationException e) {
+                        log.error("Failed reloading external configuration '" + path + "': " + e.getMessage());
+                        if(log.isTraceEnabled()) {
+                            log.trace(e);
+                        }
+                    }
+                }
+            };
+        }
+
+        /**
+         * Creates a default executor service. This method is called if no executor
+         * has been passed to the constructor.
+         *
+         * @return the default executor service
+         */
+        private static ScheduledExecutorService createDefaultExecutorService()
+        {
+            final ThreadFactory factory =
+                    new BasicThreadFactory.Builder()
+                            .namingPattern("ReloadingTrigger-%s").daemon(true)
+                            .build();
+            return Executors.newScheduledThreadPool(2, factory);
+        }
+    }
 
 }
