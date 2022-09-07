@@ -58,6 +58,7 @@ import org.cesecore.util.FileTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenReferenceRegistry;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -461,8 +462,8 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalSessionRemote.addApprovalRequest(cliReqAuthToken, eeApprovalRequest);
         // Use the authentication token
         endEntityManagementSession.addUser(intadmin, userdata, false);
-        endEntityManagementSession.changeUser(cliReqAuthToken, userdata, false);
-        approvalExecutionSessionRemote.approve(intadmin, approvalId, createApprovalLongExpirationPeriod("ap1test"));
+        endEntityManagementSession.changeUser(intadmin, userdata, false);
+        approvalExecutionSessionRemote.approve(cliReqAuthToken, approvalId, createApprovalLongExpirationPeriod("ap1test"));
 
         final int actualStatus = approvalSessionRemote.isApproved(approvalId);
         assertEquals(ApprovalDataVO.STATUS_APPROVED, actualStatus);
