@@ -95,29 +95,12 @@ public final class EjbcaConfigurationHolder {
 				config.addConfiguration(new SystemConfiguration());
 				log.info("Added system properties to configuration source (java -Dfoo.prop=bar).");
 
-				// Override with file in "application server home directory"/conf, this is prio 2
-				for (int i=0; i<CONFIG_FILES.length; i++) {
-					File f = null;
-					try {
-						f = new File("conf"+File.separator+CONFIG_FILES[i]);
-						config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
-						log.info("Added file to configuration source: "+f.getAbsolutePath());
-					} catch (ConfigurationException e) {
-						log.error("Failed to load configuration from file " + f.getAbsolutePath());
-					}
-				}
+				// Override with file in "application server home directory"/bin/conf, this is prio 2
+				loadReloadingPropertiesfromExternalDirectory("conf" + File.separator);
+				
 				// Override with file in "/etc/ejbca/conf/, this is prio 3
-				for (int i=0; i<CONFIG_FILES.length; i++) {
-					File f = null;
-					try {
-						f = new File("/etc/ejbca/conf/" + CONFIG_FILES[i]);
-						config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
-						log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
-					} catch (ConfigurationException e) {
-						log.error("Failed to load configuration from file " + f.getAbsolutePath());
-					}
-				}
-			} // if (allowexternal)
+				loadReloadingPropertiesfromExternalDirectory("/etc/ejbca/conf/");
+			}
 			
 			// Default values build into jar file, this is last prio used if no of the other sources override this
 			for (int i=0; i<CONFIG_FILES.length; i++) {
@@ -135,6 +118,31 @@ public final class EjbcaConfigurationHolder {
 			}
 		return config;
 	}
+	
+	private static void loadReloadingPropertiesfromExternalDirectory(final String directory) {
+        boolean foundAny = false;
+        for (int i = 0; i < CONFIG_FILES.length; i++) {
+            File file = null;
+            try {
+                file = new File(directory + CONFIG_FILES[i]);
+                if (file.exists()) {
+                    if (!file.canRead()) {
+                        log.warn("External configuration file '" + file.getAbsolutePath() + "' is present but cannot be read.");
+                        continue;
+                    }
+                    // @TODO Merge conflict with ECA-10955, 'ConfigurationHolder.load...' will be replaced !!
+                    config.addConfiguration(ConfigurationHolder.loadReloadingProperties(file));
+                    log.info("Added file to configuration source: " + file.getAbsolutePath());
+                    foundAny = true;
+                }
+            } catch (ConfigurationException e) {
+                log.error("Failed to load configuration from file " + file.getAbsolutePath() + ": " + e.getMessage());
+            }
+        }
+        if (!foundAny) {
+            log.info("External configuration override is allowed, but no configuration sources were detected in '" + new File(directory).getAbsolutePath() + "'.");
+        }
+    }
 	
 	/** Method used primarily for JUnit testing, where we can add a new properties file (in tmp directory)
 	 * to the configuration.
