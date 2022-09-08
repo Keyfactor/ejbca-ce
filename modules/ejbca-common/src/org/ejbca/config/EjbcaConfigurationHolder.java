@@ -85,7 +85,7 @@ public final class EjbcaConfigurationHolder {
 					}
 				}
 			} catch (ConfigurationException e) {
-				log.error("Error intializing configuration: ", e);
+				log.error("Error initializing configuration: ", e);
 			}
 			config = new CompositeConfiguration();
 

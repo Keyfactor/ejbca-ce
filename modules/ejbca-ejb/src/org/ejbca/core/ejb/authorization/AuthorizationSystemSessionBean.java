@@ -280,7 +280,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         // Since RoleData might be empty when this is invoked on a not yet upgraded system, we also check if there are any CAs present.
         // (The CLI admin might have been reconfigured or removed in the old authorization system and we don't want to change this.)
         if (roleDataSession.getAllRoles().isEmpty() && caSession.getAllCaIds().isEmpty()) {
-            log.info("No roles or CAs exist, intializing Super Administrator Role with default CLI user.");
+            log.info("No roles or CAs exist, initializing Super Administrator Role with default CLI user.");
             // Create "Super Administrator Role" (with roleId "1" to ensure that upgraded installations still have the same roleId)
             final Role roleToPersist = new Role(null, SUPERADMIN_ROLE, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
             roleToPersist.setRoleId(1);
@@ -302,7 +302,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             initPublicAccessRoleOnFreshInstallation();
             return true;
         }
-        log.info("Roles or CAs exist, not intializing " + SUPERADMIN_ROLE);
+        log.info("Roles or CAs exist, not initializing " + SUPERADMIN_ROLE);
         return false;
     }
 
