@@ -33,6 +33,10 @@
 	<category name="org.hibernate">
 		<priority value="INFO"/>
 	</category>
+	
+	<category name="org.apache.commons.beanutils">
+		<priority value="ERROR"/>
+	</category>
 
     <!-- Avoid that these chatty classes' output appear in the console -->
     <category name="org.ejbca.config.EjbcaConfigurationHolder" additivity="false">
