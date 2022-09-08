@@ -103,7 +103,7 @@ public final class ConfigurationHolder {
                     log.info("Allow external re-configuration: " + allowexternal);
                 }
             } catch (ConfigurationException e) {
-                log.error("Error intializing configuration: ", e);
+                log.error("Error initializing configuration: ", e);
             }
             config = new CompositeConfiguration();
 
