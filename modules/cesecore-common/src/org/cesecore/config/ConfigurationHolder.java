@@ -114,10 +114,10 @@ public final class ConfigurationHolder {
                 log.info("Added system properties to configuration source (java -Dfoo.prop=bar).");
 
                 // Override with file in "application server home directory"/bin/conf, this is prio 2
-                loadReloadingPropertiesfromExternalDirectory("conf" + File.separator);
+                loadReloadingPropertiesFromExternalDirectory("conf" + File.separator);
                 
                 // Override with file in "/etc/cesecore/conf/, this is prio 3
-                loadReloadingPropertiesfromExternalDirectory("/etc/cesecore/conf/");
+                loadReloadingPropertiesFromExternalDirectory("/etc/cesecore/conf/");
 
             } // if (allowexternal)
 
@@ -139,7 +139,7 @@ public final class ConfigurationHolder {
         return config;
     }
     
-    private static void loadReloadingPropertiesfromExternalDirectory(final String directory) {
+    private static void loadReloadingPropertiesFromExternalDirectory(final String directory) {
         boolean foundAny = false;
         for (int i = 0; i < CONFIG_FILES.length; i++) {
             File file = null;
