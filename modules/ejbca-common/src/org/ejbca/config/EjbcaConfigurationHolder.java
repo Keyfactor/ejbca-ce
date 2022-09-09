@@ -151,23 +151,6 @@ public final class EjbcaConfigurationHolder {
 		return config;
 	}
 	
-	/** Method used primarily for JUnit testing, where we can add a new properties file (in tmp directory)
-	 * to the configuration.
-	 * @param filename the full path to the properties file used for configuration.
-	 */
-	public static void addConfigurationFile(final String filename) {
-		// Make sure the basic initialization has been done
-		instance();
-		File f = null;
-		try {
-			f = new File(filename);
-			config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
-			log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
-		} catch (ConfigurationException e) {
-			log.error("Failed to load configuration from file " + f.getAbsolutePath());
-		}
-	}
-	
 	/**
 	 * Add built in config file
 	 */
