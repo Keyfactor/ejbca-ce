@@ -103,7 +103,7 @@ public final class ConfigurationHolder {
                     log.info("Allow external re-configuration: " + allowexternal);
                 }
             } catch (ConfigurationException e) {
-                log.error("Error intializing configuration: ", e);
+                log.error("Error initializing configuration: ", e);
             }
             config = new CompositeConfiguration();
 
@@ -113,28 +113,12 @@ public final class ConfigurationHolder {
                 config.addConfiguration(new SystemConfiguration());
                 log.info("Added system properties to configuration source (java -Dfoo.prop=bar).");
 
-                // Override with file in "application server home directory"/conf, this is prio 2
-                for (int i = 0; i < CONFIG_FILES.length; i++) {
-                    File f = null;
-                    try {
-                        f = new File("conf" + File.separator + CONFIG_FILES[i]);
-                        config.addConfiguration(loadReloadingProperties(f));
-                        log.info("Added file to configuration source: " + f.getAbsolutePath());
-                    } catch (ConfigurationException e) {
-                        log.error("Failed to load configuration from file " + f.getAbsolutePath());
-                    }
-                }
+                // Override with file in "application server home directory"/bin/conf, this is prio 2
+                loadReloadingPropertiesfromExternalDirectory("conf" + File.separator);
+                
                 // Override with file in "/etc/cesecore/conf/, this is prio 3
-                for (int i = 0; i < CONFIG_FILES.length; i++) {
-                    File f = null;
-                    try {
-                        f = new File("/etc/cesecore/conf/" + CONFIG_FILES[i]);
-                        config.addConfiguration(loadReloadingProperties(f));
-                        log.info("Added file to configuration source: " + f.getAbsolutePath());
-                    } catch (ConfigurationException e) {
-                        log.error("Failed to load configuration from file " + f.getAbsolutePath());
-                    }
-                }
+                loadReloadingPropertiesfromExternalDirectory("/etc/cesecore/conf/");
+
             } // if (allowexternal)
 
             // Default values build into jar file, this is last prio used if no of the other sources override this
@@ -153,6 +137,30 @@ public final class ConfigurationHolder {
             }
         }
         return config;
+    }
+    
+    private static void loadReloadingPropertiesfromExternalDirectory(final String directory) {
+        boolean foundAny = false;
+        for (int i = 0; i < CONFIG_FILES.length; i++) {
+            File file = null;
+            try {
+                file = new File(directory + CONFIG_FILES[i]);
+                if (file.exists()) {
+                    if (!file.canRead()) {
+                        log.warn("External configuration file '" + file.getAbsolutePath() + "' is present but cannot be read.");
+                        continue;
+                    }
+                    config.addConfiguration(loadReloadingProperties(file));
+                    log.info("Added file to configuration source: " + file.getAbsolutePath());
+                    foundAny = true;
+                }
+            } catch (ConfigurationException e) {
+                log.error("Failed to load configuration from file " + file.getAbsolutePath() + ": " + e.getMessage());
+            }
+        }
+        if (!foundAny) {
+            log.info("External configuration override is allowed, but no configuration sources were detected in '" + new File(directory).getAbsolutePath()  + "'.");
+        }
     }
     
     private static synchronized void addConfiguration(final PropertiesConfiguration pc) {
@@ -455,7 +463,9 @@ public final class ConfigurationHolder {
                 @SuppressWarnings("unchecked")
                 @Override
                 public void onEvent(ConfigurationBuilderEvent event) {
-                    log.info("Loaded external configuration file: " + ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource()).getFileHandler().getFile().getAbsolutePath());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Loaded external configuration file: " + ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource()).getFileHandler().getFile().getAbsolutePath());
+                    }
                 }
             }
         );
