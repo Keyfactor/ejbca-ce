@@ -810,6 +810,10 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
         }
     }
+    
+    public boolean isKeyRecoverable() {
+        return getEndEntityInformation().getKeyRecoverable();
+    }
 
     //-----------------------------------------------------------------
     //Getters/setters
