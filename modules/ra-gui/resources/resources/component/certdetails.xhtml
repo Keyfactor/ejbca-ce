@@ -99,6 +99,10 @@
             <h:outputText id="basicconstraints" value="#{cc.attrs.raCertificateDetails.basicConstraints}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
+            <h:outputLabel for="pkup" value="#{msg.component_certdetails_field_privatekeyusageperiod}" rendered="#{not empty cc.attrs.raCertificateDetails.privateKeyUsagePeriod}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="pkup" value="#{cc.attrs.raCertificateDetails.privateKeyUsagePeriod}" rendered="#{not empty cc.attrs.raCertificateDetails.privateKeyUsagePeriod}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="cvcauthorizationrole" value="#{msg.component_certdetails_field_cvcauthorizationrole}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
@@ -321,9 +325,9 @@
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis"/>
                 <h:outputLabel for="subjectkeyid" value="#{msg.component_certdetails_field_subjectkeyid}"
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-                <h:outputText id="subjectkeyid" value="#{cc.attrs.raCertificateDetails.subjectKeyId}"
+                <h:outputText id="subjectkeyid" value="#{cc.attrs.raCertificateDetails.subjectKeyId}" 
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
-
+            
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
                 <h:outputLabel for="dump" value="#{msg.component_certdetails_field_dump}"
