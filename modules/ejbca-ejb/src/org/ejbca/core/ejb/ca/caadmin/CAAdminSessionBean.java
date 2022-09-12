@@ -1731,6 +1731,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public void importExternalCA(AuthenticationToken admin, String caname, 
             Collection<CertificateWrapper> wrappedCerts, CAInfo cainfo)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
+        if (StringUtils.isBlank(caname)) {
+            throw new CertificateImportException("CA name cannot be empty.");
+        }
         List<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
         // Re-order if needed and validate chain
         if (certificates.size() != 1) {
@@ -4052,6 +4055,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         ITSCertificate caCertificate = ECAUtils.parseItsCertificate(certificate);
         String errorMessage = null;
+        if (StringUtils.isBlank(caname)) {
+            errorMessage = "CA name cannot be empty.";
+            log.info(errorMessage);
+            throw new CertificateImportException(errorMessage);
+        }
         //TODO: validate with certificates from ECTL
         
         // using child implementations to avoid casts later on
