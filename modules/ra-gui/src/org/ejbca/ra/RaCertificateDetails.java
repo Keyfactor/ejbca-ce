@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -118,6 +119,7 @@ public class RaCertificateDetails {
     private String subjectKeyId = "";
     private String accountBindingId = "";
     private String basicConstraints = "";
+    private String privateKeyUsagePeriod = "";
     private String cvcAuthorizationRole = "";
     private String cvcAuthorizationAccessRights = "";
     private final List<String> keyUsages = new ArrayList<>();
@@ -238,6 +240,16 @@ public class RaCertificateDetails {
                         if (keyUsageArray[i]) {
                             keyUsages.add(String.valueOf(i));
                         }
+                    }
+                }
+                PrivateKeyUsagePeriod pkup = CertTools.getPrivateKeyUsagePeriod(x509Certificate);
+                if (pkup != null) {
+                    try {
+                        String pkupNotBefore = ValidityDate.formatAsISO8601ServerTZ(pkup.getNotBefore().getDate().getTime(), TimeZone.getDefault());
+                        String pkupNotAfter = ValidityDate.formatAsISO8601ServerTZ(pkup.getNotAfter().getDate().getTime(), TimeZone.getDefault());
+                        this.privateKeyUsagePeriod = "Not Before: " + pkupNotBefore + ", Not After: " + pkupNotAfter;
+                    } catch (ParseException e) {
+                        log.debug("Failed to parse Subject Directory Attributes extension: " + e.getMessage());
                     }
                 }
                 extendedKeyUsages.clear();
@@ -379,6 +391,7 @@ public class RaCertificateDetails {
     public String getSubjectKeyId() { return subjectKeyId; }
     public String getAccountBindingId() { return accountBindingId; }
     public String getBasicConstraints() { return basicConstraints; }
+    public String getPrivateKeyUsagePeriod() { return privateKeyUsagePeriod; }
     public String getCvcAuthorizationRole() { return cvcAuthorizationRole; }
     public String getCvcAuthorizationAccessRights() { return cvcAuthorizationAccessRights; }
     public List<String> getKeyUsages() { return keyUsages; }
