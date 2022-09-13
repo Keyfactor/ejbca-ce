@@ -99,7 +99,7 @@
 					</h:selectBooleanCheckbox>
 					<h:outputLabel value="#{web.text.ACTIVATE}" styleClass="checkBoxOverlay"/>
 				</h:panelGroup>
-				<h:panelGroup layout="block" styleClass="">
+				<h:panelGroup layout="block" styleClass="" rendered="#{web.ejbcaWebBean.runningEnterprise}">
 				    <h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.localKeyRecovery}"
 							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery}">
 						<f:ajax render="systemconfiguration:keyrecoverygroup"/>
