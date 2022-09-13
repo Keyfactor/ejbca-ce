@@ -107,6 +107,7 @@ import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.cert.OID;
 
 /**
@@ -184,6 +185,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private List<SelectItem> availableAlgorithmSelectItems = null;
 
     private List<String> selectedPsd2PspRoles;
+    private String certValidityStartTime;
+    private String certValidityEndTime;
+
     private String psd2NcaId;
     private String psd2NcaName;
     private String cabfOrganizationIdentifier;
@@ -787,6 +791,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
         cabfOrganizationIdentifier = endEntityProfile != null ? endEntityProfile.getCabfOrganizationIdentifier() : null;
         sendNotification = endEntityProfile != null && endEntityProfile.isSendNotificationDefault();
+        certValidityStartTime = endEntityProfile != null ? endEntityProfile.getValidityStartTime() : null;
+        certValidityEndTime = endEntityProfile != null ? endEntityProfile.getValidityEndTime() : null;
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -808,7 +814,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isRenderOtherCertificateData() {
         return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed() || 
-                isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isIssuanceRevocationReasonUsed();
+                isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isIssuanceRevocationReasonUsed() ||
+                getEndEntityProfile().isValidityStartTimeUsed() || getEndEntityProfile().isValidityEndTimeUsed();
     }
 
     public boolean isRenderOtherData() {
@@ -825,6 +832,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isRenderIssuanceRevocationReason() {
         return getEndEntityProfile().isIssuanceRevocationReasonUsed();
+    }
+    
+    public boolean isRenderCertValidityStartTime() {
+        return getEndEntityProfile().isValidityStartTimeUsed();
+    }
+
+    public boolean isRenderCertValidityEndTime() {
+        return getEndEntityProfile().isValidityEndTimeUsed();
+    }
+    
+    public boolean isCertValidityStartTimeModifiable() {
+        return getEndEntityProfile().isValidityStartTimeModifiable();
+    }
+    
+    public boolean isCertValidityEndTimeModifiable() {
+        return getEndEntityProfile().isValidityEndTimeModifiable();
     }
     
     public void setRenderCsrDetailedInfo(boolean renderCsrDetailedInfo) {
@@ -1046,6 +1069,42 @@ public class EnrollMakeNewRequestBean implements Serializable {
         extendedInformation.setMaxLoginAttempts(getEndEntityProfile().getMaxFailedLogins());
         extendedInformation.setRemainingLoginAttempts(getEndEntityProfile().getMaxFailedLogins());
         
+        if (getEndEntityProfile().isValidityStartTimeUsed() && certValidityStartTime != null) {
+            certValidityStartTime = certValidityStartTime.trim();
+            if (certValidityStartTime.length() > 0) {
+                String certValidityStartTimeValue;
+                try {
+                    certValidityStartTimeValue = getImpliedUTCFromISO8601OrRelative(certValidityStartTime);
+                } catch (ParseException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Incorrectly formatted or invalid certificate start time!");
+                    }
+                    raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
+                    throw new IllegalStateException(e);
+                }
+                extendedInformation.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, certValidityStartTimeValue);
+                getEndEntityProfile().setValidityStartTime(certValidityStartTimeValue);
+            }
+        }
+        
+        if (getEndEntityProfile().isValidityEndTimeUsed() && certValidityEndTime != null) {
+            certValidityEndTime = certValidityEndTime.trim();
+            if (certValidityEndTime.length() > 0) {
+                String certValidityEndTimeValue;
+                try {
+                    certValidityEndTimeValue = getImpliedUTCFromISO8601OrRelative(certValidityEndTime);
+                } catch (ParseException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Incorrectly formatted or invalid certificate end time!");
+                    }
+                    raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
+                    throw new IllegalStateException(e);
+                }
+                extendedInformation.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, certValidityEndTimeValue);
+                getEndEntityProfile().setValidityEndTime(certValidityEndTimeValue);
+            }
+        }
+        
         if (getUserDefinedValidityIfSpecified() != null) {
             extendedInformation.setCertificateEndTime(getUserDefinedValidityIfSpecified());
         }
@@ -1110,12 +1169,31 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return extendedInformation;
     }
     
+    private String getImpliedUTCFromISO8601OrRelative(final String certValidityTime) throws ParseException {
+        if (StringUtils.isEmpty(certValidityTime)) {
+            return "";
+        }
+        if (!isRelativeDateTime(certValidityTime)) {
+            return getImpliedUTCFromISO8601(certValidityTime);
+        }
+        return certValidityTime;
+    }
+    
+    private String getImpliedUTCFromISO8601(final String dateString) throws ParseException {
+        return ValidityDate.getImpliedUTCFromISO8601(dateString);
+    }
+    
+    private boolean isRelativeDateTime(final String dateString) {
+        return dateString.matches("^\\d+:\\d?\\d:\\d?\\d$");
+    }
+
     /**
      * Adds end entity and creates its token that will be downloaded. This method is responsible for deleting the end entity if something goes wrong with token creation.
      *
      * @param tokenType         the type of the token that will be created (one of: TOKEN_USERGEN, TOKEN_SOFT_P12, TOKEN_SOFT_JKS from EndEntityConstants)
      * @param tokenDownloadType the download type/format of the token. This is used only with TOKEN_USERGEN since this is the only one that have different formats: PEM, DER,...)
      * @return generated token as byte array or null if token could not be generated
+     * @throws ParseException 
      */
     private byte[] addEndEntityAndGenerateToken(int tokenType, TokenDownloadType tokenDownloadType) {
         // Fill subjectDn email fields
@@ -2289,6 +2367,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
         selectedPsd2PspRoles = new ArrayList<>(roles);
     }
 
+    public String getCertValidityStartTime() {
+        return certValidityStartTime;
+    }
+
+    public void setCertValidityStartTime(String certValidityStartTime) {
+        this.certValidityStartTime = certValidityStartTime;
+    }
+
+    public String getCertValidityEndTime() {
+        return certValidityEndTime;
+    }
+
+    public void setCertValidityEndTime(String certValidityEndTime) {
+        this.certValidityEndTime = certValidityEndTime;
+    }
+
+    
     public String getCabfOrganizationIdentifier() {
         return cabfOrganizationIdentifier;
     }
@@ -2298,8 +2393,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isCabfOrganizationIdentifierRendered() {
-        return getEndEntityProfile().isCabfOrganizationIdentifierUsed() &&
-                (isRenderNonModifiableFields() || isCabfOrganizationIdentifierModifiable());
+        return getEndEntityProfile().isCabfOrganizationIdentifierUsed();
     }
 
     public boolean isCabfOrganizationIdentifierModifiable() {
