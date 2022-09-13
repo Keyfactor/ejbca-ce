@@ -349,14 +349,6 @@ public class OcspConfiguration {
     }
 
     /**
-     * Intended for debugging.
-     * @return OID of extension to always respond with, even if not requested.
-     */
-    public static String getAlwaysSendCustomOCSPExtension() {
-        return ConfigurationHolder.getString("ocsp.alwayssendcustomextension");
-    }
-
-    /**
      * Directory containing certificates of trusted entities allowed to query for Fnrs.
      * @deprecated since 6.12. May still be required for upgrades. CA+serial of trusted certificates are now stored in the database, in internal key bindings.
      */
