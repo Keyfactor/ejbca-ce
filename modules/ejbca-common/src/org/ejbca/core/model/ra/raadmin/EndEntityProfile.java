@@ -3013,7 +3013,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.defaultValue = EndEntityProfile.this.getValue(name, number);
             this.value = (defaultValue != null && defaultValue.split(";").length > 1) ? defaultValue.split(";")[0] : defaultValue;
             this.profileId = EndEntityProfile.DATA_CONSTANTS.get(name);
-            this.rfcEmailUsed = name.equals("RFC822NAME") && isCopy();
+            this.rfcEmailUsed = name.equals("RFC822NAME") && isUsed();
             this.dnsCopyCheckbox = name.equals(DnComponents.DNSNAME) && isCopy();
             if (dnsCopyCheckbox) this.value = "";
             HashMap<String, Serializable> temp = EndEntityProfile.this.getValidation(name, number);
@@ -3033,7 +3033,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             return name.equals(DnComponents.DNEMAILADDRESS);
         }
         public boolean isRfcUseEmail() {
-            return name.equals("RFC822NAME") && isCopy();
+            return name.equals("RFC822NAME") && isUsed();
         }
         public boolean getRfcEmailUsed() { return rfcEmailUsed; }
         public void setRfcEmailUsed(boolean rfcEmailUsed) { this.rfcEmailUsed = rfcEmailUsed; }
@@ -3051,7 +3051,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         
         public String getUpnRfcEmailNonModifiableField() {
             final List<String> list = getSelectableValuesUpnRfc();
-            if (!list.isEmpty()) {
+            if (list.size() > 0) {
                 return list.get(0);
             }
             return "";
