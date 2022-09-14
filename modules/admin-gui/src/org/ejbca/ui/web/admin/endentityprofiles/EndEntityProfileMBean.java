@@ -214,7 +214,16 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             this.helpText = helpText;
         }
 
-        /** Used for  "Use entity CN field" and "Use End Entity Email" */
+        /** Used for "Use End Entity E-mail"  */
+        public boolean isUsed() {
+            return profiledata.getUse(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+        }
+
+        public void setUsed(final boolean use) {
+            profiledata.setUse(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], use);
+        }
+
+        /** Used for  "Use entity CN field" */
         public boolean isCopy() {
             return profiledata.getCopy(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
         }
@@ -224,7 +233,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
 
         public boolean getUseEndEntityEmail() {
-            return emailField && isCopy();
+            return emailField && isUsed();
         }
 
         public boolean getUseEndEntityDns() {
