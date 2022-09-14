@@ -369,20 +369,42 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     }
     
     
+    /**
+     * @param alias the CMP configuration alias
+     * @return the boolean status of whether Vendor Certificate Mode is activated
+     */
     public boolean getVendorMode(String alias) {
         String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
+
+    /**
+     * Sets the Vendor Certificate Mode to true or false
+     * @param alias the CMP configuration alias
+     * @param vendormode boolean value of Vendor Certificate Mode
+     */
     public void setVendorMode(String alias, boolean vendormode) {
         String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
         setValue(key, Boolean.toString(vendormode), alias);
     }
     
+    /**
+     * Gets the semicolon separated list of CA IDs for accepted vendor certificates
+     * @param alias
+     * @return the semicolon separated list of CA IDs
+     */
     public String getVendorCA(String alias) {
         String key = alias + "." + CONFIG_VENDORCA;
         return getValue(key, alias);
     }
+    
+    /**
+     * Sets the semicolon separated list of CA IDs, to add or remove vendor CAs.
+     * There are no checks performed, if the CAs for the IDs exist.
+     * @param alias the CMP configuration alias
+     * @param vendorCA the semicolon separated list of CA IDs
+     */
     public void setVendorCA(String alias, String vendorCA) {
         String key = alias + "." + CONFIG_VENDORCA;
         setValue(key, vendorCA, alias);
