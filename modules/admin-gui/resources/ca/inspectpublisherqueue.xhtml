@@ -125,7 +125,8 @@
                             <div>
                                 <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_FLUSH_ITEM}"
                                                  type="submit"
-                                                 action="#{inspectPublisherQueue.flushItem(item)}">
+                                                 action="#{inspectPublisherQueue.flushItem()}">
+                                    <f:param name="fingerprintOfItemToFlush" value="#{item.fingerprint}" />
                                     <f:ajax render="@form" />
                                 </h:commandButton>
                             </div>
