@@ -30,7 +30,7 @@
 		<h:outputText value="" rendered="#{ocspResponderMBean.pageLoadResetTrigger}"/>
 		<h1>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_RESPONDERS}"/>
-			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Internal_Key_Bindings_Overview.html')}" escape="false"/>
+			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 		</h1>
 		<br/>
 		<h:panelGroup styleClass="section-label-span">
@@ -139,7 +139,7 @@
 			<h3>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULTRESPONDER}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 			</h3>
 			<h:panelGrid columns="2">
 				<h:selectOneMenu id="defaultResponderTarget" value="#{ocspResponderMBean.defaultResponderTarget}" disabled="#{ocspResponderMBean.forbiddenToEdit}" >
@@ -152,7 +152,7 @@
 			<h3>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLED_NONCE_CA}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_NONCE_CA}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 			</h3>
 			<h:panelGrid columns="2">
 				<h:panelGroup>
@@ -167,7 +167,7 @@
 			<h3>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULT_RESPONDERIDTYPE}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULT_RESPONDERIDTYPE}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 			</h3>
 			<h:panelGrid columns="2">
 				<h:selectOneMenu id="defaultResponderId" value="#{ocspResponderMBean.responderIdType}" disabled="#{ocspResponderMBean.forbiddenToEdit}" >
@@ -181,7 +181,7 @@
 			<h3>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 			</h3>
 			<h:panelGrid columns="2">
 				<h:panelGroup>
@@ -197,7 +197,7 @@
 			<h3>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 			</h3>
 			<h:panelGrid columns="2">
 				<h:panelGroup>
@@ -218,7 +218,7 @@
 		<h:form id="ocspLoggingSettings">
 			<h3>
 				<h:outputText value="#{web.text.OCSP_LOGGING_HEADER}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 			</h3>
 			<h:panelGrid id="ocspLoggingSettings" columns="2" cellspacing="3">
 				<h:panelGroup>
