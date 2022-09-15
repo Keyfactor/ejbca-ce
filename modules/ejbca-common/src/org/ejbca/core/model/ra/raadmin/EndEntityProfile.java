@@ -424,12 +424,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	addField(parameter, getParameter(parameter));
     }
 
-    /** Add a field with value="", required=false, use=true, modifyable=true, copy =false  */
+    /** Add a field with value="", required=false, use=true, modifyable=true, copy =false  
+     * For RFC822, checkbox is unchecked when added, use=false
+     */
     private void addField(final int parameter, final String parameterName) {
         if (DnComponents.RFC822NAME.equals(parameterName)) {
             addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, null);
-        }else
+        } else {
     	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, null);
+    }
     }
 
     private void addFieldWithDefaults(final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable) {
