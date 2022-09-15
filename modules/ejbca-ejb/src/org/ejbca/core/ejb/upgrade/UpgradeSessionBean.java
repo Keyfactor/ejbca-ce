@@ -124,6 +124,7 @@ import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -610,6 +611,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("7.10.0");
+        }
+        if (isLesserThan(oldVersion, "7.11.0")) {
+            try {
+                upgradeSession.migrateDatabase7110();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -2394,6 +2402,76 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (AuthorizationDeniedException | RoleExistsException e) {
             log.error("An error occurred when updating roles for 7.10.0: " + e, e);
             throw new UpgradeFailedException(e);
+        }
+    }
+
+    @Override
+    public void migrateDatabase7110() throws UpgradeFailedException {
+        log.debug("migrateDatabase7110: Converting vendor CAs previously stored using names to use IDs instead");
+        final HashMap<Integer, String> caIdToNameMap = (HashMap<Integer, String>) caSession.getCAIdToNameMap();
+        // CMP
+        final CmpConfiguration cmpConfiguration =
+                (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        for(final String cmpAlias : cmpConfiguration.getAliasList()) {
+            log.debug("Converting vendor CA list for CMP alias: " + cmpAlias);
+            final String cmpVendorCaNameString = cmpConfiguration.getVendorCA(cmpAlias);
+            if (StringUtils.isEmpty(cmpVendorCaNameString)) {
+                break;
+            }
+            final String[] cmpVendorCaNames = cmpVendorCaNameString.split(";");
+            final ArrayList<String> cmpVendorCaIds = new ArrayList<>();
+            for (String cmpVendorName : cmpVendorCaNames) {
+                boolean cmpVendorCaFound = false;
+                for (final Integer caId : caIdToNameMap.keySet()) {
+                    final String currentCmpVendorCaName = caIdToNameMap.get(caId);
+                    if (StringUtils.equals(cmpVendorName.trim(), currentCmpVendorCaName.trim())) {
+                        cmpVendorCaIds.add(caId.toString());
+                        cmpVendorCaFound = true;
+                        break;
+                    }
+                }
+                if (!cmpVendorCaFound) {
+                    log.debug("CMP vendor with name: " + cmpVendorName + " was not found, it will be removed");
+                }
+            }
+            cmpConfiguration.setVendorCA(cmpAlias, StringUtils.join(cmpVendorCaIds, ";"));
+        }
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+        // EST
+        EstConfiguration estConfiguration =
+                (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+        for (final String estAlias : estConfiguration.getAliasList()) {
+            log.debug("Converting vendor CA list for EST alias: " + estAlias);
+            final String estVendorCaNamesString = estConfiguration.getVendorCAs(estAlias);
+            if (StringUtils.isEmpty(estVendorCaNamesString)) {
+                break;
+            }
+            final String[] estVendorCaNames = estVendorCaNamesString.split(";");
+            final ArrayList<String> estVendorCaIds = new ArrayList<>();
+            for (String estVendorName : estVendorCaNames) {
+                boolean estVendorCaFound = false;
+                for (final Integer caId : caIdToNameMap.keySet()) {
+                    final String currentEstVendorCaName = caIdToNameMap.get(caId);
+                    if (StringUtils.equals(estVendorName.trim(), currentEstVendorCaName.trim())) {
+                        estVendorCaIds.add(caId.toString());
+                        estVendorCaFound = true;
+                        break;
+                    }
+                }
+                if (!estVendorCaFound) {
+                    log.debug("EST vendor with name: " + estVendorName + " was not found, it will be removed");
+                }
+            }
+            estConfiguration.setVendorCAs(estAlias, StringUtils.join(estVendorCaIds, ";"));
+        }
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, estConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
         }
     }
 
