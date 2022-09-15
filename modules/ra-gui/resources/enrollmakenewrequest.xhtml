@@ -740,6 +740,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
 								<h:outputLabel for="keyRecoveryCheckbox" value="#{msg.component_eedetails_field_keyrecoverable}"/>
 								<h:selectBooleanCheckbox id="keyRecoveryCheckbox" value="#{enrollMakeNewRequestBean.keyRecoverableUse}" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
+                            	    <f:ajax execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                             	</h:selectBooleanCheckbox>
 						    </h:panelGroup>
 						</h:panelGroup>
@@ -948,7 +949,7 @@
 							<h:commandButton id="generateKeyStorePem"
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGeneratePem}"
-								rendered="#{enrollMakeNewRequestBean.generatePemButtonRendered}"
+								rendered="#{enrollMakeNewRequestBean.generatePemButtonRendered  and not enrollMakeNewRequestBean.keyRecoverableUse}"
                                 disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
