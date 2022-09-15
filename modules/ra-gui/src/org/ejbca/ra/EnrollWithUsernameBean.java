@@ -338,6 +338,10 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         return ret;
     }
     
+    public boolean isKeyRecoverable() {
+        return getEndEntityInformation().getKeyRecoverable();
+    }
+    
     public boolean isRequestIdInfoRendered() {
         return requestId != null;
     }
