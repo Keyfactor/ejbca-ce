@@ -431,8 +431,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if (DnComponents.RFC822NAME.equals(parameterName)) {
             addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, null);
         } else {
-    	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, null);
-    }
+            addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, null);
+        }
     }
 
     private void addFieldWithDefaults(final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable) {
