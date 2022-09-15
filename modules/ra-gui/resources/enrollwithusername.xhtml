@@ -185,7 +185,7 @@
 								<h:commandButton id="generateKeyStorePem"
 									value="#{msg.enroll_generate_pem}"
 									action="#{enrollWithUsernameBean.generateKeyStorePem}"
-									rendered="#{enrollWithUsernameBean.renderGenerateKeyStorePem}"
+									rendered="#{enrollWithUsernameBean.renderGenerateKeyStorePem  and not enrollWithUsernameBean.keyRecoverable}"
 									styleClass="pure-button ra-button executeActionButton">
 								</h:commandButton>
 							</h:panelGroup>
