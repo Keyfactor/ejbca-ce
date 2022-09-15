@@ -63,9 +63,8 @@ public class CmpServlet extends HttpServlet {
      */
     @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-        if (request.getContentLengthLong() < 0) {
-            log.error("Missing Content-Length header.");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing Content-Length header.");
+        if (request.getContentLengthLong() < 0 && request.getHeader("Transfer-Encoding")==null) {
+            log.error("Missing Content-Length header and Transfer-Encoding header");
             return;
         }
         if (log.isTraceEnabled()) {
