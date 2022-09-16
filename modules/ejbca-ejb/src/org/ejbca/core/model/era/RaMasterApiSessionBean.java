@@ -3295,7 +3295,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             cleanupAfterFailure(endEntity);
             throw new KeyStoreGeneralRaException(e);
         }
-        if (!endEntity.getKeyRecoverable() && endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM) {
+        if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM) {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
