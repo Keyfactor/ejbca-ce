@@ -85,7 +85,7 @@ public class JackNJI11Provider extends Provider {
     public static final String NAME = "JackNJI11";
 
     public JackNJI11Provider() {
-        super(NAME, "1.3", "JackNJI11 Provider");
+        super(NAME, 1.3, "JackNJI11 Provider");
  
         putService(new MySigningService(this, "Signature", "MD5withRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "NONEwithRSA", MySignature.class.getName()));
