@@ -526,6 +526,9 @@ public class EndEntityInformationFillerTest {
         p.setValue(DnComponents.DNSNAME, 2, "server.bad.com");
         p.setValue(DnComponents.DNSNAME, 3, "server.superbad.com");
         
+        p.setUse(DnComponents.RFC822NAME,0,true);
+        p.setUse(DnComponents.RFC822NAME,1,true);
+        
         String san = "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com";
         EndEntityInformation user = new EndEntityInformation();
         user.setSubjectAltName(san);
