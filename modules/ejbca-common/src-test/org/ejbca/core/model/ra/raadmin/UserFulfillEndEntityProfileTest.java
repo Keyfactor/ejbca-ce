@@ -215,6 +215,8 @@ public class UserFulfillEndEntityProfileTest {
         profile.addField(DnComponents.UPN);
         profile.addField(DnComponents.IPADDRESS);
         
+        profile.setUse(DnComponents.RFC822NAME,0,true);
+        
         profile.setRequired(DnComponents.RFC822NAME,0,true);
         profile.setRequired(DnComponents.DNSNAME,0,true);
         profile.setRequired(DnComponents.UPN,0,true);
