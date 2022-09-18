@@ -91,6 +91,7 @@ public class CmpAliasTest extends CmpTestCase {
             con.setDoOutput(true);
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-type", "application/pkixcmp");
+            con.setRequestProperty("Content-Length", "0");
             con.connect();
             assertEquals("Unexpected HTTP response code.", 404, con.getResponseCode()); // A cmp alias that does not will result in a HTTP not found error 
         } finally {
@@ -194,6 +195,7 @@ public class CmpAliasTest extends CmpTestCase {
         con.setDoOutput(true);
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-type", "application/pkixcmp");
+        con.setRequestProperty("Content-Length", "0");
         con.connect();
         assertEquals("Unexpected HTTP response code.", 400, con.getResponseCode()); // 400 = HttpServletResponse.SC_BAD_REQUEST
     }
