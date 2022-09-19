@@ -13,6 +13,35 @@
 
 package org.ejbca.core.ejb;
 
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.CodeSource;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.EJB;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.audit.AuditDevicesConfig;
@@ -33,6 +62,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.Base64;
@@ -59,33 +89,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.JDBCUtil;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.CodeSource;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import org.ejbca.util.string.StringConfigurationCache;
 
 /**
  * Singleton used to start services and perform upgrade tasks at startup.
@@ -98,7 +102,7 @@ public class StartupSingletonBean {
 
     private static final Logger log = Logger.getLogger(StartupSingletonBean.class);
     private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Application internal");
-    
+        
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -208,7 +212,23 @@ public class StartupSingletonBean {
         log.debug(">startup re-installing BC-provider");
         CryptoProviderTools.removeBCProvider();
         CryptoProviderTools.installBCProvider();
-
+        
+        // Register forbidden characters
+        // Using 'instance().getString' instead of 'getString' since an empty String (size 0) must be returned when the property is defined without any value.
+        final String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
+        if (StringUtils.isNotBlank(forbiddenCharacters)) {
+            StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters.toCharArray());
+        }
+       
+        //Register password encryption count
+        final String encryptionCount = ConfigurationHolder.getString("password.encryption.count");
+        if (StringUtils.isNumeric(encryptionCount)) {
+            StringConfigurationCache.INSTANCE.setPasswordEncryptionCount(Integer.valueOf(encryptionCount) );
+        }
+        
+        //Register encryption key
+        StringConfigurationCache.INSTANCE.setEncryptionKey(ConfigurationHolder.getString("password.encryption.key").toCharArray());
+                   
         // Run java seed collector, that can take a little time the first time it is run
         log.debug(">startup initializing random seed, can take a little time...");
         SecureRandom rand = new SecureRandom();

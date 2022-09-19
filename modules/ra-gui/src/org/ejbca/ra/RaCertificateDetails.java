@@ -209,7 +209,7 @@ public class RaCertificateDetails {
             } else if(certificate.getPublicKey() instanceof ECPublicKey) {
                 this.publicKeyParameter = ((ECPublicKey)publicKey).getW().getAffineX().toString(16) + " " + ((ECPublicKey)publicKey).getW().getAffineY().toString(16);
             }
-            this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
+            this.signatureAlgorithm = CertTools.getCertSignatureAlgorithmNameAsString(certificate);
             this.expireDate = certificateData.getExpireDate();
 
             if (certificate instanceof X509Certificate) {
