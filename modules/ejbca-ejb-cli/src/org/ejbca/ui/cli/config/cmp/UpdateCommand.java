@@ -154,7 +154,8 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         sb.append("    " + CmpConfiguration.CONFIG_RACANAME + " - possible values: ProfileDefault | " + existingCas + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + " - possible values: signature | pbe" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE + " - possible values: true | false" + "\n");
-        sb.append("    " + CmpConfiguration.CONFIG_VENDORCA + " - possible values: the name of the external CA. Several CAs can be specified by separating them with ';'" + "\n");
+        sb.append("    " + CmpConfiguration.CONFIG_VENDORCAIDS
+                + " - possible values: the ID of the external CA. Several CAs can be specified by separating them with ';'" + "\n");
         sb.append("    "
                 + CmpConfiguration.CONFIG_RACERT_PATH
                 + " - possible values: the path to the catalogue where the certificate that will be used to authenticate NestedMessageContent are stored."
