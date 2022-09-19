@@ -65,7 +65,9 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RESPONSEPROTECTION      = "responseprotection";
     public static final String CONFIG_RACANAME                = "ra.caname";
     public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
+    /** @deprecated since 7.11.0, but remains to allows 100% uptime during upgrades. Use CONFIG_VENDORCAIDS instead */
     public static final String CONFIG_VENDORCA                = "vendorca";
+    public static final String CONFIG_VENDORCAIDS             = "vendorcaids";
     public static final String CONFIG_RESPONSE_CAPUBS_CA       = "response.capubsca";
     public static final String CONFIG_RESPONSE_CAPUBS_ISSUING_CA = "response.capubsissuingca";
     public static final String CONFIG_RESPONSE_EXTRACERTS_CA   = "response.extracertsca";
@@ -102,6 +104,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
     private static final String DEFAULT_VENDOR_MODE = "false";
     private static final String DEFAULT_VENDOR_CA = "";
+    private static final String DEFAULT_VENDOR_CA_IDS = "";
     private static final String DEFAULT_RESPONSE_CAPUBS_CA = "";
     private static final String DEFAULT_RESPONSE_CAPUBS_ISSUING_CA = "true";
     private static final String DEFAULT_RESPONSE_EXTRACERTS_CA = "";
@@ -165,6 +168,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
             data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_MODE);
             data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+            data.put(alias + CONFIG_VENDORCAIDS, DEFAULT_VENDOR_CA_IDS);
             data.put(alias + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
             data.put(alias + CONFIG_RESPONSE_CAPUBS_ISSUING_CA, DEFAULT_RESPONSE_CAPUBS_ISSUING_CA);
             data.put(alias + CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
@@ -200,6 +204,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
         keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
         keys.add(alias + CONFIG_VENDORCA);
+        keys.add(alias + CONFIG_VENDORCAIDS);
         keys.add(alias + CONFIG_RESPONSE_CAPUBS_CA);
         keys.add(alias + CONFIG_RESPONSE_EXTRACERTS_CA);
         keys.add(alias + CONFIG_ALLOWRAVERIFYPOPO);
@@ -394,8 +399,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @param alias
      * @return the semicolon separated list of CA IDs
      */
-    public String getVendorCA(String alias) {
-        String key = alias + "." + CONFIG_VENDORCA;
+    public String getVendorCaIds(String alias) {
+        String key = alias + "." + CONFIG_VENDORCAIDS;
         return getValue(key, alias);
     }
     
@@ -405,8 +410,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @param alias the CMP configuration alias
      * @param vendorCA the semicolon separated list of CA IDs
      */
-    public void setVendorCA(String alias, String vendorCA) {
-        String key = alias + "." + CONFIG_VENDORCA;
+    public void setVendorCaIds(String alias, String vendorCA) {
+        String key = alias + "." + CONFIG_VENDORCAIDS;
         setValue(key, vendorCA, alias);
     }
     
