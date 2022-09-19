@@ -3599,7 +3599,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             final PublicKey issuerKey = issuer.getPublicKey();
             // Make an algorithm check first so we don't try to verify an RSA signature with an ECDSA key
-            final String certSigAlg = AlgorithmTools.getCertSignatureAlgorithmNameAsString(subject);
+            final String certSigAlg = CertTools.getCertSignatureAlgorithmNameAsString(subject);
             final List<String> keySigAlgs = AlgorithmTools.getSignatureAlgorithms(issuerKey);
             // SHA1WithECDSA returns as ECDSA for certSigAlg (has been always, don't know why), while keySigAlgs will contain SHA1WithECDSA
             // therefore we need to make a more complex match, checking if keySigAlgs contains the part,

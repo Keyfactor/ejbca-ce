@@ -454,18 +454,18 @@ public class AlgorithmToolsTest {
         Certificate sha3_256_rsa = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, true);
         Certificate sha3_384_rsa = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA, true);
         Certificate sha3_512_rsa = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, true);
-    	assertEquals("SHA1WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsa));
-    	assertEquals("MD5WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(md5rsa));
-    	assertEquals("SHA256WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsa));
-    	assertEquals("SHA384WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha384rsa));
-    	assertEquals("SHA512WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha512rsa));
-    	assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsamgf));
-    	assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsamgf));
-        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1, AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha384rsamgf));
-        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1, AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha512rsamgf));
-        assertEquals("SHA3-256WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha3_256_rsa));
-        assertEquals("SHA3-384WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha3_384_rsa));
-        assertEquals("SHA3-512WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha3_512_rsa));
+    	assertEquals("SHA1WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(sha1rsa));
+    	assertEquals("MD5WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(md5rsa));
+    	assertEquals("SHA256WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(sha256rsa));
+    	assertEquals("SHA384WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(sha384rsa));
+    	assertEquals("SHA512WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(sha512rsa));
+    	assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, CertTools.getCertSignatureAlgorithmNameAsString(sha1rsamgf));
+    	assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, CertTools.getCertSignatureAlgorithmNameAsString(sha256rsamgf));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1, CertTools.getCertSignatureAlgorithmNameAsString(sha384rsamgf));
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1, CertTools.getCertSignatureAlgorithmNameAsString(sha512rsamgf));
+        assertEquals("SHA3-256WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(sha3_256_rsa));
+        assertEquals("SHA3-384WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(sha3_384_rsa));
+        assertEquals("SHA3-512WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(sha3_512_rsa));
 
     	assertEquals("SHA1WithRSA", AlgorithmTools.getSignatureAlgorithm(sha1rsa));
     	assertEquals("MD5WithRSA", AlgorithmTools.getSignatureAlgorithm(md5rsa));
@@ -490,10 +490,10 @@ public class AlgorithmToolsTest {
                 createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA1WithRSAAndMGF1", AuthorizationRoleEnum.IS));
         CardVerifiableCertificate cvsha256mgf = new CardVerifiableCertificate(CertificateGenerator.
                 createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA256WithRSAAndMGF1", AuthorizationRoleEnum.IS));
-        assertEquals("SHA1WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha1));
-    	assertEquals("SHA256WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha256));
-    	assertEquals("SHA1WITHRSAANDMGF1", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha1mgf));
-    	assertEquals("SHA256WITHRSAANDMGF1", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha256mgf));
+        assertEquals("SHA1WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(cvsha1));
+    	assertEquals("SHA256WITHRSA", CertTools.getCertSignatureAlgorithmNameAsString(cvsha256));
+    	assertEquals("SHA1WITHRSAANDMGF1", CertTools.getCertSignatureAlgorithmNameAsString(cvsha1mgf));
+    	assertEquals("SHA256WITHRSAANDMGF1", CertTools.getCertSignatureAlgorithmNameAsString(cvsha256mgf));
 
     	assertEquals("SHA1WithRSA", AlgorithmTools.getSignatureAlgorithm(cvsha1));
     	assertEquals("SHA256WithRSA", AlgorithmTools.getSignatureAlgorithm(cvsha256));
@@ -503,10 +503,10 @@ public class AlgorithmToolsTest {
     	// DSA
     	keyPair = KeyTools.genKeys("1024", "DSA");
     	Certificate sha1rsadsa = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA1WithDSA", true);
-    	assertEquals("SHA1withDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsadsa));
+    	assertEquals("SHA1withDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha1rsadsa));
     	assertEquals("SHA1WithDSA", AlgorithmTools.getSignatureAlgorithm(sha1rsadsa));
         Certificate sha256rsadsa = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA256WithDSA", true);
-        assertEquals("SHA256WITHDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsadsa));
+        assertEquals("SHA256WITHDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha256rsadsa));
         assertEquals("SHA256WithDSA", AlgorithmTools.getSignatureAlgorithm(sha256rsadsa));
 
         // ECC
@@ -519,14 +519,14 @@ public class AlgorithmToolsTest {
         Certificate sha3_256_ecc = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, true);
         Certificate sha3_384_ecc = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, true);
         Certificate sha3_512_ecc = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, true);
-    	assertEquals("ECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1ecc));
-    	assertEquals("SHA224WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha224ecc));
-    	assertEquals("SHA256WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256ecc));
-    	assertEquals("SHA384WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha384ecc));
-        assertEquals("SHA512WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha512ecc));
-        assertEquals("SHA3-256WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha3_256_ecc));
-        assertEquals("SHA3-384WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha3_384_ecc));
-        assertEquals("SHA3-512WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha3_512_ecc));
+    	assertEquals("ECDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha1ecc));
+    	assertEquals("SHA224WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha224ecc));
+    	assertEquals("SHA256WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha256ecc));
+    	assertEquals("SHA384WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha384ecc));
+        assertEquals("SHA512WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha512ecc));
+        assertEquals("SHA3-256WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha3_256_ecc));
+        assertEquals("SHA3-384WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha3_384_ecc));
+        assertEquals("SHA3-512WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(sha3_512_ecc));
 
     	assertEquals("SHA1withECDSA", AlgorithmTools.getSignatureAlgorithm(sha1ecc));
     	assertEquals("SHA224withECDSA", AlgorithmTools.getSignatureAlgorithm(sha224ecc));
@@ -544,9 +544,9 @@ public class AlgorithmToolsTest {
                 createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA224WithECDSA", AuthorizationRoleEnum.IS));
         CardVerifiableCertificate cvsha256ecc = new CardVerifiableCertificate(CertificateGenerator.
                 createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA256WithECDSA", AuthorizationRoleEnum.IS));
-    	assertEquals("SHA1WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha1ecc));
-    	assertEquals("SHA224WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha224ecc));
-    	assertEquals("SHA256WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha256ecc));
+    	assertEquals("SHA1WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(cvsha1ecc));
+    	assertEquals("SHA224WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(cvsha224ecc));
+    	assertEquals("SHA256WITHECDSA", CertTools.getCertSignatureAlgorithmNameAsString(cvsha256ecc));
 
     	assertEquals("SHA1withECDSA", AlgorithmTools.getSignatureAlgorithm(cvsha1ecc));
     	assertEquals("SHA224withECDSA", AlgorithmTools.getSignatureAlgorithm(cvsha224ecc));
@@ -555,10 +555,10 @@ public class AlgorithmToolsTest {
         // EdDSA
         keyPair = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_ED25519);
         Certificate ed25519 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_ED25519, true);
-        assertEquals("Ed25519", AlgorithmTools.getCertSignatureAlgorithmNameAsString(ed25519));
+        assertEquals("Ed25519", CertTools.getCertSignatureAlgorithmNameAsString(ed25519));
         keyPair = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_ED448);
         Certificate ed448 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_ED448, true);
-        assertEquals("Ed448", AlgorithmTools.getCertSignatureAlgorithmNameAsString(ed448));
+        assertEquals("Ed448", CertTools.getCertSignatureAlgorithmNameAsString(ed448));
         
     }
 
@@ -567,7 +567,7 @@ public class AlgorithmToolsTest {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         KeyPair keyPair = KeyTools.genKeys(CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B"), AlgorithmConstants.KEYALGORITHM_ECGOST3410);
         Certificate gost3411withgost3410 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, true);
-        assertEquals("GOST3411WITHECGOST3410", AlgorithmTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));
+        assertEquals("GOST3411WITHECGOST3410", CertTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));
         assertEquals("GOST3411withECGOST3410", AlgorithmTools.getSignatureAlgorithm(gost3411withgost3410));
     }
 
@@ -576,7 +576,7 @@ public class AlgorithmToolsTest {
         assumeTrue(AlgorithmTools.isDstu4145Enabled());
         KeyPair keyPair = KeyTools.genKeys(CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233"), AlgorithmConstants.KEYALGORITHM_DSTU4145);
         Certificate gost3411withgost3410 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, true);
-        assertEquals("GOST3411WITHDSTU4145", AlgorithmTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));
+        assertEquals("GOST3411WITHDSTU4145", CertTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));
         assertEquals("GOST3411withDSTU4145", AlgorithmTools.getSignatureAlgorithm(gost3411withgost3410));
     }
 

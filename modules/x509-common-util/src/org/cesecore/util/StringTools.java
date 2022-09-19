@@ -53,8 +53,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.config.ConfigurationHolder;
+import org.ejbca.util.keys.X509KeyTools;
+import org.ejbca.util.string.StringConfigurationCache;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
@@ -99,7 +99,7 @@ public final class StringTools {
      *
      */
     public static class CharSet {
-        public static CharSet INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
+        public static CharSet INSTANCE = new CharSet(StringConfigurationCache.INSTANCE.getForbiddenCharacters());
 
         private Set<Character> charSet = null;
         /**
@@ -124,7 +124,7 @@ public final class StringTools {
 
         /** Used to reset the value so we can JUnit test the class */
         public static void reset() {
-            INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
+            INSTANCE = new CharSet(StringConfigurationCache.INSTANCE.getForbiddenCharacters());
         }
     }
 
@@ -773,9 +773,8 @@ public final class StringTools {
         return "legacy";
     }
 
-    private static byte[] getSalt() {
-        final boolean legacy = DEFAULT_P.equals(ConfigurationHolder.getString("password.encryption.key"));
-        if (legacy) {
+    private static byte[] getSalt(boolean useLegacySalt) {      
+        if (useLegacySalt) {
             log.debug("Using legacy password encryption/decryption");
             return getDefaultSalt();
         } else {
@@ -791,7 +790,7 @@ public final class StringTools {
         return "1958473059684739584hfurmaqiekcmq".getBytes(StandardCharsets.UTF_8);
     }
 
-    private static final String DEFAULT_P = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf");
+   
 
     private static int getDefaultCount() {
         return 100;
@@ -799,13 +798,12 @@ public final class StringTools {
 
     /** number of rounds for password based encryption. FIXME 100 is not secure and can easily be broken.
      */
-    private static int getCount() {
-        final String str = ConfigurationHolder.getString("password.encryption.count");
-        final boolean legacy = DEFAULT_P.equals(ConfigurationHolder.getString("password.encryption.key"));
-        if (StringUtils.isNumeric(str) && !legacy) {
-            return Integer.valueOf(str);
+    private static int getCount(final boolean legacyCount) {
+
+        if (!legacyCount) {
+            return StringConfigurationCache.INSTANCE.getPasswordEncryptionCount();
         } else {
-            return getDefaultCount(); // Old default value before EJBCA 6.8.0
+            return StringConfigurationCache.DEFAULT_ENCRYPTION_COUNT; // Old default value before EJBCA 6.8.0
         }
     }
 
@@ -815,28 +813,27 @@ public final class StringTools {
      * Note that this method does provide limited security (e.g. DBA's won't be able to access encrypted passwords in database)
      * as long as the 'password.encryption.key' is set, otherwise, it won't provide any real encryption more than obfuscation.
      */
-    public static String pbeEncryptStringWithSha256Aes192(final String in) {
-        char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
-        return pbeEncryptStringWithSha256Aes192(in, p);
+    public static String pbeEncryptStringWithSha256Aes192(final String in, final String encryptionKey, final boolean legacyMode) {      
+        return pbeEncryptStringWithSha256Aes192(in, encryptionKey.toCharArray(), legacyMode);
     }
 
     /**
      *
      * @param in clear text string to encrypt
      * @param p encryption passphrase
+     * @param legacyMode to true to use the legacy method of generating salt. Not recommended. 
      * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files), or null if null is input
      */
-    public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p) {
+    public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p, final boolean legacyMode) {
         if (in == null) {
             return in;
         }
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-        if (CryptoProviderTools.isUsingExportableCryptography()) {
+        if (X509KeyTools.isUsingExportableCryptography()) {
             log.warn("Encryption not possible due to weak crypto policy.");
             return in;
         }
-        final byte[] salt = getSalt();
-        final int count = getCount();
+        final byte[] salt = getSalt(legacyMode);
+        final int count = getCount(legacyMode);
 
         final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
         final Cipher c;
@@ -857,9 +854,8 @@ public final class StringTools {
             throw new IllegalStateException("Password-Based Encryption (PBE) failed.", e);
         }
         // Create a return value which is "encryption_version:salt:count:encrypted_data"
-        StringBuilder ret = new StringBuilder(64);
-        final boolean legacy = DEFAULT_P.equals(ConfigurationHolder.getString("password.encryption.key"));
-        if (legacy) {
+        StringBuilder ret = new StringBuilder(64);        
+        if (legacyMode) {
             // In the old legacy system we only return the encrypted data without extra info
             ret.append(Hex.toHexString(enc));
         } else {
@@ -877,7 +873,7 @@ public final class StringTools {
     * @return decrypted clear text string
     */
    public static String pbeDecryptStringWithSha256Aes192(final String in) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
-       char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+       char[] p = StringConfigurationCache.INSTANCE.getEncryptionKey();
        return pbeDecryptStringWithSha256Aes192(in, p);
    }
     
@@ -889,8 +885,7 @@ public final class StringTools {
      */
     public static String pbeDecryptStringWithSha256Aes192(final String in, char[] p) throws IllegalBlockSizeException, BadPaddingException,
             InvalidKeyException, InvalidKeySpecException {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-        if (CryptoProviderTools.isUsingExportableCryptography()) {
+        if (X509KeyTools.isUsingExportableCryptography()) {
             log.warn("Decryption not possible due to weak crypto policy.");
             return in;
         }
@@ -941,14 +936,14 @@ public final class StringTools {
             return null;
         }
         try {
-            final String tmp = pbeDecryptStringWithSha256Aes192(in, ConfigurationHolder.getString("password.encryption.key").toCharArray());
+            final String tmp = pbeDecryptStringWithSha256Aes192(in, StringConfigurationCache.INSTANCE.getEncryptionKey());
             if (log.isDebugEnabled()) {
                 log.debug("Using encrypted " + sDebug);
             }
             return tmp;
         } catch (Throwable t) { // NOPMD: we want to catch everything here
             try {
-                final String tmp = pbeDecryptStringWithSha256Aes192(in, ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+                final String tmp = pbeDecryptStringWithSha256Aes192(in, StringConfigurationCache.INSTANCE.getEncryptionKey());
                 log.warn("Using encrypted " + sDebug + " (falling back to default 'password.encryption.key')");
                 return tmp;
             } catch (Throwable t2) { // NOPMD: we want to catch everything here

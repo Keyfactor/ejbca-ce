@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli;
 
 import org.apache.log4j.Logger;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -71,9 +72,10 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
         final String enc;
 
         if (readKey) {
-            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey);
+            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey, ConfigurationHolder.useLegacyEncryption());
         } else {
-            enc = StringTools.pbeEncryptStringWithSha256Aes192(s);
+            char[] encryptionKeyFromConfiguration = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKeyFromConfiguration, ConfigurationHolder.useLegacyEncryption());
         }
 
         log.info(enc);

@@ -33,6 +33,7 @@
         <path refid="lib.hc.classpath"/> <!-- Apache http client for Azure crypto token -->
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in KeyTools -->
         <path location="${mod.cesecore-x509ca.lib}"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 
 	<!-- The buildservicemanifest needs additional classes in order to run.

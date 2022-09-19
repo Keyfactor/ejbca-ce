@@ -48,6 +48,7 @@ import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -329,7 +330,8 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             String authcode = pin;
             if (encrypt) {
                 try {
-                    authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin);
+                    char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+                    authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin, encryptionKey, ConfigurationHolder.useLegacyEncryption());
                 } catch (Exception e) {
                     log.error(intres.getLocalizedMessage("token.nopinencrypt"), e);
                     authcode = pin;
