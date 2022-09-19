@@ -18,6 +18,7 @@ import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.StringTools;
+import org.ejbca.util.string.StringConfigurationCache;
 
 /**
  * @version $Id$
@@ -36,6 +37,17 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
     @Override
     public String getConfigurationValue(String key) {
         return ConfigurationHolder.getExpandedString(key);
+    }
+
+    @Override
+    public void setForbiddenCharacters(char[] forbiddenCharacters) {
+        StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters);
+        
+    }
+
+    @Override
+    public char[] getForbiddenCharacters() {
+        return StringConfigurationCache.INSTANCE.getForbiddenCharacters();
     }
 
 }

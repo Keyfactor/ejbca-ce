@@ -42,6 +42,7 @@ import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -65,7 +66,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     private String mJcaProviderName = null;
     /** Used for encrypt/decrypt, can be same as for signatures for example for pkcs#11 */
     private String mJceProviderName = null;
-    
+
     private char[] mAuthCode;
 
     private Properties properties;
@@ -81,7 +82,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     }
 
     protected void setKeyStore(KeyStore keystore) throws KeyStoreException {
-        if (keystore==null) {
+        if (keystore == null) {
             this.keyStore = null;
         } else {
             this.keyStore = new CachingKeyStoreWrapper(keystore, CesecoreConfiguration.isKeyStoreCacheEnabled());
@@ -127,10 +128,10 @@ public abstract class BaseCryptoToken implements CryptoToken {
      */
     @Override
     public boolean doPermitExtractablePrivateKey() {
-        return getProperties().containsKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY) &&
-               Boolean.parseBoolean(getProperties().getProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
+        return getProperties().containsKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)
+                && Boolean.parseBoolean(getProperties().getProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
     }
-    
+
     /** Similar to the method above, but only applies for internal testing of keys. This method is called during testKeyPair to verify that a key
      * that is extractable can never be used, unless we allow extractable private keys. Used for PKCS#11 (HSMs) to ensure that they are configured
      * correctly. On a PKCS11 Crypto Token, this should return the same as doPermitExtractablePrivateKey(), on a Soft Crypto Token this should always return true.
@@ -138,7 +139,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @return false if the key must not be extractable, this will throw an error if the key is extractable when crypto token tries to test it.
      */
     public abstract boolean permitExtractablePrivateKeyForTest();
-    
+
     @Override
     public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException { // NOPMD:this is not a junit test
         final PrivateKey privateKey = getPrivateKey(alias);
@@ -149,8 +150,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     @Override
     public void testKeyPair(final String alias, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException { // NOPMD:this is not a junit test
         if (log.isDebugEnabled()) {
-            log.debug("Testing key '" + alias + "' (SHA1: "
-                    + CertTools.getFingerprintAsString(publicKey.getEncoded()) + ").");
+            log.debug("Testing key '" + alias + "' (SHA1: " + CertTools.getFingerprintAsString(publicKey.getEncoded()) + ").");
             log.debug("The key '" + alias + "' will be tested using the provider '" + getSignProviderName() + "'.");
         }
         if (!permitExtractablePrivateKeyForTest() && KeyTools.isPrivateKeyExtractable(privateKey)) {
@@ -167,32 +167,32 @@ public abstract class BaseCryptoToken implements CryptoToken {
     public void keyAuthorizeInit(String alias, KeyPair kakKeyPair, String signProviderName, String selectedPaddingScheme) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
-    
+
     @Override
     public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
-    
+
     @Override
     public void changeAuthData(String alias, KeyPair currentKakPair, KeyPair newKakPair, String signProviderName, String selectedPaddingScheme) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
-    
+
     @Override
     public boolean isKeyInitialized(final String alias) {
         return true;
     }
-    
+
     @Override
     public long maxOperationCount(final String alias) {
         return Long.MAX_VALUE;
     }
-    
+
     @Override
     public void backupKey(int keySpecId, Path backupFilePath) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
-    
+
     @Override
     public void restoreKey(int keySpecId, Path backupFilePath) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
@@ -243,7 +243,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
         // Set basic properties that are of dynamic nature
         setProperties(properties);
         // Set properties that can not change dynamically
-        
+
         if (doAutoActivate) {
             autoActivate();
         }
@@ -273,7 +273,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
         }
         properties.setProperty(CryptoToken.TOKENNAME_PROPERTY, tokenName);
     }
-    
+
     @Override
     public Properties getProperties() {
         return properties;
@@ -341,7 +341,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
         if (StringUtils.isNotEmpty(pin)) {
             String authcode = pin;
             if (encrypt) {
-                    authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin);
+                char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+                authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin, encryptionKey, ConfigurationHolder.useLegacyEncryption());
             }
             if (properties != null) {
                 properties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, authcode);
@@ -362,13 +363,13 @@ public abstract class BaseCryptoToken implements CryptoToken {
      *             type, or void; or if it has no nullary constructor; or if the instantiation fails for some other reason.
      * @see {@link #setJCAProvider(Provider)}
      */
-    protected void setProviders(String jcaProviderClassName, String jceProviderClassName) throws InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+    protected void setProviders(String jcaProviderClassName, String jceProviderClassName)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         Provider jcaProvider;
         try {
             jcaProvider = (Provider) Class.forName(jcaProviderClassName).getConstructor().newInstance();
-        } catch ( IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-                | SecurityException | ClassNotFoundException e) {       
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException
+                | ClassNotFoundException e) {
             log.error(intres.getLocalizedMessage("token.jceinitfail"), e);
             throw new IllegalStateException(intres.getLocalizedMessage("token.jceinitfail"), e);
         }
@@ -386,7 +387,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
             this.mJceProviderName = null;
         }
     }
-    
+
     @Override
     public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
         // Removal of old key is only needed for sun-p11 with none ASCII chars in the alias.
@@ -433,7 +434,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
             // is installed during startup, as a generally used provider, 
             // and the P11 provider for a specific slot is installed in #P11Slot
             if (Security.getProvider(pName) == null) {
-                log.info("Adding Provider from BaseCryptoToken: "+pName);
+                log.info("Adding Provider from BaseCryptoToken: " + pName);
                 Security.addProvider(prov);
             }
             if (Security.getProvider(pName) == null) {
@@ -481,7 +482,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
         }
         return aliasInUse;
     }
-    
+
     @Override
     public PrivateKey getPrivateKey(final String alias) throws CryptoTokenOfflineException {
         return getPrivateKey(alias, true);
@@ -533,7 +534,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     public PublicKey getPublicKey(final String alias) throws CryptoTokenOfflineException {
         return getPublicKey(alias, true);
     }
-    
+
     /** @see #getPublicKey(String)
      * @param warn if we should log a warning if the key does not exist 
      */
@@ -651,7 +652,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
             // NOPMD, ignore status is offline
         }
         return ret;
-    }    
+    }
 
     @Override
     public List<String> getAliases() throws KeyStoreException, CryptoTokenOfflineException {
