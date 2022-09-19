@@ -30,7 +30,7 @@ public enum StringConfigurationCache {
         
     private static final char[] defaultForbiddenCharacters = {'\n', '\r', ';', '!', '\u0000', '%', '`', '?', '$', '~'};  
 
-    private static Set<Character> forbiddenCharacters = new HashSet<>();
+    private static Set<Character> forbiddenCharacters = null;
     
     private static int passwordEncryptionCount = DEFAULT_ENCRYPTION_COUNT;
     
@@ -43,7 +43,7 @@ public enum StringConfigurationCache {
      * @param forbiddenCharacters an array of characters to forbid
      */
     public void setForbiddenCharacters(char[] forbiddenCharacters) {
-        if (forbiddenCharacters == null || forbiddenCharacters.length == 0) {
+        if (forbiddenCharacters == null) {
             StringConfigurationCache.forbiddenCharacters = new HashSet<>(Arrays.asList(ArrayUtils.toObject(defaultForbiddenCharacters)));
         } else {
             StringConfigurationCache.forbiddenCharacters = new HashSet<>(Arrays.asList(ArrayUtils.toObject(forbiddenCharacters)));
@@ -54,7 +54,7 @@ public enum StringConfigurationCache {
      * @return the list of forbidden characters. If none has been set for any reason, the default will be returned. 
      */
     public char[] getForbiddenCharacters() {
-        if (forbiddenCharacters.size() == 0) {
+        if (forbiddenCharacters == null) {
             return defaultForbiddenCharacters;
         } else {
             return ArrayUtils.toPrimitive(forbiddenCharacters.toArray(new Character[forbiddenCharacters.size()]));
