@@ -447,7 +447,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
   
     public String getVendorCa() {
-        final String vendorCas = cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+        final String vendorCas = cmpConfiguration.getVendorCaIds(getSelectedCmpAlias());
         if (StringUtils.isEmpty(vendorCas)) {
             return "";
         }
@@ -470,7 +470,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
 
     public void actionAddVendorCa() throws AuthorizationDeniedException {
-        final String currentVendorCas = cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+        final String currentVendorCas = cmpConfiguration.getVendorCaIds(getSelectedCmpAlias());
         List<String> currentVendorCaList = new ArrayList<>();
         if (StringUtils.isNotBlank(currentVendorCas)) {
             currentVendorCaList = new ArrayList<>(Arrays.asList(currentVendorCas.split(";"))); 
@@ -479,16 +479,16 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         if (!currentVendorCaList.contains(selectedVendorCaId.toString())) {
             currentVendorCaList.add(selectedVendorCaId.toString());
         }
-        cmpConfiguration.setVendorCA(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
+        cmpConfiguration.setVendorCaIds(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
     }
     
     public void actionRemoveVendorCa() throws AuthorizationDeniedException {
-        final String currentVendorCas = cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+        final String currentVendorCas = cmpConfiguration.getVendorCaIds(getSelectedCmpAlias());
         if (StringUtils.isNotBlank(currentVendorCas)) {
             final List<String> currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";")));
             final Integer selectedVendorCaId = caSession.getCAInfo(getAdmin(), getSelectedVendorCa()).getCAId();
             if (currentVendorCaList.remove(selectedVendorCaId.toString())) {
-                cmpConfiguration.setVendorCA(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
+                cmpConfiguration.setVendorCaIds(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
             }
         }
     }
