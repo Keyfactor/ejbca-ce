@@ -2414,7 +2414,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         for(final String cmpAlias : cmpConfiguration.getAliasList()) {
             log.debug("Converting vendor CA list for CMP alias: " + cmpAlias);
-            final String cmpVendorCaNameString = cmpConfiguration.getVendorCA(cmpAlias);
+            final String cmpVendorCaNameString = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAlias);
             if (StringUtils.isEmpty(cmpVendorCaNameString)) {
                 break;
             }
@@ -2434,7 +2434,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     log.debug("CMP vendor with name: " + cmpVendorName + " was not found, it will be removed");
                 }
             }
-            cmpConfiguration.setVendorCA(cmpAlias, StringUtils.join(cmpVendorCaIds, ";"));
+            cmpConfiguration.setVendorCaIds(cmpAlias, StringUtils.join(cmpVendorCaIds, ";"));
         }
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
