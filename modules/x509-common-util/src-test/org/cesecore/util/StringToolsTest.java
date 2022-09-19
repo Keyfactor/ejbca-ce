@@ -12,6 +12,14 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
@@ -23,18 +31,9 @@ import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.ejbca.util.string.StringConfigurationCache;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests the StringTools class.
