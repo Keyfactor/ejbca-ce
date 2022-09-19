@@ -31,6 +31,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ExternalScriptsAllowlist;
 import org.cesecore.util.StringTools;
@@ -123,7 +124,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	            int propertyType = publisher.getPropertyType((String)key);
                 if (propertyType == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD) {
                     //Property is of a type that shouldn't be written in clear text to disk. Encrypt!
-                    value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key));
+                    final char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+                    value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key), encryptionKey, ConfigurationHolder.useLegacyEncryption());
                 } else if ((propertyType == CustomPublisherProperty.UI_TEXTINPUT) && "dataSource".equals((String) key)) {
                     value = properties.getProperty((String) key);
                     validateDataSource(value);

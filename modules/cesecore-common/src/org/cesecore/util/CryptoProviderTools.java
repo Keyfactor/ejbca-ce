@@ -29,6 +29,7 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.ejbca.cvc.CVCProvider;
+import org.ejbca.util.keys.X509KeyTools;
 
 /**
  * Basic crypto provider helper methods.
@@ -62,19 +63,7 @@ public final class CryptoProviderTools {
      * @return true if key strength is limited
      */
     public static boolean isUsingExportableCryptography() {
-    	boolean returnValue = true;
-    	try {
-    		final int keylen = Cipher.getMaxAllowedKeyLength("DES");
-    		if (log.isDebugEnabled()) {
-    			log.debug("MaxAllowedKeyLength for DES is: "+keylen);
-    		}
-			if ( keylen == Integer.MAX_VALUE ) {
-				returnValue = false;
-			}
-		} catch (NoSuchAlgorithmException e) {
-			// NOPMD
-		}
-		return returnValue;
+    	return X509KeyTools.isUsingExportableCryptography();
     }
     
     public static synchronized void installBCProviderIfNotAvailable() {

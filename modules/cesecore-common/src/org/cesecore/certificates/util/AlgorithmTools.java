@@ -22,7 +22,6 @@ import java.security.Provider;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -56,7 +55,6 @@ import org.bouncycastle.asn1.gm.GMNamedCurves;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.teletrust.TeleTrusTNamedCurves;
 import org.bouncycastle.asn1.ua.UAObjectIdentifiers;
@@ -65,7 +63,6 @@ import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
-import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
@@ -74,12 +71,8 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.cvc.AlgorithmUtil;
-import org.ejbca.cvc.CVCPublicKey;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.OIDField;
-
 /**
  * Various helper methods for handling the mappings between different key and
  * signature algorithms.
@@ -94,7 +87,7 @@ import org.ejbca.cvc.OIDField;
 public abstract class AlgorithmTools {
 
     /** Log4j instance */
-    private static final Logger log = Logger.getLogger(AlgorithmTools.class);
+    public static final Logger log = Logger.getLogger(AlgorithmTools.class);
 
     /** String used for an unknown keyspec in CA token properties */
     public static final String KEYSPEC_UNKNOWN = "unknown";
@@ -842,78 +835,6 @@ public abstract class AlgorithmTools {
     }
 
     /**
-     * Simple methods that returns the signature algorithm value from the certificate. Not usable for setting signature algorithms names in EJBCA,
-     * only for human presentation.
-     *
-     * @return Signature algorithm name from the certificate as a human readable string, for example SHA1WithRSA.
-     */
-    public static String getCertSignatureAlgorithmNameAsString(Certificate cert) {
-        final String certSignatureAlgorithm;
-        {
-            final String certSignatureAlgorithmTmp;
-            if (cert instanceof X509Certificate) {
-                final X509Certificate x509cert = (X509Certificate) cert;
-                certSignatureAlgorithmTmp = x509cert.getSigAlgName();
-                if (log.isDebugEnabled()) {
-                    log.debug("certSignatureAlgorithm is: " + certSignatureAlgorithmTmp);
-                }
-            } else if (StringUtils.equals(cert.getType(), "CVC")) {
-                final CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cert;
-                final CVCPublicKey cvcpk;
-                try {
-                    cvcpk = cvccert.getCVCertificate().getCertificateBody().getPublicKey();
-                    final OIDField oid = cvcpk.getObjectIdentifier();
-                    certSignatureAlgorithmTmp = AlgorithmUtil.getAlgorithmName(oid);
-                } catch (NoSuchFieldException e) {
-                    throw new AlgorithmsToolRuntimeException("Not a valid CVC certificate", e);
-                }
-            } else {
-                throw new AlgorithmsToolRuntimeException("Certificate type neither X509 nor CVS.");
-            }
-            // Try to make it easier to display some signature algorithms that cert.getSigAlgName() does not have a good string for.
-            // We typically don't get here, since the x509cert.getSigAlgName handles id_RSASSA_PSS nowadays, this is old legacy code,
-            // only triggered if the resulting signature algorithm returned above is an OID in stead of a sign alg name
-            // (i.e. 1.2.840.113549.1.1.10 instead of SHA256WithRSAAndMGF1
-            if (certSignatureAlgorithmTmp.equalsIgnoreCase(PKCSObjectIdentifiers.id_RSASSA_PSS.getId()) && cert instanceof X509Certificate) {
-                // Figure out the hash algorithm, it's hidden in the Signature Algorithm Parameters when using RSA PSS
-                // If we got this value we should have a x509 cert
-                final X509Certificate x509cert = (X509Certificate) cert;
-                final byte[] params = x509cert.getSigAlgParams();
-                // Below code snipped from BC, it's hidden as private/protected methods so we can't use BC directly.
-                final RSASSAPSSparams rsaParams = RSASSAPSSparams.getInstance(params);
-                String digestName = MessageDigestUtils.getDigestName(rsaParams.getHashAlgorithm().getAlgorithm());
-                // This is just to convert SHA-256 into SHA256, while SHA3-256 should remain as it is
-                if (digestName.contains("-") && !digestName.startsWith("SHA3")) {
-                    digestName = StringUtils.remove(digestName, '-');
-                }
-                certSignatureAlgorithm = digestName + "withRSAandMGF1";
-            } else {
-                certSignatureAlgorithm = certSignatureAlgorithmTmp;
-            }
-        }
-        // EdDSA does not work to be translated (JDK11)
-        if (certSignatureAlgorithm.equalsIgnoreCase(EdECObjectIdentifiers.id_Ed25519.getId())) {
-            return AlgorithmConstants.SIGALG_ED25519;
-        }
-        if (certSignatureAlgorithm.equalsIgnoreCase(EdECObjectIdentifiers.id_Ed448.getId())) {
-            return AlgorithmConstants.SIGALG_ED448;
-        }
-        // SHA256WithECDSA does not work to be translated in JDK5.
-        if (certSignatureAlgorithm.equalsIgnoreCase(X9ObjectIdentifiers.ecdsa_with_SHA256.getId())) {
-            return AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-        }
-        // GOST3410
-        if(isGost3410Enabled() && certSignatureAlgorithm.equalsIgnoreCase(CesecoreConfiguration.getOidGost3410())) {
-            return AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
-        }
-        // DSTU4145
-        if(isDstu4145Enabled() && certSignatureAlgorithm.startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
-            return AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
-        }
-        return certSignatureAlgorithm;
-    }
-
-    /**
      * Simple method that looks at the certificate and determines, from EJBCA's standpoint, which signature algorithm it is
      *
      * @param cert the cert to examine
@@ -921,7 +842,7 @@ public abstract class AlgorithmTools {
      */
     public static String getSignatureAlgorithm(Certificate cert) {
         String signatureAlgorithm = null;
-        String certSignatureAlgorithm = getCertSignatureAlgorithmNameAsString(cert);
+        String certSignatureAlgorithm = CertTools.getCertSignatureAlgorithmNameAsString(cert);
 
         // The signature string returned from the certificate is often not usable as the signature algorithm we must
         // specify for a CA in EJBCA, for example SHA1WithECDSA is returned as only ECDSA, so we need some magic to fix it up.

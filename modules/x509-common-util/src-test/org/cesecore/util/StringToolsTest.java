@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
+import org.ejbca.util.string.StringConfigurationCache;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -165,24 +166,28 @@ public class StringToolsTest {
         log.trace("<test04Strip()");
     }
 
-    final static String FORBIDDEN_CHARS_KEY = "forbidden.characters";
-    private static void forbiddenTest( final String forbidden, final String input, final String output ) {
-        ConfigurationHolder.instance().setProperty(FORBIDDEN_CHARS_KEY, forbidden);
+    private static void forbiddenTest( final String forbidden, final String input, final String expectedOutput ) {
+        if (forbidden == null) {
+            StringConfigurationCache.INSTANCE.setForbiddenCharacters(null);
+        } else {
+            StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbidden.toCharArray());
+        }
+        
         StringTools.CharSet.reset();
         final String stripped = StringTools.strip(input);
-        if ( input.equals(output) ) {
-            assertTrue("The string do NOT have chars that should be stripped!", StringTools.hasStripChars(input).isEmpty());
+        if ( input.equals(expectedOutput) ) {
+            assertTrue("The string does NOT have chars that should be stripped!", StringTools.hasStripChars(input).isEmpty());
         } else {
-            assertFalse("The string DO have chars that should be stripped!", StringTools.hasStripChars(input).isEmpty());
+            assertFalse("The string DOES have chars that should be stripped!", StringTools.hasStripChars(input).isEmpty());
         }
-        assertEquals("String not stripped correctly!", output, stripped);
+        assertEquals("String not stripped correctly!", expectedOutput, stripped);
     }
     @Test
     public void test05Strip() throws Exception {
         log.trace(">test05Strip()");
-        final Object originalValue = ConfigurationHolder.instance().getProperty(FORBIDDEN_CHARS_KEY);
+        final char[] originalValue = StringConfigurationCache.INSTANCE.getForbiddenCharacters();
         try {
-            assertEquals("\n\r;!\u0000%`?$~", new String(CesecoreConfiguration.getForbiddenCharacters()));
+            assertEquals("\n\r;!\u0000%`?$~", new String(StringConfigurationCache.INSTANCE.getForbiddenCharacters()));
             final String input =  "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|\\<|\\>|\\\"|\\\\";
             final String defaultOutput = "|/|/|/|foo bar|/|/|/|/|/|/|\\<|\\>|\\\"|\\\\";
             forbiddenTest(null, input, defaultOutput);
@@ -193,7 +198,7 @@ public class StringToolsTest {
             forbiddenTest("\"", input, "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|\\<|\\>|/|\\\\");
             forbiddenTest("f", input, "|\n|\r|;|/oo bar|!|\u0000|`|?|$|~|\\<|\\>|\\\"|\\\\");
         } finally {
-            ConfigurationHolder.instance().setProperty(FORBIDDEN_CHARS_KEY, originalValue);
+            StringConfigurationCache.INSTANCE.setForbiddenCharacters(originalValue);
         }
         log.trace("<test05Strip()");
     }
@@ -293,7 +298,8 @@ public class StringToolsTest {
     @Test
     public void testPbe() throws Exception {
         CryptoProviderTools.installBCProvider();
-        String enc = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+        final String encryptionKey = "supersecretpassword";
+        String enc = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, ConfigurationHolder.useLegacyEncryption());
         String dec = StringTools.pbeDecryptStringWithSha256Aes192(enc, ConfigurationHolder.getString("password.encryption.key").toCharArray());
         assertEquals("foo123", dec);
     }
@@ -545,12 +551,13 @@ public class StringToolsTest {
             String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+            final String encryptionKey = "supersecretpassword";
+            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, ConfigurationHolder.useLegacyEncryption());
             assertEquals("Encryption version should be legacy", "legacy", StringTools.getEncryptVersionFromString(pbe));
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray());
+            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray(), ConfigurationHolder.useLegacyEncryption());
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
                 fail("Decryption should not work with wrong key");
@@ -578,11 +585,12 @@ public class StringToolsTest {
                 // NOPMD: we expected failure
             }
 
-            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+            final String encryptionKey = "supersecretpassword";
+            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, ConfigurationHolder.useLegacyEncryption());
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray());
+            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray(), ConfigurationHolder.useLegacyEncryption());
             assertEquals("Encryption version should be encv1", "encv1", StringTools.getEncryptVersionFromString(pbe));
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
@@ -610,12 +618,13 @@ public class StringToolsTest {
             // Legacy decryption with default pwd should always work
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+            final String encryptionKey = "supersecretpassword";
+            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, ConfigurationHolder.useLegacyEncryption());
             log.info(pbe);
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray());
+            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray(), ConfigurationHolder.useLegacyEncryption());
             assertEquals("Encryption version should be encv1", "encv1", StringTools.getEncryptVersionFromString(pbe));
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
