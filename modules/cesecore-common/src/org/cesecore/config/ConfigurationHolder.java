@@ -47,6 +47,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.ReloadingController;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.log4j.Logger;
+import org.cesecore.util.StringTools;
 
 /**
  * This is a singleton. Used to configure common-configuration with our sources.
@@ -679,5 +680,13 @@ public final class ConfigurationHolder {
                             .build();
             return Executors.newScheduledThreadPool(2, factory);
         }
+    }
+    
+    /**
+     * @return true for systems still configured to use the legacy encryption mode
+     */
+    public static boolean useLegacyEncryption() {
+        final String defaultPassword = StringTools.deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf");
+        return defaultPassword.equals(getString("password.encryption.key"));
     }
 }

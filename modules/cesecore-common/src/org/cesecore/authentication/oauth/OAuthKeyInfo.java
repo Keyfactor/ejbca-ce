@@ -27,6 +27,7 @@ import javax.crypto.IllegalBlockSizeException;
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.util.StringTools;
 
 /**
@@ -158,7 +159,8 @@ public final class OAuthKeyInfo implements Serializable {
     }
 
     public void setClientSecretAndEncrypt(String clientSecret) {
-        this.clientSecret = StringTools.pbeEncryptStringWithSha256Aes192(clientSecret);
+        final char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+        this.clientSecret = StringTools.pbeEncryptStringWithSha256Aes192(clientSecret, encryptionKey, ConfigurationHolder.useLegacyEncryption());
     }
 
     public String getLabel() {
