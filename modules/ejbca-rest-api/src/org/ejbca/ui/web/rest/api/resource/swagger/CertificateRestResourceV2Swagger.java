@@ -76,7 +76,7 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Searches for certificates confirming given criteria and pagination.",
-            notes = "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model.",
+            notes = "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model. Use -1 for current_page to get total number of certificate for the request criteria.",
             response = SearchCertificatesRestResponseV2.class
     )
     public Response searchCertificates(

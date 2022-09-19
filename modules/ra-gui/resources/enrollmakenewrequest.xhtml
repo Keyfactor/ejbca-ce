@@ -697,6 +697,27 @@
 								</h:inputTextarea>
 								<h:message for="certExtensionDataField" id="certExtensionDataFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
+
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderCertValidityStartTime}">
+								<h:outputLabel for="certValidityStartTime" value="#{msg.enroll_cert_validity_start_time}"/>
+								<h:inputText id="certValidityStartTime" value="#{enrollMakeNewRequestBean.certValidityStartTime}" 
+								disabled="#{not enrollMakeNewRequestBean.certValidityStartTimeModifiable}" 
+								pt:placeholder="(ISO 8601 date: [yyyy-MM-dd HH:mm:ssZZ]: or days:hours:minutes)">
+								<f:validator validatorId="dateValidator"/>
+								</h:inputText>
+								<h:message for="certValidityStartTime" id="certValidityStartTimeMessage" styleClass="showErrorMessage"/>
+							</h:panelGroup>
+
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderCertValidityEndTime}">
+								<h:outputLabel for="certValidityEndTime" value="#{msg.enroll_cert_validity_end_time}"/>
+								<h:inputText id="certValidityEndTime" value="#{enrollMakeNewRequestBean.certValidityEndTime}" 
+								disabled="#{not enrollMakeNewRequestBean.certValidityEndTimeModifiable}"
+								pt:placeholder="(ISO 8601 date: [yyyy-MM-dd HH:mm:ssZZ]: or days:hours:minutes)">
+								<f:validator validatorId="dateValidator"/>
+								</h:inputText>
+								<h:message for="certValidityEndTime" id="certValidityEndTimeMessage" styleClass="showErrorMessage"/>
+							</h:panelGroup>
+
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderPsd2QcStatementField}">
 								<h:outputLabel for="psd2QcNcaName" value="#{msg.enroll_psd2_ncaname}"/>
 								<h:inputText id="psd2QcNcaName" value="#{enrollMakeNewRequestBean.psd2NcaName}"/>
@@ -740,6 +761,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
 								<h:outputLabel for="keyRecoveryCheckbox" value="#{msg.component_eedetails_field_keyrecoverable}"/>
 								<h:selectBooleanCheckbox id="keyRecoveryCheckbox" value="#{enrollMakeNewRequestBean.keyRecoverableUse}" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
+                            	    <f:ajax execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                             	</h:selectBooleanCheckbox>
 						    </h:panelGroup>
 						</h:panelGroup>
@@ -948,7 +970,7 @@
 							<h:commandButton id="generateKeyStorePem"
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGeneratePem}"
-								rendered="#{enrollMakeNewRequestBean.generatePemButtonRendered}"
+								rendered="#{enrollMakeNewRequestBean.generatePemButtonRendered  and not enrollMakeNewRequestBean.keyRecoverableUse}"
                                 disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
