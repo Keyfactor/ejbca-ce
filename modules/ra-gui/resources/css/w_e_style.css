@@ -790,7 +790,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   border-radius: 0; }
 
 .showErrorMessage {
-  display: block !important; }
+  display: block !important;
+  color: white }
 
 #messages {
   padding-left: 0; }
