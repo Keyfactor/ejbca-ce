@@ -310,8 +310,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
                 certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
                 relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, null);
-    }   
-        
+    }  
+    
     public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
             int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
             boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName)
@@ -350,6 +350,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + dn, "", "" + keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, caName, CAConstants.CA_ACTIVE,
                 signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
                         : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "3650d", signedBy, certificateChain, catoken);

@@ -162,6 +162,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
             setFingerprint(fp);
 
             // Make sure names are always looking the same
+            // TODO: ECA-9184
             setSubjectDN(CertTools.getSubjectDN(certificate));
             setIssuerDN(CertTools.getIssuerDN(certificate));
             if (storeSubjectAltName) {

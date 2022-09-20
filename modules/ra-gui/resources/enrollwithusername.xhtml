@@ -79,13 +79,55 @@
 								<h:outputLabel for="usernameField" value="#{msg.enroll_username}" />
 								<h:outputText id="usernameField" value="#{enrollWithUsernameBean.username}" />
 							</h:panelGroup>
-							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
+							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" 
+									rendered="#{!enrollWithUsernameBean.sshEnrollmentMode and enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
 								<h:outputLabel for="requestKeyAlgorithmField" value="Last Key Algorithm"/>
 								<h:outputText id="requestKeyAlgorithmField" value="#{enrollWithUsernameBean.preSetKeyAlgorithm}"/>
 							</h:panelGroup>
 					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithUsernameBean.sshEnrollmentMode}">
+							<h2>
+								<h:outputText
+									value="#{msg.enroll_upload_ssh_pubkey_placeholder} " />
+							</h2>
+							
+							<h:panelGroup layout="block">
+								<p id="newFileInputContainerSsh" style="display: inline-block;"></p>
+								<script>
+							        ejbca.ra.createFileUploadInput("newFileInput", "newFileInputContainerSsh", function(uploadedText) {
+							            document.getElementById("enrollWithUsernameForm:sshCertificateRequest").value = atob(uploadedText);
+							            document.getElementById("enrollWithUsernameForm:uploadSshPubKeyButton").click();
+							        });
+							    </script>
+						    </h:panelGroup>
+						    <br/>
+						    <br/>
+							
+							<h:inputTextarea id="sshCertificateRequest" styleClass="jsAutoFocusLast" style="line-height: 100%;"
+										value="#{enrollWithUsernameBean.sshPublicKey}" 
+										cols="80" rows="10" validator="#{enrollWithUsernameBean.validateSshPublicKey}">
+								<f:ajax event="keyup" execute="@this"
+                                                render=":globalMessages sshCertificateRequestMessage @form"/>
+                              </h:inputTextarea>                  
+							<h:message for="sshCertificateRequest" id="sshCertificateRequestMessage" styleClass="showErrorMessage"/>
+							<br/>
+							<h:commandButton id="uploadSshPubKeyButton" value="#{msg.enroll_upload_csr}" style="display:none"
+									    action="#{enrollWithUsernameBean.uploadSshPubKey}">
+							    <f:ajax event="change" execute="@form" render=":globalMessages sshCertificateRequestMessage @form"/>
+							</h:commandButton>
+									
+							<h:panelGroup id="requestSshCert" layout="block" styleClass="keygeneration-button-group">
+								<h:commandButton id="generateSshCertificate"
+									value="#{msg.enroll_ssh_pub_key}"
+									action="#{enrollWithUsernameBean.generateSshCertificate}"
+									disabled="#{!enrollWithUsernameBean.validSshPubKey}"
+									styleClass="pure-button ra-button executeActionButton">
+								</h:commandButton>
+							</h:panelGroup>
+					</h:panelGroup>
 
-					<h:panelGroup layout="block" styleClass="internal-frame">
+					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{!enrollWithUsernameBean.sshEnrollmentMode}">
 					<!--Either render the fields for algorithm selection if no algorithm has been set, or render the field for CSR upload/paste -->
 						<h:panelGroup layout="block"
 							rendered="#{!enrollWithUsernameBean.preSetKeyAlgorithmRendered}">

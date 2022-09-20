@@ -36,9 +36,12 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -58,6 +61,7 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
@@ -212,6 +216,15 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             }
         }
         
+        if(req instanceof SshRequestMessage) {
+            CertificateProfile cerificateProfile = 
+                    certificateProfileSession.getCertificateProfile(userdata.getCertificateProfileId());
+            if(cerificateProfile!=null) {
+                // otherwise, properly logged exception will thrown later
+                ((SshRequestMessage) req).populateEndEntityData(userdata, cerificateProfile);
+            }            
+        }
+        
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, false, true);
         ResponseMessage retval = null;
@@ -226,6 +239,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         }
         return retval;
     }
+    
+    
 
     /**
      * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
