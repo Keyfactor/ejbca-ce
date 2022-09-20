@@ -20,13 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import org.bouncycastle.util.encoders.Base64;
+
 /**
  * SSH Key Factory.
  * @version $Id$
  */
 public enum SshKeyFactory {
     INSTANCE;
-
+            
     /**
      * Sorts potential instances by their SSH prefixes, e.g. ecdsa-sha2-nistp384
      */
@@ -86,6 +88,41 @@ public enum SshKeyFactory {
         try {
             SshPublicKey result = sshKeyImplementations.get(algorithm).getConstructor().newInstance();
             result.init(publicKey);
+            return result;
+        } catch (InvocationTargetException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+                | IllegalArgumentException e) {
+            throw new IllegalStateException("Could not instance class of type " + sshKeyImplementations.get(algorithm).getCanonicalName(), e);
+        }
+    }
+    
+    /**
+     * Decodes an SSH public key from a file after trimming
+     *
+     * @param publicKeyFile the SSH public key body, trims the prefix and comment.
+     * @return an a SshPublicKey
+     * @throws SshKeyException if the key was not a proper SSH key
+     * @throws InvalidKeySpecException if the key body could not be parsed
+     */
+    public SshPublicKey extractSshPublicKeyFromFile(final byte[] publicKeyFile) 
+                        throws InvalidKeySpecException, SshKeyException {
+        String publicKeyFileContent = new String(publicKeyFile);
+        
+        int prefixIndex = publicKeyFileContent.indexOf(" ");
+        if(prefixIndex==-1) {
+            throw new IllegalStateException("SSH pubkey file content is malformed: does not contain perifx or algorithm");
+        }
+        
+        String algorithm = publicKeyFileContent.substring(0, prefixIndex).trim();
+        int suffixIndex = publicKeyFileContent.indexOf(" ", prefixIndex+1);
+        if(suffixIndex==-1) {
+            publicKeyFileContent = publicKeyFileContent.substring(prefixIndex+1);
+        } else {
+            publicKeyFileContent = publicKeyFileContent.substring(prefixIndex+1, suffixIndex);
+        }
+        
+        try {
+            SshPublicKey result = sshKeyImplementations.get(algorithm).getConstructor().newInstance();
+            result.init(Base64.decode(publicKeyFileContent.getBytes()));
             return result;
         } catch (InvocationTargetException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
                 | IllegalArgumentException e) {
