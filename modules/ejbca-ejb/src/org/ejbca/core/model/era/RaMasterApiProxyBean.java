@@ -1653,6 +1653,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+    
+    @Override
+    public byte[] enrollAndIssueSshCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation,
+            final SshRequestMessage sshRequestMessage)
+            throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (log.isDebugEnabled()) {
+                log.debug("raMasterApi calling enrollAndIssueSshCertificate: " + raMasterApi.getApiVersion() + ", "
+                        + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
+            }
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
+                try {
+                    return raMasterApi.enrollAndIssueSshCertificate(authenticationToken, endEntityInformation, sshRequestMessage);
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
+    }
 
     @Override
     public byte[] enrollAndIssueSshCertificateWs(final AuthenticationToken authenticationToken, final UserDataVOWS userDataVOWS,
