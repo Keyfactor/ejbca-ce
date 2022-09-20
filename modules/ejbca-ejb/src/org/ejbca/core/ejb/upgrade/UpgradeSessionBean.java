@@ -1860,14 +1860,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             
             final long startDataNormalization = System.currentTimeMillis();
             
-            // Check whether it is an MSSQL datbase. If yes, don't normalize
+            // Check whether it is an MSSQL datbase. If yes, don't normalize in chunks
             boolean isMSSQL = false;
             Connection connection = null;
             try {
                 connection = JDBCUtil.getDBConnection();
                 DatabaseMetaData metaData = connection.getMetaData();
                 String productName = metaData.getDatabaseProductName();
-                // For testing during development only. Remove before review.  
                 if (MSSQL.equals(productName)) {
                     isMSSQL = true;
                 }
@@ -2139,6 +2138,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public void fixPartitionedCrls(final int limit, final boolean isMSSQL) throws UpgradeFailedException {
         try {
+            // Do the whole normalization at once in the case of MSSQL
             if (isMSSQL) {
                 final long startDataNormalization = System.currentTimeMillis();
                 final Query normalizeData = entityManager.createQuery(
@@ -2147,6 +2147,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 final int rowCount = normalizeData.executeUpdate();
                 log.info("Successfully normalized " + rowCount + " rows in CRLData. Completed in "
                         + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+                // If not MSSQL normalize only a set amount at a time
             } else {
                 final Query normalizeData = entityManager.createNativeQuery(
                         "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0  LIMIT :limit");
@@ -2162,7 +2163,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException(e);
         }
     }
-
 
     private void fixPartitionedCrlIndexes() {
         final IndexUpgradeResult res3 = upgradeSession.upgradeIndex("crldata_idx3", "CRLData", "CREATE INDEX crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex)");
