@@ -50,7 +50,6 @@ import com.google.common.net.InternetDomainName;
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.util.keys.X509KeyTools;
@@ -840,8 +839,8 @@ public final class StringTools {
         final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
         final byte[] enc;
         try {
-            c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
-            final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            c = Cipher.getInstance(algorithm, "BC");
+            final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, "BC");
             c.init(Cipher.ENCRYPT_MODE, fact.generateSecret(keySpec));
             enc = c.doFinal(in.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
@@ -909,9 +908,9 @@ public final class StringTools {
         // We can do different handling here depending on version, but currently we only have one so.
         final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
         try {
-            final Cipher c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            final Cipher c = Cipher.getInstance(algorithm, "BC");
             final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
-            final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, "BC");
             c.init(Cipher.DECRYPT_MODE, fact.generateSecret(keySpec));
             final byte[] dec = c.doFinal(Hex.decode(data.getBytes(StandardCharsets.UTF_8)));
             return new String(dec);

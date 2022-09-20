@@ -14,11 +14,8 @@
 package org.cesecore.util;
 
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Security;
-
-import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
