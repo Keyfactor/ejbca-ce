@@ -30,6 +30,14 @@ public abstract class SshEndEntityProfileFields {
     public static final int SSH_CRITICAL_OPTION_FORCE_COMMAND_FIELD_NUMBER = 201;
     public static final String SSH_CRITICAL_OPTION_SOURCE_ADDRESS = "SSH_CRITICAL_OPTION_SOURCE_ADDRESS";
     public static final int SSH_CRITICAL_OPTION_SOURCE_ADDRESS_FIELD_NUMBER = 202;
+    
+    // Not a EndEntityProfile field but parts of SSH Certificate
+    public static final String SSH_CERTIFICATE_COMMENT = "COMMENT";
+    public static final String SSH_CERTIFICATE_KEYID = "KeyId";
+    public static final String SSH_CERTIFICATE_TYPE = "sshCertificateType";
+    
+    public static final String SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP = "source-address";
+    public static final String SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP = "force-command";
 
     private static final Map<String, String> sshFields = new TreeMap<>();
     private static final Map<Integer, String> sshFieldsLanguageKeys = new HashMap<>();
