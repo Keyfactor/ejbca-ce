@@ -64,7 +64,9 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
     public static final String CONFIG_RA_NAMEGENERATIONPOSTFIX= "ra.namegenerationpostfix";
     public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
+    /** @deprecated since 7.11.0, but remains to allow 100% uptime during upgrades. Use CONFIG_VENDORCAIDS instead */
     public static final String CONFIG_VENDORCA                = "vendorca";
+    public static final String CONFIG_VENDORCAIDS             = "vendorcaids";
     public static final String CONFIG_OPERATIONMODE = "operationmode";
     public static final String CONFIG_EXTRACTUSERNAMECOMPONENT= "extractusernamecomponent";
     public static final String CONFIG_EXTRACTDNPARTPWDCOMPONENT = "extractdnpartpwdcomponent";
@@ -99,6 +101,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
     private static final String DEFAULT_VENDOR_CERTIFICATE_MODE = "false";
     private static final String DEFAULT_VENDOR_CA = "";
+    private static final String DEFAULT_VENDOR_CA_IDS = "";
     private static final String DEFAULT_OPERATION_MODE = EstConfiguration.OPERATION_MODE_RA; // Use what we had before EJBCA 7.5.0 as default
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
     private static final String DEFAULT_EXTRACTDNPARTPWD_COMPONENT = "DN";
@@ -152,6 +155,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX, DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
             data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_CERTIFICATE_MODE);
             data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+            data.put(alias + CONFIG_VENDORCAIDS, DEFAULT_VENDOR_CA_IDS);
             data.put(alias + CONFIG_OPERATIONMODE, DEFAULT_OPERATION_MODE);
             data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
             data.put(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT, DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
@@ -208,13 +212,25 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
     
     
-    public String getVendorCAs(String alias) {
-        String key = alias + "." + CONFIG_VENDORCA;
+    /**
+     * Gets the semicolon separated list of CA IDs for accepted vendor certificates
+     * @param alias
+     * @return the semicolon separated list of CA IDs
+     */
+    public String getVendorCaIds(String alias) {
+        String key = alias + "." + CONFIG_VENDORCAIDS;
         return getValue(key, alias);
     }
-    public void setVendorCAs(String alias, String vendorCA) {
-        String key = alias + "." + CONFIG_VENDORCA;
-        setValue(key, vendorCA, alias);
+
+    /**
+     * Sets the semicolon separated list of CA IDs, to add or remove vendor CAs.
+     * There are no checks performed, if the CAs for the IDs exist.
+     * @param alias the EST configuration alias
+     * @param vendorCaIds the semicolon separated list of CA IDs
+     */
+    public void setVendorCaIds(String alias, String vendorCaIds) {
+        String key = alias + "." + CONFIG_VENDORCAIDS;
+        setValue(key, vendorCaIds, alias);
     }
     
     // return all the key with an alias
@@ -233,6 +249,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPREFIX);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX);
         keys.add(alias + CONFIG_VENDORCA);
+        keys.add(alias + CONFIG_VENDORCAIDS);
         keys.add(alias + CONFIG_OPERATIONMODE);
         keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
         keys.add(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT);

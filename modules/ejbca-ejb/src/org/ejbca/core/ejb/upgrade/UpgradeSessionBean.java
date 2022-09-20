@@ -2446,7 +2446,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         for (final String estAlias : estConfiguration.getAliasList()) {
             log.debug("Converting vendor CA list for EST alias: " + estAlias);
-            final String estVendorCaNamesString = estConfiguration.getVendorCAs(estAlias);
+            final String estVendorCaNamesString = estConfiguration.getValue(estAlias + "." + CmpConfiguration.CONFIG_VENDORCA, estAlias);
             if (StringUtils.isEmpty(estVendorCaNamesString)) {
                 break;
             }
@@ -2466,7 +2466,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     log.debug("EST vendor with name: " + estVendorName + " was not found, it will be removed");
                 }
             }
-            estConfiguration.setVendorCAs(estAlias, StringUtils.join(estVendorCaIds, ";"));
+            estConfiguration.setVendorCaIds(estAlias, StringUtils.join(estVendorCaIds, ";"));
         }
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, estConfiguration);

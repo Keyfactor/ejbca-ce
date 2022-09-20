@@ -183,7 +183,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         }
         
         public  String getSelectedVendorCa() {
-            return selectedVendorCa == null ? "" : selectedVendorCa;
+            return selectedVendorCa == null ? String.valueOf(getVendorCaSelectItems().get(0).getValue()) : selectedVendorCa;
         }
         
         public void setVendorCas(String vendorCas) {
@@ -295,13 +295,12 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
             estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
             estAliasGui.setVendorMode(estConfiguration.getVendorMode(aliasName));
-            estAliasGui.setSelectedVendorCa(estConfiguration.getVendorCAs(aliasName));
             estAliasGui.setAuthenticationModule(estConfiguration.getAuthenticationModule(aliasName));
             estAliasGui.setChallengePwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD));
             estAliasGui.setDnPartPwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD));
             estAliasGui.setExtDnPartPwdComponent(estConfiguration.getExtractDnPwdComponent(aliasName));
             estAliasGui.setAllowChangeSubjectName(estConfiguration.getAllowChangeSubjectName(aliasName));
-            String vendorCaIds = estConfiguration.getVendorCAs(aliasName);
+            String vendorCaIds = estConfiguration.getVendorCaIds(aliasName);
             ArrayList<String> vendorCaNames = new ArrayList<>();
             if (!StringUtils.isEmpty(vendorCaIds)) {
                 for (String vendorCaId : vendorCaIds.split(";")) {
@@ -402,12 +401,11 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         estConfiguration.setExtractDnPwdComponent(alias, estAliasGui.getExtDnPartPwdComponent());
         estConfiguration.setOperationMode(alias, estAliasGui.getOperationMode());
         estConfiguration.setVendorMode(alias, estAliasGui.getVendorMode());
-        estConfiguration.setVendorCAs(alias, estAliasGui.getSelectedVendorCa());
         estConfiguration.setAuthenticationModule(alias, estAliasGui.getAuthenticationModule());
         estConfiguration.setAllowChangeSubjectName(alias, estAliasGui.getAllowChangeSubjectName());
         final String currentVendorCas = getCurrentVendorCas();
         if (StringUtils.isEmpty(currentVendorCas)) {
-            estConfiguration.setVendorCAs(alias, "");
+            estConfiguration.setVendorCaIds(alias, "");
         } else {
             final String[] vendorCaNames = currentVendorCas.split(";");
             final ArrayList<String> vendorCaIds = new ArrayList<>();
@@ -415,7 +413,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
                 Integer caId = caSession.getCAInfo(getAdmin(), vendorCaName).getCAId();
                 vendorCaIds.add(caId.toString());
             }
-            estConfiguration.setVendorCAs(alias, StringUtils.join(vendorCaIds, ";"));
+            estConfiguration.setVendorCaIds(alias, StringUtils.join(vendorCaIds, ";"));
         }
         updateSupportProxyCa();
         estConfiguration.setSupportProxyCa(alias, estAliasGui.isUsesProxyCa());
@@ -429,7 +427,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         final String currentVendorCas = getCurrentVendorCas();
         List<String> currentVendorCaList = new ArrayList<>();
         if (StringUtils.isNotBlank(currentVendorCas)) {
-            currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";"))); 
+            currentVendorCaList = new ArrayList<>(Arrays.asList(currentVendorCas.split(";"))); 
         }
         if (!currentVendorCaList.contains(estAliasGui.getSelectedVendorCa())) {
             currentVendorCaList.add(estAliasGui.getSelectedVendorCa());
@@ -441,7 +439,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     public void actionRemoveVendorCa() {
         final String currentVendorCas = getCurrentVendorCas();
         if (StringUtils.isNotBlank(currentVendorCas)) {
-            final List<String> currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";")));
+            final List<String> currentVendorCaList = new ArrayList<>(Arrays.asList(currentVendorCas.split(";")));
             if (currentVendorCaList.remove(estAliasGui.getSelectedVendorCa())) {
                 setCurrentVendorCas(StringUtils.join(currentVendorCaList, ";"));
                 updateSupportProxyCa();
