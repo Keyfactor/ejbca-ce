@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.InvalidKeyException;
+import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,8 +32,9 @@ import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.config.ConfigurationHolder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.ejbca.util.string.StringConfigurationCache;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -40,6 +42,11 @@ import org.junit.Test;
  */
 public class StringToolsTest {
     private static Logger log = Logger.getLogger(StringToolsTest.class);
+    
+    @BeforeClass
+    public static void beforeClass() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
     
     @Test
     public void testStripLog() throws Exception{
@@ -296,10 +303,9 @@ public class StringToolsTest {
     
     @Test
     public void testPbe() throws Exception {
-        CryptoProviderTools.installBCProvider();
         final String encryptionKey = "supersecretpassword";
-        String enc = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, ConfigurationHolder.useLegacyEncryption());
-        String dec = StringTools.pbeDecryptStringWithSha256Aes192(enc, ConfigurationHolder.getString("password.encryption.key").toCharArray());
+        String enc = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, false);
+        String dec = StringTools.pbeDecryptStringWithSha256Aes192(enc, encryptionKey.toCharArray());
         assertEquals("foo123", dec);
     }
 
@@ -539,24 +545,28 @@ public class StringToolsTest {
 
     @Test
     public void testPasswordEncryptionAndObfuscation() throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
+        Security.addProvider(new BouncyCastleProvider());
+        final String legacyEncryptionKey = "qhrnf.f8743;12%#75";
         // First test with legacy encryption, using default pwd
-        ConfigurationHolder.backupConfiguration();
         {
             String obf = StringTools.obfuscate("foo123");
             String deobf = StringTools.deobfuscate(obf);
             assertEquals("Obfuscated/De-obfuscated password does not match", "foo123", deobf);
 
+           
             // Using an encrypted string from older version of EJBCA, using BC 1.52
-            String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+            String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", legacyEncryptionKey.toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            final String encryptionKey = "supersecretpassword";
-            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, ConfigurationHolder.useLegacyEncryption());
+
+            String encryptionKey = "supersecretpassword";
+            
+            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, true);
             assertEquals("Encryption version should be legacy", "legacy", StringTools.getEncryptVersionFromString(pbe));
-            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, encryptionKey.toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray(), ConfigurationHolder.useLegacyEncryption());
+            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray(), false);
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
                 fail("Decryption should not work with wrong key");
@@ -566,64 +576,27 @@ public class StringToolsTest {
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
         }
-        // Second test with new encryption
-        ConfigurationHolder.updateConfiguration("password.encryption.key", "1POTQK7ofSGTPsOOXwIo2Z0jfXsADtXx");
+        final int originalEncryptionCount = StringConfigurationCache.INSTANCE.getPasswordEncryptionCount();
+        StringConfigurationCache.INSTANCE.setPasswordEncryptionCount(100000);
+        // Third with a different count
         {
             String obf = StringTools.obfuscate("foo123");
             String deobf = StringTools.deobfuscate(obf);
             assertEquals("Obfuscated/De-obfuscated password does not match", "foo123", deobf);
 
+            String encryptionKey = "supersecretpassword";
+            
             // Using an encrypted string from older version of EJBCA, using BC 1.52
-            String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
-            // Legacy decryption with default pwd should always work
-            assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
-            try {
-                pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getString("password.encryption.key").toCharArray());
-                fail("Decryption of legacey encrypted string with non default pwd should not work");
-            } catch (BadPaddingException e) {
-                // NOPMD: we expected failure
-            }
-
-            final String encryptionKey = "supersecretpassword";
-            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, ConfigurationHolder.useLegacyEncryption());
-            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
-            assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
-
-            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray(), ConfigurationHolder.useLegacyEncryption());
-            assertEquals("Encryption version should be encv1", "encv1", StringTools.getEncryptVersionFromString(pbe));
-            try {
-                pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
-                assertFalse("Decryption should not work with wrong key. Decrypted data: "+pwd, "customEncryptionKey".equals(pwd));
-            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException e) {
-                // we should end up here typically when encryption fails, but it's not 100% sure
-            }
-            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
-            assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
-
-            pwd = StringTools.pbeDecryptStringWithSha256Aes192("encv1:61ea7d4ce0564370246f219b7ab7533f8066c4d0a58950e45dd1d34497f98e08:100:3a3e10a382d4c504fc4b7900be204bcc"
-                    , "1POTQK7ofSGTPsOOXwIo2Z0jfXsADtXx".toCharArray());
-            assertEquals("Encrypted/decrypted password (from 6.8.0) does not match", "foo123", pwd);
-        }
-
-        // Third test with a different count
-        ConfigurationHolder.updateConfiguration("password.encryption.count", "100000");
-        {
-            String obf = StringTools.obfuscate("foo123");
-            String deobf = StringTools.deobfuscate(obf);
-            assertEquals("Obfuscated/De-obfuscated password does not match", "foo123", deobf);
-
-            // Using an encrypted string from older version of EJBCA, using BC 1.52
-            String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+            String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", legacyEncryptionKey.toCharArray());
             // Legacy decryption with default pwd should always work
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            final String encryptionKey = "supersecretpassword";
-            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, ConfigurationHolder.useLegacyEncryption());
+            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123", encryptionKey, false);
             log.info(pbe);
-            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, encryptionKey.toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray(), ConfigurationHolder.useLegacyEncryption());
+            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray(), false);
             assertEquals("Encryption version should be encv1", "encv1", StringTools.getEncryptVersionFromString(pbe));
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
@@ -646,7 +619,7 @@ public class StringToolsTest {
 
         assertEquals("Encryption version should be none", "none", StringTools.getEncryptVersionFromString("foo123"));
 
-        ConfigurationHolder.restoreConfiguration();
+        StringConfigurationCache.INSTANCE.setPasswordEncryptionCount(originalEncryptionCount);
     }
 
     @Test
