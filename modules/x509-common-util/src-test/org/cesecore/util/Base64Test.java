@@ -17,12 +17,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Security;
 import java.security.cert.Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -272,12 +275,11 @@ public class Base64Test {
             43, 86, 110, 73, 89, 107, 50, 43, 83, 121, 75, 72, 77, 67, 116, 89, 112, 117, 121, 57, 32, 55, 70, 65, 69, 70, 68, 52, 72, 57, 54, 113,
             105, 122, 81, 112, 97, 74, 67, 51, 105, 75, 111, 104, 114, 102, 43, 119, 90, 84, 105, 80, 111, 65, 103, 70, 107, 65, 65, 65, 61 };
 
-    @Before
-    public void setUp() throws Exception {
-        log.trace(">setUp()");
-        CryptoProviderTools.installBCProvider();
-        log.trace("<setUp()");
+    @BeforeClass
+    public static void beforeClass() {
+        Security.addProvider(new BouncyCastleProvider());
     }
+    
 
     @Test
     public void testBase64Small() throws Exception {
