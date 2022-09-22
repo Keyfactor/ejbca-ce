@@ -114,7 +114,8 @@ import org.ejbca.ui.web.configuration.exception.CacheClearException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.HttpTools;
-import org.ejbca.util.keys.X509KeyTools;
+
+import com.keyfactor.util.keys.X509KeyTools;
 
 /**
  * The main bean for the web interface, it contains all basic functions.

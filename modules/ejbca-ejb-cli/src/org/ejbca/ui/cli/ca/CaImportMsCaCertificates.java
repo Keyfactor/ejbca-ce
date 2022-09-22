@@ -42,6 +42,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  * Implementation of the CLI command <code>./ejbca.sh ca importcertsms</code>.
  * 
@@ -340,7 +342,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             return null;
         }
         final String beginCertificate = reader.readLine();
-        if (!StringUtils.equals(beginCertificate, CertTools.BEGIN_CERTIFICATE)) {
+        if (!StringUtils.equals(beginCertificate, X509CertificateTools.BEGIN_CERTIFICATE)) {
             throw new IOException("Expected BEGIN_CERTIFICATE but read '" + beginCertificate + "'.");
         }
         final StringBuilder pem = new StringBuilder();
@@ -348,7 +350,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
         for (String nextLine; (nextLine = reader.readLine()) != null;) {
             pem.append("\n");
             pem.append(nextLine);
-            if (StringUtils.equals(nextLine, CertTools.END_CERTIFICATE)) {
+            if (StringUtils.equals(nextLine, X509CertificateTools.END_CERTIFICATE)) {
                 return pem.toString();
             }
         }
@@ -441,7 +443,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                 return upn;
             }
             if (StringUtils.equals(eeUsernameField, "universalPrincipalName")) {
-                final String upnFromCertificate = CertTools.getPartFromDN(CertTools.getSubjectAlternativeName(certificate), CertTools.UPN);
+                final String upnFromCertificate = CertTools.getPartFromDN(CertTools.getSubjectAlternativeName(certificate), X509CertificateTools.UPN);
                 if (StringUtils.isEmpty(upnFromCertificate)) {
                     continue;
                 }

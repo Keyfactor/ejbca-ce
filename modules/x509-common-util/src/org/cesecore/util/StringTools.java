@@ -46,14 +46,14 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 import com.google.common.net.InternetDomainName;
+import com.keyfactor.util.keys.X509KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.util.keys.X509KeyTools;
-import org.ejbca.util.string.StringConfigurationCache;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.

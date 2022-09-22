@@ -91,6 +91,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  * 
  */
@@ -245,7 +247,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         super.test05OcspUnknownCA();
         // Reverted issuer DN should work as well, we are independent of the order here
-        final String revertedIssuerDN = CertTools.reverseDN(issuerDN);
+        final String revertedIssuerDN = X509CertificateTools.reverseDN(issuerDN);
         assertNotEquals("Reverting DN should produce a different result.", issuerDN, revertedIssuerDN);
         ocspConfiguration.setOcspDefaultResponderReference(revertedIssuerDN);
         globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);

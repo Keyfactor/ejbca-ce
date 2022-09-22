@@ -18,7 +18,8 @@ import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.StringTools;
-import org.ejbca.util.string.StringConfigurationCache;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * @version $Id$

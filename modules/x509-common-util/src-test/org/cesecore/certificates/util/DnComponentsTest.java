@@ -21,8 +21,9 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
 import org.junit.Test;
+
+import com.keyfactor.util.certificates.X509CertificateTools;
 
 /**
  * Tests the DnComponents class.
@@ -131,13 +132,13 @@ public class DnComponentsTest {
             // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
             // We used to swallow this badly formatted DN string, but doesn't do that anymore. uri=fff is not a valid DN component
             final String dn = "uri=fff,CN=oid,SN=12345,NAME=name,C=se";
-            CertTools.stringToBCDNString(dn);
+            X509CertificateTools.stringToBCDNString(dn);
             fail("should fail since directory string is badly formatted 'uri, is not a valid DN component: "+dn);
         } catch (IllegalArgumentException e) {
             // NOPMD: should throw
         }
-        String dn = CertTools.stringToBCDNString("CN=oid,SN=12345,NAME=name,C=se");
-        final X500Name name = CertTools.stringToBcX500Name(dn);
+        String dn = X509CertificateTools.stringToBCDNString("CN=oid,SN=12345,NAME=name,C=se");
+        final X500Name name = X509CertificateTools.stringToBcX500Name(dn);
         ASN1ObjectIdentifier[] oids = name.getAttributeTypes();
         assertEquals(BCStyle.CN, oids[0]);
         assertEquals(BCStyle.NAME, oids[1]);
@@ -149,13 +150,13 @@ public class DnComponentsTest {
             // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
             // We used to swallow this badly formatted DN string, but doesn't do that anymore. =fff is not a valid DN component
             final String dn1 = "SURNAME=Json,=fff,Description=test,CN=oid,SN=12345,NAME=name,C=se";
-            CertTools.stringToBCDNString(dn1);
+            X509CertificateTools.stringToBCDNString(dn1);
             fail("should fail since directory string is badly formatted '=fff, is not a valid DN component: "+dn1);
         } catch (StringIndexOutOfBoundsException e) {
             // NOPMD: should throw
         }
-        String dn1 = CertTools.stringToBCDNString("SURNAME=Json,Description=test,CN=oid,SN=12345,NAME=name,C=se");
-        final X500Name name1 = CertTools.stringToBcX500Name(dn1);
+        String dn1 = X509CertificateTools.stringToBCDNString("SURNAME=Json,Description=test,CN=oid,SN=12345,NAME=name,C=se");
+        final X500Name name1 = X509CertificateTools.stringToBcX500Name(dn1);
         ASN1ObjectIdentifier[] oids1 = name1.getAttributeTypes();
         assertEquals(CeSecoreNameStyle.DESCRIPTION, oids1[0]);
         assertEquals(BCStyle.CN, oids1[1]);
@@ -169,13 +170,13 @@ public class DnComponentsTest {
             // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
             // We used to swallow this badly formatted DN string, but doesn't do that anymore. =fff is not a valid DN component
             final String dn2 = "jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,=fff,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se";
-            CertTools.stringToBCDNString(dn2);
+            X509CertificateTools.stringToBCDNString(dn2);
             fail("should fail since directory string is badly formatted '=fff, is not a valid DN component: "+dn2);
         } catch (StringIndexOutOfBoundsException e) {
             // NOPMD: should throw
         }
-        String dn2 = CertTools.stringToBCDNString("jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se");
-        final X500Name name2 = CertTools.stringToBcX500Name(dn2);
+        String dn2 = X509CertificateTools.stringToBCDNString("jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se");
+        final X500Name name2 = X509CertificateTools.stringToBcX500Name(dn2);
         ASN1ObjectIdentifier[] oids2 = name2.getAttributeTypes();
         assertEquals(CeSecoreNameStyle.JURISDICTION_COUNTRY, oids2[0]);
         assertEquals(CeSecoreNameStyle.JURISDICTION_STATE, oids2[1]);

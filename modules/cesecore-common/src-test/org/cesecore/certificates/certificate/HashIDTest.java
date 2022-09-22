@@ -24,6 +24,8 @@ import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  * Unit tests for the HashID class
  * 
@@ -44,6 +46,6 @@ public class HashIDTest {
         X509Certificate testCertificate = CertTools.genSelfCert(subjectDn, 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(subjectDn).getKey());
-        assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(CertTools.reverseDN(subjectDn)).getKey());
+        assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(X509CertificateTools.reverseDN(subjectDn)).getKey());
     }
 }

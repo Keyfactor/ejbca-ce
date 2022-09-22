@@ -33,9 +33,10 @@ import javax.crypto.IllegalBlockSizeException;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.ejbca.util.string.StringConfigurationCache;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * Tests the StringTools class.

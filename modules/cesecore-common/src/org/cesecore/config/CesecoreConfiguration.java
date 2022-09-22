@@ -13,7 +13,8 @@
 package org.cesecore.config;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.string.StringConfigurationCache;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

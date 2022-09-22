@@ -47,6 +47,8 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  * Utility class to gather a few functions
  */
@@ -136,8 +138,8 @@ public abstract class RequestMessageUtils {
                 endKey = CertTools.END_KEYTOOL_CERTIFICATE_REQUEST;
                 if (!str.contains(beginKey)) {
                     // CSR can be a PEM encoded certificate instead of "certificate request"
-                    beginKey = CertTools.BEGIN_CERTIFICATE;
-                    endKey = CertTools.END_CERTIFICATE;
+                    beginKey = X509CertificateTools.BEGIN_CERTIFICATE;
+                    endKey = X509CertificateTools.END_CERTIFICATE;
                     if (!str.contains(beginKey)) {
                         // IE PKCS10 Base64 coded request
                         try {

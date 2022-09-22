@@ -75,7 +75,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
-import org.ejbca.util.keys.X509KeyTools;
+
+import com.keyfactor.util.keys.X509KeyTools;
 
 /**
  * CLI command for creating a CA and its first CRL. Publishes the CRL and CA certificate if it should.

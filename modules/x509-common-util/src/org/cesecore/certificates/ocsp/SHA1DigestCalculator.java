@@ -20,10 +20,9 @@ import java.security.NoSuchAlgorithmException;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.ocsp.RespID;
 import org.bouncycastle.operator.DigestCalculator;
-import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 
 /**
- * @version $Id$
+ * 
  */
 public class SHA1DigestCalculator implements DigestCalculator {
     private ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -56,7 +55,7 @@ public class SHA1DigestCalculator implements DigestCalculator {
         try {
             return new SHA1DigestCalculator(MessageDigest.getInstance("SHA1"));
         } catch (NoSuchAlgorithmException e) {
-            throw new OcspFailureException(e);
+            throw new IllegalStateException(e);
         }
     }
 }
