@@ -45,12 +45,16 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.sun.jna.Memory;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
@@ -67,8 +71,6 @@ import org.pkcs11.jacknji11.CKO;
 import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
-
-import com.sun.jna.Memory;
 
 /**
  * Provider using JackNJI11.
@@ -111,6 +113,9 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", NISTObjectIdentifiers.id_ecdsa_with_sha3_256.getId(), MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", NISTObjectIdentifiers.id_ecdsa_with_sha3_384.getId(), MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId(), MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED25519, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED448, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "NONEwithECDSA", MySignature.class.getName()));
@@ -119,7 +124,7 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "MessageDigest", "SHA512", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "AlgorithmParameters", "PSS", MyAlgorithmParameters.class.getName()));
         putService(new MySigningService(this, "Cipher", "RSAEncryption", MyCipher.class.getName()));
-        putService(new MySigningService(this, "Cipher", "1.2.840.113549.1.1.1", MyCipher.class.getName()));
+        putService(new MySigningService(this, "Cipher", PKCSObjectIdentifiers.rsaEncryption.getId(), MyCipher.class.getName()));
         putService(new MySigningService(this, "KeyAgreement", "ECDH", MyKeyAgreement.class.getName()));
 
     }
@@ -225,7 +230,7 @@ public class JackNJI11Provider extends Provider {
             if (MechanismNames.typeFromSigAlgoName(algorithm).isPresent()) {
                 type = MechanismNames.typeFromSigAlgoName(algorithm).get();                
             } else {
-                throw new RuntimeException("Algorithm " + algorithm + " is not supported, it has not PKCS#11 signature type defined.");
+                throw new RuntimeException("Algorithm " + algorithm + " is not supported, it has no PKCS#11 signature type defined.");
             }
             if (log.isTraceEnabled()) {
                 log.trace("Creating Signature provider for algorithm: " + algorithm + ", and provider " + provider + ", type=" + type);
