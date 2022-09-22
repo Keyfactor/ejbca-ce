@@ -72,6 +72,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  * A publisher that sends certificate issuance and life cycle events (revoke and unrevoke)
  * to a HTTPS server. The HTTPS request content (aka. the certificate and other related
@@ -485,7 +487,7 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
             log.error(msg, e);
             throw new PublisherException(msg);
         }
-        int index = certStr.indexOf(CertTools.BEGIN_CERTIFICATE);
+        int index = certStr.indexOf(X509CertificateTools.BEGIN_CERTIFICATE);
         certStr = certStr.substring(index);
         certStr = StringTools.normalizeNewlines(certStr); // normalize \r\n (Windows) and \r (Mac) to always have \n, which is used in the API examples.
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");

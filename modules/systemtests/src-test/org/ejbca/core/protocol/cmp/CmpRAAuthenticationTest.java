@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -49,9 +53,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.util.certificates.X509CertificateTools;
 
 /**
  * This will test that different PBE shared secrets can be used to authenticate 
@@ -249,7 +251,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         
         String issuerDN = CertTools.getSubjectDN(caCertificate);
         if(reverseIssuerDN) {
-            issuerDN = CertTools.reverseDN(issuerDN); 
+            issuerDN = X509CertificateTools.reverseDN(issuerDN); 
         }        
         
         // Generate and send certificate request

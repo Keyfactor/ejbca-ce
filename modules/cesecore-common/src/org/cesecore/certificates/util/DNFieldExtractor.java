@@ -32,6 +32,8 @@ import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.ietf.ldap.LDAPDN;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  * A class used to retrieve different fields from a Distinguished Name or Subject Alternate Name or Subject Directory Attributes strings.
  */
@@ -274,11 +276,11 @@ public class DNFieldExtractor implements Serializable {
                         final String dnexupper = dnex.toUpperCase();
                         if (id == DNFieldExtractor.URI) {
                             // Fix up URI, which can have several forms
-                            if (dnexupper.contains(CertTools.URI.toUpperCase(Locale.ENGLISH) + "=")) {
-                                field = CertTools.URI.toUpperCase(Locale.ENGLISH) + "=";
+                            if (dnexupper.contains(X509CertificateTools.URI.toUpperCase(Locale.ENGLISH) + "=")) {
+                                field = X509CertificateTools.URI.toUpperCase(Locale.ENGLISH) + "=";
                             }
-                            if (dnexupper.contains(CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=")) {
-                                field = CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=";
+                            if (dnexupper.contains(X509CertificateTools.URI1.toUpperCase(Locale.ENGLISH) + "=")) {
+                                field = X509CertificateTools.URI1.toUpperCase(Locale.ENGLISH) + "=";
                             }
                         }
 
