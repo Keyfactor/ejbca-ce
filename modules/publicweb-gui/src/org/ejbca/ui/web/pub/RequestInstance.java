@@ -82,6 +82,8 @@ import org.ejbca.ui.web.CertificateResponseType;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  *
  */
@@ -490,7 +492,7 @@ public class RequestInstance {
 							RequestHelper.sendBinaryBytes(Base64.decode(b64cert), response, "application/octet-stream", filename+".cvcert");
 						}
 						if(resulttype == CertificateResponseType.ENCODED_CERTIFICATE) {
-							RequestHelper.sendNewB64File(b64cert, response, filename+".pem", CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
+							RequestHelper.sendNewB64File(b64cert, response, filename+".pem", X509CertificateTools.BEGIN_CERTIFICATE_WITH_NL, X509CertificateTools.END_CERTIFICATE_WITH_NL);
 						}
 					} else {
 						throw new SignRequestException("No request bytes received.");
@@ -715,8 +717,8 @@ public class RequestInstance {
                 RequestHelper.sendNewB64File(b64data, response, username + ".pem", RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
                 break;
             case ENCODED_CERTIFICATE:
-                RequestHelper.sendNewB64File(b64data, response, username + ".pem", CertTools.BEGIN_CERTIFICATE_WITH_NL,
-                        CertTools.END_CERTIFICATE_WITH_NL);
+                RequestHelper.sendNewB64File(b64data, response, username + ".pem", X509CertificateTools.BEGIN_CERTIFICATE_WITH_NL,
+                        X509CertificateTools.END_CERTIFICATE_WITH_NL);
                 break;
             case ENCODED_CERTIFICATE_CHAIN:
                 //Begin/end keys have already been set in the serialized object

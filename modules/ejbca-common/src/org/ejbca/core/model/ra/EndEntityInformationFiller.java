@@ -12,6 +12,19 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.Rdn;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -24,18 +37,7 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.Rdn;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import com.keyfactor.util.certificates.X509CertificateTools;
 
 /** This class gives facilities to populate user data with default values from profile.
  *
@@ -471,7 +473,7 @@ public class EndEntityInformationFiller {
             
             if(dnParts.length==2 || !curDn.contains("+") ||
                     startsWithIgnoreCase(curDn, DnComponents.UNIFORMRESOURCEID) ||
-                    startsWithIgnoreCase(curDn, CertTools.URI1)) {
+                    startsWithIgnoreCase(curDn, X509CertificateTools.URI1)) {
                 // multi-valued RDN must have unescaped + in them
                 // URI may contain unescaped + as part of query string
                 value = curDn.substring(dnParts[0].length()+1).trim();

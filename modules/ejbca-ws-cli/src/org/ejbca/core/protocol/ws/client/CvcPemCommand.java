@@ -34,6 +34,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 
 /**
  * Converts a CV Certificate or certificate request to/from binary and PEM
@@ -88,8 +90,8 @@ public class CvcPemCommand extends EJBCAWSRABaseCommand implements IAdminCommand
 			if ("pem".equalsIgnoreCase(outform)) {
 				byte[] b64 = Base64.encode(bytes);
 				FileOutputStream fos = new FileOutputStream(outfile);
-				String begin = CertTools.BEGIN_CERTIFICATE;
-				String end = CertTools.END_CERTIFICATE;
+				String begin = X509CertificateTools.BEGIN_CERTIFICATE;
+				String end = X509CertificateTools.END_CERTIFICATE;
 				if (args.length > 5 && args[5].equals("-req")) {					
 					begin = CertTools.BEGIN_CERTIFICATE_REQUEST;
 					end = CertTools.END_CERTIFICATE_REQUEST;
