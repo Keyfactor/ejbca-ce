@@ -329,6 +329,10 @@ public class StringToolsTest {
         byte[] ipv6oct = StringTools.ipStringToOctets(ipv6);
         assertNotNull(ipv6oct);
         assertEquals(16, ipv6oct.length);
+        String compressedIpv6 = "::1";
+        byte[] compressedIpv6oct = StringTools.ipStringToOctets(compressedIpv6);
+        assertNotNull(compressedIpv6oct);
+        assertEquals(16, compressedIpv6oct.length);
         String invalid = "foo";
         byte[] oct = StringTools.ipStringToOctets(invalid);
         assertNotNull(oct);
