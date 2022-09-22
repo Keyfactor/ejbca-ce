@@ -66,6 +66,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RACANAME                = "ra.caname";
     public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
     /** @deprecated since 7.11.0, but remains to allows 100% uptime during upgrades. Use CONFIG_VENDORCAIDS instead */
+    @Deprecated
     public static final String CONFIG_VENDORCA                = "vendorca";
     public static final String CONFIG_VENDORCAIDS             = "vendorcaids";
     public static final String CONFIG_RESPONSE_CAPUBS_CA       = "response.capubsca";
@@ -103,7 +104,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_OPERATION_MODE = "client";
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
     private static final String DEFAULT_VENDOR_MODE = "false";
-    private static final String DEFAULT_VENDOR_CA = "";
     private static final String DEFAULT_VENDOR_CA_IDS = "";
     private static final String DEFAULT_RESPONSE_CAPUBS_CA = "";
     private static final String DEFAULT_RESPONSE_CAPUBS_ISSUING_CA = "true";
@@ -167,7 +167,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_AUTHENTICATIONPARAMETERS, DEFAULT_CLIENT_AUTHENTICATION_PARAMS);
             data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
             data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_MODE);
-            data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
             data.put(alias + CONFIG_VENDORCAIDS, DEFAULT_VENDOR_CA_IDS);
             data.put(alias + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
             data.put(alias + CONFIG_RESPONSE_CAPUBS_ISSUING_CA, DEFAULT_RESPONSE_CAPUBS_ISSUING_CA);
@@ -203,7 +202,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_AUTHENTICATIONPARAMETERS);
         keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
         keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
-        keys.add(alias + CONFIG_VENDORCA);
         keys.add(alias + CONFIG_VENDORCAIDS);
         keys.add(alias + CONFIG_RESPONSE_CAPUBS_CA);
         keys.add(alias + CONFIG_RESPONSE_EXTRACERTS_CA);
