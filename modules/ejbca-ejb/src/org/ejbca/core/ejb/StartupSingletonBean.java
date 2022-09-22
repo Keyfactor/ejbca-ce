@@ -89,7 +89,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.JDBCUtil;
-import org.ejbca.util.string.StringConfigurationCache;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * Singleton used to start services and perform upgrade tasks at startup.

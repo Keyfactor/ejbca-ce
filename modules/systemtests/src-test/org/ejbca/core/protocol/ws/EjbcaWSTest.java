@@ -195,7 +195,6 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
-import org.ejbca.util.string.StringConfigurationCache;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -205,6 +204,8 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
