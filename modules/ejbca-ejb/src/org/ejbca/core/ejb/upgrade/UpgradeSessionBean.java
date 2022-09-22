@@ -2451,7 +2451,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.debug("Converting vendor CA list for CMP alias: " + cmpAlias);
             final String cmpVendorCaNameString = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAlias);
             if (StringUtils.isEmpty(cmpVendorCaNameString)) {
-                break;
+                continue;
             }
             final String[] cmpVendorCaNames = cmpVendorCaNameString.split(";");
             final ArrayList<String> cmpVendorCaIds = new ArrayList<>();
@@ -2483,7 +2483,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.debug("Converting vendor CA list for EST alias: " + estAlias);
             final String estVendorCaNamesString = estConfiguration.getValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCA, estAlias);
             if (StringUtils.isEmpty(estVendorCaNamesString)) {
-                break;
+                continue;
             }
             final String[] estVendorCaNames = estVendorCaNamesString.split(";");
             final ArrayList<String> estVendorCaIds = new ArrayList<>();
