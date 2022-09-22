@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -136,12 +143,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.certificates.X509CertificateTools;
 
 /**
  * Test class for tests based on an RSA
@@ -578,28 +580,28 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             String altNames = CertTools.getSubjectAlternativeName(cert);
             log.debug("Altnames1: "+altNames);
-            List<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            List<String> list = CertTools.getPartsFromDN(altNames, X509CertificateTools.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));
-            String name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            String name = CertTools.getPartFromDN(altNames, X509CertificateTools.URI);
             assertEquals("http://www.a.se/", name);
-            List<String> names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            List<String> names = CertTools.getPartsFromDN(altNames, X509CertificateTools.URI);
             assertEquals("There should be 2 URIs", 2, names.size());
             assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
-            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.EMAIL);
             assertEquals("tomas@a.se", name);
-            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            list = CertTools.getPartsFromDN(altNames, X509CertificateTools.DNS);
             assertEquals(2, list.size());
             assertTrue(list.contains("www.a.se"));
             assertTrue(list.contains("www.b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.IPADDR);
             assertEquals("10.1.1.1", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.XMPPADDR);
             assertEquals("tomas@xmpp.domain.com", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.SRVNAME);
             assertEquals("_Service.Name", name);
             name = CertTools.getPartFromDN(altNames, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD);
             // Compare the SIM, we know the input that was used to generate the SIM above
@@ -626,28 +628,28 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             altNames = CertTools.getSubjectAlternativeName(cert);
             log.debug("Altnames2: "+altNames);
-            list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            list = CertTools.getPartsFromDN(altNames, X509CertificateTools.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.URI);
             assertEquals("http://www.a.se/", name);
-            names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            names = CertTools.getPartsFromDN(altNames, X509CertificateTools.URI);
             assertEquals("There should be 2 URIs", 2, names.size());
             assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
-            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.EMAIL);
             assertEquals("tomas@a.se", name);
-            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            list = CertTools.getPartsFromDN(altNames, X509CertificateTools.DNS);
             assertEquals(2, list.size());
             assertTrue(list.contains("www.a.se"));
             assertTrue(list.contains("www.b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.IPADDR);
             assertEquals("10.1.1.1", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.XMPPADDR);
             assertEquals("tomas1@xmpp.domain.com", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.SRVNAME);
             assertEquals("_Service1.Name", name);
         } finally {
             // Clean up
@@ -704,30 +706,30 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             String altNames = CertTools.getSubjectAlternativeName(cert);
             log.debug("Altnames1: "+altNames);
-            List<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            List<String> list = CertTools.getPartsFromDN(altNames, X509CertificateTools.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));
-            String name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            String name = CertTools.getPartFromDN(altNames, X509CertificateTools.URI);
             assertEquals("http://www.a.se/", name);
-            List<String> names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            List<String> names = CertTools.getPartsFromDN(altNames, X509CertificateTools.URI);
             assertEquals("There should be 2 URIs", 2, names.size());
             assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
-            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.EMAIL);
             assertEquals("tomas@a.se", name);
-            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            list = CertTools.getPartsFromDN(altNames, X509CertificateTools.DNS);
             assertEquals(2, list.size());
             assertTrue(list.contains("www.a.se"));
             assertTrue(list.contains("www.b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.IPADDR);
             assertEquals("10.1.1.1", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.XMPPADDR);
             assertEquals("tomas@xmpp.domain.com", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.SRVNAME);
             assertEquals("_Service.Name", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.FASCN);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.FASCN);
             assertEquals("0419d23210d8210c2c1a843085a16858300842108608823210c3e1", name);
             // Change a user that we know...
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
@@ -741,30 +743,30 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             altNames = CertTools.getSubjectAlternativeName(cert);
             log.debug("Altnames2: "+altNames);
-            list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            list = CertTools.getPartsFromDN(altNames, X509CertificateTools.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.URI);
             assertEquals("http://www.a.se/", name);
-            names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            names = CertTools.getPartsFromDN(altNames, X509CertificateTools.URI);
             assertEquals("There should be 2 URIs", 2, names.size());
             assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
-            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.EMAIL);
             assertEquals("tomas@a.se", name);
-            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            list = CertTools.getPartsFromDN(altNames, X509CertificateTools.DNS);
             assertEquals(2, list.size());
             assertTrue(list.contains("www.a.se"));
             assertTrue(list.contains("www.b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.IPADDR);
             assertEquals("10.1.1.1", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.XMPPADDR);
             assertEquals("tomas1@xmpp.domain.com", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.SRVNAME);
             assertEquals("_Service1.Name", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.FASCN);
+            name = CertTools.getPartFromDN(altNames, X509CertificateTools.FASCN);
             assertEquals("0419d23210d8210c2c1a843085a16858300842108608823210c3e1", name);
         } finally {
             // Clean up

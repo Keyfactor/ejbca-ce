@@ -122,6 +122,8 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * <p>
@@ -263,9 +265,9 @@ public class CAInterfaceBean implements Serializable {
 		String returnval = null;
 		if(request != null ){
 			byte[] b64cert = Base64.encode(this.processedcert.getEncoded(), true);
-			returnval = CertTools.BEGIN_CERTIFICATE_WITH_NL;
+			returnval = X509CertificateTools.BEGIN_CERTIFICATE_WITH_NL;
 			returnval += new String(b64cert);
-			returnval += CertTools.END_CERTIFICATE_WITH_NL;
+			returnval += X509CertificateTools.END_CERTIFICATE_WITH_NL;
 		}
 		return returnval;
 	}

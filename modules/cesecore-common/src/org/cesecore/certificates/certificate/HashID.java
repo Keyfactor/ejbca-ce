@@ -27,6 +27,8 @@ import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 
+import com.keyfactor.util.certificates.X509CertificateTools;
+
 /**
  * An object of this class is identifying one or several certificates or a CRL.
  *
@@ -109,7 +111,7 @@ public class HashID {
     public static HashID getFromDNString(String sDN) {
 		// Note that the DN string has to be encoded to an ASN1 with the BC lib. BC endcoding is EJBCA standard.
         try {
-            return getFromDN( new X500Principal(new X500Name(CertTools.isDNReversed(sDN) ? CertTools.reverseDN(sDN) : sDN).getEncoded()));
+            return getFromDN( new X500Principal(new X500Name(X509CertificateTools.isDNReversed(sDN) ? X509CertificateTools.reverseDN(sDN) : sDN).getEncoded()));
         } catch (IOException e) {
            throw new IllegalStateException(e);
         }

@@ -13,6 +13,11 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -95,10 +100,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.util.certificates.X509CertificateTools;
 
 /**
  * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
@@ -598,7 +600,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         ASN1EncodableVector vec = new ASN1EncodableVector();
         ASN1EncodableVector v = new ASN1EncodableVector();
         
-        v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
+        v.add(new ASN1ObjectIdentifier(X509CertificateTools.UPN_OBJECTID));
         v.add(new DERTaggedObject(true, 0, new DERUTF8String("boo@bar")));
         GeneralName gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
         vec.add(gn);

@@ -26,7 +26,8 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.ejbca.cvc.CVCProvider;
-import org.ejbca.util.keys.X509KeyTools;
+
+import com.keyfactor.util.keys.X509KeyTools;
 
 /**
  * Basic crypto provider helper methods.
