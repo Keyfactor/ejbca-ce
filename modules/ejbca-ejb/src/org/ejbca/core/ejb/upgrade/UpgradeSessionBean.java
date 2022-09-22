@@ -357,7 +357,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.10.0");
+                setLastPostUpgradedToVersion("7.11.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -678,6 +678,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.10.0");
         }
+        if (isLesserThan(oldVersion, "7.11.0")) {
+            if (!postMigrateDatabase7110()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.11.0");
+        }
         
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
@@ -873,7 +879,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.10.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.11.0");
     }
 
     /**
@@ -1888,6 +1894,35 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Post upgrade to 7.4.0 complete.");
         return true;  
     }
+
+    private boolean postMigrateDatabase7110() {
+        log.info("Starting post upgrade to 7.11.0");
+        try {
+            // CMP
+            log.debug("Removing CMP vendor names that have been converted to the new ID format");
+            final CmpConfiguration cmpConfiguration =
+                    (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            final LinkedHashMap<Object, Object> cmpRawData = cmpConfiguration.getRawData();
+            for (final String cmpAlias : cmpConfiguration.getAliasList()) {
+                cmpRawData.remove(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA);
+            }
+            globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
+            // EST
+            log.debug("Removing EST vendor names that have been converted to the new ID format");
+            final EstConfiguration estConfiguration =
+                    (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            final LinkedHashMap<Object, Object> estRawData = estConfiguration.getRawData();
+            for (final String estAlias : estConfiguration.getAliasList()) {
+                estRawData.remove(estAlias + "." + EstConfiguration.CONFIG_VENDORCA);
+            }
+            globalConfigurationSession.saveConfiguration(authenticationToken, estConfiguration);
+        } catch (Exception e) {
+            log.error(e);
+            return false;
+        }
+        log.info("Post upgrade to 7.11.0 complete.");
+        return true;
+    }
     
     private boolean postMigrateDatabase6101() {
         log.info("Starting post upgrade to 6.10.1.");
@@ -2412,7 +2447,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // CMP
         final CmpConfiguration cmpConfiguration =
                 (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        for(final String cmpAlias : cmpConfiguration.getAliasList()) {
+        for (final String cmpAlias : cmpConfiguration.getAliasList()) {
             log.debug("Converting vendor CA list for CMP alias: " + cmpAlias);
             final String cmpVendorCaNameString = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAlias);
             if (StringUtils.isEmpty(cmpVendorCaNameString)) {
@@ -2446,7 +2481,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         for (final String estAlias : estConfiguration.getAliasList()) {
             log.debug("Converting vendor CA list for EST alias: " + estAlias);
-            final String estVendorCaNamesString = estConfiguration.getValue(estAlias + "." + CmpConfiguration.CONFIG_VENDORCA, estAlias);
+            final String estVendorCaNamesString = estConfiguration.getValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCA, estAlias);
             if (StringUtils.isEmpty(estVendorCaNamesString)) {
                 break;
             }
