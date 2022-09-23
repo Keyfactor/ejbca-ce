@@ -246,9 +246,9 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             stagingState = new AuthState();
             return initializeInternal(httpServletRequest, resources);
         } finally {
-            if (!stagingState.initialized) {
+            if (!stagingState.initialized && !stagingState.errorpage_initialized) {
                 // Make sure we at least have the needed information (default language strings etc.) to show an error page
-                initialize_errorpage(httpServletRequest);
+                initializeErrorPageInternal(httpServletRequest);
             }
             authState = stagingState;
             stagingState = new AuthState(); // make sure any half-initialized state is never used
@@ -262,7 +262,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         final String oauthBearerToken = getBearerToken(httpServletRequest);
-        final AuthState state;
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
         if (!authState.initialized || !StringUtils.equals(authState.authenticationTokenTlsSessionId, currentTlsSessionId)
@@ -368,12 +367,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             stagingState.authenticationTokenTlsSessionId = currentTlsSessionId;
             // Set ServletContext for reading language files from resources
             servletContext = httpServletRequest.getSession(true).getServletContext();
-            state = stagingState;
         } else {
-            state = authState;
+            // No need to authenticate again
+            stagingState = authState;
         }
         try {
-            if (resources.length > 0 && !authorizationSession.isAuthorized(state.administrator, resources)) {
+            if (resources.length > 0 && !authorizationSession.isAuthorized(stagingState.administrator, resources)) {
                 throw new AuthorizationDeniedException("You are not authorized to view this page.");
             }
         } catch (final EJBException e) {
@@ -387,13 +386,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
             throw e;
         }
-        if (!state.initialized) {
-            currentAdminPreference = adminPreferenceSession.getAdminPreference(state.administrator);
+        if (!stagingState.initialized) {
+            currentAdminPreference = adminPreferenceSession.getAdminPreference(stagingState.administrator);
             if (currentAdminPreference == null) {
                 currentAdminPreference = getDefaultAdminPreference();
             }
             adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
-            state.initialized = true;
+            stagingState.initialized = true;
         }
 
         return globalconfiguration;
@@ -475,26 +474,29 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
-    public GlobalConfiguration initialize_errorpage(final HttpServletRequest request) throws Exception {
+    public synchronized GlobalConfiguration initialize_errorpage(final HttpServletRequest request) throws Exception {
         if (!authState.errorpage_initialized) {
             stagingState = new AuthState();
-            if (authState.administrator == null) {
-                final String remoteAddr = request.getRemoteAddr();
-                stagingState.administrator = new PublicAccessAuthenticationToken(remoteAddr, true);
-            } else {
-                stagingState.administrator = authState.administrator;
-            }
-            commonInit();
-            // Set ServletContext for reading language files from resources
-            servletContext = request.getSession(true).getServletContext();
-            if (currentAdminPreference == null) {
-                currentAdminPreference = getDefaultAdminPreference();
-            }
-            adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
-            stagingState.errorpage_initialized = true;
+            initializeErrorPageInternal(request);
             authState = stagingState;
+            stagingState = new AuthState();
         }
         return globalconfiguration;
+    }
+
+    private void initializeErrorPageInternal(final HttpServletRequest request) throws Exception {
+        if (stagingState.administrator == null) {
+            final String remoteAddr = request.getRemoteAddr();
+            stagingState.administrator = new PublicAccessAuthenticationToken(remoteAddr, true);
+        }
+        commonInit();
+        // Set ServletContext for reading language files from resources
+        servletContext = request.getSession(true).getServletContext();
+        if (currentAdminPreference == null) {
+            currentAdminPreference = getDefaultAdminPreference();
+        }
+        adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
+        stagingState.errorpage_initialized = true;
     }
 
     /** Returns the current users common name */
