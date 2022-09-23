@@ -809,7 +809,8 @@ public class CryptokiDevice {
                         oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());                            
                     }
                 } catch (IOException ex) {
-                    //utimaco mode
+                    // P11 states that the curve/oid shoudl be DER encoded, but (at least) Utimaco 
+                    // don't do that but just put the curve in a string
                     final String plainString = new String(ckaParams.getValue());
                     if ("curve25519".equalsIgnoreCase(plainString)) {
                         oid = EdECObjectIdentifiers.id_Ed25519;
@@ -1251,8 +1252,7 @@ public class CryptokiDevice {
                         final DERPrintableString str = new DERPrintableString(curve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
                         ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
-                    }
-                    else if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
+                    } else if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
                         // Workaround for EdDSA where HSMs are not up to P11v3 yet
                         // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
                         if (LOG.isTraceEnabled()) {
@@ -1267,10 +1267,9 @@ public class CryptokiDevice {
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
                         ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);
                     } else if (StringUtils.contains(libName, "cs_pkcs11_R3")) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
-                        if (oid.equals(EdECObjectIdentifiers.id_Ed448)) {
-                            throw new IllegalArgumentException("utimaco has not yet implemented Ed448"); //InvalidKeySpecException
-                        }
-                        // undocumented deviations from the OASIS PKCS#11 v3 (that utimaco themselfs co-authored)
+                        // Just as the other HSMs, Utimaco only supports Ed25519 (as of today fall 2022), so we expect 
+                        // keygen for Ed448 to fail with a P11 error from the HSM until it's implemented (hopefully standardized)
+                        // Undocumented deviations from the OASIS PKCS#11 v3
                         // - EC_KEY_PAIR_GEN instead of EC_EDWARDS_KEY_PAIR_GEN
                         // - curve name specified as CKA_EC_PARAM
                         //      - but NOT as DER encoded
