@@ -23,7 +23,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -1863,10 +1862,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Check whether it is an MSSQL database. If yes, don't normalize in chunks
             final String dbType = DatabaseConfiguration.getDatabaseName();
             if (MSSQL.equals(dbType)) {
-                log.info("isMSSQL=true");
                 upgradeSession.fixPartitionedCrls(0, true);
             } else {
-                log.info("isMSSQL=false");
                 // Normalization for non-MSSQL databases is done in chunks in case number of rows are huge in CRLData table.
                 // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
                 // See ECA-10712 for more info.
