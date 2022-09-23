@@ -164,7 +164,7 @@ import org.ejbca.util.JDBCUtil;
 public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote {
 
     private static final int PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE = 1000;
-    private static final String MSSQL = "Microsoft SQL Server";
+    private static final String MSSQL = "mssql";
 
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
@@ -1860,40 +1860,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             
             final long startDataNormalization = System.currentTimeMillis();
             
-            // Check whether it is an MSSQL datbase. If yes, don't normalize in chunks
-            boolean isMSSQL = false;
-            Connection connection = null;
-            try {
-                connection = JDBCUtil.getDBConnection();
-                DatabaseMetaData metaData = connection.getMetaData();
-                String productName = metaData.getDatabaseProductName();
-                if (MSSQL.equals(productName)) {
-                    isMSSQL = true;
-                }
-            } catch (ServiceLocatorException e) {
-                log.info("Could not establish connection to database to verify database type. Attempting to continue without checking database type.");
-            } catch (SQLException e) {
-                log.info("Could not get metadata from connection. Attempting to proceed anyway.");
-            } catch (Exception e) {
-                log.info("Could not retrieve the product name of the database. Attempting to proceed anyway.");
-            }
-            finally {
-                if (connection != null) {
-                    try {
-                        connection.close();
-                    } catch (SQLException e) {
-                        // do nothing
-                    }
-                }
-            }
-
-            // Normalization is done in chunks in case number of rows are huge in CRLData table.
-            // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
-            // See ECA-10712 for more info.
-            // Do not normalize in chunks in the case of MSSQL.
-            if (isMSSQL) {
+            // Check whether it is an MSSQL database. If yes, don't normalize in chunks
+            final String dbType = DatabaseConfiguration.getDatabaseName();
+            if (MSSQL.equals(dbType)) {
+                log.info("isMSSQL=true");
                 upgradeSession.fixPartitionedCrls(0, true);
             } else {
+                log.info("isMSSQL=false");
+                // Normalization for non-MSSQL databases is done in chunks in case number of rows are huge in CRLData table.
+                // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
+                // See ECA-10712 for more info.
                 for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
                     upgradeSession.fixPartitionedCrls(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE, false);
                     
