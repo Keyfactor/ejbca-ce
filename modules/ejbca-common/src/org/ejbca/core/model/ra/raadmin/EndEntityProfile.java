@@ -536,7 +536,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		data.remove(getFieldTypeBoundary(MODIFYABLE) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
     		data.remove(getFieldTypeBoundary(COPY) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
     		data.remove(getFieldTypeBoundary(VALIDATION) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
-		decrementFieldnumber(parameter);
+    		decrementFieldnumber(parameter);
     	}
     }
 
