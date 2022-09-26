@@ -198,7 +198,9 @@ public class CmpAliasTest extends CmpTestCase {
         con.setDoOutput(true);
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-type", "application/pkixcmp");
-        con.setRequestProperty("Content-Length", "0");
+        try (OutputStream os = con.getOutputStream()) {
+            os.write(new byte[] {});
+        }
         con.connect();
         assertEquals("Unexpected HTTP response code.", 400, con.getResponseCode()); // 400 = HttpServletResponse.SC_BAD_REQUEST
     }
