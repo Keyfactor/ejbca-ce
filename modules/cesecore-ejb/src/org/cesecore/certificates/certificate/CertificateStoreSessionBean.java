@@ -1176,6 +1176,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final String username = certificateData.getUsername();
         final Date now = new Date();
 
+        // TODO: get the allowedOnCa flag from CA via caId we already have.
+
         boolean returnVal = false;
         // A normal revocation
         if ( (certificateData.getStatus()!=CertificateConstants.CERT_REVOKED || certificateData.getRevocationReason()==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) &&
@@ -1192,6 +1194,22 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
+        } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), true)) {
+
+            certificateData.setUpdateTime(now.getTime());
+            certificateData.setStatus(CertificateConstants.CERT_REVOKED);
+            certificateData.setRevocationReason(reason);
+
+            if (revokeDate != null) {
+                certificateData.setRevocationDate(revokeDate);
+            }
+
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+
+            returnVal = true;
         } else if (((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL))
                 && (certificateData.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
             // Unrevoke, can only be done when the certificate was previously revoked with reason CertificateHold
