@@ -93,6 +93,7 @@ public class CaInfoDto {
     private String crlCaOverlapTime;
     private String crlCaDeltaCrlPeriod;
     private boolean generateCrlUponRevocation = false;
+    private boolean allowChangingRevocationReason = false;
     private String requestPreProcessor;
     
     //cits
@@ -662,6 +663,14 @@ public class CaInfoDto {
     
     public void setGenerateCrlUponRevocation(boolean generate) {
         generateCrlUponRevocation = generate;
+    }
+
+    public boolean isAllowChangingRevocationReason() {
+        return allowChangingRevocationReason;
+    }
+
+    public void setAllowChangingRevocationReason(boolean allowChangingRevocationReason) {
+        this.allowChangingRevocationReason = allowChangingRevocationReason;
     }
 
     public String getRequestPreProcessor() {
