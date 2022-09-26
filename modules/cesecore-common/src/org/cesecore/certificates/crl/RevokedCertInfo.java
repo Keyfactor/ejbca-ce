@@ -18,6 +18,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.CompressedCollection;
@@ -201,6 +204,30 @@ public class RevokedCertInfo implements Serializable {
     
     public static boolean isRevoked(int revocationReason) {
         return revocationReason != NOT_REVOKED && revocationReason != REVOCATION_REASON_REMOVEFROMCRL;
+    }
+
+    /**
+     * Check if the revocation reason can be changed.
+     *
+     * @param newReason         new revocation reason must Key Compromise
+     * @param newDate           new date can only be a backdate
+     * @param currentReason     current reason can be one of the 5 revocation reasons
+     * @param currentDate       current revocation date
+     * @param allowedOnCa       changing revocation reason must be allowed on CA level.
+     *
+     * @return  true if all the requirements are met.
+     */
+    public static boolean canRevocationReasonBeChanged(final int newReason, final Date newDate, final int currentReason, final long currentDate, final boolean allowedOnCa) {
+        final List<Integer> allowedReasons = Stream.of(REVOCATION_REASON_KEYCOMPROMISE,
+                                                       REVOCATION_REASON_PRIVILEGESWITHDRAWN,
+                                                       REVOCATION_REASON_CESSATIONOFOPERATION,
+                                                       REVOCATION_REASON_AFFILIATIONCHANGED,
+                                                       REVOCATION_REASON_SUPERSEDED)
+                                                   .collect(Collectors.toList());
+
+        final boolean dateIsOk = newDate == null || newDate.getTime() <= currentDate;
+
+        return allowedOnCa && newReason == REVOCATION_REASON_KEYCOMPROMISE && allowedReasons.contains(currentReason) && dateIsOk;
     }
     
     public static boolean isPermanentlyRevoked(int revocationReason) {
