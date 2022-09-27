@@ -763,6 +763,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
+    public String getEditionFolder() {
+        return isRunningEnterprise()? "EE" :"CE";
+    }
+
+    @Override
     public String[] getAvailableLanguages() {
         return adminsweblanguage.getAvailableLanguages();
     }
