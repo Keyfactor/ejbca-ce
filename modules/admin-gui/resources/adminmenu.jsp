@@ -46,7 +46,7 @@ org.ejbca.util.HTMLTools
        final String CMPCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/cmpaliases.xhtml";
        
        final String INTERNALKEYBINDING_LINK  = ejbcawebbean.getAdminWebBaseUrl() + "keybind/keybindings.xhtml";
-       final String INTERNALKEYBINDING_LINK  = ejbcawebbean.getAdminWebBaseUrl() + "keybind/ocspresponders.xhtml";
+       final String OCSP_RESPONDER_LINK  = ejbcawebbean.getAdminWebBaseUrl() + "keybind/ocspresponders.xhtml";
        final String SERVICES_LINK            = ejbcawebbean.getAdminWebBaseUrl() + "services/listservices.xhtml";
        final String PEERCONNECTOR_LINK       = ejbcawebbean.getAdminWebBaseUrl() + "peerconnector/peerconnectors.xhtml";
        
@@ -82,6 +82,7 @@ org.ejbca.util.HTMLTools
   boolean htheaderprinted     =false;
   boolean logheaderprinted    =false;
   boolean systemheaderprinted =false;
+  boolean vaheaderprinted     =false;
   boolean configheaderprinted = false;
 
 
@@ -221,7 +222,19 @@ org.ejbca.util.HTMLTools
      out.write("</ul></li>"); 
    }
 %>
+        <%
+   // --------------------------------------------------------------------------
+   // VA FUNCTIONS
+%>
 
+        <%
+     if(ejbcawebbean.isAuthorizedNoLogSilent(INTERNALKEYBINDING_RESOURCE)){
+       if(!vaheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_VAFUNCTIONS")+"</strong><ul>");
+         vaheaderprinted=true;
+         }  %>
+    <li><a href="<%= OCSP_RESPONDER_LINK %>"><%=ejbcawebbean.getText("NAV_OCSPRESPONDERS") %></a></li>
+        <% } %>
 <%
    // --------------------------------------------------------------------------
    // SUPERVISION FUNCTIONS
@@ -258,21 +271,6 @@ org.ejbca.util.HTMLTools
      out.write("</ul></li>"); 
    }
 %>
-
-<%
-   // --------------------------------------------------------------------------
-   // VA FUNCTIONS
-%>
-
-<%   
-     if(ejbcawebbean.isAuthorizedNoLogSilent(INTERNALKEYBINDING_RESOURCE)){
-       if(!systemheaderprinted){
-         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_VAFUNCTIONS")+"</strong><ul>"); 
-         systemheaderprinted=true;
-         }  %>
-				<li><a href="<%= INTERNALKEYBINDING_LINK %>"><%=ejbcawebbean.getText("NAV_OCSPRESPONDERS") %></a></li>
-<% } %>
-
 
 
 <%
