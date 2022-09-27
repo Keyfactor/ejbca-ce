@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.configuration;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -60,6 +59,9 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     @EJB
     private CaSessionLocal caSession;
 
+    private TreeMap<Integer, String> caIdToNameMap;
+    private TreeMap<String, Integer> caNameToIdMap;
+
     @ManagedProperty(value = "#{estConfigMBean}")
     private EstConfigMBean estConfigMBean;
     EstAliasGui estAliasGui = null;
@@ -67,6 +69,8 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     @PostConstruct
     public void initialize() {
         getEjbcaWebBean().clearEstConfigClone();
+        caIdToNameMap = (TreeMap<Integer, String>) caSession.getAuthorizedCaIdsToNames(getAdmin());
+        caNameToIdMap = (TreeMap<String, Integer>) caSession.getAuthorizedCaNamesToIds(getAdmin());
     }
 
     public class EstAliasGui {
@@ -304,7 +308,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             ArrayList<String> vendorCaNames = new ArrayList<>();
             if (!StringUtils.isEmpty(vendorCaIds)) {
                 for (String vendorCaId : vendorCaIds.split(";")) {
-                    String caName = caSession.getCAInfo(getAdmin(), Integer.parseInt(vendorCaId)).getName();
+                    String caName = caIdToNameMap.get(Integer.parseInt(vendorCaId));
                     vendorCaNames.add(caName);
                 }
                 estAliasGui.setVendorCas(StringUtils.join(vendorCaNames, ";"));
@@ -341,10 +345,9 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         if (StringUtils.isEmpty(getEstAlias().getCaId())) {
             ret.add(new SelectItem("", EjbcaJSFHelper.getBean().getText().get("ESTDEFAULTCA_DISABLED")));
         }
-        Map<String, Integer> canames = getEjbcaWebBean().getCANames();
-        for (String caname : canames.keySet()) {
-            final Integer cadi = canames.get(caname);
-            ret.add(new SelectItem(cadi, caname));
+        for (String caname : caNameToIdMap.keySet()) {
+            final Integer caId = caNameToIdMap.get(caname);
+            ret.add(new SelectItem(caId, caname));
         }
         return ret;
     }
@@ -410,7 +413,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             final String[] vendorCaNames = currentVendorCas.split(";");
             final ArrayList<String> vendorCaIds = new ArrayList<>();
             for (String vendorCaName : vendorCaNames) {
-                Integer caId = caSession.getCAInfo(getAdmin(), vendorCaName).getCAId();
+                Integer caId = caNameToIdMap.get(vendorCaName.trim());
                 vendorCaIds.add(caId.toString());
             }
             estConfiguration.setVendorCaIds(alias, StringUtils.join(vendorCaIds, ";"));
@@ -481,9 +484,8 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     
     public List<SelectItem> getVendorCaSelectItems() {
         final List<SelectItem> selectItems = new ArrayList<>();
-        final HashMap<Integer, String> caOptions = (HashMap<Integer, String>) caSession.getCAIdToNameMap();
-        for (Integer caId : caOptions.keySet()) {
-            selectItems.add(new SelectItem(caOptions.get(caId)));
+        for (Integer caId : caIdToNameMap.keySet()) {
+            selectItems.add(new SelectItem(caIdToNameMap.get(caId)));
         }
         return selectItems;
     }
