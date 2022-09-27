@@ -251,7 +251,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public String getLogoUrl() {
-        return getEjbcaWebBean().getImagePath("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png");
+        return getEjbcaWebBean().getImagePath(getEjbcaWebBean().getEditionFolder() + "/keyfactor-"+ InternalConfiguration.getAppNameLower() +"-logo.png");
     }
     
     /** 
