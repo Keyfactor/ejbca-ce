@@ -89,6 +89,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     // MSAE Settings
     private boolean isUseSSL;
+    private boolean followLdapReferral;
     private int adConnectionPort;
     private String adLoginDN;
     private String adLoginPassword;
@@ -143,6 +144,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             krb5ConfFilename = autoEnrollmentConfiguration.getMsaeKrb5ConfFilename(autoenrollmentConfigMBean.getSelectedAlias());
 
             isUseSSL = autoEnrollmentConfiguration.isUseSSL(autoenrollmentConfigMBean.getSelectedAlias());
+            followLdapReferral = autoEnrollmentConfiguration.isFollowLdapReferral(autoenrollmentConfigMBean.getSelectedAlias());
             adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort(autoenrollmentConfigMBean.getSelectedAlias());
             adLoginDN = autoEnrollmentConfiguration.getAdLoginDN(autoenrollmentConfigMBean.getSelectedAlias());
             adLoginPassword = MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD;
@@ -252,6 +254,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setUseSSL(final boolean isUseSSL) {
         this.isUseSSL = isUseSSL;
+    }
+
+    public boolean isFollowLdapReferral() {
+        return followLdapReferral;
+    }
+
+    public void setFollowLdapReferral(final boolean followLdapReferral) {
+        this.followLdapReferral = followLdapReferral;
     }
 
     public int getAdConnectionPort() {
@@ -669,7 +679,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         try {
             availableTemplates = null;
-            adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), adLoginPassword, isUseSSL(),
+            adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), adLoginPassword, isUseSSL(), isFollowLdapReferral(),
                     autoenrollmentConfigMBean.getSelectedAlias());
             addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
         } catch (LDAPException e) {
@@ -764,6 +774,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             // MSAE Settings
             autoEnrollmentConfiguration.setIsUseSsl(autoenrollmentConfigMBean.getSelectedAlias(), isUseSSL);
+            autoEnrollmentConfiguration.setFollowLdapReferral(autoenrollmentConfigMBean.getSelectedAlias(), followLdapReferral);
             autoEnrollmentConfiguration.setAdConnectionPort(autoenrollmentConfigMBean.getSelectedAlias(), adConnectionPort);
             autoEnrollmentConfiguration.setAdLoginDN(autoenrollmentConfigMBean.getSelectedAlias(), adLoginDN);
             // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
