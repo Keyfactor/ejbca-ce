@@ -236,29 +236,45 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             log.trace("<findMostRecentCertData(): no certificates found");
             return null;
         }
+
+        final int caId = certDatas.stream().findFirst().get().getIssuerDN().hashCode();
+        final boolean allowRevocationReasonChange = true; // TODO: get the flag from CA!
+
         NoConflictCertificateData mostRecentData = null;
-        for (final NoConflictCertificateData data : certDatas) {
+        for (final NoConflictCertificateData currentData : certDatas) {
             if (mostRecentData == null) {
-                mostRecentData = data;
+                mostRecentData = currentData;
                 continue;
             }
-            long timestampThis = data.getUpdateTime() != null ? data.getUpdateTime() : 0;
-            long timestampRecent = mostRecentData.getUpdateTime() != null ? mostRecentData.getUpdateTime() : 0;
-            if (RevokedCertInfo.isPermanentlyRevoked(data.getRevocationReason())) {
-                // Permanently revoked certificate always takes precedence over non-permanently revoked one.
-                // Older permanent revocations take precedence over newer ones.
-                if (!RevokedCertInfo.isPermanentlyRevoked(mostRecentData.getRevocationReason()) || timestampRecent > timestampThis) {
-                    mostRecentData = data;
+
+            long updateTimeCurrent = currentData.getUpdateTime() != null ? currentData.getUpdateTime() : 0;
+            long updateTimeMostRecent = mostRecentData.getUpdateTime() != null ? mostRecentData.getUpdateTime() : 0;
+
+            if (RevokedCertInfo.isPermanentlyRevoked(currentData.getRevocationReason())) {
+                // Permanently revoked certificate always takes precedence over non-permanently revoked ones.
+                if (!RevokedCertInfo.isPermanentlyRevoked(mostRecentData.getRevocationReason())) {
+                    mostRecentData = currentData;
                     continue;
+                } else {
+                    // If both permanently revoked... older permanent revocation takes precedences over newer ones,
+                    // unless revocation reason change flag is enabled on CA level. (See relevant epic: ECA-10973)
+
+                    if ((allowRevocationReasonChange && updateTimeCurrent > updateTimeMostRecent) ||
+                        (!allowRevocationReasonChange && updateTimeCurrent < updateTimeMostRecent)) {
+                        mostRecentData = currentData;
+                        continue;
+                    }
                 }
             }
+
             // Permanent revocations take precedence over temporary ones
             if (RevokedCertInfo.isPermanentlyRevoked(mostRecentData.getRevocationReason())) {
                 continue;
             }
+
             // Otherwise, most recent status takes precedence
-            if (timestampThis > timestampRecent) {
-                mostRecentData = data;
+            if (updateTimeCurrent > updateTimeMostRecent) {
+                mostRecentData = currentData;
             }
         }
         return mostRecentData;
