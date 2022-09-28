@@ -30,7 +30,7 @@
 %>
 <body id="header">
 	<div id="banner">
-		<a href="<%= ejbcawebbean.getAdminWebBaseUrl() %>" target="_top"><img src="<%= ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath("banner_"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"-admin-test.png") %>" alt="<c:out value="<%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %>" />" /></a>
+		<a href="<%= ejbcawebbean.getAdminWebBaseUrl() %>" target="_top"><img src="<%= ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath(ejbcawebbean.getEditionFolder() + "/keyfactor-"+ org.ejbca.config.InternalConfiguration.getAppNameLower() +"-logo-test.png") %>" alt="<c:out value="<%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %>" />" /></a>
 	</div>
 </body>
 </html>
