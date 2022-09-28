@@ -1887,7 +1887,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD &&
                     // a valid certificate could have reason "REVOCATION_REASON_REMOVEFROMCRL" if it has been revoked in the past.
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
-                //TODO: allowedOnCA through session bean and caId.
+                // TODO: allowedOnCA through session bean and caId.
+                // TODO: Certificate type X509
 
                 if (!RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), true)) {
                     final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
