@@ -47,11 +47,18 @@
 					value="#{cc.attrs.raRequestPreview.getUnescapedRdnValue(cc.attrs.raRequestPreview.issuerDn)}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
 					
-				<h:outputLabel for="subjectDn"
+				<h:outputLabel for="subjectDn" rendered="#{!cc.attrs.raRequestPreview.sshCertificatePreview}"
 					value="#{msg.component_certdetails_field_subjectdn}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
-				<h:outputText id="subjectDn"
+				<h:outputText id="subjectDn" rendered="#{!cc.attrs.raRequestPreview.sshCertificatePreview}"
 					value="#{cc.attrs.raRequestPreview.getUnescapedRdnValue(cc.attrs.raRequestPreview.subjectDn)}"
+					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
+
+				<h:outputLabel for="sshPrincipalsPreview" rendered="#{cc.attrs.raRequestPreview.sshCertificatePreview}"
+					value="#{msg.component_certdetails_field_ssh_princpals}"
+					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+				<h:outputText id="sshPrincipalsPreview" rendered="#{cc.attrs.raRequestPreview.sshCertificatePreview}"
+					value="#{cc.attrs.raRequestPreview.sshPrincipals}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
 
 				<h:outputLabel for="subjectAlternativeName" rendered="#{cc.attrs.raRequestPreview.subjectAlternativeNameUsed}"
@@ -82,13 +89,31 @@
 					value="#{cc.attrs.raRequestPreview.validity}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
 
+				<h:outputLabel for="sshCertficateType" 
+					rendered="#{cc.attrs.raRequestPreview.more and cc.attrs.raRequestPreview.sshCertificatePreview}"
+					value="#{msg.component_certdetails_field_ssh_cert_type}"
+					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+				<h:outputText id="sshCertficateType" 
+					rendered="#{cc.attrs.raRequestPreview.more and cc.attrs.raRequestPreview.sshCertificatePreview}"
+					value="#{cc.attrs.raRequestPreview.sshCertificateType}"
+					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
+
+				<h:outputLabel for="sshExtensions" 
+					rendered="#{cc.attrs.raRequestPreview.more and cc.attrs.raRequestPreview.sshCertificatePreview}"
+					value="#{msg.component_certdetails_field_ssh_extensions}"
+					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+				<h:outputText id="sshExtensions" 
+					rendered="#{cc.attrs.raRequestPreview.more and cc.attrs.raRequestPreview.sshCertificatePreview}"
+					value="#{cc.attrs.raRequestPreview.sshExtensions}"
+					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
+
 				<h:outputLabel for="keyusage"
 					value="#{msg.component_certdetails_field_keyusage}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-					rendered="#{cc.attrs.raRequestPreview.more}" />
+					rendered="#{cc.attrs.raRequestPreview.more and !cc.attrs.raRequestPreview.sshCertificatePreview}" />
 				<h:panelGroup id="keyusage"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-					rendered="#{cc.attrs.raRequestPreview.more}">
+					rendered="#{cc.attrs.raRequestPreview.more and !cc.attrs.raRequestPreview.sshCertificatePreview}">
 					<ui:repeat var="keyUsageIndex"
 						value="#{cc.attrs.raRequestPreview.keyUsages}"
 						varStatus="status">
@@ -104,10 +129,10 @@
 				<h:outputLabel for="extendedkeyusage"
 					value="#{msg.component_certdetails_field_extendedkeyusage}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-					rendered="#{cc.attrs.raRequestPreview.more}" />
+					rendered="#{cc.attrs.raRequestPreview.more and !cc.attrs.raRequestPreview.sshCertificatePreview}" />
 				<h:panelGroup id="extendedkeyusage"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-					rendered="#{cc.attrs.raRequestPreview.more}">
+					rendered="#{cc.attrs.raRequestPreview.more and !cc.attrs.raRequestPreview.sshCertificatePreview}">
 					<ui:repeat var="extendedKeyUsageOid"
 						value="#{cc.attrs.raRequestPreview.extendedKeyUsages}"
 						varStatus="status">

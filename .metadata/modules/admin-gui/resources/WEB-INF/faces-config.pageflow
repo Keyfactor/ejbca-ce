@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf16629805922900" configfile="/ejbca_all/modules/admin-gui/resources/WEB-INF/faces-config.xml">
+  <nodes xsi:type="pageflow:PFPage" name="approval/approvalaction.xhtml" x="122" y="178" id="pf16629826384151" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" outlinks="pf16629826384152" inlinks="pf16629826384152" path="/approval/approvalaction.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ca/caactivation.xhtml" x="122" y="562" id="pf16629826384163" referenceLink="//@navigationRule.1/@navigationCase.0/@toViewId|" outlinks="pf16629826384164" inlinks="pf16629826384164" path="/ca/caactivation.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="initpki.xhtml" x="770" y="1138" id="pf16629826384165" referenceLink="//@navigationRule.7/@navigationCase.0/@toViewId|" outlinks="pf16629826384166 pf16629826384167 pf16629826384168" inlinks="pf16629826384169 pf166298263841610" path="/initpki.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="initnewpki.xhtml" x="554" y="946" id="pf166298263841611" referenceLink="//@navigationRule.6/@navigationCase.0/@toViewId|" outlinks="pf16629826384169 pf166298263841612 pf166298263841613" inlinks="pf16629826384166 pf166298263841614 pf166298263841615" path="/initnewpki.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="initexistingpki.xhtml" x="554" y="1330" id="pf166298263841616" referenceLink="//@navigationRule.8/@navigationCase.0/@toViewId|" outlinks="pf166298263841610 pf166298263841617" inlinks="pf16629826384167 pf166298263841618" path="/initexistingpki.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ca/editcas/managecas.xhtml" x="986" y="1138" id="pf166298263841619" referenceLink="//@navigationRule.2/@navigationCase.2/@toViewId|" inlinks="pf16629826384168" path="/ca/editcas/managecas.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="cryptotoken/cryptotoken.xhtml" x="338" y="562" id="pf166298263841620" referenceLink="//@navigationRule.6/@fromViewId|" outlinks="pf166298263841615" inlinks="pf166298263841612" path="/cryptotoken/cryptotoken.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="initpkiadmin.xhtml" x="338" y="946" id="pf166298263841621" referenceLink="//@navigationRule.5/@navigationCase.0/@toViewId|" outlinks="pf166298263841614 pf166298263841622" inlinks="pf166298263841613 pf166298263841623" path="/initpkiadmin.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="initpkisummary.xhtml" x="122" y="946" id="pf166298263841624" referenceLink="//@navigationRule.5/@fromViewId|" outlinks="pf166298263841623" inlinks="pf166298263841622" path="/initpkisummary.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="initexistingpkirole.xhtml" x="338" y="1714" id="pf166298263841625" referenceLink="//@navigationRule.8/@fromViewId|" outlinks="pf166298263841618 pf166298263841626" inlinks="pf166298263841617" path="/initexistingpkirole.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="administratorprivileges/roles.xhtml" x="554" y="1714" id="pf166298263841627" referenceLink="//@navigationRule.8/@navigationCase.1/@toViewId|" inlinks="pf166298263841626" path="/administratorprivileges/roles.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/cmpaliases.xhtml" x="122" y="1330" id="pf166298263841628" referenceLink="//@navigationRule.11/@navigationCase.0/@toViewId|" outlinks="pf166298263841629 pf166298263841630" inlinks="pf166298263841631" path="/sysconfig/cmpaliases.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/cmpalias.xhtml" x="338" y="1330" id="pf166298263841632" referenceLink="//@navigationRule.11/@fromViewId|" outlinks="pf166298263841631" inlinks="pf166298263841629 pf166298263841630" path="/sysconfig/cmpalias.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/autoenrollconfiguration.xhtml" x="122" y="2108" id="pf166298263841633" referenceLink="//@navigationRule.14/@navigationCase.0/@toViewId|" outlinks="pf166298263841634 pf166298263841635" inlinks="pf166298263841636" path="/sysconfig/autoenrollconfiguration.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/editautoenrollmentconfiguration.xhtml" x="338" y="2108" id="pf166298263841637" referenceLink="//@navigationRule.14/@fromViewId|" outlinks="pf166298263841636" inlinks="pf166298263841634 pf166298263841635" path="/sysconfig/editautoenrollmentconfiguration.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/estconfigurations.xhtml" x="122" y="2503" id="pf166298263841638" referenceLink="//@navigationRule.17/@navigationCase.0/@toViewId|" outlinks="pf166298263841639 pf166298263841640" inlinks="pf166298263841641" path="/sysconfig/estconfigurations.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/editestalias.xhtml" x="338" y="2503" id="pf166298263841642" referenceLink="//@navigationRule.17/@fromViewId|" outlinks="pf166298263841641" inlinks="pf166298263841639 pf166298263841640" path="/sysconfig/editestalias.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ca/editcertificateprofiles/editcertificateprofiles.xhtml" x="122" y="2898" id="pf166298263841643" referenceLink="//@navigationRule.19/@navigationCase.0/@toViewId|" outlinks="pf166298263841644 pf166298263841645" inlinks="pf166298263841646" path="/ca/editcertificateprofiles/editcertificateprofiles.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ca/editcertificateprofiles/editcertificateprofile.xhtml" x="338" y="2898" id="pf166298263841647" referenceLink="//@navigationRule.19/@fromViewId|" outlinks="pf166298263841646" inlinks="pf166298263841644 pf166298263841645" path="/ca/editcertificateprofiles/editcertificateprofile.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ca/editvalidators/editvalidators.xhtml" x="122" y="4050" id="pf166298263841648" referenceLink="//@navigationRule.21/@navigationCase.0/@toViewId|" outlinks="pf166298263841649 pf166298263841650 pf166298263841651 pf166298263841652 pf166298263841653" inlinks="pf166298263841651 pf166298263841652 pf166298263841653 pf166298263841654" path="/ca/editvalidators/editvalidators.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ca/editvalidators/editvalidator.xhtml" x="338" y="4050" id="pf166298263841655" referenceLink="//@navigationRule.21/@fromViewId|" outlinks="pf166298263841654" inlinks="pf166298263841649 pf166298263841650" path="/ca/editvalidators/editvalidator.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="approval/editapprovalprofiles.xhtml" x="122" y="4434" id="pf166298263841656" referenceLink="//@navigationRule.23/@navigationCase.0/@toViewId|" outlinks="pf166298263841657 pf166298263841658" inlinks="pf166298263841659" path="/approval/editapprovalprofiles.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="approval/editapprovalprofile.xhtml" x="338" y="4434" id="pf166298263841660" referenceLink="//@navigationRule.23/@fromViewId|" outlinks="pf166298263841659" inlinks="pf166298263841657 pf166298263841658" path="/approval/editapprovalprofile.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ra/edituserdatasources/userdatasourcespage.xhtml" x="338" y="5592" id="pf166298263841661" referenceLink="//@navigationRule.25/@navigationCase.0/@toViewId|" outlinks="pf166298263841662" inlinks="pf166298263841663" path="/ra/edituserdatasources/userdatasourcespage.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ra/edituserdatasources/edituserdatasource.xhtml" x="122" y="5592" id="pf166298263841664" referenceLink="//@navigationRule.25/@fromViewId|" outlinks="pf166298263841663" inlinks="pf166298263841662" path="/ra/edituserdatasources/edituserdatasource.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/systemconfiguration.xhtml" x="338" y="3475" id="pf166298263841665" referenceLink="//@navigationRule.28/@navigationCase.0/@toViewId|" outlinks="pf166298263841666 pf166298263841667 pf166298263841668 pf166298263841669" inlinks="pf166298263841670 pf166298263841671" path="/sysconfig/systemconfiguration.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/customcertextension.xhtml" x="554" y="3475" id="pf166298263841672" referenceLink="//@navigationRule.26/@navigationCase.1/@toViewId|" inlinks="pf166298263841666 pf166298263841667" path="/sysconfig/customcertextension.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/editctlog.xhtml" x="122" y="3282" id="pf166298263841673" referenceLink="//@navigationRule.27/@fromViewId|" outlinks="pf166298263841670" inlinks="pf166298263841668" path="/sysconfig/editctlog.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="sysconfig/editoauthkey.xhtml" x="122" y="3666" id="pf166298263841674" referenceLink="//@navigationRule.28/@fromViewId|" outlinks="pf166298263841671" inlinks="pf166298263841669" path="/sysconfig/editoauthkey.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="services/listservices.xhtml" x="338" y="5976" id="pf166298263841675" referenceLink="//@navigationRule.30/@navigationCase.0/@toViewId|" outlinks="pf166298263841676 pf166298263841677" inlinks="pf166298263841676 pf166298263841678" path="/services/listservices.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="services/editservice.xhtml" x="122" y="5976" id="pf166298263841679" referenceLink="//@navigationRule.30/@navigationCase.1/@toViewId|" outlinks="pf166298263841678 pf166298263841680" inlinks="pf166298263841677 pf166298263841680" path="/services/editservice.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="peerconnector/peerconnectors.xhtml" x="338" y="5009" id="pf166298263841681" referenceLink="//@navigationRule.33/@navigationCase.0/@toViewId|" outlinks="pf166298263841682 pf166298263841683 pf166298263841684 pf166298263841685 pf166298263841686" inlinks="pf166298263841683 pf166298263841687 pf166298263841688" path="/peerconnector/peerconnectors.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="peerconnector/peerconnector.xhtml" x="122" y="4818" id="pf166298263841689" referenceLink="//@navigationRule.32/@fromViewId|" outlinks="pf166298263841687" inlinks="pf166298263841682" path="/peerconnector/peerconnector.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="peerconnector/peermgmt.xhtml" x="122" y="5202" id="pf166298263841690" referenceLink="//@navigationRule.33/@fromViewId|" outlinks="pf166298263841688" inlinks="pf166298263841684" path="/peerconnector/peermgmt.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="peerconnector/peerprocessauth" x="554" y="4817" id="pf166298263841691" referenceLink="//@navigationRule.31/@navigationCase.3/@toViewId|" inlinks="pf166298263841685" path="/peerconnector/peerprocessauth.jsp"/>
+  <nodes xsi:type="pageflow:PFPage" name="peerconnector/peerinauth.xhtml" x="554" y="5201" id="pf166298263841692" referenceLink="//@navigationRule.31/@navigationCase.4/@toViewId|" inlinks="pf166298263841686" path="/peerconnector/peerinauth.xhtml"/>
+  <links id="pf16629826384166" target="pf166298263841611" source="pf16629826384165" outcome="newPkiMode"/>
+  <links id="pf16629826384167" target="pf166298263841616" source="pf16629826384165" outcome="existingPkiMode"/>
+  <links id="pf16629826384168" target="pf166298263841619" source="pf16629826384165" outcome="skip"/>
+  <links id="pf16629826384169" target="pf16629826384165" source="pf166298263841611" outcome="back"/>
+  <links id="pf166298263841612" target="pf166298263841620" source="pf166298263841611" outcome="createNewToken" redirect="true"/>
+  <links id="pf166298263841613" target="pf166298263841621" source="pf166298263841611" outcome="next"/>
+  <links id="pf166298263841614" target="pf166298263841611" source="pf166298263841621" outcome="back"/>
+  <links id="pf166298263841622" target="pf166298263841624" source="pf166298263841621" outcome="next"/>
+  <links id="pf166298263841623" target="pf166298263841621" source="pf166298263841624" outcome="back"/>
+  <links id="pf166298263841615" target="pf166298263841611" source="pf166298263841620" outcome="back"/>
+  <links id="pf166298263841610" target="pf16629826384165" source="pf166298263841616" outcome="back"/>
+  <links id="pf166298263841617" target="pf166298263841625" source="pf166298263841616" outcome="next"/>
+  <links id="pf166298263841618" target="pf166298263841616" source="pf166298263841625" outcome="back"/>
+  <links id="pf166298263841626" target="pf166298263841627" source="pf166298263841625" outcome="next"/>
+  <links id="pf166298263841629" target="pf166298263841632" source="pf166298263841628" outcome="edit"/>
+  <links id="pf166298263841630" target="pf166298263841632" source="pf166298263841628" outcome="view"/>
+  <links id="pf166298263841631" target="pf166298263841628" source="pf166298263841632" outcome="done"/>
+  <links id="pf166298263841634" target="pf166298263841637" source="pf166298263841633" outcome="edit"/>
+  <links id="pf166298263841635" target="pf166298263841637" source="pf166298263841633" outcome="view"/>
+  <links id="pf166298263841636" target="pf166298263841633" source="pf166298263841637" outcome="done"/>
+  <links id="pf166298263841639" target="pf166298263841642" source="pf166298263841638" outcome="edit"/>
+  <links id="pf166298263841640" target="pf166298263841642" source="pf166298263841638" outcome="view"/>
+  <links id="pf166298263841641" target="pf166298263841638" source="pf166298263841642" outcome="done"/>
+  <links id="pf166298263841644" target="pf166298263841647" source="pf166298263841643" outcome="edit"/>
+  <links id="pf166298263841645" target="pf166298263841647" source="pf166298263841643" outcome="view"/>
+  <links id="pf166298263841646" target="pf166298263841643" source="pf166298263841647" outcome="done"/>
+  <links id="pf166298263841649" target="pf166298263841655" source="pf166298263841648" outcome="edit" redirect="true" fromaction="#{validatorsBean.actionEdit}"/>
+  <links id="pf166298263841650" target="pf166298263841655" source="pf166298263841648" outcome="view" redirect="true"/>
+  <links id="pf166298263841654" target="pf166298263841648" source="pf166298263841655" outcome="done"/>
+  <links id="pf166298263841657" target="pf166298263841660" source="pf166298263841656" outcome="edit"/>
+  <links id="pf166298263841658" target="pf166298263841660" source="pf166298263841656" outcome="view"/>
+  <links id="pf166298263841659" target="pf166298263841656" source="pf166298263841660" outcome="done"/>
+  <links id="pf166298263841662" target="pf166298263841664" source="pf166298263841661" outcome="edit" redirect="true" fromaction="#{userDatasoucesMBean.actionEdit}"/>
+  <links id="pf166298263841663" target="pf166298263841661" source="pf166298263841664" outcome="done"/>
+  <links id="pf166298263841666" target="pf166298263841672" source="pf166298263841665" outcome="edit"/>
+  <links id="pf166298263841667" target="pf166298263841672" source="pf166298263841665" outcome="view"/>
+  <links id="pf166298263841668" target="pf166298263841673" source="pf166298263841665" outcome="editCTLog"/>
+  <links id="pf166298263841669" target="pf166298263841674" source="pf166298263841665" outcome="editOAuthKey"/>
+  <links id="pf166298263841670" target="pf166298263841665" source="pf166298263841673" outcome="saved"/>
+  <links id="pf166298263841671" target="pf166298263841665" source="pf166298263841674" outcome="saved"/>
+  <links id="pf166298263841677" target="pf166298263841679" source="pf166298263841675" outcome="editservice"/>
+  <links id="pf166298263841678" target="pf166298263841675" source="pf166298263841679" outcome="listservices"/>
+  <links id="pf166298263841682" target="pf166298263841689" source="pf166298263841681" outcome="edit"/>
+  <links id="pf166298263841684" target="pf166298263841690" source="pf166298263841681" outcome="manage"/>
+  <links id="pf166298263841685" target="pf166298263841691" source="pf166298263841681" outcome="peerprocessauth"/>
+  <links id="pf166298263841686" target="pf166298263841692" source="pf166298263841681" outcome="peerinauth"/>
+  <links id="pf166298263841687" target="pf166298263841681" source="pf166298263841689" outcome="done"/>
+  <links id="pf166298263841688" target="pf166298263841681" source="pf166298263841690" outcome="done"/>
+  <links id="pf16629826384152" target="pf16629826384151" source="pf16629826384151" outcome="approveaction">
+    <bendPoints d1Height="-36" d2Height="-36"/>
+    <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
+    <bendPoints d1Width="-64" d2Width="-64"/>
+  </links>
+  <links id="pf16629826384164" target="pf16629826384163" source="pf16629826384163" outcome="apply">
+    <bendPoints d1Height="-36" d2Height="-36"/>
+    <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
+    <bendPoints d1Width="-64" d2Width="-64"/>
+  </links>
+  <links id="pf166298263841651" target="pf166298263841648" source="pf166298263841648" fromaction="#{validatorsBean.#{validatorsBean.actionRenameConfirm}}">
+    <bendPoints d1Height="-36" d2Height="-36"/>
+    <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
+    <bendPoints d1Width="-64" d2Width="-64"/>
+  </links>
+  <links id="pf166298263841652" target="pf166298263841648" source="pf166298263841648" fromaction="#{validatorsBean.#{validatorsBean.actionDeleteConfirm}}">
+    <bendPoints d1Height="-66" d2Height="-66"/>
+    <bendPoints d1Width="-94" d1Height="-66" d2Width="-94" d2Height="-66"/>
+    <bendPoints d1Width="-94" d2Width="-94"/>
+  </links>
+  <links id="pf166298263841653" target="pf166298263841648" source="pf166298263841648" fromaction="#{validatorsBean.#{validatorsBean.actionAddFromTemplateConfirm}}">
+    <bendPoints d1Height="-96" d2Height="-96"/>
+    <bendPoints d1Width="-124" d1Height="-96" d2Width="-124" d2Height="-96"/>
+    <bendPoints d1Width="-124" d2Width="-124"/>
+  </links>
+  <links id="pf166298263841676" target="pf166298263841675" source="pf166298263841675" outcome="listservices">
+    <bendPoints d1Height="-36" d2Height="-36"/>
+    <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
+    <bendPoints d1Width="-64" d2Width="-64"/>
+  </links>
+  <links id="pf166298263841680" target="pf166298263841679" source="pf166298263841679" outcome="editservice">
+    <bendPoints d1Height="-36" d2Height="-36"/>
+    <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
+    <bendPoints d1Width="-64" d2Width="-64"/>
+  </links>
+  <links id="pf166298263841683" target="pf166298263841681" source="pf166298263841681" outcome="done">
+    <bendPoints d1Height="-36" d2Height="-36"/>
+    <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
+    <bendPoints d1Width="-64" d2Width="-64"/>
+  </links>
+</pageflow:Pageflow>
