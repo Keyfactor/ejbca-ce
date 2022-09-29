@@ -164,6 +164,7 @@ import org.ejbca.util.JDBCUtil;
 public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote {
 
     private static final int PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE = 1000;
+    private static final String MSSQL = "mssql";
 
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
@@ -1868,23 +1869,30 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
             // Counting the number of non normal CRLData rows
             final Query query = entityManager.createQuery("SELECT count(*) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
-            final long countOfRowsToBeNormalized = (long) query.getSingleResult();
+            final long countOfRowsToBeNormalized = (long) query.getSingleResult();            
             
             final long startDataNormalization = System.currentTimeMillis();
-
-            // Normalization is done in chunks in case number of rows are huge in CRLData table.
-            // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
-            // See ECA-10712 for more info.
-            for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
-                upgradeSession.fixPartitionedCrls(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE);
+            
+            // Check whether it is an MSSQL database. If yes, don't normalize in chunks
+            final String dbType = DatabaseConfiguration.getDatabaseName();
+            if (MSSQL.equals(dbType)) {
+                upgradeSession.fixPartitionedCrls(0, true);
+            } else {
+                // Normalization for non-MSSQL databases is done in chunks in case number of rows are huge in CRLData table.
+                // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
+                // See ECA-10712 for more info.
+                for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
+                    upgradeSession.fixPartitionedCrls(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE, false);
+                    
+                }
+                // Do fix the remaining if any
+                final Query normalizeData = entityManager.createQuery(
+                        "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
+                log.debug("Executing SQL query: " + normalizeData);
+                normalizeData.executeUpdate();
+                log.info("Successfully normalized " + countOfRowsToBeNormalized + " rows in CRLData. Completed in "
+                        + (System.currentTimeMillis() - startDataNormalization) + " ms.");
             }
-            // Do fix the remaining if any
-            final Query normalizeData = entityManager.createQuery(
-                    "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
-            log.debug("Executing SQL query: " + normalizeData);
-            normalizeData.executeUpdate();
-            log.info("Successfully normalized " + countOfRowsToBeNormalized + " rows in CRLData. Completed in "
-                    + (System.currentTimeMillis() - startDataNormalization) + " ms.");
             
             fixPartitionedCrlIndexes();
         } catch (AuthorizationDeniedException | UpgradeFailedException e) {
@@ -1892,6 +1900,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             return false;
         }
         log.info("Post upgrade to 7.4.0 complete.");
+
         return true;  
     }
 
@@ -2143,14 +2152,26 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public void fixPartitionedCrls(final int limit) throws UpgradeFailedException {
-
+    public void fixPartitionedCrls(final int limit, final boolean isMSSQL) throws UpgradeFailedException {
         try {
-            final Query normalizeData = entityManager.createNativeQuery(
-                    "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0 LIMIT :limit");
-            normalizeData.setParameter("limit", limit);
-            log.debug("Executing SQL query: " + normalizeData);
-            normalizeData.executeUpdate();
+            // Do the whole normalization at once in the case of MSSQL
+            if (isMSSQL) {
+                final long startDataNormalization = System.currentTimeMillis();
+                final Query normalizeData = entityManager.createQuery(
+                        "UPDATE CRLData a SET a.crlPartitionIndex=-1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
+                log.debug("Executing SQL query: " + normalizeData);
+                final int rowCount = normalizeData.executeUpdate();
+                log.info("Successfully normalized " + rowCount + " rows in CRLData. Completed in "
+                        + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+                // If not MSSQL normalize only a set amount at a time
+            } else {
+                final Query normalizeData = entityManager.createNativeQuery(
+                        "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0  LIMIT :limit");
+                normalizeData.setParameter("limit", limit);
+                log.debug("Executing SQL query: " + normalizeData);
+                normalizeData.executeUpdate();
+            }
+
         } catch (RuntimeException e) {
             log.error("An error occurred when updating data in database table 'CRLData': " + e);
             log.error("You can update the data manually using the following SQL query and then run the post-upgrade again.");

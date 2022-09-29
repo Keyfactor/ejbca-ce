@@ -690,6 +690,24 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, ApprovalException, EjbcaException, EndEntityProfileValidationException;
 
     /**
+     * Enrolls a new end entity or updates it and creates an SSH certificate according to the profiles defined for that end entity
+     *
+     * @param authenticationToken an authentication token
+     * @param EndEntityInformation a object describing the end entity to be created
+     * @param sshRequestMessage a {@link SshRequestMessage} container with the request details
+     *
+     * @return an SSH encoded certificate
+     *
+     * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
+     * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
+     * @throws ApprovalException if the request requires approval
+     * @since RA Master API version 15 (EJBCA 7.11.0)
+     */
+    byte[] enrollAndIssueSshCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation,
+            SshRequestMessage sshRequestMessage) throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException;
+
+    /**
      * Generates a certificate. This variant is used from the REST Service interface.
      * @param authenticationToken authentication token.
      * @param enrollCertificateRequest input data object for enrolling a certificate
@@ -1649,4 +1667,5 @@ public interface RaMasterApi {
      * @return renewed certificate
      */
     byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException;
+
 }
