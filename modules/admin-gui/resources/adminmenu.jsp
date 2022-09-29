@@ -46,6 +46,7 @@ org.ejbca.util.HTMLTools
        final String CMPCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/cmpaliases.xhtml";
        
        final String INTERNALKEYBINDING_LINK  = ejbcawebbean.getAdminWebBaseUrl() + "keybind/keybindings.xhtml";
+       final String OCSP_RESPONDER_LINK  = ejbcawebbean.getAdminWebBaseUrl() + "keybind/ocspresponders.xhtml";
        final String SERVICES_LINK            = ejbcawebbean.getAdminWebBaseUrl() + "services/listservices.xhtml";
        final String PEERCONNECTOR_LINK       = ejbcawebbean.getAdminWebBaseUrl() + "peerconnector/peerconnectors.xhtml";
        
@@ -81,6 +82,7 @@ org.ejbca.util.HTMLTools
   boolean htheaderprinted     =false;
   boolean logheaderprinted    =false;
   boolean systemheaderprinted =false;
+  boolean vaheaderprinted     =false;
   boolean configheaderprinted = false;
 
 
@@ -91,7 +93,7 @@ org.ejbca.util.HTMLTools
 <% } else { %>
     <div id="header">
         <div id="banner">
-            <a href="<%= ejbcawebbean.getAdminWebBaseUrl() %>"><img src="<%=ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png")%>" alt="<%= HTMLTools.htmlescape(InternalConfiguration.getAppNameCapital()) %>" /></a>
+            <a href="<%= ejbcawebbean.getAdminWebBaseUrl() %>"><img src="<%=ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath(ejbcawebbean.getEditionFolder() + "/keyfactor-"+ InternalConfiguration.getAppNameLower() +"-logo.png")%>" alt="<%= HTMLTools.htmlescape(InternalConfiguration.getAppNameCapital()) %>" /></a>
         </div>
 	</div>
 <% } %>
@@ -220,7 +222,19 @@ org.ejbca.util.HTMLTools
      out.write("</ul></li>"); 
    }
 %>
+        <%
+   // --------------------------------------------------------------------------
+   // VA FUNCTIONS
+%>
 
+        <%
+     if(ejbcawebbean.isAuthorizedNoLogSilent(INTERNALKEYBINDING_RESOURCE)){
+       if(!vaheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_VAFUNCTIONS")+"</strong><ul>");
+         vaheaderprinted=true;
+         }  %>
+    <li><a href="<%= OCSP_RESPONDER_LINK %>"><%=ejbcawebbean.getText("NAV_OCSPRESPONDERS") %></a></li>
+        <% } %>
 <%
    // --------------------------------------------------------------------------
    // SUPERVISION FUNCTIONS
@@ -258,11 +272,6 @@ org.ejbca.util.HTMLTools
    }
 %>
 
-
-<%
-   // --------------------------------------------------------------------------
-   // SYSTEM FUNCTIONS
-%>
 
 <%
    // If authorized to edit authorizations then display related links.

@@ -15,6 +15,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
@@ -111,6 +112,30 @@ public class SearchCertificatesRestResponseV2UnitTest {
         // then
         assertPaginationSummary(restResponse, list.size());
         assertCertificateResultList(restResponse);
+    }
+
+    @Test
+    public void testConvertRaCertificateSearchResponseWhenCurrentPageNegativeOne() throws CertificateEncodingException, CertificateParsingException {
+
+        // given
+        final Long total = 77l;
+        final List<CertificateDataWrapper> list = new ArrayList<>();
+        final RaCertificateSearchResponseV2 raResponse = new RaCertificateSearchResponseV2();
+        raResponse.setCdws(list);
+        raResponse.setTotalCount(total);
+
+        // when
+        final int currentPage = -1;
+        final SearchCertificatesRestResponseV2 restResponse = SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, new Pagination(10, currentPage));
+
+        // then
+        final PaginationSummary summary = restResponse.getPaginationSummary();
+        Long totalCount = summary.getTotalCerts();
+        List certificates = restResponse.getCertificates();
+        assertNotNull("PaginationSummary must not be null.", summary);
+        assertEquals("Total count does not match.", total, totalCount);
+        assertNotNull("List of certificates must not be null.", certificates);
+        assertTrue("Certificates list is not empty.", certificates.isEmpty());
     }
     
     private final void assertPaginationSummary(final SearchCertificatesRestResponseV2 response, final int listSize) {

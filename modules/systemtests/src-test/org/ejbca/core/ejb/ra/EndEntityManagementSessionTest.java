@@ -1163,7 +1163,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         cceConfig.addCustomCertExtension(1000, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT, 
                 "ObjectSid", BasicCertificateExtension.class.getName(), false, false, props);
         globalConfSession.saveConfiguration(admin, cceConfig);
-      
+	
         // ee cert profile
         CertificateProfile endEntityCertprofile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         List<Integer> usedExtensions = new ArrayList<>();
