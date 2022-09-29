@@ -170,7 +170,7 @@
                         </ui:fragment>
                         -->
                         </ui:remove>
-                        <ui:fragment rendered="#{raAuthenticationBean.publicUser and raAuthenticationBean.certificateInRequest or raAuthenticationBean.clientCertificateUser}">
+                        <ui:fragment rendered="#{raAuthenticationBean.publicUser and raAuthenticationBean.certificateInRequest or raAuthenticationBean.clientCertificateUser or raAuthenticationBean.oauthUser}">
                             <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
                                 <h:selectBooleanCheckbox id="web-express-usermenu" class="web-express tablet"/>
                                 <label for="web-express-usermenu" class="web-express tablet">&nbsp;</label>
