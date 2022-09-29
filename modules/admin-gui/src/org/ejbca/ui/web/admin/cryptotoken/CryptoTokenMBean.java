@@ -63,11 +63,11 @@ import org.ejbca.util.SlotList;
 
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import java.io.File;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -88,8 +88,8 @@ import java.util.stream.Collectors;
  * Session scoped and will cache the list of tokens and keys.
  *
  */
-@ManagedBean
-@SessionScoped
+@Named
+@ViewScoped
 public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     
     public String localize(String stringId) {

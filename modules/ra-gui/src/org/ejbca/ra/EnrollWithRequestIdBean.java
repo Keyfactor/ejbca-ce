@@ -591,7 +591,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         return endEntityInformation.getExtendedInformation() != null && endEntityInformation.getExtendedInformation().getCertificateRequest() != null;
     }
 
-    private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
+    protected final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
         if (token == null) {
             return;
         }
@@ -809,6 +809,10 @@ public class EnrollWithRequestIdBean implements Serializable {
                 return false;
             }
         }
+    }
+    
+    public boolean isKeyRecoverable() {
+        return getEndEntityInformation().getKeyRecoverable();
     }
 
     //-----------------------------------------------------------------
