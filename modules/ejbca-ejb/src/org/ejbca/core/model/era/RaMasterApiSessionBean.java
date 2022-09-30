@@ -1901,9 +1901,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override    
     public RaCertificateProfileResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName) {
         final CertificateProfile profile = certificateProfileSession.getCertificateProfile(profileName);
+        final Integer certProfileId = certificateProfileSession.getCertificateProfileId(profileName);
         if (profile!=null) {
             final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
-            return RaCertificateProfileResponseV2.converter().toRaResponse(profile, caInfos);
+            return RaCertificateProfileResponseV2.converter().toRaResponse(profile, caInfos, certProfileId);
         }
         return null;
     }
