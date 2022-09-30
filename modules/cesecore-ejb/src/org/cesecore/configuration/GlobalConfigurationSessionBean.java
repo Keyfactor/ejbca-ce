@@ -269,7 +269,14 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
 
         public void updateConfiguration(final ConfigurationBase conf, final String configId) {
+            /** deleted code (jose.miranda@devisefutures.com)
             caches.get(configId).updateConfiguration(conf);
+            */
+            /* start changed code (jose.miranda@devisefutures.com) */
+            if (caches.get(configId) != null) {
+                caches.get(configId).updateConfiguration(conf);
+            }
+            /* end changed code */
         }
 
         public void clearCache(final String configId) {
