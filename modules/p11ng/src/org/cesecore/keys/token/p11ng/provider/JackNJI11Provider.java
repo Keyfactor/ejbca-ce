@@ -262,15 +262,22 @@ public class JackNJI11Provider extends Provider {
                     throw new InvalidKeyException("The signature algorithm " + algorithm + " is not supported by P11NG.");
                 }
                 long mechanism = MechanismNames.longFromSigAlgoName(this.algorithm).get();
-                if (mechanism == CKM.EDDSA && StringUtils.contains(myKey.getSlot().getLibName(), "Cryptoki2")) {
-                    // Workaround, like ED key generation in CryptokiDevice, for EdDSA where HSMs are not up to P11v3 yet
-                    // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Cryptoki2 detected, using CKM_VENDOR_DEFINED + 0xC03 instead of P11v3 for CKM_EDDSA");
+                if (mechanism == CKM.EDDSA) {
+                    if (StringUtils.contains(myKey.getSlot().getLibName(), "Cryptoki2")) {
+                        // Workaround, like ED key generation in CryptokiDevice, for EdDSA where HSMs are not up to P11v3 yet
+                        // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("Cryptoki2 detected, using CKM_VENDOR_DEFINED + 0xC03 instead of P11v3 for CKM_EDDSA");
+                        }
+                        // From cryptoki_v2.h in the lunaclient sample package
+                        final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
+                        mechanism = LUNA_CKM_EDDSA;
+                    } else if (StringUtils.contains(myKey.getSlot().getLibName(), "cs_pkcs11_R3")) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("cs_pkcs11_R3 / utimaco detected. CKM.EDDSA=>CKM.ECDSA");
+                        }
+                        mechanism = CKM.ECDSA;
                     }
-                    // From cryptoki_v2.h in the lunaclient sample package
-                    final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
-                    mechanism = LUNA_CKM_EDDSA;
                 }
                 final byte[] param;
                 if (params == null) {
