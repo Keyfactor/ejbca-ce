@@ -807,7 +807,22 @@ public class CryptokiDevice {
                         }
                     } else {
                         oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());                            
-                    }                            
+                    }
+                } catch (IOException ex) {
+                    // P11 states that the curve/oid shoudl be DER encoded, but (at least) Utimaco 
+                    // don't do that but just put the curve in a string
+                    final String plainString = new String(ckaParams.getValue());
+                    if ("curve25519".equalsIgnoreCase(plainString)) {
+                        oid = EdECObjectIdentifiers.id_Ed25519;
+                    } else if ("Ed25519".equalsIgnoreCase(plainString)) {
+                        oid = EdECObjectIdentifiers.id_Ed25519;
+                    } else if ("edwards25519".equalsIgnoreCase(plainString)) {
+                        oid = EdECObjectIdentifiers.id_Ed25519;
+                    } else if ("curve448".equalsIgnoreCase(plainString)) {
+                        oid = EdECObjectIdentifiers.id_Ed448;
+                    } else {
+                        throw new IOException(ex);
+                    }
                 }
                 if (oid == null) {
                     LOG.warn("Unable to reconstruct curve OID from DER encoded data: " + StringTools.hex(ckaParams.getValue()));
@@ -1226,6 +1241,9 @@ public class CryptokiDevice {
                     // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
                     // Generating keys for SoftHSM however, the keys generate fine with PrintableString, but can not be used
                     final String curve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "curve25519" : "curve448");
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
+                    }
                     if (StringUtils.contains(libName, "cknfast")) { // only use String for nCipher
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("cknfast detected, using PrintableString CKA_EC_PARAMS: " + curve);
@@ -1233,11 +1251,8 @@ public class CryptokiDevice {
                         // actually only Ed25519 is supported (nCipher v12.60 nov2020)
                         final DERPrintableString str = new DERPrintableString(curve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
-                    }
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
-                    }
-                    if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
+                        ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
+                    } else if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
                         // Workaround for EdDSA where HSMs are not up to P11v3 yet
                         // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
                         if (LOG.isTraceEnabled()) {
@@ -1250,9 +1265,24 @@ public class CryptokiDevice {
                         final String lunacurve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "Ed25519" : "Ed448");
                         final DERPrintableString str = new DERPrintableString(lunacurve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
-                        ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);          
+                        ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);
+                    } else if (StringUtils.contains(libName, "cs_pkcs11_R3")) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
+                        // Just as the other HSMs, Utimaco only supports Ed25519 (as of today fall 2022), so we expect 
+                        // keygen for Ed448 to fail with a P11 error from the HSM until it's implemented (hopefully standardized)
+                        // Undocumented deviations from the OASIS PKCS#11 v3
+                        // - EC_KEY_PAIR_GEN instead of EC_EDWARDS_KEY_PAIR_GEN
+                        // - curve name specified as CKA_EC_PARAM
+                        //      - but NOT as DER encoded
+                        //      - and NOT curve25519 but edwards25519
+                        // disregarding any of these deviations will allow to generate a key just fine, it will be shown as Ed25519, but will fail to Sign...
+                        final String utimacoCurve = "edwards25519";
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("cs_pkcs11_R3 / utimaco detected: CKM.EC_EDWARDS_KEY_PAIR_GEN=>CKM.EC_KEY_PAIR_GEN, CKA.EC_PARAMS=" + utimacoCurve);
+                        }
+                        publicKeyTemplate.put(CKA.EC_PARAMS, utimacoCurve.getBytes());
+                        ckm = new CKM(CKM.EC_KEY_PAIR_GEN);
                     } else {
-                        ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);                        
+                        ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
                     }
                 } else {
                     LOG.trace("Using ECDSA_KEY_PAIR_GEN");
