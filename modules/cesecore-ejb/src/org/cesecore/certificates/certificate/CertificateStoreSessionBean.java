@@ -62,6 +62,8 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAData;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -105,6 +107,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateDataSessionLocal certificateDataSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -1177,7 +1181,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final Date now = new Date();
         final boolean isX509 = certificateData.getCertificate(entityManager) instanceof X509Certificate;
 
-        // TODO: get the allowedOnCa flag from CA via caId we already have.
+        final CAData cadata = caSession.findById(caid);
+        final boolean allowedOnCa = cadata.getCA().getCAInfo().isAllowChangingRevocationReason();
 
         boolean returnVal = false;
         // A normal revocation
@@ -1195,7 +1200,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
-        } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), true, isX509)) {
+        } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
 
             certificateData.setUpdateTime(now.getTime());
             certificateData.setStatus(CertificateConstants.CERT_REVOKED);
