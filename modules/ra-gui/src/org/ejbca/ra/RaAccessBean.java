@@ -315,4 +315,17 @@ public class RaAccessBean implements Serializable {
     public boolean hasEndEntityProfileAccess() {
         return isAuthorized(AccessRulesConstants.ENDENTITYPROFILEPREFIX);
     }
+
+    public boolean isRunningEnterprise() {
+        try {
+            Class.forName("org.ejbca.ra.enterprise.RaWebEnterpriseClass");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    public String getEditionFolder() {
+        return isRunningEnterprise() ? "EE" : "CE";
+    }
 }
