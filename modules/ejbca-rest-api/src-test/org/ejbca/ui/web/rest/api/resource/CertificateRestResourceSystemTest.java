@@ -245,6 +245,79 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
         }
     }
+
+    /**
+     * Revocation reason can be changed according to ECA-
+     */
+    @Test
+    public void shouldAllowRevocationReasonChange() throws Exception {
+        try {
+            // User and certificate generation
+            EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null,
+                                                                     new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                                                                     SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
+            userdata.setPassword("foo123");
+            userdata.setStatus(EndEntityConstants.STATUS_NEW);
+            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
+            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+            final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(),
+                                                                                                    "1024", "RSA", SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            final KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+            keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
+            String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
+            String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
+            String issuerDn = "C=SE,CN=" + TEST_CA_NAME;
+
+            // Attempt the initial revocation through REST
+            Response actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&date=2022-06-15T14:07:09Z").request().put(null);
+            String actualJsonString = actualResponse.readEntity(String.class);
+            assertJsonContentType(actualResponse);
+
+            JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
+            String responseSerialNr = (String) actualJsonObject.get("serial_number");
+            boolean responseStatus = (boolean) actualJsonObject.get("revoked");
+            String responseReason = (String) actualJsonObject.get("revocation_reason");
+
+            // Verify rest response
+            assertEquals(issuerDn, responseIssuerDn);
+            assertEquals(serialNr, responseSerialNr);
+            assertEquals(true, responseStatus);
+            assertEquals("SUPERSEDED", responseReason);
+
+            // Verify actual database value
+            CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+            String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
+            assertEquals("SUPERSEDED", databaseReason);
+
+            // Second revocation for the same certificate.
+            // Change revocation reason from SUPERSEDED to KEY_COMPROMISE with backdating
+            actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE&date=2021-06-15T14:07:09Z").request().put(null);
+            actualJsonString = actualResponse.readEntity(String.class);
+            assertJsonContentType(actualResponse);
+
+            actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
+            responseSerialNr = (String) actualJsonObject.get("serial_number");
+            responseStatus = (boolean) actualJsonObject.get("revoked");
+            responseReason = (String) actualJsonObject.get("revocation_reason");
+
+            // Verify rest response
+            assertEquals(issuerDn, responseIssuerDn);
+            assertEquals(serialNr, responseSerialNr);
+            assertEquals(true, responseStatus);
+            assertEquals("KEY_COMPROMISE", responseReason);
+
+            // Verify actual database value
+            certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+            databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
+            assertEquals("KEY_COMPROMISE", databaseReason);
+        } finally {
+            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
+            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
+        }
+    }
     
     @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutEmail() throws Exception {
