@@ -1175,6 +1175,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final int caid = issuerDn.hashCode();
         final String username = certificateData.getUsername();
         final Date now = new Date();
+        final boolean isX509 = certificateData.getCertificate(entityManager) instanceof X509Certificate;
 
         // TODO: get the allowedOnCa flag from CA via caId we already have.
 
@@ -1194,7 +1195,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
-        } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), true)) {
+        } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), true, isX509)) {
 
             certificateData.setUpdateTime(now.getTime());
             certificateData.setStatus(CertificateConstants.CERT_REVOKED);
