@@ -1890,7 +1890,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // TODO: allowedOnCA through session bean and caId.
                 // TODO: Certificate type X509
 
-                if (!RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), true)) {
+                final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
+                if (!RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), true, isX509)) {
                     final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
                     log.info(msg);
                     throw new AlreadyRevokedException(msg);
