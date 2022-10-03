@@ -597,6 +597,7 @@
 				<include name="kerb4j-server-common-*.jar"/>
 				<include name="kerb-core-*.jar"/>
 				<include name="kerby-asn1-*.jar"/>
+            	<include name="kerb-crypto-*.jar"/>
             	
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
