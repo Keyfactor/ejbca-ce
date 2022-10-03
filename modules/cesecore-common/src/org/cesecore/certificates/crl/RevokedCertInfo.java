@@ -217,7 +217,7 @@ public class RevokedCertInfo implements Serializable {
      *
      * @return  true if all the requirements are met.
      */
-    public static boolean canRevocationReasonBeChanged(final int newReason, final Date newDate, final int currentReason, final long currentDate, final boolean allowedOnCa) {
+    public static boolean canRevocationReasonBeChanged(final int newReason, final Date newDate, final int currentReason, final long currentDate, final boolean allowedOnCa, final boolean isX509) {
         final List<Integer> allowedReasons = Stream.of(REVOCATION_REASON_KEYCOMPROMISE,
                                                        REVOCATION_REASON_PRIVILEGESWITHDRAWN,
                                                        REVOCATION_REASON_CESSATIONOFOPERATION,
@@ -227,7 +227,7 @@ public class RevokedCertInfo implements Serializable {
 
         final boolean dateIsOk = newDate == null || newDate.getTime() <= currentDate;
 
-        return allowedOnCa && newReason == REVOCATION_REASON_KEYCOMPROMISE && allowedReasons.contains(currentReason) && dateIsOk;
+        return isX509 && allowedOnCa && newReason == REVOCATION_REASON_KEYCOMPROMISE && allowedReasons.contains(currentReason) && dateIsOk;
     }
     
     public static boolean isPermanentlyRevoked(int revocationReason) {
