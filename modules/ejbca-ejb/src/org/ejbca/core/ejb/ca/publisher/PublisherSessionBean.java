@@ -176,27 +176,27 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             return true;
         }
         final int status = certificateData.getStatus();
-        final int revocationReason = certificateData.getRevocationReason();
+        final long revocationDate = certificateData.getRevocationDate();
         final String username = certificateData.getUsername();
         boolean returnval = true;
         final List<BasePublisher> publishersToTryDirect = new ArrayList<>();
         final List<BasePublisher> publishersToQueuePending = new ArrayList<>();
         final List<BasePublisher> publishersToQueueSuccess = new ArrayList<>();
         for (final Integer id : publisherids) {
-            BasePublisher publ = getPublisherInternal(id, null, true);
-            if (publ != null) {
+            BasePublisher publisher = getPublisherInternal(id, null, true);
+            if (publisher != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
-                if (publ.willPublishCertificate(status, revocationReason)) {
-                    if (publ.getOnlyUseQueue() || publ.getSafeDirectPublishing()) {
-                        if (publ.getUseQueueForCertificates()) {
-                            publishersToQueuePending.add(publ);
+                if (publisher.willPublishCertificate(status, revocationDate)) {
+                    if (publisher.getOnlyUseQueue() || publisher.getSafeDirectPublishing()) {
+                        if (publisher.getUseQueueForCertificates()) {
+                            publishersToQueuePending.add(publisher);
                             // Publishing to the queue directly is not considered a successful write to the publisher (since we don't know that it will be)
                             returnval = false;
                         } else {
                             // NOOP: This publisher is configured to only write to the queue, but not for certificates
                         }
                     } else {
-                        publishersToTryDirect.add(publ);
+                        publishersToTryDirect.add(publisher);
                     }
                 } else {
                     if (log.isDebugEnabled()) {
