@@ -316,7 +316,9 @@ public class CryptokiDevice {
          */
         private synchronized void closeSessionFinal(final NJI11Session session) {
             try {
+                // Close the session and mark it as closed so this NJI11Session object can not be used anymore
                 c.CloseSession(session.getId());
+                session.markClosed();
             } catch (CKRException ex) {
                 throw new EJBException("Could not close session " + session, ex);
             }
