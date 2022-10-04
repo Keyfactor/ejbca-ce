@@ -66,7 +66,7 @@ public final class StringTools {
     private static Pattern VALID_IPV6_PATTERN = null;
     private static Pattern windowsOrMacNewlines = Pattern.compile("\r\n?"); // Matches Windows \r\n and Mac \r
     private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
-    private static final String ipv6Pattern = "(([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}|[0-9a-f]{1,4}(:[0-9a-f]{1,4})*::[0-9a-f]{1,4}(:[0-9a-f]{1,4})*)";
+    private static final String ipv6Pattern = "^([\\dA-F]{1,4}:|((?=.*(::))(?!.*\\3.+\\3))\\3?)([\\dA-F]{1,4}(\\3|:\\b)|\\2){5}(([\\dA-F]{1,4}(\\3|:\\b|$)|\\2){2}|(((2[0-4]|1\\d|[1-9])?\\d|25[0-5])\\.?\\b){4})\\z";
 
     private static Pattern VALID_RFC5322_USER_PART = null;
     private static Pattern VALID_RFC5322_EMAIL = null;
