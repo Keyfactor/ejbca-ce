@@ -172,26 +172,29 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void shouldReturnCertificateProfileInfo() throws Exception {
         //given
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        List<Integer> availableCas = new ArrayList<>();
+        final List<Integer> availableCas = new ArrayList<>();
         availableCas.add(x509TestCa.getCAId());
         certificateProfile.setAvailableCAs(availableCas);
-        int[] availableBitLengths = {4096};
+        final int[] availableBitLengths = {4096};
         certificateProfile.setAvailableBitLengths(availableBitLengths);
-        String[] availableAlgorithms = {"RSA"};
+        final String[] availableAlgorithms = {"RSA"};
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
         certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, "TestProfileName", certificateProfile);
+        final Integer certProfileId = certificateProfileSession.getCertificateProfileId("TestProfileName");
         try {
             // when
             final Response actualResponse = newRequest("/v2/certificate/profile/TestProfileName").request().get();
             final String actualJsonString = actualResponse.readEntity(String.class);
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-            JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
-            String algorithms  = (String) jsonArrayAlgs.get(0);
-            JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
-            long bitLengths  = (long) jsonArrayBitLengths.get(0);
-            JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
-            String cas  = (String) jsonArrayCas.get(0);
+            final String responseCertProfileId = actualJsonObject.get("certificate_profile_id").toString();
+            final JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
+            final String algorithms  = (String) jsonArrayAlgs.get(0);
+            final JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
+            final long bitLengths  = (long) jsonArrayBitLengths.get(0);
+            final JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
+            final String cas  = (String) jsonArrayCas.get(0);
             // then
+            assertEquals(certProfileId.toString(), responseCertProfileId);
             assertEquals("RSA", algorithms);
             assertEquals(4096, bitLengths);
             assertEquals(TEST_CA_NAME, cas);
