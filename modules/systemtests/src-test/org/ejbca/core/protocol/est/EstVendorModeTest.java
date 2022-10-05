@@ -176,7 +176,7 @@ public class EstVendorModeTest extends EstTestCase {
             // that we need a client certificate issued from ManagementCA, which is an accepted CA for TLS client certs
             // We also need to enroll against port 8443
             final CAInfo serverCertCaInfo = CaTestUtils.getServerCertCaInfo(ADMIN);
-            config.setVendorCAs(alias, serverCertCaInfo.getName()+";DummyCA"); // DummyCA just to see that we handle a list
+            config.setVendorCaIds(alias, serverCertCaInfo.getCAId() + ";1337"); // Dummy id just to see that we handle a list
             config.setExtractUsernameComponent(alias, "CN"); 
             config.setKurAllowSameKey(alias, false);
             config.setAllowChangeSubjectName(alias, false);
