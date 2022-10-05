@@ -688,6 +688,22 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return names;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public TreeMap<Integer,String> getAuthorizedCaIdsToNames(final AuthenticationToken admin) {
+        final Collection<Integer> availableCaIds = getAllCaIds();
+        final TreeMap<Integer,String> ids = new TreeMap<>();
+        for (Integer caid : availableCaIds) {
+            if (authorizedToCANoLogging(admin, caid)) {
+                final CAInfo caInfo = getCAInfoInternal(caid);
+                if (caInfo != null) {
+                    ids.put(caInfo.getCAId(), caInfo.getName());
+                }
+            }
+        }
+        return ids;
+    }
+
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
