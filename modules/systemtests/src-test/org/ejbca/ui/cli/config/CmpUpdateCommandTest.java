@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 
+import org.apache.cxf.common.util.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -159,7 +160,22 @@ public class CmpUpdateCommandTest extends CmpTestCase{
         cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         assertFalse("Alias is not updated with new CA",cmpConfiguration.getCMPDefaultCA(ALIAS).equals("CN=NonExistingCa"));
         assertEquals("Alias is not updated with new CA",cmpConfiguration.getCMPDefaultCA(ALIAS), "");
-        log.trace(">test04CmpUpdateDefaultCaWithNonExistingCa()");
+        log.trace("<test04CmpUpdateDefaultCaWithNonExistingCa()");
     }
- 
+
+    /**
+     * Checks that running the update command for vendor CAs actually performs the update in the configuration.
+     * Note that checks on the validity of the values are not performed, could be any String.
+     */
+    @Test
+    public void test05CmpUpdateVendorCaIdsCommand() throws Exception {
+        log.trace(">test05CmpUpdateVendorCaIdsCommand()");
+        assertTrue("Vendor CA ID list is initially epty", StringUtils.isEmpty(cmpConfiguration.getVendorCaIds(ALIAS)));
+        final String[] updateVendorCaCommand = new String[]{ ALIAS, "vendorcaids", "1;100"};
+        new org.ejbca.ui.cli.config.cmp.UpdateCommand().execute(updateVendorCaCommand);
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        assertEquals("Vendor CAs in CmpConfiguration should now have the updated value from the command",
+                "1;100", cmpConfiguration.getVendorCaIds(ALIAS));
+        log.trace("<test05CmpUpdateVendorCaIdsCommand()");
+    }
 }
