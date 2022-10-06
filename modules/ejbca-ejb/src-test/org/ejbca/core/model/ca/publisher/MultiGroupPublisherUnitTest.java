@@ -84,7 +84,8 @@ public class MultiGroupPublisherUnitTest {
         private static final long serialVersionUID = 1L;
         @Override
         public boolean willPublishCertificate(int status, long revocationDate) {
-            return (status == CertificateConstants.CERT_REVOKED || (status == CertificateConstants.CERT_ACTIVE && revocationDate != -1L));
+            final long initialRevocationDate = -1L;
+            return (status == CertificateConstants.CERT_REVOKED || (status == CertificateConstants.CERT_ACTIVE && revocationDate != initialRevocationDate));
         }
         @Override
         public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp,
