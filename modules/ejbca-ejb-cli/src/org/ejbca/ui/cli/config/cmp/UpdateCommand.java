@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -154,7 +155,13 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         sb.append("    " + CmpConfiguration.CONFIG_RACANAME + " - possible values: ProfileDefault | " + existingCas + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + " - possible values: signature | pbe" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE + " - possible values: true | false" + "\n");
-        sb.append("    " + CmpConfiguration.CONFIG_VENDORCA + " - possible values: the name of the external CA. Several CAs can be specified by separating them with ';'" + "\n");
+        StringBuilder vendorCaOptions = new StringBuilder();
+        for (CAInfo caOption:
+                EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaInfos(getAuthenticationToken())) {
+            vendorCaOptions.append((vendorCaOptions.length() == 0 ? "" : divider) + caOption.getCAId() + " (" + caOption.getName() + ")");
+        }
+        sb.append("    " + CmpConfiguration.CONFIG_VENDORCAIDS
+                + " - possible values (available CA IDs, several CAs can be specified by separating them with ';'): " + vendorCaOptions + "\n");
         sb.append("    "
                 + CmpConfiguration.CONFIG_RACERT_PATH
                 + " - possible values: the path to the catalogue where the certificate that will be used to authenticate NestedMessageContent are stored."

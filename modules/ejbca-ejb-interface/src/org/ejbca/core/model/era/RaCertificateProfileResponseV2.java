@@ -29,10 +29,15 @@ public class RaCertificateProfileResponseV2 implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private Integer certificateProfileId;
     private List<String> availableAlgorithms;
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     private List<Integer> availableBitLengths;
+
+    public Integer getCertificateProfileId() {
+        return certificateProfileId;
+    }
 
     public List<String> getAvailableAlgorithms(){
         return availableAlgorithms;
@@ -74,7 +79,7 @@ public class RaCertificateProfileResponseV2 implements Serializable {
         }
 
         public RaCertificateProfileResponseV2 toRaResponse(
-                CertificateProfile certificateProfile, IdNameHashMap<CAInfo> caInfos) {
+                final CertificateProfile certificateProfile, final IdNameHashMap<CAInfo> caInfos, final Integer certProfileId) {
             RaCertificateProfileResponseV2 response = new RaCertificateProfileResponseV2();
             final List<Integer> caIds = certificateProfile.getAvailableCAs();
             final List<String> availableKeyAlgorithmsFromProfile = certificateProfile.getAvailableKeyAlgorithmsAsList();
@@ -91,6 +96,7 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             }else {
                 availableBitLengthsFromProfile = certificateProfile.getAvailableBitLengthsAsList();
             }
+            response.certificateProfileId = certProfileId;
             response.availableAlgorithms = availableKeyAlgorithmsFromProfile;
             response.availableBitLengths = availableBitLengthsFromProfile;
             response.availableEcdsaCurves = availableEcdsaCurvesFromProfile;
