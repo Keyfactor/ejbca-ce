@@ -769,7 +769,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public String getEditionFolder() {
-        return isRunningEnterprise()? "EE" :"CE";
+        return isRunningEnterprise() ? "EE" : "CE";
     }
 
     @Override
