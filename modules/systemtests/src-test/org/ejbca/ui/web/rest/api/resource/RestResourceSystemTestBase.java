@@ -47,6 +47,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -229,6 +230,12 @@ public class RestResourceSystemTestBase {
         enableRestProtocolConfiguration();
     }
 
+    protected static void setMaxSearchResults(int maxResults) throws Exception {
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration)
+                 globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setMaximumQueryCount(maxResults);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, globalCesecoreConfiguration);
+    }
     
     protected static void enableRestProtocolConfiguration() throws AuthorizationDeniedException {
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
