@@ -111,6 +111,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
         setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
+        setAllowChangingRevocationReason(cainfo.isAllowChangingRevocationReason());
 
         List<Integer> extendedservicetypes = new ArrayList<>();
         if (cainfo.getExtendedCAServiceInfos() != null) {
@@ -138,6 +139,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         data.put(CRLPERIOD, cainfo.getCRLPeriod());
         data.put(DELTACRLPERIOD, cainfo.getDeltaCRLPeriod());
         data.put(GENERATECRLUPONREVOCATION, cainfo.isGenerateCrlUponRevocation());
+        data.put(ALLOWCHANGINGREVOCATIONREASON, cainfo.isAllowChangingRevocationReason());
         data.put(CRLISSUEINTERVAL, cainfo.getCRLIssueInterval());
         data.put(CRLOVERLAPTIME, cainfo.getCRLOverlapTime());
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
@@ -221,6 +223,16 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     @Override
     public void setGenerateCrlUponRevocation(boolean generate) {
         data.put(GENERATECRLUPONREVOCATION, generate);
+    }
+
+    @Override
+    public boolean getAllowChangingRevocationReason() {
+        return getBoolean(ALLOWCHANGINGREVOCATIONREASON, false);
+    }
+
+    @Override
+    public void setAllowChangingRevocationReason(boolean allow) {
+        data.put(ALLOWCHANGINGREVOCATIONREASON, allow);
     }
 
     @Override
