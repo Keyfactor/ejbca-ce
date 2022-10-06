@@ -1105,6 +1105,7 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-common-web/src/org/ejbca/core/model/services/workers/PreCertificateRevocationWorker.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ScepRaModeExtension.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ProtocolScepHttpRATest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/upgrade/UpgradeSessionBeanEnterpriseTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ClientCertificateRenewalExtension.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ScepClientCertificateRenewalTest.java"/>
                 <exclude unless="edition.is.ee" name="src/java/profilemappings_enterprise.properties"/>
