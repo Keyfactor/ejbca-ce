@@ -40,6 +40,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -228,7 +229,6 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
      * Permanent revocations always take precedence over other updates, the first one wins.
      * Otherwise, the most recent update wins.
      * @param certDatas Collection of NoConflictCertificateData to filter.
-     * @param serno Certificate serial number
      * @return NoConflictCertificateData entry, or null if not found. Entity is append-only, so do not modify it.
      */
     private NoConflictCertificateData filterMostRecentCertData(final Collection<NoConflictCertificateData> certDatas) {
@@ -238,7 +238,8 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         }
 
         final int caId = certDatas.stream().findFirst().get().getIssuerDN().hashCode();
-        final boolean allowRevocationReasonChange = true; // TODO: get the flag from CA!
+        final CAData cadata = caSession.findById(caId);
+        final boolean allowRevocationReasonChange = cadata != null && cadata.getCA().getCAInfo().isAllowChangingRevocationReason();
 
         NoConflictCertificateData mostRecentData = null;
         for (final NoConflictCertificateData currentData : certDatas) {
