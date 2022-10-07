@@ -13,6 +13,7 @@
 
 package org.cesecore.config;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -20,6 +21,7 @@ import org.cesecore.authorization.AuthorizationSessionRemote;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
@@ -35,11 +37,14 @@ import org.junit.Test;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -287,6 +292,54 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         for (int caid : knownCaids) {
             final CAInfo ca = caSession.getCAInfo(admin, caid);
             assertNull("Got CA " + caid + " as admin of type " + admin.toString(), ca);
+        }
+    }
+    
+    @Test
+    public void testSaveCtLog() throws Exception {
+        GlobalConfiguration globalconfigurationBkup = 
+                (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        try {
+            GlobalConfiguration globalconfiguration = 
+                    (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            
+            LinkedHashMap<Integer,CTLogInfo> ctlogs = new LinkedHashMap<>();
+            KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            CTLogInfo ctLog0 = new CTLogInfo("https://first.one", keys.getPublic().getEncoded(), "firstCtTag", 4000);
+            CTLogInfo ctLog1 = new CTLogInfo("https://back.for.seconds", keys.getPublic().getEncoded(), "secondCtTag", 4000);
+            ctLog1.setIntervalStart(new Date());
+            ctLog1.setIntervalEnd(new Date());
+            CTLogInfo ctLog2 = new CTLogInfo("https://finally.third", keys.getPublic().getEncoded(), "thirdCtTag", 4000);
+            ctLog2.setExpirationYearRequired(2022);
+            ctlogs.put(ctLog0.getLogId(), ctLog0);
+            ctlogs.put(ctLog1.getLogId(), ctLog1);
+            ctlogs.put(ctLog2.getLogId(), ctLog2);
+            globalconfiguration.setCTLogs(ctlogs);
+            globalConfigurationSession.saveConfiguration(internalAdmin, globalconfiguration);
+            
+            // reload
+            globalconfiguration = 
+                    (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            
+            LinkedHashMap<Integer,CTLogInfo> savedCtlogs = globalconfiguration.getCTLogs();
+            assertEquals("CT logs count did not match", savedCtlogs.size(), 3);
+            
+            assertEquals("CT logs 1 url did not match", savedCtlogs.get(ctLog0.getLogId()).getUrl(), "https://first.one");
+            assertEquals("CT logs 2 url did not match", savedCtlogs.get(ctLog1.getLogId()).getUrl(), "https://back.for.seconds");
+            assertEquals("CT logs 3 url did not match", savedCtlogs.get(ctLog2.getLogId()).getUrl(), "https://finally.third");
+            
+            assertEquals("CT logs pubkey did not match", 
+                    Hex.toHexString(savedCtlogs.get(ctLog0.getLogId()).getPublicKeyBytes()), 
+                    Hex.toHexString(keys.getPublic().getEncoded()));
+            
+            assertNotNull("CT logs 2 start date is null", savedCtlogs.get(ctLog1.getLogId()).getIntervalStart());
+            assertNotNull("CT logs 2 end date is null", savedCtlogs.get(ctLog1.getLogId()).getIntervalEnd());
+            assertEquals("CT logs 3 url did not match", 
+                    savedCtlogs.get(ctLog2.getLogId()).getExpirationYearRequired().intValue(), 2022);
+            
+            
+        } finally {
+            globalConfigurationSession.saveConfiguration(internalAdmin, globalconfigurationBkup);
         }
     }
 
