@@ -44,6 +44,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -96,6 +97,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     //private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
     private static final String TEST_CA_NAME = "RestCertificateResourceTestCa";
+    private static final String TEST_ISSUER_DN = "C=SE,CN=" + TEST_CA_NAME;
     private static final String TEST_USERNAME = "CertificateRestSystemTestUser";
     private static final JSONParser jsonParser = new JSONParser();
     
@@ -104,7 +106,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             .getRemoteSession(CertificateProfileSessionRemote.class);
     protected final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
-            EjbRemoteHelper.MODULE_TEST); 
+            EjbRemoteHelper.MODULE_TEST);
+    private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
 
     private static X509CA x509TestCa;
 
@@ -132,7 +135,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
-
     }
 
     @AfterClass
@@ -143,7 +145,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     @Before
     public void setUp() throws Exception {
         CryptoProviderTools.installBCProvider();
-        x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, "C=SE,CN=" + TEST_CA_NAME);
+        x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, TEST_ISSUER_DN);
     }
 
     @After
@@ -219,9 +221,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
             String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
             String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
-            String issuerDn = "C=SE,CN=" + TEST_CA_NAME;
             // Attempt revocation through REST
-            final Response actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
+            final Response actualResponse = newRequest("/v1/certificate/" + TEST_ISSUER_DN + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
             final String actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
@@ -231,7 +232,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final String responseReason = (String) actualJsonObject.get("revocation_reason");
 
             // Verify rest response
-            assertEquals(issuerDn, responseIssuerDn);
+            assertEquals(TEST_ISSUER_DN, responseIssuerDn);
             assertEquals(serialNr, responseSerialNr);
             assertEquals(true, responseStatus);
             assertEquals("KEY_COMPROMISE", responseReason);
@@ -252,6 +253,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     @Test
     public void shouldAllowRevocationReasonChange() throws Exception {
         try {
+            enableRevocationReasonChange();
             // User and certificate generation
             EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null,
                                                                      new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -267,10 +269,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
             String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
             String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
-            String issuerDn = "C=SE,CN=" + TEST_CA_NAME;
 
             // Attempt the initial revocation through REST
-            Response actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&date=2022-06-15T14:07:09Z").request().put(null);
+            Response actualResponse = newRequest("/v1/certificate/" + TEST_ISSUER_DN + "/" + serialNr + "/revoke/?reason=SUPERSEDED&date=2022-06-15T14:07:09Z").request().put(null);
             String actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
 
@@ -281,7 +282,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             String responseReason = (String) actualJsonObject.get("revocation_reason");
 
             // Verify rest response
-            assertEquals(issuerDn, responseIssuerDn);
+            assertEquals(TEST_ISSUER_DN, responseIssuerDn);
             assertEquals(serialNr, responseSerialNr);
             assertEquals(true, responseStatus);
             assertEquals("SUPERSEDED", responseReason);
@@ -293,7 +294,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
             // Second revocation for the same certificate.
             // Change revocation reason from SUPERSEDED to KEY_COMPROMISE with backdating
-            actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE&date=2021-06-15T14:07:09Z").request().put(null);
+            actualResponse = newRequest("/v1/certificate/" + TEST_ISSUER_DN + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE&date=2021-06-15T14:07:09Z").request().put(null);
             actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
 
@@ -304,7 +305,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             responseReason = (String) actualJsonObject.get("revocation_reason");
 
             // Verify rest response
-            assertEquals(issuerDn, responseIssuerDn);
+            assertEquals(TEST_ISSUER_DN, responseIssuerDn);
             assertEquals(serialNr, responseSerialNr);
             assertEquals(true, responseStatus);
             assertEquals("KEY_COMPROMISE", responseReason);
@@ -318,7 +319,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
         }
     }
-    
+
     @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutEmail() throws Exception {
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null);
@@ -354,7 +355,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             assertNotNull(base64cert);
             byte [] certBytes = Base64.decode(base64cert.getBytes());
             X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
-            assertEquals("Returned certificate contained unexpected issuer", "C=SE,CN=RestCertificateResourceTestCa", cert.getIssuerDN().getName());
+            assertEquals("Returned certificate contained unexpected issuer", TEST_ISSUER_DN, cert.getIssuerDN().getName());
             assertEquals("Returned certificate contained unexpected subject DN", "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", cert.getSubjectDN().getName());
             
             EndEntityInformation userData = endEntityAccessSession.findUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
@@ -576,5 +577,15 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Unexpected response after disabling protocol", 403, status);
         // restore state
         enableRestProtocolConfiguration();
+    }
+
+    /**
+     * Enables "Allow changing revocation reason" setting for the test CA
+     * @throws Exception
+     */
+    private void enableRevocationReasonChange() throws Exception {
+        X509CAInfo caInfo = (X509CAInfo) x509TestCa.getCAInfo();
+        caInfo.setAllowChangingRevocationReason(true);
+        caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, caInfo);
     }
 }
