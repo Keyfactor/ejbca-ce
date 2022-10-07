@@ -36,6 +36,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -1887,9 +1888,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD &&
                     // a valid certificate could have reason "REVOCATION_REASON_REMOVEFROMCRL" if it has been revoked in the past.
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
-                final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
-                log.info(msg);
-                throw new AlreadyRevokedException(msg);
+
+                final CAData cadata = caSession.findById(certificateData.getIssuerDN().hashCode());
+                final boolean allowedOnCa = cadata.getCA().getCAInfo().isAllowChangingRevocationReason();
+
+                final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
+                if (!RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
+                    final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
+                    log.info(msg);
+                    throw new AlreadyRevokedException(msg);
+                }
+
             }
         }
         if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
