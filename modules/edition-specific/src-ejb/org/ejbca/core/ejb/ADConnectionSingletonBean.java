@@ -36,7 +36,7 @@ public class ADConnectionSingletonBean implements ADConnectionSingletonLocal {
     }
 
     @Override
-    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, String alias) throws LDAPException {
+    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, boolean followLdapReferral, String alias) throws LDAPException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
         
     }
