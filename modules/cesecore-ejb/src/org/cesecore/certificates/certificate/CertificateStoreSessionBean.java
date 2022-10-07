@@ -86,9 +86,6 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.cvc.PublicKeyEC;
 
-/**
- * @version $Id$
- */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateStoreSessionBean implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
