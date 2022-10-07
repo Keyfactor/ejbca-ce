@@ -1010,14 +1010,13 @@ public class CryptokiDevice {
                         LOG.debug("Public key: " + Base64.toBase64String(publicKey.getEncoded()));
                     }
 
-                    CKM cipherMechanism = new CKM(wrappingCipher); // OK with nCipher
-//                    CKM cipherMechanism = new CKM(0x00001091); // SoftHSM2+patched-botan
-                    
+                    CKM cipherMechanism = new CKM(wrappingCipher);
+
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Using mechanism: " + cipherMechanism);
                     }
                     
-                    byte[] wrapped = c.WrapKey(session.getId(), cipherMechanism, wrapKey, privateKeyRef.value);       // TODO cipher
+                    byte[] wrapped = c.WrapKey(session.getId(), cipherMechanism, wrapKey, privateKeyRef.value);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Wrapped private key: " + Base64.toBase64String(wrapped));
                     }
@@ -1075,7 +1074,9 @@ public class CryptokiDevice {
                 final LongRef publicKeyRef = new LongRef();
                 final LongRef privateKeyRef = new LongRef();
                 final CKM ckm;
-  /*              if (oid.equals(EdECObjectIdentifiers.id_Ed25519) || oid.equals(EdECObjectIdentifiers.id_Ed448)) {
+  /*            TODO: Enabled below when adding support for key wrapping with EdDSA (DSS-2476).
+                Also compare with similar code block in generateEccKeyPair():
+                if (oid.equals(EdECObjectIdentifiers.id_Ed25519) || oid.equals(EdECObjectIdentifiers.id_Ed448)) {
                     // PKCS#11v3 section 2.3.10
                     // https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/pkcs11-curr-v3.0.html
                     // "These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the
@@ -1111,13 +1112,10 @@ public class CryptokiDevice {
                 cryptoki.generateKeyPair(session.getId(), ckm, toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
                         publicKeyRef, privateKeyRef);
 
-                CKM cipherMechanism = new CKM(wrappingCipher); // OK with nCipher
-//                    CKM cipherMechanism = new CKM(0x00001091); // SoftHSM2+patched-botan
+                CKM cipherMechanism = new CKM(wrappingCipher);
 
+                byte[] wrapped = c.WrapKey(session.getId(), cipherMechanism, wrapKey, privateKeyRef.value);
 
-                byte[] wrapped = c.WrapKey(session.getId(), cipherMechanism, wrapKey, privateKeyRef.value);       // TODO cipher
-
-                //               if (certGenerator != null) {
                 final CKA ckaQ = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.EC_POINT);
                 final CKA ckaParams = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.EC_PARAMS);
 
@@ -1138,7 +1136,8 @@ public class CryptokiDevice {
                         final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
                         final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
                         publicKey = keyfact.generatePublic(pubKeySpec);
-/*                    } else if (EdECObjectIdentifiers.id_Ed25519.equals(oid) || EdECObjectIdentifiers.id_Ed448.equals(oid)) {
+/*                  TODO: Enabled below when adding support for key wrapping with EdDSA (DSS-2476).
+                    } else if (EdECObjectIdentifiers.id_Ed25519.equals(oid) || EdECObjectIdentifiers.id_Ed448.equals(oid)) {
                         // It is an EdDSA key
                         X509EncodedKeySpec edSpec = createEdDSAPublicKeySpec(ckaQ.getValue());
                         final KeyFactory keyfact = KeyFactory.getInstance(oid.getId(), BouncyCastleProvider.PROVIDER_NAME);
