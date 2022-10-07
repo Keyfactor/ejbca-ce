@@ -205,7 +205,39 @@
                 	rendered="#{cc.attrs.raCertificateDetails.keyRecoveryPossible}"/>
             </h:panelGroup>
 
-			<h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
+            <h:outputLabel
+                for="updateRevocationReasonSelectMenu"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                value="#{msg.component_certdetails_changestatus_change_revocation_reason}"
+                rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates and true}"/>
+            <h:panelGroup styleClass="#{cc.attrs.styleValue}"
+                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates and true}">
+                <h:selectOneMenu id="changeRevocationReasonSelectMenu" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
+                    styleClass="pure-input-1-4 #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                    style="color:black"
+                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates and true}">
+                    <f:selectItems value="#{cc.attrs.raCertificateDetails.changeRevocationReasons}"/>
+                </h:selectOneMenu>
+            </h:panelGroup>
+            <h:panelGroup styleClass="#{cc.attrs.styleLabel}"
+                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates and true}"/>
+            <h:panelGroup id="changeRevocationReasonDate" styleClass="#{cc.attrs.styleValue} revokeGroup"
+                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates and true}">
+                <h:inputText
+                    id="updatedRevocationDate"
+                    styleClass="pure-input-1-4"
+                    value="#{cc.attrs.raCertificateDetails.changedRevocationReasonDate}">
+                    <f:validator validatorId="dateValidator"/>
+                </h:inputText>
+                <h:commandButton value="#{msg.component_certdetails_changestatus_change_revocation_reason}"
+                    action="#{cc.attrs.raCertificateDetails.actionChangeRevocationReason}" styleClass="pure-button ra-button"/>
+                <h:outputText 
+                    id="updatedRevocationDateHelpText" 
+                    for="updatedRevocationDate"
+                    styleClass="showErrorMessage"
+                    value="#{msg.generic_timeformat_iso}"/>
+            </h:panelGroup>
+
 			<h:panelGroup layout="block" styleClass="recovery-group" rendered="#{cc.attrs.raCertificateDetails.renderConfirmRecovery}">
 						<f:event type="postValidate" listener="#{cc.attrs.raCertificateDetails.validatePassword}"/>
 						<h:panelGroup layout="block" styleClass="pure-control-group">
