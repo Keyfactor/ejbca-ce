@@ -28,9 +28,6 @@ import org.cesecore.util.CompressedCollection;
 /**
  * Holds information about a revoked certificate. The information kept here is the
  * information that goes into a CRLEntry.
- *
- * @version $Id$
- * 
  **/
 public class RevokedCertInfo implements Serializable {
 
