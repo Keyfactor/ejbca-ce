@@ -207,18 +207,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void shouldRevokeCertificate() throws Exception {
         try {
             // Create test user & generate certificate
-            EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
-            userdata.setPassword("foo123");
-            userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
-            final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(),
-                    "1024", "RSA", SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-            final KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
-            keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
+            createEndEntity();
+            final KeyStore keyStore = createKeystore();
             String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
             String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
             // Attempt revocation through REST
@@ -255,18 +245,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         try {
             enableRevocationReasonChange();
             // User and certificate generation
-            EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null,
-                                                                     new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                                                                     SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
-            userdata.setPassword("foo123");
-            userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
-            final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(),
-                                                                                                    "1024", "RSA", SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-            final KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
-            keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
+            createEndEntity();
+            final KeyStore keyStore = createKeystore();
             String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
             String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
 
@@ -587,5 +567,32 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         X509CAInfo caInfo = (X509CAInfo) x509TestCa.getCAInfo();
         caInfo.setAllowChangingRevocationReason(true);
         caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, caInfo);
+    }
+
+    private EndEntityInformation createEndEntity() throws Exception{
+        final EndEntityInformation userdata = new EndEntityInformation(
+                TEST_USERNAME,
+                "CN=" + TEST_USERNAME,
+                x509TestCa.getCAId(),
+                null,
+                null,
+                new EndEntityType(EndEntityTypes.ENDUSER),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12,
+                new ExtendedInformation());
+        userdata.setPassword("foo123");
+        userdata.setStatus(EndEntityConstants.STATUS_NEW);
+        userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
+        userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+        return endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+    }
+
+    private KeyStore createKeystore() throws Exception{
+        final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(),
+                "1024", "RSA", SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+        final KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+        keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
+        return keyStore;
     }
 }
