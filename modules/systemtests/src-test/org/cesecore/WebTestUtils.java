@@ -541,11 +541,6 @@ public final class WebTestUtils {
             return this;
         }
         
-        public HttpClientConfig withRoleMember(final RoleMember roleMember) {
-            this.roleMember = roleMember;
-            return this;
-        }
-        
         public String getUsername() {
             return username;
         }
@@ -579,7 +574,13 @@ public final class WebTestUtils {
         public CloseableHttpClient getHttpClient() {
             return httpClient;
         }
-        public void setHttpClient(CloseableHttpClient client) {
+        public RoleMember getRoleMember() {
+            return roleMember;
+        }
+        public void setRoleMember(final RoleMember roleMember) {
+            this.roleMember = roleMember;
+        }
+        public void setHttpClient(final CloseableHttpClient client) {
             this.httpClient = client;
         }
     }
