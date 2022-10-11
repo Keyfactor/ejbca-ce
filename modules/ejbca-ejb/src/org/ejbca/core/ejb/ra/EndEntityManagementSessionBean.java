@@ -1893,12 +1893,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 final boolean allowedOnCa = cadata.getCA().getCAInfo().isAllowChangingRevocationReason();
 
                 final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
-                if (!RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
+                if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
+                    // use the previous revocation date if a new one was not provided
+                    if (revocationDate == null){
+                        revocationDate = new Date(certificateData.getRevocationDate());
+                    }
+                }
+                else {
                     final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
                     log.info(msg);
                     throw new AlreadyRevokedException(msg);
                 }
-
             }
         }
         if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
