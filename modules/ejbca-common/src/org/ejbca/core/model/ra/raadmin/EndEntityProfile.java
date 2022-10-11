@@ -509,6 +509,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			setRequired(parameter, n, isRequired(parameter, n + 1));
     			setUse(parameter, n, getUse(parameter, n + 1));
     			setModifyable(parameter, n, isModifyable(parameter, n + 1));
+			setValidation(parameter, n, getValidation(parameter, n + 1));
     		}
     		final String param = getParameter(parameter);
     		// Remove last element from Subject DN order list.
@@ -544,6 +545,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		data.remove(getFieldTypeBoundary(ISREQUIRED) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
     		data.remove(getFieldTypeBoundary(MODIFYABLE) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
     		data.remove(getFieldTypeBoundary(COPY) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
+    		data.remove(getFieldTypeBoundary(VALIDATION) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
     		decrementFieldnumber(parameter);
     	}
     }
