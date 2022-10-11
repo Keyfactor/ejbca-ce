@@ -236,6 +236,7 @@
                     for="updatedRevocationDate"
                     styleClass="showErrorMessage"
                     value="#{msg.generic_timeformat_iso}"/>
+                <h:message for="updatedRevocationDate" id="updatedRevocationDateMessage" styleClass="showErrorMessage validationErrorMessage"/>
             </h:panelGroup>
 
 			<h:panelGroup layout="block" styleClass="recovery-group" rendered="#{cc.attrs.raCertificateDetails.renderConfirmRecovery}">
