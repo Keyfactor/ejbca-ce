@@ -1067,6 +1067,12 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
             assertNotNull(revokestatus.getRevocationDate());
 
+            // Revocation reason cannot be changed back from KEYCOMPROMISE to SUPERSEDED
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            fail("should throw");
+        } catch (AlreadyRevokedException_Exception e) {
+            final String message = "Certificate with issuer: CN=CA1 and serial number: " + serno + " has previously been revoked. Revocation reason could not be changed or was not allowed.";
+            assertEquals(message, e.getMessage());
         } finally {
             // Clean up
             cainfo.setAllowChangingRevocationReason(false);
