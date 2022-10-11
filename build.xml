@@ -1140,10 +1140,9 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSearchPaginationSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/p11ng/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/p11ng-cli/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
-                <exclude unless="edition.is.ee" name="modules/cesecore-common/src-test/org/cesecore/keys/token/p11ng/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/msae/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/cits/**"/>
                 <!-- List of modules to exclude from non-eIDAS editions -->
