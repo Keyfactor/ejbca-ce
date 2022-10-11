@@ -51,8 +51,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * Approval Request created when trying to add an end entity.
- *
- * @version $Id$
+ * 
  */
 public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndEntityApprovalRequest {
 

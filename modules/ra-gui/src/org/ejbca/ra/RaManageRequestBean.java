@@ -64,7 +64,6 @@ import org.ejbca.util.KeyValuePair;
  * Backing bean for Manage Request page (for individual requests).
  *
  * @see RaManageRequestsBean
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
