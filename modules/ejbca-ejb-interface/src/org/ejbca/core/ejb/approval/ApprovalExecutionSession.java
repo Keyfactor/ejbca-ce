@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.approval;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -25,8 +26,6 @@ import org.ejbca.core.model.approval.SelfApprovalException;
 
 /**
  * 
- * @version $Id$
- *
  */
 
 public interface ApprovalExecutionSession {
@@ -61,10 +60,11 @@ public interface ApprovalExecutionSession {
      * @throws AdminAlreadyApprovedRequestException if the admin has already approved the action before
      * @throws SelfApprovalException if the administrator performing the approval is the same as the one requesting the original action. 
      * @throws AuthenticationFailedException if the authentication token failed to authenticate
+     * @throws EndEntityExistsException 
      */
     void approve(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, 
-            ApprovalException, SelfApprovalException, AuthenticationFailedException;
+            ApprovalException, SelfApprovalException, AuthenticationFailedException, EndEntityExistsException;
     
     /**
      * Method used to reject an approval requests.
