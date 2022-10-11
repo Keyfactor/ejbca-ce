@@ -997,6 +997,83 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         revokeCertBackdated();
     }
 
+    @Test(expected = AlreadyRevokedException_Exception.class)
+    public void test062RevokeCertChangeReasonToKeyCompromiseWithoutFlag() throws Exception {
+        // Revocation reason change should fail if not enabled on CA  leve.
+
+        // Given that we have a certificate that is unrevoked, and a CA that doesn't have the "allow
+        // revocation reason change" flag enabled:
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        // First changed into SUPERSEDED
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+        assertNotNull(revokestatus);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        assertTrue(revokestatus.getCertificateSN().equals(serno));
+        assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+        assertNotNull(revokestatus.getRevocationDate());
+
+        // This should throw an exception because CA doesn't have the allow revocation reason change flag.
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+    }
+
+    @Test()
+    public void test063RevokeCertChangeReasonToKeyCompromise() throws Exception {
+
+        // Given that we have a certificate that is unrevoked, and a CA has the "allow
+        // revocation reason change" flag enabled:
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+
+        try {
+            // Change the CA flag to TRUE
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            // First changed into SUPERSEDED
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+
+            // Revocation reason can be changed into KEYCOMPROMISE
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+
+        } finally {
+            // Clean up
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+        }
+    }
+
     @Test
     public void test08CheckRevokeStatus() throws Exception {
         checkRevokeStatus();
