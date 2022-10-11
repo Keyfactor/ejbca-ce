@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -587,6 +588,10 @@ public class RaSearchEesBean implements Serializable {
             public boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason)
                     throws ApprovalException, WaitingForApprovalException {
                 return false;
+            }
+            @Override
+            public void changeRevocationReason(RaCertificateDetails raCertificateDetails, int newRevocationReason, Date newDate, String issuerDn) {
+                return;
             }
             @Override
             public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException,
