@@ -342,11 +342,12 @@ public interface RaMasterApi {
      * @throws ApprovalRequestExpiredException if the approval request is older than the configured expiry time
      * @throws AuthenticationFailedException if the authentication token couldn't be validated
      * @throws ApprovalException is thrown for other errors, such as the approval being in the wrong state, etc.
+     * @throws EndEntityExistsException  is thrown when the approval request can not be completed due to username conflict with an existing end entity
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
-            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException;
+            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException, EndEntityExistsException;
 
     /**
      * Searches for approval requests.
