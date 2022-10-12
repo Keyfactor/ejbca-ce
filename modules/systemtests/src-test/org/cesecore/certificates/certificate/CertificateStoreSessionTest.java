@@ -63,6 +63,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -80,8 +81,9 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     private static final String USERNAME = "CertificateStoreSessionTest";
     private static final String SELFCERT_DN = "C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo";
-
+    
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -816,5 +818,33 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
         return xcert;
     }
+    
+    @Test
+    public void testRevocationReasonUpdate() {
+        
+    }
+    
+    @Test
+    public void testRevocationReasonUpdateExternalCa() throws Exception {
+        // relevant for CRLReader and importCrl
+        String externalCaName = this.getClass().getSimpleName() + "_TEST_EXT_CA";
+        final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final String subjectDn = "CN="+externalCaName;
+        final X509Certificate caCertificate = CertTools.genSelfCert(
+                subjectDn, 3650, null, keyPair.getPrivate(), keyPair.getPublic(), 
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        
+        caAdminSession.importCACertificate(alwaysAllowToken, externalCaName, 
+                EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {caCertificate})));
+
+        
+    }
+    
+    @Test
+    public void testRevocationReasonUpdateLimitedCertificate() {
+        
+    }
+    
+    
 
 }
