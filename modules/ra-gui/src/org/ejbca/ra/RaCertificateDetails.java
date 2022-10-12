@@ -81,6 +81,13 @@ public class RaCertificateDetails {
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
         boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException;
+        /**
+         * Tries to update the revocation reason (and optionally backdate it).
+         * @param newRevocationReason The revocation reason to update to
+         * @param newDate New revocation date (can be null if backdate is not desired)
+         * @param issuerDn Distinguished name of certificate issuer
+         * @throws RevokeBackDateNotAllowedForProfileException Backdating fails if not allowed in certificate profile
+         */
         void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason, final Date newDate,
                 final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
                 AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException;
@@ -376,12 +383,22 @@ public class RaCertificateDetails {
     public boolean isSuspended() {
         return status == CertificateConstants.CERT_REVOKED && revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD;
     }
+    /**
+     * @return boolean is certificate revoked
+     */
     public boolean isRevoked() {
         return status == CertificateConstants.CERT_REVOKED;
     }
+    /**
+     * @return boolean is certificate revoked with reason key compromise
+     */
     public boolean isRevokedWithKeyCompromise() {
         return this.isRevoked() && this.revocationReason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE;
     }
+    /**
+     * Check if the CA that issues the certificate allows changing the revocation reason.
+     * @return boolean does CA allow revocation reason change
+     */
     public boolean isCaAllowingChangeOfRevocationReason() {
         return this.caAllowsChangeOfRevocationReason;
     }
@@ -491,8 +508,8 @@ public class RaCertificateDetails {
     }
 
     /**
-     * Returns list of options for changing revocation reason
-     * The Mozilla Root Store Policy only allows change of revocation reason to keyCompromise
+     * Returns list of options for changing revocation reason.
+     * The Mozilla Root Store Policy only allows change of revocation reason to keyCompromise.
      * @return list of SelectItem revocation reasons
      */
     public List<SelectItem> getChangeRevocationReasons() {
@@ -505,8 +522,16 @@ public class RaCertificateDetails {
     public Integer getNewRevocationReason() { return Integer.valueOf(newRevocationReason); }
     public void setNewRevocationReason(final Integer newRevocationReason) { this.newRevocationReason = newRevocationReason.intValue(); }
 
+    /**
+     * Get the date String for the revocation backdate that has been input by the GUI user.
+     * @return String date
+     */
     public String getChangedRevocationReasonDate() { return updatedRevocationDate; }
 
+    /**
+     * Set the revocation backdate date String.
+     * @param dateString new date String
+     */
     public void setChangedRevocationReasonDate(String dateString) {
         updatedRevocationDate = dateString;
     }
