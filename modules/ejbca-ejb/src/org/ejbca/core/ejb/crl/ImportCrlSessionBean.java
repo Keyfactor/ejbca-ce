@@ -35,13 +35,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -133,10 +131,6 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                     certStoreSession.updateLimitedCertificateDataStatus(authenticationToken, cainfo.getCAId(), issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
                 } else {
                     final String serialHex = serialNumber.toString(16).toUpperCase();
-                    if (isCertAlreadyRevoked(reasonCode, cdw)) {
-                        log.info("Certificate '" + serialHex + "' is already revoked");
-                        continue;
-                    }
                     log.info("Revoking '" + serialHex + "' " + "(" + serialNumber.toString() + ")");
                     try {
                         //log.info("Reason code: " + reason);
@@ -161,20 +155,6 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         // Last of all, store the CRL if there were no errors during creation of database entries
         crlStoreSession.storeCRL(authenticationToken, x509crl.getEncoded(), caFingerprint, newCrlNumber, issuerDn, crlPartitionIndex, x509crl.getThisUpdate(), x509crl.getNextUpdate(), isDeltaCrl?1:-1);
     
-    }
-    
-    private boolean isCertAlreadyRevoked(final int revocationReason, final CertificateDataWrapper cdw) {
-        if(cdw != null) {
-            final CertificateData certData = cdw.getCertificateData();
-            if(certData.getStatus()==CertificateConstants.CERT_REVOKED) {
-                final int storedRevocationReason = certData.getRevocationReason();
-                if(storedRevocationReason==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
-                    return revocationReason==storedRevocationReason;
-                }
-                return true;
-            }
-        }
-        return false;
     }
     
     private void verifyCrlIssuer(final X509CRL crl, final String issuerDN, final X509Certificate cacert) throws CrlImportException {
