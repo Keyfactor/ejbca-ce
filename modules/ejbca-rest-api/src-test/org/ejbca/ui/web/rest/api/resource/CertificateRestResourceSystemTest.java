@@ -251,7 +251,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
 
             // Attempt the initial revocation through REST
-            Response actualResponse = newRequest("/v1/certificate/" + TEST_ISSUER_DN + "/" + serialNr + "/revoke/?reason=SUPERSEDED&date=2022-06-15T14:07:09Z").request().put(null);
+            Response actualResponse = newRequest("/v1/certificate/" + TEST_ISSUER_DN + "/" + serialNr + "/revoke/?reason=SUPERSEDED").request().put(null);
             String actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
 
@@ -274,7 +274,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
             // Second revocation for the same certificate.
             // Change revocation reason from SUPERSEDED to KEY_COMPROMISE with backdating
-            actualResponse = newRequest("/v1/certificate/" + TEST_ISSUER_DN + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE&date=2021-06-15T14:07:09Z").request().put(null);
+            actualResponse = newRequest("/v1/certificate/" + TEST_ISSUER_DN + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
             actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
 
