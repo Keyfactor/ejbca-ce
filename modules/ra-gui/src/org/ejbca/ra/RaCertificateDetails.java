@@ -372,6 +372,9 @@ public class RaCertificateDetails {
     public boolean isRevoked() {
         return status == CertificateConstants.CERT_REVOKED;
     }
+    public boolean isRevokedWithKeyCompromise() {
+        return this.isRevoked() && this.revocationReason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE;
+    }
 
     /** @return a localized certificate (revocation) status string */
     public String getStatus() {
