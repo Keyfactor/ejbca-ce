@@ -540,7 +540,9 @@ public class RaCertificateDetails {
         } catch (WaitingForApprovalException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_approvalrequest", e.getRequestId());
             log.error(e);
-        } catch (NoSuchEndEntityException | RevokeBackDateNotAllowedForProfileException | AlreadyRevokedException | CADoesntExistsException
+        } catch (RevokeBackDateNotAllowedForProfileException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_error_certificate_profile_backdating");
+        } catch (NoSuchEndEntityException | AlreadyRevokedException | CADoesntExistsException
                 | AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             log.error(e);
