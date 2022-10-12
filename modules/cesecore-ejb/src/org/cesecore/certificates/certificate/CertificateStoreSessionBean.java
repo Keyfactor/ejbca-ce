@@ -62,7 +62,9 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -1178,8 +1180,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final Date now = new Date();
         final boolean isX509 = certificateData.getCertificate(entityManager) instanceof X509Certificate;
 
-        final CAData cadata = caSession.findById(caid);
-        final boolean allowedOnCa = cadata.getCA().getCAInfo().isAllowChangingRevocationReason();
+        final CAInfo caInfo = caSession.findById(caid).getCA().getCAInfo();
+        // external CA for CRLReader in VA
+        final boolean allowedOnCa = caInfo.isAllowChangingRevocationReason() || caInfo.getStatus() == CAConstants.CA_EXTERNAL;
 
         boolean returnVal = false;
         // A normal revocation
