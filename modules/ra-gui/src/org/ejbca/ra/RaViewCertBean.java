@@ -70,6 +70,7 @@ public class RaViewCertBean implements Serializable {
     private Map<Integer, String> eepIdToNameMap = null;
     private Map<Integer, String> cpIdToNameMap = null;
     private Map<String,String> caSubjectToNameMap = new HashMap<>();
+    private Map<String, Boolean> caNameToAllowsChangeOfRevocationReason = new HashMap<>();
 
     private final Callbacks raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
         @Override
@@ -87,7 +88,7 @@ public class RaViewCertBean implements Serializable {
             if (ret) {
                 // Re-initialize object if status has changed
                 final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
-                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason);
             }
             return ret;
         }
@@ -101,7 +102,7 @@ public class RaViewCertBean implements Serializable {
                     issuerDn, newRevocationReason, true);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
-            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason);
         }
         @Override
         public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, 
@@ -128,8 +129,10 @@ public class RaViewCertBean implements Serializable {
                 final List<CAInfo> caInfos = new ArrayList<>(raMasterApiProxyBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
                 for (final CAInfo caInfo : caInfos) {
                     caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
+                    caNameToAllowsChangeOfRevocationReason.put(caInfo.getName(), caInfo.isAllowChangingRevocationReason());
                 }
-                raCertificateDetails = new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+                raCertificateDetails = new RaCertificateDetails(cdw, raCertificateDetailsCallbacks,
+                        cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason);
             }
         }
     }
