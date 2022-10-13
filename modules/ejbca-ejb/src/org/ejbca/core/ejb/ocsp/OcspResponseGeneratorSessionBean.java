@@ -426,7 +426,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     + caCertificateStatus.revocationReason + ".");
                         }
                         //Check if CA cert is expired
-                        if (!CertTools.isCertificateValid(caCertificateChain.get(0), false)) {
+                        if (!CertTools.isCertificateValid(caCertificateChain.get(0), false, 0)) {
                             log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
                                     + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate with expiration date "
                                     + CertTools.getNotAfter(caCertificateChain.get(0)) + ".");
@@ -476,8 +476,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate)
                                 + "' and serial number " + CertTools.getSerialNumber(ocspSigningCertificate) + " is revoked.");
                     }
+                    final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
                     //Check if signing cert is expired
-                    if (!CertTools.isCertificateValid(ocspSigningCertificate, true)) {
+                    if (!CertTools.isCertificateValid(ocspSigningCertificate, true, warnBeforeExpirationTime)) {
                         log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate)
                                 + "' and serial number " + CertTools.getSerialNumber(ocspSigningCertificate) + " is expired.");
                     }
@@ -596,7 +597,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     + ".");
         }
         //Check if CA cert is expired
-        if (!CertTools.isCertificateValid(caCertificate, true)) {
+        final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+        if (!CertTools.isCertificateValid(caCertificate, true, warnBeforeExpirationTime)) {
             log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
                     + CertTools.getSerialNumber(caCertificate) + " has an expired certificate with expiration date "
                     + CertTools.getNotAfter(caCertificate) + ".");
@@ -2334,7 +2336,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
             final BasicOCSPResp ocspresp = generateBasicOcspResp(exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry, producedAt);
-            if (CertTools.isCertificateValid(signerCert, false)) { // Don't warn about signer validity for each OCSP response...
+            if (CertTools.isCertificateValid(signerCert, false, 0)) { // Don't warn about signer validity for each OCSP response...
                 return ocspresp;
             } else {
                 throw new OcspFailureException("Response was not validly signed.");
@@ -2855,7 +2857,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.error("No key available. " + errMsg);
                         continue;
                     }
-                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !CertTools.isCertificateValid(ocspSigningCertificate, true) ) {
+                    final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !CertTools.isCertificateValid(ocspSigningCertificate, true, warnBeforeExpirationTime) ) {
                         sb.append('\n').append(errMsg);
                         continue;
                     }

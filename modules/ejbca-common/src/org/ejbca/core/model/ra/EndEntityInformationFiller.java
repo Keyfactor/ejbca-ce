@@ -37,8 +37,6 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-import com.keyfactor.util.certificates.X509CertificateTools;
-
 /** This class gives facilities to populate user data with default values from profile.
  *
  * @version $Id: EndEntityInformationFiller.java 34943 2020-04-29 12:12:05Z anatom $
@@ -473,7 +471,7 @@ public class EndEntityInformationFiller {
             
             if(dnParts.length==2 || !curDn.contains("+") ||
                     startsWithIgnoreCase(curDn, DnComponents.UNIFORMRESOURCEID) ||
-                    startsWithIgnoreCase(curDn, X509CertificateTools.URI1)) {
+                    startsWithIgnoreCase(curDn, CertTools.URI1)) {
                 // multi-valued RDN must have unescaped + in them
                 // URI may contain unescaped + as part of query string
                 value = curDn.substring(dnParts[0].length()+1).trim();

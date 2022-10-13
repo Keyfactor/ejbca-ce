@@ -19,7 +19,7 @@
 		<path refid="lib.guava.classpath"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in KeyTools -->
 		<path refid="lib.jee.classpath" />
-		<path refid="lib.ldap.classpath"/> <!-- Used for a single method call in X509CertificateTools - eliminate? -->
+		<path refid="lib.ldap.classpath"/> <!-- Used for a single method call in CertTools - eliminate? -->
 	</path>
 
 	<path id="test.classpath">
@@ -28,12 +28,20 @@
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
 	</path>
+	
+	<!-- The buildservicemanifest needs additional classes in order to run. -->
+	<path id="manifest.classpath">
+		<path refid="compile.classpath"/>
+		<path location="${x509-common-util.dir}/build/classes"/>
+	</path>
 
 	<target name="jar" depends="">
 		<mkdir dir="${x509-common-util.dir}/build/classes"/>
 		<javac srcdir="${x509-common-util.dir}/src" destdir="${x509-common-util.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="compile.classpath"/>
 		</javac>
+		<buildservicemanifest interface="com.keyfactor.util.certificate.CertificateImplementation"
+		    		file="${x509-common-util.dir}/build/classes" classpath="manifest.classpath"/>
 		<mkdir dir="${x509-common-util.dir}/dist"/>
 		<jar destfile="${x509-common-util.dir}/dist/x509-common-util.jar">
      

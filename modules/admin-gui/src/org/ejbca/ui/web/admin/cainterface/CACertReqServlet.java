@@ -47,8 +47,6 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.pub.ServletUtils;
 
-import com.keyfactor.util.certificates.X509CertificateTools;
-
 /**
  * Servlet used to handle certificate requests between CAs.<br>
  *
@@ -159,8 +157,8 @@ public class CACertReqServlet extends BaseAdminServlet {
             		String begin = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
             		String end = RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
             		if (isx509cert) {
-            			begin = X509CertificateTools.BEGIN_CERTIFICATE_WITH_NL;
-            			end = X509CertificateTools.END_CERTIFICATE_WITH_NL;
+            			begin = CertTools.BEGIN_CERTIFICATE_WITH_NL;
+            			end = CertTools.END_CERTIFICATE_WITH_NL;
             		}
     				byte[] b64certreq = Base64.encode(request);
     				String out = begin;
@@ -204,7 +202,7 @@ public class CACertReqServlet extends BaseAdminServlet {
 			 	Certificate cert = caBean.getProcessedCertificate();
             	if (!StringUtils.equals(format, "binary")) {
     				byte[] b64cert = Base64.encode(cert.getEncoded());	
-    				RequestHelper.sendNewB64Cert(b64cert, res, X509CertificateTools.BEGIN_CERTIFICATE_WITH_NL, X509CertificateTools.END_CERTIFICATE_WITH_NL);
+    				RequestHelper.sendNewB64Cert(b64cert, res, CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
             	} else {
             		RequestHelper.sendBinaryBytes(cert.getEncoded(), res, "application/octet-stream", "cert.crt");
             	}
@@ -235,7 +233,7 @@ public class CACertReqServlet extends BaseAdminServlet {
                 if (rawCert!=null) {
                     if (!"binary".equals(format)) {
                         final byte[] b64cert = Base64.encode(rawCert);  
-                        RequestHelper.sendNewB64Cert(b64cert, res, X509CertificateTools.BEGIN_CERTIFICATE_WITH_NL, X509CertificateTools.END_CERTIFICATE_WITH_NL);
+                        RequestHelper.sendNewB64Cert(b64cert, res, CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
                     } else {
                         RequestHelper.sendBinaryBytes(rawCert, res, "application/octet-stream", "cert.crt");
                     }

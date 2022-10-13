@@ -42,6 +42,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
@@ -61,8 +62,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.keyfactor.util.certificates.X509CertificateTools;
 
 /**
  * A unit test class for CaRestResource to test its content.
@@ -229,8 +228,8 @@ public class CaRestResourceUnitTest {
         final Response actualResponse = request.get();
         final String actualString = actualResponse.readEntity(String.class);
         // then
-        assertTrue(actualString.contains(X509CertificateTools.BEGIN_CERTIFICATE));
-        assertTrue(actualString.contains(X509CertificateTools.END_CERTIFICATE));
+        assertTrue(actualString.contains(CertTools.BEGIN_CERTIFICATE));
+        assertTrue(actualString.contains(CertTools.END_CERTIFICATE));
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         verify(raMasterApiProxy);
     }

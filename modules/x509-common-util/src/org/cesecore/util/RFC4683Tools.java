@@ -40,8 +40,6 @@ import org.bouncycastle.tsp.TSPAlgorithms;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.DnComponents;
 
-import com.keyfactor.util.certificates.X509CertificateTools;
-
 /**
  * Helper class to handle operations for RFC4683 certificate extension Subject Identification method (SIM) for 
  * including a privacy-sensitive identifier in the subjectAltName extension of a certificate. The SIM is 
@@ -94,7 +92,7 @@ public final class RFC4683Tools {
     public static final String generateSimForInternalSanFormat(String san)
             throws IllegalArgumentException, NoSuchProviderException, NoSuchAlgorithmException {
         if (StringUtils.isNotBlank(san) && san.toUpperCase().contains(DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
-            final List<String> sims = X509CertificateTools.getPartsFromDN(san, DnComponents.SUBJECTIDENTIFICATIONMETHOD);
+            final List<String> sims = CertTools.getPartsFromDN(san, DnComponents.SUBJECTIDENTIFICATIONMETHOD);
             for (String sim : sims) {
                 if (LOG.isDebugEnabled()) {
                     LOG.info("Store user SIM strings: " + sims);

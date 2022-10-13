@@ -53,8 +53,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.certificates.X509CertificateTools;
-
 /**
  * This will test that different PBE shared secrets can be used to authenticate 
  * the RA to different CAs.
@@ -251,7 +249,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         
         String issuerDN = CertTools.getSubjectDN(caCertificate);
         if(reverseIssuerDN) {
-            issuerDN = X509CertificateTools.reverseDN(issuerDN); 
+            issuerDN = CertTools.reverseDN(issuerDN); 
         }        
         
         // Generate and send certificate request

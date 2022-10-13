@@ -67,8 +67,6 @@ import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
 
-import com.keyfactor.util.certificates.X509CertificateTools;
-
 /**
  * Handles management of key validators.
  *
@@ -412,8 +410,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     final String subjectAltName = endEntityInformation.getSubjectAltName();
                     final List<String> dnsNames = new ArrayList<>();
                     for (String split : subjectAltName.toLowerCase(Locale.ROOT).split(",")) {
-                        if (split.trim().startsWith(X509CertificateTools.DNS.toLowerCase())) {
-                            dnsNames.add(split.trim().substring(X509CertificateTools.DNS.length() + 1));
+                        if (split.trim().startsWith(CertTools.DNS.toLowerCase())) {
+                            dnsNames.add(split.trim().substring(CertTools.DNS.length() + 1));
                         }
                     }
                     //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
@@ -424,8 +422,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             if (extension != null) {
                                 String extendedSubjectAltName = CertTools.getAltNameStringFromExtension(extension);
                                 for (String split : extendedSubjectAltName.toLowerCase(Locale.ROOT).split(",")) {
-                                    if (split.trim().startsWith(X509CertificateTools.DNS.toLowerCase())) {
-                                        dnsNames.add(split.trim().substring(X509CertificateTools.DNS.length() + 1));
+                                    if (split.trim().startsWith(CertTools.DNS.toLowerCase())) {
+                                        dnsNames.add(split.trim().substring(CertTools.DNS.length() + 1));
                                     }
                                 }
                             }

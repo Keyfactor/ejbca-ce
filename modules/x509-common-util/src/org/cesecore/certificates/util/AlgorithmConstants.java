@@ -99,6 +99,8 @@ public final class AlgorithmConstants {
 
     public static final String KEYSPECPREFIX_ECGOST3410 = "GostR3410-";
     
+    public static final String GOST3410_OID = "1.2.643.2.2.3";
+    
     //The following curves may be used for ECCDH: P-224, P-256, P-384, P-521, K-233, K-283, K-409, K-571, B-233, B-283, B-409, B-571
     //See https://pages.nist.gov/ACVP/draft-hammett-acvp-kas-ecc-sp800-56ar3.html#name-ecc-cdh-component-test
     public static final List<String> ECCDH_PERMITTED_CURVES = Arrays.asList("secp224r1", "P-224", "prime256v1", "secp256r1", "P-256", "prime384v1", "secp384r1",

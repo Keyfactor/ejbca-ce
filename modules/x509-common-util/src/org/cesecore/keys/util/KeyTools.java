@@ -97,16 +97,13 @@ import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
-import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
 import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
-import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -121,7 +118,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.cvc.PublicKeyEC;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.AsymmetricJWK;
@@ -295,38 +291,6 @@ public final class KeyTools {
        return genKeys(keySpec, null, keyAlg);
     }
 
-    /**
-     * An ECDSA key can be stripped of the curve parameters so it only contains the public point, and this is not enough to use the key for
-     * verification. However, if we know the curve name we can fill in the curve parameters and get a usable EC public key
-     * 
-     * @param pk
-     *            PublicKey, org.ejbca.cvc.PublicKeyEC, that might miss parameters, if parameters are there we do not touch the public key just return it unchanged
-     * @param keySpec
-     *            name of curve for example brainpoolp224r1
-     * @return PublicKey with parameters from the named curve
-     * @throws NoSuchProviderException
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeySpecException
-     */
-    public static PublicKey getECPublicKeyWithParams(final PublicKey pk, final String keySpec) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeySpecException {
-        PublicKey ret = pk;
-        if ((pk instanceof PublicKeyEC) && (keySpec != null)) {
-            final PublicKeyEC pkec = (PublicKeyEC) pk;
-            // The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
-            final ECParameterSpec spec = pkec.getParams();
-            if (spec == null) {
-                // we did not have the parameter specs, lets create them because we know which curve we are using
-                final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(keySpec);
-                final java.security.spec.ECPoint p = pkec.getW();
-                final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p);
-                final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
-                final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
-                ret = keyfact.generatePublic(pubKey);
-            }
-        }
-        return ret;
-    }
 
     /**
      * Encodes an EC point
@@ -425,50 +389,7 @@ public final class KeyTools {
             throw new IllegalStateException("Couldn't decode Ed25519 public key", e);
         }
     }
-    
-    /**
-     * An ECDSA key can be stripped of the curve parameters so it only contains the public point, and this is not enough to use the key for
-     * verification. However, if we know the curve name we can fill in the curve parameters and get a usable EC public key
-     * 
-     * @param pk
-     *            PublicKey, org.ejbca.cvc.PublicKeyEC, that might miss parameters, if parameters are there we do not touch the public key just return it unchanged
-     * @param pkwithparams
-     *            PublicKey, org.ejbca.cvc.PublicKeyEC, that contains all parameters.
-     * @return PublicKey with parameters from the named curve
-     *
-     * @throws InvalidKeySpecException if the key specification in pkwithparams was invalid
-     */
-    public static PublicKey getECPublicKeyWithParams(final PublicKey pk, final PublicKey pkwithparams) throws InvalidKeySpecException {
-        if ( !(pk instanceof PublicKeyEC) || !(pkwithparams instanceof PublicKeyEC) ) {
-            log.info("Either pk or pkwithparams is not a PublicKeyEC: " + pk.toString() + ", " + pkwithparams.toString());
-            return pk;
-        }
-        final PublicKeyEC pkec = (PublicKeyEC) pk;
-        final ECParameterSpec spec = pkec.getParams();
-        if (spec != null) {
-            return pk;// the key already has its parameters.
-        }
-        // The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
-        final PublicKeyEC pkecp = (PublicKeyEC) pkwithparams;
-        final ECParameterSpec pkspec = pkecp.getParams();
-        if (pkspec == null) {
-            log.info("pkwithparams does not have any params.");
-            return pk;
-        }
-        final org.bouncycastle.jce.spec.ECParameterSpec bcspec = EC5Util.convertSpec(pkspec);
-        final java.security.spec.ECPoint p = pkec.getW();
-        final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p);
-        final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
-        final KeyFactory keyfact;
-        try {
-            keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("ECDSA was an unknown algorithm", e);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-        }
-        return keyfact.generatePublic(pubKey);
-    }
+   
 
     /**
      * Gets the key length of supported keys

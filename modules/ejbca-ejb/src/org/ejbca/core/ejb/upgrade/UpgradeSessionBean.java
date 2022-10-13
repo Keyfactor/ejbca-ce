@@ -153,8 +153,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
-import com.keyfactor.util.certificates.X509CertificateTools;
-
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
  * releases.
@@ -1770,7 +1768,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     final byte bytesFromFile[] = FileTools.readFiletoBuffer(fileName);
                     byte[] bytes;
                     try {
-                        bytes = FileTools.getBytesFromPEM(bytesFromFile, X509CertificateTools.BEGIN_CERTIFICATE, X509CertificateTools.END_CERTIFICATE);
+                        bytes = FileTools.getBytesFromPEM(bytesFromFile, CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
                     } catch (Exception e) {
                         bytes = bytesFromFile; // assume binary data (.der).
                     }
@@ -1798,7 +1796,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         try {
             byte[] bytes = FileTools.getBytesFromPEM(FileTools
                     .readFiletoBuffer(cacertfile),
-                    X509CertificateTools.BEGIN_CERTIFICATE, X509CertificateTools.END_CERTIFICATE);
+                    CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
             cacert = CertTools.getCertfromByteArray(bytes, Certificate.class);
         } catch (Exception e) {
             String errMsg = "Error reading CA Certificate from UnidFnr cacertfile";
