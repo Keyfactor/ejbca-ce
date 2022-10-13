@@ -20,7 +20,6 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.jacknji.classpath"/>
-        <path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 	
@@ -31,7 +30,6 @@
 		<path refid="lib.jee-client.classpath"/>
 		<path location="${p11ng.build.dir}"/>
 		<path location="${p11ng.build-test.dir}"/>
-		<path location="${mod.cesecore-common.lib}"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.slf4jlog4j.classpath"/>
