@@ -68,7 +68,6 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.math.ec.ECCurve;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -1202,18 +1201,6 @@ public abstract class AlgorithmTools {
         }
 
         return null;
-    }
-
-    /**
-     * Determine if the certificate profile supports Elliptic Curve Cryptography (ECC).
-     *
-     * @param certificateProfile the certificate profile to check.
-     * @return true if the certificate profile supports a key algorithm which utilises ECC, false otherwise.
-     */
-    public static boolean isEccCapable(final CertificateProfile certificateProfile) {
-        return certificateProfile.getAvailableKeyAlgorithmsAsList().contains("ECDSA")
-                || certificateProfile.getAvailableKeyAlgorithmsAsList().contains("ECGOST3410")
-                || certificateProfile.getAvailableKeyAlgorithmsAsList().contains("DSTU4145");
     }
 
     /**

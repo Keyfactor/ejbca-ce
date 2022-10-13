@@ -17,22 +17,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Security;
 import java.security.cert.Certificate;
 
 import org.apache.commons.lang.StringUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
-
-import com.keyfactor.util.certificates.X509CertificateTools;
 
 /**
  * Tests base64 encoding and decoding
  *
+ * @version $Id$
  */
 public class Base64Test {
+    private static final Logger log = Logger.getLogger(Base64Test.class);
 
     private static final String testcert_oneline = ("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky" + "NDA2NDgwNFoXDTA1MDkyMzA2NTgwNFowMzEQMA4GA1UEAxMHcDEydGVzdDESMBAG"
@@ -273,11 +272,12 @@ public class Base64Test {
             43, 86, 110, 73, 89, 107, 50, 43, 83, 121, 75, 72, 77, 67, 116, 89, 112, 117, 121, 57, 32, 55, 70, 65, 69, 70, 68, 52, 72, 57, 54, 113,
             105, 122, 81, 112, 97, 74, 67, 51, 105, 75, 111, 104, 114, 102, 43, 119, 90, 84, 105, 80, 111, 65, 103, 70, 107, 65, 65, 65, 61 };
 
-    @BeforeClass
-    public static void beforeClass() {
-        Security.addProvider(new BouncyCastleProvider());
+    @Before
+    public void setUp() throws Exception {
+        log.trace(">setUp()");
+        CryptoProviderTools.installBCProvider();
+        log.trace("<setUp()");
     }
-    
 
     @Test
     public void testBase64Small() throws Exception {
@@ -285,7 +285,7 @@ public class Base64Test {
         byte[] certBytes = Base64.decode(testcert_oneline.getBytes());
         assertNotNull(certBytes);
         // This should be a cert
-        Certificate cert = X509CertificateTools.parseCertificate(BouncyCastleProvider.PROVIDER_NAME, certBytes);
+        Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
         assertNotNull(cert);
         // Base64 encode it again
         byte[] encBytes = Base64.encode(cert.getEncoded(), false);
@@ -294,7 +294,7 @@ public class Base64Test {
         certBytes = Base64.decode(testcert_crlf.getBytes());
         assertNotNull(certBytes);
         // This should be a cert
-        cert = X509CertificateTools.parseCertificate(BouncyCastleProvider.PROVIDER_NAME, certBytes);
+        cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
         assertNotNull(cert);
         // Base64 encode it again
         encBytes = Base64.encode(cert.getEncoded(), true);

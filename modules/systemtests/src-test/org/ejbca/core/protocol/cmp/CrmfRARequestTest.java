@@ -100,8 +100,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.certificates.X509CertificateTools;
-
 /**
  * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
  * for example "-DhttpCmpProxyURL=http://localhost:8080/cmpProxy-6.3.3", which can be set in Run Configurations if running the 
@@ -600,7 +598,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         ASN1EncodableVector vec = new ASN1EncodableVector();
         ASN1EncodableVector v = new ASN1EncodableVector();
         
-        v.add(new ASN1ObjectIdentifier(X509CertificateTools.UPN_OBJECTID));
+        v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
         v.add(new DERTaggedObject(true, 0, new DERUTF8String("boo@bar")));
         GeneralName gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
         vec.add(gn);
