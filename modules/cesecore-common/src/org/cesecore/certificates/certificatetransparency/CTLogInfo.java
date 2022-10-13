@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
@@ -46,6 +47,8 @@ public final class CTLogInfo implements Serializable {
     private Date intervalEnd;
 
     private transient PublicKey publicKey;
+    
+    private static final Random random = new Random();
 
     /**
      * Creates a CT log info object, but does not parse the public key yet
@@ -65,6 +68,7 @@ public final class CTLogInfo implements Serializable {
         if (!url.endsWith("/ct/v1/")) {
             log.warn("CT Log URL should end with /ct/v1/. URL: "+url);
         }
+        this.logId = random.nextInt();
         this.url = url;
         if (publicKeyBytes == null) {
             throw new IllegalArgumentException("publicKeyBytes is null");
@@ -76,7 +80,6 @@ public final class CTLogInfo implements Serializable {
             this.label = label;
         }
         this.timeout = timeout;
-        this.logId = (this.url + this.label).hashCode(); // see canAdd in CtLogManager
     }
 
     private void ensureParsed() {
