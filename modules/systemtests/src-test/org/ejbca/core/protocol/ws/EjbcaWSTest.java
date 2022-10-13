@@ -134,6 +134,8 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.CesecoreException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.DateNotValidException;
+import org.ejbca.core.protocol.ws.client.gen.DateNotValidException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -1138,7 +1140,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
         }
     }
-    //NOT WORKING. Will pass but is not correct
     @Test
     public void test065ChangeDateForAlreadyRevokedCertificateToLaterDate() throws Exception {
 
@@ -1163,8 +1164,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             cp.setAllowBackdatedRevocation(true);
             certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
             
-            final String originalRevocationDate = "2022-05-15";
-            final String forwardDatedRevocationDate = "2050-05-15";
+            final String originalRevocationDate = "2020-06-07T23:55:59+02:00";
+            final String forwardDatedRevocationDate = "2050-05-15T23:55:59+02:00";
             
             // Revoke certificate with Revocation reason KeyCompromise and a set revocation date
             this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, originalRevocationDate);
@@ -1176,21 +1177,16 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             assertTrue(revokestatus.getCertificateSN().equals(serno));
             assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
             assertNotNull(revokestatus.getRevocationDate());
-            assertEquals(originalRevocationDate, revokestatus.getRevocationDate().toString().substring(0, 10));
+            assertEquals(originalRevocationDate.substring(0, 10), revokestatus.getRevocationDate().toString().substring(0, 10));
 
-            // Change date for revocation to later date
+            // Change date for revocation to later date. Should not be possible.
             this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, forwardDatedRevocationDate);
 
-            revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
-
-            assertNotNull(revokestatus);
-            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-            assertTrue(revokestatus.getCertificateSN().equals(serno));
-            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
-            assertNotNull(revokestatus.getRevocationDate());
-            //should not be equals
-            assertEquals(originalRevocationDate, revokestatus.getRevocationDate().toString().substring(0, 10));
-
+            fail("should throw");
+        } catch (Exception e) {
+            final String message = "org.apache.cxf.binding.soap.SoapFault: Marshalling Error: class org.ejbca.ui.web.protocol.DateNotValidException nor any of its super class is known to this context.";
+            assertEquals(message, e.getMessage());
+            assertNotNull(e.getMessage());
         } finally {
             // Cleanup
             cainfo.setAllowChangingRevocationReason(false);
