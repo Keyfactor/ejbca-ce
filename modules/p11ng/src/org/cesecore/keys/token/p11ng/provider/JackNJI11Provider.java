@@ -267,6 +267,16 @@ public class JackNJI11Provider extends Provider {
                     final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
                     mechanism = LUNA_CKM_EDDSA;
                 }
+                if (mechanism == CKM.EDDSA && StringUtils.contains(myKey.getSlot().getLibName(), "libcs2_pkcs11.so")) { // added for Utimaco
+                    // Workaround, like ED key generation in CryptokiDevice, for EdDSA where HSMs are not up to P11v3 yet
+                    // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("libcs2_pkcs11.so detected, using CKM_VENDOR_DEFINED instead of P11v3 for CKM_EDDSA");
+                    }
+                    // Utimaco CryptoServer signature CKM
+                    final long UTIMACO_CKM_EDDSA = CKM.ECDSA;
+                    mechanism = UTIMACO_CKM_EDDSA;
+                }
                 final byte[] param;
                 if (params == null) {
                     param = MechanismNames.CKM_PARAMS.get(this.algorithm);
