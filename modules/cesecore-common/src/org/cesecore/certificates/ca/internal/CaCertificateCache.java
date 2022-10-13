@@ -32,8 +32,6 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
-import com.keyfactor.util.certificates.X509CertificateTools;
-
 
 /**
  * A cache for storing CA certificates
@@ -141,9 +139,9 @@ public enum CaCertificateCache  {
                         pw.println("Here follows a base64 encoding of the certificate:");
                         try {
                             final String b64encoded = new String(Base64.encode(cert.getEncoded()));
-                            pw.println(X509CertificateTools.BEGIN_CERTIFICATE);
+                            pw.println(CertTools.BEGIN_CERTIFICATE);
                             pw.println(b64encoded);
-                            pw.println(X509CertificateTools.END_CERTIFICATE);
+                            pw.println(CertTools.END_CERTIFICATE);
                         } catch (CertificateEncodingException e) {
                             pw.println("Not possible to encode certificate.");
                         }

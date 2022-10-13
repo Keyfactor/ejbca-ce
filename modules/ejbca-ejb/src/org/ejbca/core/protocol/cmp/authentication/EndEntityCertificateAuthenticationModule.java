@@ -38,6 +38,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -334,7 +335,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
         } else if(ramode) {
             // Get the CA to use for the authentication
-            CAInfo cainfo = getCAInfoByName(authenticationparameter);
+            X509CAInfo cainfo = getCAInfoByName(authenticationparameter);
             if(cainfo == null) {
                 return false;
             }
@@ -375,7 +376,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             if(vendormode) {
 
                 // Check that extraCert is issued  by a configured VendorCA
-                CAInfo cainfo = null;
+                X509CAInfo cainfo = null;
                 try {
                     cainfo = impl.isExtraCertIssuedByVendorCA(admin, this.confAlias, extraCertPath);
                     if (cainfo == null) {
@@ -403,7 +404,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             } else {
 
                 // Get the CA to use for the authentication
-                CAInfo cainfo = getCAInfoByIssuer(CertTools.getIssuerDN(extraCert));
+                X509CAInfo cainfo = getCAInfoByIssuer(CertTools.getIssuerDN(extraCert));
                 // Check that extraCert is in the Database
                 CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
                 if(certinfo == null) {
@@ -885,14 +886,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @param cainfo The CA we want to verify extraCerts with, can be a root CA or a sub CA, in which case the sub CA's root CA is used as trust anchor
      * @return true if certs verifies up to the trust anchor, false otherwise
      */
-    private boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs, CAInfo cainfo) {
+    private boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs, X509CAInfo cainfo) {
         if (certs == null || certs.isEmpty()) {
             throw new IllegalArgumentException("extraCerts must contain at least one certificate.");
         }
         // We "hope" that the first certificate is the end entity certificate
         Certificate endentitycert = certs.get(0);
         try {
-            return CertTools.isCertListValidAndIssuedByCA(certs, cainfo);
+            return cainfo.isCertListValidAndIssuedByCA(certs);
         } catch (CertPathValidatorException e) {
             this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid - " + getCertPathValidatorExceptionMessage(e);
             if(log.isDebugEnabled()) {
@@ -950,9 +951,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return true;
     }
 
-    private CAInfo getCAInfoByName(String caname) {
+    private X509CAInfo getCAInfoByName(String caname) {
         try {
-            return caSession.getCAInfo(admin, caname);
+            return (X509CAInfo) caSession.getCAInfo(admin, caname);
         } catch (AuthorizationDeniedException e) {
             this.errorMessage = "Authorization denied for CA: " + caname;
             if(log.isDebugEnabled()) {
@@ -962,9 +963,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return null;
     }
 
-    private CAInfo getCAInfoByIssuer(String issuerDN) {
+    private X509CAInfo getCAInfoByIssuer(String issuerDN) {
         try {
-            return caSession.getCAInfo(admin, issuerDN.hashCode());
+            return (X509CAInfo) caSession.getCAInfo(admin, issuerDN.hashCode());
         } catch (AuthorizationDeniedException e) {
             this.errorMessage = "Authorization denied for CA: " + issuerDN;
             if(log.isDebugEnabled()) {
