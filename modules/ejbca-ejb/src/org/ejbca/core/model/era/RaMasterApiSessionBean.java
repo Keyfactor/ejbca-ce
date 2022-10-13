@@ -825,7 +825,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public boolean addRequestResponse(final AuthenticationToken authenticationToken, final RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
-            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
+            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException, EndEntityExistsException {
         final ApprovalDataVO approvalDataVO = getApprovalDataNoAuth(requestResponse.getId());
         if (approvalDataVO == null) {
             // Return false so the next master api backend can see if it can handle the approval
