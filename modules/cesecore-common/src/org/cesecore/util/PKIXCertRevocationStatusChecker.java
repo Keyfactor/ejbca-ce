@@ -190,7 +190,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             OCSPReq req = null;
             try {
                 req = getOcspRequest(cacert, certSerialnumber, nonce);
-            } catch (CertificateEncodingException | OCSPException e) {
+            } catch (CertificateEncodingException | OCSPException | IOException e) {
                 if(log.isDebugEnabled()) {
                     log.debug("Failed to create OCSP request. " + e.getLocalizedMessage());
                 }
@@ -352,13 +352,14 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * @return OCSPReq
      * @throws CertificateEncodingException
      * @throws OCSPException
+     * @throws IOException 
      */
-    private OCSPReq getOcspRequest(Certificate cacert, BigInteger certSerialnumber, final byte[] nonce) throws CertificateEncodingException, OCSPException {
+    private OCSPReq getOcspRequest(Certificate cacert, BigInteger certSerialnumber, final byte[] nonce) throws CertificateEncodingException, OCSPException, IOException {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) cacert, certSerialnumber));
         
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         return gen.build();
