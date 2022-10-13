@@ -787,27 +787,31 @@ public class CryptokiDevice {
                             + StringTools.hex(ckaParams.getValue()) + ".");
                 }
                 ASN1ObjectIdentifier oid = null;
-                try (ASN1InputStream ain = new ASN1InputStream(ckaParams.getValue())) {
-                    final ASN1Primitive primitive = ain.readObject();
-                    // Here we have some specific things if the key is EdDSA, it can be either an OID or a String
-                    // PKCS#11v3 section 2.3.10
-                    // https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/pkcs11-curr-v3.0.html
-                    // "These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the 
-                    // public key using the curveName or the oID methods"
-                    // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
-                    // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
-                    if (primitive instanceof ASN1String) {
-                        final ASN1String string = (ASN1String) primitive;
-                        if ("curve25519".equalsIgnoreCase(string.getString())) {
-                            oid = EdECObjectIdentifiers.id_Ed25519;
-                        } else if ("Ed25519".equalsIgnoreCase(string.getString())) {
-                            oid = EdECObjectIdentifiers.id_Ed25519;
-                        } else if ("curve448".equalsIgnoreCase(string.getString())) {
-                            oid = EdECObjectIdentifiers.id_Ed448;
+                if ("edwards25519".equalsIgnoreCase(ckaParams.getValueStr())) { // Utimaco curve name
+                    oid = EdECObjectIdentifiers.id_Ed25519;
+                } else {
+                    try (ASN1InputStream ain = new ASN1InputStream(ckaParams.getValue())) {
+                        final ASN1Primitive primitive = ain.readObject();
+                        // Here we have some specific things if the key is EdDSA, it can be either an OID or a String
+                        // PKCS#11v3 section 2.3.10
+                        // https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/pkcs11-curr-v3.0.html
+                        // "These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the 
+                        // public key using the curveName or the oID methods"
+                        // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
+                        // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
+                        if (primitive instanceof ASN1String) {
+                            final ASN1String string = (ASN1String) primitive;
+                            if ("curve25519".equalsIgnoreCase(string.getString())) {
+                                oid = EdECObjectIdentifiers.id_Ed25519;
+                            } else if ("Ed25519".equalsIgnoreCase(string.getString())) {
+                                oid = EdECObjectIdentifiers.id_Ed25519;
+                            } else if ("curve448".equalsIgnoreCase(string.getString())) {
+                                oid = EdECObjectIdentifiers.id_Ed448;
+                            }
+                        } else {
+                            oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());
                         }
-                    } else {
-                        oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());                            
-                    }                            
+                    }
                 }
                 if (oid == null) {
                     LOG.warn("Unable to reconstruct curve OID from DER encoded data: " + StringTools.hex(ckaParams.getValue()));
