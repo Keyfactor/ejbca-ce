@@ -110,6 +110,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.cert.OID;
 
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page.
  * <p>
@@ -2199,13 +2201,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                                 + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                     }
                 }
-                for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-                    if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+                for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
+                    if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
                         for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                             final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                             final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
                             if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                                availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
+                                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
                                         CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
                             } else {
                                 if (log.isTraceEnabled()) {

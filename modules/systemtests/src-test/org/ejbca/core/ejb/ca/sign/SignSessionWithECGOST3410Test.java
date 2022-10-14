@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -37,7 +42,6 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -49,10 +53,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 
 /**
  * 
@@ -77,7 +78,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-        if (AlgorithmTools.isGost3410Enabled()) {
+        if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled()) {
             // Install BouncyCastle provider
             CryptoProviderTools.installBCProviderIfNotAvailable();
 
@@ -91,7 +92,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
     
     @AfterClass
     public static void afterClass() throws Exception {
-        if (AlgorithmTools.isGost3410Enabled()) {
+        if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled()) {
             EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
             userAdminSession.deleteUser(internalAdmin, ECGOST3410_USERNAME);
             removeTestCA(TEST_ECGOST3410_CA_NAME);
@@ -100,7 +101,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
     
     @Test
     public void testSignSessionECGOST3410WithECGOST3410CA() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         log.trace(">test14SignSessionECGOST3410WithECGOST3410CA()");
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
@@ -128,7 +129,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
      */
     @Test
     public void testBCPKCS10ECGOST3410WithECGOST3410CA() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         log.trace(">test15TestBCPKCS10ECGOST3410WithECGOST3410CA()");
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");

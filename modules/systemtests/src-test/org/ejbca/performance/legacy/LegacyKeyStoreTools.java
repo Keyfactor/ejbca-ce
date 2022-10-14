@@ -64,6 +64,8 @@ import org.cesecore.keys.KeyCreationException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+
 /**
  * @version $Id$
  */
@@ -308,9 +310,9 @@ public class LegacyKeyStoreTools {
 
         if (keySpec.toUpperCase().startsWith("DSA")) {
             generateDSA(Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
-        } else if (AlgorithmTools.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+        } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             generateGOST3410(keySpec, keyEntryName);
-        } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
+        } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keySpec.startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
             generateDSTU4145(keySpec, keyEntryName);
         } else {
 
