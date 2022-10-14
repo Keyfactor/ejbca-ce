@@ -1250,7 +1250,10 @@ public class CryptokiDevice {
                         final String lunacurve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "Ed25519" : "Ed448");
                         final DERPrintableString str = new DERPrintableString(lunacurve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
-                        ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);          
+                        ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);
+                    } else if (StringUtils.contains(libName, "libcs2_pkcs11.so")) { // vendor defined mechanism for Utimaco
+                        publicKeyTemplate.put(CKA.EC_PARAMS, "edwards25519");
+                        ckm = new CKM(CKM.ECDSA_KEY_PAIR_GEN);
                     } else {
                         ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);                        
                     }
