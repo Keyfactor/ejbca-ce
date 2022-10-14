@@ -28,14 +28,20 @@ public enum StringConfigurationCache {
     
     public static final int DEFAULT_ENCRYPTION_COUNT = 100;
         
-    private static final char[] defaultForbiddenCharacters = {'\n', '\r', ';', '!', '\u0000', '%', '`', '?', '$', '~'};  
+    private static final char[] DEFAULT_FORBIDDEN_CHARACTERS = {'\n', '\r', ';', '!', '\u0000', '%', '`', '?', '$', '~'};  
 
-    private static Set<Character> forbiddenCharacters = null;
+    private  Set<Character> forbiddenCharacters = null;
     
-    private static int passwordEncryptionCount = DEFAULT_ENCRYPTION_COUNT;
+    private int passwordEncryptionCount;
     
-    private static char[] encryptionKey = {}; 
+    private char[] encryptionKey;
     
+    
+    private StringConfigurationCache() {
+        forbiddenCharacters = null;
+        passwordEncryptionCount = DEFAULT_ENCRYPTION_COUNT;
+        encryptionKey = new char[0];
+    }
     
     /**
      * Sets the parameter as the set of forbidden characters. If the array is null or empty, the default set will be set. 
@@ -44,9 +50,9 @@ public enum StringConfigurationCache {
      */
     public void setForbiddenCharacters(char[] forbiddenCharacters) {
         if (forbiddenCharacters == null) {
-            StringConfigurationCache.forbiddenCharacters = new HashSet<>(Arrays.asList(ArrayUtils.toObject(defaultForbiddenCharacters)));
+            this.forbiddenCharacters = new HashSet<>(Arrays.asList(ArrayUtils.toObject(DEFAULT_FORBIDDEN_CHARACTERS)));
         } else {
-            StringConfigurationCache.forbiddenCharacters = new HashSet<>(Arrays.asList(ArrayUtils.toObject(forbiddenCharacters)));
+            this.forbiddenCharacters = new HashSet<>(Arrays.asList(ArrayUtils.toObject(forbiddenCharacters)));
         }
     }
     
@@ -55,7 +61,7 @@ public enum StringConfigurationCache {
      */
     public char[] getForbiddenCharacters() {
         if (forbiddenCharacters == null) {
-            return defaultForbiddenCharacters;
+            return DEFAULT_FORBIDDEN_CHARACTERS;
         } else {
             return ArrayUtils.toPrimitive(forbiddenCharacters.toArray(new Character[forbiddenCharacters.size()]));
         }
@@ -66,7 +72,7 @@ public enum StringConfigurationCache {
     }
 
     public void setPasswordEncryptionCount(int passwordEncryptionCount) {
-        StringConfigurationCache.passwordEncryptionCount = passwordEncryptionCount;
+        this.passwordEncryptionCount = passwordEncryptionCount;
     }
 
     public char[] getEncryptionKey() {
@@ -74,6 +80,6 @@ public enum StringConfigurationCache {
     }
 
     public void setEncryptionKey(char[] encryptionKey) {
-        StringConfigurationCache.encryptionKey = encryptionKey;
+        this.encryptionKey = encryptionKey;
     }
 }

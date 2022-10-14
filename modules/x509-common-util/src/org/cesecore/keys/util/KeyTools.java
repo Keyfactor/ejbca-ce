@@ -70,6 +70,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.crypto.Cipher;
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
 
@@ -114,11 +115,10 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.AsymmetricJWK;
 import com.nimbusds.jose.jwk.JWK;
@@ -126,11 +126,9 @@ import com.nimbusds.jose.jwk.JWK;
 /**
  * Tools to handle common key and keystore operations.
  * 
- * @version $Id$
  */
 public final class KeyTools {
     private static final Logger log = Logger.getLogger(KeyTools.class);
-    private static final InternalResources intres = InternalResources.getInstance();
 
     private static final byte[] BAG_ATTRIBUTES = "Bag Attributes\n".getBytes();
     private static final byte[] FRIENDLY_NAME = "    friendlyName: ".getBytes();
@@ -599,7 +597,7 @@ public final class KeyTools {
     public static KeyStore createP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
             throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         try {
-            KeyStore store = CesecoreConfiguration.useLegacyPkcs12Keystore()
+            KeyStore store = AlgorithmConfigurationCache.INSTANCE.isUseLegacyPkcs12Keystore()
                     ? KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME)
                     : KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
             store.load(null, null);
@@ -1352,19 +1350,19 @@ public final class KeyTools {
 
     public static void checkValidKeyLength(final String keyAlg, final int len) throws InvalidKeyException {
         final boolean isEcdsa = AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlg);
-        final boolean isGost3410 = AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(keyAlg);
-        final boolean isDstu4145 = AlgorithmTools.isDstu4145Enabled() && keyAlg.startsWith(CesecoreConfiguration.getOidDstu4145()+".");
+        final boolean isGost3410 = AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(keyAlg);
+        final boolean isDstu4145 = AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keyAlg.startsWith(AlgorithmConstants.DSTU4145_OID + ".");
         if (isEcdsa || isGost3410 || isDstu4145) {
             // We allow key lengths of 0, because that means that implicitlyCA is used. 
             // for ImplicitlyCA we have no idea what the key length is, on the other hand only real professionals
             // will ever use that to we will allow it.
             if ((len > 0) && (len < 224)) {
-                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "ECDSA", "224", len);
+                final String msg = "ECDSA keys of smaller size than 224 is not allowed for a CA. Requested length was " + len;             
                 throw new InvalidKeyException(msg);
             }                            
         } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(keyAlg) || AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlg)) {
             if (len < 1024) {
-                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "RSA/DSA", "1024", len);
+                final String msg = "RSA/DSA keys of smaller size than 1024 is not allowed for a CA. Requested length was " + len;             
                 throw new InvalidKeyException(msg);
             }
         }
@@ -1393,10 +1391,10 @@ public final class KeyTools {
         if (keyspec.equalsIgnoreCase(AlgorithmConstants.KEYALGORITHM_ED448)) {
             return AlgorithmConstants.KEYALGORITHM_ED448;
         }
-        if (AlgorithmTools.isGost3410Enabled() && keyspec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+        if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keyspec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             return AlgorithmConstants.KEYALGORITHM_ECGOST3410;
         }
-        if (AlgorithmTools.isDstu4145Enabled() && keyspec.startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
+        if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keyspec.startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
             return AlgorithmConstants.KEYALGORITHM_DSTU4145;
         }
         return AlgorithmConstants.KEYALGORITHM_ECDSA;
@@ -1639,5 +1637,26 @@ public final class KeyTools {
      */
     public static String getCertificateRequestSignature(JcaPKCS10CertificationRequest certificationRequest) {
         return new String(Hex.encode(certificationRequest.getSignature()));
+    }
+    
+    /**
+     * Detect if "Unlimited Strength" Policy files has bean properly installed.
+     * 
+     * @return true if key strength is limited
+     */
+    public static boolean isUsingExportableCryptography() {
+        boolean returnValue = true;
+        try {
+            final int keylen = Cipher.getMaxAllowedKeyLength("DES");
+            if (log.isDebugEnabled()) {
+                log.debug("MaxAllowedKeyLength for DES is: "+keylen);
+            }
+            if ( keylen == Integer.MAX_VALUE ) {
+                returnValue = false;
+            }
+        } catch (NoSuchAlgorithmException e) {
+            // NOPMD
+        }
+        return returnValue;
     }
 }

@@ -78,6 +78,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -114,8 +115,6 @@ import org.ejbca.ui.web.configuration.exception.CacheClearException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.HttpTools;
-
-import com.keyfactor.util.keys.X509KeyTools;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
@@ -1176,7 +1175,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public boolean isUsingExportableCryptography() {
-        return X509KeyTools.isUsingExportableCryptography();
+        return KeyTools.isUsingExportableCryptography();
     }
 
     @Override
