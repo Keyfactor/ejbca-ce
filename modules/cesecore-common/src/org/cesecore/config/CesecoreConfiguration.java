@@ -137,50 +137,6 @@ public final class CesecoreConfiguration {
         return ConfigurationHolder.getExpandedString("intresources.secondarylanguage");
     }
 
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaQ() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.q");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaA() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.a");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaB() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.b");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaG() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.g");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaN() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.n");
-    }
-
-    /**
-     * Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot this is needed so you
-     * don't have to restart JBoss all the time. In production it may cause failures because the BC provider may get removed just when another thread
-     * wants to use it. Therefore the default value is false.
-     */
-    public static boolean isDevelopmentProviderInstallation() {
-        return TRUE.equalsIgnoreCase(ConfigurationHolder.getString("development.provider.installation"));
-    }
-
     /** Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be cached, and in that case for how long. */
     public static long getCacheCaTimeInCaSession() {
         // Cache for 10 seconds is the default (Changed 2013-02-14 under ECA-2801.)
@@ -299,26 +255,6 @@ public final class CesecoreConfiguration {
             ConfigurationHolder.updateConfigurationWithoutBackup(PROPERTY_NAME, value);
         }
         return value;
-    }
-
-    /** Oid tree for GOST32410 */
-    public static String getOidGost3410() {
-        return ConfigurationHolder.getString("extraalgs.gost3410.oidtree");
-    }
-
-    /** Oid tree for DSTU4145 */
-    public static String getOidDstu4145() {
-        return ConfigurationHolder.getString("extraalgs.dstu4145.oidtree");
-    }
-
-    /** Returns extraalgs such as GOST, DSTU */
-    public static List<String> getExtraAlgs() {
-        return ConfigurationHolder.getPrefixedPropertyNames("extraalgs");
-    }
-
-    /** Returns title of the algorithm */
-    public static String getExtraAlgTitle(String algName) {
-        return ConfigurationHolder.getString("extraalgs." + algName.toLowerCase() + ".title");
     }
 
     /** Returns "subalgorithms", e.g. different keylengths or curves */
@@ -512,9 +448,4 @@ public final class CesecoreConfiguration {
         return (customClassWhitelist != null ? customClassWhitelist : "");
     }
 
-    public static boolean useLegacyPkcs12Keystore() {
-        return ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null
-                ? false
-                : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12"));
-    }
 }

@@ -169,6 +169,7 @@ import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
@@ -1277,7 +1278,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                                     .isDV()) {
                                 log.debug("Enriching DV public key with EC parameters from CVCA");
                                 Certificate cvcacert = reqchain.iterator().next();
-                                caCertPublicKey = KeyTools.getECPublicKeyWithParams(caCertPublicKey, cvcacert.getPublicKey());
+                                caCertPublicKey = CvcKeyTools.getECPublicKeyWithParams(caCertPublicKey, cvcacert.getPublicKey());
                             } else {
                                 final String msg = "Trying to receive CA certificate response for a DVCA, but the received certificate's authRole field is not for a DV";
                                 log.debug(msg);

@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,6 +91,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.JDBCUtil;
 
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
@@ -229,7 +231,28 @@ public class StartupSingletonBean {
         
         //Register encryption key
         StringConfigurationCache.INSTANCE.setEncryptionKey(ConfigurationHolder.getString("password.encryption.key").toCharArray());
+        
+        //Read if GOST3410 or DSTU4145 are defined in cesecore.properties
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(ConfigurationHolder.getString("extraalgs.gost3410.oidtree") != null);
+        AlgorithmConfigurationCache.INSTANCE.setDstu4145Enabled(ConfigurationHolder.getString("extraalgs.dstu4145.oidtree") != null);
+        //Read and cache all configuration defined algorithms 
+        final List<String> configurationDefinedAlgorithms = ConfigurationHolder.getPrefixedPropertyNames("extraalgs");
+        AlgorithmConfigurationCache.INSTANCE.setConfigurationDefinedAlgorithms(configurationDefinedAlgorithms);
+        for (String algorithm : configurationDefinedAlgorithms) {
+            AlgorithmConfigurationCache.INSTANCE.addConfigurationDefinedAlgorithmTitle(algorithm,
+                    ConfigurationHolder.getString("extraalgs." + algorithm.toLowerCase() + ".title"));
+        }
+        //Check if legacy keystore format should be used
+        AlgorithmConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null ? false
+                : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12")));
                    
+        //Set ECDSA ImplicitlyCA Values
+        AlgorithmConfigurationCache.INSTANCE.setEcDsaImplicitlyCaQ(ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.q"));
+        AlgorithmConfigurationCache.INSTANCE.setEcDsaImplicitlyCaA(ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.a"));
+        AlgorithmConfigurationCache.INSTANCE.setEcDsaImplicitlyCaB(ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.b"));
+        AlgorithmConfigurationCache.INSTANCE.setEcDsaImplicitlyCaG(ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.g"));
+        AlgorithmConfigurationCache.INSTANCE.setEcDsaImplicitlyCaN(ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.n"));
+        
         // Run java seed collector, that can take a little time the first time it is run
         log.debug(">startup initializing random seed, can take a little time...");
         SecureRandom rand = new SecureRandom();
