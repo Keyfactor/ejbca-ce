@@ -31,6 +31,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+
 /**
  * Tests and removes the CA entity and its CryptoToken.
  * 
@@ -75,13 +77,13 @@ public class RemoveCATest extends CaTestCase {
 
     @Test
     public void test03primRemoveECGOST3410CA() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         removeCa("CN=TESTECGOST3410");
     }
     
     @Test
     public void test03bisRemoveDSTU4145CA() throws Exception {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         removeCa("CN=TESTDSTU4145");
     }
 
