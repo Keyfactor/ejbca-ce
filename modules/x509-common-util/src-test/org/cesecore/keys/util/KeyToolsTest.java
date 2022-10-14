@@ -13,31 +13,14 @@
 
 package org.cesecore.keys.util;
 
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x9.X962Parameters;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
-import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.bouncycastle.util.Arrays;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.cvc.AuthorizationRoleEnum;
-import org.ejbca.cvc.CAReferenceField;
-import org.ejbca.cvc.CVCPublicKey;
-import org.ejbca.cvc.CVCertificate;
-import org.ejbca.cvc.CertificateGenerator;
-import org.ejbca.cvc.HolderReferenceField;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -63,14 +46,24 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.Enumeration;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import org.apache.log4j.Logger;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.util.Arrays;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 
 /**
  * Tests the CertTools class .
@@ -430,7 +423,7 @@ public class KeyToolsTest {
 	
 	@Test
 	public void testGenKeysGOSTAlgorithmSpec() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         log.trace(">testGenKeysGOSTAlgorithmSpec");
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("ECGOST3410", BouncyCastleProvider.PROVIDER_NAME);
         
@@ -507,7 +500,7 @@ public class KeyToolsTest {
 	
 	@Test
     public void testGenKeysDSTU4145AlgorithmSpec() throws Exception {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         log.trace(">testGenKeysDSTU4145AlgorithmSpec");
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("DSTU4145", BouncyCastleProvider.PROVIDER_NAME);
 

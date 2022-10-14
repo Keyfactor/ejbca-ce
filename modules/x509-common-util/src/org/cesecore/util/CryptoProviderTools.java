@@ -24,10 +24,11 @@ import org.bouncycastle.jcajce.provider.config.ConfigurableProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.config.CesecoreConfiguration;
-import org.ejbca.cvc.CVCProvider;
+import org.cesecore.keys.util.KeyTools;
 
-import com.keyfactor.util.keys.X509KeyTools;
+import com.keyfactor.util.crypto.provider.CryptoProvider;
+import com.keyfactor.util.crypto.provider.CryptoProviderRegistry;
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 
 /**
  * Basic crypto provider helper methods.
@@ -43,11 +44,11 @@ public final class CryptoProviderTools {
     /** Parameters used when generating or verifying ECDSA keys/certs using the "implicitlyCA" key encoding.
      * The curve parameters is then defined outside of the key and configured in the BC provider.
      */
-    private static final String IMPLICITLYCA_Q = CesecoreConfiguration.getEcdsaImplicitlyCaQ();
-    private static final String IMPLICITLYCA_A = CesecoreConfiguration.getEcdsaImplicitlyCaA(); 
-    private static final String IMPLICITLYCA_B = CesecoreConfiguration.getEcdsaImplicitlyCaB(); 
-    private static final String IMPLICITLYCA_G = CesecoreConfiguration.getEcdsaImplicitlyCaG(); 
-    private static final String IMPLICITLYCA_N = CesecoreConfiguration.getEcdsaImplicitlyCaN();
+    private static final String IMPLICITLYCA_Q = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaQ();
+    private static final String IMPLICITLYCA_A = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaA();
+    private static final String IMPLICITLYCA_B = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaB();
+    private static final String IMPLICITLYCA_G = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaG();
+    private static final String IMPLICITLYCA_N = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaN();
 
     /** System provider used to circumvent a bug in Glassfish. Should only be used by 
      * X509CAInfo, OCSPCAService, CMSCAService. 
@@ -61,7 +62,7 @@ public final class CryptoProviderTools {
      * @return true if key strength is limited
      */
     public static boolean isUsingExportableCryptography() {
-    	return X509KeyTools.isUsingExportableCryptography();
+    	return KeyTools.isUsingExportableCryptography();
     }
     
     public static synchronized void installBCProviderIfNotAvailable() {
@@ -72,8 +73,10 @@ public final class CryptoProviderTools {
 
     public static synchronized void removeBCProvider() {
         Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);  
-        // Also remove the CVC provider
-        Security.removeProvider("CVC");
+        // Also remove other providers, such as the CVC provider
+        for(CryptoProvider provider : CryptoProviderRegistry.INSTANCE.getCryptoProviders()) {
+            Security.removeProvider(provider.getName());
+        }
     }
     
     @SuppressWarnings({ "deprecation", "unchecked" })
@@ -82,28 +85,19 @@ public final class CryptoProviderTools {
         // A flag that ensures that we install the parameters for implcitlyCA only when we have installed a new provider
         boolean installImplicitlyCA = false;
         if (Security.addProvider(new BouncyCastleProvider()) < 0) {
-            // If already installed, remove so we can handle redeploy
-            // Nope, we ignore re-deploy on this level, because it can happen
-            // that the BC-provider is uninstalled, in just the second another
-            // thread tries to use the provider, and then that request will fail.
-            if (CesecoreConfiguration.isDevelopmentProviderInstallation()) {
-                removeBCProvider();
-                if (Security.addProvider(new BouncyCastleProvider()) < 0) {
-                    log.error("Cannot even install BC provider again!");
-                } else {
-                    installImplicitlyCA = true;
-                }
-            }
         } else {
             installImplicitlyCA = true;
         }
         
-    	// Also install the CVC provider
-    	try {
-        	Security.addProvider(new CVCProvider());    		
-    	} catch (Exception e) {
-    		log.info("CVC provider can not be installed, CVC certificate will not work: ", e);
-    	}
+    	// Also install non-BC providers, such as the CVC provider
+        for(CryptoProvider provider : CryptoProviderRegistry.INSTANCE.getCryptoProviders()) {
+            try {
+                Security.addProvider(provider.getProvider());            
+            } catch (Exception e) {
+                log.info(provider.getErrorMessage(), e);
+            }
+        }
+ 
     	
         if (installImplicitlyCA) {
             // Install EC parameters for implicitlyCA encoding of EC keys, we have default curve parameters if no new ones have been given.

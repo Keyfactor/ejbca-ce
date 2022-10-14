@@ -25,14 +25,14 @@ import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 /**
  *
  */
-public enum CertificateImplementationFactory {
+public enum CertificateImplementationRegistry {
     INSTANCE;
     
     private final Map<String, CertificateImplementation> certificateImplementations = new HashMap<>();
     
     private final Map<Class<?>, CertificateImplementation> certificateImplementationsByClassType = new HashMap<>();
     
-    CertificateImplementationFactory() {
+    private CertificateImplementationRegistry() {
         for (CertificateImplementation certificateImplementation : ServiceLoader.load(CertificateImplementation.class)) {
             certificateImplementations.put(certificateImplementation.getType(), certificateImplementation);
             certificateImplementationsByClassType.put(certificateImplementation.getImplementationClass(), certificateImplementation);

@@ -57,6 +57,8 @@ import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
 
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+
 /** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */
 public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser {
@@ -288,9 +290,9 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         try {
             if (keySpec.toUpperCase().startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
-            } else if (AlgorithmTools.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+            } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-            } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
+            } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keySpec.startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_DSTU4145;
             } else if (!Character.isDigit(keySpec.charAt(0))) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;

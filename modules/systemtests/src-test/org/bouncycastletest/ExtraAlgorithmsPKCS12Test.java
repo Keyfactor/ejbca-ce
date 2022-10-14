@@ -1,5 +1,9 @@
 package org.bouncycastletest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -46,9 +50,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 
 /**
  * This test verifies that GOST3410 and DSTU4145 are working in BouncyCastle.
@@ -67,8 +69,8 @@ public class ExtraAlgorithmsPKCS12Test {
     
     @Test
     public void testP12KeystoreGOST3410() throws Exception {
-        log.debug("GOST3410 configured: "+(AlgorithmTools.isGost3410Enabled() ? "YES" : "NO"));
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        log.debug("GOST3410 configured: "+(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() ? "YES" : "NO"));
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         log.trace(">testP12KeystoreGOST3410()");
         
         String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
@@ -87,8 +89,8 @@ public class ExtraAlgorithmsPKCS12Test {
      */
     @Test
     public void testP12KeystoreDSTU4145() throws Exception {
-        log.debug("DSTU4145 configured: "+(AlgorithmTools.isDstu4145Enabled() ? "YES" : "NO"));
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        log.debug("DSTU4145 configured: "+(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() ? "YES" : "NO"));
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         log.trace(">testP12KeystoreDSTU4145()");
         
         String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");

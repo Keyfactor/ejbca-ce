@@ -61,6 +61,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -75,8 +76,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
-
-import com.keyfactor.util.keys.X509KeyTools;
 
 /**
  * CLI command for creating a CA and its first CRL. Publishes the CRL and CA certificate if it should.
@@ -384,7 +383,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             }
         }
 
-        if (X509KeyTools.isUsingExportableCryptography()) {
+        if (KeyTools.isUsingExportableCryptography()) {
             getLogger().warn("WARNING!");
             getLogger().warn("WARNING: Using exportable strength crypto!");
             getLogger().warn("WARNING!");

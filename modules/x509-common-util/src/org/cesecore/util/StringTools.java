@@ -45,15 +45,15 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-import com.google.common.net.InternetDomainName;
-import com.keyfactor.util.keys.X509KeyTools;
-import com.keyfactor.util.string.StringConfigurationCache;
-
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.keys.util.KeyTools;
+
+import com.google.common.net.InternetDomainName;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
@@ -827,7 +827,7 @@ public final class StringTools {
         if (in == null) {
             return in;
         }
-        if (X509KeyTools.isUsingExportableCryptography()) {
+        if (KeyTools.isUsingExportableCryptography()) {
             log.warn("Encryption not possible due to weak crypto policy.");
             return in;
         }
@@ -884,7 +884,7 @@ public final class StringTools {
      */
     public static String pbeDecryptStringWithSha256Aes192(final String in, char[] p) throws IllegalBlockSizeException, BadPaddingException,
             InvalidKeyException, InvalidKeySpecException {
-        if (X509KeyTools.isUsingExportableCryptography()) {
+        if (KeyTools.isUsingExportableCryptography()) {
             log.warn("Decryption not possible due to weak crypto policy.");
             return in;
         }

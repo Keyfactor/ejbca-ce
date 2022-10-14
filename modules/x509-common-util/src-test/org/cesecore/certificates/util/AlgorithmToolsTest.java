@@ -30,6 +30,8 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -194,7 +196,7 @@ public class AlgorithmToolsTest {
 
     @Test
     public void testGetKeySpecificationGOST3410() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("ECGOST3410", "BC");
         AlgorithmParameterSpec ecSpec = ECGOST3410NamedCurveTable.getParameterSpec(keyspec);
@@ -205,7 +207,7 @@ public class AlgorithmToolsTest {
 
     @Test
     public void testGetKeySpecificationDSTU4145() throws Exception {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("DSTU4145", "BC");
         AlgorithmParameterSpec ecSpec = KeyTools.dstuOidToAlgoParams(keyspec);
@@ -402,7 +404,7 @@ public class AlgorithmToolsTest {
 
     @Test
     public void testIsCompatibleSigAlgGOST3410() {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
     	assertTrue(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410));
         assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_SHA1_WITH_DSA));
         assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_DSA));
@@ -421,7 +423,7 @@ public class AlgorithmToolsTest {
 
     @Test
     public void testIsCompatibleSigAlgDSTU4145() {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         assertTrue(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145));
         assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_SHA1_WITH_DSA));
         assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_DSA));
@@ -564,7 +566,7 @@ public class AlgorithmToolsTest {
 
     @Test
     public void testCertSignatureAlgorithmAsStringGOST3410() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         KeyPair keyPair = KeyTools.genKeys(CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B"), AlgorithmConstants.KEYALGORITHM_ECGOST3410);
         Certificate gost3411withgost3410 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, true);
         assertEquals("GOST3411WITHECGOST3410", CertTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));
@@ -573,7 +575,7 @@ public class AlgorithmToolsTest {
 
     @Test
     public void testCertSignatureAlgorithmAsStringDSTU4145() throws Exception {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         KeyPair keyPair = KeyTools.genKeys(CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233"), AlgorithmConstants.KEYALGORITHM_DSTU4145);
         Certificate gost3411withgost3410 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, true);
         assertEquals("GOST3411WITHDSTU4145", CertTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));

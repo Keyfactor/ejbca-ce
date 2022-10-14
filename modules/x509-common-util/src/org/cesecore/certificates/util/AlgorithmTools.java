@@ -68,10 +68,11 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.math.ec.ECCurve;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 /**
  * Various helper methods for handling the mappings between different key and
  * signature algorithms.
@@ -210,8 +211,8 @@ public abstract class AlgorithmTools {
     public static List<String> getAvailableKeyAlgorithms() {
         final List<String> ret = new ArrayList<>(Arrays.asList(AlgorithmConstants.KEYALGORITHM_DSA, AlgorithmConstants.KEYALGORITHM_ECDSA,
                 AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED448));
-        for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-            ret.add(CesecoreConfiguration.getExtraAlgTitle(algName));
+        for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
+            ret.add(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName));
         }
         return ret;
     }
@@ -907,9 +908,9 @@ public abstract class AlgorithmTools {
             } else if (certSignatureAlgorithm.contains("ECDSA")) {
                 // From x509cert.getSigAlgName(), SHA1withECDSA only returns name ECDSA
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
-            } else if (isGost3410Enabled() && certSignatureAlgorithm.equalsIgnoreCase(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
+            } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && certSignatureAlgorithm.equalsIgnoreCase(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
-            } else if (isDstu4145Enabled() && certSignatureAlgorithm.equalsIgnoreCase(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
+            } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && certSignatureAlgorithm.equalsIgnoreCase(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
             }
         }
@@ -1001,7 +1002,7 @@ public abstract class AlgorithmTools {
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
             oid = CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001;
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
-            oid = new ASN1ObjectIdentifier(CesecoreConfiguration.getOidDstu4145());
+            oid = new ASN1ObjectIdentifier(AlgorithmConstants.DSTU4145_OID);
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
             oid = EdECObjectIdentifiers.id_Ed25519;
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
@@ -1061,19 +1062,11 @@ public abstract class AlgorithmTools {
         return getAlgorithmNameFromOID(getSignAlgOidFromDigestAndKey(digestAlg, keyAlg));
     }
 
-    public static boolean isGost3410Enabled() {
-        return CesecoreConfiguration.getOidGost3410() != null;
-    }
-
-    public static boolean isDstu4145Enabled() {
-        return CesecoreConfiguration.getOidDstu4145() != null;
-    }
-
     public static boolean isSigAlgEnabled(String sigAlg) {
         if (AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410.equals(sigAlg)) {
-            return isGost3410Enabled();
+            return AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled();
         } else if (AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145.equals(sigAlg)) {
-            return isDstu4145Enabled();
+            return AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled();
         } else {
             return true;
         }
@@ -1192,11 +1185,11 @@ public abstract class AlgorithmTools {
             return AlgorithmConstants.SIGALG_ED448;
         }
         // GOST3410
-        if(isGost3410Enabled() && sigAlgOid.getId().equalsIgnoreCase(CesecoreConfiguration.getOidGost3410())) {
+        if(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && sigAlgOid.getId().equalsIgnoreCase(AlgorithmConstants.GOST3410_OID)) {
             return AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
         }
         // DSTU4145
-        if(isDstu4145Enabled() && sigAlgOid.getId().startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
+        if(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && sigAlgOid.getId().startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
             return AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
         }
 

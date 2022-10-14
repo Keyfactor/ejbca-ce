@@ -156,10 +156,10 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 
-import com.keyfactor.util.certificate.CertificateImplementationFactory;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 import com.novell.ldap.LDAPDN;
 
 /**
@@ -488,7 +488,7 @@ public abstract class CertTools {
     public static String getCertSignatureAlgorithmNameAsString(Certificate cert) {
         final String certSignatureAlgorithm;
         {
-            final String certSignatureAlgorithmTmp = CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType())
+            final String certSignatureAlgorithmTmp = CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType())
                     .getCertificateSignatureAlgorithm(cert);
             // Try to make it easier to display some signature algorithms that cert.getSigAlgName() does not have a good string for.
             // We typically don't get here, since the x509cert.getSigAlgName handles id_RSASSA_PSS nowadays, this is old legacy code,
@@ -523,7 +523,7 @@ public abstract class CertTools {
             return AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
         }
         // GOST3410
-        if(AlgorithmTools.isGost3410Enabled() && certSignatureAlgorithm.equalsIgnoreCase(AlgorithmConstants.GOST3410_OID)) {
+        if(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && certSignatureAlgorithm.equalsIgnoreCase(AlgorithmConstants.GOST3410_OID)) {
             return AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
         }
         return certSignatureAlgorithm;
@@ -880,7 +880,7 @@ public abstract class CertTools {
      * @return String containing the subjects DN.
      */
     public static String getSubjectDN(final Certificate cert) {
-       return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).getSubjectDn(cert);
+       return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getSubjectDn(cert);
     }
 
     /**
@@ -903,7 +903,7 @@ public abstract class CertTools {
      * @return String containing the issuers DN, or null if cert is null.
      */
     public static String getIssuerDN(final Certificate cert) {
-        return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).getIssuerDn(cert);
+        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getIssuerDn(cert);
 
     }
 
@@ -920,7 +920,7 @@ public abstract class CertTools {
         if (cert == null) {
             throw new IllegalArgumentException("Null input");
         }
-        return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).getSerialNumber(cert);
+        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getSerialNumber(cert);
     }
 
     /**
@@ -989,7 +989,7 @@ public abstract class CertTools {
      * @throws IllegalArgumentException if input is null or certificate type is not implemented
      */
     public static String getSerialNumberAsString(Certificate cert) {
-        return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).getSerialNumberAsString(cert);
+        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getSerialNumberAsString(cert);
     }
 
     /**
@@ -1004,7 +1004,7 @@ public abstract class CertTools {
         if (cert == null) {
             return new byte[0];
         } else {
-            return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).getSignature(cert);
+            return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getSignature(cert);
         }
     }
 
@@ -1033,14 +1033,14 @@ public abstract class CertTools {
         if (cert == null) {
             throw new IllegalArgumentException("getNotBefore: cert is null");
         }
-        return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).getNotBefore(cert);
+        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getNotBefore(cert);
     }
 
     public static Date getNotAfter(Certificate cert) {
         if (cert == null) {
             throw new IllegalArgumentException("getNotAfter: cert is null");
         }
-        return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).getNotAfter(cert);
+        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getNotAfter(cert);
     }
 
     /** Returns a CertificateFactory that can be used to create certificates from byte arrays and such.
@@ -1403,7 +1403,7 @@ public abstract class CertTools {
      * 
      */
     public static <T extends Certificate> T getCertfromByteArray(byte[] cert, String provider, Class<T> returnType) throws CertificateParsingException {
-        return CertificateImplementationFactory.INSTANCE.getCertfromByteArray(cert, provider, returnType);
+        return CertificateImplementationRegistry.INSTANCE.getCertfromByteArray(cert, provider, returnType);
     }
    
     /**
@@ -1536,7 +1536,7 @@ public abstract class CertTools {
      * @return boolean true if the certificate belongs to a CA.
      */
     public static boolean isCA(Certificate cert) {
-        return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).isCA(cert);
+        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).isCA(cert);
     }
 
     /**
@@ -2909,7 +2909,7 @@ public abstract class CertTools {
      */
     public static void checkValidity(final Certificate cert, final Date date) throws CertificateExpiredException, CertificateNotYetValidException {
         if (cert != null) {
-            CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).checkValidity(cert, date);
+            CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).checkValidity(cert, date);
         }
     }
 
@@ -4013,7 +4013,7 @@ public abstract class CertTools {
      * @return String with cvc or asn.1 dump.
      */
     public static String dumpCertificateAsString(final Certificate cert) {
-        return CertificateImplementationFactory.INSTANCE.getCertificateImplementation(cert.getType()).dumpCertificateAsString(cert);
+        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).dumpCertificateAsString(cert);
     }
     
     /**
