@@ -47,7 +47,7 @@ public final class CTLogInfo implements Serializable {
     private Date intervalEnd;
 
     private transient PublicKey publicKey;
-
+    
     private static final Random random = new Random();
 
     /**
