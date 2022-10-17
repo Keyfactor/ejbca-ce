@@ -25,6 +25,7 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -63,6 +64,8 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.cvc.AuthorizationField;
 import org.ejbca.cvc.CVCertificateBody;
@@ -78,6 +81,16 @@ public class RaCertificateDetails {
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
         boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException;
+        /**
+         * Tries to update the revocation reason (and optionally backdate it).
+         * @param newRevocationReason The revocation reason to update to
+         * @param newDate New revocation date (can be null if backdate is not desired)
+         * @param issuerDn Distinguished name of certificate issuer
+         * @throws RevokeBackDateNotAllowedForProfileException Backdating fails if not allowed in certificate profile
+         */
+        void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason, final Date newDate,
+                final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
+                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException;
         boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
                                                                                 WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
         boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
@@ -141,17 +154,20 @@ public class RaCertificateDetails {
     private RaCertificateDetails next = null;
     private RaCertificateDetails previous = null;
 
-
     private int newRevocationReason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
+    private String updatedRevocationDate = null;
+    private Boolean caAllowsChangeOfRevocationReason = false;
 
     public RaCertificateDetails(final CertificateDataWrapper cdw, final Callbacks callbacks,
-            final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap) {
+            final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
+                    final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason) {
         this.callbacks = callbacks;
-        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason);
     }
 
-    public void reInitialize(final CertificateDataWrapper cdw,
-            final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap) {
+    public void reInitialize(final CertificateDataWrapper cdw, final Map<Integer, String> cpIdToNameMap,
+            final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
+            final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason) {
         this.cdw = cdw;
         final CertificateData certificateData = cdw.getCertificateData();
         this.cpId = certificateData.getCertificateProfileId();
@@ -171,6 +187,10 @@ public class RaCertificateDetails {
             this.caName = getCaNameFromIssuerDn(caSubjectToNameMap, issuerDn);
         } else {
             this.caName = null;
+        }
+        if (caNameToAllowsChangeOfRevocationReason != null && this.caName != null &&
+                caNameToAllowsChangeOfRevocationReason.containsKey(this.caName)) {
+            this.caAllowsChangeOfRevocationReason = caNameToAllowsChangeOfRevocationReason.get(this.caName);
         }
         this.status = certificateData.getStatus();
         this.revocationReason = certificateData.getRevocationReason();
@@ -363,6 +383,25 @@ public class RaCertificateDetails {
     public boolean isSuspended() {
         return status == CertificateConstants.CERT_REVOKED && revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD;
     }
+    /**
+     * @return boolean is certificate revoked
+     */
+    public boolean isRevoked() {
+        return status == CertificateConstants.CERT_REVOKED;
+    }
+    /**
+     * @return boolean is certificate revoked with reason key compromise
+     */
+    public boolean isRevokedWithKeyCompromise() {
+        return this.isRevoked() && this.revocationReason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE;
+    }
+    /**
+     * Check if the CA that issues the certificate allows changing the revocation reason.
+     * @return boolean does CA allow revocation reason change
+     */
+    public boolean isCaAllowingChangeOfRevocationReason() {
+        return this.caAllowsChangeOfRevocationReason;
+    }
 
     /** @return a localized certificate (revocation) status string */
     public String getStatus() {
@@ -468,13 +507,40 @@ public class RaCertificateDetails {
         return ret;
     }
 
+    /**
+     * Returns list of options for changing revocation reason.
+     * The Mozilla Root Store Policy only allows change of revocation reason to keyCompromise.
+     * @return list of SelectItem revocation reasons
+     */
+    public List<SelectItem> getChangeRevocationReasons() {
+        final List<SelectItem> ret = new ArrayList<>();
+        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE),
+                callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_1")));
+        return ret;
+    }
+
     public Integer getNewRevocationReason() { return Integer.valueOf(newRevocationReason); }
     public void setNewRevocationReason(final Integer newRevocationReason) { this.newRevocationReason = newRevocationReason.intValue(); }
+
+    /**
+     * Get the date String for the revocation backdate that has been input by the GUI user.
+     * @return String date
+     */
+    public String getChangedRevocationReasonDate() { return updatedRevocationDate; }
+
+    /**
+     * Set the revocation backdate date String.
+     * @param dateString new date String
+     */
+    public void setChangedRevocationReasonDate(String dateString) {
+        updatedRevocationDate = dateString;
+    }
 
     public void actionRevoke() {
         try {
             if (callbacks.changeStatus(this, CertificateConstants.CERT_REVOKED, newRevocationReason)) {
                 callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_successful");
+                setNewRevocationReason(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } else {
                 callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             }
@@ -484,6 +550,38 @@ public class RaCertificateDetails {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_approvalrequest", e.getRequestId());
         }
         styleRowCallCounter = 0;    // Reset
+    }
+
+    /**
+     * Tries to change revocation reason. Also used to backdate when revocation reason already is KeyCompromise.
+     */
+    public void actionChangeRevocationReason() {
+        Date changedDate = null;
+        if (!StringUtils.isEmpty(getChangedRevocationReasonDate())) {
+            try {
+                changedDate = ValidityDate.parseAsIso8601(getChangedRevocationReasonDate().trim());
+            } catch (ParseException e) {
+                callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_incorrect_date_format");
+                return;
+            }
+        }
+        try {
+            callbacks.changeRevocationReason(this, getNewRevocationReason().intValue(), changedDate, this.issuerDn);
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_successful");
+            setNewRevocationReason(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        } catch (ApprovalException e) {
+            callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_approvalrequest");
+            log.error(e);
+        } catch (WaitingForApprovalException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_info_revocation_approvalrequest", e.getRequestId());
+            log.error(e);
+        } catch (RevokeBackDateNotAllowedForProfileException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_error_certificate_profile_backdating");
+        } catch (NoSuchEndEntityException | AlreadyRevokedException | CADoesntExistsException
+                | AuthorizationDeniedException e) {
+            callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
+            log.error(e);
+        }
     }
 
     public void actionReactivate() {
