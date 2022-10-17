@@ -1890,7 +1890,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
 
                 final CAData cadata = caSession.findById(certificateData.getIssuerDN().hashCode());
-                final boolean allowedOnCa = cadata.getCA().getCAInfo().isAllowChangingRevocationReason();
+                final boolean allowedOnCa = cadata != null ? cadata.getCA().getCAInfo().isAllowChangingRevocationReason() : false;
 
                 final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
                 if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
