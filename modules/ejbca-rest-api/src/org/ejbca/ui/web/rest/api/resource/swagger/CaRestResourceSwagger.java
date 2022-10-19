@@ -85,6 +85,7 @@ public class CaRestResourceSwagger extends CaRestResource {
 
     @GET
     @Path("/{issuer_dn}/getLatestCrl")
+    @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Returns the latest CRL issued by this CA",
             response = CrlRestResponse.class)
     public Response getLatestCrl(@Context HttpServletRequest httpServletRequest,
