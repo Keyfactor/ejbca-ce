@@ -50,6 +50,14 @@ public class RevokedCertInfo implements Serializable {
     public static final int REVOCATION_REASON_PRIVILEGESWITHDRAWN  = RevocationReasons.PRIVILEGESWITHDRAWN.getDatabaseValue();
     public static final int REVOCATION_REASON_AACOMPROMISE         = RevocationReasons.AACOMPROMISE.getDatabaseValue();
     
+    public static final List<Integer> ALLOWED_OLD_REVOCATION_REASONS = Stream.of(REVOCATION_REASON_UNSPECIFIED,
+                                                                        REVOCATION_REASON_KEYCOMPROMISE,
+                                                                        REVOCATION_REASON_PRIVILEGESWITHDRAWN,
+                                                                        REVOCATION_REASON_CESSATIONOFOPERATION,
+                                                                        REVOCATION_REASON_AFFILIATIONCHANGED,
+                                                                        REVOCATION_REASON_SUPERSEDED)
+                                                                    .collect(Collectors.toList());
+
     /** BigInteger (serialNumber) in byte format, BigInteger.toByteArray() */
     private byte[]      userCertificate;
     private long        revocationDate;
@@ -215,16 +223,10 @@ public class RevokedCertInfo implements Serializable {
      * @return  true if all the requirements are met.
      */
     public static boolean canRevocationReasonBeChanged(final int newReason, final Date newDate, final int currentReason, final long currentDate, final boolean allowedOnCa, final boolean isX509) {
-        final List<Integer> allowedReasons = Stream.of(REVOCATION_REASON_KEYCOMPROMISE,
-                                                       REVOCATION_REASON_PRIVILEGESWITHDRAWN,
-                                                       REVOCATION_REASON_CESSATIONOFOPERATION,
-                                                       REVOCATION_REASON_AFFILIATIONCHANGED,
-                                                       REVOCATION_REASON_SUPERSEDED)
-                                                   .collect(Collectors.toList());
-
+        
         final boolean dateIsOk = newDate == null || newDate.getTime() <= currentDate;
 
-        return isX509 && allowedOnCa && newReason == REVOCATION_REASON_KEYCOMPROMISE && allowedReasons.contains(currentReason) && dateIsOk;
+        return isX509 && allowedOnCa && newReason == REVOCATION_REASON_KEYCOMPROMISE && ALLOWED_OLD_REVOCATION_REASONS.contains(currentReason) && dateIsOk;
     }
     
     public static boolean isPermanentlyRevoked(int revocationReason) {
