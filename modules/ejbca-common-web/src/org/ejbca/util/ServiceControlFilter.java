@@ -52,8 +52,9 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 public class ServiceControlFilter implements Filter {
     private static final Logger log = Logger.getLogger(ServiceControlFilter.class);
     
-    private AvailableProtocolsConfiguration availableProtocolsConfiguration;
-    
+    private static final String REST_PROTOCOL_INDICATOR = "REST";
+    private static final String[] BROWSER_FORBIDDEN_HEADERS = new String[] {"Sec-Fetch-Mode", "Sec-Fetch-Dest"};
+        
     private String serviceName;
 
     private GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -61,7 +62,6 @@ public class ServiceControlFilter implements Filter {
     private AuthorizationSessionLocal authorizationSession;
     
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-    
 
     @Override
     public void destroy() {
@@ -80,12 +80,36 @@ public class ServiceControlFilter implements Filter {
             log.debug("Initialized service control filter for '" + serviceName + "'.");
         }
     }
+    
+    private boolean allowPossibleDirectBrowserCalls(AvailableProtocolsConfiguration availableProtocolsConfiguration, 
+            HttpServletRequest httpRequest) {
+        
+        if(!serviceName.startsWith(REST_PROTOCOL_INDICATOR)) {
+            return true;
+        }
+        
+        if(!availableProtocolsConfiguration.isCustomHeaderForRestEnabled()) {
+            log.debug("Custom header protection for browser calls is disabled. REST call is let through.");
+            return true;
+        }
+        
+        for(String forbiddenHeader: BROWSER_FORBIDDEN_HEADERS) {
+            if(httpRequest.getHeader(forbiddenHeader)!=null 
+                    && httpRequest.getHeader(availableProtocolsConfiguration.getCustomHeaderForRest())==null) {
+                // error is logged for server admin
+                log.error("Custom header for browser calls is absent with forbidden header: " + httpRequest);
+                return false;
+            }
+        }
+        
+        return true;
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         final HttpServletRequest httpRequest = (HttpServletRequest) request;
         final HttpServletResponse httpResponse = (HttpServletResponse) response;
-        availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         
         // Note: Swagger gets serviceName == AvailableProtocols.REST_CERTIFICATE_MANAGEMENT
@@ -95,7 +119,8 @@ public class ServiceControlFilter implements Filter {
             }
             
             if(serviceName.equalsIgnoreCase(
-                    AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())) {
+                    AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())
+                    && allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
                 AuthenticationToken authenticationToken = getAdmin(httpRequest);
                 if(authenticationToken!=null &&
                         authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
@@ -110,13 +135,19 @@ public class ServiceControlFilter implements Filter {
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
             return;
         }
+        
+        // service is enabled
+        if(!allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
+            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
+            return;
+        }
 
         if (log.isDebugEnabled()) {
             log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
         }
         chain.doFilter(request, response);
     }
-    
+        
     private AuthenticationToken getAdmin(HttpServletRequest requestContext) {
         if (requestContext == null) {
             return null;
