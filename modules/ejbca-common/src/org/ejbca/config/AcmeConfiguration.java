@@ -124,7 +124,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
             // v10. Added client authentication required.
             if (data.get(KEY_CLIENT_AUTHENTICATION_REQUIRED) == null) {
-                data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, DEFAULT_CLIENT_AUTHENTICATION_REQUIRED);
+                data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED));
             }
             // v9. Added DNS identifier chaleenge Types selection.
             if (data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES) == null) {
