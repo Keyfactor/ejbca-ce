@@ -970,7 +970,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private void enableRevocationReasonChange() throws Exception {
         X509CAInfo caInfo = (X509CAInfo) x509TestCa.getCAInfo();
         caInfo.setAllowChangingRevocationReason(true);
-        caInfo.setDeltaCRLPeriod(0);
         caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, caInfo);
     }
 
@@ -1067,9 +1066,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     /**
      * Creates a keystore with a certificate for the test End Entity
-     *
-     * @return KeyStore
-     * @throws Exception
      */
     private KeyStore createKeystore() throws Exception {
         final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(
