@@ -745,4 +745,8 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     public void setUseExtendedValidation(boolean use) {
         cmpConfiguration.setUseExtendedValidation(getSelectedCmpAlias(), use);
     }
+
+    public boolean isShowExtendedConfiguration(){
+        return getEjbcaWebBean().isRunningEnterprise() ;
+    }
 }
