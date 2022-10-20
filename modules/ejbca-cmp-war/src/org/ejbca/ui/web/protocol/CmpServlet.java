@@ -26,6 +26,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -37,7 +38,6 @@ import org.ejbca.ui.web.pub.ServletUtils;
 /**
  * Servlet implementing server side of the Certificate Management Protocols (CMP)
  * 
- * @version $Id$
  */
 public class CmpServlet extends HttpServlet {
 
@@ -97,6 +97,11 @@ public class CmpServlet extends HttpServlet {
                 }
                 output.write(buf, 0, n);
             }
+            CmpConfiguration config = raMasterApiProxyBean.getGlobalConfiguration(CmpConfiguration.class);
+            if (config.getUseExtendedValidation(alias)) {
+                // Perform extended validation. To be implemented in ECA-11035
+            }
+            
             service(output.toByteArray(), request.getRemoteAddr(), response, alias);
         } catch (IOException | RuntimeException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
