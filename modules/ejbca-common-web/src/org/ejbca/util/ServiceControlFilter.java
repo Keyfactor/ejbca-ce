@@ -56,6 +56,7 @@ public class ServiceControlFilter implements Filter {
     private static final String[] BROWSER_FORBIDDEN_HEADERS = new String[] {"Sec-Fetch-Mode", "Sec-Fetch-Dest"};
         
     private String serviceName;
+    private boolean isRestService;
 
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     
@@ -70,6 +71,8 @@ public class ServiceControlFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         serviceName = filterConfig.getInitParameter("serviceName");
+        isRestService = serviceName.startsWith(REST_PROTOCOL_INDICATOR);
+        
         // Since this filter is referenced in ejbca-common-web module and that module is referenced by 
         // cmpHttpProxy module, to make cmpHttpProxy module deploy-able in JEE servers we initialize 
         // the globalConfigurationSession bean here instead of using the EJB annotation.
@@ -77,14 +80,14 @@ public class ServiceControlFilter implements Filter {
         authorizationSession = new EjbLocalHelper().getAuthorizationSession();
         ejbcaRestHelperSession = new EjbLocalHelper().getEjbcaRestHelperSession();
         if (log.isDebugEnabled()) {
-            log.debug("Initialized service control filter for '" + serviceName + "'.");
+            log.debug("Initialized service control filter for '" + serviceName + "', which is REST service: " + isRestService);
         }
     }
     
     private boolean allowPossibleDirectBrowserCalls(AvailableProtocolsConfiguration availableProtocolsConfiguration, 
             HttpServletRequest httpRequest) {
         
-        if(!serviceName.startsWith(REST_PROTOCOL_INDICATOR)) {
+        if(!isRestService) {
             return true;
         }
         
