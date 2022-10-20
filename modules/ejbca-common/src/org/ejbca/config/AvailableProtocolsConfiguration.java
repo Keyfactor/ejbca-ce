@@ -173,7 +173,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         return (String) data.get(CUSTOM_HEADER_REST_NAME);
     }
     
-    public void setCustomHeaderForRestEnabled(String value) {
+    public void setCustomHeaderForRest(String value) {
         data.put(CUSTOM_HEADER_REST_NAME, value);
     }
 
