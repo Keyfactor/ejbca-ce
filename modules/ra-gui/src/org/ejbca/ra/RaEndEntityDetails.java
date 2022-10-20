@@ -27,6 +27,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -80,6 +82,7 @@ public class RaEndEntityDetails {
     private final String created;
     private final String modified;
     private final int status;
+    private final boolean sshTypeEndEntity;
 
     private EndEntityProfile endEntityProfile = null;
     private SubjectDn subjectDistinguishedName = null;
@@ -115,6 +118,7 @@ public class RaEndEntityDetails {
         this.eepName = eeProfName;
         this.caName = caName;
         final Date timeCreated = endEntity.getTimeCreated();
+        this.sshTypeEndEntity = endEntity.isSshEndEntity();
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
         } else {
@@ -166,6 +170,7 @@ public class RaEndEntityDetails {
     public int getCaId() {
         return endEntityInformation.getCAId();
     }
+    public boolean getSshTypeEndEntity() { return sshTypeEndEntity; }
     public String getCreated() { return created; }
     public String getModified() { return modified; }
     public String getStatus() {
@@ -198,6 +203,18 @@ public class RaEndEntityDetails {
                 return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_pem");
         }
         return "?";
+    }
+
+    public String getSshKeyId() {
+        return parseSshKeyId(subjectDn);
+    }
+
+    public String getSshPrincipals() {
+        return parseSshPrincipals(subjectAn);
+    }
+
+    public String getSshComment() {
+        return parseSshComment(subjectAn);
     }
 
     /**
@@ -643,6 +660,52 @@ public class RaEndEntityDetails {
      */
     public String getCabfOrganizationIdentifier() {
         return extendedInformation.getCabfOrganizationIdentifier();
+    }
+
+    /**
+     * Used for SSH type end entities to present the key ID which is stored as the subject DN common name value internally.
+     * @param subjectDn Subject Distinguished Name for the end entity
+     * @return String formatted as 'Key ID: <ssh key id>'
+     */
+    private static String parseSshKeyId(final String subjectDn) {
+        return subjectDn.replace("CN=", "Key ID: ");
+    }
+
+    /**
+     * Used for SSH type end entities to extract principals from SAN.
+     * @param subjectAn Subject Alternative Name for the end entity
+     * @return String with prinipals formatted as 'Principals: <comma separated list of principals>'
+     */
+    private static String parseSshPrincipals(final String subjectAn) {
+        final Pattern pattern = Pattern.compile("dnsName=PRINCIPAL:(.*):COMMENT:.*");
+        final Matcher matcher = pattern.matcher(subjectAn);
+        if (matcher.matches()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Principals: ");
+            sb.append(matcher.group(1));
+            return sb.toString();
+        }
+        else {
+            return "";
+        }
+    }
+
+    /**
+     * Used for SSH type end entities to extract comment field from SAN.
+     * @param subjectAn Subject Alternative Name for the end entity
+     * @return String with comment formatted as 'Comment: <comment>'
+     */
+    private static String parseSshComment(final String subjectAn) {
+        final Pattern pattern = Pattern.compile("dnsName=PRINCIPAL:.*:COMMENT:(.*)");
+        final Matcher matcher = pattern.matcher(subjectAn);
+        if (matcher.matches()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Comment: ");
+            sb.append(matcher.group(1));
+            return sb.toString();
+        } else {
+            return "";
+        }
     }
 
     /** @return true every twice starting with every forth call */
