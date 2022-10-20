@@ -162,7 +162,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     }
     
     public boolean isCustomHeaderForRestEnabled() {
-        return Boolean.parseBoolean((String) data.get(CUSTOM_HEADER_REST_ENABLED));
+        return Boolean.parseBoolean((String) data.getOrDefault(CUSTOM_HEADER_REST_ENABLED, String.valueOf(true)));
     }
     
     public void setCustomHeaderForRestEnabled(boolean value) {
@@ -170,7 +170,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     }
     
     public String getCustomHeaderForRest() {
-        return (String) data.get(CUSTOM_HEADER_REST_NAME);
+        return (String) data.getOrDefault(CUSTOM_HEADER_REST_NAME, CUSTOM_HEADER_REST_NAME_DEFAULT);
     }
     
     public void setCustomHeaderForRest(String value) {
@@ -180,14 +180,6 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     @Override
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            if(Float.compare(LATEST_VERSION, getVersion()) < 3f) {
-                if(data.get(CUSTOM_HEADER_REST_NAME) == null) {
-                    data.put(CUSTOM_HEADER_REST_NAME, CUSTOM_HEADER_REST_NAME_DEFAULT);
-                }
-                if(data.get(CUSTOM_HEADER_REST_ENABLED) == null) {
-                    data.put(CUSTOM_HEADER_REST_ENABLED, String.valueOf(true));
-                }
-            }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));
         }
     }
