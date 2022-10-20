@@ -32,6 +32,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -80,14 +81,14 @@ public class ServiceControlFilter implements Filter {
         authorizationSession = new EjbLocalHelper().getAuthorizationSession();
         ejbcaRestHelperSession = new EjbLocalHelper().getEjbcaRestHelperSession();
         if (log.isDebugEnabled()) {
-            log.debug("Initialized service control filter for '" + serviceName + "', which is REST service: " + isRestService);
+            log.debug("Initialized service control filter for '" + serviceName + "'");
         }
     }
     
     private boolean allowPossibleDirectBrowserCalls(AvailableProtocolsConfiguration availableProtocolsConfiguration, 
             HttpServletRequest httpRequest) {
         
-        if(!isRestService) {
+        if(!isRestService || !EjbcaConfiguration.getIsCustomHeaderProtectionEnabled()) {
             return true;
         }
         
