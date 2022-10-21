@@ -37,6 +37,7 @@ public abstract class RaAbstractDn {
     
     private final Collection<EndEntityProfile.FieldInstance> requiredFieldInstances = new ArrayList<>();
     private final Collection<EndEntityProfile.FieldInstance> optionalFieldInstances = new ArrayList<>();
+    private final Collection<EndEntityProfile.FieldInstance> fullListOfInstances = new ArrayList<>();
 
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
     protected String value;
@@ -84,6 +85,7 @@ public abstract class RaAbstractDn {
                 } else {
                     optionalFieldInstances.add(fieldInstance);
                 }
+                fullListOfInstances.add(fieldInstance);
                 fieldInstancesMap.get(key).put(fieldInstance.getNumber(), fieldInstance);
             }
         }
@@ -110,7 +112,7 @@ public abstract class RaAbstractDn {
         Collection<EndEntityProfile.FieldInstance> allFieldInstances = new ArrayList<>();
         allFieldInstances.addAll(requiredFieldInstances);
         allFieldInstances.addAll(optionalFieldInstances);
-        
+
         return allFieldInstances;
     }
 
@@ -126,9 +128,6 @@ public abstract class RaAbstractDn {
      */
     public void update() {
         StringBuilder dn = new StringBuilder();
-        Collection<EndEntityProfile.FieldInstance> fullListOfInstances = new ArrayList<>();
-        fullListOfInstances.addAll(requiredFieldInstances);
-        fullListOfInstances.addAll(optionalFieldInstances);
         
         for (EndEntityProfile.FieldInstance fieldInstance : fullListOfInstances) {
             if (fieldInstance != null) {
@@ -159,7 +158,7 @@ public abstract class RaAbstractDn {
      * @see RaAbstractDn.update()
      */
     public String getValue() {
-        if(value == null){
+        if (value == null) {
             update();
         }
         return value;
