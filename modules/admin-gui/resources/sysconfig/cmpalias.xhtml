@@ -480,7 +480,8 @@
 
             <!--  Other Configuration  -->
             <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
-                         rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
+                         rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2"
+						 rendered="#{editCmpConfigMBean.showExtendedConfiguration}">
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CMPOTHERCONFIGURATION}" style="font-weight: bold;"/>
                 </h:panelGroup>
