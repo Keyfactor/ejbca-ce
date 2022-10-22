@@ -129,10 +129,11 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
                 if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) { 
                     setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
                             AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
-                } else if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof AcmeExternalAccountBinding) {
-                    setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
-                            (AcmeExternalAccountBinding) data.get(KEY_EXTERNAL_ACCOUNT_BINDING))));
-                } else { // Should never happen.
+                } else if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof LinkedHashMap) {
+                    final LinkedList<LinkedHashMap<Object,Object>> clones = new LinkedList<>();
+                    clones.add((LinkedHashMap<Object,Object>)data.get(KEY_EXTERNAL_ACCOUNT_BINDING));
+                    data.put(KEY_EXTERNAL_ACCOUNT_BINDING, clones);
+                } else if (!(data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof List)) { // Should never happen.
                     log.error("Invalida data type during upgrade. Verify ACME configuration with alias '" + getConfigurationId() + "'");
                     setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
                             AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
