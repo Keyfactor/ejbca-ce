@@ -29,6 +29,8 @@ public class RaEndEntitySearchPaginationSummary {
     private int nextPageNumber; // to distinguish between repeated search
     
     private boolean onlyUpdateCache; // used to update currentIdentifierSearchOffset at remote
+    
+    private int maxResultsPerPage; 
 
     public String getSortingProperty() {
         return sortingProperty;
@@ -100,6 +102,14 @@ public class RaEndEntitySearchPaginationSummary {
 
     public void setOnlyUpdateCache(boolean onlyUpdateCache) {
         this.onlyUpdateCache = onlyUpdateCache;
+    }
+
+    public int getMaxResultsPerPage() {
+        return maxResultsPerPage;
+    }
+
+    public void setMaxResultsPerPage(int maxResultsPerPage) {
+        this.maxResultsPerPage = maxResultsPerPage;
     }    
     
 }
