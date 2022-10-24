@@ -1538,6 +1538,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
         }
 
+        searchSummary.setMaxResultsPerPage(Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), raEndEntitySearchRequest.getMaxResults()));
         RaEndEntitySearchResponse searchResponse =
                 searchForEndEntities(authenticationToken, raEndEntitySearchRequest,
                         searchSummary.getCurrentIdentifierSearchOffset(),
