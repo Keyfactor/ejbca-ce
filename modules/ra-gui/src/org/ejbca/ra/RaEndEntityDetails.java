@@ -82,7 +82,12 @@ public class RaEndEntityDetails {
     private final String created;
     private final String modified;
     private final int status;
+
+    // SSH End entity fields
     private final boolean sshTypeEndEntity;
+    private final String sshKeyId;
+    private final String sshPrincipals;
+    private final String sshComment;
 
     private EndEntityProfile endEntityProfile = null;
     private SubjectDn subjectDistinguishedName = null;
@@ -118,7 +123,18 @@ public class RaEndEntityDetails {
         this.eepName = eeProfName;
         this.caName = caName;
         final Date timeCreated = endEntity.getTimeCreated();
-        this.sshTypeEndEntity = endEntity.isSshEndEntity();
+        if (endEntity.isSshEndEntity()) {
+            // END entity is SSH type
+            this.sshTypeEndEntity = true;
+            this.sshKeyId = parseSshKeyId(this.subjectDn);
+            this.sshPrincipals = parseSshPrincipals(this.subjectAn);
+            this.sshComment = parseSshComment(this.subjectAn);
+        } else {
+            this.sshTypeEndEntity = false;
+            this.sshKeyId = null;
+            this.sshPrincipals = null;
+            this.sshComment = null;
+        }
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
         } else {
@@ -171,6 +187,10 @@ public class RaEndEntityDetails {
         return endEntityInformation.getCAId();
     }
     public boolean getSshTypeEndEntity() { return sshTypeEndEntity; }
+    public String getSshKeyId() { return sshKeyId; }
+    public String getSshPrincipals() { return sshPrincipals; }
+    public String getSshComment() { return sshComment; }
+
     public String getCreated() { return created; }
     public String getModified() { return modified; }
     public String getStatus() {
@@ -205,17 +225,6 @@ public class RaEndEntityDetails {
         return "?";
     }
 
-    public String getSshKeyId() {
-        return parseSshKeyId(subjectDn);
-    }
-
-    public String getSshPrincipals() {
-        return parseSshPrincipals(subjectAn);
-    }
-
-    public String getSshComment() {
-        return parseSshComment(subjectAn);
-    }
 
     /**
      * Extracts subject DN from certificate request and converts the string to cesecore namestyle
@@ -663,27 +672,24 @@ public class RaEndEntityDetails {
     }
 
     /**
-     * Used for SSH type end entities to present the key ID which is stored as the subject DN common name value internally.
+     * Used for SSH type end entities to extract the key ID which is stored as the subject DN common name value internally.
      * @param subjectDn Subject Distinguished Name for the end entity
-     * @return String formatted as 'Key ID: <ssh key id>'
+     * @return SSH key ID string
      */
     private static String parseSshKeyId(final String subjectDn) {
-        return subjectDn.replace("CN=", "Key ID: ");
+        return subjectDn.substring(3);
     }
 
     /**
      * Used for SSH type end entities to extract principals from SAN.
      * @param subjectAn Subject Alternative Name for the end entity
-     * @return String with prinipals formatted as 'Principals: <comma separated list of principals>'
+     * @return String with SSH prinipals formatted as a comma separated list
      */
     private static String parseSshPrincipals(final String subjectAn) {
         final Pattern pattern = Pattern.compile("dnsName=PRINCIPAL:(.*):COMMENT:.*");
         final Matcher matcher = pattern.matcher(subjectAn);
         if (matcher.matches()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Principals: ");
-            sb.append(matcher.group(1));
-            return sb.toString();
+            return matcher.group(1);
         }
         else {
             return "";
@@ -693,16 +699,13 @@ public class RaEndEntityDetails {
     /**
      * Used for SSH type end entities to extract comment field from SAN.
      * @param subjectAn Subject Alternative Name for the end entity
-     * @return String with comment formatted as 'Comment: <comment>'
+     * @return String with SSH comment
      */
     private static String parseSshComment(final String subjectAn) {
         final Pattern pattern = Pattern.compile("dnsName=PRINCIPAL:.*:COMMENT:(.*)");
         final Matcher matcher = pattern.matcher(subjectAn);
         if (matcher.matches()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Comment: ");
-            sb.append(matcher.group(1));
-            return sb.toString();
+            return matcher.group(1);
         } else {
             return "";
         }
