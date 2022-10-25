@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package com.keyfactor.util.keys;
+package com.keyfactor.util.crypto.algorithm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,21 +34,21 @@ public enum AlgorithmConfigurationCache {
     
     private List<String> configurationDefinedAlgorithms;
     private Map<String, String> configurationDefinedAlgorithmTitles;
-    
-    private boolean useLegacyPkcs12Keystore;
 
     private AlgorithmConfigurationCache() {
         gost3410Enabled = false;
         dstu4145Enabled = false;
         configurationDefinedAlgorithms = new ArrayList<>();
         configurationDefinedAlgorithmTitles = new HashMap<>();
-        useLegacyPkcs12Keystore = false;
+        
         //Set defaults
         ecDsaImplicitlyCaQ = "883423532389192164791648750360308885314476597252960362792450860609699839";
         ecDsaImplicitlyCaA = "7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc";
         ecDsaImplicitlyCaB = "6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a";
         ecDsaImplicitlyCaG = "020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf";
         ecDsaImplicitlyCaN = "883423532389192164791648750360308884807550341691627752275345424702807307";
+        
+       
     }
     
     public boolean isGost3410Enabled() {
@@ -81,14 +81,6 @@ public enum AlgorithmConfigurationCache {
 
     public void addConfigurationDefinedAlgorithmTitle(final String algorithm, final String title) {
         configurationDefinedAlgorithmTitles.put(algorithm, title);
-    }
-
-    public boolean isUseLegacyPkcs12Keystore() {
-        return useLegacyPkcs12Keystore;
-    }
-
-    public void setUseLegacyPkcs12Keystore(boolean useLegacyPkcs12Keystore) {
-        this.useLegacyPkcs12Keystore = useLegacyPkcs12Keystore;
     }
 
     public String getEcDsaImplicitlyCaQ() {
@@ -130,4 +122,5 @@ public enum AlgorithmConfigurationCache {
     public void setEcDsaImplicitlyCaN(String ecDsaImplicitlyCaN) {
         this.ecDsaImplicitlyCaN = ecDsaImplicitlyCaN;
     }
+
 }

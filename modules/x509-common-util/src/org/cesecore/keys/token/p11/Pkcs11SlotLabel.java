@@ -29,16 +29,18 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.ServiceLoader;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.PKCS11SlotListWrapper;
-import org.cesecore.keys.token.PKCS11SlotListWrapperHelper;
+import org.cesecore.keys.token.PKCS11SlotListWrapperFactory;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11.exception.P11RuntimeException;
+
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 
 /**
  * Object for handling a PKCS#11 Slot Label.
@@ -119,7 +121,7 @@ public class Pkcs11SlotLabel {
             }
         }
         final long slot;
-        final PKCS11SlotListWrapper p11 = PKCS11SlotListWrapperHelper.getSlotListWrapper(libFile); // must be called before any provider is created for libFile
+        final PKCS11SlotListWrapper p11 = getSlotListWrapper(libFile); // must be called before any provider is created for libFile
         switch (this.type) {
         case SLOT_LABEL:
             slot = getSlotID(this.value, p11);
@@ -157,7 +159,7 @@ public class Pkcs11SlotLabel {
     /** @return a List of "slotId;tokenLabel" in the (indexed) order we get the from the P11 */
     public static List<String> getExtendedTokenLabels(final File libFile) {
         final List<String> tokenLabels = new ArrayList<>();
-        final PKCS11SlotListWrapper p11 = PKCS11SlotListWrapperHelper.getSlotListWrapper(libFile);
+        final PKCS11SlotListWrapper p11 = getSlotListWrapper(libFile);
         final long slots[] = p11.getSlotList();
         if (log.isDebugEnabled()) {
             log.debug("Found " + slots.length + " slots for '" +libFile + "'");
@@ -333,7 +335,7 @@ public class Pkcs11SlotLabel {
                 }
                 pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
                 pw.println("}");
-                if ( CesecoreConfiguration.p11disableHashingSignMechanisms() ) {
+                if ( CryptoProviderConfigurationCache.INSTANCE.isP11disableHashingSignMechanisms() ) {
                     pw.println("disabledMechanisms = {");
                     // by disabling these mechanisms the hashing will be done in the application instead of the HSM.
                     pw.println("  CKM_SHA1_RSA_PKCS");
@@ -551,5 +553,22 @@ public class Pkcs11SlotLabel {
         }
         final Pkcs11SlotLabel slotSpec = new Pkcs11SlotLabel(slotLabelType, sSlot);
         return slotSpec.getProvider(fileName, attributesFile, privateKeyLabel);
+    }
+    
+    public static PKCS11SlotListWrapper getSlotListWrapper(final File pkcs11Library) {
+        // We create the META-INF/services file during build in EJBCA with:
+        //<buildservicemanifest interface="org.cesecore.keys.token.PKCS11SlotListWrapperFactory" file="${cesecore-common.dir}/build/classes" classpath="manifest.classpath"/>
+        PKCS11SlotListWrapperFactory factory = null;
+        final ServiceLoader<? extends PKCS11SlotListWrapperFactory> serviceLoader = ServiceLoader.load(PKCS11SlotListWrapperFactory.class);
+        for (PKCS11SlotListWrapperFactory slotListWrapperFactory : serviceLoader) {
+            if (factory == null || slotListWrapperFactory.getPriority() > factory.getPriority()) {
+                factory = slotListWrapperFactory;
+            }
+        }
+        if (factory != null) {
+            log.debug("Using PKCS11SlotListWrapperFactory of type " + factory.getClass().getName());
+            return factory.getInstance(pkcs11Library);
+        }
+        return null;
     }
 }
