@@ -437,7 +437,7 @@ public class RevocationApprovalTest extends CaTestCase {
             assertNotNull("Test user certificate was not created", usercert);
 
             RevocationApprovalRequest revAr = new RevocationApprovalRequest(CertTools.getSerialNumber(usercert), CertTools.getIssuerDN(usercert), username, 
-                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null);
+                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null, null);
             revAr.execute(endEntityManagementSession, 4711, null);
             // Verify that the certificate was revokes
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
