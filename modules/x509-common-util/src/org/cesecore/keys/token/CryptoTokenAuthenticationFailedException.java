@@ -18,7 +18,6 @@ import org.cesecore.CesecoreException;
 /**
  * An exception thrown when authentication to HardCATokens fail.
  *
- * @version $Id$
  */
 public class CryptoTokenAuthenticationFailedException extends CesecoreException {
     
