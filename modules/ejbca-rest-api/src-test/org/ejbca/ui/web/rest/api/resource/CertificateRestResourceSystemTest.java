@@ -49,6 +49,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -112,6 +113,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
@@ -130,6 +132,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private static final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static final Random random = new Random();
     private X509CA x509TestCa;
@@ -587,6 +590,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldContainUpdatedRevocationReasonInBaseCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         final String serialNumber = generateTestSerialNumber();
@@ -604,6 +608,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldContainBackdatedRevocationDateInBaseCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         enableRevocationBackdating();
@@ -626,6 +631,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldContainUpdatedRevocationReasonInDeltaCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         final String serialNumber = generateTestSerialNumber();
@@ -643,6 +649,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldContainBackdatedRevocationDateInDeltaCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // Scenario: base CRL > initial revocation > revocation backdating with a date after last base CRL > delta CRL
         // given
         enableRevocationReasonChange();
@@ -665,6 +672,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldGenerateCrlUponRevocationReasonChange() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         enableGenerateCrlUponRevocation();
@@ -684,6 +692,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldChangeRevocationReasonUponCrlImport() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         createTestEndEntity();
