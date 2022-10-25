@@ -72,7 +72,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 /**
  * Various helper methods for handling the mappings between different key and
  * signature algorithms.

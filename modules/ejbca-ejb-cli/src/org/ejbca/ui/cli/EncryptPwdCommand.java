@@ -25,6 +25,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 /**
  * Implements the password encryption mechanism
  *
@@ -72,10 +74,10 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
         final String enc;
 
         if (readKey) {
-            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey, ConfigurationHolder.useLegacyEncryption());
+            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
         } else {
             char[] encryptionKeyFromConfiguration = ConfigurationHolder.getString("password.encryption.key").toCharArray();
-            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKeyFromConfiguration, ConfigurationHolder.useLegacyEncryption());
+            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKeyFromConfiguration, StringConfigurationCache.INSTANCE.useLegacyEncryption());
         }
 
         log.info(enc);

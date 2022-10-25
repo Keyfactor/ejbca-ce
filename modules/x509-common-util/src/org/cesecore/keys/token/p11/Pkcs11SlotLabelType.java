@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
  *  which can be used for human friendly labels, and the last is a validator used to validate inputed values (such as checking that
  *  a slot number can be cast to an integer). 
  * 
- * @version $Id$
  *
  */
 

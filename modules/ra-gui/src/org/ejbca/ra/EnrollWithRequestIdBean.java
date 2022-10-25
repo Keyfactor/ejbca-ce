@@ -85,7 +85,7 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Managed bean that backs up the enrollwithrequestid.xhtml page

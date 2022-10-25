@@ -25,6 +25,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
 import com.google.common.base.Preconditions;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.config.ConfigurationHolder;
@@ -160,7 +161,7 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setClientSecretAndEncrypt(String clientSecret) {
         final char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
-        this.clientSecret = StringTools.pbeEncryptStringWithSha256Aes192(clientSecret, encryptionKey, ConfigurationHolder.useLegacyEncryption());
+        this.clientSecret = StringTools.pbeEncryptStringWithSha256Aes192(clientSecret, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
     }
 
     public String getLabel() {

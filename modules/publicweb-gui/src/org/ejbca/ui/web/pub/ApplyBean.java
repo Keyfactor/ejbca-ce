@@ -33,7 +33,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;

@@ -12,15 +12,15 @@
  *************************************************************************/
 package org.cesecore.config;
 
-import org.apache.log4j.Logger;
-
-import com.keyfactor.util.string.StringConfigurationCache;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * This file handles configuration from cesecore.properties
@@ -113,14 +113,6 @@ public final class CesecoreConfiguration {
      */
     public static String getCertificateValidityOffset() {
         return ConfigurationHolder.getExpandedString("certificate.validityoffset");
-    }
-
-    /**
-     * @return true if it is permitted to use an extractable private key in a HSM.
-     */
-    public static boolean isPermitExtractablePrivateKeys() {
-        final String value = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
-        return value != null && value.trim().equalsIgnoreCase(TRUE);
     }
 
     /**
@@ -347,20 +339,6 @@ public final class CesecoreConfiguration {
         return StringConfigurationCache.INSTANCE.getForbiddenCharacters();
     }
 
-    /**
-     * @return true if sign mechanisms that uses PKCS#11 for hashing should be disabled, 
-     * if no value is defined for pkcs11.disableHashingSignMechanisms default value is true.
-     */
-    public static boolean p11disableHashingSignMechanisms() {
-        final String value = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
-        return value==null || Boolean.parseBoolean(value.trim());
-    }
-
-    /** @return true key store content of Crypto Tokens should be cached. */
-    public static boolean isKeyStoreCacheEnabled() {
-        return Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache"));
-    }
-
     /** @return a list of enabled TLS protocol versions and cipher suites */
     /*
      * Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
@@ -429,14 +407,6 @@ public final class CesecoreConfiguration {
      */
     public static long getCTFastFailBackOff() {
         return getLongValue("ct.fastfail.backoff", 1000L, "milliseconds");
-    }
-
-    /**
-     * @return true if key should be unmodifiable after generation.
-     */
-    public static boolean makeKeyUnmodifiableAfterGeneration() {
-        final String value = ConfigurationHolder.getString("pkcs11.makeKeyUnmodifiableAfterGeneration");
-        return value!=null && Boolean.parseBoolean(value.trim());
     }
     
     /**

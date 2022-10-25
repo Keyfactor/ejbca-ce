@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,22 +10,30 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keys.token.p11.exception;
+package org.cesecore.keys;
 
 /**
- * Classes in this packages throws this exception when an unexpected problem
- * occurs that should not occur at any circumstances.
- * @version $Id$
- *
+ * This exception is thrown when an error is encountered when trying to create a key.
+ * 
  */
-public class P11RuntimeException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
+public class KeyCreationException extends RuntimeException {
 
-    public P11RuntimeException(final String message, final Exception cause) {
-        super( message, cause );
+    private static final long serialVersionUID = 6589133117806842102L;
+
+    public KeyCreationException() {
+
     }
 
-    public P11RuntimeException(final String message) {
-        super( message );
+    public KeyCreationException(String arg0) {
+        super(arg0);
     }
+
+    public KeyCreationException(Throwable arg0) {
+        super(arg0);
+    }
+
+    public KeyCreationException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
+
 }

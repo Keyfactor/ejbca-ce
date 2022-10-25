@@ -91,7 +91,8 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.JDBCUtil;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
@@ -243,7 +244,7 @@ public class StartupSingletonBean {
                     ConfigurationHolder.getString("extraalgs." + algorithm.toLowerCase() + ".title"));
         }
         //Check if legacy keystore format should be used
-        AlgorithmConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null ? false
+        CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null ? false
                 : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12")));
                    
         //Set ECDSA ImplicitlyCA Values
@@ -252,6 +253,19 @@ public class StartupSingletonBean {
         AlgorithmConfigurationCache.INSTANCE.setEcDsaImplicitlyCaB(ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.b"));
         AlgorithmConfigurationCache.INSTANCE.setEcDsaImplicitlyCaG(ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.g"));
         AlgorithmConfigurationCache.INSTANCE.setEcDsaImplicitlyCaN(ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.n"));
+        
+        final String disableHashingSignMechanisms = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
+        CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(disableHashingSignMechanisms==null || Boolean.parseBoolean(disableHashingSignMechanisms.trim()));
+        
+        CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache")));
+        
+        final String doPermitExtractablePrivateKeys = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
+        CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(
+                doPermitExtractablePrivateKeys != null && doPermitExtractablePrivateKeys.trim().equalsIgnoreCase(Boolean.TRUE.toString()));
+        
+        final String keyUnmodifiableAfterGeneration = ConfigurationHolder.getString("pkcs11.makeKeyUnmodifiableAfterGeneration");
+        CryptoProviderConfigurationCache.INSTANCE.setKeyUnmodifiableAfterGeneration(
+                keyUnmodifiableAfterGeneration != null && Boolean.parseBoolean(keyUnmodifiableAfterGeneration.trim()));
         
         // Run java seed collector, that can take a little time the first time it is run
         log.debug(">startup initializing random seed, can take a little time...");

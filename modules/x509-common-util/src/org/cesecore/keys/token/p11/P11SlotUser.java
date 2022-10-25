@@ -24,8 +24,6 @@ package org.cesecore.keys.token.p11;
  * If deactivation is not allowed then the user may just continue to answer true to {@link #isActive()}.
  * </p>  
  * 
- * @version $Id$
- * 
  */
 public interface P11SlotUser {
     /**

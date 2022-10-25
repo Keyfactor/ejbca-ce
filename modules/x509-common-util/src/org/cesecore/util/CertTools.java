@@ -159,7 +159,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.novell.ldap.LDAPDN;
 
 /**

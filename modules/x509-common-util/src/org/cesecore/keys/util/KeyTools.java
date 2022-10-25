@@ -118,7 +118,8 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.AsymmetricJWK;
 import com.nimbusds.jose.jwk.JWK;
@@ -597,7 +598,7 @@ public final class KeyTools {
     public static KeyStore createP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
             throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         try {
-            KeyStore store = AlgorithmConfigurationCache.INSTANCE.isUseLegacyPkcs12Keystore()
+            KeyStore store = CryptoProviderConfigurationCache.INSTANCE.isUseLegacyPkcs12Keystore()
                     ? KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME)
                     : KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
             store.load(null, null);

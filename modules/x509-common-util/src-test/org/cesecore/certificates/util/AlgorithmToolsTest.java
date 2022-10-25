@@ -30,7 +30,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;

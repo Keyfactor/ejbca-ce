@@ -41,12 +41,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * Base class for crypto tokens handling things that are common for all crypto tokens, hard or soft.
@@ -59,8 +59,6 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(BaseCryptoToken.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     /** Used for signatures */
     private String mJcaProviderName = null;
@@ -85,7 +83,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
         if (keystore == null) {
             this.keyStore = null;
         } else {
-            this.keyStore = new CachingKeyStoreWrapper(keystore, CesecoreConfiguration.isKeyStoreCacheEnabled());
+            this.keyStore = new CachingKeyStoreWrapper(keystore, CryptoProviderConfigurationCache.INSTANCE.isKeystoreCacheEnabled());
         }
     }
 
@@ -98,7 +96,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
     protected CachingKeyStoreWrapper getKeyStore() throws CryptoTokenOfflineException {
         autoActivate();
         if (this.keyStore == null) {
-            throw new CryptoTokenOfflineException(intres.getLocalizedMessage("token.offline", id));
+            String msg = "The keys in the crypto token with id " + id + " could not be accessed. Is the crypto token active? ";
+            throw new CryptoTokenOfflineException(msg);
         }
         return this.keyStore;
     }
@@ -154,8 +153,9 @@ public abstract class BaseCryptoToken implements CryptoToken {
             log.debug("The key '" + alias + "' will be tested using the provider '" + getSignProviderName() + "'.");
         }
         if (!permitExtractablePrivateKeyForTest() && KeyTools.isPrivateKeyExtractable(privateKey)) {
-            String msg = intres.getLocalizedMessage("token.extractablekey", CesecoreConfiguration.isPermitExtractablePrivateKeys());
-            if (!CesecoreConfiguration.isPermitExtractablePrivateKeys()) {
+            String msg = "HW key must not be extractable. You can set ca.doPermitExtractablePrivateKeys=true in ejbca.properties to allow extractable keys. ca.doPermitExtractablePrivateKeys="
+                    + CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys();
+            if (!CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys()) {
                 throw new InvalidKeyException(msg);
             }
             log.info(msg);
@@ -214,7 +214,9 @@ public abstract class BaseCryptoToken implements CryptoToken {
             if (cert != null) {
                 pubk = cert.getPublicKey();
             } else if (warn) {
-                log.warn(intres.getLocalizedMessage("token.nopublic", alias));
+                String msg = "Can not read public key certificate with alias '" + alias
+                        + "' from Crypto Token, got null. If the key of the certificate was generated after the latest application server start then restart the application server.";
+                log.warn(msg);
                 if (log.isDebugEnabled()) {
                     Enumeration<String> en = getKeyStore().aliases();
                     while (en.hasMoreElements()) {
@@ -341,8 +343,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
         if (StringUtils.isNotEmpty(pin)) {
             String authcode = pin;
             if (encrypt) {
-                char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
-                authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin, encryptionKey, ConfigurationHolder.useLegacyEncryption());
+                char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
+                authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
             }
             if (properties != null) {
                 properties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, authcode);
@@ -366,12 +368,13 @@ public abstract class BaseCryptoToken implements CryptoToken {
     protected void setProviders(String jcaProviderClassName, String jceProviderClassName)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         Provider jcaProvider;
+        final String errorMessage = "Failed to initialize JCE provider. Encryption operations may not work but we are continuing...";
         try {
             jcaProvider = (Provider) Class.forName(jcaProviderClassName).getConstructor().newInstance();
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException
                 | ClassNotFoundException e) {
-            log.error(intres.getLocalizedMessage("token.jceinitfail"), e);
-            throw new IllegalStateException(intres.getLocalizedMessage("token.jceinitfail"), e);
+            log.error(errorMessage, e);
+            throw new IllegalStateException(errorMessage, e);
         }
         setProvider(jcaProvider);
         this.mJcaProviderName = jcaProvider.getName();
@@ -381,7 +384,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
                 setProvider(jceProvider);
                 this.mJceProviderName = jceProvider.getName();
             } catch (Exception e) {
-                log.error(intres.getLocalizedMessage("token.jceinitfail"), e);
+                log.error(errorMessage, e);
             }
         } else {
             this.mJceProviderName = null;
@@ -497,7 +500,9 @@ public abstract class BaseCryptoToken implements CryptoToken {
             final PrivateKey privateK = (PrivateKey) getKeyStore().getKey(alias, (mAuthCode != null && mAuthCode.length > 0) ? mAuthCode : null);
             if (privateK == null) {
                 if (warn) {
-                    log.warn(intres.getLocalizedMessage("token.noprivate", alias));
+                    final String msg = "Can not read private key with alias '" + alias
+                            + "' from Crypto Token, got null. If the key was generated after the latest application server start then restart the application server.";
+                    log.warn(msg);
                     if (log.isDebugEnabled()) {
                         final Enumeration<String> aliases;
                         aliases = getKeyStore().aliases();
@@ -506,7 +511,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
                         }
                     }
                 }
-                final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+                final String msg = "No key with alias '" + alias + "'.";
                 throw new CryptoTokenOfflineException(msg);
             }
             return privateK;
@@ -543,7 +548,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
         try {
             PublicKey publicK = readPublicKey(alias, warn);
             if (publicK == null) {
-                final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+                final String msg = "No key with alias '" + alias + "'.";
                 throw new CryptoTokenOfflineException(msg);
             }
             final String str = getProperties().getProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS);
@@ -583,7 +588,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
                 key = getKeyFromProperties(alias);
                 if (key == null) {
                     if (warn) {
-                        log.warn(intres.getLocalizedMessage("token.errornosuchkey", alias));
+                        final String msg = "No key with alias '" + alias + "'.";
+                        log.warn(msg);
                         if (log.isDebugEnabled()) {
                             Enumeration<String> aliases;
                             aliases = getKeyStore().aliases();
@@ -592,7 +598,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
                             }
                         }
                     }
-                    final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+                    final String msg = "No key with alias '" + alias + "'.";
                     throw new CryptoTokenOfflineException(msg);
                 }
             }

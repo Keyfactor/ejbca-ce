@@ -12,10 +12,22 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.cert.CertificateException;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.Properties;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.keys.token.p11.P11SlotUser;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
@@ -23,19 +35,10 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyStoreTools;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.Properties;
-
 
 /**
  * Class implementing a keystore on PKCS11 tokens.
  * 
- * @version $Id$
  */
 public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
 
@@ -43,8 +46,6 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(PKCS11CryptoToken.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     /** Keys, specific to PKCS#11, that can be defined in CA token properties */
     public static final String SLOT_LABEL_VALUE = "slotLabelValue";
@@ -159,7 +160,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
             authfe.initCause(t);
             throw authfe;
         }
-        String msg = intres.getLocalizedMessage("token.activated", getId());
+        String msg = "Activated Crypto Token with ID " + getId() + ".";
         log.info(msg);
     }
 
@@ -209,7 +210,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         } else {
             log.debug("p11slot was null, token was not active trying to deactivate.");
         }
-        final String msg = intres.getLocalizedMessage("token.deactivate", getId());
+        final String msg = "De-activated Crypto Token with ID " + getId() + ".";
         log.info(msg);
     }
 
@@ -226,7 +227,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());
             cont.deleteEntry(alias);
-            String msg = intres.getLocalizedMessage("token.deleteentry", alias, getId());
+            String msg = "Deleted entry with alias '" + alias + "' from Crypto Token with ID " + getId() + ".";
             log.info(msg);
         } else {
             log.debug("Trying to delete keystore entry with empty alias.");

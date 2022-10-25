@@ -10,31 +10,21 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keys;
+package org.cesecore.keys.util;
 
 /**
- * This exception is thrown when an error is encountered when trying to create a key.
- * 
- * @version $Id$
+ * Exception thrown by classes in this package when an error occur that
+ * should not be handled.
+ *
  */
-public class KeyCreationException extends RuntimeException {
+public class KeyUtilRuntimeException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
 
-    private static final long serialVersionUID = 6589133117806842102L;
-
-    public KeyCreationException() {
-
+    KeyUtilRuntimeException( final String message, final Exception cause ) {
+        super(message, cause);
     }
 
-    public KeyCreationException(String arg0) {
-        super(arg0);
+    KeyUtilRuntimeException( final String message ) {
+        super(message);
     }
-
-    public KeyCreationException(Throwable arg0) {
-        super(arg0);
-    }
-
-    public KeyCreationException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
-    }
-
 }

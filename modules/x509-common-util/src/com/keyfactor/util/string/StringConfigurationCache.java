@@ -14,9 +14,11 @@ package com.keyfactor.util.string;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.cesecore.util.StringTools;
 
 /**
  *  Singleton configuration holder for String related values, such as forbidden characters. Allows configurations to be registered and retrieved whether 
@@ -81,5 +83,13 @@ public enum StringConfigurationCache {
 
     public void setEncryptionKey(char[] encryptionKey) {
         this.encryptionKey = encryptionKey;
+    }
+    
+    /**
+     * @return true for systems still configured to use the legacy encryption mode
+     */
+    public boolean useLegacyEncryption() {
+        final String defaultPassword = StringTools.deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf");
+        return Objects.deepEquals(defaultPassword.toCharArray(), this.encryptionKey);
     }
 }

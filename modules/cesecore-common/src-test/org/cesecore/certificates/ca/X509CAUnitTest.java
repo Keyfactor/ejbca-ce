@@ -143,7 +143,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /** JUnit test for X.509 CA
  *

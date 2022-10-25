@@ -58,13 +58,12 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * @version $Id$

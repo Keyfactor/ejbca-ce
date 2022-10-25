@@ -122,7 +122,7 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.

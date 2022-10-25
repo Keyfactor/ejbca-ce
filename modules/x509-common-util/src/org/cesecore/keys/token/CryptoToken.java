@@ -38,7 +38,6 @@ import javax.crypto.NoSuchPaddingException;
 /** Handles operations of the device producing signatures and handling the private key.
  *  All Crypto Token plug-ins must implement this interface.
  *
- * @version $Id$
  */
 public interface CryptoToken extends Serializable {
 

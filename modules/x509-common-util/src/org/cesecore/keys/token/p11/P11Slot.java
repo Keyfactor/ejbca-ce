@@ -22,7 +22,6 @@ import java.util.Map;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 
@@ -31,7 +30,6 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
  * Use an instance of this class for all your access of a specific P11 slot.
  * Use {@link P11Slot#getProvider()} to get a provider for the slot.
  *
- * @version $Id$
  */
 public class P11Slot {
 
@@ -255,7 +253,8 @@ public class P11Slot {
         } catch (NoSuchSlotException e) {
             throw e;
         } catch (Exception e) {
-            throw new CryptoTokenOfflineException(InternalResources.getInstance().getLocalizedMessage("token.errorcreatetoken", id), e);
+            final String msg = "Error when creating Crypto Token with ID " + id +  ".";
+            throw new CryptoTokenOfflineException(msg, e);
         }
     }
 }

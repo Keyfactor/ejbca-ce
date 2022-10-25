@@ -110,7 +110,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.cert.OID;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page.
