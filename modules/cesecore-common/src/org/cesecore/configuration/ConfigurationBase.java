@@ -21,6 +21,8 @@ import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.StringTools;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 /**
  *
  */
@@ -64,7 +66,7 @@ public abstract class ConfigurationBase extends UpgradeableDataHashMap {
      */
     public String getEncryptedValue(String value) {
         char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
-        return StringTools.pbeEncryptStringWithSha256Aes192(value, encryptionKey, ConfigurationHolder.useLegacyEncryption());
+        return StringTools.pbeEncryptStringWithSha256Aes192(value, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
     }
     /** gets a a decrypted value from the (encrypted) input string, typically a password, that was stored encrypted in the database 
      * @param value the string to decrypt

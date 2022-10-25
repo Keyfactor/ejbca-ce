@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
- * @version $Id$
  *
  */
 public class Pkcs11SlotLabelTypeTest {

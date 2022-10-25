@@ -26,9 +26,9 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.util.KeyTools;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.provider.CryptoProvider;
 import com.keyfactor.util.crypto.provider.CryptoProviderRegistry;
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
 
 /**
  * Basic crypto provider helper methods.

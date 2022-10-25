@@ -45,7 +45,6 @@ import org.apache.log4j.Logger;
  * Aliases and certificates are read when the class is initiated from the underlying key store.
  * PrivateKey and SecretKey objects are read and cached when the key specific protection is available (when used).
  * 
- * @version $Id$
  */
 public class CachingKeyStoreWrapper {
     /** Similar to Java's KeyStore.Entry */

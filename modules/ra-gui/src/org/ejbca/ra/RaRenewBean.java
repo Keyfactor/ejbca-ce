@@ -53,7 +53,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaCertificateDataOnRenew;
 import org.ejbca.core.model.era.RaSelfRenewCertificateData;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 
 /**

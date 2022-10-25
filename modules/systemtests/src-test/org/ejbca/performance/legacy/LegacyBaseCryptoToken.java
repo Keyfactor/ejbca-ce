@@ -47,7 +47,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
@@ -55,6 +54,9 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * Base class for crypto tokens handling things that are common for all crypto tokens, hard or soft.
@@ -161,8 +163,8 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             log.debug("Testing key of type " + baos.toString());
         }
         if (!permitExtractablePrivateKeyForTest() && KeyTools.isPrivateKeyExtractable(privateKey)) {
-            String msg = intres.getLocalizedMessage("token.extractablekey", CesecoreConfiguration.isPermitExtractablePrivateKeys());
-            if (!CesecoreConfiguration.isPermitExtractablePrivateKeys()) {
+            String msg = intres.getLocalizedMessage("token.extractablekey", CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys());
+            if (!CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys() ) {
                 throw new InvalidKeyException(msg);
             }
             log.info(msg);
@@ -331,7 +333,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             if (encrypt) {
                 try {
                     char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
-                    authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin, encryptionKey, ConfigurationHolder.useLegacyEncryption());
+                    authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
                 } catch (Exception e) {
                     log.error(intres.getLocalizedMessage("token.nopinencrypt"), e);
                     authcode = pin;

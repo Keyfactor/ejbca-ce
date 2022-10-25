@@ -68,23 +68,20 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.keys.token.CachingKeyStoreWrapper;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.p11.PKCS11Utils;
 import org.cesecore.util.CertTools;
 
-import com.keyfactor.util.keys.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 
 /**
- * @version $Id$
+ * 
  */
 public class KeyStoreTools {
     private static final Logger log = Logger.getLogger(KeyStoreTools.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     protected final CachingKeyStoreWrapper keyStore;
     private final String providerName;
@@ -459,7 +456,7 @@ public class KeyStoreTools {
                     log.debug("Creating certificate with entry " + keyAlias + '.');
                 }
                 setKeyEntry(keyAlias, keyPair.getPrivate(), chain);
-                if ( CesecoreConfiguration.makeKeyUnmodifiableAfterGeneration() ) {
+                if ( CryptoProviderConfigurationCache.INSTANCE.isKeyUnmodifiableAfterGeneration() ) {
                     PKCS11Utils.getInstance().makeKeyUnmodifiable(keyPair.getPrivate(), this.providerName);
                 }
                 break; // success no need to try more
@@ -554,7 +551,7 @@ public class KeyStoreTools {
             final PKCS10CertificationRequest certReq = operation.getResult();
             final ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(publicKey);
             if ( !certReq.isSignatureValid(verifier) ) {
-                final String msg = intres.getLocalizedMessage("token.errorcertreqverify", alias);
+                final String msg = "Certificate request is not verifying.";
                 throw new KeyUtilRuntimeException(msg);
             }
             final String filename = alias+".pem";
@@ -595,7 +592,7 @@ public class KeyStoreTools {
                 }
             }
             if ( notFound ) {
-                final String msg = intres.getLocalizedMessage("token.errorkeynottoken", importKeyHash);
+                final String msg = "Key with public key hash " + importKeyHash + " not on token.";
                 throw new KeyUtilRuntimeException(msg);
             }
         } catch (IOException | CertificateParsingException | KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException e) {
@@ -622,7 +619,7 @@ public class KeyStoreTools {
     private PrivateKey getPrivateKey(String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
         final PrivateKey key = (PrivateKey)getKey(alias);
         if ( key==null ) {
-            String msg = intres.getLocalizedMessage("token.errornokeyalias", alias);
+            String msg = "Key alias '" + alias + "' not found in keystore.";
             log.info(msg);
         }
         return key;
@@ -633,7 +630,7 @@ public class KeyStoreTools {
     private X509Certificate getCertificate( String alias ) throws KeyStoreException {
         final X509Certificate cert = (X509Certificate)this.keyStore.getCertificate(alias);
         if ( cert==null ) {
-            String msg = intres.getLocalizedMessage("token.errornocertalias", alias);
+            String msg = "Certificate alias '" + alias +"' not found in keystore."; 
             log.info(msg);
         }
         return cert;
