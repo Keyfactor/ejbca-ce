@@ -18,26 +18,26 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  * Thrown to signify that a slot was not found. Differs from {@link CryptoTokenOfflineException} by virtue of
  * the latter being thrown when a slot exists, but for some reason is unavailable.
  * 
- * @version $Id$
  *
  */
-public class PKCS11LibraryFileNotFoundException extends Exception {
+public class NoSuchSlotException extends Exception {
 
-    private static final long serialVersionUID = 471712760739840779L;
+    private static final long serialVersionUID = -1943802946146748726L;
 
-    public PKCS11LibraryFileNotFoundException() {
+    public NoSuchSlotException() {
         super();
     }
 
-    public PKCS11LibraryFileNotFoundException(String message, Throwable cause) {
+    public NoSuchSlotException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public PKCS11LibraryFileNotFoundException(String message) {
+    public NoSuchSlotException(String message) {
         super(message);
     }
 
-    public PKCS11LibraryFileNotFoundException(Throwable cause) {
+    public NoSuchSlotException(Throwable cause) {
         super(cause);
     }
+
 }

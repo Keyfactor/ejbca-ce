@@ -681,12 +681,5 @@ public final class ConfigurationHolder {
             return Executors.newScheduledThreadPool(2, factory);
         }
     }
-    
-    /**
-     * @return true for systems still configured to use the legacy encryption mode
-     */
-    public static boolean useLegacyEncryption() {
-        final String defaultPassword = StringTools.deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf");
-        return defaultPassword.equals(getString("password.encryption.key"));
-    }
+   
 }
