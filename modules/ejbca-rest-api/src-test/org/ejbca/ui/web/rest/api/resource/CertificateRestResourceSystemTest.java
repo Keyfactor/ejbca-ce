@@ -49,6 +49,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -94,6 +95,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -112,6 +114,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
@@ -130,6 +133,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private static final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static final Random random = new Random();
     private X509CA x509TestCa;
@@ -587,6 +591,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldContainUpdatedRevocationReasonInBaseCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         final String serialNumber = generateTestSerialNumber();
@@ -604,6 +609,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldContainBackdatedRevocationDateInBaseCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         enableRevocationBackdating();
@@ -626,6 +632,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldContainUpdatedRevocationReasonInDeltaCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         final String serialNumber = generateTestSerialNumber();
@@ -643,6 +650,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldContainBackdatedRevocationDateInDeltaCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // Scenario: base CRL > initial revocation > revocation backdating with a date after last base CRL > delta CRL
         // given
         enableRevocationReasonChange();
@@ -665,6 +673,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldGenerateCrlUponRevocationReasonChange() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         enableGenerateCrlUponRevocation();
@@ -684,6 +693,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldChangeRevocationReasonUponCrlImport() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
         enableRevocationReasonChange();
         createTestEndEntity();
@@ -905,7 +915,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
             // Verify results
             Enumeration<String> aliases = keyStore.aliases();
-            assertEquals("Unexpected alias in keystore response", testUsername, aliases.nextElement());
+            assertTrue("Alias is missing in keystore response", Collections.list(aliases).contains(testUsername));
             assertEquals("Unexpected response format", "PKCS12", responseFormat);
             assertEquals("Unexpected keystore format", "PKCS12-3DES-3DES", keyStore.getType());
         } finally {
