@@ -347,6 +347,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
     private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
 
+    private boolean enableCustomHeaderRest;
+    private String customHeaderRestName;
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -1105,6 +1107,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         googleCtPolicy = null;
         validatorSettings = null;
         incompleteIssuanceServiceCheckDone = false;
+        enableCustomHeaderRest = getAvailableProtocolsConfiguration().isCustomHeaderForRestEnabled();
+        customHeaderRestName = getAvailableProtocolsConfiguration().getCustomHeaderForRest();
     }
 
     public void toggleEnableKeyRecovery() { getCurrentConfig().setEnableKeyRecovery(!getCurrentConfig().getEnableKeyRecovery()); }
@@ -1358,7 +1362,36 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return enabled ? getEjbcaWebBean().getText("PC_STATUS_ENABLED") : getEjbcaWebBean().getText("PC_STATUS_DISABLED");
         }
     }
+    
+    public boolean isEnableCustomHeaderRest() {
+        return enableCustomHeaderRest;
+    }
+    
+    public void setEnableCustomHeaderRest(boolean value) {
+        enableCustomHeaderRest = value;
+    }
+    
+    public String getCustomHeaderRestName() {
+        return customHeaderRestName;
+    }
+    
+    public void setCustomHeaderRestName(String value) {
+        customHeaderRestName = value;
+    }
 
+    public void saveProtocolConfigurations() {
+        final AvailableProtocolsConfiguration availableProtocolsConfiguration = getAvailableProtocolsConfiguration();
+        getAvailableProtocolsConfiguration().setCustomHeaderForRestEnabled(enableCustomHeaderRest);
+        getAvailableProtocolsConfiguration().setCustomHeaderForRest(customHeaderRestName);
+        // Save config
+        try {
+            getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), availableProtocolsConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+            log.info("Administrator '" + getAdmin() + "' " + msg);
+            super.addNonTranslatedErrorMessage(msg);
+        }
+    }
 
     // --------------------------------------------
     //               Extended Key Usage
