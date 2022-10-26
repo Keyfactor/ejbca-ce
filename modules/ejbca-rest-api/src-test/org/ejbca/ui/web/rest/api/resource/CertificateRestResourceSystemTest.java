@@ -95,6 +95,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -914,7 +915,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
             // Verify results
             Enumeration<String> aliases = keyStore.aliases();
-            assertEquals("Unexpected alias in keystore response", testUsername, aliases.nextElement());
+            assertTrue("Alias is missing in keystore response", Collections.list(aliases).contains(testUsername));
             assertEquals("Unexpected response format", "PKCS12", responseFormat);
             assertEquals("Unexpected keystore format", "PKCS12-3DES-3DES", keyStore.getType());
         } finally {
