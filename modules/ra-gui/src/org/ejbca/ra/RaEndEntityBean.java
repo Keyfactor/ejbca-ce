@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrg
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -152,6 +153,7 @@ public class RaEndEntityBean implements Serializable {
     // SSH fields
     private String sshKeyId;
     private String sshComment;
+    List<EndEntityProfile.FieldInstance> sshPrincipals;
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -276,6 +278,7 @@ public class RaEndEntityBean implements Serializable {
     public void editEditEndEntityCancel() {
         subjectDistinguishNames = null;
         subjectAlternativeNames = null;
+        sshPrincipals = null;
         subjectDirectoryAttributes = null;
 
         editEditEndEntityMode = false;
@@ -507,11 +510,11 @@ public class RaEndEntityBean implements Serializable {
                 changed = true;
                 endEntityInformation.setDN("CN=" + sshKeyId);
             }
-            if (sshComment != raEndEntityDetails.getSshComment()) {
+            if (sshComment != raEndEntityDetails.getSshComment()
+                    || raEndEntityDetails.getSshPrincipals() != sshPrincipalFieldsToString(getSshPrincipals())) {
                 changed = true;
-                System.out.println("SAN generated: " + SshCertificateUtils.createSanForStorage(raEndEntityDetails.getSshPrincipals(), sshComment));
                 endEntityInformation.setSubjectAltName(
-                        SshCertificateUtils.createSanForStorage(raEndEntityDetails.getSshPrincipals(), sshComment));
+                        SshCertificateUtils.createSanForStorage(sshPrincipalFieldsToString(getSshPrincipals()), sshComment));
             }
         }
 
@@ -998,6 +1001,7 @@ public class RaEndEntityBean implements Serializable {
             subjectDistinguishNames = null;
             subjectAlternativeNames = null;
             subjectDirectoryAttributes = null;
+            sshPrincipals = null;
 
 
             if (raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId() == eepId) {
@@ -1127,6 +1131,28 @@ public class RaEndEntityBean implements Serializable {
      */
     public void setSubjectDistinguishNames(SubjectDn subjectDistinguishNames) {
         this.subjectDistinguishNames = subjectDistinguishNames;
+    }
+
+    public void handleNullSshPrincipals() {
+        if (sshPrincipals == null) {
+            final String[] sshPrincipalValues = raEndEntityDetails.getSshPrincipals().split(":");
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
+            sshPrincipals = new ArrayList<>();
+            final List<EndEntityProfile.FieldInstance> fieldInstances = eep.new Field(SshEndEntityProfileFields.SSH_PRINCIPAL).getInstances();
+            for (int i = 0; i < fieldInstances.size(); i++) {
+                fieldInstances.get(i).setValue(sshPrincipalValues[i]);
+                sshPrincipals.add(fieldInstances.get(i));
+            }
+        }
+    }
+
+    public List<EndEntityProfile.FieldInstance> getSshPrincipals() {
+        handleNullSshPrincipals();
+        return sshPrincipals;
+    }
+
+    public void setSshPrincipals(final List<EndEntityProfile.FieldInstance> newSshPrincipals) {
+        sshPrincipals = newSshPrincipals;
     }
 
     private void handleNullSubjectAlternativeNames() {
@@ -1439,6 +1465,11 @@ public class RaEndEntityBean implements Serializable {
 
     public void setSshComment(final String newSshComment) {
         sshComment = newSshComment;
+    }
+
+    private static String sshPrincipalFieldsToString(List<EndEntityProfile.FieldInstance> sshPrincipals) {
+        String[] sshPrincipalValues = sshPrincipals.stream().map(e -> e.getValue()).toArray(String[]::new);
+        return StringUtils.join(sshPrincipalValues, ":");
     }
 
     /**
