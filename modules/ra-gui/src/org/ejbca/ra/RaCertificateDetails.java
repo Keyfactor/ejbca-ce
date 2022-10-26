@@ -74,7 +74,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 /**
  * UI representation of a certificate from the back end.
  *
- * @version $Id$
  */
 public class RaCertificateDetails {
 
@@ -156,7 +155,7 @@ public class RaCertificateDetails {
 
     private int newRevocationReason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
     private String updatedRevocationDate = null;
-    private Boolean caAllowsChangeOfRevocationReason = false;
+    private boolean caAllowsChangeOfRevocationReason = false;
 
     public RaCertificateDetails(final CertificateDataWrapper cdw, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
@@ -178,7 +177,7 @@ public class RaCertificateDetails {
         }
         this.eepId = certificateData.getEndEntityProfileIdOrZero();
         if (eepIdToNameMap != null) {
-            this.eepName = eepIdToNameMap.get(Integer.valueOf(eepId));
+            this.eepName = eepIdToNameMap.get(eepId);
         } else {
             this.eepName = null;
         }
