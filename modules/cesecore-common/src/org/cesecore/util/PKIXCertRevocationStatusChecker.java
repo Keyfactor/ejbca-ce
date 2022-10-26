@@ -75,9 +75,6 @@ import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
  * The revocation status will first be obtained using OCSP. If it turned out that that was not possible for 
  * some reason, a CRL will be used instead. If it was not possible to check the CRL for some reason, an 
  * exception will be thrown.
- * 
- * @version $Id$
- *
  */
 public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
 
@@ -446,15 +443,15 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
 
         // ------------- Verify the nonce ---------------//
         byte[] noncerep;
-        try {
-            noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
-        } catch (IOException e) {
-            if(log.isDebugEnabled()) {
-                log.debug("Failed to read extension from OCSP response. " + e.getLocalizedMessage());
-            }
+        Extension nonceExt = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce); 
+        if (nonceExt == null) {
+            log.warn("Sent an OCSP request containing a nonce, but the OCSP response does not contain a nonce");
             return null;
         }
-        if(noncerep == null) {
+        // An extensions is wrapped in an octet string, this means that the nonce which is an octet string
+        // is wrapped on another octet string in the extension encoding. Therefore we do getExtnValue().getOctets(), 
+        noncerep = nonceExt.getExtnValue().getOctets();
+        if (noncerep == null || noncerep.length == 0) {
             log.warn("Sent an OCSP request containing a nonce, but the OCSP response does not contain a nonce");
             return null;
         }
