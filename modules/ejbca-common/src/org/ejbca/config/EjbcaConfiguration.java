@@ -45,6 +45,20 @@ public final class EjbcaConfiguration {
         }
         return false;
     }
+    
+    /**
+     * Only to be disabled for testing custom header protection during non-production mode.
+     */
+    public static boolean getIsCustomHeaderProtectionEnabled() {
+        if(getIsInProductionMode()) {
+            return true;
+        }
+        final String value = EjbcaConfigurationHolder.getString("ejbca.rest.customheader.protection.enabled");
+        if (TRUE.equalsIgnoreCase(value)) {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Password used to protect CMS keystores in the database.
