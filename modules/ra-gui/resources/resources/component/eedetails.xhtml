@@ -530,6 +530,36 @@
                     <h:inputText id="commentinput"
                         value="#{cc.attrs.raEndEntityBean.sshComment}"/>
                 </h:panelGroup>
+                <ui:repeat id="sshPrincipal"
+                    value="#{cc.attrs.raEndEntityBean.sshPrincipals}"
+                    var="instance"
+                    varStatus="loop">
+                    <h:outputLabel for="sshPrincipalNonModifiableField"
+                        value="#{msg.enroll_ssh_principal} "
+                        styleClass="pure-u-lg-1-3 row-even"
+                        rendered="#{!instance.required}" />
+                    <h:outputLabel for="sshPrincipalField"
+                        value="#{msg.enroll_ssh_principal} *"
+                        styleClass="pure-u-lg-1-3 row-even"
+                        rendered="#{instance.required}" />
+                    <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                        <h:inputText id="sshPrincipalField" value="#{instance.value}" 
+                            styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+                            rendered="#{instance.modifiable}">
+                            <f:validator validatorId="extendedRegexValidator" />
+                            <f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
+                            <f:validator validatorId="extendedRequiredValidator"/>
+                            <f:attribute name="_required" value="#{instance.required}"/>
+                            <f:attribute name="_label" value="#{instance.name}"/>
+                            <f:ajax event="keyup" execute="@this"
+                                render=":requestInfoForm:requestPreviewOuterPanel sshPrincipalFieldMessage"/>
+                        </h:inputText>
+                            <h:outputText id="sshPrincipalFieldNonModifiableField" value="#{instance.value}" 
+                                rendered="#{!instance.modifiable}"/>
+                        <h:message for="sshPrincipalField" id="sshPrincipalFieldMessage" styleClass="sshPrincipalErrorMessage" 
+                            errorClass="sshPrincipalErrorMessage showErrorMessage"/>
+                    </h:panelGroup>
+                </ui:repeat>
             </h:panelGroup>
             <h:outputLabel for="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
