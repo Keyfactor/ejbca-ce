@@ -148,6 +148,8 @@ public class RaEndEntityBean implements Serializable {
     private List<String> selectedPsd2PspRoles;
     private String cabfOrganizationIdentifier;
 
+    // SSH fields
+    private String sshKeyId;
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -214,6 +216,9 @@ public class RaEndEntityBean implements Serializable {
                 psd2NcaId = raEndEntityDetails.getPsd2NcaId();
                 selectedPsd2PspRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
                 cabfOrganizationIdentifier = raEndEntityDetails.getCabfOrganizationIdentifier();
+                if (endEntityInformation.isSshEndEntity()) {
+                    sshKeyId = raEndEntityDetails.getSshKeyId();
+                }
             }
         }
         issuedCerts = null;
@@ -340,7 +345,7 @@ public class RaEndEntityBean implements Serializable {
         }
 
         if (eep.isEmailUsed()) {
-            for (EndEntityProfile.FieldInstance instance: subjectDistinguishNames.getFieldInstances()) {
+            for (EndEntityProfile.FieldInstance instance: getSubjectDistinguishNames().getFieldInstances()) {
                 if (isDnEmail(instance)) {
                     if (instance.isUseDataFromEmailField()) {
                         instance.setValue(email[0]+"@"+email[1]);
@@ -350,7 +355,7 @@ public class RaEndEntityBean implements Serializable {
                 }
             }
         }
-        String subjectDn = subjectDistinguishNames.getValue();
+        String subjectDn = getSubjectDistinguishNames().getValue();
         if(!subjectDn.equals(endEntityInformation.getDN())) {
             endEntityInformation.setDN(subjectDn);
             changed = true;
@@ -492,6 +497,11 @@ public class RaEndEntityBean implements Serializable {
             if (eep.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || StringUtils.isNotEmpty(endEntityInformation.getPassword())) {
                 isClearPwd = true;
             }
+        }
+
+        if (sshKeyId != raEndEntityDetails.getSshKeyId()) {
+            changed = true;
+            endEntityInformation.setDN("CN=" + sshKeyId);
         }
 
         if (changed) {
@@ -1402,6 +1412,14 @@ public class RaEndEntityBean implements Serializable {
      */
     public String getCabfOrganizationIdentifierRegex() {
         return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
+
+    public String getSshKeyId() {
+        return sshKeyId;
+    }
+
+    public void setSshKeyId(final String newSshKeyId) {
+        sshKeyId = newSshKeyId;
     }
 
     /**

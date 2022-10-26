@@ -467,7 +467,7 @@
 
             <h:panelGroup id="subjectDistinguishNames"
                 styleClass="subjects"
-                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}">
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectdn}"/>
                 <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectDistinguishNames.fieldInstances}"
                     msgPrefix="#{'subject_dn_'}"
@@ -503,7 +503,7 @@
 
             <h:panelGroup id="subjectAlternativeNames"
                 styleClass="subjects"
-                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}">
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.raEndEntityBean.anySubjectAlternativeName}" value="#{msg.component_eedetails_header_subjectan}"/>
                 <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectAlternativeNames.fieldInstances}"
@@ -512,6 +512,18 @@
                     eeEmail="#{cc.attrs.raEndEntityDetails.email}"/>
             </h:panelGroup>
 
+            <h:panelGroup id="editableSshAttributes"
+                styleClass="subjects"
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
+                <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+                <h:outputLabel for="keyidinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    value="#{msg.component_eedetails_header_ssh_keyid}"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="keyidinput"
+                        value="#{cc.attrs.raEndEntityBean.sshKeyId}"/>
+                </h:panelGroup>
+            </h:panelGroup>
             <h:outputLabel for="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}"
