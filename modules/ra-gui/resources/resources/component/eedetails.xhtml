@@ -523,6 +523,13 @@
                     <h:inputText id="keyidinput"
                         value="#{cc.attrs.raEndEntityBean.sshKeyId}"/>
                 </h:panelGroup>
+                <h:outputLabel for="commentinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    value="#{msg.component_eedetails_header_ssh_comment}"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="commentinput"
+                        value="#{cc.attrs.raEndEntityBean.sshComment}"/>
+                </h:panelGroup>
             </h:panelGroup>
             <h:outputLabel for="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>

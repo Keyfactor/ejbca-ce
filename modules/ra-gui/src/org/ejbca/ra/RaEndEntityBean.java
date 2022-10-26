@@ -52,6 +52,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.util.SshCertificateUtils;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -150,6 +151,7 @@ public class RaEndEntityBean implements Serializable {
 
     // SSH fields
     private String sshKeyId;
+    private String sshComment;
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -218,6 +220,7 @@ public class RaEndEntityBean implements Serializable {
                 cabfOrganizationIdentifier = raEndEntityDetails.getCabfOrganizationIdentifier();
                 if (endEntityInformation.isSshEndEntity()) {
                     sshKeyId = raEndEntityDetails.getSshKeyId();
+                    sshComment = raEndEntityDetails.getSshComment();
                 }
             }
         }
@@ -499,9 +502,17 @@ public class RaEndEntityBean implements Serializable {
             }
         }
 
-        if (sshKeyId != raEndEntityDetails.getSshKeyId()) {
-            changed = true;
-            endEntityInformation.setDN("CN=" + sshKeyId);
+        if (endEntityInformation.isSshEndEntity()) {
+            if (sshKeyId != raEndEntityDetails.getSshKeyId()) {
+                changed = true;
+                endEntityInformation.setDN("CN=" + sshKeyId);
+            }
+            if (sshComment != raEndEntityDetails.getSshComment()) {
+                changed = true;
+                System.out.println("SAN generated: " + SshCertificateUtils.createSanForStorage(raEndEntityDetails.getSshPrincipals(), sshComment));
+                endEntityInformation.setSubjectAltName(
+                        SshCertificateUtils.createSanForStorage(raEndEntityDetails.getSshPrincipals(), sshComment));
+            }
         }
 
         if (changed) {
@@ -1420,6 +1431,14 @@ public class RaEndEntityBean implements Serializable {
 
     public void setSshKeyId(final String newSshKeyId) {
         sshKeyId = newSshKeyId;
+    }
+
+    public String getSshComment() {
+        return sshComment;
+    }
+
+    public void setSshComment(final String newSshComment) {
+        sshComment = newSshComment;
     }
 
     /**
