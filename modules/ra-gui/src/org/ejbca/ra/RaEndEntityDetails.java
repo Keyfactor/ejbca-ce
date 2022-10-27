@@ -133,8 +133,8 @@ public class RaEndEntityDetails {
             this.sshPrincipals = parseSshPrincipals(this.subjectAn);
             this.sshComment = parseSshComment(this.subjectAn);
             Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
-            this.sshForceCommand = sshCriticalOptions.get("force-command");
-            this.sshSourceAddress = sshCriticalOptions.get("source-address");
+            this.sshForceCommand = sshCriticalOptions.containsKey("force-command") ? sshCriticalOptions.get("force-command") : null;
+            this.sshSourceAddress = sshCriticalOptions.containsKey("source-address") ? sshCriticalOptions.get("source-address") : null;
             this.sshExtensions = parseSshExtensions(this.extendedInformation.getSshExtensions());
         } else {
             this.sshTypeEndEntity = false;
@@ -204,6 +204,21 @@ public class RaEndEntityDetails {
     public String getSshSourceAddress() { return sshSourceAddress; }
     public String getSshExtensions() { return sshExtensions; }
 
+    public boolean isSshForceCommandRequired() {
+        return this.endEntityProfile.isSshForceCommandRequired();
+    }
+
+    public boolean isSshForceCommandModifiable() {
+        return this.endEntityProfile.isSshForceCommandModifiable();
+    }
+
+    public boolean isSshSourceAddressRequired() {
+        return this.endEntityProfile.isSshSourceAddressRequired();
+    }
+
+    public boolean isSshSourceAddressModifiable() {
+        return this.endEntityProfile.isSshSourceAddressModifiable();
+    }
 
     public String getCreated() { return created; }
     public String getModified() { return modified; }
