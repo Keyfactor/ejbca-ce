@@ -235,12 +235,12 @@
 	<classpathentry kind="lib" path="lib/ext/test/powermock/javassist-3.24.0-GA.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
-	<classpathentry kind="lib" path="lib/commons-text-1.9.jar"/>
+	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.4.8.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.21.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.12.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-3.3.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-3.3.12.jar"/>
