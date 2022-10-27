@@ -156,6 +156,7 @@ public class RaEndEntityBean implements Serializable {
     List<EndEntityProfile.FieldInstance> sshPrincipals;
     private String sshCriticalOptionsForceCommand;
     private String sshCriticalOptionsSourceAddress;
+
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
