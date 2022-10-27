@@ -154,6 +154,8 @@ public class RaEndEntityBean implements Serializable {
     private String sshKeyId;
     private String sshComment;
     List<EndEntityProfile.FieldInstance> sshPrincipals;
+    private String sshCriticalOptionsForceCommand;
+    private String sshCriticalOptionsSourceAddress;
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -223,6 +225,8 @@ public class RaEndEntityBean implements Serializable {
                 if (endEntityInformation.isSshEndEntity()) {
                     sshKeyId = raEndEntityDetails.getSshKeyId();
                     sshComment = raEndEntityDetails.getSshComment();
+                    sshCriticalOptionsForceCommand = raEndEntityDetails.getSshForceCommand();
+                    sshCriticalOptionsSourceAddress = raEndEntityDetails.getSshSourceAddress();
                 }
             }
         }
@@ -515,6 +519,14 @@ public class RaEndEntityBean implements Serializable {
                 changed = true;
                 endEntityInformation.setSubjectAltName(
                         SshCertificateUtils.createSanForStorage(sshPrincipalFieldsToString(getSshPrincipals()), sshComment));
+            }
+            if (sshCriticalOptionsForceCommand != raEndEntityDetails.getSshForceCommand()
+                    || sshCriticalOptionsSourceAddress != raEndEntityDetails.getSshSourceAddress()) {
+                changed = true;
+                final Map<String, String> criticalOptions = endEntityInformation.getExtendedInformation().getSshCriticalOptions();
+                criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, sshCriticalOptionsForceCommand);
+                criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, sshCriticalOptionsSourceAddress);
+                endEntityInformation.getExtendedInformation().setSshCriticalOptions(criticalOptions);
             }
         }
 
@@ -1465,6 +1477,38 @@ public class RaEndEntityBean implements Serializable {
 
     public void setSshComment(final String newSshComment) {
         sshComment = newSshComment;
+    }
+
+    public String getSshForceCommand() {
+        return sshCriticalOptionsForceCommand;
+    }
+
+    public void setSshForceCommand(final String newForceCommand) {
+        sshCriticalOptionsForceCommand = newForceCommand;
+    }
+
+    public boolean isSshForceCommandRequired() {
+        return raEndEntityDetails.isSshForceCommandRequired();
+    }
+
+    public boolean isSshForceCommandModifiable() {
+        return raEndEntityDetails.isSshForceCommandModifiable();
+    }
+
+    public String getSshSourceAddress() {
+        return sshCriticalOptionsSourceAddress;
+    }
+
+    public void setSshSourceAddress(final String newSourceAddress) {
+        sshCriticalOptionsSourceAddress = newSourceAddress;
+    }
+
+    public boolean isSshSourceAddressRequired() {
+        return raEndEntityDetails.isSshSourceAddressRequired();
+    }
+
+    public boolean isSshSourceAddressModifiable() {
+        return raEndEntityDetails.isSshSourceAddressModifiable();
     }
 
     private static String sshPrincipalFieldsToString(List<EndEntityProfile.FieldInstance> sshPrincipals) {
