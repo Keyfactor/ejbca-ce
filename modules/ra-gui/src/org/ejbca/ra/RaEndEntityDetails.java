@@ -90,7 +90,6 @@ public class RaEndEntityDetails {
     private final String sshComment;
     private final String sshForceCommand;
     private final String sshSourceAddress;
-    private final String sshExtensions;
 
     private EndEntityProfile endEntityProfile = null;
     private SubjectDn subjectDistinguishedName = null;
@@ -135,7 +134,6 @@ public class RaEndEntityDetails {
             Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
             this.sshForceCommand = sshCriticalOptions.containsKey("force-command") ? sshCriticalOptions.get("force-command") : null;
             this.sshSourceAddress = sshCriticalOptions.containsKey("source-address") ? sshCriticalOptions.get("source-address") : null;
-            this.sshExtensions = parseSshExtensions(this.extendedInformation.getSshExtensions());
         } else {
             this.sshTypeEndEntity = false;
             this.sshKeyId = null;
@@ -143,7 +141,6 @@ public class RaEndEntityDetails {
             this.sshComment = null;
             this.sshForceCommand = null;
             this.sshSourceAddress = null;
-            this.sshExtensions = null;
         }
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
@@ -202,7 +199,6 @@ public class RaEndEntityDetails {
     public String getSshComment() { return sshComment; }
     public String getSshForceCommand() { return sshForceCommand; }
     public String getSshSourceAddress() { return sshSourceAddress; }
-    public String getSshExtensions() { return sshExtensions; }
 
     public boolean isSshForceCommandRequired() {
         return this.endEntityProfile.isSshForceCommandRequired();
@@ -738,20 +734,6 @@ public class RaEndEntityDetails {
         } else {
             return "";
         }
-    }
-
-    /**
-     * Used for SSH type end entities to convert the SSH extensions to human-readable String.
-     * @param sshExtensions a map of SSH extensions
-     * @return String of SSH extensions
-     */
-    public static String parseSshExtensions(final Map<String, byte[]> sshExtensions) {
-        final StringBuilder sb = new StringBuilder();
-        for (Entry<String, byte[]> entry : sshExtensions.entrySet()) {
-            sb.append(entry.getKey() + ": " + entry.getValue().toString());
-            sb.append("\n");
-        }
-        return sb.toString().trim();
     }
 
     /** @return true every twice starting with every forth call */

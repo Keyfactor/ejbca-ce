@@ -437,14 +437,6 @@
                 rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
                 value="#{cc.attrs.raEndEntityDetails.sshSourceAddress}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputLabel for="sshextensions"
-                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
-                value="#{msg.component_eedetails_header_ssh_extensions}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="sshextensions"
-                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
-                value="#{cc.attrs.raEndEntityDetails.sshExtensions}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances
             		and cc.attrs.approvalRequestMode}"
                 value=" "/>
