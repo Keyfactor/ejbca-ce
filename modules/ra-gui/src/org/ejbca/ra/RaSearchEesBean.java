@@ -605,7 +605,7 @@ public class RaSearchEesBean implements Serializable {
         };
         List<RaCertificateDetails> certificates = new ArrayList<>();
         for (CertificateDataWrapper cdw : response.getCdws()) {
-            certificates.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, null, null, null, null));
+            certificates.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, null, null, null, null, null));
         }
         // Sort by date created, descending
         Collections.sort(certificates, new Comparator<RaCertificateDetails>() {
