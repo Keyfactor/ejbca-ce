@@ -25,7 +25,6 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +63,6 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -92,13 +90,18 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     private static final Logger log = Logger.getLogger(CmpExtendedValidationTest.class);
 
     private static final String ISSUER_CA_NAME = "CmpExternalValidationTestCA";
+    private static final String ISSUER_CA_1_NAME = "CmpExternalValidationTestCA1";
+    private static final String ISSUER_CA_2_NAME = "CmpExternalValidationTestCA2";
     private static final String ISSUER_DN = "O=CmpTests,OU=FoooUåäö,CN=" + ISSUER_CA_NAME + "";
+    private static final String ISSUER_1_DN = "O=CmpTests,OU=FoooUåäö,CN=" + ISSUER_CA_1_NAME + "";
+    private static final String ISSUER_2_DN = "O=CmpTests,OU=FoooUåäö,CN=" + ISSUER_CA_2_NAME + "";
     private static final int KEYUSAGE = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
     private static final String ALIAS = "CmpExtendedValidationTest";
     private static final String TEST_ROLE = "CmpExtendedValidationTest";
     private static final String PBEPASSWORD = "pbe123";
     private static final String SIGNINGCERT_EE = "CmpExtendedValidationTest_signingcertuser";
     private static final String SIGNINGCERT_DN = "O=CmpExtendedValidationTest,CN=signingcert";
+    private static final String CLIENT_MODE_ENDENTITY = "cmp_externalvalidation_test";
 
     private static final X509CA testx509ca;
     private static final X509Certificate cacert;
@@ -108,12 +111,15 @@ public class CmpExtendedValidationTest extends CmpTestCase {
 
     static { // runs only once for all test cases
         try {
+            CaTestUtils.removeCa(ADMIN, ISSUER_CA_NAME, ISSUER_CA_NAME);
+            CaTestUtils.removeCa(ADMIN, ISSUER_CA_1_NAME, ISSUER_CA_1_NAME);
+            CaTestUtils.removeCa(ADMIN, ISSUER_CA_2_NAME, ISSUER_CA_2_NAME);
             testx509ca = CaTestUtils.createTestX509CA(ISSUER_DN, null, false, KEYUSAGE);
             cacert = (X509Certificate) testx509ca.getCACertificate();
             cafp = CertTools.getFingerprintAsString(cacert);
             caPrivateKey = CaTestUtils.getCaPrivateKey(testx509ca);
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        } catch (CertificateParsingException | CryptoTokenOfflineException | OperatorCreationException | InvalidAlgorithmParameterException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to create test CA and keys.", e);
         }
     }
@@ -178,6 +184,11 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
         roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
         internalCertificateStoreSession.removeCertificatesByIssuer(ISSUER_DN);
+        internalCertificateStoreSession.removeCertificatesByIssuer(ISSUER_1_DN);
+        internalCertificateStoreSession.removeCertificatesByIssuer(ISSUER_2_DN);
+        if (endEntityManagementSession.existsUser(CLIENT_MODE_ENDENTITY)) {
+            endEntityManagementSession.deleteUser(ADMIN, CLIENT_MODE_ENDENTITY);
+        }
     }
 
     @Override
@@ -223,7 +234,6 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testVerifySignedMessage() throws Exception {
         log.trace(">testVerifySignedMessage");
-
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
@@ -242,6 +252,26 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifySignedMessage");
+    }
+
+    @Test
+    public void testVerifySignedMessageClientMode() throws Exception {
+        log.trace(">testVerifySignedMessageClientMode");
+        cmpConfiguration.setRAMode(ALIAS, false);
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+
+        final String clientUserDn = "C=SE,O=PrimeKey,CN=testVerifySignedMessageClientMode";
+        createCmpUser(CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
+
+        final PKIMessage req = genCertReq(clientUserDn);
+
+        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, ISSUER_CA_NAME, PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+        log.trace("<testVerifySignedMessageClientMode");
     }
 
     /**
@@ -335,6 +365,75 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         log.trace("<testRejectSignedMessageWithWrongCertificate");
     }
 
+    // TODO Enable if we add support for multiple CAs. Otherwise it should be removed.
+//    /**
+//     * This test will verify that signed message passes through. Will specifically check that multiple keychains can be specified and the right one picked.
+//     */
+//    @Test
+//    public void testVerifySignedMessageWithMultipleExtraCertIssuers() throws Exception {
+//        log.trace(">testVerifySignedMessageWithMultipleExtraCertIssuers");
+//
+//        final X509CA ca1 = CaTestUtils.createTestX509CA(ISSUER_1_DN, null, false, KEYUSAGE);
+//        final X509Certificate ca1cert = (X509Certificate) ca1.getCACertificate();
+//        final String ca1fp = CertTools.getFingerprintAsString(ca1cert);
+//        final PrivateKey ca1PrivateKey = CaTestUtils.getCaPrivateKey(ca1);
+//        caSession.addCA(ADMIN, ca1);
+//
+//        final X509CA ca2 = CaTestUtils.createTestX509CA(ISSUER_2_DN, null, false, KEYUSAGE);
+//        final X509Certificate ca2cert = (X509Certificate) ca2.getCACertificate();
+//        final String ca2fp = CertTools.getFingerprintAsString(ca2cert);
+//        final PrivateKey ca2PrivateKey = CaTestUtils.getCaPrivateKey(ca2);
+//        caSession.addCA(ADMIN, ca2);
+//
+//        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+//        cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
+//        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+//        cmpConfiguration.setRACAName(ALIAS, ISSUER_CA_1_NAME + ";" + ISSUER_CA_2_NAME); // <--- there is currently no way to have multiple RA CA's
+//        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+//
+//        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_2_DN, keys, ca2PrivateKey);
+//        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessageWithMultipleExtraCertIssuers", ca2cert, ISSUER_2_DN);
+//
+//        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+//        signCertColl.add(signingCertificate);
+//        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+//                BouncyCastleProvider.PROVIDER_NAME);
+//        // Send CMP request
+//        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+//        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+//        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+//        shouldBeAccepted();
+//        log.trace("<testVerifySignedMessageWithMultipleExtraCertIssuers");
+//    }
+
+    /**
+     * This test will verify that signed message passes through. The main goal of this test is to assert the correct return code.
+     */
+    @Test
+    public void testMessageSignedByRevokedCertRejected() throws Exception {
+        log.trace(">testVerifySignedMessage");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_REVOKED);
+        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
+
+        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        // FIXME message from proxy was:
+        // "Failed to find CA certificate of the CMP message signing certificate. CMP message: pvno = 2, sender = 4: C=SE,O=PrimeKey,CN=testVerifySignedMessage, recipient = 4: CN=TestCA, transactionID = #ab677197b739684d876313afc80026c6"
+        checkCmpFailMessage(resp, "The certificate attached to the PKI message in the extraCert field is revoked.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+        log.trace("<testVerifySignedMessage");
+    }
+
 
     /** Checks that the request was accepted (and would have been passed to the CA in a RA-CA setup) */
     private void shouldBeAccepted() {
@@ -366,6 +465,10 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     }
 
     private X509Certificate createSigningCertificate(final String issuerDn, final KeyPair signingKeyPair, final PrivateKey issuerKey) throws Exception {
+        return createSigningCertificate(issuerDn, SIGNINGCERT_EE, signingKeyPair, issuerKey, CertificateConstants.CERT_ACTIVE);
+    }
+
+    private X509Certificate createSigningCertificate(final String issuerDn, final String username, final KeyPair signingKeyPair, final PrivateKey issuerKey, final int certStatus) throws Exception {
         // Create the signing certificate, signed by the ca certificate
         Date firstDate = new Date();
         firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
@@ -383,7 +486,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
         assertNotNull("Certificate was null", cert);
-        certificateStoreSession.storeCertificateRemote(ADMIN, EJBTools.wrap(cert), SIGNINGCERT_EE, cafp, CertificateConstants.CERT_ACTIVE,
+        certificateStoreSession.storeCertificateRemote(ADMIN, EJBTools.wrap(cert), username, cafp, certStatus,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
         grantAccessToCert(cert);
@@ -406,12 +509,16 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     }
 
     private PKIMessage genCertReq(final String userDn) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException {
+        return genCertReq(userDn, cacert, ISSUER_DN);
+    }
+
+    private PKIMessage genCertReq(final String userDn, final X509Certificate issuerCert, final String issuerDn) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         this.nonce = nonce;
         this.transid = transid;
         userDnX500 = new X500Name(userDn);
-        final PKIMessage req = genCertReq(ISSUER_DN, userDnX500, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
+        final PKIMessage req = genCertReq(issuerDn, userDnX500, keys, issuerCert, nonce, transid, false, null, null, null, null, null, null);
         final CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         return req;
