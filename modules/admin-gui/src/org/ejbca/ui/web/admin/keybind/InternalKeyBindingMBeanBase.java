@@ -310,8 +310,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "No InternalKeyBinding selected.", null));
             return;
         }
-        if (uploadToTargetFile != null && uploadToTargetFile.getSize() > 0) {
 
+        if (uploadToTargetFile != null && uploadToTargetFile.getSize() > 0) {
             try {
                 internalKeyBindingSession.importCertificateForInternalKeyBinding(getAdmin(), uploadTarget.intValue(),
                         IOUtils.toByteArray(uploadToTargetFile.getInputStream()));
@@ -323,7 +323,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
             }
         } else {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Upload file is null or empty.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Uploaded file is null or empty.", null));
         }
     }
 
