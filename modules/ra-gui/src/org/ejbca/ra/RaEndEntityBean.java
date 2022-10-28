@@ -1153,7 +1153,9 @@ public class RaEndEntityBean implements Serializable {
             sshPrincipals = new ArrayList<>();
             final List<EndEntityProfile.FieldInstance> fieldInstances = eep.new Field(SshEndEntityProfileFields.SSH_PRINCIPAL).getInstances();
             for (int i = 0; i < fieldInstances.size(); i++) {
-                fieldInstances.get(i).setValue(sshPrincipalValues[i]);
+                if (i < sshPrincipalValues.length) {
+                    fieldInstances.get(i).setValue(sshPrincipalValues[i]);
+                }
                 sshPrincipals.add(fieldInstances.get(i));
             }
         }
