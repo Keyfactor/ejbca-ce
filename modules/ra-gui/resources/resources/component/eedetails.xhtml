@@ -411,7 +411,7 @@
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="sshprincipals"
                 rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
-                value="#{cc.attrs.raEndEntityDetails.sshPrincipals}"
+                value="#{cc.attrs.raEndEntityDetails.sshPrincipalsPretty}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="sshcomment"
                 rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
