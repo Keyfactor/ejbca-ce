@@ -196,6 +196,15 @@ public class RaEndEntityDetails {
     public boolean isSshTypeEndEntity() { return sshTypeEndEntity; }
     public String getSshKeyId() { return sshKeyId; }
     public String getSshPrincipals() { return sshPrincipals; }
+
+    public String getSshPrincipalsPretty() {
+        String principals = getSshPrincipals().replace(":", ", ");
+        if (StringUtils.endsWith(principals, ", ")) {
+            principals = principals.substring(0, principals.length() -2);
+        }
+        return principals;
+    }
+
     public String getSshComment() { return sshComment; }
     public String getSshForceCommand() { return sshForceCommand; }
     public String getSshSourceAddress() { return sshSourceAddress; }
