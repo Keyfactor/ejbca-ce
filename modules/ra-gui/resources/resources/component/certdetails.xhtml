@@ -244,7 +244,7 @@
                     <f:validator validatorId="dateValidator"/>
                 </h:inputText>
                 <h:commandButton value="#{cc.attrs.raCertificateDetails.revokedWithKeyCompromise ?
-                            'Backdate' : msg.component_certdetails_changestatus_change_revocation_reason}"
+                        msg.component_certdetails_changestatus_backdate : msg.component_certdetails_changestatus_change_revocation_reason}"
                     action="#{cc.attrs.raCertificateDetails.actionChangeRevocationReason}" styleClass="pure-button ra-button"/>
                 <h:outputText 
                     id="updatedRevocationDateHelpText" 
