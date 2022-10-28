@@ -28,6 +28,7 @@ public class KeyBindingFileUploadValidator implements Validator<Object> {
     private static final Logger log = Logger.getLogger(KeyBindingFileUploadValidator.class);
 
     private static final int MAX_FILE_SIZE = 10000000; // In bytes
+    private static final int MAX_FILE_NAME_LENGTH = 256;
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
@@ -35,13 +36,18 @@ public class KeyBindingFileUploadValidator implements Validator<Object> {
         final Part uploadedFile = (Part) value;
 
         FacesMessage errorMessage = null;
-
+        
         try {
 
             if (uploadedFile == null || uploadedFile.getSize() <= 0 || uploadedFile.getContentType().isEmpty()) {
                 errorMessage = new FacesMessage("Select a valid file");
                 if (log.isDebugEnabled()) {
                     log.debug("Null, empty or mallformed certificate file uploaded.");
+                }
+            } else if (uploadedFile.getName().length() > MAX_FILE_NAME_LENGTH) {
+                errorMessage = new FacesMessage("Selected file name too long. Allowed file name is less than or equal to 256 characters.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Certificate file uploaded has a name longer than allowed length (256 characters).");
                 }
             } else if (uploadedFile.getSize() > MAX_FILE_SIZE) {
                 errorMessage = new FacesMessage("Selected file is too big. Allowed file size is less than or equal to 10 MB.");
