@@ -1146,6 +1146,9 @@ public class RaEndEntityBean implements Serializable {
         this.subjectDistinguishNames = subjectDistinguishNames;
     }
 
+    /**
+     * Retrieves and populates EndEntityProfile.FieldInstances for SSH principals (if not already set).
+     */
     public void handleNullSshPrincipals() {
         if (sshPrincipals == null) {
             final String[] sshPrincipalValues = raEndEntityDetails.getSshPrincipals().split(":");
@@ -1514,6 +1517,11 @@ public class RaEndEntityBean implements Serializable {
         return raEndEntityDetails.isSshSourceAddressModifiable();
     }
 
+    /**
+     * Converts principals FieldInstance list to principals String for db storage.
+     * @param sshPrincipals list of EndEntityProfile.FieldInstance for principals
+     * @return String of SSH principals separated by colon (:)
+     */
     private static String sshPrincipalFieldsToString(List<EndEntityProfile.FieldInstance> sshPrincipals) {
         String[] sshPrincipalValues = sshPrincipals.stream().map(e -> e.getValue()).toArray(String[]::new);
         return StringUtils.join(sshPrincipalValues, ":");

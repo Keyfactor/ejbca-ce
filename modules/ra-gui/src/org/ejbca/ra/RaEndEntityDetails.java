@@ -197,6 +197,10 @@ public class RaEndEntityDetails {
     public String getSshKeyId() { return sshKeyId; }
     public String getSshPrincipals() { return sshPrincipals; }
 
+    /**
+     * Converts colon separated list of principals to colon separated.
+     * @return String with principals separated by ,
+     */
     public String getSshPrincipalsPretty() {
         String principals = getSshPrincipals().replace(":", ", ");
         if (StringUtils.endsWith(principals, ", ")) {
