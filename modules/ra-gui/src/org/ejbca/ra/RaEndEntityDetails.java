@@ -27,8 +27,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -47,6 +45,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SshCertificateUtils;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -126,11 +125,10 @@ public class RaEndEntityDetails {
         this.caName = caName;
         final Date timeCreated = endEntity.getTimeCreated();
         if (endEntity.isSshEndEntity()) {
-            // END entity is SSH type
             this.sshTypeEndEntity = true;
-            this.sshKeyId = parseSshKeyId(this.subjectDn);
-            this.sshPrincipals = parseSshPrincipals(this.subjectAn);
-            this.sshComment = parseSshComment(this.subjectAn);
+            this.sshKeyId = SshCertificateUtils.getKeyId(this.subjectDn);
+            this.sshPrincipals = SshCertificateUtils.getPrincipalsAsString(this.subjectAn);
+            this.sshComment = SshCertificateUtils.getComment(this.subjectAn);
             Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
             this.sshForceCommand = sshCriticalOptions.containsKey("force-command") ? sshCriticalOptions.get("force-command") : null;
             this.sshSourceAddress = sshCriticalOptions.containsKey("source-address") ? sshCriticalOptions.get("source-address") : null;
@@ -262,7 +260,6 @@ public class RaEndEntityDetails {
         }
         return "?";
     }
-
 
     /**
      * Extracts subject DN from certificate request and converts the string to cesecore namestyle
@@ -707,46 +704,6 @@ public class RaEndEntityDetails {
      */
     public String getCabfOrganizationIdentifier() {
         return extendedInformation.getCabfOrganizationIdentifier();
-    }
-
-    /**
-     * Used for SSH type end entities to extract the key ID which is stored as the subject DN common name value internally.
-     * @param subjectDn Subject Distinguished Name for the end entity
-     * @return SSH key ID string
-     */
-    private static String parseSshKeyId(final String subjectDn) {
-        return subjectDn.substring(3);
-    }
-
-    /**
-     * Used for SSH type end entities to extract principals from SAN.
-     * @param subjectAn Subject Alternative Name for the end entity
-     * @return String with SSH prinipals formatted as a comma separated list
-     */
-    private static String parseSshPrincipals(final String subjectAn) {
-        final Pattern pattern = Pattern.compile("dnsName=PRINCIPAL:(.*):COMMENT:.*");
-        final Matcher matcher = pattern.matcher(subjectAn);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        }
-        else {
-            return "";
-        }
-    }
-
-    /**
-     * Used for SSH type end entities to extract comment field from SAN.
-     * @param subjectAn Subject Alternative Name for the end entity
-     * @return String with SSH comment
-     */
-    private static String parseSshComment(final String subjectAn) {
-        final Pattern pattern = Pattern.compile("dnsName=PRINCIPAL:.*:COMMENT:(.*)");
-        final Matcher matcher = pattern.matcher(subjectAn);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        } else {
-            return "";
-        }
     }
 
     /** @return true every twice starting with every forth call */
