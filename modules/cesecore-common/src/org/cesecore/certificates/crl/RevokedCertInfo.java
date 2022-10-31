@@ -223,10 +223,18 @@ public class RevokedCertInfo implements Serializable {
      * @return  true if all the requirements are met.
      */
     public static boolean canRevocationReasonBeChanged(final int newReason, final Date newDate, final int currentReason, final long currentDate, final boolean allowedOnCa, final boolean isX509) {
-        
-        final boolean dateIsOk = newDate == null || newDate.getTime() <= currentDate;
-
+        final boolean dateIsOk = isDateOk(newDate, currentDate);
         return isX509 && allowedOnCa && newReason == REVOCATION_REASON_KEYCOMPROMISE && ALLOWED_OLD_REVOCATION_REASONS.contains(currentReason) && dateIsOk;
+    }
+
+    /**
+     * Helper function to check if new date for updated revocation is ok.
+     * @param newDate the new revocation date
+     * @param currentDate the current revocation date
+     * @return true if newDate is null or newDate is before currentDate
+     */
+    public static boolean isDateOk(final Date newDate, final long currentDate) {
+        return newDate == null || newDate.getTime() <= currentDate;
     }
     
     public static boolean isPermanentlyRevoked(int revocationReason) {

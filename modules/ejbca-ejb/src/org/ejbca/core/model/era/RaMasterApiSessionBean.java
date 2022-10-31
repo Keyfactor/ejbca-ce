@@ -208,6 +208,7 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
+import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
@@ -2821,7 +2822,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, InvalidRevocationDateException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
         final int caId = CertTools.stringToBCDNString(issuerDn).hashCode();
         caSession.verifyExistenceOfCA(caId);
@@ -2837,7 +2838,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, CertificateProfileDoesNotExistException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException,
+            CertificateProfileDoesNotExistException, InvalidRevocationDateException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
 
         final int caId = CertTools.stringToBCDNString(certRevocationDto.getIssuerDN()).hashCode();
