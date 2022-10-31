@@ -47,22 +47,22 @@ public @interface ValidSearchEndEntitiesSearchRestRequestV2 {
 
         @Override
         public boolean isValid(final SearchEndEntitiesRestRequestV2 searchEndEntitiesRestRequest, final ConstraintValidatorContext constraintValidatorContext) {
-            if(searchEndEntitiesRestRequest==null) {
+            if (searchEndEntitiesRestRequest == null) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, 
                         "{ValidSearchEndEntitiesSearchRestRequest.invalid.default}");
                 return false;
             }
-            if(searchEndEntitiesRestRequest.getMaxNumberOfResults()==null||searchEndEntitiesRestRequest.getMaxNumberOfResults()<0) {
+            if (searchEndEntitiesRestRequest.getMaxNumberOfResults() == null || searchEndEntitiesRestRequest.getMaxNumberOfResults() < 0) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, 
                         "{ValidSearchEndEntitiesSearchRestRequest.invalid.invalidmaxnoresult}");
                 return false;
             }
-            if(searchEndEntitiesRestRequest.getCurrentPage()<0) {
+            if (searchEndEntitiesRestRequest.getCurrentPage() < 1) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, 
                         "{ValidSearchEndEntitiesSearchRestRequest.invalid.invalidcurrentpage}");
                 return false;
             }
-            if((searchEndEntitiesRestRequest.getCriteria() == null || searchEndEntitiesRestRequest.getCriteria().isEmpty())
+            if ((searchEndEntitiesRestRequest.getCriteria() == null || searchEndEntitiesRestRequest.getCriteria().isEmpty())
                     && searchEndEntitiesRestRequest.getSortOperation() == null) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, 
                         "{ValidSearchEndEntitiesSearchRestRequest.invalid.nooperation}");
