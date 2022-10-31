@@ -210,23 +210,32 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 value="#{msg.component_certdetails_changestatus_change_revocation_reason}"
                 rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                        and not cc.attrs.raCertificateDetails.suspended
                         and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}"/>
             <h:panelGroup styleClass="#{cc.attrs.styleValue}"
                     rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                            and not cc.attrs.raCertificateDetails.suspended
                             and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}">
                 <h:selectOneMenu id="changeRevocationReasonSelectMenu" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
                     styleClass="pure-input-1-4 #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                     style="color:black"
                     rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                            and not cc.attrs.raCertificateDetails.suspended
                             and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}">
                     <f:selectItems value="#{cc.attrs.raCertificateDetails.changeRevocationReasons}"/>
                 </h:selectOneMenu>
+                <h:commandButton value="#{msg.component_certdetails_changestatus_change_revocation_reason}"
+                    rendered="#{not cc.attrs.raCertificateDetails.cpAllowingRevocationBackdate}"
+                    action="#{cc.attrs.raCertificateDetails.actionChangeRevocationReason}" styleClass="pure-button ra-button"/>
             </h:panelGroup>
             <h:panelGroup styleClass="#{cc.attrs.styleLabel}"
                     rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                            and not cc.attrs.raCertificateDetails.suspended
                             and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}"/>
             <h:panelGroup id="changeRevocationReasonDate" styleClass="#{cc.attrs.styleValue} revokeGroup"
                     rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                            and not cc.attrs.raCertificateDetails.suspended
+                            and cc.attrs.raCertificateDetails.cpAllowingRevocationBackdate
                             and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}">
                 <h:inputText
                     id="updatedRevocationDate"
@@ -235,7 +244,7 @@
                     <f:validator validatorId="dateValidator"/>
                 </h:inputText>
                 <h:commandButton value="#{cc.attrs.raCertificateDetails.revokedWithKeyCompromise ?
-                            'Backdate' : msg.component_certdetails_changestatus_change_revocation_reason}"
+                        msg.component_certdetails_changestatus_backdate : msg.component_certdetails_changestatus_change_revocation_reason}"
                     action="#{cc.attrs.raCertificateDetails.actionChangeRevocationReason}" styleClass="pure-button ra-button"/>
                 <h:outputText 
                     id="updatedRevocationDateHelpText" 

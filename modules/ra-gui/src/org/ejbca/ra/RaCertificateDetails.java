@@ -156,17 +156,21 @@ public class RaCertificateDetails {
     private int newRevocationReason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
     private String updatedRevocationDate = null;
     private boolean caAllowsChangeOfRevocationReason = false;
+    private boolean cpAllowsRevocationBackdate = false;
 
     public RaCertificateDetails(final CertificateDataWrapper cdw, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
-                    final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason) {
+                    final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
+                    final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
         this.callbacks = callbacks;
-        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason);
+        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
+                caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
     }
 
     public void reInitialize(final CertificateDataWrapper cdw, final Map<Integer, String> cpIdToNameMap,
             final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
-            final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason) {
+            final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
+            final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
         this.cdw = cdw;
         final CertificateData certificateData = cdw.getCertificateData();
         this.cpId = certificateData.getCertificateProfileId();
@@ -190,6 +194,10 @@ public class RaCertificateDetails {
         if (caNameToAllowsChangeOfRevocationReason != null && this.caName != null &&
                 caNameToAllowsChangeOfRevocationReason.containsKey(this.caName)) {
             this.caAllowsChangeOfRevocationReason = caNameToAllowsChangeOfRevocationReason.get(this.caName);
+        }
+        if (cpNameToAllowsRevocationBackdating != null && this.cpName != null &&
+                cpNameToAllowsRevocationBackdating.containsKey(this.cpName)) {
+            this.cpAllowsRevocationBackdate = cpNameToAllowsRevocationBackdating.get(this.cpName);
         }
         this.status = certificateData.getStatus();
         this.revocationReason = certificateData.getRevocationReason();
@@ -400,6 +408,14 @@ public class RaCertificateDetails {
      */
     public boolean isCaAllowingChangeOfRevocationReason() {
         return this.caAllowsChangeOfRevocationReason;
+    }
+
+    /**
+     * Check if the Certificate profile is set to allowing revocation backdating.
+     * @return boolean does CP allow revocation backdate
+     */
+    public boolean isCpAllowingRevocationBackdate() {
+        return this.cpAllowsRevocationBackdate;
     }
 
     /** @return a localized certificate (revocation) status string */
