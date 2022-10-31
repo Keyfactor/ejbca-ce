@@ -80,6 +80,7 @@ import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -249,7 +250,7 @@ public class CertificateRestResource extends BaseRestResource {
             final String reason,
             final String date)
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException {
+            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException, InvalidRevocationDateException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         RevocationReasons reasons = RevocationReasons.getFromCliValue(reason);
         // TODO Replace with @ValidRevocationReason

@@ -65,6 +65,7 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.cvc.AuthorizationField;
@@ -86,10 +87,11 @@ public class RaCertificateDetails {
          * @param newDate New revocation date (can be null if backdate is not desired)
          * @param issuerDn Distinguished name of certificate issuer
          * @throws RevokeBackDateNotAllowedForProfileException Backdating fails if not allowed in certificate profile
+         * @throws InvalidRevocationDateException
          */
         void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason, final Date newDate,
                 final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException;
+                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, InvalidRevocationDateException;
         boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
                                                                                 WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
         boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
@@ -576,6 +578,8 @@ public class RaCertificateDetails {
             log.error(e);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_error_certificate_profile_backdating");
+        } catch (InvalidRevocationDateException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_error_invalid_revocation_date");
         } catch (NoSuchEndEntityException | AlreadyRevokedException | CADoesntExistsException
                 | AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
