@@ -56,6 +56,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -361,6 +362,9 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                     log.error(e.getMessage());
                     return CommandResult.FUNCTIONAL_FAILURE;
                 } catch (WaitingForApprovalException e) {
+                    log.error(e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                } catch (InvalidRevocationDateException e) {
                     log.error(e.getMessage());
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }

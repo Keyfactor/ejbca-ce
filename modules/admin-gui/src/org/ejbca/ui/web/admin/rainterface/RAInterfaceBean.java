@@ -63,6 +63,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -210,7 +211,7 @@ public class RAInterfaceBean implements Serializable {
      * @param reason reason(s) of revocation.
      */
     public void revokeUser(String username, int reason) throws AuthorizationDeniedException,
-        NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+        NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, InvalidRevocationDateException {
         log.trace(">revokeUser()");
         endEntityManagementSession.revokeUser(administrator, username, reason);
         log.trace("<revokeUser()");
