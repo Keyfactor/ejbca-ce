@@ -8,7 +8,6 @@
 	<property name="x509-common-util.build.dir" location="${x509-common-util.dir}/build"/>
 	<property name="x509-common-util.build-test.dir" location="${x509-common-util.dir}/build-test"/>
 	<property name="x509-common-util.src-test.dir" location="${x509-common-util.dir}/src-test"/>
-	<property name="x509-common-util.resources-test.dir" location="${x509-common-util.dir}/resources-test"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.commons-lang.classpath"/>
@@ -72,16 +71,6 @@
 		<javac srcdir="${x509-common-util.src-test.dir}" destdir="${x509-common-util.build-test.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
 		<copy file="${log4j.test.file}" tofile="${x509-common-util.build-test.dir}/log4j.xml" failonerror="true"/>
-		<copy todir="${x509-common-util.build-test.dir}" failonerror="true">
-			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
-			<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
-		</copy>
-		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
-		<copy file="${systemtests.properties.file}" todir="${x509-common-util.build-test.dir}" failonerror="false"/>
-		<!-- Copy input data for tests to access via classpath -->
-		<copy todir="${x509-common-util.build-test.dir}" failonerror="true">
-			<fileset dir="${x509-common-util.resources-test.dir}" includes="*" excludes="readme.txt"/>
-		</copy>
 	</target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">

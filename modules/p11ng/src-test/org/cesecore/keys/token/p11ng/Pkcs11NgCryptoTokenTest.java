@@ -17,9 +17,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.CryptoTokenTestBase;
 import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.util.CryptoProviderTools;
@@ -42,8 +40,8 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
     
     @BeforeClass
     public static void beforeClass() {
-        assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
-        assumeTrue(PKCS11TestUtils.getHSMProvider() != null);
+        assumeTrue(getHSMLibrary() != null);
+        assumeTrue(getHSMProvider() != null);
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
@@ -110,11 +108,11 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
     
     private static CryptoToken createPkcs11NgTokenWithAttributesFile(String file, String tokenName, boolean extractable) throws NoSuchSlotException {
         Properties prop = new Properties();
-        String hsmlib = PKCS11TestUtils.getHSMLibrary();
+        String hsmlib = getHSMLibrary();
         assertNotNull(hsmlib);
         prop.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, hsmlib);
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, getPkcs11SlotValue());
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, getPkcs11SlotType().getKey());
         if (file != null) {
             prop.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, file);
         }
