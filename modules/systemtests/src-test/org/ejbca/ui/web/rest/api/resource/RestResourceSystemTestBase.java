@@ -97,6 +97,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
@@ -426,6 +428,15 @@ public class RestResourceSystemTestBase {
                 log.error("Cannot remove the membership", e);
             }
         }
+    }
+    
+    public String encodeUrl(String path) {
+        try {
+            path = URLEncoder.encode(path, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.error("Error encoding parameter: " + e.getMessage());
+        }
+        return path;
     }
 
 }

@@ -99,6 +99,7 @@ public class CaRestResourceSwagger extends CaRestResource {
 
     @POST
     @Path("/{issuer_dn}/createcrl")
+    @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Create CRL(main, partition and delta) issued by this CA", response = CreateCrlRestResponse.class)
     public Response createCrl(@Context HttpServletRequest httpServletRequest,
                               @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
