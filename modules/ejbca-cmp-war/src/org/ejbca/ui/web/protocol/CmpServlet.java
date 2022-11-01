@@ -100,6 +100,13 @@ public class CmpServlet extends HttpServlet {
             CmpConfiguration config = raMasterApiProxyBean.getGlobalConfiguration(CmpConfiguration.class);
             if (config.getUseExtendedValidation(alias)) {
                 // Perform extended validation. To be implemented in ECA-11035
+                validateMessageSignature();
+                validateMAC();
+                validateCertificateChain();
+                validateCertificateValidity();
+                validateCertificateChainValidity();
+                validateCertificateStatus();
+                validateCertificateChainStatus();
             }
             
             service(output.toByteArray(), request.getRemoteAddr(), response, alias);
@@ -183,4 +190,71 @@ public class CmpServlet extends HttpServlet {
         }
         return alias;
     }
+
+    /**
+     * The signature contained in the PKIProtection (s. [rfc4210]) data structure must be cryptographically verified on the CMP proxy if “Signature”
+     * is used as protection. The signature certificate/key must be contained in the extraCerts structure.
+     *
+     * CmpProxyServlet.assertMessageSignature()
+     *
+     */
+    private boolean validateMessageSignature(){
+        return true;
+    }
+
+    /**
+     * The MAC contained in the PKIProtection data structure must be cryptographically verified on the CMP proxy if “DH Key Pairs” is used as protection.
+     * The DH cert/key information must be stored in the extraCerts structure.
+     *
+     * CmpProxyServlet.validateCmpMessage()
+     */
+    private boolean validateMAC(){
+        return true;
+    }
+
+    /**
+     * The certificate chain of the signature certificate must be validated
+     *
+     * CmpProxyServlet.validateCmpMessage()
+     */
+    private boolean validateCertificateChain(){
+        return true;
+    }
+
+    /**
+     * The validity interval of the certificate must be checked
+     *
+     * CmpProxyServlet.validateCmpMessage()
+     */
+    private boolean validateCertificateValidity(){
+        return true;
+    }
+
+    /**
+     * The validity interval of all chain certificate must be checked
+     *
+     *
+     */
+    private boolean validateCertificateChainValidity(){
+        return true;
+    }
+
+    /**
+     * The revocation status of the signature certificate must be checked against a current CRL of the issuing CA and/or via OCSP
+     *
+     * CmpProxyServlet.checkRevocationStatus. We should be able to do this internally moving forward.
+     */
+    private boolean validateCertificateStatus(){
+        return true;
+    }
+
+    /**
+     * The revocation status of all chain certificates must be checked against a current CRL of the respective issuing CA
+     *
+     * CmpProxyServlet.checkRevocationStatus
+     */
+    private boolean validateCertificateChainStatus(){
+        return true;
+    }
+
 }
