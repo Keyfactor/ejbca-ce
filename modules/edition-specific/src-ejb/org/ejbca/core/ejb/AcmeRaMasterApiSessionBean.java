@@ -205,6 +205,11 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
     }
 
     @Override
+    public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String... resources) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
     public EndEntityInformation searchUser(final AuthenticationToken authenticationToken, final String username) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }

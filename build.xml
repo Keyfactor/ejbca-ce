@@ -1090,6 +1090,7 @@
                 <exclude unless="edition.is.ee" name="modules/validationtool/**"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/cmp/authentication/CmpVendorModeImpl.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/cmp/VendorAuthenticationTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/cmp/CmpExtendedValidationTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/cmpProxy/**"/>
                 <exclude unless="edition.is.ee" name="modules/ct/**"/>
                 <exclude unless="edition.is.ee" name="lib/ct/**"/>
@@ -1140,6 +1141,7 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CryptoTokenRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSearchPaginationSystemTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CustomRestHeaderSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/p11ng/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/p11ng-cli/**"/>
