@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.util.List;
+
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -21,6 +23,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  */
 @Local
 public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
+
+    public static final String TEST_TRACE_SUFFIX_LOCAL = "|local";
+    public static final String TEST_TRACE_SUFFIX_REMOTE = "|remote";
 
     /**
      *
@@ -37,4 +42,20 @@ public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
 
     /** @return a RaCertificateSearchResponse from a search with a given username */
     RaCertificateSearchResponse searchForCertificatesByUsername(final AuthenticationToken authenticationToken, final String username);
+
+    /** Causes the function name, and local/remote status, of each called RaMasterApi function to be logged */
+    void enableFunctionTracingForTest();
+
+    /**
+     * Returns the list of called functions and local/remote status. Syntax example:
+     *
+     * <pre>
+     * isAuthorizedNoLogging|local
+     * isAuthorizedNoLogging|remote
+     * </pre>
+     */
+    List<String> getFunctionTraceForTest();
+
+    /** Restores the changed made by enableFunctionTracingForTest. Simply does nothing if there is nothing to restore */
+    void restoreFunctionTracingAfterTest();
 }

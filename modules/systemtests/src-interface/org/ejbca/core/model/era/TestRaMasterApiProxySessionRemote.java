@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.util.List;
+
 import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -38,7 +40,23 @@ public interface TestRaMasterApiProxySessionRemote {
      * Used in tests, to test "remote" peer connections to localhost.
      */
     void deferLocalForTest();
-    
+
+    /** Causes the function name, and local/remote status, of each called RaMasterApi function to be logged */
+    void enableFunctionTracingForTest();
+
+    /** Restores the changed made by enableFunctionTracingForTest. Simply does nothing if there is nothing to restore */
+    void restoreFunctionTracingAfterTest();
+
+    /**
+     * Returns the list of called functions and local/remote status. Syntax example:
+     *
+     * <pre>
+     * isAuthorizedNoLogging|local
+     * isAuthorizedNoLogging|remote
+     * </pre>
+     */
+    List<String> getFunctionTraceForTest();
+
     /**
      * Adds (end entity) user.
      * @param admin authentication token

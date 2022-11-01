@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.util.List;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -40,12 +42,27 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    
+
     @Override
     public void deferLocalForTest() {
         raMasterApiProxyBean.deferLocalForTest();
     }
-    
+
+    @Override
+    public void enableFunctionTracingForTest() {
+        raMasterApiProxyBean.enableFunctionTracingForTest();
+    }
+
+    @Override
+    public List<String> getFunctionTraceForTest() {
+        return raMasterApiProxyBean.getFunctionTraceForTest();
+    }
+
+    @Override
+    public void restoreFunctionTracingAfterTest() {
+        raMasterApiProxyBean.restoreFunctionTracingAfterTest();
+    }
+
     @Override
     public byte[] cmpDispatch(byte[] pkiMessageBytes, String cmpConfigurationAlias)
             throws NoSuchAliasException {

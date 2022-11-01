@@ -193,6 +193,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
 
     @POST
     @Path("/{request_id}/finalize")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Finalize enrollment",
             notes = "Finalizes enrollment after administrator approval using request Id",
