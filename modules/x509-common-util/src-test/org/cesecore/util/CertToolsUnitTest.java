@@ -23,8 +23,6 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -49,11 +47,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -67,34 +62,17 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.GeneralSubtree;
-import org.bouncycastle.asn1.x509.NameConstraints;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.PolicyQualifierId;
 import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
-import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
-import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.cert.CrlExtensions;
-import org.cesecore.certificates.util.cert.QCStatementExtension;
-import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.keys.util.KeyTools;
-import org.ejbca.cvc.AuthorizationRoleEnum;
-import org.ejbca.cvc.CAReferenceField;
-import org.ejbca.cvc.CVCAuthenticatedRequest;
-import org.ejbca.cvc.CVCObject;
-import org.ejbca.cvc.CVCertificate;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.CertificateGenerator;
-import org.ejbca.cvc.CertificateParser;
-import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -197,27 +175,6 @@ public class CertToolsUnitTest {
                     +"6Q5uP6jRra4WeOWt3ylEYl9R8AGm2gEnGPyEGV7CDeM3+QHa8dFnBcMpXfXkjT6X"
                     +"DAJPWF9uCqBxkH/fhnJTs64qn0zVB8zs").getBytes());
     
-    /** The reference certificate from RFC3739 */
-    private static byte[] qcRefCert = Base64.decode(("MIIDEDCCAnmgAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADBIMQswCQYDVQQGEwJE"
-            + "RTE5MDcGA1UECgwwR01EIC0gRm9yc2NodW5nc3plbnRydW0gSW5mb3JtYXRpb25z" + "dGVjaG5payBHbWJIMB4XDTA0MDIwMTEwMDAwMFoXDTA4MDIwMTEwMDAwMFowZTEL"
-            + "MAkGA1UEBhMCREUxNzA1BgNVBAoMLkdNRCBGb3JzY2h1bmdzemVudHJ1bSBJbmZv" + "cm1hdGlvbnN0ZWNobmlrIEdtYkgxHTAMBgNVBCoMBVBldHJhMA0GA1UEBAwGQmFy"
-            + "emluMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDc50zVodVa6wHPXswg88P8" + "p4fPy1caIaqKIK1d/wFRMN5yTl7T+VOS57sWxKcdDzGzqZJqjwjqAP3DqPK7AW3s"
-            + "o7lBG6JZmiqMtlXG3+olv+3cc7WU+qDv5ZXGEqauW4x/DKGc7E/nq2BUZ2hLsjh9" + "Xy9+vbw+8KYE9rQEARdpJQIDAQABo4HpMIHmMGQGA1UdCQRdMFswEAYIKwYBBQUH"
-            + "CQQxBBMCREUwDwYIKwYBBQUHCQMxAxMBRjAdBggrBgEFBQcJATERGA8xOTcxMTAx" + "NDEyMDAwMFowFwYIKwYBBQUHCQIxCwwJRGFybXN0YWR0MA4GA1UdDwEB/wQEAwIG"
-            + "QDASBgNVHSAECzAJMAcGBSskCAEBMB8GA1UdIwQYMBaAFAABAgMEBQYHCAkKCwwN" + "Dg/+3LqYMDkGCCsGAQUFBwEDBC0wKzApBggrBgEFBQcLAjAdMBuBGW11bmljaXBh"
-            + "bGl0eUBkYXJtc3RhZHQuZGUwDQYJKoZIhvcNAQEFBQADgYEAj4yAu7LYa3X04h+C" + "7+DyD2xViJCm5zEYg1m5x4znHJIMZsYAU/vJJIJQkPKVsIgm6vP/H1kXyAu0g2Ep"
-            + "z+VWPnhZK1uw+ay1KRXw8rw2mR8hQ2Ug6QZHYdky2HH3H/69rWSPp888G8CW8RLU" + "uIKzn+GhapCuGoC4qWdlGLWqfpc=").getBytes());
-
-    private static byte[] qcPrimeCert = Base64.decode(("MIIDMDCCAhigAwIBAgIIUDIxBvlO2qcwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
-            + "AxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw" + "HhcNMDYwMTIyMDgxNTU0WhcNMDgwMTIyMDgyNTU0WjAOMQwwCgYDVQQDEwNxYzIw"
-            + "gZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAKkuPOqOEWCJH9xb11sS++vfKb/z" + "gHf2clwyf2vSFWTSDzQHOa2j5rwZ/F23X/mZl96fFAIfTBmr5dCwt0xAXZvTcKfO"
-            + "RAcKl7ZBXvsAYvwl1KIUpA8NqEbgjwA+OaTdND2vpAhII7PoU4CkoNajy44EuL3Y" + "xP6KNWTMiks9KP5vAgMBAAGjgewwgekwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8E"
-            + "BAMCBPAwJwYDVR0lBCAwHgYIKwYBBQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDBzAd" + "BgNVHQ4EFgQUZsj/dUVp1FmOJpYZ2j5fYKIdXYowHwYDVR0jBBgwFoAUs8UBsa9O"
-            + "S1c8/I07DHYFJp0po0AwYAYIKwYBBQUHAQMEVDBSMCMGCCsGAQUFBwsBMBcGAykB" + "AjAQgQ5xY0BwcmltZWtleS5zZTAIBgYEAI5GAQEwFwYGBACORgECMA0TA1NFSwID"
-            + "AMNQAgEAMAgGBgQAjkYBBDANBgkqhkiG9w0BAQUFAAOCAQEAjmL27XY5Wt0/axsI" + "PbtcfrJ6xEm5PlYabM+T3I6lksov6Rz1+/n/L1S5poGPG8iOdJCExcnR0HbNkeB+"
-            + "2oPltqSaxyoSfGugVn/Oufz2BfFd7OCWe14dPsA181oC7/nq+mzhBpQ7App9JirA" + "aeJQrcRDNK7vVOmg2LZ2oSYno/TuRTFq0GxsEVjEdzAxpAxY7N8ff6gY7IHd7+hc"
-            + "4GiFY+NnNp9Dvf6mOYTXLxsOc+093S7uK2ohhq99aYCkzJmrngtrImtKi0y/LMjq" + "oviMCQmzMLY2Ifcw+CsOyQZx7nxwafZ7BAzm6vIvSeiIe3VlskRGzYDM66NJJNNo"
-            + "C2HsPA==").getBytes());
 
     private static byte[] aiaCert = Base64.decode(("MIIDYDCCAkigAwIBAgIIFlJveCmyW4owDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
             + "AwwIQWRtaW5DQTExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw" + "HhcNMDgxMDIwMDkxOTM0WhcNMDkxMDIwMDkxOTM0WjA9MQwwCgYDVQQDDANhaWEx"
@@ -230,41 +187,7 @@ public class CertToolsUnitTest {
             + "g3uXQh2dXcv3DbvU2lfSVXRnuOz+K0ZUMAW96nsCeT41viM6w4x18zZeb+Px8RL9" + "swtcYdObNK0qmjZ4X+DcbdGRRrh8kr9GPLHYqtVLRM6z6hH3n54WJzojeIebKCsY"
             + "MoHGmOJkaIcFRXfneXrId1/k7b1QdOagGjvLkgw3pi/7k6vOJn+DrudNMFmsNpVY" + "fkrayw==").getBytes());
 
-    private static byte[] subjDirAttrCert = Base64.decode(("MIIGmTCCBYGgAwIBAgIQGMYCpWmOBXXOL2ODrM8FHzANBgkqhkiG9w0BAQUFADBx"
-            + "MQswCQYDVQQGEwJUUjEoMCYGA1UEChMfRWxla3Ryb25payBCaWxnaSBHdXZlbmxp" + "Z2kgQS5TLjE4MDYGA1UEAxMvZS1HdXZlbiBFbGVrdHJvbmlrIFNlcnRpZmlrYSBI"
-            + "aXptZXQgU2FnbGF5aWNpc2kwHhcNMDYwMzI4MDAwMDAwWhcNMDcwMzI4MjM1OTU5" + "WjCCAR0xCzAJBgNVBAYTAlRSMSgwJgYDVQQKDB9FbGVrdHJvbmlrIEJpbGdpIEd1"
-            + "dmVubGlnaSBBLlMuMQ8wDQYDVQQLDAZHS05FU0kxFDASBgNVBAUTCzIyOTI0NTQ1" + "MDkyMRswGQYDVQQLDBJEb2d1bSBZZXJpIC0gQlVSU0ExIjAgBgNVBAsMGURvZ3Vt"
-            + "IFRhcmloaSAtIDAxLjA4LjE5NzcxPjA8BgNVBAsMNU1hZGRpIFPEsW7EsXIgLSA1" + "MC4wMDAgWVRMLTIuMTYuNzkyLjEuNjEuMC4xLjUwNzAuMS4yMRcwFQYDVQQDDA5Z"
-            + "QVPEsE4gQkVDRU7EsDEjMCEGCSqGSIb3DQEJARYUeWFzaW5AdHVya2VrdWwuYXYu" + "dHIwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAKaJXVLvXC7qyjiqTAlM582X"
-            + "GPdQJxUfRxgTm6jlBZKtEhbWN5hbH4ASJTzmXWryGricejdKM+JBJECFdelyWPHs" + "UkEL/U0uft3KLIdYo72oTibaL3j4vkEhjyubikSdl9CywkY6WS8nV9JNc66QOYxE"
-            + "5ZdE5CR19ScIYcOh7YpxAgMBAAGjggMBMIIC/TAJBgNVHRMEAjAAMAsGA1UdDwQE" + "AwIGwDBWBgNVHR8ETzBNMEugSaBHhkVodHRwOi8vY3JsLmUtZ3V2ZW4uY29tL0Vs"
-            + "ZWt0cm9uaWtCaWxnaUd1dmVubGlnaUFTR0tORVNJL0xhdGVzdENSTC5jcmwwHwYD" + "VR0jBBgwFoAUyT6jfNNisqvczhIzwmTXZTTyfrowggEcBgNVHSAEggETMIIBDzCB"
-            + "/wYJYIYYAwABAQECMIHxMDYGCCsGAQUFBwIBFipodHRwczovL3d3dy5lLWd1dmVu" + "LmNvbS9lLWltemEvYmlsZ2lkZXBvc3UwgbYGCCsGAQUFBwICMIGpGoGmQnUgc2Vy"
-            + "dGlmaWthLCA1MDcwIHNhef1s/SBFbGVrdHJvbmlrIN1temEgS2FudW51bmEgZ/Zy" + "ZSBuaXRlbGlrbGkgZWxla3Ryb25payBzZXJ0aWZpa2Fk/XIuIE9JRDogMi4xNi43"
-            + "OTIuMS42MS4wLjEuNTA3MC4xLjEgLSBPSUQ6IDAuNC4wLjE0NTYuMS4yIC0gT0lE" + "OiAwLjQuMC4xODYyLjEuMTALBglghhgDAAEBBQQwgaEGCCsGAQUFBwEDBIGUMIGR"
-            + "MHYGCCsGAQUFBwsBMGoGC2CGGAE9AAGnTgEBMFuGWUJ1IFNlcnRpZmlrYSA1MDcw" + "IHNhef1s/SBFbGVrdHJvbmlrIN1temEgS2FudW51bmEgZ/ZyZSBuaXRlbGlrbGkg"
-            + "ZWxla3Ryb25payBzZXJ0aWZpa2Fk/XIuMBcGBgQAjkYBAjANEwNZVEwCAwDDUAIB" + "ADB2BggrBgEFBQcBAQRqMGgwIwYIKwYBBQUHMAGGF2h0dHA6Ly9vY3NwLmUtZ3V2"
-            + "ZW4uY29tMCIGCCsGAQUFBzAChhZodHRwOi8vd3d3LmUtZ3V2ZW4uY29tMB0GAytv" + "DoYWaHR0cDovL3d3dy5lLWd1dmVuLmNvbTAbBgNVHQkEFDASMBAGCCsGAQUFBwkE"
-            + "MQQTAlRSMBEGCWCGSAGG+EIBAQQEAwIHgDANBgkqhkiG9w0BAQUFAAOCAQEA3yVY" + "rURakBcrfv1hJjhDg7+ylCjXf9q6yP2E03kG4t606TLIyqWoqGkrndMtanp+a440"
-            + "rLPIe456XfRJBilj99H0NjzKACAVfLMTL8h/JBGLDYJJYA1S8PzBnMLHA8dhfBJ7" + "StYEPM9BKW/WuBfOOdBNrRZtYKCHwGK2JANfM/JlfzOyG4A+XDQcgjiNoosjes1P"
-            + "qUHsaccIy0MM7FLMVV0HJNNQ84N9CuKIrBSSWopOudkajVqNtI3+FCcy+yXiH6LX" + "fmpHZ346zprcafcjQmAiKfzPSljruvGDIVI3WN7S7WOMrx6MDq54626cZzQl9GFT"
-            + "D1gNo3fjOFhK33DY1Q==").getBytes());
-
-    private static byte[] subjDirAttrCert2 = Base64.decode(("MIIEsjCCA5qgAwIBAgIIFsYK/Jx7XEEwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
-            + "AxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw" + "HhcNMDYwNTMwMDcxNjU2WhcNMDgwNTI5MDcyNjU2WjA5MRkwFwYDVQQDExBUb21h"
-            + "cyBHdXN0YXZzc29uMQ8wDQYDVQQKEwZGb29PcmcxCzAJBgNVBAYTAlNFMIGfMA0G" + "CSqGSIb3DQEBAQUAA4GNADCBiQKBgQCvhUYzNVW6iG5TpYi2Dr9VX37g05jcGEyP"
-            + "Lix05oxs3FnzPUf6ykxGy4nUYO12PfC6u9Gh+zelFfg6nKNQqYI48D4ufJc928Nx" + "dZQZi41UmnFT5UXn3JcG4DQe0wZp+BKCch/UbtRjuE6iNxH24R//8W4wXc1R++FG"
-            + "5V6CQzHxXwIDAQABo4ICQjCCAj4wDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMC" + "BPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMB0GA1UdDgQWBBQ54I1p"
-            + "TGNwAeQEdnmcjNT+XMMjsjAfBgNVHSMEGDAWgBRzBo+b/XQZqq0DU6J10x17GoKS" + "sDBMBgNVHSAERTBDMEEGAykBATA6MB4GCCsGAQUFBwICMBIeEABGAPYA9gBCAGEA"
-            + "cgDkAOQwGAYIKwYBBQUHAgEWDGh0dHA6LzExMS5zZTBuBgNVHR8EZzBlMGOgYaBf" + "hl1odHRwOi8vbG9jYWxob3N0OjgwODAvZWpiY2EvcHVibGljd2ViL3dlYmRpc3Qv"
-            + "Y2VydGRpc3Q/Y21kPWNybCZpc3N1ZXI9Q049VGVzdENBLE89QW5hVG9tLEM9U0Uw" + "TQYIKwYBBQUHAQEEQTA/MD0GCCsGAQUFBzABhjFodHRwOi8vbG9jYWxob3N0Ojgw"
-            + "ODAvZWpiY2EvcHVibGljd2ViL3N0YXR1cy9vY3NwMDoGCCsGAQUFBwEDBC4wLDAg" + "BggrBgEFBQcLAjAUMBKBEHJhQGNvbW1maWRlcy5jb20wCAYGBACORgEBMHYGA1Ud"
-            + "CQRvMG0wEAYIKwYBBQUHCQUxBBMCU0UwEAYIKwYBBQUHCQQxBBMCU0UwDwYIKwYB" + "BQUHCQMxAxMBTTAXBggrBgEFBQcJAjELEwlTdG9ja2hvbG0wHQYIKwYBBQUHCQEx"
-            + "ERgPMTk3MTA0MjUxMjAwMDBaMA0GCSqGSIb3DQEBBQUAA4IBAQA+vgNnGjw29xEs" + "cnJi7wInUBvtTzQ4+SVSBPTzNA/ZEk+CJVsr/2xbPl+SShZ0SHObj9un1kwKst4n"
-            + "zcNqsnBorrluM92Z5gYwDN3mRGF0szbYEshr/KezMhY2MdXkE+i3nEx6awdemuCG" + "g+LAfL4ODLAzAJJI4MfF+fz0IK7Zeobo1aVGS6Ii9sEnDdQOsLbdfHBNccrT353d"
-            + "NAwxPGnfunGBQ+Los6vjDApy/szMT32NFJDe4WTmkDxqYJQqQjhdrHTxpFEr0VQB" + "s7KRRCYjga/Z52XytwwDBLFM9CPZJfyKxZTV9I9i6e0xSn2xEW8NRplY1HOKa/2B"
-            + "VzvWW9G5").getBytes());
-
+   
     private static byte[] krb5principalcert = Base64
             .decode(("MIIDIzCCAgugAwIBAgIIdSCEXyq32cIwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
                     + "AwwIQWRtaW5DQTExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
@@ -379,24 +302,7 @@ public class CertToolsUnitTest {
             + "1W+nw1Gx8b0CAwEAAaBGMBUGCSqGSIb3DQEJBzEIDAZmb28xMjMwLQYJKoZIhvcN" + "AQkOMSAwHjAcBgNVHREEFTATggtmb28uYmFyLmNvbYcECgAAATANBgkqhkiG9w0B"
             + "AQUFAANBADUO2tpAkxaeB/2zY9wsfcwE5hGvcuA0oJwXlcMq1wm32MJFV1G9JJQI" + "Exz4OC1eT1LH/6i5SU8Op3VOKVLpTTo=").getBytes());
 
-    private static byte[] cvccert = Base64.decode(("fyGCAWF/ToHZXykBAEIKU0VSUFMxMDExMH9JgZUGCgQAfwAHAgICAQGBgYEAk4Aq"
-            + "LqYXchIouF9yBv/2hFnf5N65hdpvQPUdfH1k2qnHAlOL5DYYlKCBh8YFCC2RZD+K" + "nJ99cHxh8oxh28U23Z/MqTOKv5tR8JIUUm3G3Hjj2erVVTEJ49MqLzsyVGfw4yCu"
-            + "YRdwBYFWJu2t6PcS5KPnpNtbNdBzrDJAqxPAsO2CAwEAAV8gClNFUlBTMTAxMTB/" + "TA4GCQQAfwAHAwECAVMBw18lBgAIAAUABV8kBgEAAAUABV83gYB88jfXZ3njYpuD"
-            + "4fpS6BV53y9+iz3KAQM/74LPMI49elGtcAVyMn1EMn/bU4MeMARfv3Njd2Go4ZhM" + "j5xuY2Pvktz3Dq4ogjkgqAJqqIvG+M9KXh9XAv2m2wjmsueKbXUJ8TpJR87k4o97"
-            + "buZXbuStDOb5FibhxyVgWIxuCn8quQ==").getBytes());
-
-    private static byte[] cvcreqrenew = Base64.decode(("Z4IBtn8hggFmf06CASZfKQEAQg5TRUlTQlBPT0wwMDAwNn9Jgf0GCgQAfwAHAgIC"
-            + "AgKBHNfBNKomQ2aGKhgwJXXR14ewnwdXl9qJ9X7IwP+CHGil5iypzmwcKZgDpsFT" + "C1FOGCrYsAQqWcrSn0ODHCWA9jzP5EE4hwcTsakjaeM+ITXSZtuzcjhsQAuEOQQN"
-            + "kCmtLH5c9DQII7KofcaMnkzjF0webv3uEsB9WKpW93LAcm8kxrieTs2sJDVLnpnK" + "o/bTdhQCzYUc18E0qiZDZoYqGDAlddD7mNEWvEtt3ryjpaeTn4Y5BBQte2aU3YOQ"
-            + "Ykf73/UluNQOpMlnHt9PXplomqhuAZ0QxwXb6TCG3rZJhVwe0wx0R1mqz3U+fJnU" + "hwEBXyAOU0VJU0JQT09MMDAwMDZfNzgErOAjPCoQ+WN8K6pzztZp+Mt6YGNkJzkk"
-            + "WdLnvfPGZkEF0oUjcw+NjexaNCLOA0mCfu4oQwsjrUIOU0VJU0JQT09MMDAwMDVf" + "NzhSmH1c7YJhbLTRzwuSozUd9hlBHKEIfFqSUE9/FrbWXEtR+rHRYKAGu/nw8PAH"
-            + "oM+HPMzMVVLDVg==").getBytes());
-
-    private static byte[] cvcreq = Base64.decode(("fyGCAWZ/ToIBJl8pAQBCDlNFSVNCUE9PTDAwMDA1f0mB/QYKBAB/AAcCAgICAoEc"
-            + "18E0qiZDZoYqGDAlddHXh7CfB1eX2on1fsjA/4IcaKXmLKnObBwpmAOmwVMLUU4Y" + "KtiwBCpZytKfQ4McJYD2PM/kQTiHBxOxqSNp4z4hNdJm27NyOGxAC4Q5BA2QKa0s"
-            + "flz0NAgjsqh9xoyeTOMXTB5u/e4SwH1Yqlb3csBybyTGuJ5OzawkNUuemcqj9tN2" + "FALNhRzXwTSqJkNmhioYMCV10PuY0Ra8S23evKOlp5OfhjkEOwPDLflRVBj2iayW"
-            + "VzpO2BICGO+PqFeuce1EZM4o1EIfLzoackPowabEMANfNltZvt5bWyzkZleHAQFf" + "IA5TRUlTQlBPT0wwMDAwNV83OEnwL+XYDhXqK/0fBuZ6lZV0HncoZyn3oo8MmaUL"
-            + "2mNzpezLAoZMux0l5aYperrSDsuHw0zrf0yo").getBytes());
+   
 
     private static byte[] cvccertchainroot = Base64.decode(("fyGCAmx/ToIBYl8pAQBCDlNFSFNNQ1ZDQTAwMDAxf0mCARUGCgQAfwAHAgICAQKB"
             + "ggEAyGju6NHTACB+pl2x27/VJVKuGBTgf98j3gQOyW5vDzXI7PkiwR1/ObPjFiuW" + "iBRH0WsPzHX7A3jysZr7IohLjy4oQMdP5z282/ZT4mBwlVu5pAEcHt2eHbpILwIJ"
@@ -551,11 +457,6 @@ public class CertToolsUnitTest {
     		+"5sVvEafzh67itIasqcv/PwUT6DwQxoiX85h53cFtvXQxi/2Xqn+PaNBOqWShByX7"
     		+"TQlMX0Bmoz9/").getBytes());
 
-    private static byte[] testdeltacrl = Base64.decode(("MIHWMIGBAgEBMA0GCSqGSIb3DQEBCwUAMA8xDTALBgNVBAMMBFRFU1QXDTExMDEz"
-    		+"MTEzNDcxOFoXDTExMDEzMTEzNDcxOFqgPjA8MB8GA1UdIwQYMBaAFJ5BHYGqJr3K"
-    		+"j9IMQxmMP6ad8gDdMAoGA1UdFAQDAgEDMA0GA1UdGwEB/wQDAgECMA0GCSqGSIb3"
-    		+"DQEBCwUAA0EAP8CIPLll5m/wmhcLL5SXlb+aYrPGsUlBFNBKYKO0iV1QjBHeDMp5"
-    		+"z70nU3g2tIfiEX4IKNFyzFvn5m6e8m0JQQ==").getBytes());
 
     private static byte[] testCrlWithIssuingDistributionPoint = Base64.decode(("MIIBTjCBrwIBATALBglghkgBZQMEAwswHTEbMBkGA1UEAwwSQ0Egd0l0aCBJRFAgb24gQ1JMFw0x\n" + 
             "OTAzMjExOTM1MzhaFw0xOTAzMjIxOTM1MzhaoGAwXjAfBgNVHSMEGDAWgBRv8z/8lQ2y+HtRbGYD\n" + 
@@ -1410,24 +1311,7 @@ public class CertToolsUnitTest {
         log.trace("<test13GetSubjectAltNameString()");
     }
 
-    @Test
-    public void test14QCStatement() throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(qcRefCert, Certificate.class);
-        // log.debug(cert);
-        assertEquals("rfc822name=municipality@darmstadt.de", QCStatementExtension.getQcStatementAuthorities(cert));
-        Collection<String> ids = QCStatementExtension.getQcStatementIds(cert);
-        assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
-        Certificate cert2 = CertTools.getCertfromByteArray(qcPrimeCert, Certificate.class);
-        assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert2));
-        ids = QCStatementExtension.getQcStatementIds(cert2);
-        assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
-        assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
-        assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
-        assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue.getId()));
-        String limit = QCStatementExtension.getQcStatementValueLimit(cert2);
-        assertEquals("50000 SEK", limit);
-    }
-
+ 
     @Test
     public void test15AiaOcspUri() throws Exception {
         Certificate cert = CertTools.getCertfromByteArray(aiaCert, Certificate.class);
@@ -1500,18 +1384,6 @@ public class CertToolsUnitTest {
     }
 
     @Test
-    public void test17SubjectDirectoryAttributes() throws Exception {
-        log.trace(">test17SubjectDirectoryAttributes()");
-        Certificate cer = CertTools.getCertfromByteArray(subjDirAttrCert, Certificate.class);
-        String ret = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cer);
-        assertEquals("countryOfCitizenship=TR", ret);
-        cer = CertTools.getCertfromByteArray(subjDirAttrCert2, Certificate.class);
-        ret = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cer);
-        assertEquals("countryOfResidence=SE, countryOfCitizenship=SE, gender=M, placeOfBirth=Stockholm, dateOfBirth=19710425", ret);
-        log.trace("<test17SubjectDirectoryAttributes()");
-    }
-
-    @Test
     public void test18DNSpaceTrimming() throws Exception {
         log.trace(">test18DNSpaceTrimming()");
         String dn1 = "CN=CommonName, O= Org,C=SE";
@@ -1570,106 +1442,6 @@ public class CertToolsUnitTest {
             assertTrue(found);
         }
 
-    }
-
-    
-
-    @Test
-    public void test20cvcCert() throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(cvccert, Certificate.class);
-        assertNotNull(cert);
-        PublicKey pk = cert.getPublicKey();
-        assertNotNull(pk);
-        assertEquals("RSA", pk.getAlgorithm());
-        if (pk instanceof RSAPublicKey) {
-            BigInteger modulus = ((RSAPublicKey) pk).getModulus();
-            int len = modulus.bitLength();
-            assertEquals(1024, len);
-        } else {
-            fail();
-        }
-        String subjectdn = CertTools.getSubjectDN(cert);
-        assertEquals("CN=RPS,C=SE", subjectdn);
-        String issuerdn = CertTools.getIssuerDN(cert);
-        assertEquals("CN=RPS,C=SE", issuerdn);
-        assertEquals("10110", CertTools.getSerialNumberAsString(cert));
-        assertEquals("10110", CertTools.getSerialNumber(cert).toString());
-        // Get signature field
-        byte[] sign = CertTools.getSignature(cert);
-        assertEquals(128, sign.length);
-        // Check validity dates
-        final long MAY5_0000_2008_GMT = 1209945600000L; 
-        final long MAY5_0000_2008_GMT_MINUS1MS = 1209945599999L; 
-        final long MAY5_2359_2010_GMT = 1273103999000L; 
-        final long MAY5_2359_2010_GMT_PLUS1MS = 1273103999001L;
-        
-    	assertEquals(MAY5_0000_2008_GMT, CertTools.getNotBefore(cert).getTime());
-    	assertEquals(MAY5_2359_2010_GMT, CertTools.getNotAfter(cert).getTime());
-    	assertTrue(CertTools.isCA(cert));
-        CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
-        assertEquals("CVCA", cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole().name());
-    	CertTools.checkValidity(cert, new Date(MAY5_0000_2008_GMT));
-    	CertTools.checkValidity(cert, new Date(MAY5_2359_2010_GMT));
-    	try {
-    		CertTools.checkValidity(cert, new Date(MAY5_0000_2008_GMT_MINUS1MS));
-    		fail("Should throw");
-    	} catch (CertificateNotYetValidException e) {
-    		// NOPMD
-    	}
-    	try {
-    		CertTools.checkValidity(cert, new Date(MAY5_2359_2010_GMT_PLUS1MS));
-    		fail("Should throw");
-    	} catch (CertificateExpiredException e) {
-    		// NOPMD
-    	}    	
-
-        // Serialization, CVC provider is installed by CryptoProviderTools.installBCProvider
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(cert);
-        oos.close();
-        baos.close();
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        ObjectInputStream ois = new ObjectInputStream(bais);
-        Object o = ois.readObject();
-        Certificate ocert = (Certificate) o;
-        assertEquals("CVC", ocert.getType());
-
-        // Test CVC certificate request encoding
-        CVCObject parsedObject = CertificateParser.parseCVCObject(cvcreq);
-        CVCertificate req = (CVCertificate) parsedObject;
-        PublicKey pubKey = req.getCertificateBody().getPublicKey();
-        assertNotNull(pubKey);
-        assertEquals("CVC", pubKey.getFormat());
-        BigInteger modulus = ((RSAPublicKey) pk).getModulus();
-        int len = modulus.bitLength();
-        assertEquals(1024, len);
-
-        // Test verification of an authenticated request
-        parsedObject = CertificateParser.parseCVCObject(cvcreqrenew);
-        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest) parsedObject;
-        try {
-            authreq.verify(pubKey);
-        } catch (Exception e) {
-            fail("Exception verifying authenticated request: " + e.getMessage());
-        }
-        // Test verification of an authenticated request that fails
-        parsedObject = CertificateParser.parseCVCObject(cvcreqrenew);
-        authreq = (CVCAuthenticatedRequest) parsedObject;
-        req = authreq.getRequest();
-        try {
-            authreq.verify(req.getCertificateBody().getPublicKey());
-            fail("verifying authenticated request should have failed");
-        } catch (Exception e) { // NOPMD:
-        }
-        
-        // IS cert
-    	KeyPair keyPair = KeyTools.genKeys("prime192v1", "ECDSA");
-        CAReferenceField caRef = new CAReferenceField("SE", "CAREF001", "00000");
-        HolderReferenceField holderRef = new HolderReferenceField("SE", "HOLDERRE", "00000");
-        CVCertificate cv = CertificateGenerator.createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA1WithECDSA", AuthorizationRoleEnum.IS);
-        CardVerifiableCertificate cvsha1 = new CardVerifiableCertificate(cv);
-        assertFalse(CertTools.isCA(cvsha1));
     }
 
     @Test
@@ -1989,21 +1761,6 @@ public class CertToolsUnitTest {
     	assertEquals("c61bfaa15d733532c5e795756c8001d4", new String(Hex.encode(CertTools.generateMD5Fingerprint(testcert))));
     }
 
-    @Test
-    public void testCRLs() throws Exception {
-    	X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
-    	assertEquals("CN=TEST", CertTools.getIssuerDN(crl));
-    	byte[] pembytes = CertTools.getPEMFromCrl(testcrl);
-    	String pem = new String(pembytes);
-    	assertTrue(pem.contains("BEGIN X509 CRL"));
-    	assertEquals(1, CrlExtensions.getCrlNumber(crl).intValue());
-    	assertEquals(-1, CrlExtensions.getDeltaCRLIndicator(crl).intValue());
-
-    	X509CRL deltacrl = CertTools.getCRLfromByteArray(testdeltacrl);
-    	assertEquals(3, CrlExtensions.getCrlNumber(deltacrl).intValue());
-    	assertEquals(2, CrlExtensions.getDeltaCRLIndicator(deltacrl).intValue());
-
-    }
     
     private DERSequence permanentIdentifier(String identifierValue, String assigner) {
         DERSequence result;
@@ -2221,61 +1978,11 @@ public class CertToolsUnitTest {
         }
     }
 
-    /**
-     * Tests encoding DN attributes as UTF-8 or printable string
-     */
-    @Test
-    public void testPrintableStringDN() throws Exception {
-        log.trace(">testPrintableStringDN()");
-        
-        final String dnstr = "C=SE,O=Test,CN=Test";
-        
-        final X500Name xn1 = CertTools.stringToBcX500Name(dnstr, new CeSecoreNameStyle(), false);
-        assertTrue("When using CeSecoreNameStyle, C was not of PrintableString type", xn1.getRDNs()[0].getFirst().getValue() instanceof DERPrintableString);
-        assertTrue("When using CeSecoreNameStyle, O was not of UTF8String type", xn1.getRDNs()[1].getFirst().getValue() instanceof DERUTF8String);
-        assertTrue("When using CeSecoreNameStyle, CN was not of UTF8String type", xn1.getRDNs()[2].getFirst().getValue() instanceof DERUTF8String);
-        
-        final X500Name xn2 = CertTools.stringToBcX500Name(dnstr, new PrintableStringNameStyle(), false);
-        assertTrue("When using PrintableStringNameStyle, C was not of PrintableString type", xn2.getRDNs()[0].getFirst().getValue() instanceof DERPrintableString);
-        assertTrue("When using PrintableStringNameStyle, O was not of PrintableString type", xn2.getRDNs()[1].getFirst().getValue() instanceof DERPrintableString);
-        assertTrue("When using PrintableStringNameStyle, CN was not of PrintableString type", xn2.getRDNs()[2].getFirst().getValue() instanceof DERPrintableString);
-        
-        log.trace("<testPrintableStringDN()");
-    }
+
     
    
     
-    @Test
-    public void testNameConstraintAreCorrectInCert() throws Exception {
-
-        final String excluded = ".\n" + "example.com";
-
-        final List<Extension> extensions = new ArrayList<>();
-
-        List<String> ncList = NameConstraint.parseNameConstraintsList(excluded);
-
-        GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(ncList);
-        byte[] extdata = new NameConstraints(null, excludedSubtrees).toASN1Primitive().getEncoded();
-        extensions.add(new Extension(Extension.nameConstraints, false, extdata));
-
-        final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null, testkeys.getPrivate(),
-                testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null,
-                "BC", true, extensions);
-
-        final byte[] ncbytes = cacert.getExtensionValue(Extension.nameConstraints.getId());
-        final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
-        final ASN1Sequence ncseq = (ncbytes != null ? ASN1Sequence.getInstance(ncstr.getOctets()) : null);
-        final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
-
-        GeneralSubtree[] excludedST = nc.getExcludedSubtrees();
-
-        assertNotNull("Excluded sub tree was null!", excludedST);
-        assertEquals("Array size did not match", 2, excludedST.length);
-        assertEquals("Domain not match!", "2: ", excludedST[0].getBase().toString());
-        assertEquals("Domain not match!", "2: example.com", excludedST[1].getBase().toString());
-    }
-
+   
     @Test
     public void testCertificateWithEmptyOU() throws CertificateParsingException {
         byte[] customerCertificate = ("-----BEGIN CERTIFICATE-----\n"
