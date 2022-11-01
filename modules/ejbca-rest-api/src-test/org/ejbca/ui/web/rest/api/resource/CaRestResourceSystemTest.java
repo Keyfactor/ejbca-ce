@@ -18,8 +18,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.cert.X509CRL;
@@ -489,15 +487,6 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
      */
     private X509CRL getLatestCrl(String issuerDn) throws Exception {
         return getLatestCrl(issuerDn, false, CertificateConstants.NO_CRL_PARTITION);
-    }
-
-    private String encodeUrl(String path) {
-        try {
-            path = URLEncoder.encode(path, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.error("Error encoding parameter: " + e.getMessage());
-        }
-        return path;
     }
 
     private String getImportCrlPath(String issuerDn) {
