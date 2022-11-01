@@ -776,4 +776,17 @@ public abstract class CaTestUtils {
         return allCaNames.iterator().next();
     }
 
+    public static PrivateKey getCaPrivateKey(final CA ca) {
+        final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
+        final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+        final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
+        try {
+            return cryptoToken.getPrivateKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        } catch (CryptoTokenOfflineException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
 }
