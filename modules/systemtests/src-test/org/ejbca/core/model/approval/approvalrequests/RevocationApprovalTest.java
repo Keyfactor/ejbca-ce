@@ -18,8 +18,10 @@ import java.security.KeyPair;
 import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -46,10 +48,14 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -75,6 +81,7 @@ import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -86,6 +93,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.junit.After;
 import org.junit.Before;
@@ -99,10 +107,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-/**
- * 
- * @version $Id$
- */
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RevocationApprovalTest extends CaTestCase {
 
@@ -129,6 +134,8 @@ public class RevocationApprovalTest extends CaTestCase {
     private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
 
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
             SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -506,4 +513,103 @@ public class RevocationApprovalTest extends CaTestCase {
             }
         }
     }
-} 
+
+    /**
+     * Verify it is possible to backdate already revoked certificates with approvals
+     * @throws Exception
+     */
+    @Test
+    public void test06BackDateAlreadyRevokedCertificates() throws Exception {
+        
+        final String username = "test06Revocation";
+        final String certificateProfileName = "certificateProfile";
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm XXX");
+        final Date newBackdatedRevocationDate = sdf.parse("31-12-2014 18:09 +05:30");
+        final Date newForwardRevocationDate = sdf.parse("31-12-2100 18:09 +05:30");
+
+        //Create certificate profile with Allow Backdated Revocation
+        int certificateProfileId = createCertificateProfile(certificateProfileName);
+        assertEquals(true, certificateProfileSession.getCertificateProfile(certificateProfileId).getAllowBackdatedRevocation());
+        //Allow changing revocation reason in CA and add certificate profile to the CA
+        CAInfo caInfo = caSession.getCAInfo(internalAdmin, approvalCAID);
+        caInfo.setAllowChangingRevocationReason(true);
+        caInfo.setCertificateProfileId(certificateProfileId);
+        caSession.editCA(internalAdmin, caInfo);
+        assertEquals(true, caSession.getCAInfo(internalAdmin, approvalCAID).isAllowChangingRevocationReason());
+        assertEquals(certificateProfileId, caInfo.getCertificateProfileId());
+
+        X509Certificate usercertTest06 = createUserAndCert(username, approvalCAID, true);
+        assertNotNull("Test user certificate was not created", usercertTest06);
+        String usercertTest06fp = CertTools.getFingerprintAsString(usercertTest06);
+        //Create approval profile and revoke certificate
+        ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+        assertNotNull("Could not find approval profile with id: " + approvalProfileId, approvalProfile);
+        revocationSession.revokeCertificate(internalAdmin, usercertTest06, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        //Assert revoke date is added and certificate is revoked
+        assertNotNull(certificateStoreSession.getCertificateInfo(usercertTest06fp).getRevocationDate());
+        assertEquals(CertificateStatus.REVOKED,
+                certificateStoreSession.getStatus(CertTools.getIssuerDN(usercertTest06), CertTools.getSerialNumber(usercertTest06)));
+        try {
+            //Revoke certificate with new back dated revocation date. Should be possible 
+            endEntityManagementSession.revokeCert(requestingAdmin, CertTools.getSerialNumber(usercertTest06), newBackdatedRevocationDate,
+                    CertTools.getIssuerDN(usercertTest06), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, false);
+            int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next()
+                    .getPartitionIdentifier();
+            assertNotNull(partitionId);
+            approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE,
+                    ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, approvalCAID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID,
+                    partitionId);
+            //assert revocation date has been changed
+            assertEquals(newBackdatedRevocationDate, certificateStoreSession.getCertificateInfo(usercertTest06fp).getRevocationDate());
+        } catch (WaitingForApprovalException e) {
+            log.debug(e.getMessage());
+        }
+        try {
+            //try change date for revocation to a later date
+            endEntityManagementSession.revokeCert(requestingAdmin, CertTools.getSerialNumber(usercertTest06), newForwardRevocationDate,
+                    CertTools.getIssuerDN(usercertTest06), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, false);
+            fail("Revocation reason could not be changed or was not allowed.");
+        } catch (AlreadyRevokedException e) {
+            log.debug(e.getMessage());
+        }
+        try {
+            internalCertStoreSession.removeCertificate(usercertTest06fp);
+            caInfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(internalAdmin, caInfo);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
+        } catch (Exception e) {
+            log.debug(e.getMessage());
+        }
+    }
+
+    private int createCertificateProfile(String profileName) throws AuthorizationDeniedException {
+        if (this.certificateProfileSession.getCertificateProfileId(profileName) == 0) {
+            final CertificateProfile certProfile = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
+            certProfile.setUseSubjectDirAttributes(true); // used in test cases
+            certProfile.setAllowBackdatedRevocation(true);
+            try {
+                this.certificateProfileSession.addCertificateProfile(internalAdmin, profileName, certProfile);
+            } catch (CertificateProfileExistsException e) {
+                //NOPMD: Ignore
+            }
+        }
+        return certificateProfileSession.getCertificateProfileId(profileName);
+    }
+
+    private X509Certificate createUserAndCert(final String username, final int caID, final boolean deleteFirst) throws Exception {
+        if (deleteFirst) {
+            internalCertStoreSession.removeCertificatesByUsername(username);
+            endEntityManagementSession.deleteUser(internalAdmin, username);
+        }
+        final EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null,
+                new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        userdata.setPassword("foo123");
+        endEntityManagementSession.addUser(internalAdmin, userdata, true);
+        fileHandles.addAll(BatchCreateTool.createAllNew(internalAdmin, new File(P12_FOLDER_NAME)));
+        final Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
+        assertEquals("Certificates for user with username " + username + " wasn't exactly one.", 1, userCerts.size());
+        return (X509Certificate) userCerts.iterator().next();
+    }
+}
