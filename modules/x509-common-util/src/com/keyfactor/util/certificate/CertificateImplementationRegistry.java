@@ -34,9 +34,16 @@ public enum CertificateImplementationRegistry {
     
     private CertificateImplementationRegistry() {
         for (CertificateImplementation certificateImplementation : ServiceLoader.load(CertificateImplementation.class)) {
-            certificateImplementations.put(certificateImplementation.getType(), certificateImplementation);
-            certificateImplementationsByClassType.put(certificateImplementation.getImplementationClass(), certificateImplementation);
+            addCertificateImplementation(certificateImplementation);
         }
+    }
+    
+    /**
+     * Primarily for use in unit testing. Implementations should normally be added automatically in the constructor. 
+     */
+    public void addCertificateImplementation(final CertificateImplementation certificateImplementation) {
+        certificateImplementations.put(certificateImplementation.getType(), certificateImplementation);
+        certificateImplementationsByClassType.put(certificateImplementation.getImplementationClass(), certificateImplementation);
     }
     
     public CertificateImplementation getCertificateImplementation(final String name) {

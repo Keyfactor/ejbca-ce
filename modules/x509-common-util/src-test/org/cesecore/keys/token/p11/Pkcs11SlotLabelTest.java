@@ -18,12 +18,13 @@ import static org.junit.Assume.assumeTrue;
 import java.security.Provider;
 
 import org.apache.log4j.Logger;
-import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.pkcs11.PKCS11TestUtils;
 
 /**
  * Some general test methods for Pkcs11SlotLabel

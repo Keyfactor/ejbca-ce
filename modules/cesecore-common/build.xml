@@ -59,6 +59,7 @@
 		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 
 	<target name="jar" depends="">
