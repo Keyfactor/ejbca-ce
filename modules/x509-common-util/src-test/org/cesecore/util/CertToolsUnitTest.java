@@ -73,9 +73,11 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 import com.novell.ldap.LDAPDN;
 
 /**
@@ -302,24 +304,6 @@ public class CertToolsUnitTest {
             + "1W+nw1Gx8b0CAwEAAaBGMBUGCSqGSIb3DQEJBzEIDAZmb28xMjMwLQYJKoZIhvcN" + "AQkOMSAwHjAcBgNVHREEFTATggtmb28uYmFyLmNvbYcECgAAATANBgkqhkiG9w0B"
             + "AQUFAANBADUO2tpAkxaeB/2zY9wsfcwE5hGvcuA0oJwXlcMq1wm32MJFV1G9JJQI" + "Exz4OC1eT1LH/6i5SU8Op3VOKVLpTTo=").getBytes());
 
-   
-
-    private static byte[] cvccertchainroot = Base64.decode(("fyGCAmx/ToIBYl8pAQBCDlNFSFNNQ1ZDQTAwMDAxf0mCARUGCgQAfwAHAgICAQKB"
-            + "ggEAyGju6NHTACB+pl2x27/VJVKuGBTgf98j3gQOyW5vDzXI7PkiwR1/ObPjFiuW" + "iBRH0WsPzHX7A3jysZr7IohLjy4oQMdP5z282/ZT4mBwlVu5pAEcHt2eHbpILwIJ"
-            + "Hbv6130T+RoG/3bI/eHk9HWi3/ipVnwRX1CsylczFfdyPTMyGOJmmElT0GQgV8Rt" + "b5Us/Hz66qiUX67eRBrahJfwiVwawYzmZ5Rn9u/vXHQYeUh+lLja+H+kXof9ARuw"
-            + "p5S09DO2VZWbbR2BZHk0IaNgo54Xoih+5c/nIA/2+j9Afdf+wuqmxqib5aPOMHO3" + "WOVmVMF84Xo2V+duIZ4b7KkRXYIDAQABXyAOU0VIU01DVkNBMDAwMDF/TA4GCQQA"
-            + "fwAHAwECAVMBw18lBgAIAAUCBl8kBgEAAAUCBl83ggEAMiiqI+HF8DyhPfH8dTeU" + "4/0/DNnjZ2/Qy1a5GATWU04da+L2iWI8QclN64cw0l/zroBGyeq+flDKzVWnqril"
-            + "HX/PD3/xoCEhZSfZ/1AQZBP39/t1lYZLJ36VeFwrsmvN8rq6RnNtR2CrDYDFkFRq" + "A6v9dNYMbnEDN7m8wD/DWM2fZr+loqznT1/egx+SBqUY+KnU6ntxQyw7gzL1DV9Z"
-            + "OlyxjDaWY8i2Q/tcdDxdZYBBMgFhxivXV5ou2YiBZKKIlP2ots6P8TlSVwdyaHTI" + "8z8Hpvx1QcB2maOVn6IFAyq/X71p9Zb626YLhjaFO6v80SYnlefVu5Uir5n/HzpW"
-            + "kg==").getBytes());
-
-    private static byte[] cvccertchainsub = Base64.decode(("fyGCAeV/ToHcXykBAEIOU0VIU01DVkNBMDAwMDF/SYGUBgoEAH8ABwICAgECgYGA"
-            + "rdRouw7ksS6M5kw28YkWAD350vbDlnPCmqsKPfKiNvDxowviWDUTn9Ai3xpTIzGO" + "cl40DqxYPA2X4XO52+r5ZUazsVyyx6F6XwznHdjUpDff4QFyG74Vjq7DDrCCKOzH"
-            + "b0H6rNJFC5YEKI4wpEPou+3bq2jhLWkzU35EfydJHXWCAwEAAV8gClNFUlBTRFZF" + "WDJ/TA4GCQQAfwAHAwECAVMBgl8lBgAIAAYABV8kBgEAAAUCBl83ggEAbawFepay"
-            + "gX+VrBOsGzbQCpG2mR1NrJbaNdBJcouWYTNzlDP/hRssU9/lTzHulRPupkarepAI" + "GMIDMOo3lNImlYlU8ZlaV6mbKRgWZVjtZmVgq+wLARS4dXNlHRJvS2AustfseGVr"
-            + "kqJ0+UYo8x8UL13fB7VCSVqADnOnbemtvE1cIdFcIAqP1JLh91ACJ4lpoaAn10+g" + "5coIGGa01BYEDtiA++SFnRl7kYFykAZrs3eXq+zuPmOo9hr4JxLZuiN5DnIrZdLA"
-            + "DWq7GeCFr6wCMg2jPuK9Kqvl06tqylVy4ravVHv58WvAxWFgyuezdRbyV7YAfVF3" + "tlcVDXa3R+mfYg==").getBytes());
-
     private static byte[] x509certchainsubsub = Base64
             .decode(("MIICAzCCAWygAwIBAgIINrHHHchdmfMwDQYJKoZIhvcNAQEFBQAwEDEOMAwGA1UE"
                     + "AwwFU3ViQ0EwHhcNMTAwNjA1MTIwNzMxWhcNMzAwNjA1MTIwNjUyWjATMREwDwYD"
@@ -537,9 +521,10 @@ public class CertToolsUnitTest {
             "S9/8DHADVZaSC8+G1P1iDJVeHnJ9UHYlxWBsXoo1dOyMqSPMv1b90afYUlWN1gSj" +
             "ecSvxm0H1m1PvttZNdEJTDB63Iug5FwvoBbn3RUphhpaawBYFzmK7XHfEAchJw==").getBytes() );
 
-    @Before
-    public void setUp() throws Exception {
-        CryptoProviderTools.installBCProvider();
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
     }
 
     /**
@@ -1472,24 +1457,7 @@ public class CertToolsUnitTest {
     }
 
     @Test
-    public void test22CreateCertChain() throws Exception {
-        // Test creating a certificate chain for CVC CAs
-        Certificate cvccertroot = CertTools.getCertfromByteArray(cvccertchainroot, Certificate.class);
-        Certificate cvccertsub = CertTools.getCertfromByteArray(cvccertchainsub, Certificate.class);
-        assertTrue(CertTools.isCA(cvccertsub)); // DV is a CA also
-        assertTrue(CertTools.isCA(cvccertroot));
-
-        ArrayList<Certificate> certlist = new ArrayList<>();
-        certlist.add(cvccertsub);
-        certlist.add(cvccertroot);
-        Collection<Certificate> col = CertTools.createCertChain(certlist);
-        assertEquals(2, col.size());
-        Iterator<Certificate> iter = col.iterator();
-        Certificate certsub = iter.next();
-        assertEquals("CN=RPS,C=SE", CertTools.getSubjectDN(certsub));
-        Certificate certroot = iter.next();
-        assertEquals("CN=HSMCVCA,C=SE", CertTools.getSubjectDN(certroot));
-
+    public void testCreateCertChain() throws Exception {
         // Test creating a certificate chain for X509CAs
         Certificate x509certsubsub = CertTools.getCertfromByteArray(x509certchainsubsub, Certificate.class);
         assertTrue(CertTools.isCA(x509certsubsub));
@@ -1497,18 +1465,18 @@ public class CertToolsUnitTest {
         assertTrue(CertTools.isCA(x509certsub));
         Certificate x509certroot = CertTools.getCertfromByteArray(x509certchainroot, Certificate.class);
         assertTrue(CertTools.isCA(x509certroot));
-        certlist = new ArrayList<>();
+        List<Certificate> certlist = new ArrayList<>();
         certlist.add(x509certsub);
         certlist.add(x509certroot);
         certlist.add(x509certsubsub);
-        col = CertTools.createCertChain(certlist);
+        List<Certificate> col = CertTools.createCertChain(certlist);
         assertEquals(3, col.size());
-        iter = col.iterator();
+        Iterator<Certificate> iter = col.iterator();
         Certificate certsubsub = iter.next();
         assertEquals("CN=SubSubCA", CertTools.getSubjectDN(certsubsub));
-        certsub = iter.next();
+        Certificate certsub = iter.next();
         assertEquals("CN=SubCA", CertTools.getSubjectDN(certsub));
-        certroot = iter.next();
+        Certificate certroot = iter.next();
         assertEquals("CN=RootCA", CertTools.getSubjectDN(certroot));
 
     }
@@ -1694,19 +1662,19 @@ public class CertToolsUnitTest {
         assertEquals(0, CertTools.getCustomOids(null).size());
         try {
         	assertNull(CertTools.getSerialNumber(null));
-        	assertTrue("Should throw", false);
+        	fail("Should throw");
         } catch (IllegalArgumentException e) {
         	// NOPMD
         }
         try {
             assertNull(CertTools.getSerialNumberAsString(null));
-        	assertTrue("Should throw", false);
+        	fail("Should throw");
         } catch (IllegalArgumentException e) {
         	// NOPMD
         }
         try {
             assertNull(CertTools.getSerialNumberFromString(null));
-        	assertTrue("Should throw", false);
+        	fail("Should throw");
         } catch (IllegalArgumentException e) {
         	// NOPMD
         }

@@ -14,6 +14,7 @@ package com.keyfactor.util.certificate;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -35,6 +36,10 @@ public enum CertificateImplementationRegistry {
     private CertificateImplementationRegistry() {
         for (CertificateImplementation certificateImplementation : ServiceLoader.load(CertificateImplementation.class)) {
             addCertificateImplementation(certificateImplementation);
+        }
+        //Since X509 exists locally. always add it 
+        if(!certificateImplementationsByClassType.containsKey(X509Certificate.class)) {
+            addCertificateImplementation(new X509CertificateUtility());
         }
     }
     

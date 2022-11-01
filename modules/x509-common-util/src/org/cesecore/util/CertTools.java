@@ -880,7 +880,11 @@ public abstract class CertTools {
      * @return String containing the subjects DN.
      */
     public static String getSubjectDN(final Certificate cert) {
-       return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getSubjectDn(cert);
+        if (cert == null || CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()) == null) {
+            return "";
+        } else {
+            return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getSubjectDn(cert);
+        }
     }
 
     /**
@@ -903,8 +907,11 @@ public abstract class CertTools {
      * @return String containing the issuers DN, or null if cert is null.
      */
     public static String getIssuerDN(final Certificate cert) {
-        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getIssuerDn(cert);
-
+        if (cert == null || CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()) == null) {
+            return "";
+        } else {
+            return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getIssuerDn(cert);
+        }
     }
 
     /**
@@ -989,7 +996,11 @@ public abstract class CertTools {
      * @throws IllegalArgumentException if input is null or certificate type is not implemented
      */
     public static String getSerialNumberAsString(Certificate cert) {
-        return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getSerialNumberAsString(cert);
+        if (cert == null) {
+            throw new IllegalArgumentException("Certificate was null");
+        } else {
+            return CertificateImplementationRegistry.INSTANCE.getCertificateImplementation(cert.getType()).getSerialNumberAsString(cert);
+        }
     }
 
     /**
