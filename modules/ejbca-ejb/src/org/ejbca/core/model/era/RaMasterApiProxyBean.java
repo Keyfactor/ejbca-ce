@@ -15,6 +15,9 @@ package org.ejbca.core.model.era;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -195,6 +198,10 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     private RaMasterApi[] raMasterApis = null;
     private RaMasterApi[] raMasterApisLocalFirst = null;
 
+    // Used in tests
+    private RaMasterApi[] savedRaMasterApisBeforeTest;
+    private List<String> functionTraceForTest;
+
     /** Default constructor */
     public RaMasterApiProxyBean() {
     }
@@ -245,6 +252,53 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public void deferLocalForTest() {
         raMasterApisLocalFirst = (RaMasterApi[]) ArrayUtils.removeElement(raMasterApisLocalFirst, raMasterApiSession);
         raMasterApisLocalFirst = (RaMasterApi[]) ArrayUtils.add(raMasterApisLocalFirst, raMasterApiSession);
+    }
+
+    // Use in tests only!
+    @Override
+    public void enableFunctionTracingForTest() {
+        restoreFunctionTracingAfterTest(); // if already tracing
+        savedRaMasterApisBeforeTest = (RaMasterApi[]) ArrayUtils.clone(raMasterApis); // we want a shallow clone here
+        functionTraceForTest = new ArrayList<>();
+        String suffix = TEST_TRACE_SUFFIX_REMOTE;
+        for (int i = 0; i < raMasterApis.length; i++) {
+            final RaMasterApi wrapped = wrapInTracingProxy(raMasterApis[i], suffix);
+            raMasterApis[i] = wrapped;
+            raMasterApisLocalFirst[i] = wrapped;
+            suffix = TEST_TRACE_SUFFIX_LOCAL;
+        }
+        ArrayUtils.reverse(raMasterApisLocalFirst);
+    }
+
+    private RaMasterApi wrapInTracingProxy(final RaMasterApi raMasterApi, final String suffix) {
+        final List<String> functionTrace = functionTraceForTest;
+        return (RaMasterApi) Proxy.newProxyInstance(RaMasterApi.class.getClassLoader(),
+                new Class[] { RaMasterApi.class },
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+                        functionTrace.add(method.getName() + suffix);
+                        return method.invoke(raMasterApi, args);
+                    }
+                });
+    }
+
+    // Use in tests only!
+    @Override
+    public List<String> getFunctionTraceForTest() {
+        return functionTraceForTest;
+    }
+
+    // Use in tests only!
+    @Override
+    public void restoreFunctionTracingAfterTest() {
+        if (savedRaMasterApisBeforeTest != null) {
+            raMasterApis = savedRaMasterApisBeforeTest;
+            raMasterApisLocalFirst = (RaMasterApi[]) ArrayUtils.clone(raMasterApis);
+            ArrayUtils.reverse(raMasterApisLocalFirst);
+            savedRaMasterApisBeforeTest = null;
+            functionTraceForTest = null;
+        }
     }
 
     @Override
