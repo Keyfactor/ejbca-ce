@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -50,8 +51,6 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
-
-import com.keyfactor.pkcs11.PKCS11TestUtils;
 
 /**
  */
