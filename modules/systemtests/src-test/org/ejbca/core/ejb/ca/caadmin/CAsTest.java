@@ -114,6 +114,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
@@ -145,6 +147,7 @@ public class CAsTest extends CaTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
         createTestCA();
     }
     
