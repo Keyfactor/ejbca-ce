@@ -22,6 +22,7 @@ import java.io.PrintStream;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
@@ -31,22 +32,37 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X962Parameters;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.certificates.certificate.cvc.CvCertificateUtility;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
+import org.ejbca.cvc.CVCProvider;
 import org.ejbca.cvc.CVCPublicKey;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 
 /**
  *
  */
 public class CvcKeyToolsTest {
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new CvCertificateUtility());
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
+        Security.addProvider(new CVCProvider());     
+    }
+    
     @Test
     public void testGenKeysECDSAx9() throws Exception {
         KeyPair keys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
