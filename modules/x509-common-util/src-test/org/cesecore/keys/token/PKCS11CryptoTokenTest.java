@@ -24,6 +24,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.keys.token.CryptoTokenTestBase;
+import com.keyfactor.pkcs11.PKCS11TestUtils;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -166,15 +169,15 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 		return PKCS11TestUtils.getHSMProvider();
 	}
 
-	public static CryptoToken createPKCS11Token() throws NoSuchSlotException {
+	private static CryptoToken createPKCS11Token() throws NoSuchSlotException {
 		return createPKCS11TokenWithAttributesFile(null, null, true);
 	}
 
-    public static CryptoToken createPKCS11Token(String name, boolean extractable) throws NoSuchSlotException{
+    private static CryptoToken createPKCS11Token(String name, boolean extractable) throws NoSuchSlotException{
         return createPKCS11TokenWithAttributesFile(null, name, extractable);
     }
 
-	public static CryptoToken createPKCS11TokenWithAttributesFile(String file, String tokenName, boolean extractable) throws NoSuchSlotException {
+    private static CryptoToken createPKCS11TokenWithAttributesFile(String file, String tokenName, boolean extractable) throws NoSuchSlotException {
 		Properties prop = new Properties();
         String hsmlib = PKCS11TestUtils.getHSMLibrary();
         assertNotNull(hsmlib);
@@ -192,7 +195,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         } else {
             prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "False");
         }
-        CryptoToken catoken = CryptoTokenFactory.createCryptoToken(PKCS11CryptoToken.class.getName(), prop, null, 111, "P11 CryptoToken");
+        CryptoToken catoken = createCryptoToken(PKCS11CryptoToken.class.getName(), prop, null, 111, "P11 CryptoToken");
 		return catoken;
 	}
 

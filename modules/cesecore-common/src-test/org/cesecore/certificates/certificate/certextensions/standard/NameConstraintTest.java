@@ -12,10 +12,26 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.certextensions.standard;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralSubtree;
+import org.bouncycastle.asn1.x509.NameConstraints;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.junit.Test;
 
 /**
@@ -53,5 +69,37 @@ public class NameConstraintTest {
 
 
     }
+    
+    @Test
+    public void testNameConstraintAreCorrectInCert() throws Exception {
+
+        final String excluded = ".\n" + "example.com";
+
+        final List<Extension> extensions = new ArrayList<>();
+
+        List<String> ncList = NameConstraint.parseNameConstraintsList(excluded);
+
+        GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(ncList);
+        byte[] extdata = new NameConstraints(null, excludedSubtrees).toASN1Primitive().getEncoded();
+        extensions.add(new Extension(Extension.nameConstraints, false, extdata));
+
+        final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null, testkeys.getPrivate(),
+                testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null,
+                "BC", true, extensions);
+
+        final byte[] ncbytes = cacert.getExtensionValue(Extension.nameConstraints.getId());
+        final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
+        final ASN1Sequence ncseq = (ncbytes != null ? ASN1Sequence.getInstance(ncstr.getOctets()) : null);
+        final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
+
+        GeneralSubtree[] excludedST = nc.getExcludedSubtrees();
+
+        assertNotNull("Excluded sub tree was null!", excludedST);
+        assertEquals("Array size did not match", 2, excludedST.length);
+        assertEquals("Domain not match!", "2: ", excludedST[0].getBase().toString());
+        assertEquals("Domain not match!", "2: example.com", excludedST[1].getBase().toString());
+    }
+
 
 }
