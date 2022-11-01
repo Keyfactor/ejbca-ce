@@ -15,7 +15,6 @@ import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
@@ -36,6 +35,9 @@ import static org.junit.Assume.assumeTrue;
  */
 public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
 
+    private static final String JACKNJI_NAME = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
+
+    
     CryptoToken token = null;
     
     @BeforeClass
@@ -117,7 +119,7 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
             prop.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, file);
         }
         prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "False");
-        CryptoToken token = CryptoTokenFactory.createCryptoToken(CryptoTokenFactory.JACKNJI_NAME, prop, null, 111, "P11Ng CryptoToken");
+        CryptoToken token = createCryptoToken(JACKNJI_NAME, prop, null, 111, "P11Ng CryptoToken");
         return token;
     }
 
