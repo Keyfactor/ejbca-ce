@@ -26,10 +26,14 @@ import org.cesecore.configuration.ConfigurationBase;
  */
 public class AvailableProtocolsConfiguration extends ConfigurationBase implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final float LATEST_VERSION = 2f;
+    private static final float LATEST_VERSION = 3f;
 
     public static final String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
     private static final String REST_CERTIFICATE_MANAGEMENT_PROTOCOL_EE_ONLY_PATH = "/ejbca/ejbca-rest-api/v1/ca";
+    
+    private static final String CUSTOM_HEADER_REST_ENABLED = "ejbca.rest.custombrowserheader.enabled";
+    private static final String CUSTOM_HEADER_REST_NAME_DEFAULT = "X-Keyfactor-Requested-With";
+    private static final String CUSTOM_HEADER_REST_NAME = "ejbca.rest.custombrowserheader";
 
     /**
      * Protocols currently supporting enable/disable configuration by EJBCA
@@ -155,6 +159,22 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     @Override
     public String getConfigurationId() {
         return CONFIGURATION_ID;
+    }
+    
+    public boolean isCustomHeaderForRestEnabled() {
+        return Boolean.parseBoolean((String) data.getOrDefault(CUSTOM_HEADER_REST_ENABLED, String.valueOf(true)));
+    }
+    
+    public void setCustomHeaderForRestEnabled(boolean value) {
+        data.put(CUSTOM_HEADER_REST_ENABLED, String.valueOf(value));
+    }
+    
+    public String getCustomHeaderForRest() {
+        return (String) data.getOrDefault(CUSTOM_HEADER_REST_NAME, CUSTOM_HEADER_REST_NAME_DEFAULT);
+    }
+    
+    public void setCustomHeaderForRest(String value) {
+        data.put(CUSTOM_HEADER_REST_NAME, value);
     }
 
     @Override
