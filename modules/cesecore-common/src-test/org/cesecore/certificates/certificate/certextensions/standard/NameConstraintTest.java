@@ -32,13 +32,24 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 
 /**
  * Unit tests for the {@link NameConstraint} class
  */
 public class NameConstraintTest {
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
+    }
+    
     /**
      * From RFC 5280 4.2.1.10: 
      * 

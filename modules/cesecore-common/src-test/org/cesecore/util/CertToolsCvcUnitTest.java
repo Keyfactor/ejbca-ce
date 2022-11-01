@@ -30,7 +30,10 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 import org.cesecore.certificates.certificate.cvc.CvCertificateUtility;
 import org.cesecore.keys.util.KeyTools;
@@ -72,6 +75,22 @@ public class CertToolsCvcUnitTest {
             + "flz0NAgjsqh9xoyeTOMXTB5u/e4SwH1Yqlb3csBybyTGuJ5OzawkNUuemcqj9tN2" + "FALNhRzXwTSqJkNmhioYMCV10PuY0Ra8S23evKOlp5OfhjkEOwPDLflRVBj2iayW"
             + "VzpO2BICGO+PqFeuce1EZM4o1EIfLzoackPowabEMANfNltZvt5bWyzkZleHAQFf" + "IA5TRUlTQlBPT0wwMDAwNV83OEnwL+XYDhXqK/0fBuZ6lZV0HncoZyn3oo8MmaUL"
             + "2mNzpezLAoZMux0l5aYperrSDsuHw0zrf0yo").getBytes());
+    
+    private static byte[] cvccertchainroot = Base64.decode(("fyGCAmx/ToIBYl8pAQBCDlNFSFNNQ1ZDQTAwMDAxf0mCARUGCgQAfwAHAgICAQKB"
+            + "ggEAyGju6NHTACB+pl2x27/VJVKuGBTgf98j3gQOyW5vDzXI7PkiwR1/ObPjFiuW" + "iBRH0WsPzHX7A3jysZr7IohLjy4oQMdP5z282/ZT4mBwlVu5pAEcHt2eHbpILwIJ"
+            + "Hbv6130T+RoG/3bI/eHk9HWi3/ipVnwRX1CsylczFfdyPTMyGOJmmElT0GQgV8Rt" + "b5Us/Hz66qiUX67eRBrahJfwiVwawYzmZ5Rn9u/vXHQYeUh+lLja+H+kXof9ARuw"
+            + "p5S09DO2VZWbbR2BZHk0IaNgo54Xoih+5c/nIA/2+j9Afdf+wuqmxqib5aPOMHO3" + "WOVmVMF84Xo2V+duIZ4b7KkRXYIDAQABXyAOU0VIU01DVkNBMDAwMDF/TA4GCQQA"
+            + "fwAHAwECAVMBw18lBgAIAAUCBl8kBgEAAAUCBl83ggEAMiiqI+HF8DyhPfH8dTeU" + "4/0/DNnjZ2/Qy1a5GATWU04da+L2iWI8QclN64cw0l/zroBGyeq+flDKzVWnqril"
+            + "HX/PD3/xoCEhZSfZ/1AQZBP39/t1lYZLJ36VeFwrsmvN8rq6RnNtR2CrDYDFkFRq" + "A6v9dNYMbnEDN7m8wD/DWM2fZr+loqznT1/egx+SBqUY+KnU6ntxQyw7gzL1DV9Z"
+            + "OlyxjDaWY8i2Q/tcdDxdZYBBMgFhxivXV5ou2YiBZKKIlP2ots6P8TlSVwdyaHTI" + "8z8Hpvx1QcB2maOVn6IFAyq/X71p9Zb626YLhjaFO6v80SYnlefVu5Uir5n/HzpW"
+            + "kg==").getBytes());
+
+    private static byte[] cvccertchainsub = Base64.decode(("fyGCAeV/ToHcXykBAEIOU0VIU01DVkNBMDAwMDF/SYGUBgoEAH8ABwICAgECgYGA"
+            + "rdRouw7ksS6M5kw28YkWAD350vbDlnPCmqsKPfKiNvDxowviWDUTn9Ai3xpTIzGO" + "cl40DqxYPA2X4XO52+r5ZUazsVyyx6F6XwznHdjUpDff4QFyG74Vjq7DDrCCKOzH"
+            + "b0H6rNJFC5YEKI4wpEPou+3bq2jhLWkzU35EfydJHXWCAwEAAV8gClNFUlBTRFZF" + "WDJ/TA4GCQQAfwAHAwECAVMBgl8lBgAIAAYABV8kBgEAAAUCBl83ggEAbawFepay"
+            + "gX+VrBOsGzbQCpG2mR1NrJbaNdBJcouWYTNzlDP/hRssU9/lTzHulRPupkarepAI" + "GMIDMOo3lNImlYlU8ZlaV6mbKRgWZVjtZmVgq+wLARS4dXNlHRJvS2AustfseGVr"
+            + "kqJ0+UYo8x8UL13fB7VCSVqADnOnbemtvE1cIdFcIAqP1JLh91ACJ4lpoaAn10+g" + "5coIGGa01BYEDtiA++SFnRl7kYFykAZrs3eXq+zuPmOo9hr4JxLZuiN5DnIrZdLA"
+            + "DWq7GeCFr6wCMg2jPuK9Kqvl06tqylVy4ravVHv58WvAxWFgyuezdRbyV7YAfVF3" + "tlcVDXa3R+mfYg==").getBytes());
     
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -176,6 +195,26 @@ public class CertToolsCvcUnitTest {
         CVCertificate cv = CertificateGenerator.createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA1WithECDSA", AuthorizationRoleEnum.IS);
         CardVerifiableCertificate cvsha1 = new CardVerifiableCertificate(cv);
         assertFalse(CertTools.isCA(cvsha1));
+    }
+    
+    @Test
+    public void testCreateCertChain() throws Exception {
+        // Test creating a certificate chain for CVC CAs
+        Certificate cvccertroot = CertTools.getCertfromByteArray(cvccertchainroot, Certificate.class);
+        Certificate cvccertsub = CertTools.getCertfromByteArray(cvccertchainsub, Certificate.class);
+        assertTrue(CertTools.isCA(cvccertsub)); // DV is a CA also
+        assertTrue(CertTools.isCA(cvccertroot));
+
+        ArrayList<Certificate> certlist = new ArrayList<>();
+        certlist.add(cvccertsub);
+        certlist.add(cvccertroot);
+        Collection<Certificate> col = CertTools.createCertChain(certlist);
+        assertEquals(2, col.size());
+        Iterator<Certificate> iter = col.iterator();
+        Certificate certsub = iter.next();
+        assertEquals("CN=RPS,C=SE", CertTools.getSubjectDN(certsub));
+        Certificate certroot = iter.next();
+        assertEquals("CN=HSMCVCA,C=SE", CertTools.getSubjectDN(certroot));
     }
 
 
