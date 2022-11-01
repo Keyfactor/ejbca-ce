@@ -34,7 +34,7 @@ import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
 import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
 
 /**
- * Configuration used by specifying the configurationId as part of the request URL path.
+ * Configuration used by specifying the configurationId as part of the request URL path or as URL parameter.
  */
 public class AcmeConfiguration extends UpgradeableDataHashMap implements Serializable {
 
@@ -45,7 +45,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     protected static final InternalResources intres = InternalResources.getInstance();
     
-    protected static final float LATEST_VERSION = 9;
+    protected static final float LATEST_VERSION = 10;
     
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
@@ -79,6 +79,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_AUTHORIZED_REDIRECT_PORTS = "authorizedRedirectPorts";
     private static final String KEY_APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
     private static final String KEY_APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
+    private static final String KEY_CLIENT_AUTHENTICATION_REQUIRED = "clientAuthenticationRequired";
 
     private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.RANDOM;
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
@@ -102,6 +103,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     public static final int DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID = -1;
     public static final int DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID = -1;
+    private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
 
     public AcmeConfiguration() {}
 
@@ -120,6 +122,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
+            // v10. Added client authentication required.
+            if (data.get(KEY_CLIENT_AUTHENTICATION_REQUIRED) == null) {
+                data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED));
+            }
             // v9. Added DNS identifier chaleenge Types selection.
             if (data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES) == null) {
                 data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
@@ -129,10 +135,11 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
                 if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) { 
                     setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
                             AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
-                } else if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof AcmeExternalAccountBinding) {
-                    setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
-                            (AcmeExternalAccountBinding) data.get(KEY_EXTERNAL_ACCOUNT_BINDING))));
-                } else { // Should never happen.
+                } else if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof LinkedHashMap) {
+                    final LinkedList<LinkedHashMap<Object,Object>> clones = new LinkedList<>();
+                    clones.add((LinkedHashMap<Object,Object>)data.get(KEY_EXTERNAL_ACCOUNT_BINDING));
+                    data.put(KEY_EXTERNAL_ACCOUNT_BINDING, clones);
+                } else if (!(data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof List)) { // Should never happen.
                     log.error("Invalida data type during upgrade. Verify ACME configuration with alias '" + getConfigurationId() + "'");
                     setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
                             AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
@@ -199,7 +206,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Getter for RA Name Generation Scheme for given alias
-     * @param alias the EST alias to get the name generation scheme for
      * @return name generation scheme, one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
      */
     public String getRANameGenScheme() {
@@ -213,7 +219,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Setter for RA Name Generation Scheme
-     * @param alias the EST alias to set the name generation scheme for
      * @param scheme one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
      */
     public void setRANameGenScheme(String scheme) {
@@ -222,7 +227,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     /**
      * Getter for RA Name Generation Params for given alias
-     * @param alias the EST alias to get the name generation DN parameters for
      * @return RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
      */
     public String getRANameGenParams() {
@@ -231,7 +235,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Setter for RA Name Generation Parameters
-     * @param alias the EST alias to set the name generation DN parameters for
      * @param params RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
      */    
     public void setRANameGenParams(String params) {
@@ -240,8 +243,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Getter for RA Name Generation Prefix for given alias
-     * @param alias the EST alias to get the name generation prefix for
-     *
      */
     public String getRANameGenPrefix() {
         //Set default to empty String for aliases created before RA name generation was added.
@@ -254,7 +255,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Setter for RA Name Generation Prefix
-     * @param alias the EST alias to set the name generation prefix for
      * @param prefix RA name prefix
      *
      */ 
@@ -264,8 +264,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     /**
      * Getter for RA Name Generation Postfix
-     * @param alias the EST alias to set the name generation postfix for
-     *
      */     
     public String getRANameGenPostfix() {
         // Set default to empty String for aliases created before RA name generation was added.
@@ -277,8 +275,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
      /**
-     * Setter for RA Name Generation Postfix
-     * @param alias the EST alias to set the name generation postfix for
+     * Setter for RA Name Generation Postfix.
      * @param postfix RA name postfix
      *
      */    
@@ -582,6 +579,14 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         return DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID != getApprovalForKeyChangeId();
     }
     
+    public boolean isClientAuthenticationRequired() {
+        return Boolean.valueOf((String) super.data.get(KEY_CLIENT_AUTHENTICATION_REQUIRED));
+    }
+    
+    public void setClientAuthenticationRequired(final boolean required) {
+        super.data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(required));
+    }
+    
     /** Initializes a new acme configuration with default values. */
     public void initialize(String alias) {
         alias += ".";
@@ -613,5 +618,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setAuthorizedRedirectPorts(DEFAULT_AUTHORIZED_REDIRECT_PORTS);
         setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
         setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
+        setClientAuthenticationRequired(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED);
     }
 }

@@ -14,6 +14,7 @@ package org.ejbca.ui.web.rest.api;
 
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.converter.ModelConverters;
+
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.util.swagger.SnakeCaseConverter;
