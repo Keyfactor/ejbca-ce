@@ -41,6 +41,8 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -53,6 +55,11 @@ import static org.junit.Assert.fail;
  */
 public class CryptoToolsTest {
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
+    
     @Test
     public void testExtractSaltFromPasswordHash() {
         //Firstly, generate a hash.

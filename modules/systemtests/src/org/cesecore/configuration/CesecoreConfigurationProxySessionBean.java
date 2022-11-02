@@ -30,8 +30,7 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
 
     @Override
     public void setConfigurationValue(String key, String value) {
-        ConfigurationHolder.updateConfiguration(key, value);
-        StringTools.CharSet.reset(); // reset reading of forbidden characters of we changed that
+        ConfigurationHolder.updateConfiguration(key, value);      
         OcspConfigurationCache.INSTANCE.reloadConfiguration();
     }
 
@@ -43,6 +42,7 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
     @Override
     public void setForbiddenCharacters(char[] forbiddenCharacters) {
         StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters);
+        StringTools.CharSet.reset(); // reset reading of forbidden characters of we changed that
         
     }
 
