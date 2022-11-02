@@ -53,7 +53,6 @@ import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaCertificateDetails.Callbacks;
@@ -138,7 +137,7 @@ public class RaSearchCertsBean implements Serializable {
         public void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason,
                 final Date newDate, final String issuerDn)
                 throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
-                CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, InvalidRevocationDateException {
+                CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException {
             raMasterApiProxyBean.revokeCert(
                     raAuthenticationBean.getAuthenticationToken(), new BigInteger(raCertificateDetails.getSerialnumberRaw()), newDate,
                     issuerDn, newRevocationReason, newDate == null ? false : true);
