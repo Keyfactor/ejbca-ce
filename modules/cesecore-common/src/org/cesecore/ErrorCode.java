@@ -99,7 +99,6 @@ public class ErrorCode implements Serializable {
     private static final String _DOMAIN_BLACKLIST_FILE_PARSING_FAILED = "DOMAIN_BLACKLIST_FILE_PARSING_FAILED"; // Domain Blacklist File Parsing Failed
     private static final String _ACME_EAB_PARSING_FAILED = "ACME_EAB_PARSING_FAILED"; // ACME EAB Upload File Parsing Failed
     private static final String _BAD_REQUEST = "BAD_REQUEST"; // Invalid input
-    private static final String _INVALID_REVOCATION_DATE = "INVALID_REVOCATION_DATE"; // Invalid date for revocation backdate
 
 
     /** Default constructor. */
@@ -220,7 +219,6 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode BAD_REQUEST = new ErrorCode(_BAD_REQUEST);
     public static final ErrorCode DOMAIN_BLACKLIST_FILE_PARSING_FAILED = new ErrorCode(_DOMAIN_BLACKLIST_FILE_PARSING_FAILED);
     public static final ErrorCode ACME_EAB_PARSING_FAILED = new ErrorCode(_ACME_EAB_PARSING_FAILED);
-    public static final ErrorCode INVALID_REVOCATION_DATE = new ErrorCode(_INVALID_REVOCATION_DATE);
     
     /** Get the internal error code. */
     public String getInternalErrorCode() {

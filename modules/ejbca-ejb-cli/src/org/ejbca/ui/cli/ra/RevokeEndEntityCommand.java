@@ -26,7 +26,6 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -123,8 +122,6 @@ public class RevokeEndEntityCommand extends BaseRaCommand {
             } catch (AlreadyRevokedException e) {
                 log.error("ERROR: " + e.getMessage());
             } catch (NoSuchEndEntityException e) {
-                log.error("ERROR: " + e.getMessage());
-            } catch (InvalidRevocationDateException e) {
                 log.error("ERROR: " + e.getMessage());
             }
         }

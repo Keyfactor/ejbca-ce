@@ -26,7 +26,6 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.cvc.exception.ConstructionException;
@@ -173,7 +172,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date)
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException, InvalidRevocationDateException {
+            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException {
         return super.revokeCertificate(requestContext, issuerDN, serialNumber, reason, date);
     }
 

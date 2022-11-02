@@ -114,7 +114,6 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.FieldValidator;
-import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -1606,7 +1605,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
             try {
                 revokeUser(authenticationToken, username, reason);
-            } catch (AlreadyRevokedException | InvalidRevocationDateException e) {
+            } catch (AlreadyRevokedException e) {
                 // This just means that the end entity was revoked before
                 // this request could be completed. No harm.
             }
@@ -1642,14 +1641,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public void revokeUser(AuthenticationToken authenticationToken, String username, int reason) throws AuthorizationDeniedException,
-            NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, InvalidRevocationDateException {
+    public void revokeUser(AuthenticationToken authenticationToken, String username, int reason) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         revokeUserAfterApproval(authenticationToken, username, reason, 0, null);
     }
 
     @Override
     public void revokeUserAfterApproval(AuthenticationToken authenticationToken, String username, int reason, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin)
-            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, InvalidRevocationDateException {
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeUser(" + username + ")");
         }
@@ -1758,7 +1756,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             AlreadyRevokedException {
         try {
             revokeCert(authenticationToken, certSerNo, null, issuerDn, reason, false);
-        } catch (RevokeBackDateNotAllowedForProfileException | InvalidRevocationDateException e) {
+        } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("This should not happen since there is no back dating.",e);
         }
     }
@@ -1768,7 +1766,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final AuthenticationToken authenticationToken, final BigInteger certSerNo, final String issuerDn,
             final int reason, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            AlreadyRevokedException, InvalidRevocationDateException {
+            AlreadyRevokedException {
         try {
             revokeCert(authenticationToken, certSerNo, null, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
@@ -1783,7 +1781,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn,
             int reason, boolean checkDate
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, InvalidRevocationDateException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
         try {
             revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, checkDate, null, 0, null, null);
         } catch (CertificateProfileDoesNotExistException e) {
@@ -1795,7 +1793,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void revokeCertWithMetadata(
             AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException, InvalidRevocationDateException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException {
         BigInteger certificateSn = new BigInteger(certRevocationDto.getCertificateSN(), 16);
         revokeCert(authenticationToken, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(),
                 null, 0, null, certRevocationDto.getCertificateProfileId());
@@ -1806,7 +1804,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             int reason, boolean checkDate, final EndEntityInformation endEntityInformationParam, final int approvalRequestID,
             final AuthenticationToken lastApprovingAdmin, final Integer certificateProfileIdParam
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException, InvalidRevocationDateException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certSerNo.toString(16) + ", IssuerDN: " + issuerDn + ")");
         }
@@ -1914,7 +1912,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     if (!RevokedCertInfo.isDateOk(revocationDate, certificateData.getRevocationDate())) {
                         final String msg = intres.getLocalizedMessage("ra.invalidrevocationdate");
                         log.info(msg);
-                        throw new InvalidRevocationDateException(msg);
+                        throw new AlreadyRevokedException(msg);
                     }
                     final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
                     log.info(msg);

@@ -26,7 +26,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
@@ -361,11 +360,10 @@ public interface EndEntityManagementSession {
      * @param reason revocation reason to use in certificate revocations
      * @throws AlreadyRevokedException if user is revoked and unrevocation is attempted by sending revocation reason NOTREVOKED or REMOVEFROMCRL
      * @throws ApprovalException if revocation has been requested and is waiting for approval.
-     * @throws InvalidRevocationDateException
      * 
      */
     void revokeUser(AuthenticationToken admin, String username, int reason)
-            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, InvalidRevocationDateException;
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
      * Revokes all of a user's certificates.
@@ -407,11 +405,10 @@ public interface EndEntityManagementSession {
      * @param lastApprovingAdmin the last administrator to have approved the request
      * @throws AlreadyRevokedException if user is revoked and unrevocation is attempted by sending revocation reason NOTREVOKED or REMOVEFROMCRL
      * @throws ApprovalException if revocation has been requested and is waiting for approval.
-     * @throws InvalidRevocationDateException
      *
      */
     void revokeUserAfterApproval(AuthenticationToken admin, String username, int reason, int approvalRequestID, AuthenticationToken lastApprovingAdmin) 
-            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, InvalidRevocationDateException;
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
      * Same as {@link #revokeCert(AuthenticationToken, BigInteger, String, int)} but also sets the revocation date.
@@ -429,11 +426,10 @@ public interface EndEntityManagementSession {
      * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException
      * @throws RevokeBackDateNotAllowedForProfileException
-     * @throws InvalidRevocationDateException
      */
     void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkPermission)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException,
-            RevokeBackDateNotAllowedForProfileException, InvalidRevocationDateException;
+            RevokeBackDateNotAllowedForProfileException;
 
     /**
      * Method that revokes a certificate for a user. It can also be used to
@@ -475,11 +471,10 @@ public interface EndEntityManagementSession {
      * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException
      * @throws CertificateProfileDoesNotExistException if no profile was found with certRevocationDto.certificateProfileId input parameter.
-     * @throws InvalidRevocationDateException
      */
     void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException,
-            RevokeBackDateNotAllowedForProfileException, CertificateProfileDoesNotExistException, InvalidRevocationDateException;
+            RevokeBackDateNotAllowedForProfileException, CertificateProfileDoesNotExistException;
     
     /**
      * Method that revokes a certificate for a user. It can also be used to
@@ -502,12 +497,10 @@ public interface EndEntityManagementSession {
      * @throws ApprovalException if an approval already exists for this request.
      * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException
-     * @throws InvalidRevocationDateException
      */
     void revokeCertAfterApproval(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason, int approvalRequestID,
             AuthenticationToken lastApprovingAdmin)
-            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException,
-            InvalidRevocationDateException;
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
     
     /**
      * Method that checks if a user with specified users certificate exists in
