@@ -74,7 +74,6 @@ import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -789,7 +788,7 @@ public interface RaMasterApi {
      */
     void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, InvalidRevocationDateException;
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException;
 
     /**
      * Request status change of a certificate (revoke or reactivate).
@@ -808,13 +807,12 @@ public interface RaMasterApi {
      * @throws AlreadyRevokedException if a revocation request for an already revoked object is requested
      * @throws CADoesntExistsException in addition to the above throws if the CA (from issuer DN) is not handled by this instance, fail-fast
      * @throws CertificateProfileDoesNotExistException if no profile was found with certRevocationDto.certificateProfileId input parameter.
-     * @throws InvalidRevocationDateException if the new revocation date is not null or older than the previous date
      * @since Added between Master RA API version 3 and 4 (EJBCA 6.13.0), lacks an exact API version
      */
     void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException,
-            CertificateProfileDoesNotExistException, InvalidRevocationDateException;
+            CertificateProfileDoesNotExistException;
 
     /**
      * Revokes all of a user's certificates. A revocation must succeed at least on one instance, otherwise the operation fails with an exception.
