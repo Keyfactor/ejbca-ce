@@ -539,6 +539,11 @@ public class RevocationApprovalTest extends CaTestCase {
         assertEquals(true, caSession.getCAInfo(internalAdmin, approvalCAID).isAllowChangingRevocationReason());
         assertEquals(certificateProfileId, caInfo.getCertificateProfileId());
 
+     // make sure that the end entity we are testing with does not already exist
+        if(endEntityAccessSession.findUser(internalAdmin, username) != null) {
+            endEntityManagementSession.deleteUser(internalAdmin, username);
+        }
+
         X509Certificate usercertTest06 = createUserAndCert(username, approvalCAID, true);
         assertNotNull("Test user certificate was not created", usercertTest06);
         String usercertTest06fp = CertTools.getFingerprintAsString(usercertTest06);
@@ -578,6 +583,7 @@ public class RevocationApprovalTest extends CaTestCase {
             caInfo.setAllowChangingRevocationReason(false);
             caSession.editCA(internalAdmin, caInfo);
             certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
+            endEntityManagementSession.deleteUser(internalAdmin, username);
         } catch (Exception e) {
             log.debug(e.getMessage());
         }
@@ -600,7 +606,6 @@ public class RevocationApprovalTest extends CaTestCase {
     private X509Certificate createUserAndCert(final String username, final int caID, final boolean deleteFirst) throws Exception {
         if (deleteFirst) {
             internalCertStoreSession.removeCertificatesByUsername(username);
-            endEntityManagementSession.deleteUser(internalAdmin, username);
         }
         final EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
