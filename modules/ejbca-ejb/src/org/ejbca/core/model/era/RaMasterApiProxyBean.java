@@ -200,6 +200,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     // Used in tests
     private RaMasterApi[] savedRaMasterApisBeforeTest;
+    private RaMasterApi[] savedRaMasterApisLocalFirstBeforeTest;
     private List<String> functionTraceForTest;
 
     /** Default constructor */
@@ -258,16 +259,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public void enableFunctionTracingForTest() {
         restoreFunctionTracingAfterTest(); // if already tracing
-        savedRaMasterApisBeforeTest = (RaMasterApi[]) ArrayUtils.clone(raMasterApis); // we want a shallow clone here
+        final int numBackends = raMasterApis.length;
+        savedRaMasterApisBeforeTest = raMasterApis;
+        savedRaMasterApisLocalFirstBeforeTest = raMasterApisLocalFirst;
         functionTraceForTest = new ArrayList<>();
         String suffix = TEST_TRACE_SUFFIX_REMOTE;
-        for (int i = 0; i < raMasterApis.length; i++) {
-            final RaMasterApi wrapped = wrapInTracingProxy(raMasterApis[i], suffix);
+        raMasterApis = new RaMasterApi[numBackends];
+        raMasterApisLocalFirst = new RaMasterApi[numBackends];
+        for (int i = 0; i < numBackends; i++) {
+            final RaMasterApi wrapped = wrapInTracingProxy(savedRaMasterApisBeforeTest[i], suffix);
             raMasterApis[i] = wrapped;
-            raMasterApisLocalFirst[i] = wrapped;
+            raMasterApisLocalFirst[numBackends-1 - i] = wrapped;
             suffix = TEST_TRACE_SUFFIX_LOCAL;
         }
-        ArrayUtils.reverse(raMasterApisLocalFirst);
     }
 
     private RaMasterApi wrapInTracingProxy(final RaMasterApi raMasterApi, final String suffix) {
@@ -294,9 +298,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public void restoreFunctionTracingAfterTest() {
         if (savedRaMasterApisBeforeTest != null) {
             raMasterApis = savedRaMasterApisBeforeTest;
-            raMasterApisLocalFirst = (RaMasterApi[]) ArrayUtils.clone(raMasterApis);
-            ArrayUtils.reverse(raMasterApisLocalFirst);
+            raMasterApisLocalFirst = savedRaMasterApisLocalFirstBeforeTest;
             savedRaMasterApisBeforeTest = null;
+            savedRaMasterApisLocalFirstBeforeTest = null;
             functionTraceForTest = null;
         }
     }
