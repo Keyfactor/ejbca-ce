@@ -41,7 +41,6 @@ public final class CesecoreConfiguration {
     private CesecoreConfiguration() {
     }
 
-    private static final String TRUE = "true";
     private static final String FALSE = "false";
 
     /**
@@ -328,15 +327,6 @@ public final class CesecoreConfiguration {
      */
     public static boolean getDatabaseRevokedCertInfoFetchOrdered() {
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("database.crlgenfetchordered"));
-    }
-
-   
-    /**
-     * Characters forbidden in fields to be stored in the DB.
-     * @return all forbidden characters.
-     */
-    public static char[] getForbiddenCharacters() {
-        return StringConfigurationCache.INSTANCE.getForbiddenCharacters();
     }
 
     /** @return a list of enabled TLS protocol versions and cipher suites */

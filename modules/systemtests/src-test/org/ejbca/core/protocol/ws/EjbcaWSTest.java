@@ -36,6 +36,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -97,6 +98,7 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.cvc.CvCertificateUtility;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -195,6 +197,7 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
+import org.ejbca.cvc.CVCProvider;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -205,6 +208,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
@@ -304,6 +308,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         originalForbiddenChars = cesecoreConfigurationProxySession.getForbiddenCharacters();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new CvCertificateUtility());
+        Security.addProvider(new CVCProvider());   
     }
 
     @Before
@@ -1955,12 +1961,11 @@ public class EjbcaWSTest extends CommonEjbcaWs {
      */
     @Test
     public void test50CertificateRequestWithForbiddenCharsDefinedBogus() throws Exception {
-        long rnd = secureRandom.nextLong();
         cesecoreConfigurationProxySession.setForbiddenCharacters("tset".toCharArray());
         try {
             testCertificateRequestWithSpecialChars(
-                    "CN=test" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                    "CN=////" + rnd + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
+                    "CN=test" +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                    "CN=////" + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
         } finally {
             // we must remove this bogus settings otherwise next setupAdmin() will fail
             cesecoreConfigurationProxySession.setForbiddenCharacters(null);
@@ -1972,12 +1977,12 @@ public class EjbcaWSTest extends CommonEjbcaWs {
      */
     @Test
     public void test51CertificateRequestWithNoForbiddenChars() throws Exception {
-        long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setForbiddenCharacters(null);
+        final String testName = "test50CertificateRequestWithForbiddenCharsDefinedBogus";
+        cesecoreConfigurationProxySession.setForbiddenCharacters("".toCharArray());
         // Using JDK8 \r is transformed into \n for some reason, expected will work if: O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE
         testCertificateRequestWithSpecialChars(
-                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
+                "CN=test51CertificateRequestWithNoForbiddenChars" + testName +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                "CN=test51CertificateRequestWithNoForbiddenChars" + testName +   ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
     }
 
 
@@ -3086,7 +3091,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     }
 
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {
-        String userName = "wsSpecialChars" + secureRandom.nextLong();
+        String userName = "wsSpecialChars";
+        deleteUser(userName);
         final UserDataVOWS userData = new UserDataVOWS();
         userData.setUsername(userName);
         userData.setPassword(PASSWORD);
@@ -3125,9 +3131,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             expectedSubjectDN = expectedSubjectDN.replace("\\r", "\\n");
             assertEquals(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "')" , expectedSubjectDN,
                     resultingSubjectDN);
+        } finally {
+            deleteUser(userName);
         }
-
-        deleteUser(userName);
     }
     
     /**
@@ -3189,6 +3195,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     private void deleteUser(final String username) {
         try {
             endEntityManagementSession.deleteUser(intAdmin, username);
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
         } catch (NoSuchEndEntityException e) {
             // NOPMD: Ignore
         } catch (AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {
