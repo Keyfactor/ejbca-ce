@@ -32,7 +32,6 @@ public enum AcmeProblem {
     PROBLEM_UNSUPPORTED_INDENTIFIER("unsupportedIdentifier", "Identifier is not supported, but may be in future"),
     PROBLEM_USER_ACTION_REQUIRED("userActionRequired", "Visit the \"instance\" URL and take actions specified there"),
     PROBLEM_ALREADY_REVOKED("alreadyRevoked", "The certificate is already revoked."),
-    PROBLEM_INVALID_REVOCATION_DATE("invalidRevocationDate", "The new revocation date is invalid."),
     PROBLEM_BAD_REVOCATION_REASON("badRevocationReason", "The revocation reason provided is not allowed by the server"),
     PROBLEM_CAA("caa", "CAA records forbid the CA from issuing"),
     PROBLEM_DNS("dns", "There was a problem with a DNS query"),
