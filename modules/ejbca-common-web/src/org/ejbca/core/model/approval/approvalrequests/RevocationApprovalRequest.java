@@ -38,7 +38,6 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.InvalidRevocationDateException;
 
 /**
  *
@@ -132,11 +131,9 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		} catch (AlreadyRevokedException e) {
 			throw new ApprovalRequestExecutionException("End entity " + username + " was already revoked at execution time.");
 		} catch (NoSuchEndEntityException e) {
-			throw new ApprovalRequestExecutionException("Could not find object.", e);
+			throw new ApprovalRequestExecutionException("Could not find object.",e);
 		} catch (CouldNotRemoveEndEntityException e) {
-			throw new ApprovalRequestExecutionException("Could not remove object.", e);
-		} catch (InvalidRevocationDateException e) {
-			throw new ApprovalRequestExecutionException("Invalid revocation date.", e);
+			throw new ApprovalRequestExecutionException("Could not remove object.",e);
 		}
 	}
 

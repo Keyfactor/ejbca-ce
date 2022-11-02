@@ -48,7 +48,6 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.InvalidRevocationDateException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ImportCrlSessionRemote")
@@ -138,8 +137,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                         endentityManagementSession.revokeCert(authenticationToken, serialNumber, crlEntry.getRevocationDate(), issuerDn, reasonCode, false);
                     } catch (AlreadyRevokedException e) {
                         log.warn("Failed to revoke '" + serialHex + "'. (Status might be 'Archived'.) Error message was: " + e.getMessage());
-                    } catch (ApprovalException | RevokeBackDateNotAllowedForProfileException | NoSuchEndEntityException
-                            | WaitingForApprovalException | InvalidRevocationDateException e) {
+                    } catch (ApprovalException | RevokeBackDateNotAllowedForProfileException | NoSuchEndEntityException | WaitingForApprovalException e) {
                         throw new CrlImportException("Failed to revoke certificate with serial number " + serialHex, e);
                     }
                     
