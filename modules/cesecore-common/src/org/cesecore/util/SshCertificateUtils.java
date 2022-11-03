@@ -21,6 +21,11 @@ import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 
 public class SshCertificateUtils {
     
+    /**
+     * Extract SSH key ID from subject DN text field.
+     * @param subjectDn
+     * @return SSH key ID String
+     */
     public static String getKeyId(String subjectDn) {
         if(StringUtils.isNotBlank(subjectDn)) {
             return subjectDn.replace("CN=", "");
@@ -28,14 +33,29 @@ public class SshCertificateUtils {
         return "";
     }
     
+    /**
+     * Extract SSH principals from subject AN text field.
+     * @param subjectAlternateName
+     * @return colon separated String of SSH principals
+     */
     public static String getPrincipalsAsString(String subjectAlternateName) {
         return parsePrincipalsAndComment(subjectAlternateName)[0];
     }
     
+    /**
+     * Extract SSH comment from subject AN text field.
+     * @param subjectAlternateName
+     * @return String with SSH comment
+     */
     public static String getComment(String subjectAlternateName) {
         return parsePrincipalsAndComment(subjectAlternateName)[1];
     }
     
+    /**
+     * Extract SSH principals and comment from subject AN text field.
+     * @param subjectAlternateName
+     * @return Array of Strings where the first element is SSH principals (colon separated) and second element is SSH comment
+     */
     public static String[] parsePrincipalsAndComment(String subjectAlternateName) {
         String comment = "";
         String principals = "";
@@ -61,10 +81,21 @@ public class SshCertificateUtils {
         return new String[] {principals, comment};
     }
     
+    /**
+     * Create subject AN text field for storage from SSH certificate.
+     * @param sshCertificate SshCertificate object
+     * @return SSH subject AN text field formatted for storage
+     */
     public static String createSanForStorage(SshCertificate sshCertificate) {
         return createSanForStorage(sshCertificate.getPrincipals(), sshCertificate.getComment());
     }
     
+    /**
+     * Create subject AN text field for storage from list of principals and comment.
+     * @param principals String containing colon separated SSH principals
+     * @param comment
+     * @return SSH subject AN text field formatted for storage
+     */
     public static String createSanForStorage(List<String> principals, String comment) {
         StringBuilder placeHolderSan = new StringBuilder();
         if(principals!=null && !principals.isEmpty()) {
@@ -89,6 +120,12 @@ public class SshCertificateUtils {
         return "";
     }
 
+    /**
+     * Create subject AN text field for storage from colon separated String with SSH principals and comment.
+     * @param principalString String with colon separated SSH principals
+     * @param comment
+     * @return SSH subject AN text field formatted for storage
+     */
     public static String createSanForStorage(final String principalString, final String comment) {
         return createSanForStorage(Arrays.asList(principalString.split(":")), comment);
     }
