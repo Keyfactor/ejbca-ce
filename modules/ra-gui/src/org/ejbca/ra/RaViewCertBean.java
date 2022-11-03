@@ -33,10 +33,12 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -71,6 +73,7 @@ public class RaViewCertBean implements Serializable {
     private Map<Integer, String> cpIdToNameMap = null;
     private Map<String,String> caSubjectToNameMap = new HashMap<>();
     private Map<String, Boolean> caNameToAllowsChangeOfRevocationReason = new HashMap<>();
+    private Map<String, Boolean> cpNameToAllowsRevocationBackdating = new HashMap<>();
 
     private final Callbacks raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
         @Override
@@ -88,7 +91,8 @@ public class RaViewCertBean implements Serializable {
             if (ret) {
                 // Re-initialize object if status has changed
                 final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
-                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason);
+                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
+                        caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
             }
             return ret;
         }
@@ -102,7 +106,8 @@ public class RaViewCertBean implements Serializable {
                     issuerDn, newRevocationReason, true);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
-            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason);
+            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
+                    caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
         }
         @Override
         public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, 
@@ -127,12 +132,19 @@ public class RaViewCertBean implements Serializable {
                 cpIdToNameMap = raMasterApiProxyBean.getAuthorizedCertificateProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
                 eepIdToNameMap = raMasterApiProxyBean.getAuthorizedEndEntityProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
                 final List<CAInfo> caInfos = new ArrayList<>(raMasterApiProxyBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
+                final IdNameHashMap<CertificateProfile> cpMap = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(
+                        raAuthenticationBean.getAuthenticationToken()); 
+                for (Integer cpId : cpMap.idKeySet()) {
+                    final CertificateProfile currentCp = cpMap.getValue(cpId);
+                    cpNameToAllowsRevocationBackdating.put(cpIdToNameMap.get(cpId), currentCp.getAllowBackdatedRevocation());
+                }
                 for (final CAInfo caInfo : caInfos) {
                     caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
                     caNameToAllowsChangeOfRevocationReason.put(caInfo.getName(), caInfo.isAllowChangingRevocationReason());
                 }
                 raCertificateDetails = new RaCertificateDetails(cdw, raCertificateDetailsCallbacks,
-                        cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason);
+                        cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
+                        cpNameToAllowsRevocationBackdating);
             }
         }
     }
