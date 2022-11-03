@@ -13,6 +13,10 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -35,6 +39,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -44,6 +49,8 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -73,21 +80,41 @@ import org.junit.Test;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.TimeZone;
 
+import static org.cesecore.certificates.crl.RevocationReasons.*;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
@@ -95,18 +122,26 @@ import static org.junit.Assert.fail;
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
 
     //private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
-    private static final String TEST_CA_NAME = "RestCertificateResourceTestCa";
-    private static final String TEST_USERNAME = "CertificateRestSystemTestUser";
+    private static final String CRL_FILENAME = "CertificateRestSystemTestCrlFile";
+    private static final String ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE = "Certificate with issuer: {0} and serial " +
+            "number: {1} has previously been revoked. Revocation reason could not be changed or was not allowed.";
     private static final JSONParser jsonParser = new JSONParser();
-    
-    protected final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CertificateProfileSessionRemote.class);
-    protected final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    private final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
-            EjbRemoteHelper.MODULE_TEST); 
 
-    private static X509CA x509TestCa;
+    private static final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private static final EndEntityProfileSessionRemote endEntityProfileSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private static final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private static final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
+    private static final Random random = new Random();
+    private X509CA x509TestCa;
+    private String testCaName = "CertificateRestSystemTestCa";
+    private String testIssuerDn = "C=SE,CN=" + testCaName;
+    private String testUsername = "CertificateRestSystemTestUser";
+    private String testCertProfileName = "CertificateRestSystemTestCertProfile";
+    private String testEeProfileName = "CertificateRestSystemTestEeProfile";
 
     private final String csr = "-----BEGIN CERTIFICATE REQUEST-----\n"
             + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
@@ -132,7 +167,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
-
     }
 
     @AfterClass
@@ -142,8 +176,14 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Before
     public void setUp() throws Exception {
+        final int randomSuffix = random.nextInt();
+        testCaName += randomSuffix;
+        testIssuerDn += randomSuffix;
+        testUsername += randomSuffix;
+        testCertProfileName += randomSuffix;
+        testEeProfileName += randomSuffix;
         CryptoProviderTools.installBCProvider();
-        x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, "C=SE,CN=" + TEST_CA_NAME);
+        x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testIssuerDn);
     }
 
     @After
@@ -151,6 +191,14 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         if (x509TestCa != null) {
             CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
         }
+        try {
+            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, testUsername);
+        } catch (Exception e) {
+            // ignore
+        }
+        internalCertificateStoreSession.removeCertificatesByUsername(testUsername);
+        certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName);
+        endEntityProfileSessionRemote.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileName);
     }
 
     @Test
@@ -179,146 +227,490 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         certificateProfile.setAvailableBitLengths(availableBitLengths);
         String[] availableAlgorithms = {"RSA"};
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
-        certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, "TestProfileName", certificateProfile);
-        try {
-            // when
-            final Response actualResponse = newRequest("/v2/certificate/profile/TestProfileName").request().get();
-            final String actualJsonString = actualResponse.readEntity(String.class);
-            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-            JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
-            String algorithms  = (String) jsonArrayAlgs.get(0);
-            JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
-            long bitLengths  = (long) jsonArrayBitLengths.get(0);
-            JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
-            String cas  = (String) jsonArrayCas.get(0);
-            // then
-            assertEquals("RSA", algorithms);
-            assertEquals(4096, bitLengths);
-            assertEquals(TEST_CA_NAME, cas);
-            assertJsonContentType(actualResponse);
-        } finally {
-            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, "TestProfileName");
-        }
+        certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+        // when
+        final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
+        String algorithms = (String) jsonArrayAlgs.get(0);
+        JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
+        long bitLengths = (long) jsonArrayBitLengths.get(0);
+        JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
+        String cas = (String) jsonArrayCas.get(0);
+        // then
+        assertEquals("RSA", algorithms);
+        assertEquals(4096, bitLengths);
+        assertEquals(testCaName, cas);
+        assertJsonContentType(actualResponse);
     }
 
     @Test
     public void shouldRevokeCertificate() throws Exception {
-        try {
-            // Create test user & generate certificate
-            EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
-            userdata.setPassword("foo123");
-            userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
-            final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(),
-                    "1024", "RSA", SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-            final KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
-            keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
-            String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
-            String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
-            String issuerDn = "C=SE,CN=" + TEST_CA_NAME;
-            // Attempt revocation through REST
-            final Response actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
-            final String actualJsonString = actualResponse.readEntity(String.class);
-            assertJsonContentType(actualResponse);
-            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-            final String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
-            final String responseSerialNr = (String) actualJsonObject.get("serial_number");
-            final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
-            final String responseReason = (String) actualJsonObject.get("revocation_reason");
+        // Create test user & generate certificate
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
+        // Attempt revocation through REST
+        final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
+        final String responseSerialNr = (String) actualJsonObject.get("serial_number");
+        final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
+        final String responseReason = (String) actualJsonObject.get("revocation_reason");
 
-            // Verify rest response
-            assertEquals(issuerDn, responseIssuerDn);
-            assertEquals(serialNr, responseSerialNr);
-            assertEquals(true, responseStatus);
-            assertEquals("KEY_COMPROMISE", responseReason);
+        // Verify rest response
+        assertEquals(testIssuerDn, responseIssuerDn);
+        assertEquals(serialNr, responseSerialNr);
+        assertEquals(true, responseStatus);
+        assertEquals("KEY_COMPROMISE", responseReason);
 
-            // Verify actual database value
-            CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-            String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
-            assertEquals("KEY_COMPROMISE", databaseReason);
-        } finally {
-            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
-            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
-        }
+        // Verify actual database value
+        CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
+        assertEquals("KEY_COMPROMISE", databaseReason);
     }
 
-    /**
-     * Revocation reason can be changed according to ECA-
-     */
     @Test
     public void shouldAllowRevocationReasonChange() throws Exception {
-        try {
-            // User and certificate generation
-            EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null,
-                                                                     new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                                                                     SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
-            userdata.setPassword("foo123");
-            userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
-            final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(),
-                                                                                                    "1024", "RSA", SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-            final KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
-            keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
-            String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
-            String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
-            String issuerDn = "C=SE,CN=" + TEST_CA_NAME;
+        enableRevocationReasonChange();
+        // User and certificate generation
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
 
-            // Attempt the initial revocation through REST
-            Response actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&date=2022-06-15T14:07:09Z").request().put(null);
-            String actualJsonString = actualResponse.readEntity(String.class);
-            assertJsonContentType(actualResponse);
+        // Attempt the initial revocation through REST
+        Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED").request().put(null);
+        String actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
 
-            JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-            String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
-            String responseSerialNr = (String) actualJsonObject.get("serial_number");
-            boolean responseStatus = (boolean) actualJsonObject.get("revoked");
-            String responseReason = (String) actualJsonObject.get("revocation_reason");
+        JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
+        String responseSerialNr = (String) actualJsonObject.get("serial_number");
+        boolean responseStatus = (boolean) actualJsonObject.get("revoked");
+        String responseReason = (String) actualJsonObject.get("revocation_reason");
 
-            // Verify rest response
-            assertEquals(issuerDn, responseIssuerDn);
-            assertEquals(serialNr, responseSerialNr);
-            assertEquals(true, responseStatus);
-            assertEquals("SUPERSEDED", responseReason);
+        // Verify rest response
+        assertEquals(testIssuerDn, responseIssuerDn);
+        assertEquals(serialNr, responseSerialNr);
+        assertEquals(true, responseStatus);
+        assertEquals("SUPERSEDED", responseReason);
 
-            // Verify actual database value
-            CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-            String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
-            assertEquals("SUPERSEDED", databaseReason);
+        // Verify actual database value
+        CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
+        assertEquals("SUPERSEDED", databaseReason);
 
-            // Second revocation for the same certificate.
-            // Change revocation reason from SUPERSEDED to KEY_COMPROMISE with backdating
-            actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE&date=2021-06-15T14:07:09Z").request().put(null);
-            actualJsonString = actualResponse.readEntity(String.class);
-            assertJsonContentType(actualResponse);
+        // Second revocation for the same certificate.
+        // Change revocation reason from SUPERSEDED to KEY_COMPROMISE with backdating
+        actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
+        actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
 
-            actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-            responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
-            responseSerialNr = (String) actualJsonObject.get("serial_number");
-            responseStatus = (boolean) actualJsonObject.get("revoked");
-            responseReason = (String) actualJsonObject.get("revocation_reason");
+        actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
+        responseSerialNr = (String) actualJsonObject.get("serial_number");
+        responseStatus = (boolean) actualJsonObject.get("revoked");
+        responseReason = (String) actualJsonObject.get("revocation_reason");
 
-            // Verify rest response
-            assertEquals(issuerDn, responseIssuerDn);
-            assertEquals(serialNr, responseSerialNr);
-            assertEquals(true, responseStatus);
-            assertEquals("KEY_COMPROMISE", responseReason);
+        // Verify rest response
+        assertEquals(testIssuerDn, responseIssuerDn);
+        assertEquals(serialNr, responseSerialNr);
+        assertEquals(true, responseStatus);
+        assertEquals("KEY_COMPROMISE", responseReason);
 
-            // Verify actual database value
-            certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-            databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
-            assertEquals("KEY_COMPROMISE", databaseReason);
-        } finally {
-            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
-            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
-        }
+        // Verify actual database value
+        certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
+        assertEquals("KEY_COMPROMISE", databaseReason);
     }
-    
+
+    @Test
+    public void shouldPreventRevocationWithInvalidReason() throws Exception {
+        // given
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationReason = "sticky note with private key got lost";
+        final int expectedErrorCode = 400;
+        final String expectedErrorMessage = "Invalid revocation reason.";
+        // when
+        final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, revocationReason, null);
+        // then
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
+    }
+
+    @Test
+    public void shouldPreventRevocationWithAFutureDate() throws Exception {
+        // given
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationDate = "3000-01-01T00:00:00Z";
+        final int expectedErrorCode = 400;
+        final String expectedErrorMessage = MessageFormat.format("Revocation date in the future: ''{0}''.", revocationDate);
+        // when
+        final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, KEYCOMPROMISE.getStringValue(), revocationDate);
+        // then
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
+    }
+
+    @Test
+    public void shouldPreventRevocationReasonChangeIfDisabledOnCaLevel() throws Exception {
+        // given
+        disableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = SUPERSEDED.getStringValue();
+        final int expectedErrorCode = 409;
+        final String expectedErrorMessage = MessageFormat.format(ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE, testIssuerDn, serialNumber.toLowerCase());
+        // when
+        // perform initial revocation
+        revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        // attempt to change revocation reason
+        final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, KEYCOMPROMISE.getStringValue(), null);
+        // then
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
+    }
+
+    @Test
+    public void shouldPreventBackdatingRevocationIfDisabledInCertificateProfile() throws Exception {
+        // given
+        disableRevocationBackdating();
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationDate = "2000-01-01T00:00:00Z";
+        final int expectedErrorCode = 422;
+        final String expectedErrorMessage = MessageFormat.format("Back dated revocation not allowed for certificate profile ''{0}''." +
+                " Certificate serialNumber ''{1}'', issuerDN ''{2}''.", testCertProfileName, serialNumber.toLowerCase(), testIssuerDn);
+        // when
+        final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, KEYCOMPROMISE.getStringValue(), revocationDate);
+        // then
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
+    }
+
+    @Test
+    public void shouldPreserveRevocationDateWhenOnlyReasonIsChanged() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = SUPERSEDED.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        final String initialRevocationDate = initialRevocationResponse.get("revocation_date").toString();
+        Thread.sleep(1000);
+        final JSONObject revocationReasonChangeResponse = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        // then
+        assertEquals("Changing revocation reson should have preserved the initial revocation date",
+                initialRevocationDate, revocationReasonChangeResponse.get("revocation_date"));
+    }
+
+    @Test
+    public void shouldAllowBackdatingRevocation() throws Exception {
+        // given
+        enableRevocationBackdating();
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationReason = SUPERSEDED.getStringValue();
+        final String revocationDate = "2000-01-01T00:00:00Z";
+        // when
+        final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, revocationReason, revocationDate);
+        // then
+        assertEquals("Revocation date does not match with request", revocationDate, response.get("revocation_date"));
+    }
+
+    @Test
+    public void shouldAllowBackdatingRevocationDuringReasonChange() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        enableRevocationBackdating();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = SUPERSEDED.getStringValue();
+        final String initialRevocationDate = "2000-01-01T00:00:00Z";
+        final String newRevocationDate = "1999-01-01T00:00:00Z";
+        // when
+        final JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, initialRevocationDate);
+        final JSONObject revocationReasonChangeResponse = revokeCertificate(testIssuerDn, serialNumber, KEYCOMPROMISE.getStringValue(), newRevocationDate);
+        // then
+        assertEquals("Revocation date does not match with request", initialRevocationDate, initialRevocationResponse.get("revocation_date"));
+        assertEquals("Revocation date had to be backdated", newRevocationDate, revocationReasonChangeResponse.get("revocation_date"));
+    }
+
+    @Test
+    public void shouldAllowBackdatingRevokedCertificateWithReasonKeyCompromise() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        enableRevocationBackdating();
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationReason = KEYCOMPROMISE.getStringValue();
+        final String initialRevocationDate = "2000-01-01T00:00:00Z";
+        final String newRevocationDate = "1999-01-01T00:00:00Z";
+        // when
+        final JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, revocationReason, initialRevocationDate);
+        final JSONObject revocationReasonChangeResponse = revokeCertificate(testIssuerDn, serialNumber, revocationReason, newRevocationDate);
+        // then
+        assertEquals("Revocation date does not match with request", initialRevocationDate, initialRevocationResponse.get("revocation_date"));
+        assertEquals("Revocation date had to be backdated", newRevocationDate, revocationReasonChangeResponse.get("revocation_date"));
+    }
+
+    @Test
+    public void shouldAllowRevocationReasonChangeFromUnspecifiedToKeyCompromise() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = UNSPECIFIED.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        final JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        final JSONObject updatedRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        // then
+        assertEquals(initialRevocationReason, initialRevocationResponse.get("revocation_reason"));
+        assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
+    }
+
+    @Test
+    public void shouldAllowRevocationReasonChangeFromPrivilegesWithdrawnToKeyCompromise() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = PRIVILEGESWITHDRAWN.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        final JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        final JSONObject updatedRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        // then
+        assertEquals(initialRevocationReason, initialRevocationResponse.get("revocation_reason"));
+        assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
+    }
+
+    @Test
+    public void shouldAllowRevocationReasonChangeFromCessationOfOperationToKeyCompromise() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = CESSATIONOFOPERATION.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        final JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        final JSONObject updatedRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        // then
+        assertEquals(initialRevocationReason, initialRevocationResponse.get("revocation_reason"));
+        assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
+    }
+
+    @Test
+    public void shouldAllowRevocationReasonChangeFromAffiliationChangedToKeyCompromise() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = AFFILIATIONCHANGED.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        final JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        final JSONObject updatedRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        // then
+        assertEquals(initialRevocationReason, initialRevocationResponse.get("revocation_reason"));
+        assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
+    }
+
+    @Test
+    public void shouldAllowRevocationReasonChangeFromSupersededToKeyCompromise() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = SUPERSEDED.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        final JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        final JSONObject updatedRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        // then
+        assertEquals(initialRevocationReason, initialRevocationResponse.get("revocation_reason"));
+        assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
+    }
+
+    @Test
+    public void shouldPreventRevocationReasonChangeFromCaCompromiseToAnother() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = CACOMPROMISE.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        final int expectedErrorCode = 409;
+        final String expectedErrorMessage = MessageFormat.format(ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE, testIssuerDn, serialNumber.toLowerCase());
+        // when
+        // perform initial revocation
+        revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        // attempt to change revocation reason
+        final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        // then
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
+    }
+
+    @Test
+    public void shouldPreventRevocationReasonChangeFromAACompromiseToAnother() throws Exception {
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = AACOMPROMISE.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        final int expectedErrorCode = 409;
+        final String expectedErrorMessage = MessageFormat.format(ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE, testIssuerDn, serialNumber.toLowerCase());
+        // when
+        // perform initial revocation
+        revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        // attempt to change revocation reason
+        final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        // then
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
+    }
+
+    @Test
+    public void shouldAllowReactivatingACertificateOnHold() throws Exception {
+        // given
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        final String serialNumber = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        final String fingerprint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
+        final String revocationReason = CERTIFICATEHOLD.getStringValue();
+        final String reactivationReason = NOT_REVOKED.getStringValue();
+        // when
+        final JSONObject revocationResponse = revokeCertificate(testIssuerDn, serialNumber, revocationReason, null);
+        final Date preActivationSystemDate = new Date();
+        Thread.sleep(1000);
+        final JSONObject reactivationResponse = revokeCertificate(testIssuerDn, serialNumber, reactivationReason, null);
+        final CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerprint);
+        // then
+        assertEquals("Revocation reason does not match with request", revocationReason, revocationResponse.get("revocation_reason"));
+        assertEquals("Revocation reason does not match with request", reactivationReason, reactivationResponse.get("revocation_reason"));
+        assertTrue("Wrong revocation status", (boolean) revocationResponse.get("revoked"));
+        assertFalse("Wrong revocation status", (boolean) reactivationResponse.get("revoked"));
+        assertNotNull("Revocation date does not match with request", revocationResponse.get("revocation_date"));
+        assertNull("Revocation date should not be returned for an active certificate", reactivationResponse.get("revocation_date"));
+        // reactivated certificates receive an updated revocation date in the DB to remove them from CRLs
+        // and publish them even when "Publish only revoked certificates" setting is used
+        assertTrue(certificateData.getRevocationDate() > preActivationSystemDate.getTime());
+    }
+
+    @Test
+    public void shouldContainUpdatedRevocationReasonInBaseCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = SUPERSEDED.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        final X509CRL initialCrl = createCrl(false);
+        revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        final X509CRL updatedCrl = createCrl(false);
+        // then
+        assertEquals("Revocation reasons should match", initialRevocationReason, getRevocationReason(initialCrl, serialNumber));
+        assertEquals("Revocation reasons should match", updatedRevocationReason, getRevocationReason(updatedCrl, serialNumber));
+    }
+
+    @Test
+    public void shouldContainBackdatedRevocationDateInBaseCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
+        // given
+        enableRevocationReasonChange();
+        enableRevocationBackdating();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = SUPERSEDED.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        final String initialRevocationDate = "2000-01-01T00:00:00Z";
+        final String updatedRevocationDate = "1999-01-01T00:00:00Z";
+        final long initialRevocationTime = DatatypeConverter.parseDateTime(initialRevocationDate).getTime().getTime();
+        final long updatedRevocationTime = DatatypeConverter.parseDateTime(updatedRevocationDate).getTime().getTime();
+        // when
+        revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, initialRevocationDate);
+        final X509CRL initialCrl = createCrl(false);
+        revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, updatedRevocationDate);
+        final X509CRL updatedCrl = createCrl(false);
+        // then
+        assertEquals("Revocation dates should match", initialRevocationTime, getRevocationTime(initialCrl, serialNumber));
+        assertEquals("Revocation dates should match", updatedRevocationTime, getRevocationTime(updatedCrl, serialNumber));
+    }
+
+    @Test
+    public void shouldContainUpdatedRevocationReasonInDeltaCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
+        // given
+        enableRevocationReasonChange();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = SUPERSEDED.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        createCrl(false);
+        Thread.sleep(1000);
+        revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        final X509CRL deltaCrl = createCrl(true);
+        // then
+        assertEquals("Wrong revocation reason in Delta CRL", updatedRevocationReason, getRevocationReason(deltaCrl, serialNumber));
+    }
+
+    @Test
+    public void shouldContainBackdatedRevocationDateInDeltaCrl() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
+        // Scenario: base CRL > initial revocation > revocation backdating with a date after last base CRL > delta CRL
+        // given
+        enableRevocationReasonChange();
+        enableRevocationBackdating();
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        createCrl(false);
+        Thread.sleep(1000);
+        final String backdatedRevocationDate = getRevocationRequestDate();
+        final long backdatedRevocationTime = DatatypeConverter.parseDateTime(backdatedRevocationDate).getTime().getTime();
+        revokeCertificate(testIssuerDn, serialNumber, revocationReason, null); // revoke using sysdate
+        Thread.sleep(1000);
+        revokeCertificate(testIssuerDn, serialNumber, revocationReason, backdatedRevocationDate); // backdate
+        final X509CRL deltaCrl = createCrl(true);
+        // then
+        assertNotNull("Certificate should be present in delta CRL", deltaCrl.getRevokedCertificate(CertTools.getSerialNumberFromString(serialNumber)));
+        assertEquals("Revocation dates should match", backdatedRevocationTime, getRevocationTime(deltaCrl, serialNumber));
+    }
+
+    @Test
+    public void shouldGenerateCrlUponRevocationReasonChange() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
+        // given
+        enableRevocationReasonChange();
+        enableGenerateCrlUponRevocation();
+        final String serialNumber = generateTestSerialNumber();
+        final String initialRevocationReason = SUPERSEDED.getStringValue();
+        final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
+        final X509CRL initialCrl = getLatestCrl(false);
+        revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        final X509CRL lastCrl = getLatestCrl(false);
+        // then
+        assertTrue("CRL number should be greater then the last", CrlExtensions.getCrlNumber(lastCrl).compareTo(CrlExtensions.getCrlNumber(initialCrl)) == 1);
+        assertEquals("Revocation reasons should match", initialRevocationReason, getRevocationReason(initialCrl, serialNumber));
+        assertEquals("Revocation reasons should match", updatedRevocationReason, getRevocationReason(lastCrl, serialNumber));
+    }
+
+    @Test
+    public void shouldChangeRevocationReasonUponCrlImport() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
+        // given
+        enableRevocationReasonChange();
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        final String serialNumber = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        final String fingerprint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
+        final RevocationReasons initialRevocationReasonInDb = SUPERSEDED;
+        final RevocationReasons newRevocationReasonInCrl = KEYCOMPROMISE;
+        // when
+        revokeCertificate(testIssuerDn, serialNumber, initialRevocationReasonInDb.getStringValue(), null);
+        final X509CRL crl = prepareImportCrl(fingerprint, newRevocationReasonInCrl);
+        importCrl(crl);
+        final CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerprint);
+        // then
+        assertEquals("Revocation reason did not change after CRL import", newRevocationReasonInCrl.getDatabaseValue(), certificateData.getRevocationReason());
+    }
+
     @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutEmail() throws Exception {
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null);
@@ -332,10 +724,10 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(String email) throws Exception {
         // Create CSR REST request
         EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
-                certificateAuthorityName(TEST_CA_NAME).
+                certificateAuthorityName(testCaName).
                 certificateProfileName("ENDUSER").
                 endEntityProfileName("EMPTY").
-                username(TEST_USERNAME).
+                username(testUsername).
                 password("foo123").email(email).
                 certificateRequest(csr).build();
         // Construct POST  request
@@ -344,31 +736,26 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         
         // Send request
-        try {
-            final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
-            final String actualJsonString = actualResponse.readEntity(String.class);
-            // Verify response
-            assertJsonContentType(actualResponse);
-            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-            final String base64cert = (String) actualJsonObject.get("certificate");
-            assertNotNull(base64cert);
-            byte [] certBytes = Base64.decode(base64cert.getBytes());
-            X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
-            assertEquals("Returned certificate contained unexpected issuer", "C=SE,CN=RestCertificateResourceTestCa", cert.getIssuerDN().getName());
-            assertEquals("Returned certificate contained unexpected subject DN", "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", cert.getSubjectDN().getName());
-            
-            EndEntityInformation userData = endEntityAccessSession.findUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
-            assertEquals("Created user does not have expected email.", email, userData.getEmail());
-        } finally {
-            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
-            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
-        }
+        final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        // Verify response
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String base64cert = (String) actualJsonObject.get("certificate");
+        assertNotNull(base64cert);
+        byte[] certBytes = Base64.decode(base64cert.getBytes());
+        X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+        assertEquals("Returned certificate contained unexpected issuer", testIssuerDn, cert.getIssuerDN().getName());
+        assertEquals("Returned certificate contained unexpected subject DN", "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", cert.getSubjectDN().getName());
+
+        EndEntityInformation userData = endEntityAccessSession.findUser(INTERNAL_ADMIN_TOKEN, testUsername);
+        assertEquals("Created user does not have expected email.", email, userData.getEmail());
     }
     
     @Test
     public void certificateRequestExpectCsrSubjectIgnored() throws Exception {
         // Add End Entity
-        EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "O=PrimeKey,CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, 
+        EndEntityInformation userdata = new EndEntityInformation(testUsername, "O=PrimeKey,CN=" + testUsername, x509TestCa.getCAId(), null,
             null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
             SecConst.TOKEN_SOFT_BROWSERGEN, new ExtendedInformation());
         userdata.setPassword("foo123");
@@ -378,8 +765,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
         // Create CSR REST request
         EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
-                certificateAuthorityName(TEST_CA_NAME).
-                username(TEST_USERNAME).
+                certificateAuthorityName(testCaName).
+                username(testUsername).
                 password("foo123").
                 certificateRequest(csr).build();
         // Construct POST  request
@@ -388,22 +775,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         
         // Send request
-        try {
-            final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
-            final String actualJsonString = actualResponse.readEntity(String.class);
-            // Verify response
-            assertJsonContentType(actualResponse);
-            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-            final String base64cert = (String) actualJsonObject.get("certificate");
-            assertNotNull(base64cert);
-            byte [] certBytes = Base64.decode(base64cert.getBytes());
-            X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
-            // Assert End Entity DN is used. CSR subject should be ignored.
-            assertEquals("Returned certificate contained unexpected subject DN", "O=PrimeKey,CN=" + TEST_USERNAME, cert.getSubjectDN().getName());
-        } finally {
-            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
-            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
-        }
+        final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        // Verify response
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String base64cert = (String) actualJsonObject.get("certificate");
+        assertNotNull(base64cert);
+        byte[] certBytes = Base64.decode(base64cert.getBytes());
+        X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+        // Assert End Entity DN is used. CSR subject should be ignored.
+        assertEquals("Returned certificate contained unexpected subject DN", "O=PrimeKey,CN=" + testUsername, cert.getSubjectDN().getName());
     }
 
     @Test
@@ -497,7 +879,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             approvalsMap.put(ApprovalRequestType.ADDEDITENDENTITY, profileId);
             x509TestCa.getCAInfo().setApprovals(approvalsMap);
             caSession.editCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
-            EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null, new EndEntityType(
+            EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=" + testUsername, x509TestCa.getCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
             userdata.setPassword("foo123");
@@ -533,15 +915,13 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
             // Verify results
             Enumeration<String> aliases = keyStore.aliases();
-            assertEquals("Unexpected alias in keystore response", TEST_USERNAME, aliases.nextElement());
+            assertTrue("Alias is missing in keystore response", Collections.list(aliases).contains(testUsername));
             assertEquals("Unexpected response format", "PKCS12", responseFormat);
             assertEquals("Unexpected keystore format", "PKCS12-3DES-3DES", keyStore.getType());
         } finally {
             // Clean up
             approvalSession.removeApprovalRequest(INTERNAL_ADMIN_TOKEN, approvalId);
             approvalProfileSession.removeApprovalProfile(INTERNAL_ADMIN_TOKEN, profileId);
-            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
-            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
         }
     }
 
@@ -576,5 +956,256 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Unexpected response after disabling protocol", 403, status);
         // restore state
         enableRestProtocolConfiguration();
+    }
+
+    /**
+     * Revokes certificate via REST API
+     */
+    private JSONObject revokeCertificate(final String issuerDn, final String serialNumber, final String reason, final String date) throws Exception {
+        assertNotNull("Missing Issuer DN value", issuerDn);
+        assertNotNull("Missing Serial Number value", serialNumber);
+        assertNotNull("Missing Revocation Reason value", reason);
+        final String requestDate = (date != null) ? "&date=" + date : "";
+        final String requestUriPath = MessageFormat.format("/v1/certificate/{0}/{1}/revoke/?reason={2}{3}",
+                issuerDn, serialNumber, reason, requestDate);
+        final Response actualResponse = newRequest(requestUriPath).request().put(null);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        return (JSONObject) jsonParser.parse(actualJsonString);
+    }
+
+    /**
+     * Enables "Allow changing revocation reason" setting for test CA
+     */
+    private void enableRevocationReasonChange() throws Exception {
+        X509CAInfo caInfo = (X509CAInfo) x509TestCa.getCAInfo();
+        caInfo.setAllowChangingRevocationReason(true);
+        caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, caInfo);
+    }
+
+    /**
+     * Disables "Allow changing revocation reason" setting for test CA
+     */
+    private void disableRevocationReasonChange() throws Exception {
+        X509CAInfo caInfo = (X509CAInfo) x509TestCa.getCAInfo();
+        caInfo.setAllowChangingRevocationReason(false);
+        caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, caInfo);
+    }
+
+    /**
+     * Enables "Generate CRL Upon Revocation" setting for test CA
+     */
+    private void enableGenerateCrlUponRevocation() throws Exception {
+        X509CAInfo caInfo = (X509CAInfo) x509TestCa.getCAInfo();
+        caInfo.setGenerateCrlUponRevocation(true);
+        caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, caInfo);
+    }
+
+    /**
+     * Enables "Allow Backdated Revocation" setting for test certificate profile
+     */
+    private void enableRevocationBackdating() throws Exception {
+        final CertificateProfile certificateProfile = getCertificateProfile();
+        certificateProfile.setAllowBackdatedRevocation(true);
+        certificateProfileSession.changeCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+    }
+
+    /**
+     * Disables "Allow Backdated Revocation" setting for test certificate profile
+     */
+    private void disableRevocationBackdating() throws Exception {
+        final CertificateProfile certificateProfile = getCertificateProfile();
+        certificateProfile.setAllowBackdatedRevocation(false);
+        certificateProfileSession.changeCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+    }
+
+    /**
+     * Returns the test CertificateProfile. Creates one if needed.
+     */
+    private CertificateProfile getCertificateProfile() throws Exception {
+        CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(testCertProfileName);
+        if (certificateProfile == null) {
+            final int certificateProfileId = createCertificateProfile();
+            return certificateProfileSession.getCertificateProfile(certificateProfileId);
+        }
+        return certificateProfile;
+    }
+
+    /**
+     * Creates a test certificate profile and returns its ID
+     */
+    private int createCertificateProfile() throws Exception {
+        int certificateProfileId = certificateProfileSession.getCertificateProfileId(testCertProfileName);
+        if (certificateProfileId == 0) {
+            final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certificateProfile.setAvailableCAs(Arrays.asList(x509TestCa.getCAId()));
+            certificateProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+        }
+        return certificateProfileId;
+    }
+
+    /**
+     * Creates a test End Entity
+     */
+    private EndEntityInformation createTestEndEntity() throws Exception {
+        final int certificateProfileId = createCertificateProfile();
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
+        endEntityProfile.setAvailableCAs(Arrays.asList(x509TestCa.getCAId()));
+        endEntityProfile.setDefaultCA(x509TestCa.getCAId());
+        final int endEntityProfileId = endEntityProfileSessionRemote.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileName, endEntityProfile);
+        final EndEntityInformation userdata = new EndEntityInformation(
+                testUsername,
+                "CN=" + testUsername,
+                x509TestCa.getCAId(),
+                null,
+                null,
+                new EndEntityType(EndEntityTypes.ENDUSER),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                certificateProfileId,
+                SecConst.TOKEN_SOFT_P12,
+                new ExtendedInformation());
+        userdata.setPassword("foo123");
+        userdata.setStatus(EndEntityConstants.STATUS_NEW);
+        userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
+        userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+        userdata.setEndEntityProfileId(endEntityProfileId);
+        return endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+    }
+
+    /**
+     * Creates a keystore with a certificate for the test End Entity
+     */
+    private KeyStore createKeystore() throws Exception {
+        final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(
+                INTERNAL_ADMIN_TOKEN,
+                testUsername,
+                "foo123",
+                x509TestCa.getCAId(),
+                "1024",
+                "RSA",
+                SecConst.TOKEN_SOFT_P12,
+                false,
+                false,
+                false,
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+        final KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+        keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
+        return keyStore;
+    }
+
+    /**
+     * Creates a test End Entity with a Certificate and returns its Serial Number
+     */
+    private String generateTestSerialNumber() throws Exception {
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        return CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+    }
+
+    /**
+     * Creates a CRL for the test CA
+     *
+     * @param delta true for delta CRL, false for base CRL
+     */
+    private X509CRL createCrl(final boolean delta) throws Exception {
+        final String orderedIssuerDn = CertTools.stringToBCDNString(testIssuerDn);
+        final String deltaCrlParameter = (delta) ? "?deltacrl=true" : "";
+        final Response createCrlResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/createcrl" + deltaCrlParameter).request().post(null);
+        assertEquals("Failed to create a CRL", 200, createCrlResponse.getStatus());
+        return getLatestCrl(delta);
+    }
+
+    /**
+     * Returns the latest CRL of test CA
+     *
+     * @param delta true for delta CRL, false for base CRL
+     */
+    private X509CRL getLatestCrl(final boolean delta) throws Exception {
+        final String orderedIssuerDn = CertTools.stringToBCDNString(testIssuerDn);
+        final String deltaCrlParameter = (delta) ? "?deltacrl=true" : "";
+        // get the created CRL
+        final Response getLatestCrlResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/getLatestCrl" + deltaCrlParameter).request().get();
+        assertEquals("Failed to retrieve latest CRL", 200, getLatestCrlResponse.getStatus());
+        final Object latestCrlDer = getLatestCrlResponse.readEntity(Map.class).get("crl");
+        assertNotNull("Response does not contain a CRL", latestCrlDer);
+        return CertTools.getCRLfromByteArray(Base64.decode(latestCrlDer.toString().getBytes()));
+    }
+
+    /**
+     * Extracts a certificate`s revocation reason from CRL
+     *
+     * @param crl          Certificate Revocation List
+     * @param serialNumber Serial Number of certificate in CRL
+     * @return String value of {@link java.security.cert.CRLReason CRLReason}
+     */
+    private String getRevocationReason(final X509CRL crl, final String serialNumber) {
+        final X509CRLEntry crlEntry = crl.getRevokedCertificate(CertTools.getSerialNumberFromString(serialNumber));
+        assertNotNull("Certificate not found in CRL", crlEntry);
+        return crlEntry.getRevocationReason().toString();
+    }
+
+    /**
+     * Extracts a certificate`s revocation time from CRL
+     *
+     * @param crl          Certificate Revocation List
+     * @param serialNumber Serial Number of certificate in CRL
+     * @return milliseconds between start of Unix Epoch and revocation date
+     */
+    private long getRevocationTime(final X509CRL crl, final String serialNumber) {
+        final X509CRLEntry crlEntry = crl.getRevokedCertificate(CertTools.getSerialNumberFromString(serialNumber));
+        assertNotNull("Certificate not found in CRL", crlEntry);
+        return crlEntry.getRevocationDate().getTime();
+    }
+
+    /**
+     * Returns formatted date string for invocation of revocation REST API
+     *
+     * @return ISO 8601 date string, e.g. 2000-01-01T00:00:00Z
+     */
+    private String getRevocationRequestDate() {
+        final Calendar now = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        final String requestDateString = DatatypeConverter.printDateTime(now).replaceAll(".[0-9]{3}Z", "Z"); // remove milliseconds: .SSSZ > Z
+        return requestDateString;
+    }
+
+    /**
+     * Imports a X509CRL using REST API
+     */
+    private void importCrl(X509CRL crl) throws Exception {
+        Files.write(Paths.get(CRL_FILENAME), crl.getEncoded());
+        final MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+        entity.addBinaryBody("crlFile", new File(CRL_FILENAME), ContentType.DEFAULT_BINARY, CRL_FILENAME);
+        final HttpPost request = new HttpPost(getBaseUrl() + "/v1/ca/" + CertTools.stringToBCDNString(testIssuerDn) + "/importcrl");
+        request.setEntity(entity.build());
+        final HttpResponse response = getHttpClient(true).execute(request);
+        assertEquals("CRL import failed", Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+        Files.deleteIfExists(Paths.get(CRL_FILENAME));
+    }
+
+    /**
+     * Generates a new CRL containing a certificate with the desired revocation reason and deletes all CRLs of the test CA.
+     *
+     * @param fingerprint of certificate whose revocation reson should be changed
+     * @param desiredRevocationReason new revocation reason in CRL
+     * @return X509CRL containing certificate with the desired revocation reason
+     * @throws Exception
+     */
+    private X509CRL prepareImportCrl(final String fingerprint, final RevocationReasons desiredRevocationReason) throws Exception {
+        CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerprint);
+        assertNotNull("Certificate not found", certificateData);
+        final BigInteger serialNumber = CertTools.getSerialNumberFromString(certificateData.getSerialNumberHex());
+        final int oldRevocationReason = certificateData.getRevocationReason();
+        revokeCertificate(testIssuerDn, certificateData.getSerialNumberHex(), desiredRevocationReason.getStringValue(), null);
+        final X509CRL crl = createCrl(false);
+        assertNotNull("Certificate is not present in CRL", crl.getRevokedCertificate(serialNumber));
+        assertEquals("Wrong revocation reason in CRL", desiredRevocationReason.getStringValue(),
+                crl.getRevokedCertificate(serialNumber).getRevocationReason().toString());
+        internalCertificateStoreSession.removeCRLs(INTERNAL_ADMIN_TOKEN, x509TestCa.getSubjectDN());
+        internalCertificateStoreSession.setStatus(INTERNAL_ADMIN_TOKEN, fingerprint, oldRevocationReason);
+        certificateData = internalCertificateStoreSession.getCertificateData(fingerprint);
+        assertEquals("Revocation reason was not reverted", desiredRevocationReason.getDatabaseValue(), certificateData.getRevocationReason());
+        return crl;
     }
 }
