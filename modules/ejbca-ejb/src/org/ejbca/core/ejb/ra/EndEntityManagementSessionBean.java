@@ -1876,6 +1876,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, endEntityProfileId, AccessRulesConstants.REVOKE_END_ENTITY, caId);
             }
         }
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
+        // Check if revocation can be backdated
+        if (checkDate && revocationDate != null && revocationDate.getTime() != certificateData.getRevocationDate()
+                && (certificateProfile == null || !certificateProfile.getAllowBackdatedRevocation())) {
+            final String profileName = this.certificateProfileSession.getCertificateProfileName(certificateProfileId);
+            final String msg = intres.getLocalizedMessage("ra.norevokebackdate", profileName, certSerNo.toString(16), issuerDn);
+            throw new RevokeBackDateNotAllowedForProfileException(msg);
+        }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (!RevokedCertInfo.isRevoked(reason)) {
             if (revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
@@ -1931,7 +1939,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Finally find the publishers for the certificate profileId that we found
         Collection<Integer> publishers = new ArrayList<>(0);
-        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
         if (certificateProfile != null) {
             publishers = certificateProfile.getPublisherList();
             if (publishers == null || publishers.isEmpty()) {
@@ -1941,11 +1948,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         } else {
             log.warn("No certificate profile for certificate with serial #" + certSerNo.toString(16) + " issued by " + issuerDn);
-        }
-        if ( checkDate && revocationDate!=null && (certificateProfile==null || !certificateProfile.getAllowBackdatedRevocation()) ) {
-        	final String profileName = this.certificateProfileSession.getCertificateProfileName(certificateProfileId);
-        	final String msg = intres.getLocalizedMessage("ra.norevokebackdate", profileName, certSerNo.toString(16), issuerDn);
-        	throw new RevokeBackDateNotAllowedForProfileException(msg);
         }
 
         if(approvalRequestID != 0) {
