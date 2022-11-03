@@ -1565,6 +1565,8 @@
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxgeneratecrluponrevocation"
 								   value="#{web.text.USE}" />
+					<br />
+					<h:outputLabel value="#{web.text.CRL_CA_GENERATEUPONREVOCATION_HELP}" styleClass="smallHelp" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
