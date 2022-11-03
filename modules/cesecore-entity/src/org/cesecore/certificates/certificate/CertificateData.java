@@ -34,12 +34,14 @@ import javax.persistence.Transient;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SshCertificateUtils;
 import org.cesecore.util.StringTools;
 
 /**
@@ -165,8 +167,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
             // TODO: ECA-9184
             setSubjectDN(CertTools.getSubjectDN(certificate));
             setIssuerDN(CertTools.getIssuerDN(certificate));
-            if (storeSubjectAltName) {
+            if (storeSubjectAltName && !certificate.getType().equalsIgnoreCase(SshCertificate.CERTIFICATE_TYPE) ) {
                 setSubjectAltName(CertTools.getSubjectAlternativeName(certificate));
+            } else if (certificate.getType().equalsIgnoreCase(SshCertificate.CERTIFICATE_TYPE)) {
+                setSubjectAltName(SshCertificateUtils.createSanForStorage((SshCertificate) certificate));
             }
             if (log.isDebugEnabled()) {
                 log.debug("Creating CertificateData, subjectDN=" + getSubjectDnNeverNull() + ", subjectAltName=" + getSubjectAltNameNeverNull() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp+", storeSubjectAltName="+storeSubjectAltName);
@@ -747,7 +751,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
         final Query query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM CertificateData a ORDER BY a.certificateProfileId");
         return query.getResultList();
-    }
+    } 
     
     //
     // Start Database integrity protection methods
