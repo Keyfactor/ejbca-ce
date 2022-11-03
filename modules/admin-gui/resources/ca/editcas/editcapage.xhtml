@@ -1039,7 +1039,7 @@
 						<h:outputLabel value="#{web.text.CERT_VALIDITY}"
 							style="font-weight: bold;" />
 						<h:outputLabel
-							value="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.ORENDDATE}" />
+							value=" #{web.text.FORMAT_TIME_YMODHMS} #{web.text.ORENDDATE}" />
 						<h:outputText
 							value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#validity')}"
 							escape="false" styleClass="helpReference"/>
@@ -1461,7 +1461,7 @@
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_CA_CRLPERIOD}"
 						style="font-weight: bold;" />
-					<h:outputText value="#{web.text.FORMAT_TIME_YMDHMIN}" />
+					<h:outputText value=" #{web.text.FORMAT_TIME_YMDHMIN}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_Period')}"
 						escape="false" styleClass="helpReference"/>
@@ -1484,7 +1484,7 @@
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_CA_ISSUEINTERVAL}" />
-					<h:outputText value="#{web.text.FORMAT_TIME_YMDHMIN}" />
+					<h:outputText value=" #{web.text.FORMAT_TIME_YMDHMIN}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_Period')}"
 						escape="false" styleClass="helpReference"/>
@@ -1507,7 +1507,7 @@
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_CA_OVERLAPTIME}" />
-					<h:outputText value="#{web.text.FORMAT_TIME_YMDHMIN}" />
+					<h:outputText value=" #{web.text.FORMAT_TIME_YMDHMIN}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_Period')}"
 						escape="false" styleClass="helpReference"/>
@@ -1530,7 +1530,7 @@
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_CA_DELTACRLPERIOD}" />
-					<h:outputText value="#{web.text.FORMAT_TIME_YMDHMIN}" />
+					<h:outputText value=" #{web.text.FORMAT_TIME_YMDHMIN}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_Period')}"
 						escape="false" styleClass="helpReference"/>
