@@ -364,6 +364,13 @@
                     </h:panelGroup>
                     
                     <h:panelGroup>
+                    	<h:outputLabel for="clientAuthenticationRequired" value="#{web.text.ACME_CLIENT_AUTHENTICATION_REQUIRED}" styleClass="titles"/>
+                    	<br />
+                    	<h:outputText value="#{web.text.ACME_CLIENT_AUTHENTICATION_REQUIRED_HELP}" styleClass="help" style="font-size: smaller"/>
+                    </h:panelGroup>
+                    <h:selectBooleanCheckbox id="clientAuthenticationRequired" value="#{acmeAliasConfigMBean.currentAlias.clientAuthenticationRequired}" disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
+                    
+                    <h:panelGroup>
                     	<h:outputLabel for="externalAccountBinding" value="#{web.text.ACME_REQUIRE_EXTERNAL_ACCOUNT_BINDING}" styleClass="titles"/>
                     	<br />
                     	<h:outputText value="#{web.text.ACME_REQUIRE_EXTERNAL_ACCOUNT_BINDING_HELP}" styleClass="help" style="font-size: smaller"/>

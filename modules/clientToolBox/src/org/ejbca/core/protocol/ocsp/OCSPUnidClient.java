@@ -95,9 +95,6 @@ import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidResponse;
  * 1.The client was not authorized to request an Fnr
  * 2.There was no Unid Fnr mapping available
  * 3.There was no Unid in the certificate (serialNumber DN component)
- *
- * @version $Id$
- *
  */
 public class OCSPUnidClient {
 
@@ -132,7 +129,7 @@ public class OCSPUnidClient {
 	        List<Extension> extensionList = new ArrayList<Extension>();
 	        final Random randomSource = new Random();
             randomSource.nextBytes(nonce);
-	       extensionList.add(new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce)));
+            extensionList.add(new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce).getEncoded()));
 	        // Don't bother adding Unid extension if we are not using client authentication
 	        if ( getfnr ) {
 	            extensionList.add(new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString(new FnrFromUnidExtension("1"))));
