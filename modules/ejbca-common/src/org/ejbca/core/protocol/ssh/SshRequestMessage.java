@@ -42,6 +42,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.SshCertificateUtils;
 
 /**
  * Request message for SSH certificates
@@ -90,31 +91,15 @@ public class SshRequestMessage implements RequestMessage {
         } else {
             this.keyId = "";
         }
-        List<String> principals = new ArrayList<>();
         
-        if(StringUtils.isNotBlank(subjectAlternateName)) {
-            subjectAlternateName = subjectAlternateName.substring("dnsName=".length());
-            int commentIndex = subjectAlternateName.indexOf(SshEndEntityProfileFields.SSH_CERTIFICATE_COMMENT);
-            if(commentIndex!=0) { // no principal
-                if(commentIndex==-1) {
-                    commentIndex = subjectAlternateName.length(); // principal is whole content
-                    this.comment = "";
-                } else {
-                    this.comment = subjectAlternateName.substring(commentIndex + 
-                            SshEndEntityProfileFields.SSH_CERTIFICATE_COMMENT.length() + 1);
-                    commentIndex--;
-                }
-                String allPrincipals = subjectAlternateName.substring(SshEndEntityProfileFields.SSH_PRINCIPAL.length()+1, commentIndex);
-                principals = Arrays.asList(allPrincipals.split(":"));
-            } else {
-                this.comment = subjectAlternateName.substring(SshEndEntityProfileFields.SSH_CERTIFICATE_COMMENT.length() + 1);
-            }
-            
+        String[] principalsAndComment = SshCertificateUtils.parsePrincipalsAndComment(subjectAlternateName);
+        if (StringUtils.isNotBlank(principalsAndComment[0])){
+            this.principals = Arrays.asList(principalsAndComment[0].split(":"));
         } else {
-            this.comment = "";
+            this.principals = new ArrayList<>();
         }
+        this.comment = principalsAndComment[1];
         
-        this.principals = principals;
         this.criticalOptions = ei.getSshCriticalOptions();
         this.additionalExtensions = ei.getSshExtensions();
     }
@@ -380,25 +365,10 @@ public class SshRequestMessage implements RequestMessage {
         } else {
             userdata.setDN("CN="); // will set to blank DN
         }
-        StringBuilder placeHolderSan = new StringBuilder();
-        if(getPrincipals()!=null && !getPrincipals().isEmpty()) {
-            placeHolderSan.append(SshEndEntityProfileFields.SSH_PRINCIPAL + ":");
-            for(String principal: getPrincipals()) {
-                if(StringUtils.isNotBlank(principal)) {
-                    placeHolderSan.append(principal);
-                    placeHolderSan.append(":");
-                }
-            }
-        }
         
-        if(StringUtils.isNotBlank(getComment())) {
-            placeHolderSan.append(SshEndEntityProfileFields.SSH_CERTIFICATE_COMMENT + ":");
-            placeHolderSan.append(getComment());
-        }
-        
-        String placeHolderSanString = placeHolderSan.toString();
+        String placeHolderSanString =  SshCertificateUtils.createSanForStorage(getPrincipals(), getComment());
         if(StringUtils.isNotBlank(placeHolderSanString)) {
-            userdata.setSubjectAltName("dnsName=" + placeHolderSanString);
+            userdata.setSubjectAltName(placeHolderSanString);
         }
         
         if(getCriticalOptions()!=null) {

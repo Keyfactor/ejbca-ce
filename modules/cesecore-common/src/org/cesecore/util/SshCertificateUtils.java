@@ -61,9 +61,9 @@ public class SshCertificateUtils {
         return new String[] {principals, comment};
     }
     
-    // public static String createSanForStorage(SshCertificate sshCertificate) {
-    //     return createSanForStorage(sshCertificate.getPrincipals(), sshCertificate.getComment());
-    // }
+    public static String createSanForStorage(SshCertificate sshCertificate) {
+        return createSanForStorage(sshCertificate.getPrincipals(), sshCertificate.getComment());
+    }
     
     public static String createSanForStorage(List<String> principals, String comment) {
         StringBuilder placeHolderSan = new StringBuilder();
