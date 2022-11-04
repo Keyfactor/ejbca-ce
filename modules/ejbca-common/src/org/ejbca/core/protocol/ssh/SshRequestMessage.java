@@ -366,7 +366,8 @@ public class SshRequestMessage implements RequestMessage {
             userdata.setDN("CN="); // will set to blank DN
         }
         
-        String placeHolderSanString =  SshCertificateUtils.createSanForStorage(getPrincipals(), getComment());
+        String placeHolderSanString =  SshCertificateUtils.createSanForStorage(
+                getPrincipals(), getComment(), getCriticalOptions().get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP));
         if(StringUtils.isNotBlank(placeHolderSanString)) {
             userdata.setSubjectAltName(placeHolderSanString);
         }
