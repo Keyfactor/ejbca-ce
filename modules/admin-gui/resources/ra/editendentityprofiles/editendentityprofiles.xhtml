@@ -40,12 +40,19 @@
 	 			        <f:selectItems value="#{endEntityProfilesMBean.endEntityProfileItems}"/>
 	 			        <f:ajax event="change" execute="@this"/>
 	 			    </h:selectOneListbox>
-					<h:panelGrid style="width: 50em;" columns="2" border="0" columnClasses="gridColumnLeft, gridColumnRight">
+					<h:panelGrid style="width: 50em;" columns="3" border="0" columnClasses="gridColumnLeft,gridCenter,gridColumnRight">
 				    	<h:column>  
 							<h:commandButton 
 								id="editButton" 
 								action="#{endEntityProfilesMBean.actionEdit}" 
 								value="#{web.text.EDITENDENTITYPROFILE}" 
+								rendered="#{not endEntityProfilesMBean.deleteInProgress}"/>
+						</h:column>
+						<h:column>
+							<h:commandButton 
+								id="exportButton" 
+								action="#{endEntityProfilesMBean.actionExportProfile}" 
+								value="#{web.text.EXPORTENDENTITYPROFILE}" 
 								rendered="#{not endEntityProfilesMBean.deleteInProgress}"/>
 						</h:column>
 						<h:column>
@@ -83,11 +90,6 @@
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionCloneProfile}" 
 							value="#{web.text.CLONE_SELECTED}"/>
-						<h:commandButton 
-							id="exportButton" 
-							class="buttonstyle" 
-							action="#{endEntityProfilesMBean.actionExportProfile}" 
-							value="#{web.text.EXPORT_SELECTED}"/>
 	 				</h:panelGroup>	
 				</h:panelGroup>
 			</h:form>
