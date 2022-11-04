@@ -21,8 +21,15 @@ antCommonParameters="-q -Dappserver.home=/tmp -Dappserver.type=jboss -Dappserver
 antCommonParameters="$antCommonParameters"
 
 # Calculate the number of available cores
-cpuPeriod=$(cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)
-cpuQouta=$(cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us)
+if [ -e /sys/fs/cgroup/cpu/cpu ]; then
+    # -1 = no quota
+    cpuPeriod=$(cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)
+    cpuQouta=$(cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us)
+else
+    # sysfs blocked or not available
+    cpuPeriod=-1
+    cpuQouta=-1
+fi
 cpuTotal=$(cat /proc/cpuinfo | grep ^processor | wc -l)
 if [ ${cpuQouta:-0} -ne -1 ]; then
   coreLimit=$((cpuQouta/cpuPeriod))
