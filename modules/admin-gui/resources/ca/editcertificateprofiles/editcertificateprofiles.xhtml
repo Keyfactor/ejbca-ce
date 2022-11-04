@@ -124,7 +124,7 @@
 				<h:panelGroup>
 					<t:inputFileUpload id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
 					<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORTPROFILE}" rendered="#{certProfilesBean.authorizedToEdit}"/>
-					<h:commandButton styleClass="commandButtonExport" value="#{web.text.EXPORTROFILES}" action="#{certProfilesBean.actionExportProfiles}" />
+					<h:commandButton styleClass="commandButtonExport" value="#{web.text.EXPORTPROFILES}" action="#{certProfilesBean.actionExportProfiles}" />
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>
