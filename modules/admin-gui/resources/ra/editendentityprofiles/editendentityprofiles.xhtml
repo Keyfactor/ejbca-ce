@@ -67,27 +67,27 @@
 							value="#{endEntityProfilesMBean.endEntityProfileName}" 
 							size="45" 
 							maxlength="255" 
-							title="web.text.NAME"/>
+							title="#{web.text.FORMAT_ID_STR}"/>
 						<h:commandButton 
 							id="addButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionAdd}" 
-							value="Add profile"/>
+							value="#{web.text.ADDPROFILE}"/>
 						<h:commandButton 
 							id="renameButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionRename}" 
-							value="Rename selected"/>
+							value="#{web.text.RENAME_SELECTED}"/>
 						<h:commandButton 
 							id="cloneButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionCloneProfile}" 
-							value="Clone selected"/>
+							value="#{web.text.CLONE_SELECTED}"/>
 						<h:commandButton 
 							id="exportButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionExportProfile}" 
-							value="Export selected"/>
+							value="#{web.text.EXPORT_SELECTED}"/>
 	 				</h:panelGroup>	
 				</h:panelGroup>
 			</h:form>
