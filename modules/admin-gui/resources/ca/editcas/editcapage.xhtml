@@ -1281,10 +1281,10 @@
 										   value="#{web.text.USE}" />
 							<br/>
 							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible and not editCAsMBean.checkboxMsCaCompatibilityDisabled}"
-										  styleClass="helpReference"
+										  styleClass="warning"
 										  value="#{web.text.MS_COMPATIBILIY_MODE_WARNING}" />
 							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible and editCAsMBean.checkboxMsCaCompatibilityDisabled}"
-										  styleClass="helpReference"
+										  styleClass="help"
 										  value="#{web.text.MS_COMPATIBILIY_MODE_DISABLED}" />
 						</h:panelGroup>
 
