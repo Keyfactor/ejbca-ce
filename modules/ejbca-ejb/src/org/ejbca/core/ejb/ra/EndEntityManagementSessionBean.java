@@ -1764,13 +1764,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public void revokeCertAfterApproval(
             final AuthenticationToken authenticationToken, final BigInteger certSerNo, final String issuerDn,
-            final int reason, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin
+            final int reason, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin, 
+            final Date revocationDate
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, null, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
+            revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
-            throw new IllegalStateException("This should not happen since there is no back dating.",e);
+            throw new IllegalStateException("Back dating is not allowed in Certificate Profile",e);
         } catch (CertificateProfileDoesNotExistException e) {
             throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
         }
@@ -1929,7 +1930,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     certProfile);
             if (approvalProfile != null) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certSerNo, issuerDn, username, reason, authenticationToken, caId,
-                        endEntityProfileId, approvalProfile);
+                        endEntityProfileId, approvalProfile, revocationDate);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     final int requestId = approvalSession.addApprovalRequest(authenticationToken, ar);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
