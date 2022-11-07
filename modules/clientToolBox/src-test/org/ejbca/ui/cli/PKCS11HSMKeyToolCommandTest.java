@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -30,14 +31,16 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.util.keystore.KeyStoreToolsFactory;
+import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
 
 import javax.security.auth.x500.X500Principal;
@@ -83,6 +86,10 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PKCS11HSMKeyToolCommandTest {
 
+    /** 15 second timeout per test case, in case some test case freezes */
+    @Rule
+    public Timeout testTimeout = new Timeout(15_000);
+
     private final HSMKeyTool command = new HSMKeyTool();
 
     private static final String PKCS11_LIBRARY = SystemTestsConfiguration.getPkcs11Library(null);
@@ -114,23 +121,11 @@ public class PKCS11HSMKeyToolCommandTest {
     @ClassRule
     public static TemporaryFolder folder = new TemporaryFolder();
 
-    @BeforeClass
-    public static void setUp() {
-        String data = "xx";
-        final ByteArrayInputStream inStream = new ByteArrayInputStream(data.getBytes());
-        inStream.mark(0);
-        inStream.reset();
-        System.setIn(inStream);
-        System.setErr(new PrintStream(errStream));
-    }
-
     @AfterClass
     public static void tearDownClass() throws Exception {
         System.setIn(originalSystemIn);
         // Restore original System.err
         System.setErr(originalSystemError);
-        System.err.println(errStream.toString());
-        errStream.reset();
         KeyStore.ProtectionParameter protectionParameter = new KeyStore.PasswordProtection(TOKEN_PIN.toCharArray());
         ;
         final KeyStoreTools store1 = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT_LABEL,
@@ -143,6 +138,25 @@ public class PKCS11HSMKeyToolCommandTest {
         for (String alias : aliases) {
             store2.getKeyStore().deleteEntry(alias);
         }
+    }
+
+    @Before
+    public void beforeTest() {
+        // In some commands the user needs to press X + Enter to exit.
+        // If this is not done, then those test cases will just freeze until aborted.
+        // Simulate this by overriding System.in
+        String data = StringUtils.repeat("x\n", 5);
+        final ByteArrayInputStream inStream = new ByteArrayInputStream(data.getBytes());
+        inStream.mark(0);
+        inStream.reset();
+        System.setIn(inStream);
+        System.setErr(new PrintStream(errStream));
+    }
+
+    @After
+    public void afterTest() {
+        System.err.println(errStream.toString());
+        errStream.reset();
     }
 
     @Test
@@ -614,13 +628,9 @@ public class PKCS11HSMKeyToolCommandTest {
     public X509Certificate[] signCertificate(InputStream certReqStream, KeyStore.PrivateKeyEntry ca, Provider p11Provider, String algorithm) throws Exception {
         X509Certificate caCert = (X509Certificate) ca.getCertificate();
         PrivateKey issuerPrivateKey = ca.getPrivateKey();
-        PemReader reader = new PemReader(new InputStreamReader(certReqStream));
-
         PemObject pemObject;
-        try {
+        try (PemReader reader = new PemReader(new InputStreamReader(certReqStream))) {
             pemObject = reader.readPemObject();
-        } finally {
-            reader.close();
         }
 
         JcaPKCS10CertificationRequest a = new JcaPKCS10CertificationRequest(pemObject.getContent());
