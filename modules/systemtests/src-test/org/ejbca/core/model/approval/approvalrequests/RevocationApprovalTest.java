@@ -21,6 +21,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -85,6 +86,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -93,6 +95,9 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.junit.After;
 import org.junit.Before;
@@ -103,6 +108,7 @@ import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -135,9 +141,9 @@ public class RevocationApprovalTest extends CaTestCase {
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
-
+    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);    
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
-            SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private int caid = getTestCAId();
     private int approvalCAID;
@@ -521,6 +527,7 @@ public class RevocationApprovalTest extends CaTestCase {
     public void test06BackDateAlreadyRevokedCertificates() throws Exception {
         final String username = "test06Revocation";
         final String certificateProfileName = "certificateProfile";
+        final String endEntityProfileName = "endEntityProfile";
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm XXX");
         final Date newBackdatedRevocationDate = sdf.parse("31-12-2014 18:09 +05:30");
@@ -536,12 +543,15 @@ public class RevocationApprovalTest extends CaTestCase {
         caSession.editCA(internalAdmin, caInfo);
         assertEquals(true, caSession.getCAInfo(internalAdmin, approvalCAID).isAllowChangingRevocationReason());
         assertEquals(certificateProfileId, caInfo.getCertificateProfileId());
+        
+        // Create an end entity profile with the certificate profile
+        int endEntityProfileId = createEndEntityProfile(internalAdmin, endEntityProfileName, Arrays.asList(certificateProfileId));
 
         // make sure that the end entity we are testing with does not already exist
         if (endEntityAccessSession.findUser(internalAdmin, username) != null) {
             endEntityManagementSession.deleteUser(internalAdmin, username);
         }
-        X509Certificate usercertTest06 = createUserAndCert(username, approvalCAID, true, certificateProfileId);
+        X509Certificate usercertTest06 = createUserAndCert(username, approvalCAID, true, certificateProfileId, endEntityProfileId);
         assertNotNull("Test user certificate was not created", usercertTest06);
         String usercertTest06fp = CertTools.getFingerprintAsString(usercertTest06);
         //Create approval profile and revoke certificate
@@ -568,8 +578,8 @@ public class RevocationApprovalTest extends CaTestCase {
                 .getPartitionIdentifier();
         assertNotNull(partitionId);
         approveRevocationWithBackDate(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE,
-                ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, approvalCAID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId,
-                newBackdatedRevocationDate);
+                ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, approvalCAID, approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId, 
+                endEntityProfileId,newBackdatedRevocationDate);
         //assert revocation date has been changed
         assertEquals(newBackdatedRevocationDate, certificateStoreSession.getCertificateInfo(usercertTest06fp).getRevocationDate());
         assertEquals(CertificateStatus.REVOKED,
@@ -583,13 +593,14 @@ public class RevocationApprovalTest extends CaTestCase {
             log.debug(e.getMessage());
         }
         assertEquals(newBackdatedRevocationDate, certificateStoreSession.getCertificateInfo(usercertTest06fp).getRevocationDate());
-        
+
         try {
             internalCertStoreSession.removeCertificate(usercertTest06fp);
             caInfo.setAllowChangingRevocationReason(false);
             caSession.editCA(internalAdmin, caInfo);
-            certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
             endEntityManagementSession.deleteUser(internalAdmin, username);
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
         } catch (Exception e) {
             log.debug(e.getMessage());
         }
@@ -609,13 +620,35 @@ public class RevocationApprovalTest extends CaTestCase {
         return certificateProfileSession.getCertificateProfileId(profileName);
     }
 
-    private X509Certificate createUserAndCert(final String username, final int caID, final boolean deleteFirst, final int certificateProfileId)
+    private int createEndEntityProfile(AuthenticationToken admin, String endEntityProfileName, final Collection<Integer> certProfiles)
+            throws EndEntityProfileExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException {
+        EndEntityProfile profile;
+        endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);
+
+        profile = new EndEntityProfile();
+        profile.setValidityStartTimeUsed(true);
+        profile.setValidityEndTimeUsed(true);
+        profile.setClearTextPasswordUsed(true);
+        profile.setClearTextPasswordDefault(true);
+        profile.setAvailableCAs(Arrays.asList(approvalCAID));
+        profile.setAvailableCertificateProfileIds(certProfiles);
+        profile.setDefaultCA(approvalCAID);
+        profile.setDefaultCertificateProfile(certProfiles.iterator().next());
+        endEntityProfileSession.addEndEntityProfile(admin, endEntityProfileName, profile);
+
+        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+        assertTrue(endEntityProfileId != 0);
+
+        return endEntityProfileId;
+    }
+    
+    private X509Certificate createUserAndCert(final String username, final int caID, final boolean deleteFirst, final int certificateProfileId, final int endEntityProfileId)
             throws Exception {
         if (deleteFirst) {
             internalCertStoreSession.removeCertificatesByUsername(username);
         }
         final EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null,
-                new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, certificateProfileId, SecConst.TOKEN_SOFT_P12,
+                new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12,
                 null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(internalAdmin, userdata, true);

@@ -550,7 +550,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
     
     protected int approveRevocationWithBackDate(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason,
-            int approvalType, int approvalCAID, final ApprovalProfile approvalProfile, final int sequenceId, final int partitionId,
+            int approvalType, int approvalCAID, final ApprovalProfile approvalProfile, final int sequenceId, final int partitionId, final int endEntityProfileId,
             Date backDatedRevocationDate) throws Exception {
         log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
                 + " approvalCAID=" + approvalCAID + " revocationDate=" + backDatedRevocationDate);
@@ -574,7 +574,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                 List<ApprovalDataVO> queryResults = approvalSessionProxyRemote.query(q, 0, 1, "cAId=" + approvalCAID,
-                        "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
+                        "(endEntityProfileId=" + endEntityProfileId + ")");
                 if (!queryResults.isEmpty()) {
                     ApprovalDataVO approvalData;
                     Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
