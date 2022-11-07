@@ -942,7 +942,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         // Check CA exists and user is authorized to access it.
         final int caId = endEntity.getCAId();
-        caSession.verifyExistenceOfCA(caId);
+        try {
+            caSession.verifyExistenceOfCA(caId);
+        } catch (CADoesntExistsException e) {
+            throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e);
+        }
         // Check token type.
         if (endEntity.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
             throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE,
