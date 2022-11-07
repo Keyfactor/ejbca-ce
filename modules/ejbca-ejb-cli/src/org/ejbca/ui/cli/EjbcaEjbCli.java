@@ -13,10 +13,6 @@
 
 package org.ejbca.ui.cli;
 
-import java.util.ServiceConfigurationError;
-
-import javax.ejb.NoSuchEJBException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -33,7 +29,6 @@ public class EjbcaEjbCli {
 
     public static void main(String[] args) {
 
-        try {
             if (args.length == 0 || !CommandLibrary.INSTANCE.doesCommandExist(args)) {
                 CommandLibrary.INSTANCE.listRootCommands();
             } else {
@@ -45,18 +40,5 @@ public class EjbcaEjbCli {
                 }
 
             }
-        } catch (ServiceConfigurationError e) {
-            if (e.getCause() instanceof NoSuchEJBException
-                    || (e.getCause() instanceof IllegalStateException && e.getCause().getLocalizedMessage().contains("No EJB receiver"))) {
-
-                log.error("Error: CLI could not contact EJBCA instance. Either your application server is not up and running,"
-                        + " EJBCA has not been deployed successfully, or some firewall rule is blocking the CLI from the application server." + "\n\n"
-                        + "Please be aware that most commands will not work without the application server available.\n");
-
-            } else {
-                throw e;
-            }
-
-        }
     }
 }
