@@ -50,7 +50,7 @@ public class SearchEndEntitiesRestRequestV2 {
     private Integer maxNumberOfResults;
 
     @ApiModelProperty(value = "Current page number", example = "1")
-    private int currentPage;
+    private int currentPage = 1;
         
     @ApiModelProperty(value = "A List of search criteria." )
     @ValidSearchEndEntityCriteriaRestRequestList
