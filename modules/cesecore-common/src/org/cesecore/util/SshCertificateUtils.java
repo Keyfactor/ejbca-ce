@@ -122,12 +122,15 @@ public class SshCertificateUtils {
         
         String placeHolderSanString = placeHolderSan.toString();
         if(StringUtils.isNotBlank(placeHolderSanString)) {
-            placeHolderSanString = "dnsName=" + placeHolderSanString + ",";
+            placeHolderSanString = "dnsName=" + placeHolderSanString;
         }
         if(StringUtils.isNotBlank(sourceAddress)) {
-            placeHolderSanString += "rfc822Name=" + sourceAddress;
+            if(StringUtils.isNotBlank(placeHolderSanString)) {
+                placeHolderSanString += ",";
+            }
+            placeHolderSanString += "rfc822Name=" + sourceAddress.replaceAll(",", ":");
         }
-        return "";
+        return placeHolderSanString;
     }
 
     /**
