@@ -62,7 +62,7 @@ public class SshCertificateUtils {
         if(StringUtils.isNotBlank(subjectAlternateName) && subjectAlternateName.startsWith("dnsName=")) {
             subjectAlternateName = subjectAlternateName.substring("dnsName=".length());
             if (subjectAlternateName.indexOf("rfc822Name=")!=-1) {
-                subjectAlternateName = subjectAlternateName.substring(0, subjectAlternateName.indexOf("rfc822Name="));
+                subjectAlternateName = subjectAlternateName.substring(0, subjectAlternateName.indexOf("rfc822Name=")-1);
             }
             if(StringUtils.isBlank(subjectAlternateName)) {
                 return new String[] {principals, comment};
@@ -121,11 +121,11 @@ public class SshCertificateUtils {
         }
         
         String placeHolderSanString = placeHolderSan.toString();
+        if(StringUtils.isNotBlank(placeHolderSanString)) {
+            placeHolderSanString = "dnsName=" + placeHolderSanString + ",";
+        }
         if(StringUtils.isNotBlank(sourceAddress)) {
             placeHolderSanString += "rfc822Name=" + sourceAddress;
-        }
-        if(StringUtils.isNotBlank(placeHolderSanString)) {
-            return "dnsName=" + placeHolderSanString;
         }
         return "";
     }
