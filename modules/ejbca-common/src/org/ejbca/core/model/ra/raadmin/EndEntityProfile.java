@@ -1515,8 +1515,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             // we skip validations for subject DN, SAN fields
             setModifyable(DnComponents.DNSNAME, 0, true);
             setRequired(DnComponents.DNSNAME, 0, false);
-            setModifyable(DnComponents.RFC822NAME, 1, true);
-            setRequired(DnComponents.RFC822NAME, 1, false);
+            setModifyable(DnComponents.RFC822NAME, 0, true);
+            setRequired(DnComponents.RFC822NAME, 0, false);
         }
     }
 
@@ -2053,7 +2053,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if(StringUtils.isNotBlank(subjectAlternateName) && subjectAlternateName.startsWith("dnsName=")) {
             subjectAlternateName = subjectAlternateName.substring("dnsName=".length());
             if (subjectAlternateName.indexOf("rfc822Name=")!=-1) {
-                subjectAlternateName = subjectAlternateName.substring(0, subjectAlternateName.indexOf("rfc822Name="));
+                subjectAlternateName = subjectAlternateName.substring(0, subjectAlternateName.indexOf("rfc822Name=")-1);
             }
             int commentIndex = subjectAlternateName.indexOf(SshEndEntityProfileFields.SSH_CERTIFICATE_COMMENT);
             if(commentIndex!=0) { // no principal
