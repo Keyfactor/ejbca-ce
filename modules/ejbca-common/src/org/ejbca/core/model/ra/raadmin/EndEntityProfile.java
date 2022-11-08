@@ -1508,7 +1508,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setRequired(DnComponents.COMMONNAME, 0, false);
         
         final Field field = this.new Field(DnComponents.DNSNAME);
-        if (field.getInstances().size() < 2) {
+        if (field.getInstances().size() < 1) {
             addFieldWithDefaults(DnComponents.DNSNAME, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
             addFieldWithDefaults(DnComponents.RFC822NAME, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         } else {
