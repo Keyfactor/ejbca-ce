@@ -9,6 +9,7 @@ pipeline {
                 sh "docker container rm ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra -f || true"
                 sh "docker network rm bridge net_ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra || true"
                 sh "rm -rf ear"
+                sh "chmod -R a+rwX ${env.WORKSPACE}"
             }
         }
         stage('network') {

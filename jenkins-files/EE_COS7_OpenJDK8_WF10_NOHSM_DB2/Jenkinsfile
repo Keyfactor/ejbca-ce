@@ -18,6 +18,7 @@ pipeline {
 				sh "docker container rm ${env.DOCKER_NAME_BASE} -f || true"
 				sh "docker network rm ${env.DOCKER_NAME_NET} || true"
 				sh "rm -rf ear"
+				sh "chmod -R a+rwX ${env.WORKSPACE}"
 			}
 		}
 		stage('network') {
