@@ -10,6 +10,7 @@ pipeline {
                 sh "docker container rm mypeer -f || true"
                 sh "docker network rm selenium-network || true"
                 sh "rm -rf ear"
+                sh "chmod -R a+rwX ${env.WORKSPACE}"
             }
         }
         stage('network') {
@@ -26,7 +27,7 @@ pipeline {
         stage('deploy EJBCA (mypeer)') {
             steps {
                 sh "mkdir ear || true"
-                sh "chmod 777 " + "$env.WORKSPACE"
+                sh "chmod 777 ear"
                 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_WF12_SELENIUMTESTS/ejbca_image') {
                     sh "docker build -t mypeer -m 2GB ."
@@ -62,20 +63,13 @@ pipeline {
         
         stage('run Selenium tests') {
             steps {
-                sh "mkdir ear || true"
-                sh "chmod 777 " + "$env.WORKSPACE"
-                
-                // to allow creation of /app/ejbca/reports/test folder for ant test task
-                sh "chmod 777 " + "$env.WORKSPACE/ejbca"
-                
-                // pre-create necessary folders and give permissions, so that seluser can later do its stuff
-                sh "chmod +w " + "$env.WORKSPACE/ejbca/conf"
-                sh "chmod +w " + "$env.WORKSPACE/ejbca/modules/ejbca-webtest/conf/"
-                sh "chmod +w " + "$env.WORKSPACE/ejbca"
+                sh "mkdir  ear || true"
+                sh "chmod 777 ear"
+
+                // pre-create necessary folders and give permissions, so that seluser can later do its stuff.
+                // all pre-existing folders should already have the right permissions, due to the chmod in the first stage.
                 sh "mkdir -p " + "$env.WORKSPACE/ejbca/reports"
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca/reports"
-                sh "chmod 777 $env.WORKSPACE/ejbca/modules/ejbca-webtest"
-                sh "chmod 777 " + "$env.WORKSPACE/ejbca/modules/ejbca-webtest/resources"
 
                 // copy Remote EJB client JAR (jboss-client.jar)
                 sh "mkdir -p -m 755 " + "$env.WORKSPACE/ejbca/lib/jee-client"
