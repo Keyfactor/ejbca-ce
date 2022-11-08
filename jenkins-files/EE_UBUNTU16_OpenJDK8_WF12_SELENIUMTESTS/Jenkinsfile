@@ -10,7 +10,7 @@ pipeline {
                 sh "docker container rm mypeer -f || true"
                 sh "docker network rm selenium-network || true"
                 sh "rm -rf ear"
-                sh "chmod -R a+rwX ${env.WORKSPACE}"
+                sh "chmod -R a+rwX ${env.WORKSPACE} || true"
             }
         }
         stage('network') {
@@ -83,6 +83,9 @@ pipeline {
         }
     }
     post {
+        failure {
+            sh "docker logs mypeer || true"
+        }
         always {
             archiveArtifacts artifacts: 'ejbca/**/reports/test/html/QaEjbcaTestReport.html', fingerprint: true
             archiveArtifacts artifacts: 'ejbca/**/reports/test/webtest-log4j.log', fingerprint: true
