@@ -1193,7 +1193,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             fail("should throw");
         }
         catch (Exception e) {
-            final String message = "Certificate with issuer: CN=CA1 and serial number: " + serno + " has previously been revoked. Revocation reason could not be changed or was not allowed.";
+            final String message = "New revocation date must be earlier than previous revocation date";
             assertEquals(message, e.getMessage());
             assertNotNull(e.getMessage());
         } finally {
