@@ -45,6 +45,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SshCertificateUtils;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -81,6 +82,14 @@ public class RaEndEntityDetails {
     private final String modified;
     private final int status;
 
+    // SSH End entity fields
+    private final boolean sshTypeEndEntity;
+    private final String sshKeyId;
+    private final String sshPrincipals;
+    private final String sshComment;
+    private final String sshForceCommand;
+    private final String sshSourceAddress;
+
     private EndEntityProfile endEntityProfile = null;
     private SubjectDn subjectDistinguishedName = null;
     private SubjectAlternativeName subjectAlternativeName = null;
@@ -115,6 +124,22 @@ public class RaEndEntityDetails {
         this.eepName = eeProfName;
         this.caName = caName;
         final Date timeCreated = endEntity.getTimeCreated();
+        if (endEntity.isSshEndEntity()) {
+            this.sshTypeEndEntity = true;
+            this.sshKeyId = SshCertificateUtils.getKeyId(this.subjectDn);
+            this.sshPrincipals = SshCertificateUtils.getPrincipalsAsString(this.subjectAn);
+            this.sshComment = SshCertificateUtils.getComment(this.subjectAn);
+            Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
+            this.sshForceCommand = sshCriticalOptions.containsKey("force-command") ? sshCriticalOptions.get("force-command") : null;
+            this.sshSourceAddress = sshCriticalOptions.containsKey("source-address") ? sshCriticalOptions.get("source-address") : null;
+        } else {
+            this.sshTypeEndEntity = false;
+            this.sshKeyId = null;
+            this.sshPrincipals = null;
+            this.sshComment = null;
+            this.sshForceCommand = null;
+            this.sshSourceAddress = null;
+        }
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
         } else {
@@ -166,6 +191,42 @@ public class RaEndEntityDetails {
     public int getCaId() {
         return endEntityInformation.getCAId();
     }
+    public boolean isSshTypeEndEntity() { return sshTypeEndEntity; }
+    public String getSshKeyId() { return sshKeyId; }
+    public String getSshPrincipals() { return sshPrincipals; }
+
+    /**
+     * Converts colon separated list of principals to colon separated.
+     * @return String with principals separated by ,
+     */
+    public String getSshPrincipalsPretty() {
+        String principals = getSshPrincipals().replace(":", ", ");
+        if (StringUtils.endsWith(principals, ", ")) {
+            principals = principals.substring(0, principals.length() -2);
+        }
+        return principals;
+    }
+
+    public String getSshComment() { return sshComment; }
+    public String getSshForceCommand() { return sshForceCommand; }
+    public String getSshSourceAddress() { return sshSourceAddress; }
+
+    public boolean isSshForceCommandRequired() {
+        return this.endEntityProfile.isSshForceCommandRequired();
+    }
+
+    public boolean isSshForceCommandModifiable() {
+        return this.endEntityProfile.isSshForceCommandModifiable();
+    }
+
+    public boolean isSshSourceAddressRequired() {
+        return this.endEntityProfile.isSshSourceAddressRequired();
+    }
+
+    public boolean isSshSourceAddressModifiable() {
+        return this.endEntityProfile.isSshSourceAddressModifiable();
+    }
+
     public String getCreated() { return created; }
     public String getModified() { return modified; }
     public String getStatus() {

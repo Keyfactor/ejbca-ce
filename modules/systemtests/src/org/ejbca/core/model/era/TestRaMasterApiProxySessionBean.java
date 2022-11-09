@@ -99,5 +99,11 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
         return raMasterApiProxyBean.enrollAndIssueSshCertificate(authenticationToken, endEntity,
                 sshRequestMessage);
     }
+    
+    @Override
+    public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken,
+            RaCertificateSearchRequest raCertificateSearchRequest) {
+        return raMasterApiProxyBean.searchForCertificates(authenticationToken, raCertificateSearchRequest);
+    }
 
 }
