@@ -39,10 +39,11 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -244,7 +245,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     private String currentName = null;
     private ListDataModel<GuiInfo> internalKeyBindingGuiList = null;
     private Integer uploadTarget = null;
-    private UploadedFile uploadToTargetFile;
+    private transient Part uploadToTargetFile;
     private ListDataModel<InternalKeyBindingTrustEntry> trustedCertificates = null;
     private String currentCertificateSerialNumber = null;
     private String currentTrustEntryDescription = null;
@@ -284,11 +285,11 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         this.uploadTarget = uploadTarget;
     }
 
-    public UploadedFile getUploadToTargetFile() {
+    public Part getUploadToTargetFile() {
         return uploadToTargetFile;
     }
 
-    public void setUploadToTargetFile(UploadedFile uploadToTargetFile) {
+    public void setUploadToTargetFile(final Part uploadToTargetFile) {
         this.uploadToTargetFile = uploadToTargetFile;
     }
 
@@ -305,21 +306,24 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** Invoked when the user is trying to import a new certificate for an InternalKeyBinding */
     public void uploadToTarget() {
         if (uploadTarget == null) {
-            FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No InternalKeyBinding selected.", null));
-            return;
-        }
-        if (uploadToTargetFile == null) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "File upload failed.", null));
-            return;
-        }
-        try {
-            internalKeyBindingSession.importCertificateForInternalKeyBinding(getAdmin(), uploadTarget.intValue(), uploadToTargetFile.getBytes());
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
-            flushListCaches();
-        } catch (IOException | CertificateImportException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "No InternalKeyBinding selected.", null));
+            return;
+        }
+
+        if (uploadToTargetFile != null && uploadToTargetFile.getSize() > 0) {
+            try {
+                internalKeyBindingSession.importCertificateForInternalKeyBinding(getAdmin(), uploadTarget.intValue(),
+                        IOUtils.toByteArray(uploadToTargetFile.getInputStream()));
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
+                flushListCaches();
+            } catch (IOException | CertificateImportException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
+            }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Uploaded file is null or empty.", null));
         }
     }
 
@@ -389,21 +393,19 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                         }
                     }
                     // Check for additional informative UI states
-                    if (InternalKeyBindingStatus.ACTIVE.equals(current.getStatus())) {
+                    if (InternalKeyBindingStatus.ACTIVE.equals(current.getStatus()) && certificate instanceof X509Certificate) {
                         // Check if certificate is expired
-                        if (certificate instanceof X509Certificate) {
-                            final X509Certificate x509Certificate = (X509Certificate) certificate;
-                            try {
-                                x509Certificate.checkValidity();
-                                // Check if certificate is revoked
-                                if (certificateStoreSession.isRevoked(certificateIssuerDn, x509Certificate.getSerialNumber())) {
-                                    status = "REVOKED";
-                                }
-                            } catch (CertificateExpiredException e) {
-                                status = "EXPIRED";
-                            } catch (CertificateNotYetValidException e) {
-                                status = "NOTYETVALID";
+                        final X509Certificate x509Certificate = (X509Certificate) certificate;
+                        try {
+                            x509Certificate.checkValidity();
+                            // Check if certificate is revoked
+                            if (certificateStoreSession.isRevoked(certificateIssuerDn, x509Certificate.getSerialNumber())) {
+                                status = "REVOKED";
                             }
+                        } catch (CertificateExpiredException e) {
+                            status = "EXPIRED";
+                        } catch (CertificateNotYetValidException e) {
+                            status = "NOTYETVALID";
                         }
                     }
                 }
@@ -795,7 +797,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                     boundCaCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);
                 }
             }
-            this.boundCertificateInternalCaId = Integer.valueOf(certificateInternalCaId).toString();
+            this.boundCertificateInternalCaId = Integer.toString(certificateInternalCaId);
         } else if (internalKeyBindingInfo.getCertificateId() == null) {
             // clear bound certificate ID that may be cached from a previous view
             boundCertificateId = null;
@@ -904,7 +906,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     public void reloadCryptoToken() {
         List<SelectItem> keyPairs = getAvailableKeyPairAliases();
         // Only try to set keys if there are any...
-        if ((keyPairs != null) && (keyPairs.size() > 0)) {
+        if ((keyPairs != null) && (!keyPairs.isEmpty())) {
             setCurrentKeyPairAlias((String) keyPairs.get(0).getValue());
             // No need to try to find signature algorithms if there are no keys
             if (!getAvailableSignatureAlgorithms().isEmpty()) {
@@ -1012,7 +1014,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         if (trustedCertificates == null) {
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
             if (internalKeyBindingId == 0) {
-                trustedCertificates = new ListDataModel<>(new ArrayList<InternalKeyBindingTrustEntry>());
+                trustedCertificates = new ListDataModel<>(new ArrayList<>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
@@ -1031,12 +1033,12 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     public void addTrust() {
         final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = (List<InternalKeyBindingTrustEntry>) getTrustedCertificates()
                 .getWrappedData();
-        final String currentCertificateSerialNumber = getCurrentCertificateSerialNumber();
-        if (currentCertificateSerialNumber == null || currentCertificateSerialNumber.trim().length() == 0) {
+        final String currentCertSerialNumber = getCurrentCertificateSerialNumber();
+        if (currentCertSerialNumber == null || currentCertSerialNumber.trim().length() == 0) {
             trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), null, currentTrustEntryDescription));
         } else {
             trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), new BigInteger(
-                    currentCertificateSerialNumber.trim(), 16), currentTrustEntryDescription));
+                    currentCertSerialNumber.trim(), 16), currentTrustEntryDescription));
         }
         trustedCertificates.setWrappedData(trustedCertificateReferences);
     }

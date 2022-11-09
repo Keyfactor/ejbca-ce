@@ -23,6 +23,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
@@ -140,7 +141,11 @@ public class SearchCertificatesRestResponseV2 {
                 }
                 
                 if (certificate != null && cd != null) {
-                    final byte[] certificateBytes = certificate.getEncoded();
+                    byte[] certificateBytes = certificate.getEncoded();
+                    byte[] encodedCertificateBytes = certificateBytes;
+                    if (!certificate.getType().equals(SshCertificate.CERTIFICATE_TYPE)) {
+                        encodedCertificateBytes = Base64.encode(certificateBytes);
+                    }
                     final byte[] skidBytes = CertTools.getSubjectKeyId(certificate);
                     String skid = "";
                     if (skidBytes != null && skidBytes.length > 0) {
@@ -165,7 +170,7 @@ public class SearchCertificatesRestResponseV2 {
                         .setType(cd.getType())
                         .setUpdateTime(cd.getUpdateTime())
                         .setUsername(cd.getUsername())
-                        .setCertificate(Base64.encode(certificateBytes))
+                        .setCertificate(encodedCertificateBytes)
                         .setCertificateRequest(cd.getCertificateRequest())
                         .build();
                     result.getCertificates().add(response);
