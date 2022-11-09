@@ -205,7 +205,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifyUnSignedMessageRejected");
         // Send CMP request
         final byte[] resp = sendCmpHttp(req.getEncoded(), 200, ALIAS);
-        checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Authentication failed for message. Signature/HMAC verification was required by CMP Proxy, but not found in message.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testUnSignedMessageRejected");
     }
@@ -357,10 +357,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
                 BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        // FIXME message from proxy was:
-        // "Failed to find CA certificate of the CMP message signing certificate. CMP message: pvno = 2, sender = 4: C=SE,O=PrimeKey,CN=testRejectSignedMessageWithWrongCertificate, recipient = 4: CN=TestCA, transactionID = #86efa96c1367eaa31e74a19311c630b1"
-        checkCmpFailMessage(resp, "The certificate chain attached to the PKIMessage in the extraCert field is not valid - No issuer certificate for certificate in certification path found.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: TrustAnchor found but certificate validation failed..", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testRejectSignedMessageWithWrongCertificate");
     }
