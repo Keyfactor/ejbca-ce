@@ -53,7 +53,7 @@
 				<h:panelGroup>
 					<h:inputText id="msaeForestRoot" disabled="#{autoenrollmentConfigMBean.viewOnly}"
 								 value="#{msAutoEnrollmentSettings.msaeForestRoot}" size="45"
-								 title="#{web.text.MSAE_FOREST_ROOT}">
+								 title="#{web.text.FORMAT_DOMAINNAME}">
 						<f:converter converterId="trimConverter"/>
 					</h:inputText>
 				</h:panelGroup>	            
@@ -66,7 +66,7 @@
 				<h:panelGroup>
 					<h:inputText id="msaeDomain" disabled="#{autoenrollmentConfigMBean.viewOnly}"
 								 value="#{msAutoEnrollmentSettings.msaeDomain}" size="45"
-								 title="#{web.text.DOMAINNAME}">
+								 title="#{web.text.FORMAT_DOMAINNAME}">
 						<f:converter converterId="trimConverter"/>
 					</h:inputText>
 				</h:panelGroup>
@@ -181,7 +181,7 @@
 				<h:panelGroup>
 					<h:inputText id="msaeAdLoginDN" disabled="#{autoenrollmentConfigMBean.viewOnly}"
 								 value="#{msAutoEnrollmentSettings.adLoginDN}" size="45"
-								 title="#{web.text.DOMAINNAME}">
+								 title="#{web.text.FORMAT_DN_UPN}">
 						<f:converter converterId="trimConverter"/>
 					</h:inputText>
 				</h:panelGroup>
