@@ -1193,7 +1193,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             fail("should throw");
         }
         catch (Exception e) {
-            final String message = "New revocation date must be earlier than previous revocation date";
+            final String message = "New revocation date must be earlier than current revocation date";
             assertEquals(message, e.getMessage());
             assertNotNull(e.getMessage());
         } finally {
