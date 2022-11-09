@@ -62,6 +62,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -97,6 +98,7 @@ public class RaCertificateDetails {
     }
 
     private static final Logger log = Logger.getLogger(RaCertificateDetails.class);
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     public static String PARAM_REQUESTID = "requestId";
 
     private final Callbacks callbacks;
@@ -592,8 +594,16 @@ public class RaCertificateDetails {
             log.error(e);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_error_certificate_profile_backdating");
-        } catch (NoSuchEndEntityException | AlreadyRevokedException | CADoesntExistsException
-                | AuthorizationDeniedException e) {
+            log.error(e);
+        } catch (AlreadyRevokedException e) {
+            final String msg = e.getMessage();
+            if (StringUtils.equals(msg, intres.getLocalizedMessage("ra.invalidrevocationdate"))) {
+                callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_invalid_revocation_date");
+            } else {
+                callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
+            }
+            log.error(e);
+        } catch (NoSuchEndEntityException | CADoesntExistsException | AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             log.error(e);
         }
