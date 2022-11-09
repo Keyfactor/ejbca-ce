@@ -3005,7 +3005,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setSshExtensions(Map<String, byte[]> extensions) {
-        data.put(SSH_EXTENSIONS, extensions);
+        Map<String, String> extensionMap = new HashMap<>();
+        for(Entry<String, byte[]> sshExtension : extensions.entrySet()) {
+            extensionMap.put(sshExtension.getKey(), Base64.encodeBase64String(sshExtension.getValue()));
+        }
+        data.put(SSH_EXTENSIONS, extensionMap);
     }
 
     public void setSshExtensions(List<String> extensionsList) {
