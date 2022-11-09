@@ -1909,6 +1909,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     }
                 }
                 else {
+                    // Revocation reason cannot be changed, find out why and throw appropriate exception
+                    if (!RevokedCertInfo.isDateOk(revocationDate, certificateData.getRevocationDate())) {
+                        final String msg = intres.getLocalizedMessage("ra.invalidrevocationdate");
+                        log.info(msg);
+                        throw new AlreadyRevokedException(msg);
+                    }
                     final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
                     log.info(msg);
                     throw new AlreadyRevokedException(msg);
