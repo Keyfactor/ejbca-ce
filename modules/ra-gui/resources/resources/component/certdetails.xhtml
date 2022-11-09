@@ -63,9 +63,11 @@
                 <h:outputText rendered="#{!cc.attrs.raCertificateDetails.typeX509}" value="#{cc.attrs.raCertificateDetails.serialnumberRaw}" styleClass="monospace"/>
             </h:panelGroup>
             <h:outputLabel for="subjectdn" value="#{msg.component_certdetails_field_subjectdn}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{!cc.attrs.raCertificateDetails.typeSsh}"/>
             <h:outputText id="subjectdn" value="#{cc.attrs.raCertificateDetails.subjectDnUnescapedValue}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
+                rendered="#{!cc.attrs.raCertificateDetails.typeSsh}"/>
             <h:outputLabel for="subjectan" value="#{msg.component_certdetails_field_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectAn}"/>
@@ -79,6 +81,19 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
                 rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectDa}"/>
 
+			<h:outputLabel for="sshkeyid" value="#{msg.enroll_ssh_key_id}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh}" />
+            <h:outputText id="sshkeyid" value="#{cc.attrs.raCertificateDetails.sshKeyId}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh}" />
+            <h:outputLabel for="sshprincipals" value="#{msg.enroll_ssh_principals}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.principals}"/>
+            <h:outputText id="sshprincipals" value="#{cc.attrs.raCertificateDetails.principals}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.principals}"/>
+            
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="publickeyspec" value="#{msg.component_certdetails_field_publickeyspec}"
@@ -162,6 +177,37 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.certificateTransparencyScts}"/>
 
+			<h:outputLabel for="sshcomment" value="#{msg.enroll_ssh_comment}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.comment}"/>
+            <h:outputText id="sshcomment" value="#{cc.attrs.raCertificateDetails.comment}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.comment}"/>
+			<h:outputLabel for="sshcerttype" value="#{msg.component_certdetails_field_ssh_cert_type}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh}"/>
+            <h:outputText id="sshcerttype" value="#{cc.attrs.raCertificateDetails.sshCertificateType}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh}"/>
+			<h:outputLabel for="sshextensions" value="#{msg.component_certdetails_field_ssh_extensions}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshExtensions}"/>
+            <h:outputText id="sshextensions" value="#{cc.attrs.raCertificateDetails.sshExtensions}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshExtensions}"/>
+			<h:outputLabel for="sshSourceAddress" value="#{msg.enroll_ssh_critical_source_address}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshSourceAddress}"/>
+            <h:outputText id="sshSourceAddress" value="#{cc.attrs.raCertificateDetails.sshSourceAddress}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshSourceAddress}"/>
+			<h:outputLabel for="sshForceCommand" value="#{msg.enroll_ssh_critical_force_command}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshForceCommand}"/>
+            <h:outputText id="sshForceCommand" value="#{cc.attrs.raCertificateDetails.sshForceCommand}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshForceCommand}"/>
+            
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="notbefore" value="#{msg.component_certdetails_field_notbefore}"
@@ -271,28 +317,34 @@
                     <h:outputText value="#{msg.component_certdetails_link_perm}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
-                <h:outputLink value="cert" styleClass="fineprint">
+                <h:outputLink value="cert" styleClass="fineprint" rendered="#{cc.attrs.raCertificateDetails.typeSsh}">
+                    <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
+                    <f:param name="chain" value="false"/>
+                    <f:param name="format" value="ssh"/>
+                    <h:outputText value="#{msg.component_certdetails_link_download_ssh}"/>
+                </h:outputLink>
+                <h:outputLink value="cert" styleClass="fineprint" rendered="#{!cc.attrs.raCertificateDetails.typeSsh}">
                     <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
                     <f:param name="chain" value="true"/>
                     <f:param name="format" value="pem"/>
                     <h:outputText value="#{msg.component_certdetails_link_download_pem}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
-                <h:outputLink value="cert" styleClass="fineprint">
+                <h:outputLink value="cert" styleClass="fineprint" rendered="#{!cc.attrs.raCertificateDetails.typeSsh}">
                     <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
                     <f:param name="chain" value="true"/>
                     <f:param name="format" value="der"/>
                     <h:outputText value="#{msg.component_certdetails_link_download_der}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
-                <h:outputLink value="cert" styleClass="fineprint">
+                <h:outputLink value="cert" styleClass="fineprint" rendered="#{!cc.attrs.raCertificateDetails.typeSsh}">
                     <f:param name="fp" value="#{cc.attrs.raCertificateDetails.fingerprint}"/>
                     <f:param name="chain" value="false"/>
                     <f:param name="format" value="pkcs7"/>
                     <h:outputText value="#{msg.component_certdetails_link_download_pkcs7}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!cc.attrs.raCertificateDetails.typeSsh}">
 	                <h:commandLink action="#{cc.attrs.raCertificateDetails.downloadCsr}" value="#{msg.component_eedetails_link_downloadcsr}" styleClass="fineprint"
 	                    rendered="#{cc.attrs.raCertificateDetails.downloadCsrRendered}"/>
                 </h:panelGroup>

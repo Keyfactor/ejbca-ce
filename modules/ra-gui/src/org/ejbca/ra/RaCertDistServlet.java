@@ -72,6 +72,7 @@ public class RaCertDistServlet extends HttpServlet {
     private static final String PARAMETER_FORMAT_OPTION_DER = "der";
     private static final String PARAMETER_FORMAT_OPTION_JKS = "jks";    // Applies only to certificate chain download
     private static final String PARAMETER_FORMAT_OPTION_P7C = "pkcs7";  // Applies to both certificate chain and individual certificates download
+    private static final String PARAMETER_FORMAT_OPTION_SSH = "ssh";    // For SSH certificates
     private static final String PARAMETER_CHAIN = "chain";
 
     @EJB
@@ -205,6 +206,11 @@ public class RaCertDistServlet extends HttpServlet {
                                 byte[] response = null;
                                 String filename = "cert"+fingerprint;
                                 switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
+                                case PARAMETER_FORMAT_OPTION_SSH: {
+                                    response = chain.get(0).getEncoded();
+                                    filename = "ssh-" + fingerprint + "-cert.pub";
+                                    break;
+                                }
                                 case PARAMETER_FORMAT_OPTION_DER: {
                                     response = chain.get(0).getEncoded();
                                     filename += (chain.get(0) instanceof CardVerifiableCertificate) ? ".cvcert" : ".crt";

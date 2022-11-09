@@ -37,4 +37,4 @@
 "Google's Guava";               "guava-28.0";                                   "ALv2";                 "LICENSE-APACHE-2.0";           "https://github.com/google/guava";                                  "General purpose library, used in e.g. CAA, CT and WebTests.";
 "JCraft";                       "jsch-0.1.54.jar";                              "BSD";                  "LICENSE-BSD-JSCH";             "http://www.jcraft.com/jsch/";                                      "Used for SCP operations";
 "ADSSDDL";                      "adsddl-1.9.jar";                               "ALv2";                 "LICENSE-APACHE-2.0";           "https://github.com/Tirasa/ADSDDL";                                 "Used for parsing SID/ACE entries in AD"
-"Keyfactor Commons"	            "keyfactor-commons-cli-1.0.0.jar"               "LGPLv2.1";	            "LICENSE-LGPL-2.1";             "Internal"															"Library used for several EJBCA CLIs"
+"Keyfactor Commons"	            "keyfactor-commons-cli-1.0.1.jar"               "LGPLv2.1";	            "LICENSE-LGPL-2.1";             "Internal"															"Library used for several EJBCA CLIs"
