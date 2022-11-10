@@ -205,7 +205,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifyUnSignedMessageRejected");
         // Send CMP request
         final byte[] resp = sendCmpHttp(req.getEncoded(), 200, ALIAS);
-        checkCmpFailMessage(resp, "Authentication failed for message. Signature/HMAC verification was required by CMP Proxy, but not found in message.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Authentication failed for message. Signature/HMAC verification was required by CMP RA, but not found in message.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testUnSignedMessageRejected");
     }
@@ -357,6 +357,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
                 BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: TrustAnchor found but certificate validation failed..", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testRejectSignedMessageWithWrongCertificate");
