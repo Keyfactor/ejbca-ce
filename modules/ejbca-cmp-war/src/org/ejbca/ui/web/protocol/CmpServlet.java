@@ -44,6 +44,7 @@ import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
@@ -142,9 +143,9 @@ public class CmpServlet extends HttpServlet {
                 if (pkiMessage.getProtection() == null) {
                     //No protection was found
                     String msg = intres.getLocalizedMessage("cmp.errorauthmessage",
-                            "Signature/HMAC verification was required by CMP Proxy, but not found in message");
+                            "Signature/HMAC verification was required by CMP RA, but not found in message");
                     log.info(msg + " " + messageInformation);
-                    byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(msg);
+                    byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(), FailInfo.BAD_REQUEST, msg).getResponseMessage();
                     ServletUtils.addCacheHeaders(response);
                     RequestHelper.sendBinaryBytes(errorMessage, response, "application/pkixcmp", null);
                     return;
@@ -154,7 +155,8 @@ public class CmpServlet extends HttpServlet {
                         final String issuerCaName = config.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, alias);
                         validateMessageSignature(pkiMessage, messageInformation, issuerCaName);
                     } catch (CmpServletValidationError cmpServletValidationError) {
-                        byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(cmpServletValidationError.getMessage());
+                        byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(),
+                                FailInfo.BAD_REQUEST, cmpServletValidationError.getMessage()).getResponseMessage();
                         ServletUtils.addCacheHeaders(response);
                         RequestHelper.sendBinaryBytes(errorMessage, response, "application/pkixcmp", null);
                         return;
@@ -286,7 +288,7 @@ public class CmpServlet extends HttpServlet {
                 log.info(msg + " " + messageInformation);
                 throw new CmpServletValidationError(msg);
             }
-            // - verifying the certificate in extraCerts, with the chain configured in the cmpProxy
+            // - verifying the certificate in extraCerts, with the chain configured in the cmp alias
             // - verifying the PKIProtection, using a PKIXPathValidator so both certificate signatures and validity is verified
             X509Certificate extraCertIssuerCertificate = getIssuerCertificate(issuerCaName);
             if (extraCertIssuerCertificate == null) {
