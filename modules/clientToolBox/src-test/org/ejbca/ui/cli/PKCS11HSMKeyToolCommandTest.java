@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -79,12 +80,18 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 /**
- * Run tests with ClientToolBax command HSMKeyTool
+ * Run tests with ClientToolBax command HSMKeyTool.
+ *
+ * Note: This test tries to move keys, including existing keys, so make sure that the tokens configured
+ * in systemtests.properties do not contain any existing keys (that you want to keep and/or that are marked
+ * are sensitive and cannot be moved).
  *
  * @version Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PKCS11HSMKeyToolCommandTest {
+
+    private static final Logger log = Logger.getLogger(PKCS11HSMKeyToolCommandTest.class);
 
     /** 15 second timeout per test case, in case some test case freezes */
     @Rule
@@ -131,12 +138,20 @@ public class PKCS11HSMKeyToolCommandTest {
         final KeyStoreTools store1 = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT_LABEL,
                 Pkcs11SlotLabelType.SLOT_LABEL, null, protectionParameter, "batch-" + new Date().getTime());
         for (String alias : aliases) {
-            store1.getKeyStore().deleteEntry(alias);
+            try {
+                store1.getKeyStore().deleteEntry(alias);
+            } catch (Exception e) {
+                log.warn("Failed to delete key: " + alias);
+            }
         }
         final KeyStoreTools store2 = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT2_LABEL,
                 Pkcs11SlotLabelType.SLOT_LABEL, null, protectionParameter, "batch-" + new Date().getTime());
         for (String alias : aliases) {
-            store2.getKeyStore().deleteEntry(alias);
+            try {
+                store2.getKeyStore().deleteEntry(alias);
+            } catch (Exception e) {
+                log.warn("Failed to delete key: " + alias);
+            }
         }
     }
 
@@ -161,6 +176,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testA1Token1WithIx() {
+        assertNotNull("pkcs11.token_index is not configured in systemtests.properties", SLOT_INDEX);
         //no exit, because no alias.
         //PKCS11HSMKeyTool test ${p11m} i${ix_1} -password ${userPass_2}
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
@@ -211,6 +227,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testA3CfgKeyRsa2OnToken1WithId() {
+        assertNotNull("pkcs11.token_number is not configured in systemtests.properties", SLOT_ID);
         //uses alias, so uses StressTest->Perfomance test exits, status= number of failures.
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
@@ -223,6 +240,8 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testA4MoveAllKeysFromToken1ToToken2() {
+        assertNotNull("pkcs11.token_label is not configured in systemtests.properties", SLOT_LABEL);
+        assertNotNull("pkcs11.token2_label is not configured in systemtests.properties", SLOT2_LABEL);
         //PKCS11HSMKeyTool move ./p11m.so ${label_1} ${label_2}
         String[] args = new String[]{"PKCS11HSMKeyTool", "move", PKCS11_LIBRARY,
                 SLOT_LABEL, SLOT2_LABEL, "-password", TOKEN_PIN};
