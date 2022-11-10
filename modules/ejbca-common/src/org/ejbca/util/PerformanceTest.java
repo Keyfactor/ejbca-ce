@@ -223,7 +223,7 @@ public class PerformanceTest {
             wait();
         }
         printStream.format("Test exited with %d number of failures.%n", statistic.getNrOfFailures());
-        System.exit(statistic.getNrOfFailures());
+        System.exit(statistic.getNrOfFailures() == 0 ? 0 : 1); // Exit code 0 = success. Other numbers = failure
     }
 
     private class Statistic implements Runnable { // NOPMD this is a standalone test, not run in jee app
