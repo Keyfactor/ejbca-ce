@@ -450,7 +450,13 @@ table span.help {
 table#addendentity .help {
 	font-size: .8em;
 }
-
+table .warning {
+    line-height: 1.40em;
+    white-space: normal;
+/*  font-size: .9em;    /* Smaller font size */
+    color: #E15E66;     /* Keep it, for old web browsers */
+    color: rgba(224,0,0,.6);
+}
 
 /* --- Forms: Grid */
 
