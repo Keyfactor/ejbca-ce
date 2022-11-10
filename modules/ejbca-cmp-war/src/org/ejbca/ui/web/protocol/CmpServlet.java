@@ -326,6 +326,14 @@ public class CmpServlet extends HttpServlet {
                 log.info(msg);
                 throw new CmpServletValidationError(msg);
             }
+        } else {
+            // We've ended up here if HMAC or Signature were specified, but neither fulfilled.
+            String msg = intres.getLocalizedMessage("cmp.errorauthmessage",
+                    "CMP Message Protection verification failed. Server is configured for "
+                            +  "Signature validation. " + "Algorithm with ID ("
+                            + header.getProtectionAlg().getAlgorithm().getId() + ") was found instead");
+            log.info(msg);
+            throw new CmpServletValidationError(msg);
         }
     }
 
