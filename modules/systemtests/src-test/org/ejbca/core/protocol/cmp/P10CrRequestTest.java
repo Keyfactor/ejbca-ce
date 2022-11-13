@@ -165,8 +165,8 @@ public class P10CrRequestTest extends CmpTestCase {
         this.cmpConfiguration.setRAMode(CMP_ALIAS, false);
         this.cmpConfiguration.setResponseProtection(CMP_ALIAS, "signature");
         this.cmpConfiguration.setCMPDefaultCA(CMP_ALIAS, ISSUER_DN);
-        this.cmpConfiguration.setAuthenticationModule(CMP_ALIAS, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        this.cmpConfiguration.setAuthenticationParameters(CMP_ALIAS, "-;foo123");
+        this.cmpConfiguration.setAuthenticationModule(CMP_ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(CMP_ALIAS, "foo123");
         this.cmpConfiguration.setExtractUsernameComponent(CMP_ALIAS, "CN");
         this.cmpConfiguration.setRACertProfile(CMP_ALIAS, CP_DN_OVERRIDE_NAME);
         this.cmpConfiguration.setRAEEProfile(CMP_ALIAS, String.valueOf(eepDnOverrideId));
@@ -242,6 +242,9 @@ public class P10CrRequestTest extends CmpTestCase {
         PKIMessage req = genP10CrCertReq(ISSUER_DN, userDN, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
         assertNotNull(req);
 
+        // 
+        req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
+
         byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
@@ -280,6 +283,8 @@ public class P10CrRequestTest extends CmpTestCase {
         req = genP10CrCertReq(ISSUER_DN, userDN, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, keyId, true);
         assertNotNull(req);
 
+        req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
+        
         ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, CMP_ALIAS);
@@ -292,7 +297,7 @@ public class P10CrRequestTest extends CmpTestCase {
         
     }
 
-    @Ignore
+    @Test
     public void test04BlueXCrmf() throws Exception {
         log.trace(">test04BlueXCrmf");
         // An EE with a matching subject and clear text password set to "foo123" must exist for HMAC validation in this test.
@@ -352,7 +357,7 @@ public class P10CrRequestTest extends CmpTestCase {
         log.trace("<test07SignedConfirmationMessage()");
     }
 
-    @Ignore
+    @Test
     public void testUnsignedConfirmationMessage() throws Exception {
         log.trace(">testUnsignedConfirmationMessage()");
         CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
