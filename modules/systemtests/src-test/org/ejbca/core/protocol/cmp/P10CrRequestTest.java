@@ -135,6 +135,7 @@ public class P10CrRequestTest extends CmpTestCase {
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
     private static final String CMP_ALIAS = "CrmfRequestTestCmpConfigAlias";
+    private static final int P10CR_CERT_REQ_ID = -1; // https://www.ietf.org/id/draft-ietf-lamps-cmp-updates-23.html#name-update-section-534-certific
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -208,7 +209,7 @@ public class P10CrRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, 0, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
         log.trace("<test01CrmfHttpUnknowUser");
     }
 
@@ -227,7 +228,7 @@ public class P10CrRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, 0, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
     }
 
     @Test
@@ -250,7 +251,7 @@ public class P10CrRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         //Request id not applicable for pc10cr requests!
-        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN, this.cacert, resp, 0);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN, this.cacert, resp, P10CR_CERT_REQ_ID);
         
         String altNames = CertTools.getSubjectAlternativeName(cert);
         
@@ -258,7 +259,7 @@ public class P10CrRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0, null);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, P10CR_CERT_REQ_ID, null);
         ba = CmpMessageHelper.pkiMessageToByteArray(confirm);
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, CMP_ALIAS);
@@ -271,12 +272,12 @@ public class P10CrRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(barev, 200, CMP_ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, 0,
+        checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, P10CR_CERT_REQ_ID,
                                 PKIFailureInfo.badRequest);
 
         //
         // Try again, this time setting implicitConfirm in the header, expecting the server to reply with implicitConfirm as well
-                userDN = createCmpUser("cmptest", "foo123", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
+        userDN = createCmpUser("cmptest", "foo123", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
         nonce = CmpMessageHelper.createSenderNonce();
         transid = CmpMessageHelper.createSenderNonce();
         DEROctetString keyId = new DEROctetString("primekey".getBytes());
@@ -289,7 +290,7 @@ public class P10CrRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, CMP_ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true, "primekey");
-        cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN, this.cacert, resp, 0);
+        cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN, this.cacert, resp, P10CR_CERT_REQ_ID);
         altNames = CertTools.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
