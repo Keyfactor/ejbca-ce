@@ -18,7 +18,6 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -79,6 +78,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
+import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -212,30 +212,22 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
 						final String username = endEntityInformation.getUsername();
 						p10CrReq.setUsername(username);
 						
-                        // This is not defined for pc10r messages!
-                        /*                        final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(null, this.confAlias, admin, caSession, endEntityAccessSession,
+						
+                        final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(null, this.confAlias, admin, caSession, endEntityAccessSession,
                                 certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
                                 authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
                         final ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(p10CrReq.getPKIMessage(),
                                 username, authenticated);
-                        if (authenticationModule == null) {
+                        if (authenticationModule == null && !(authenticationModule instanceof RegTokenPasswordExtractor)) {
                             String errmsg = messageVerifyer.getErrorMessage();
-                            LOG.info(errmsg);
-                        
-                            LOG.error("Amin got the error message while verifying !!!!!!!!!" + errmsg);
-                        
+                            LOG.error(errmsg);
                             return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
-                        }*/
+                        }
 						
 						p10CrReq.setPassword(endEntityInformation.getPassword());
 		                // Do we have a public key in the request? If not we may be trying to do server generated keys
 		                enrichWithServerGeneratedKeyOrThrow(p10CrReq, endEntityInformation.getCertificateProfileId());
 		                resp = signSession.createCertificate(admin, p10CrReq, CmpResponseMessage.class, endEntityInformation);
-		                
-		                
-                        X509Certificate cert = (X509Certificate) ((CmpResponseMessage) resp).getCertificate();
-                        LOG.error("dear amin khan ghajar the response of cert creation is of type " + cert.toString());
-		                
 					} else {
 						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
 						LOG.info(errMsg);						
