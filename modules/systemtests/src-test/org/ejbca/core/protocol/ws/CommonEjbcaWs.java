@@ -643,7 +643,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         createTestCA(CA1);
         createTestCA(CA2);
         int certificateProfileId = createCertificateProfile(WS_CERTPROF_EI);
-        createEndEndtityProfile(WS_EEPROF_EI, certificateProfileId);
+        createEndEntityProfile(WS_EEPROF_EI, certificateProfileId);
         editUser(CA1_WSTESTUSER1, CA1);
         editUser(CA1_WSTESTUSER2, CA1);
         editUser(CA2_WSTESTUSER1, CA2);
@@ -662,7 +662,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         return certificateProfileSession.getCertificateProfileId(profileName);
     }
     
-    protected void createEndEndtityProfile(String profileName, int certificateProfileId) throws  AuthorizationDeniedException {
+    protected void createEndEntityProfile(String profileName, int certificateProfileId) throws  AuthorizationDeniedException {
      // Create suitable EE prof
         try {
             EndEntityProfile profile = new EndEntityProfile();
