@@ -220,18 +220,19 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void shouldReturnCertificateProfileInfo() throws Exception {
         //given
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        List<Integer> availableCas = new ArrayList<>();
+        final List<Integer> availableCas = new ArrayList<>();
         availableCas.add(x509TestCa.getCAId());
         certificateProfile.setAvailableCAs(availableCas);
-        int[] availableBitLengths = {4096};
+        final int[] availableBitLengths = {4096};
         certificateProfile.setAvailableBitLengths(availableBitLengths);
-        String[] availableAlgorithms = {"RSA"};
+        final String[] availableAlgorithms = {"RSA"};
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
         certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
         // when
         final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String responseCertProfileId = actualJsonObject.get("certificate_profile_id").toString();
         JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
         String algorithms = (String) jsonArrayAlgs.get(0);
         JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
@@ -239,6 +240,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
         String cas = (String) jsonArrayCas.get(0);
         // then
+        assertEquals(certProfileId.toString(), responseCertProfileId);
         assertEquals("RSA", algorithms);
         assertEquals(4096, bitLengths);
         assertEquals(testCaName, cas);

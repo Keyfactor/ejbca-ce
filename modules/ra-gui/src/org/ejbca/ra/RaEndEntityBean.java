@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrg
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -52,6 +53,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.util.SshCertificateUtils;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -148,6 +150,13 @@ public class RaEndEntityBean implements Serializable {
     private List<String> selectedPsd2PspRoles;
     private String cabfOrganizationIdentifier;
 
+    // SSH fields
+    private String sshKeyId;
+    private String sshComment;
+    List<EndEntityProfile.FieldInstance> sshPrincipals;
+    private String sshCriticalOptionsForceCommand;
+    private String sshCriticalOptionsSourceAddress;
+
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -214,6 +223,12 @@ public class RaEndEntityBean implements Serializable {
                 psd2NcaId = raEndEntityDetails.getPsd2NcaId();
                 selectedPsd2PspRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
                 cabfOrganizationIdentifier = raEndEntityDetails.getCabfOrganizationIdentifier();
+                if (endEntityInformation.isSshEndEntity()) {
+                    sshKeyId = raEndEntityDetails.getSshKeyId();
+                    sshComment = raEndEntityDetails.getSshComment();
+                    sshCriticalOptionsForceCommand = raEndEntityDetails.getSshForceCommand();
+                    sshCriticalOptionsSourceAddress = raEndEntityDetails.getSshSourceAddress();
+                }
             }
         }
         issuedCerts = null;
@@ -268,6 +283,7 @@ public class RaEndEntityBean implements Serializable {
     public void editEditEndEntityCancel() {
         subjectDistinguishNames = null;
         subjectAlternativeNames = null;
+        sshPrincipals = null;
         subjectDirectoryAttributes = null;
 
         editEditEndEntityMode = false;
@@ -340,7 +356,7 @@ public class RaEndEntityBean implements Serializable {
         }
 
         if (eep.isEmailUsed()) {
-            for (EndEntityProfile.FieldInstance instance: subjectDistinguishNames.getFieldInstances()) {
+            for (EndEntityProfile.FieldInstance instance: getSubjectDistinguishNames().getFieldInstances()) {
                 if (isDnEmail(instance)) {
                     if (instance.isUseDataFromEmailField()) {
                         instance.setValue(email[0]+"@"+email[1]);
@@ -350,7 +366,7 @@ public class RaEndEntityBean implements Serializable {
                 }
             }
         }
-        String subjectDn = subjectDistinguishNames.getValue();
+        String subjectDn = getSubjectDistinguishNames().getValue();
         if(!subjectDn.equals(endEntityInformation.getDN())) {
             endEntityInformation.setDN(subjectDn);
             changed = true;
@@ -491,6 +507,27 @@ public class RaEndEntityBean implements Serializable {
         if (eep.getUse(EndEntityProfile.CLEARTEXTPASSWORD, 0)) {
             if (eep.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || StringUtils.isNotEmpty(endEntityInformation.getPassword())) {
                 isClearPwd = true;
+            }
+        }
+
+        if (endEntityInformation.isSshEndEntity()) {
+            if (sshKeyId != raEndEntityDetails.getSshKeyId()) {
+                changed = true;
+                endEntityInformation.setDN("CN=" + sshKeyId);
+            }
+            if (sshComment != raEndEntityDetails.getSshComment()
+                    || raEndEntityDetails.getSshPrincipals() != sshPrincipalFieldsToString(getSshPrincipals())) {
+                changed = true;
+                endEntityInformation.setSubjectAltName(
+                        SshCertificateUtils.createSanForStorage(sshPrincipalFieldsToString(getSshPrincipals()), sshComment));
+            }
+            if (sshCriticalOptionsForceCommand != raEndEntityDetails.getSshForceCommand()
+                    || sshCriticalOptionsSourceAddress != raEndEntityDetails.getSshSourceAddress()) {
+                changed = true;
+                final Map<String, String> criticalOptions = endEntityInformation.getExtendedInformation().getSshCriticalOptions();
+                criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, sshCriticalOptionsForceCommand);
+                criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, sshCriticalOptionsSourceAddress);
+                endEntityInformation.getExtendedInformation().setSshCriticalOptions(criticalOptions);
             }
         }
 
@@ -977,6 +1014,7 @@ public class RaEndEntityBean implements Serializable {
             subjectDistinguishNames = null;
             subjectAlternativeNames = null;
             subjectDirectoryAttributes = null;
+            sshPrincipals = null;
 
 
             if (raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId() == eepId) {
@@ -1106,6 +1144,33 @@ public class RaEndEntityBean implements Serializable {
      */
     public void setSubjectDistinguishNames(SubjectDn subjectDistinguishNames) {
         this.subjectDistinguishNames = subjectDistinguishNames;
+    }
+
+    /**
+     * Retrieves and populates EndEntityProfile.FieldInstances for SSH principals (if not already set).
+     */
+    public void handleNullSshPrincipals() {
+        if (sshPrincipals == null) {
+            final String[] sshPrincipalValues = raEndEntityDetails.getSshPrincipals().split(":");
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
+            sshPrincipals = new ArrayList<>();
+            final List<EndEntityProfile.FieldInstance> fieldInstances = eep.new Field(SshEndEntityProfileFields.SSH_PRINCIPAL).getInstances();
+            for (int i = 0; i < fieldInstances.size(); i++) {
+                if (i < sshPrincipalValues.length) {
+                    fieldInstances.get(i).setValue(sshPrincipalValues[i]);
+                }
+                sshPrincipals.add(fieldInstances.get(i));
+            }
+        }
+    }
+
+    public List<EndEntityProfile.FieldInstance> getSshPrincipals() {
+        handleNullSshPrincipals();
+        return sshPrincipals;
+    }
+
+    public void setSshPrincipals(final List<EndEntityProfile.FieldInstance> newSshPrincipals) {
+        sshPrincipals = newSshPrincipals;
     }
 
     private void handleNullSubjectAlternativeNames() {
@@ -1402,6 +1467,64 @@ public class RaEndEntityBean implements Serializable {
      */
     public String getCabfOrganizationIdentifierRegex() {
         return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
+
+    public String getSshKeyId() {
+        return sshKeyId;
+    }
+
+    public void setSshKeyId(final String newSshKeyId) {
+        sshKeyId = newSshKeyId;
+    }
+
+    public String getSshComment() {
+        return sshComment;
+    }
+
+    public void setSshComment(final String newSshComment) {
+        sshComment = newSshComment;
+    }
+
+    public String getSshForceCommand() {
+        return sshCriticalOptionsForceCommand;
+    }
+
+    public void setSshForceCommand(final String newForceCommand) {
+        sshCriticalOptionsForceCommand = newForceCommand;
+    }
+
+    public boolean isSshForceCommandRequired() {
+        return raEndEntityDetails.isSshForceCommandRequired();
+    }
+
+    public boolean isSshForceCommandModifiable() {
+        return raEndEntityDetails.isSshForceCommandModifiable();
+    }
+
+    public String getSshSourceAddress() {
+        return sshCriticalOptionsSourceAddress;
+    }
+
+    public void setSshSourceAddress(final String newSourceAddress) {
+        sshCriticalOptionsSourceAddress = newSourceAddress;
+    }
+
+    public boolean isSshSourceAddressRequired() {
+        return raEndEntityDetails.isSshSourceAddressRequired();
+    }
+
+    public boolean isSshSourceAddressModifiable() {
+        return raEndEntityDetails.isSshSourceAddressModifiable();
+    }
+
+    /**
+     * Converts principals FieldInstance list to principals String for db storage.
+     * @param sshPrincipals list of EndEntityProfile.FieldInstance for principals
+     * @return String of SSH principals separated by colon (:)
+     */
+    private static String sshPrincipalFieldsToString(List<EndEntityProfile.FieldInstance> sshPrincipals) {
+        String[] sshPrincipalValues = sshPrincipals.stream().map(e -> e.getValue()).toArray(String[]::new);
+        return StringUtils.join(sshPrincipalValues, ":");
     }
 
     /**

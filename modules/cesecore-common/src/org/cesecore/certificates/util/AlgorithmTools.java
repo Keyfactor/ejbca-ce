@@ -1364,6 +1364,12 @@ public abstract class AlgorithmTools {
             return MessageDigest.getInstance("SHA3-384", "BC");
         } else if (signatureAlgorithm.startsWith("SHA3-512")) {
             return MessageDigest.getInstance("SHA3-512", "BC");
+        } else if (signatureAlgorithm.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_256.getId())) {
+            return MessageDigest.getInstance("SHA3-256", "BC");
+        } else if (signatureAlgorithm.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_384.getId())) {
+            return MessageDigest.getInstance("SHA3-384", "BC");
+        } else if (signatureAlgorithm.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId())) {
+            return MessageDigest.getInstance("SHA3-512", "BC");
         }
         throw new NoSuchAlgorithmException("The signature algorithm " + signatureAlgorithm + " uses an unsupported digest algorithm.");
     }
