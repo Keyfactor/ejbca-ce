@@ -50,7 +50,7 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(CryptoTokenTestRunner.class)
 public class CmpConfirmMessageTest extends CmpTestCase {
 
-    private static final Logger log = Logger.getLogger(CrmfRequestTest.class);
+    private static final Logger log = Logger.getLogger(CmpConfirmMessageTest.class);
 
     private static final String user = "TestUser";
     private static final X500Name userDN = new X500Name("CN=" + user + ", O=PrimeKey Solutions AB, C=SE");
