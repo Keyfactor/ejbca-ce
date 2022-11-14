@@ -214,9 +214,17 @@
                                     </h:commandButton>
                                 </f:facet>
                                 <h:panelGrid columns="1" styleClass="nopadding noborder">
-                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectDnUnescapedValue.length() gt 100 ? raSearchEndEntity.subjectDnUnescapedValue.substring(0,95).concat('.....')  : raSearchEndEntity.subjectDnUnescapedValue}"/>
+                                    <h:outputText rendered="#{not raSearchEndEntity.sshTypeEndEntity}" styleClass="fineprintMono"
+                                            value="#{raSearchEndEntity.subjectDnUnescapedValue.length() gt 100 ? raSearchEndEntity.subjectDnUnescapedValue.substring(0,95).concat('.....')  : raSearchEndEntity.subjectDnUnescapedValue}"/>
+                                    <h:outputText rendered="#{raSearchEndEntity.sshTypeEndEntity}" styleClass="fineprintMono"
+                                            value="Key id: #{raSearchEndEntity.sshKeyId.length() gt 100 ? raSearchEndEntity.sshKeyId.substring(0,95).concat('.....')  : raSearchEndEntity.sshKeyId}"/>
 	                                <ui:fragment rendered="#{raSearchEndEntity.subjectAn.length() gt 0}"><hr /></ui:fragment>
-                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectAn.length() gt 100 ? raSearchEndEntity.subjectAn.substring(0,95).concat('.....') : raSearchEndEntity.subjectAn}"/>
+                                    <h:outputText rendered="#{not raSearchEndEntity.sshTypeEndEntity}" styleClass="fineprintMono"
+                                            value="#{raSearchEndEntity.subjectAn.length() gt 100 ? raSearchEndEntity.subjectAn.substring(0,95).concat('.....') : raSearchEndEntity.subjectAn}"/>
+                                    <h:outputText rendered="#{raSearchEndEntity.sshTypeEndEntity and raSearchEndEntity.subjectAn.length() gt 0}" styleClass="fineprintMono"
+                                            value="Principals: #{raSearchEndEntity.sshPrincipalsPretty.length() gt 100 ? raSearchEndEntity.sshPrincipalsPretty.substring(0,95).concat('.....') : raSearchEndEntity.sshPrincipalsPretty}"/>
+                                    <h:outputText rendered="#{raSearchEndEntity.sshTypeEndEntity and raSearchEndEntity.subjectAn.length() gt 0}" styleClass="fineprintMono"
+                                            value="Comment: #{raSearchEndEntity.sshComment.length() gt 100 ? raSearchEndEntity.sshComment.substring(0,95).concat('.....') : raSearchEndEntity.sshComment}"/>
                                 </h:panelGrid>
                             </h:column>
                             <h:column>

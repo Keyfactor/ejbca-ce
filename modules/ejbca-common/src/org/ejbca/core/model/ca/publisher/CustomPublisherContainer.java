@@ -331,8 +331,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	}
 
     @Override
-    public boolean willPublishCertificate(int status, int revocationReason) {
-        return getCustomPublisher().willPublishCertificate(status, revocationReason);
+    public boolean willPublishCertificate(int status, long revocationDate) {
+        return getCustomPublisher().willPublishCertificate(status, revocationDate);
     }
 
     @Override
