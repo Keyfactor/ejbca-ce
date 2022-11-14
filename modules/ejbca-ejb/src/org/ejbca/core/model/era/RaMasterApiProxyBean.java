@@ -298,6 +298,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return false;
     }
+    
+    @Override
+    public AuthenticationToken authenticateUsingClientCertificate(final X509Certificate certificate) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+        	if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
+                try {
+                    return raMasterApi.authenticateUsingClientCertificate(certificate);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public RaAuthorizationResult getAuthorization(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
