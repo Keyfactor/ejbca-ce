@@ -840,7 +840,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     public void setSshCriticalOptions(Map<String, String> criticalOptions) {
-        log.info(criticalOptions);
         setSshCustomData(SSH_CERTIFICATE_CRITICAL_OPTIONS, criticalOptions);
     }
     
