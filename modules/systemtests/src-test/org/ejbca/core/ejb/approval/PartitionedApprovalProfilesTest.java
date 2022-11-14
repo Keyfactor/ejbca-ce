@@ -51,6 +51,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -201,7 +202,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
      * The most vanilla of tests
      */
     @Test
-    public void testSingleStepSinglePartition() throws AuthorizationDeniedException, ApprovalProfileExistsException, ApprovalException,
+    public void testSingleStepSinglePartition() throws AuthorizationDeniedException, ApprovalProfileExistsException, ApprovalException, EndEntityExistsException,
             ApprovalRequestExpiredException, ApprovalRequestExecutionException, AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
         ApprovalProfile singleStepPartitionProfile = new PartitionedApprovalProfile("testSingleSequenceSinglePartition");
         ApprovalStep executionStep = singleStepPartitionProfile.getStep(PartitionedApprovalProfile.EXECUTION_STEP_ID);
@@ -262,7 +263,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
      *  * request should execute after the 2nd step 
      */
     @Test
-    public void testTwoStepsSinglePartition() throws AuthorizationDeniedException, ApprovalProfileExistsException, ApprovalException,
+    public void testTwoStepsSinglePartition() throws AuthorizationDeniedException, ApprovalProfileExistsException, ApprovalException, EndEntityExistsException,
             ApprovalRequestExpiredException, ApprovalRequestExecutionException, AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
         ApprovalProfile doubleSequencenProfile = new PartitionedApprovalProfile("testDoubleStepSinglePartition");
         doubleSequencenProfile.addStepFirst();
@@ -336,7 +337,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
      *  * Test should execute after both partitions have been fulfilled
      */
     @Test
-    public void testOneStepsTwoPartitions() throws AuthorizationDeniedException, ApprovalProfileExistsException, ApprovalException,
+    public void testOneStepsTwoPartitions() throws AuthorizationDeniedException, ApprovalProfileExistsException, ApprovalException, EndEntityExistsException,
             ApprovalRequestExpiredException, ApprovalRequestExecutionException, AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
         ApprovalProfile doubleSequencenProfile = new PartitionedApprovalProfile("testDoubleStepSinglePartition");        
         ApprovalStep step = doubleSequencenProfile.getFirstStep();

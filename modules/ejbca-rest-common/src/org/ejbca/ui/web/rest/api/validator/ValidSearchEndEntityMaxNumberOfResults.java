@@ -30,7 +30,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <ul>
  *     <li>Not null;</li>
  *     <li>Not negative or equal to zero;</li>
- *     <li>Not more than maximum 400.</li>
+ *     <li>Not more than maximum 1000.</li>
  * </ul>
  */
 @Target({TYPE, FIELD, PARAMETER})
@@ -48,7 +48,7 @@ public @interface ValidSearchEndEntityMaxNumberOfResults {
     class Validator implements ConstraintValidator<ValidSearchEndEntityMaxNumberOfResults, Integer> {
 
         private static final int MINIMUM_INCLUSIVE = 0;
-        private static final int MAXIMUM_EXCLUSIVE = 400;
+        private static final int MAXIMUM_EXCLUSIVE = 1000;
 
         @Override
         public void initialize(final ValidSearchEndEntityMaxNumberOfResults validSearchEndEntityMaxNumberOfResults) {

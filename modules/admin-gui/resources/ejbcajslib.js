@@ -127,7 +127,7 @@ function checkfieldforlegalchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
   
-  re = /[^\u0041-\u005a\u0061-\u007a\u00a1-\ud7ff\ue000-\uffff_ 0-9@\.\*\,\-:\/\?\'\=\(\)\|.]/g; 
+  re = /[^\u0041-\u005a\u0061-\u007a\u00a1-\ud7ff\ue000-\uffff_ 0-9@\.\~\*\,\-:\/\?\'\=\(\)\|.]/g; 
 
   if(re.exec(text)){
     alert(alerttext);
@@ -154,7 +154,7 @@ function checkfieldforlegalcharswithchangeable(thetextfield , alerttext){
 function checkfieldforlegaldnchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^\u0041-\u005a\u0061-\u007a\u00a1-\ud7ff\ue000-\uffff_ 0-9@\.\&\*\,\\\-:\/\?\'\=\#\(\)\|\+]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00a1-\ud7ff\ue000-\uffff_ 0-9@\.\&\~\*\,\\\-:\/\?\'\=\#\(\)\|\+]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
