@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
@@ -163,5 +164,51 @@ public class CmpMessageHelperTest {
         assertArrayEquals(expected, generalPkiMessage2.getHeader().getRecipNonce().getEncoded());
         assertArrayEquals(expected, generalPkiMessage3.getHeader().getRecipNonce().getEncoded());
         assertArrayEquals(expected, generalPkiMessage4.getHeader().getRecipNonce().getEncoded());
+    }
+
+    @Test
+    public void testPbmac1ProtectionValidPassword() {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        try {
+            byte[] protectedPkiMessageByteArray = CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage, null, "password1",
+                    macAlgId, 1026, 100000);
+            final PKIMessage protectedPKIMessage = CmpMessageHelper.getPkiMessageFromBytes(protectedPkiMessageByteArray, false);
+            CmpPbmac1Verifyer verifyer = new CmpPbmac1Verifyer(protectedPKIMessage);
+            assertTrue("Verificaiton should succeed", verifyer.verify("password1"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testPbmac1ProtectionInvalidPassword() {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        try {
+            byte[] protectedPkiMessageByteArray = CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage, null, "password1",
+                    macAlgId, 1026, 100000);
+            final PKIMessage protectedPKIMessage = CmpMessageHelper.getPkiMessageFromBytes(protectedPkiMessageByteArray, false);
+            CmpPbmac1Verifyer verifyer = new CmpPbmac1Verifyer(protectedPKIMessage);
+            assertFalse("Verificaiton should fail because password is different.", verifyer.verify("password2"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
