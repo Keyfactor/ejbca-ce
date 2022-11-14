@@ -116,7 +116,7 @@
 
 				<!-- Authentication Type - this hides and shows the dependent controls below -->
 				<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-					<h:outputLabel for="currentCryptoTokenAuthenticationType" value="Azure Authentication Type"/>
+					<h:outputLabel for="currentCryptoTokenAuthenticationType" value="#{web.text.CRYPTOTOKEN_KEYVAULT_AUTH} "/>
                     <h:outputText id="currentCryptoTokenAuthenticationTypeHelp" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
 				</h:panelGroup>
                 <h:panelGroup
