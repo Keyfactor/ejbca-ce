@@ -179,6 +179,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        testRaMasterApiProxyBean.restoreFunctionTracingAfterTest();
         caSession.removeCA(ADMIN, testx509ca.getCAId());
         cmpConfiguration.removeAlias(ALIAS);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
