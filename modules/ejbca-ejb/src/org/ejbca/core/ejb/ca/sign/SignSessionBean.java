@@ -843,10 +843,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             log.trace("<cvcRequest");
             return EJBTools.wrapCertCollection(result);
+        } catch (CADoesntExistsException e) {
+            ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
+            throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e.getMessage());
         } catch ( NoSuchEndEntityException | ParseException | ConstructionException | NoSuchFieldException
                 | InvalidKeyException | CertificateException // | CertificateEncodingException
                 | CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
-                | IOException e) {
+                | IOException | CertificateCreateException e) {
             ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
@@ -942,11 +945,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         // Check CA exists and user is authorized to access it.
         final int caId = endEntity.getCAId();
-        try {
-            caSession.verifyExistenceOfCA(caId);
-        } catch (CADoesntExistsException e) {
-            throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e);
-        }
+        caSession.verifyExistenceOfCA(caId);
+
         // Check token type.
         if (endEntity.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
             throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE,
