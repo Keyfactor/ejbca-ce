@@ -74,6 +74,7 @@ import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
@@ -107,6 +108,7 @@ import org.bouncycastle.asn1.crmf.Controls;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -122,6 +124,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
@@ -150,6 +153,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -314,6 +318,14 @@ public abstract class CmpTestCase extends CaTestCase {
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
     }
     
+    public static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException {
+        
+        return genP10CrCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm);
+    }
+ 
     public static PKIMessage genCertReqWithSAN(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
@@ -495,8 +507,55 @@ public abstract class CmpTestCase extends CaTestCase {
             pkiHeaderBuilder.setGeneralInfo(genInfo);
         }
         PKIBody pkiBody = new PKIBody(PKIBody.TYPE_INIT_REQ, certReqMessages);
-        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
-        return pkiMessage;
+        return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+    }
+    
+    private static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, SubjectPublicKeyInfo spkInfo,  
+            KeyPair protocolEncrKey, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException {
+        
+        ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+        DERSet attributes = null;
+
+        // Building the altnames
+        if(StringUtils.isNotBlank(altNames)) {
+         // Create a P10 with extensions, in this case altNames with a DNS name
+            altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            // AltNames
+            GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            try {
+                extgen.addExtension(Extension.subjectAlternativeName, false, san);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+            Extensions exts = extgen.generate();
+            altnameattr.add(new DERSet(exts));
+            
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new DERSequence(altnameattr));
+            attributes = new DERSet(v);
+        }
+        
+        CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, userDN,
+                keys.getPublic(), attributes, keys.getPrivate(), null).toASN1Structure();
+        
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(senderDN), new GeneralName(new X500Name(
+                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
+        
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        pkiHeaderBuilder.setProtectionAlg(pAlg);
+        pkiHeaderBuilder.setSenderKID(senderKID);
+        
+        if (implicitConfirm) {
+            final InfoTypeAndValue genInfo = new InfoTypeAndValue(CMPObjectIdentifiers.it_implicitConfirm);
+            pkiHeaderBuilder.setGeneralInfo(genInfo);
+        }
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_P10_CERT_REQ, certificationRequest);
+        return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
     }
 
     protected static PKIMessage genRevReq(String issuerDN, X500Name userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
