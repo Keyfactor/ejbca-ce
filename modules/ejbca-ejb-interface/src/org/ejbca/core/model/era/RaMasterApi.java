@@ -170,6 +170,15 @@ public interface RaMasterApi {
     boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String...resources);
 
     /**
+     * Authenticates the user by its client certificate on the CA (web.reqcertindb=true).
+     * 
+     * @param certificate the client certificate.
+     * @return the X509CertificateAuthenticationToken or null, if the DB does not contain the certificate or it is 
+     *      invalid (not CertificateConstants.CERT_ACTIVE or status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION).  
+     */
+    AuthenticationToken authenticateUsingClientCertificate(X509Certificate certificate);
+
+    /**
      * @return the access rules and corresponding authorization system update number for the specified AuthenticationToken.
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */

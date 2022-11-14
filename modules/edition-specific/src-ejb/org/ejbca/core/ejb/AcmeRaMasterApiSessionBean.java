@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb;
 
 import java.math.BigInteger;
+import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -61,6 +62,11 @@ import org.ejbca.core.protocol.acme.AcmeRaMasterApiSessionLocal;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
     
+    @Override
+    public AuthenticationToken authenticateUsingClientCertificate(final X509Certificate certificate) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
     @Override
     public void revokeCert(AuthenticationToken authenticationToken, BigInteger certserno, Date revocationdate, String issuerdn, int reason,
             boolean checkDate) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,

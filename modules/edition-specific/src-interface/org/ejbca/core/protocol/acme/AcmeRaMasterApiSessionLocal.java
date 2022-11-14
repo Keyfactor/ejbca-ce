@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.acme;
 
 import java.math.BigInteger;
+import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 @Local
 public interface AcmeRaMasterApiSessionLocal {
 
+    /** @see org.ejbca.core.model.era.RaMasterApi#authenticateUsingClientCertificate(javax.security.cert.X509Certificate ) */
+    AuthenticationToken authenticateUsingClientCertificate(X509Certificate certificate);
+    
     /** @see org.ejbca.core.model.era.RaMasterApi#revokeCert(AuthenticationToken, java.math.BigInteger, java.util.Date, String, int, boolean) */
     void revokeCert(AuthenticationToken authenticationToken, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
