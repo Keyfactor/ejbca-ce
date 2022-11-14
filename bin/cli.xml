@@ -42,7 +42,7 @@
         <input message="Please enter the server dn (default: CN=${httpsserver.hostname},O=EJBCA Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=${httpsserver.hostname},O=EJBCA Sample,C=SE"/>
         <input message="Please enter the superadmin cn (default: SuperAdmin) ?" addproperty="superadmin.cn" defaultvalue="SuperAdmin"/>
         <input message="Please enter the superadmin dn (default: CN=${superadmin.cn}) ?" addproperty="superadmin.dn" defaultvalue="CN=${superadmin.cn}"/>
-        <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>      
+        <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>
 		<input message="Please enter the superadmin password (default: ejbca) ?" addproperty="superadmin.password" defaultvalue="ejbca">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
@@ -65,6 +65,7 @@ ca.policy              : ${ca.policy}
 ca.tokenproperties     : ${ca.tokenproperties}
 httpsserver.hostname   : ${httpsserver.hostname}
 httpsserver.dn         : ${httpsserver.dn}
+httpsserver.tokentype  : ${httpsserver.tokentype}
 superadmin.cn          : ${superadmin.cn}
 superadmin.dn          : ${superadmin.dn}
 superadmin.batch       : ${superadmin.batch}
@@ -77,7 +78,7 @@ appserver.home         : ${appserver.home}
 	    <input message="Enter name of CA to add to truststore" addproperty="ca.name"/>
         <echo message="Getting root certificate in DER format..."/>
 		<ejbca:cli arg="ca getcacert &quot;${ca.name}&quot; ${java.io.tmpdir}/rootca.der -der"/>
-		<property name="trust.keystore" value="${ejbca.home}/p12/truststore.jks"/>
+		<property name="trust.keystore" value="${ejbca.home}/p12/${truststore.file}"/>
 		<property name="trust.password" value="${java.trustpassword}"/>
 		<echo>Adding to or creating keystore: ${trust.keystore}</echo>
 		<!-- The 'available' below only works when trust.keystore is a full path, otherwise the keytool command runs in user.dir while available looks in bin so it returns the wrong value. -->
@@ -109,6 +110,17 @@ appserver.home         : ${appserver.home}
     	<isset property="ca.tokenproperties" />
     </condition>
 
+    <condition property="httpsserver.tokentype" value="P12" else="JKS">
+        <equals arg1="${httpsserver.tokentype}" arg2="P12" />
+    </condition>
+
+    <condition property="tokenfile.extension" value=".p12" else=".jks">
+        <equals arg1="${httpsserver.tokentype}" arg2="P12" />
+    </condition>
+
+    <property name="httpsserver.filename" value="tomcat${tokenfile.extension}"/>
+    <property name="truststore.file" value="truststore${tokenfile.extension}"/>
+
     <target name="ejbca:initCA" >
        <echo message="Initializing CA with '${ca.name}' '${ca.dn}' '${ca.tokentype}' '&lt;ca.tokenpassword hidden&gt;' '${ca.keyspec}' '${ca.keytype}' '${ca.validity}' '${ca.policy}' '${ca.signaturealgorithm}' ${install.catoken.command} ${install.certprofile.command} -superadmincn '${superadmin.cn}'..." />
     	<ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;${ca.dn}&quot; ${ca.tokentype} &quot;${ca.tokenpassword}&quot; ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${install.catoken.command} ${install.certprofile.command} -superadmincn &quot;${superadmin.cn}&quot;"/>
@@ -124,13 +136,13 @@ appserver.home         : ${appserver.home}
 		<ejbca:cli arg="batch superadmin"/>
 	</target>
 
-	<!-- Only try to batch generate superadmin if if keystoretyp is P12 -->
+	<!-- Only try to batch generate superadmin if if keystoretype is P12 -->
     <target name="ejbca:adminweb">
         <!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost, otherwise add and altname with the same dnsName as hostname. -->
         <condition property="httpsserver.an" value="dnsName=localhost,IPAddress=127.0.0.1" else="dnsName=${httpsserver.hostname}">
             <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
         </condition>
-        <ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;${httpsserver.dn}&quot; --altname &quot;${httpsserver.an}&quot; &quot;${ca.name}&quot; 1 JKS --certprofile SERVER"/>
+        <ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;${httpsserver.dn}&quot; --altname &quot;${httpsserver.an}&quot; &quot;${ca.name}&quot; 1 ${httpsserver.tokentype} --certprofile SERVER"/>
         <ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
         <ejbca:cli arg="batch tomcat"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
@@ -160,7 +172,7 @@ appserver.home         : ${appserver.home}
         <fail message="Batch generation failed!">
             <condition>
                 <or>
-                    <not><available filepath="${ejbca.home}/p12" file="tomcat.jks"/></not>
+                    <not><available filepath="${ejbca.home}/p12" file="${httpsserver.filename}"/></not>
                     <and>
                         <not><available filepath="${ejbca.home}/p12" file="superadmin.p12"/></not>
                         <istrue value="${superadmin.batch}" />

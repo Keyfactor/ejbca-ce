@@ -19,6 +19,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -86,7 +87,8 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             Properties.class,
             RaCssInfo.class,
             MSAutoEnrollmentSettingsTemplate.class,
-            RaStyleInfo.class));	
+            RaStyleInfo.class,
+            Date.class));	
 
     static {
         for (String customClassName : CesecoreConfiguration.getCustomClassWhitelist().split(",")) {

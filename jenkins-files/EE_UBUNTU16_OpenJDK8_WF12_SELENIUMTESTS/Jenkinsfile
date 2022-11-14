@@ -10,6 +10,7 @@ pipeline {
                 sh "docker container rm mypeer -f || true"
                 sh "docker network rm selenium-network || true"
                 sh "rm -rf ear"
+                sh "chmod -R a+rwX ${env.WORKSPACE} || true"
             }
         }
         stage('network') {
@@ -26,7 +27,7 @@ pipeline {
         stage('deploy EJBCA (mypeer)') {
             steps {
                 sh "mkdir ear || true"
-                sh "chmod 777 " + "$env.WORKSPACE"
+                sh "chmod 777 ear"
                 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_WF12_SELENIUMTESTS/ejbca_image') {
                     sh "docker build -t mypeer -m 2GB ."
@@ -35,7 +36,7 @@ pipeline {
                     sh "chmod 777 " + "$env.WORKSPACE/ejbca/p12"
                     
                     // set it running on background (-d parameter). needs to stay up, until selniumtests use it. will be killed later at cleanup phase.
-                    sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
+                    sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app:z -d mypeer"
 
                     // 10 minutes
                     timeout(10) {
@@ -62,20 +63,13 @@ pipeline {
         
         stage('run Selenium tests') {
             steps {
-                sh "mkdir ear || true"
-                sh "chmod 777 " + "$env.WORKSPACE"
-                
-                // to allow creation of /app/ejbca/reports/test folder for ant test task
-                sh "chmod 777 " + "$env.WORKSPACE/ejbca"
-                
-                // pre-create necessary folders and give permissions, so that seluser can later do its stuff
-                sh "chmod +w " + "$env.WORKSPACE/ejbca/conf"
-                sh "chmod +w " + "$env.WORKSPACE/ejbca/modules/ejbca-webtest/conf/"
-                sh "chmod +w " + "$env.WORKSPACE/ejbca"
+                sh "mkdir  ear || true"
+                sh "chmod 777 ear"
+
+                // pre-create necessary folders and give permissions, so that seluser can later do its stuff.
+                // all pre-existing folders should already have the right permissions, due to the chmod in the first stage.
                 sh "mkdir -p " + "$env.WORKSPACE/ejbca/reports"
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca/reports"
-                sh "chmod 777 $env.WORKSPACE/ejbca/modules/ejbca-webtest"
-                sh "chmod 777 " + "$env.WORKSPACE/ejbca/modules/ejbca-webtest/resources"
 
                 // copy Remote EJB client JAR (jboss-client.jar)
                 sh "mkdir -p -m 755 " + "$env.WORKSPACE/ejbca/lib/jee-client"
@@ -83,12 +77,15 @@ pipeline {
 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_WF12_SELENIUMTESTS/selenium_image') {
                     sh "docker build -t seleniumtests -m 5GB ."
-                    sh "docker run --name seleniumtests --net=selenium-network --shm-size=5g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
+                    sh "docker run --name seleniumtests --net=selenium-network --shm-size=5g -v " + "$env.WORKSPACE" + ":/app:z seleniumtests"
                 }
             }
         }
     }
     post {
+        failure {
+            sh "docker logs mypeer || true"
+        }
         always {
             archiveArtifacts artifacts: 'ejbca/**/reports/test/html/QaEjbcaTestReport.html', fingerprint: true
             archiveArtifacts artifacts: 'ejbca/**/reports/test/webtest-log4j.log', fingerprint: true

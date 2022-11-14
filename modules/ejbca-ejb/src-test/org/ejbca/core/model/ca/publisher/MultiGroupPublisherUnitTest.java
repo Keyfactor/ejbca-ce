@@ -83,8 +83,9 @@ public class MultiGroupPublisherUnitTest {
     private static final class MockPublishRevokedOnlyPublisher extends BasePublisher {
         private static final long serialVersionUID = 1L;
         @Override
-        public boolean willPublishCertificate(int status, int revocationReason) {
-            return (status == CertificateConstants.CERT_REVOKED || revocationReason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+        public boolean willPublishCertificate(int status, long revocationDate) {
+            final long initialRevocationDate = -1L;
+            return (status == CertificateConstants.CERT_REVOKED || (status == CertificateConstants.CERT_ACTIVE && revocationDate != initialRevocationDate));
         }
         @Override
         public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp,
@@ -184,7 +185,7 @@ public class MultiGroupPublisherUnitTest {
         }
         replay(publisherSession);
         // Run and verify
-        assertEquals("Wrong result from willPublishCertificate", expectedWillPublishResult, publisher.willPublishCertificate(certData.getStatus(), certData.getRevocationReason()));
+        assertEquals("Wrong result from willPublishCertificate", expectedWillPublishResult, publisher.willPublishCertificate(certData.getStatus(), certData.getRevocationDate()));
         assertEquals("Wrong result from storeCertificate", true, publisher.storeCertificate(admin, certData, b64CertData, EE_PASSWORD, EE_DN, extinfo));
         verify(publisherSession);
     }

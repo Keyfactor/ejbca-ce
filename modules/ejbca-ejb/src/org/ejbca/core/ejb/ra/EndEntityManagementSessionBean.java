@@ -367,7 +367,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 endEntity.setUsername(autousername);
             }
         }
+        // Trim
+        endEntity.setUsername(StringTools.trim(endEntity.getUsername()));
         final String username = endEntity.getUsername();
+        unCanonicalized.setUsername(username);
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
@@ -867,6 +870,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
         final EndEntityType type = endEntityInformation.getType();
         final ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+        final String trimmedNewUsername = StringTools.trim(newUsername);
+
         // Check if user fulfills it's profile.
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
@@ -877,7 +882,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
 
                 // User change might include a new username
-                final String usernameToValidate = StringUtils.isEmpty(newUsername) ? username : newUsername;
+                final String usernameToValidate = StringUtils.isEmpty(trimmedNewUsername) ? username : trimmedNewUsername;
 
                 final EABConfiguration eabConfiguration = (EABConfiguration) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
 
@@ -944,8 +949,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (approvalProfile != null) {
                 final EndEntityInformation orguserdata = userData.toEndEntityInformation();
                 final EndEntityInformation requestInfo = new EndEntityInformation(endEntityInformation);
-                if (newUsername != null && !newUsername.equals(username)) {
-                    requestInfo.setUsername(newUsername);
+                if (trimmedNewUsername != null && !trimmedNewUsername.equals(username)) {
+                    requestInfo.setUsername(trimmedNewUsername);
                 }
                 final List<ValidationResult> validationResults = runApprovalRequestValidation(authenticationToken, requestInfo, ca);
                 final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(requestInfo, clearPwd, orguserdata, authenticationToken, null, caId,
@@ -957,17 +962,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Rename the end entity if there's a new username
-        if (newUsername != null && !newUsername.equals(username)) {
+        if (trimmedNewUsername != null && !trimmedNewUsername.equals(username)) {
             boolean success;
             try {
-                success = renameEndEntity(authenticationToken, username, newUsername);
+                success = renameEndEntity(authenticationToken, username, trimmedNewUsername);
             } catch (EndEntityExistsException e) {
                 throw new IllegalNameException("Username already taken");
             }
             if (!success) {
                 throw new NoSuchEndEntityException("End entity does not exist");
             }
-            username = newUsername;
+            username = trimmedNewUsername;
             userData = endEntityAccessSession.findByUsername(username);
         }
         // Check if the subjectDN serialnumber already exists.
@@ -2201,7 +2206,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public boolean existsUser(String username) {
         // Selecting 1 column is optimal speed
-        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE TRIM(a.username) = :username");
+        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE a.username = :username");
         query.setParameter("username", StringTools.trim(username));
         return !query.getResultList().isEmpty();
     }

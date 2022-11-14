@@ -50,6 +50,8 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.ssh.SshCertificate;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
@@ -59,6 +61,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SshCertificateUtils;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -146,6 +149,14 @@ public class RaCertificateDetails {
     private String password;
     private String confirmPassword;
     private int requestId;
+    
+    private String sshKeyId = "";
+    private String principals = "";
+    private String comment = "";
+    private String sshCertificateType = "";
+    private String sshExtensions = "";
+    private String sshSourceAddress = "";
+    private String sshForceCommand = "";
 
     private boolean more = false;
     private boolean renderConfirmRecovery = false;
@@ -225,6 +236,13 @@ public class RaCertificateDetails {
                 }
             }
         }
+        if(certificateData.getType() == CertificateConstants.CERTTYPE_SSH) {
+            this.sshKeyId = SshCertificateUtils.getKeyId(certificateData.getSubjectDnNeverNull());
+            String[] principalsAndComment = SshCertificateUtils.parsePrincipalsAndComment(certificateData.getSubjectAltNameNeverNull());        
+            this.principals = principalsAndComment[0].replace(":", ", ");
+            this.comment = principalsAndComment[1];
+            this.type = SshCertificate.CERTIFICATE_TYPE;
+        }
         if (certificate!=null || certificateEncoded!=null) {
             this.type = certificate.getType();
             this.fingerprintSha256 = new String(Hex.encode(CertTools.generateSHA256Fingerprint(certificateEncoded)));
@@ -238,11 +256,11 @@ public class RaCertificateDetails {
             } else if(certificate.getPublicKey() instanceof ECPublicKey) {
                 this.publicKeyParameter = ((ECPublicKey)publicKey).getW().getAffineX().toString(16) + " " + ((ECPublicKey)publicKey).getW().getAffineY().toString(16);
             }
-            this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
             this.expireDate = certificateData.getExpireDate();
 
             if (certificate instanceof X509Certificate) {
                 this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
+                this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
 
                 final X509Certificate x509Certificate = (X509Certificate)certificate;
                 this.typeVersion = Integer.toString(x509Certificate.getVersion());
@@ -300,6 +318,8 @@ public class RaCertificateDetails {
                 this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
             } else if (certificate instanceof CardVerifiableCertificate) {
                 this.created = ValidityDate.formatAsUTCSecondsGranularity(CertTools.getNotBefore(certificate).getTime());
+                this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
+
                 final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate)certificate;
                 this.typeVersion = String.valueOf(CVCertificateBody.CVC_VERSION);
                 // Role and access rights
@@ -315,6 +335,18 @@ public class RaCertificateDetails {
                     }
                 }
                 this.expires = ValidityDate.formatAsUTCSecondsGranularity(expireDate);
+            } else if (certificate.getType().equalsIgnoreCase(SshCertificate.CERTIFICATE_TYPE)) {
+                 this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
+                 this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
+                 final SshCertificate sshCertificate = (SshCertificate) certificate;
+                 
+                 this.signatureAlgorithm = sshCertificate.getSignatureAlgorithm();
+                 this.sshCertificateType = sshCertificate.getSshCertificateType().getLabel();
+                 this.sshExtensions = sshCertificate.getExtensions().keySet().toString();
+                 this.sshForceCommand = sshCertificate.getCriticalOptions().getOrDefault(
+                         SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, "");
+                 this.sshSourceAddress = sshCertificate.getCriticalOptions().getOrDefault(
+                         SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, "");
             }
         }
 
@@ -338,6 +370,7 @@ public class RaCertificateDetails {
     public String getType() { return type; }
     public boolean isTypeX509() { return "X.509".equals(type); }
     public boolean isTypeCvc() { return "CVC".equals(type); }
+    public boolean isTypeSsh() { return SshCertificate.CERTIFICATE_TYPE.equals(type); }
     public String getTypeVersion() { return typeVersion; }
     public String getSerialnumber() { return serialnumber; }
     public String getSerialnumberRaw() { return serialnumberRaw; }
@@ -786,4 +819,33 @@ public class RaCertificateDetails {
     public boolean isPreCertificate() {
         return isPreCertificate;
     }
+    
+    public String  getSshKeyId() {
+        return sshKeyId;
+    }
+    
+    public String  getPrincipals() {
+        return principals;
+    }
+    
+    public String  getComment() {
+        return comment;
+    }
+
+    public String getSshCertificateType() {
+        return sshCertificateType;
+    }
+
+    public String getSshExtensions() {
+        return sshExtensions;
+    }
+
+    public String getSshSourceAddress() {
+        return sshSourceAddress;
+    }
+
+    public String getSshForceCommand() {
+        return sshForceCommand;
+    }
+    
 }

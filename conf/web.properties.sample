@@ -56,6 +56,9 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default: set automatically, so no need to change this property unless you want something specific.
 #httpsserver.an=dnsName=${httpsserver.hostname}
 
+# Desired token type for the SSL server certificate:  P12, JKS. default value is JKS
+httpsserver.tokentype=JKS
+
 # END: Installation settings.
 
 # The public port JBoss will listen to http on

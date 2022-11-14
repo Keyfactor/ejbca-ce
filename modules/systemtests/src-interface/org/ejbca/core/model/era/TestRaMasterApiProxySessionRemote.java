@@ -99,5 +99,7 @@ public interface TestRaMasterApiProxySessionRemote {
     byte[] enrollAndIssueSshCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity,
             final SshRequestMessage sshRequestMessage)
             throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException;
+
+    RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
     
 }

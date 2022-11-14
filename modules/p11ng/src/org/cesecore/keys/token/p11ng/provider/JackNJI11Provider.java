@@ -45,12 +45,16 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.sun.jna.Memory;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
@@ -67,8 +71,6 @@ import org.pkcs11.jacknji11.CKO;
 import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
-
-import com.sun.jna.Memory;
 
 /**
  * Provider using JackNJI11.
@@ -111,6 +113,9 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", NISTObjectIdentifiers.id_ecdsa_with_sha3_256.getId(), MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", NISTObjectIdentifiers.id_ecdsa_with_sha3_384.getId(), MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId(), MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED25519, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED448, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "NONEwithECDSA", MySignature.class.getName()));
@@ -119,7 +124,7 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "MessageDigest", "SHA512", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "AlgorithmParameters", "PSS", MyAlgorithmParameters.class.getName()));
         putService(new MySigningService(this, "Cipher", "RSAEncryption", MyCipher.class.getName()));
-        putService(new MySigningService(this, "Cipher", "1.2.840.113549.1.1.1", MyCipher.class.getName()));
+        putService(new MySigningService(this, "Cipher", PKCSObjectIdentifiers.rsaEncryption.getId(), MyCipher.class.getName()));
         putService(new MySigningService(this, "KeyAgreement", "ECDH", MyKeyAgreement.class.getName()));
 
     }
@@ -225,7 +230,7 @@ public class JackNJI11Provider extends Provider {
             if (MechanismNames.typeFromSigAlgoName(algorithm).isPresent()) {
                 type = MechanismNames.typeFromSigAlgoName(algorithm).get();                
             } else {
-                throw new RuntimeException("Algorithm " + algorithm + " is not supported, it has not PKCS#11 signature type defined.");
+                throw new RuntimeException("Algorithm " + algorithm + " is not supported, it has no PKCS#11 signature type defined.");
             }
             if (log.isTraceEnabled()) {
                 log.trace("Creating Signature provider for algorithm: " + algorithm + ", and provider " + provider + ", type=" + type);
@@ -257,15 +262,22 @@ public class JackNJI11Provider extends Provider {
                     throw new InvalidKeyException("The signature algorithm " + algorithm + " is not supported by P11NG.");
                 }
                 long mechanism = MechanismNames.longFromSigAlgoName(this.algorithm).get();
-                if (mechanism == CKM.EDDSA && StringUtils.contains(myKey.getSlot().getLibName(), "Cryptoki2")) {
-                    // Workaround, like ED key generation in CryptokiDevice, for EdDSA where HSMs are not up to P11v3 yet
-                    // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Cryptoki2 detected, using CKM_VENDOR_DEFINED + 0xC03 instead of P11v3 for CKM_EDDSA");
+                if (mechanism == CKM.EDDSA) {
+                    if (StringUtils.contains(myKey.getSlot().getLibName(), "Cryptoki2")) {
+                        // Workaround, like ED key generation in CryptokiDevice, for EdDSA where HSMs are not up to P11v3 yet
+                        // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("Cryptoki2 detected, using CKM_VENDOR_DEFINED + 0xC03 instead of P11v3 for CKM_EDDSA");
+                        }
+                        // From cryptoki_v2.h in the lunaclient sample package
+                        final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
+                        mechanism = LUNA_CKM_EDDSA;
+                    } else if (StringUtils.contains(myKey.getSlot().getLibName(), "cs_pkcs11_R3")) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("cs_pkcs11_R3 / utimaco detected. CKM.EDDSA=>CKM.ECDSA");
+                        }
+                        mechanism = CKM.ECDSA;
                     }
-                    // From cryptoki_v2.h in the lunaclient sample package
-                    final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
-                    mechanism = LUNA_CKM_EDDSA;
                 }
                 final byte[] param;
                 if (params == null) {
@@ -465,23 +477,31 @@ public class JackNJI11Provider extends Provider {
                 // re-using this session can then later result in CKR_OPERATION_ACTIVE, so upon failure it's better to close 
                 // this session so it can be re-created
             } catch (IOException e) {
-                myKey.getSlot().closeSession(session);
-                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().closeSession(session);
+                    hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                }
                 throw new SignatureException(e);
             } catch (NoSuchAlgorithmException e) {
                 log.warn("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.", e);
-                myKey.getSlot().closeSession(session);
-                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().closeSession(session);
+                    hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                }
                 throw new SignatureException(e);
             } catch (NoSuchProviderException e) {
                 log.error("The Bouncy Castle provider has not been installed.");
-                myKey.getSlot().closeSession(session);
-                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().closeSession(session);
+                    hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                }
                 throw new SignatureException(e);
             } catch (CKRException e) {
                 log.warn("PKCS#11 exception while trying to sign: ", e);
-                myKey.getSlot().closeSession(session);
-                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().closeSession(session);
+                    hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                }
                 throw new SignatureException(e);
             } finally {
                 // Signing is done, either successful or failed, release the session if there is an active one
@@ -839,16 +859,20 @@ public class JackNJI11Provider extends Provider {
                             privateBaseKey.getObject(), pubTempl);
             } catch(CKRException e) {
                 log.warn("PKCS#11 exception while trying to ecdh: ", e);
-                privateBaseKey.getSlot().closeSession(session);
-                hasActiveSession = false;
+                if (privateBaseKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    privateBaseKey.getSlot().closeSession(session);
+                    hasActiveSession = false;
+                }
                 throw new IllegalStateException("PKCS#11 exception while trying to ecdh: ", e);
             }
             
             CKA privKeyAttribute = ((NJI11ReleasebleSessionPrivateKey) privateBaseKey).getSlot().getCryptoki()
                     .GetAttributeValue(session.getId(), keyRef, CKA.VALUE);
             
-            privateBaseKey.getSlot().closeSession(session);
-            hasActiveSession = false;
+            if (privateBaseKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                privateBaseKey.getSlot().closeSession(session);
+                hasActiveSession = false;
+            }
             return privKeyAttribute.getValue();
         }
 

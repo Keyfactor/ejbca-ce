@@ -61,33 +61,6 @@
         }
       }
     },
-    "/v1/ca_management/{ca_name}/activate": {
-      "put": {
-        "tags": [
-          "v1/ca_management"
-        ],
-        "summary": "Activate a CA",
-        "description": "Activates CA with given name",
-        "operationId": "activate",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "ca_name",
-            "in": "path",
-            "description": "Name of the CA to activate",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "CA activated"
-          }
-        }
-      }
-    },
     "/v1/ca_management/{ca_name}/deactivate": {
       "put": {
         "tags": [
@@ -115,6 +88,33 @@
         }
       }
     },
+    "/v1/ca_management/{ca_name}/activate": {
+      "put": {
+        "tags": [
+          "v1/ca_management"
+        ],
+        "summary": "Activate a CA",
+        "description": "Activates CA with given name",
+        "operationId": "activate",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ca_name",
+            "in": "path",
+            "description": "Name of the CA to activate",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CA activated"
+          }
+        }
+      }
+    },
     "/v1/ca/status": {
       "get": {
         "tags": [
@@ -137,17 +137,14 @@
         }
       }
     },
-    "/v1/ca/{issuer_dn}/importcrl": {
-      "post": {
+    "/v1/ca/{issuer_dn}/getLatestCrl": {
+      "get": {
         "tags": [
           "v1/ca"
         ],
-        "summary": "Import a certificate revocation list (CRL) for a CA",
+        "summary": "Returns the latest CRL issued by this CA",
         "description": "",
-        "operationId": "importCrl",
-        "consumes": [
-          "multipart/form-data"
-        ],
+        "operationId": "getLatestCrl",
         "produces": [
           "application/json"
         ],
@@ -160,16 +157,17 @@
             "type": "string"
           },
           {
-            "name": "crlFile",
-            "in": "formData",
-            "description": "CRL file in DER format",
+            "name": "deltaCrl",
+            "in": "query",
+            "description": "true to get the latest deltaCRL, false to get the latest complete CRL",
             "required": false,
-            "type": "file"
+            "type": "boolean",
+            "default": false
           },
           {
             "name": "crlPartitionIndex",
-            "in": "formData",
-            "description": "CRL partition index",
+            "in": "query",
+            "description": "the CRL partition index",
             "required": false,
             "type": "integer",
             "default": 0,
@@ -178,47 +176,9 @@
         ],
         "responses": {
           "200": {
-            "description": "CRL file was imported successfully"
-          },
-          "400": {
-            "description": "Error while importing CRL file"
-          }
-        }
-      }
-    },
-    "/v1/ca/{issuer_dn}/createcrl": {
-      "post": {
-        "tags": [
-          "v1/ca"
-        ],
-        "summary": "Create CRL(main, partition and delta) issued by this CA",
-        "description": "",
-        "operationId": "createCrl",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "issuer_dn",
-            "in": "path",
-            "description": "the CRL issuers DN (CAs subject DN)",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "deltacrl",
-            "in": "query",
-            "description": "true to also create the deltaCRL, false to only create the base CRL",
-            "required": false,
-            "type": "boolean",
-            "default": false
-          }
-        ],
-        "responses": {
-          "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CreateCrlRestResponse"
+              "$ref": "#/definitions/CrlRestResponse"
             }
           }
         }
@@ -273,14 +233,14 @@
         }
       }
     },
-    "/v1/ca/{issuer_dn}/getLatestCrl": {
-      "get": {
+    "/v1/ca/{issuer_dn}/createcrl": {
+      "post": {
         "tags": [
           "v1/ca"
         ],
-        "summary": "Returns the latest CRL issued by this CA",
+        "summary": "Create CRL(main, partition and delta) issued by this CA",
         "description": "",
-        "operationId": "getLatestCrl",
+        "operationId": "createCrl",
         "produces": [
           "application/json"
         ],
@@ -293,17 +253,57 @@
             "type": "string"
           },
           {
-            "name": "deltaCrl",
+            "name": "deltacrl",
             "in": "query",
-            "description": "true to get the latest deltaCRL, false to get the latest complete CRL",
+            "description": "true to also create the deltaCRL, false to only create the base CRL",
             "required": false,
             "type": "boolean",
             "default": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CreateCrlRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ca/{issuer_dn}/importcrl": {
+      "post": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Import a certificate revocation list (CRL) for a CA",
+        "description": "",
+        "operationId": "importCrl",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "crlFile",
+            "in": "formData",
+            "description": "CRL file in DER format",
+            "required": false,
+            "type": "file"
           },
           {
             "name": "crlPartitionIndex",
-            "in": "query",
-            "description": "the CRL partition index",
+            "in": "formData",
+            "description": "CRL partition index",
             "required": false,
             "type": "integer",
             "default": 0,
@@ -312,10 +312,10 @@
         ],
         "responses": {
           "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/CrlRestResponse"
-            }
+            "description": "CRL file was imported successfully"
+          },
+          "400": {
+            "description": "Error while importing CRL file"
           }
         }
       }
@@ -337,6 +337,41 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/RestResourceStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/search": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Searches for certificates confirming given criteria.",
+        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
+        "operationId": "searchCertificates",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Maximum number of results and collection of search criterias.",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/SearchCertificatesRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/SearchCertificatesRestResponse"
             }
           }
         }
@@ -388,40 +423,6 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/RevokeStatusRestResponse"
-            }
-          }
-        }
-      }
-    },
-    "/v1/certificate/certificaterequest": {
-      "post": {
-        "tags": [
-          "v1/certificate"
-        ],
-        "summary": "Enrollment with client generated keys for an existing End Entity",
-        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-        "operationId": "certificateRequest",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/CertificateRequestRestRequest"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
             }
           }
         }
@@ -514,40 +515,6 @@
         }
       }
     },
-    "/v1/certificate/pkcs10enroll": {
-      "post": {
-        "tags": [
-          "v1/certificate"
-        ],
-        "summary": "Enrollment with client generated keys, using CSR subject",
-        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-        "operationId": "enrollPkcs10Certificate",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/EnrollCertificateRestRequest"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
-            }
-          }
-        }
-      }
-    },
     "/v1/certificate/enrollkeystore": {
       "post": {
         "tags": [
@@ -619,14 +586,14 @@
         }
       }
     },
-    "/v1/certificate/search": {
+    "/v1/certificate/pkcs10enroll": {
       "post": {
         "tags": [
           "v1/certificate"
         ],
-        "summary": "Searches for certificates confirming given criteria.",
-        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
-        "operationId": "searchCertificates",
+        "summary": "Enrollment with client generated keys, using CSR subject",
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+        "operationId": "enrollPkcs10Certificate",
         "consumes": [
           "application/json"
         ],
@@ -637,18 +604,51 @@
           {
             "in": "body",
             "name": "body",
-            "description": "Maximum number of results and collection of search criterias.",
             "required": false,
             "schema": {
-              "$ref": "#/definitions/SearchCertificatesRestRequest"
+              "$ref": "#/definitions/EnrollCertificateRestRequest"
             }
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/SearchCertificatesRestResponse"
+              "$ref": "#/definitions/CertificateRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/certificaterequest": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Enrollment with client generated keys for an existing End Entity",
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+        "operationId": "certificateRequest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CertificateRequestRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CertificateRestResponse"
             }
           }
         }
@@ -682,7 +682,7 @@
           "v2/certificate"
         ],
         "summary": "Searches for certificates confirming given criteria and pagination.",
-        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model.",
+        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model. Use -1 for current_page to get total number of certificate for the request criteria.",
         "operationId": "searchCertificates_1",
         "consumes": [
           "application/json"
@@ -706,6 +706,35 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/SearchCertificatesRestResponseV2"
+            }
+          }
+        }
+      }
+    },
+    "/v2/certificate/profile/{profile_name}": {
+      "get": {
+        "tags": [
+          "v2/certificate"
+        ],
+        "summary": "Get Certificate Profile Info.",
+        "description": "",
+        "operationId": "getCertificateProfileInfo",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "profile_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CertificateProfileInfoRestResponseV2"
             }
           }
         }
@@ -1180,14 +1209,14 @@
         }
       }
     },
-    "/v1/cryptotoken/{cryptotoken_name}/{key_pair_alias}/removekeys": {
-      "post": {
+    "/v1/cryptotoken/{cryptotoken_name}/deactivate": {
+      "put": {
         "tags": [
           "v1/cryptotoken"
         ],
-        "summary": "Remove keys",
-        "description": "Remove a key pair given crypto token name and key pair alias to be removed.",
-        "operationId": "removeKeys",
+        "summary": "Deactivate a Crypto Token",
+        "description": "Deactivates Crypto Token given name",
+        "operationId": "deactivate_1",
         "produces": [
           "application/json"
         ],
@@ -1195,14 +1224,7 @@
           {
             "name": "cryptotoken_name",
             "in": "path",
-            "description": "Name of the token to remove keys for.",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "key_pair_alias",
-            "in": "path",
-            "description": "Alias for the key to be removed from the crypto token.",
+            "description": "Name of the token to deactivate",
             "required": true,
             "type": "string"
           }
@@ -1250,14 +1272,14 @@
         }
       }
     },
-    "/v1/cryptotoken/{cryptotoken_name}/deactivate": {
-      "put": {
+    "/v1/cryptotoken/{cryptotoken_name}/{key_pair_alias}/removekeys": {
+      "post": {
         "tags": [
           "v1/cryptotoken"
         ],
-        "summary": "Deactivate a Crypto Token",
-        "description": "Deactivates Crypto Token given name",
-        "operationId": "deactivate_1",
+        "summary": "Remove keys",
+        "description": "Remove a key pair given crypto token name and key pair alias to be removed.",
+        "operationId": "removeKeys",
         "produces": [
           "application/json"
         ],
@@ -1265,7 +1287,14 @@
           {
             "name": "cryptotoken_name",
             "in": "path",
-            "description": "Name of the token to deactivate",
+            "description": "Name of the token to remove keys for.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "key_pair_alias",
+            "in": "path",
+            "description": "Alias for the key to be removed from the crypto token.",
             "required": true,
             "type": "string"
           }
@@ -1431,45 +1460,6 @@
         }
       }
     },
-    "/v1/endentity/{endentity_name}/revoke": {
-      "put": {
-        "tags": [
-          "v1/endentity"
-        ],
-        "summary": "Revokes all end entity certificates",
-        "description": "Revokes all certificates associated with given end entity name with specified reason code (see RFC 5280 Section 5.3.1), and optionally deletes the end entity",
-        "operationId": "revoke",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "endentity_name",
-            "in": "path",
-            "description": "Name of the end entity",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "in": "body",
-            "name": "body",
-            "description": "request",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/EndEntityRevocationRestRequest"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "successful operation"
-          }
-        }
-      }
-    },
     "/v1/endentity/{endentity_name}/setstatus": {
       "post": {
         "tags": [
@@ -1499,6 +1489,45 @@
             "required": false,
             "schema": {
               "$ref": "#/definitions/SetEndEntityStatusRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/v1/endentity/{endentity_name}/revoke": {
+      "put": {
+        "tags": [
+          "v1/endentity"
+        ],
+        "summary": "Revokes all end entity certificates",
+        "description": "Revokes all certificates associated with given end entity name with specified reason code (see RFC 5280 Section 5.3.1), and optionally deletes the end entity",
+        "operationId": "revoke",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "endentity_name",
+            "in": "path",
+            "description": "Name of the end entity",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "request",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EndEntityRevocationRestRequest"
             }
           }
         ],
@@ -1696,42 +1725,22 @@
         }
       }
     },
-    "CreateCrlRestResponse": {
+    "CrlRestResponse": {
       "type": "object",
       "properties": {
-        "issuer_dn": {
+        "crl": {
+          "type": "array",
+          "example": "MIIEV...SqQPE",
+          "description": "Certificate Revokation List (CRL)",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "response_format": {
           "type": "string",
-          "example": "CN=ExampleCA",
-          "description": "Issuer Distinguished Name"
-        },
-        "latest_crl_version": {
-          "type": "integer",
-          "format": "int32",
-          "example": 10,
-          "description": "Latest base CRL version"
-        },
-        "latest_delta_crl_version": {
-          "type": "integer",
-          "format": "int32",
-          "example": 5,
-          "description": "Latest delta CRL version"
-        },
-        "latest_partition_crl_versions": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "latest_partition_delta_crl_versions": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "all_success": {
-          "type": "boolean"
+          "example": "DER",
+          "description": "Response format"
         }
       }
     },
@@ -1778,22 +1787,158 @@
         }
       }
     },
-    "CrlRestResponse": {
+    "CreateCrlRestResponse": {
       "type": "object",
       "properties": {
-        "crl": {
+        "issuer_dn": {
+          "type": "string",
+          "example": "CN=ExampleCA",
+          "description": "Issuer Distinguished Name"
+        },
+        "latest_crl_version": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "Latest base CRL version"
+        },
+        "latest_delta_crl_version": {
+          "type": "integer",
+          "format": "int32",
+          "example": 5,
+          "description": "Latest delta CRL version"
+        },
+        "latest_partition_crl_versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "latest_partition_delta_crl_versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "all_success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CertificateRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
           "type": "array",
-          "example": "MIIEV...SqQPE",
-          "description": "Certificate Revokation List (CRL)",
+          "example": "MIIDXzCCA...eW1Zro0=",
+          "description": "Certificate",
           "items": {
             "type": "string",
             "format": "byte"
           }
         },
+        "serial_number": {
+          "type": "string",
+          "example": "1234567890ABCDEF",
+          "description": "Hex Serial Number"
+        },
         "response_format": {
           "type": "string",
           "example": "DER",
           "description": "Response format"
+        },
+        "certificate_chain": {
+          "type": "array",
+          "example": "[ \u201cABC123efg...345xyz0=\u201c ]",
+          "description": "Certificate chain",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "byte"
+            }
+          }
+        },
+        "certificate_profile": {
+          "type": "string",
+          "example": "ENDUSER",
+          "description": "Certificate profile name"
+        },
+        "end_entity_profile": {
+          "type": "string",
+          "example": "ExampleEEP",
+          "description": "End Entity profile name"
+        }
+      }
+    },
+    "SearchCertificatesRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CertificateRestResponse"
+          }
+        },
+        "more_results": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SearchCertificateCriteriaRestRequest": {
+      "type": "object",
+      "properties": {
+        "property": {
+          "type": "string",
+          "example": "CERTIFICATE_PROFILE",
+          "description": "A search property",
+          "enum": [
+            "QUERY",
+            "END_ENTITY_PROFILE",
+            "CERTIFICATE_PROFILE",
+            "EXTERNAL_ACCOUNT_BINDING_ID",
+            "CA",
+            "STATUS",
+            "ISSUED_DATE",
+            "EXPIRE_DATE",
+            "REVOCATION_DATE"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "example": "ENDUSER",
+          "description": "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA"
+        },
+        "operation": {
+          "type": "string",
+          "example": "EQUAL",
+          "description": "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
+          "enum": [
+            "EQUAL",
+            "LIKE",
+            "BEFORE",
+            "AFTER"
+          ]
+        }
+      },
+      "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \nUPDATE_TIME 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nUPDATE_TIME 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n"
+    },
+    "SearchCertificatesRestRequest": {
+      "type": "object",
+      "properties": {
+        "max_number_of_results": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "Maximum number of results"
+        },
+        "criteria": {
+          "type": "array",
+          "description": "A List of search criteria.",
+          "items": {
+            "$ref": "#/definitions/SearchCertificateCriteriaRestRequest"
+          }
         }
       }
     },
@@ -1828,80 +1973,6 @@
         },
         "revoked": {
           "type": "boolean"
-        }
-      }
-    },
-    "CertificateRestResponse": {
-      "type": "object",
-      "properties": {
-        "certificate": {
-          "type": "array",
-          "example": "MIIDXzCCA...eW1Zro0=",
-          "description": "Certificate",
-          "items": {
-            "type": "string",
-            "format": "byte"
-          }
-        },
-        "serial_number": {
-          "type": "string",
-          "example": "1234567890ABCDEF",
-          "description": "Hex Serial Number"
-        },
-        "response_format": {
-          "type": "string",
-          "example": "DER",
-          "description": "Response format"
-        },
-        "certificate_chain": {
-          "type": "array",
-          "example": "[ “ABC123efg...345xyz0=“ ]",
-          "description": "Certificate chain",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "byte"
-            }
-          }
-        },
-        "certificate_profile": {
-          "type": "string",
-          "example": "ENDUSER",
-          "description": "Certificate profile name"
-        },
-        "end_entity_profile": {
-          "type": "string",
-          "example": "ExampleEEP",
-          "description": "End Entity profile name"
-        }
-      }
-    },
-    "CertificateRequestRestRequest": {
-      "type": "object",
-      "properties": {
-        "certificate_request": {
-          "type": "string",
-          "example": "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
-          "description": "Certificate request"
-        },
-        "username": {
-          "type": "string",
-          "example": "JohnDoe",
-          "description": "Username"
-        },
-        "password": {
-          "type": "string",
-          "example": "foo123",
-          "description": "Password"
-        },
-        "include_chain": {
-          "type": "boolean"
-        },
-        "certificate_authority_name": {
-          "type": "string",
-          "example": "CN=ExampleCA",
-          "description": "Certificate Authority (CA) name"
         }
       }
     },
@@ -1974,6 +2045,31 @@
         }
       }
     },
+    "KeyStoreRestRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "JohnDoe",
+          "description": "Username"
+        },
+        "password": {
+          "type": "string",
+          "example": "foo123",
+          "description": "Password"
+        },
+        "key_alg": {
+          "type": "string",
+          "example": "RSA",
+          "description": "Key algorithm used for enrollment"
+        },
+        "key_spec": {
+          "type": "string",
+          "example": "4096",
+          "description": "Key specification to use"
+        }
+      }
+    },
     "EnrollCertificateRestRequest": {
       "type": "object",
       "properties": {
@@ -2022,9 +2118,14 @@
         }
       }
     },
-    "KeyStoreRestRequest": {
+    "CertificateRequestRestRequest": {
       "type": "object",
       "properties": {
+        "certificate_request": {
+          "type": "string",
+          "example": "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+          "description": "Certificate request"
+        },
         "username": {
           "type": "string",
           "example": "JohnDoe",
@@ -2035,85 +2136,13 @@
           "example": "foo123",
           "description": "Password"
         },
-        "key_alg": {
-          "type": "string",
-          "example": "RSA",
-          "description": "Key algorithm used for enrollment"
-        },
-        "key_spec": {
-          "type": "string",
-          "example": "4096",
-          "description": "Key specification to use"
-        }
-      }
-    },
-    "SearchCertificatesRestResponse": {
-      "type": "object",
-      "properties": {
-        "certificates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/CertificateRestResponse"
-          }
-        },
-        "more_results": {
+        "include_chain": {
           "type": "boolean"
-        }
-      }
-    },
-    "SearchCertificateCriteriaRestRequest": {
-      "type": "object",
-      "properties": {
-        "property": {
-          "type": "string",
-          "example": "CERTIFICATE_PROFILE",
-          "description": "A search property",
-          "enum": [
-            "QUERY",
-            "END_ENTITY_PROFILE",
-            "CERTIFICATE_PROFILE",
-            "EXTERNAL_ACCOUNT_BINDING_ID",
-            "CA",
-            "STATUS",
-            "ISSUED_DATE",
-            "EXPIRE_DATE",
-            "REVOCATION_DATE"
-          ]
         },
-        "value": {
+        "certificate_authority_name": {
           "type": "string",
-          "example": "ENDUSER",
-          "description": "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA"
-        },
-        "operation": {
-          "type": "string",
-          "example": "EQUAL",
-          "description": "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
-          "enum": [
-            "EQUAL",
-            "LIKE",
-            "BEFORE",
-            "AFTER"
-          ]
-        }
-      },
-      "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \nUPDATE_TIME 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nUPDATE_TIME 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n"
-    },
-    "SearchCertificatesRestRequest": {
-      "type": "object",
-      "properties": {
-        "max_number_of_results": {
-          "type": "integer",
-          "format": "int32",
-          "example": 10,
-          "description": "Maximum number of results"
-        },
-        "criteria": {
-          "type": "array",
-          "description": "A List of search criteria.",
-          "items": {
-            "$ref": "#/definitions/SearchCertificateCriteriaRestRequest"
-          }
+          "example": "CN=ExampleCA",
+          "description": "Certificate Authority (CA) name"
         }
       }
     },
@@ -2368,6 +2397,40 @@
           "description": "A List of search criteria.",
           "items": {
             "$ref": "#/definitions/SearchCertificateCriteriaRestRequest"
+          }
+        }
+      }
+    },
+    "CertificateProfileInfoRestResponseV2": {
+      "type": "object",
+      "properties": {
+        "certificate_profile_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "available_key_algs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "available_bit_lenghts": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "available_ecdsa_curves": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "available_cas": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
@@ -2649,39 +2712,6 @@
       },
       "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username; \nAvailable STATUS - multiplicity [0, 9] - values are: NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \n"
     },
-    "EndEntityRevocationRestRequest": {
-      "type": "object",
-      "properties": {
-        "reason_code": {
-          "type": "integer",
-          "format": "int32",
-          "example": 2,
-          "description": "Reason code",
-          "enum": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            8,
-            9,
-            10
-          ]
-        },
-        "delete": {
-          "type": "boolean",
-          "example": true,
-          "description": "Delete",
-          "enum": [
-            true,
-            false
-          ]
-        }
-      },
-      "description": "End Entity revocation request. Available reason codes: \n 0 - Unspecified,\n 1 - Key Compromise,\n 2 - CA Compromise,\n 3 - Affiliation Changed,\n 4 - Superseded,\n 5 - Cessation of Operation,\n 6 - Certificate Hold,\n 8 - Remove from CRL,\n 9 - Privileges Withdrawn,\n 10 - AA Compromise"
-    },
     "SetEndEntityStatusRestRequest": {
       "type": "object",
       "properties": {
@@ -2721,6 +2751,39 @@
       },
       "description": "Use one of allowed values as property(see enum values below).\nAvailable TOKEN - USERGENERATED, P12, BCFKS, JKS, PEM; \nAvailable STATUS - NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n"
     },
+    "EndEntityRevocationRestRequest": {
+      "type": "object",
+      "properties": {
+        "reason_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 2,
+          "description": "Reason code",
+          "enum": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10
+          ]
+        },
+        "delete": {
+          "type": "boolean",
+          "example": true,
+          "description": "Delete",
+          "enum": [
+            true,
+            false
+          ]
+        }
+      },
+      "description": "End Entity revocation request. Available reason codes: \n 0 - Unspecified,\n 1 - Key Compromise,\n 2 - CA Compromise,\n 3 - Affiliation Changed,\n 4 - Superseded,\n 5 - Cessation of Operation,\n 6 - Certificate Hold,\n 8 - Remove from CRL,\n 9 - Privileges Withdrawn,\n 10 - AA Compromise"
+    },
     "EndEntityProfileResponse": {
       "type": "object",
       "properties": {
@@ -2729,17 +2792,17 @@
           "example": "ExampleEEP",
           "description": "End Entity profile name"
         },
-        "subject_domain_name_fields": {
+        "subject_distinguished_name_fields": {
           "type": "array",
-          "example": "[ “CN“ ]",
+          "example": "[ \u201cCN\u201c ]",
           "description": "List of Subject DN Attributes",
           "items": {
             "type": "string"
           }
         },
-        "subject_alt_name_fields": {
+        "subject_alternative_name_fields": {
           "type": "array",
-          "example": "[ “RFC822NAME“ ]",
+          "example": "[ \u201cRFC822NAME\u201c ]",
           "description": "List of Subject Alternative Name fields",
           "items": {
             "type": "string"
@@ -2747,7 +2810,7 @@
         },
         "available_certificate_profiles": {
           "type": "array",
-          "example": "[ “ENDUSER“ ]",
+          "example": "[ \u201cENDUSER\u201c ]",
           "position": 1,
           "description": "List of available Certificate Profiles",
           "items": {
@@ -2756,7 +2819,7 @@
         },
         "available_cas": {
           "type": "array",
-          "example": "[ “ExampleCA“ ]",
+          "example": "[ \u201cExampleCA\u201c ]",
           "position": 2,
           "description": "List of available Certificate Authorities (CAs)",
           "items": {
@@ -2862,13 +2925,9 @@
           "description": "Certificate Authority (CA) name"
         },
         "response": {
-          "type": "array",
+          "type": "string",
           "example": "ssh-rsa AAAAB...QxLwx SshCA",
-          "description": "CA’s public key",
-          "items": {
-            "type": "string",
-            "format": "byte"
-          }
+          "description": "CA\u2019s public key"
         }
       }
     }
