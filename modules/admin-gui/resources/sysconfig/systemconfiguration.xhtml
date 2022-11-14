@@ -444,6 +444,37 @@
 					 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" disabled="#{!protocolinfos.available}"/>
 			</h:column>
 		</t:dataTable>
+		
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+			<h:outputLabel for="header_customheaderrest" value="#{web.text.RESTPROTOCOLPROTECTION}" style="font-weight:bold; font-size:1.2em;"/>
+			<h:panelGroup id="header_customheaderrest"/>
+		
+			<h:panelGroup>
+				<h:outputLabel for="enablecustomheaderrest" value="#{web.text.RESTPROTOCOLPROTECTIONHEADERENABLE}" styleClass="titles"/>
+				<br/>
+				<h:outputText value="#{web.text.RESTPROTOCOLPROTECTIONHEADERENABLE_HELP}" styleClass="help"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="enablecustomheaderrest" value="#{systemConfigMBean.enableCustomHeaderRest}"
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:outputLabel for="enablecustomheaderrest" value="#{web.text.ACTIVATE}" />
+			</h:panelGroup>
+			
+			<h:panelGroup>
+				<h:outputLabel for="enablecustomheaderrestname" value="#{web.text.RESTPROTOCOLPROTECTIONHEADERNAME}" styleClass="titles"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:inputText id="enablecustomheaderrestname" value="#{systemConfigMBean.customHeaderRestName}"
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" size="60"/>
+			</h:panelGroup>
+			
+			<h:panelGroup/>
+			<h:panelGroup>
+				<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveProtocolConfigurations}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+			</h:panelGroup>
+		
+		</h:panelGrid>
 	</h:form>
 
 	<!-- Extended Key Usages -->

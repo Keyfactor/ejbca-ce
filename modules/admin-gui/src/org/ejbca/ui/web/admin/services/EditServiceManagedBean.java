@@ -342,11 +342,8 @@ public class EditServiceManagedBean extends BaseManagedBean {
     public List<SelectItem> getAvailableCAs() {
         List<SelectItem> availableCANames = new ArrayList<>();
         for (Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
-            try {
-                availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName()));
-            } catch (AuthorizationDeniedException e) {
-                log.debug("Not authorized to CA: " + caid);
-            }
+                availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfoInternal(caid).getName()));
+            
         }
         availableCANames.sort(new Comparator<SelectItem>() {
             @Override

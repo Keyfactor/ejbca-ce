@@ -90,6 +90,7 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTHORIZE_PARAMS;
@@ -316,7 +317,9 @@ public class CryptokiDevice {
          */
         private synchronized void closeSessionFinal(final NJI11Session session) {
             try {
+                // Close the session and mark it as closed so this NJI11Session object can not be used anymore
                 c.CloseSession(session.getId());
+                session.markClosed();
             } catch (CKRException ex) {
                 throw new EJBException("Could not close session " + session, ex);
             }
@@ -491,7 +494,21 @@ public class CryptokiDevice {
             return publicKeyRefs.get(0);
         }
         
-        public PrivateKey unwrapPrivateKey(final byte[] wrappedPrivateKey, final String unwrapkey, final long wrappingCipher) {
+        public PrivateKey unwrapPrivateKey(final byte[] wrappedPrivateKey, final String wrappedKeyType, final String unwrapkey, final long wrappingCipher) {
+            // Get CKA_KEY_TYPE
+            final long wrappedKeyTypeId;
+            switch (wrappedKeyType) {
+                case "RSA":
+                    wrappedKeyTypeId = CKK.RSA;
+                    break;
+                case "EC":
+                case "ECDSA":
+                    wrappedKeyTypeId = CKK.EC;
+                    break;
+                default: // TODO Ed support
+                    throw new IllegalArgumentException("Unsuppored key type for key to unwrap: " + wrappedKeyType);
+            }
+
             NJI11Session session = aquireSession();
             // Find unWrapKey
             final List<Long> secretObjects = findSecretKeyObjectsByLabel(session, unwrapkey);
@@ -507,7 +524,7 @@ public class CryptokiDevice {
 
             CKA[] unwrappedPrivateKeyTemplate = new CKA[]{
                 new CKA(CKA.CLASS, CKO.PRIVATE_KEY),
-                new CKA(CKA.KEY_TYPE, CKK.RSA),
+                new CKA(CKA.KEY_TYPE, wrappedKeyTypeId),
                 new CKA(CKA.PRIVATE, true),
                 new CKA(CKA.DECRYPT, true),
                 new CKA(CKA.SIGN, true),
@@ -521,7 +538,7 @@ public class CryptokiDevice {
                           unWrapKey + ", session: " + session);
             }
 
-            NJI11StaticSessionPrivateKey result = new NJI11StaticSessionPrivateKey(session, privateKey, "RSA", this, true); // TODO: EC support!
+            NJI11StaticSessionPrivateKey result = new NJI11StaticSessionPrivateKey(session, privateKey, wrappedKeyType, this, true);
             return result;
         }
         
@@ -807,7 +824,22 @@ public class CryptokiDevice {
                         }
                     } else {
                         oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());                            
-                    }                            
+                    }
+                } catch (IOException ex) {
+                    // P11 states that the curve/oid shoudl be DER encoded, but (at least) Utimaco 
+                    // don't do that but just put the curve in a string
+                    final String plainString = new String(ckaParams.getValue());
+                    if ("curve25519".equalsIgnoreCase(plainString)) {
+                        oid = EdECObjectIdentifiers.id_Ed25519;
+                    } else if ("Ed25519".equalsIgnoreCase(plainString)) {
+                        oid = EdECObjectIdentifiers.id_Ed25519;
+                    } else if ("edwards25519".equalsIgnoreCase(plainString)) {
+                        oid = EdECObjectIdentifiers.id_Ed25519;
+                    } else if ("curve448".equalsIgnoreCase(plainString)) {
+                        oid = EdECObjectIdentifiers.id_Ed448;
+                    } else {
+                        throw new IOException(ex);
+                    }
                 }
                 if (oid == null) {
                     LOG.warn("Unable to reconstruct curve OID from DER encoded data: " + StringTools.hex(ckaParams.getValue()));
@@ -899,10 +931,18 @@ public class CryptokiDevice {
             return provider;
         }
 
-        public GeneratedKeyData generateWrappedKey(String wrapKeyAlias, String keyAlgorithm, String keySpec, long wrappingCipher) {            
-            if (!"RSA".equals(keyAlgorithm)) {
-                throw new IllegalArgumentException("Only RSA supported as key algorithm");
+        public GeneratedKeyData generateWrappedKey(String wrapKeyAlias, String keyAlgorithm, String keySpec, long wrappingCipher) {
+            if ("RSA".equalsIgnoreCase(keyAlgorithm)) {
+                return generateRSAWrappedKey(wrapKeyAlias, keyAlgorithm, keySpec, wrappingCipher);
+            } else if ("ECDSA".equalsIgnoreCase(keyAlgorithm)) {
+                return generateEccWrappedKey(wrapKeyAlias, keyAlgorithm, new ASN1ObjectIdentifier(AlgorithmTools.getEcKeySpecOidFromBcName(keySpec)), wrappingCipher);
+            } else {
+                throw new IllegalArgumentException("Only RSA and ECDSA supported as key algorithms");
             }
+        }
+
+        public GeneratedKeyData generateRSAWrappedKey(String wrapKeyAlias, String keyAlgorithm, String keySpec, long wrappingCipher) {
+
             final int keyLength = Integer.parseInt(keySpec);
             
             NJI11Session session = null;
@@ -970,14 +1010,13 @@ public class CryptokiDevice {
                         LOG.debug("Public key: " + Base64.toBase64String(publicKey.getEncoded()));
                     }
 
-                    CKM cipherMechanism = new CKM(wrappingCipher); // OK with nCipher
-//                    CKM cipherMechanism = new CKM(0x00001091); // SoftHSM2+patched-botan
-                    
+                    CKM cipherMechanism = new CKM(wrappingCipher);
+
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Using mechanism: " + cipherMechanism);
                     }
                     
-                    byte[] wrapped = c.WrapKey(session.getId(), cipherMechanism, wrapKey, privateKeyRef.value);       // TODO cipher
+                    byte[] wrapped = c.WrapKey(session.getId(), cipherMechanism, wrapKey, privateKeyRef.value);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Wrapped private key: " + Base64.toBase64String(wrapped));
                     }
@@ -993,6 +1032,131 @@ public class CryptokiDevice {
                 if (session != null) {
                     releaseSession(session);
                 }
+            }
+        }
+
+        public GeneratedKeyData generateEccWrappedKey(String wrapKeyAlias, String keyAlgorithm, final ASN1ObjectIdentifier oid, long wrappingCipher) {
+            NJI11Session session = null;
+            try {
+                session = aquireSession();
+
+                // Find wrapKey ----------------------
+                final List<Long> secretObjects = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true),
+                        new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, wrapKeyAlias));
+
+                long wrapKey = -1;
+                if (secretObjects.size() == 1) {
+                    wrapKey = secretObjects.get(0);
+                } else {
+                    if (secretObjects.size() < 0) {
+                        throw new RuntimeException("No such secret key found with alias: " + wrapKeyAlias); // TODO
+                    }
+                    if (secretObjects.size() > 1) {
+                        throw new RuntimeException("More than one secret key found with alias: " + wrapKeyAlias); // TODO
+                    }
+                }
+
+                final HashMap<Long, Object> publicKeyTemplate = new HashMap<>();
+                publicKeyTemplate.put(CKA.ENCRYPT, true);
+                publicKeyTemplate.put(CKA.VERIFY, true);
+                publicKeyTemplate.put(CKA.WRAP, true);
+                publicKeyTemplate.put(CKA.EC_PARAMS, oid.getEncoded());
+
+                final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
+                privateKeyTemplate.put(CKA.DECRYPT, true);
+                privateKeyTemplate.put(CKA.SIGN, true);
+                privateKeyTemplate.put(CKA.UNWRAP, true);
+
+                privateKeyTemplate.put(CKA.SENSITIVE, true);
+                privateKeyTemplate.put(CKA.EXTRACTABLE, true);
+                privateKeyTemplate.put(CKA.PRIVATE, true);
+
+                final LongRef publicKeyRef = new LongRef();
+                final LongRef privateKeyRef = new LongRef();
+                final CKM ckm;
+  /*            TODO: Enabled below when adding support for key wrapping with EdDSA (DSS-2476).
+                Also compare with similar code block in generateEccKeyPair():
+                if (oid.equals(EdECObjectIdentifiers.id_Ed25519) || oid.equals(EdECObjectIdentifiers.id_Ed448)) {
+                    // PKCS#11v3 section 2.3.10
+                    // https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/pkcs11-curr-v3.0.html
+                    // "These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the
+                    // public key using the curveName or the oID methods"
+                    // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
+                    // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
+                    // Generating keys for SoftHSM however, the keys generate fine with PrintableString, but can not be used
+                    final String curve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "curve25519" : "curve448");
+                    if (StringUtils.contains(libName, "cknfast")) { // only use String for nCipher
+
+                        // actually only Ed25519 is supported (nCipher v12.60 nov2020)
+                        final DERPrintableString str = new DERPrintableString(curve);
+                        publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
+                    }
+                    if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
+                        // Workaround for EdDSA where HSMs are not up to P11v3 yet
+                        // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
+                        // From cryptoki_v2.h in the lunaclient sample package
+                        final long LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN = (0x80000000L + 0xC01L);
+                        // Also using the OID is not good enough...just as for nCipher
+                        // actually only Ed25519 is supported (Luna 7 nov2020)
+                        final String lunacurve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "Ed25519" : "Ed448");
+                        final DERPrintableString str = new DERPrintableString(lunacurve);
+                        publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
+                        ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);
+                    } else {
+                        ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
+                    }
+                } else {
+                    ckm = new CKM(CKM.ECDSA_KEY_PAIR_GEN);
+                }*/
+                ckm = new CKM(CKM.ECDSA_KEY_PAIR_GEN);
+                cryptoki.generateKeyPair(session.getId(), ckm, toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
+                        publicKeyRef, privateKeyRef);
+
+                CKM cipherMechanism = new CKM(wrappingCipher);
+
+                byte[] wrapped = c.WrapKey(session.getId(), cipherMechanism, wrapKey, privateKeyRef.value);
+
+                final CKA ckaQ = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.EC_POINT);
+                final CKA ckaParams = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.EC_PARAMS);
+
+                if (ckaQ.getValue() == null) {
+                    throw new RuntimeException("Failed to read EC point");
+                } else if (ckaParams.getValue() == null) {
+                    throw new RuntimeException("Failed to read EC parameters");
+                } else {
+                    // Construct the public key object (Bouncy Castle)
+                    // Always return a public key with OID form of parameters, which means we probably don't support EC keys with fully custom EC parameters using this code
+                    final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(oid.getId());
+                    final PublicKey publicKey;
+                    if (bcspec != null) {
+                        final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
+                        final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
+                                ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
+                        final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
+                        final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
+                        final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+                        publicKey = keyfact.generatePublic(pubKeySpec);
+/*                  TODO: Enabled below when adding support for key wrapping with EdDSA (DSS-2476).
+                    } else if (EdECObjectIdentifiers.id_Ed25519.equals(oid) || EdECObjectIdentifiers.id_Ed448.equals(oid)) {
+                        // It is an EdDSA key
+                        X509EncodedKeySpec edSpec = createEdDSAPublicKeySpec(ckaQ.getValue());
+                        final KeyFactory keyfact = KeyFactory.getInstance(oid.getId(), BouncyCastleProvider.PROVIDER_NAME);
+                        publicKey = keyfact.generatePublic(edSpec);
+ */
+                    } else {
+                        throw new RuntimeException("Failed to find an curve with specified OID");
+                    }
+
+                    return new GeneratedKeyData(wrapped, publicKey);
+                }
+
+            } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException |
+                     NoSuchProviderException ex) {
+                throw new EJBException(ex);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to get public key during ECC key pair generation", ex);
+            } finally {
+                releaseSession(session);
             }
         }
 
@@ -1226,6 +1390,9 @@ public class CryptokiDevice {
                     // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
                     // Generating keys for SoftHSM however, the keys generate fine with PrintableString, but can not be used
                     final String curve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "curve25519" : "curve448");
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
+                    }
                     if (StringUtils.contains(libName, "cknfast")) { // only use String for nCipher
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("cknfast detected, using PrintableString CKA_EC_PARAMS: " + curve);
@@ -1233,11 +1400,8 @@ public class CryptokiDevice {
                         // actually only Ed25519 is supported (nCipher v12.60 nov2020)
                         final DERPrintableString str = new DERPrintableString(curve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
-                    }
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
-                    }
-                    if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
+                        ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
+                    } else if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
                         // Workaround for EdDSA where HSMs are not up to P11v3 yet
                         // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
                         if (LOG.isTraceEnabled()) {
@@ -1250,9 +1414,24 @@ public class CryptokiDevice {
                         final String lunacurve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "Ed25519" : "Ed448");
                         final DERPrintableString str = new DERPrintableString(lunacurve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
-                        ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);          
+                        ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);
+                    } else if (StringUtils.contains(libName, "cs_pkcs11_R3")) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
+                        // Just as the other HSMs, Utimaco only supports Ed25519 (as of today fall 2022), so we expect 
+                        // keygen for Ed448 to fail with a P11 error from the HSM until it's implemented (hopefully standardized)
+                        // Undocumented deviations from the OASIS PKCS#11 v3
+                        // - EC_KEY_PAIR_GEN instead of EC_EDWARDS_KEY_PAIR_GEN
+                        // - curve name specified as CKA_EC_PARAM
+                        //      - but NOT as DER encoded
+                        //      - and NOT curve25519 but edwards25519
+                        // disregarding any of these deviations will allow to generate a key just fine, it will be shown as Ed25519, but will fail to Sign...
+                        final String utimacoCurve = "edwards25519";
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("cs_pkcs11_R3 / utimaco detected: CKM.EC_EDWARDS_KEY_PAIR_GEN=>CKM.EC_KEY_PAIR_GEN, CKA.EC_PARAMS=" + utimacoCurve);
+                        }
+                        publicKeyTemplate.put(CKA.EC_PARAMS, utimacoCurve.getBytes());
+                        ckm = new CKM(CKM.EC_KEY_PAIR_GEN);
                     } else {
-                        ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);                        
+                        ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
                     }
                 } else {
                     LOG.trace("Using ECDSA_KEY_PAIR_GEN");

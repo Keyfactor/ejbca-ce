@@ -1,0 +1,319 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:f="http://xmlns.jcp.org/jsf/core"
+	  xmlns:h="http://xmlns.jcp.org/jsf/html"
+	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+	<!--
+  /*************************************************************************
+   *                                                                       *
+   *  EJBCA: The OpenSource Certificate Authority                          *
+   *                                                                       *
+   *  This software is free software; you can redistribute it and/or       *
+   *  modify it under the terms of the GNU Lesser General Public           *
+   *  License as published by the Free Software Foundation; either         *
+   *  version 2.1 of the License, or any later version.                    *
+   *                                                                       *
+   *  See terms of license at gnu.org.                                     *
+   *                                                                       *
+   *************************************************************************/
+
+   version: $Id$
+    -->
+</ui:remove>
+
+<ui:composition template="/WEB-INF/include/template.xhtml">
+	<ui:param name="resourceBean" value="#{ocspResponderMBean}" />
+	<ui:define name="content">
+
+		<h1>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_TYPE_OCSP}"/>
+			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
+		</h1>
+		<h:panelGroup>
+			<h:panelGrid columns="2" styleClass="margin-bottom">
+				<h:outputLink value="ocspresponders.xhtml">
+					<h:outputText value="#{ocspResponderMBean.backLinkTranslatedText}"/>
+				</h:outputLink>
+				<h:form rendered="#{ocspResponderMBean.switchToEditAllowed or ocspResponderMBean.switchToViewAllowed}">
+					<h:commandButton rendered="#{ocspResponderMBean.switchToEditAllowed}" action="#{ocspResponderMBean.switchToEdit}"
+									 value="#{web.text.EDIT}" title="#{web.text.SWITCHTOEDITMODE}"/>
+					<h:commandButton rendered="#{ocspResponderMBean.switchToViewAllowed}" action="#{ocspResponderMBean.switchToView}"
+									 value="#{web.text.VIEW}" title="#{web.text.SWITCHTOVIEWMODE}"/>
+				</h:form>
+			</h:panelGrid>
+		</h:panelGroup>
+		<h:form id="internalkeybinding">
+			<h:panelGrid columns="3">				
+				<h:outputLabel for="internalKeyBindingId" value="#{web.text.INTERNALKEYBINDING_FIELD_ID}"/>
+				<h:panelGroup id="internalKeyBindingId">
+					<h:outputText rendered="#{ocspResponderMBean.currentInternalKeyBindingId ne '0'}" value="#{ocspResponderMBean.currentInternalKeyBindingId}"/>
+					<h:outputText rendered="#{ocspResponderMBean.currentInternalKeyBindingId eq '0'}" value="#{web.text.INTERNALKEYBINDING_NOTYETGENERATED}"/>
+				</h:panelGroup>
+				<h:message for="internalKeyBindingId"/>
+				<h:outputLabel for="name" value="#{web.text.INTERNALKEYBINDING_FIELD_NAME}"/>
+				<h:panelGroup id="name">
+					<h:inputText rendered="#{ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.currentName}" required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.INTERNALKEYBINDING_FIELD_NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
+					<h:outputText rendered="#{!ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.currentName}"/>
+				</h:panelGroup>
+				<h:message for="name"/>
+				<h:outputLabel for="cryptoToken" value="#{web.text.INTERNALKEYBINDING_FIELD_CRYPTOTOKEN}"/>
+				<h:panelGroup id="cryptoToken">
+					<h:panelGroup rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive}">
+						<h:selectOneMenu value="#{ocspResponderMBean.currentCryptoToken}"
+										 onchange="document.getElementById('internalkeybinding:reloadCryptoToken').click();">
+							<f:selectItems value="#{ocspResponderMBean.availableCryptoTokens}"/>
+						</h:selectOneMenu>
+						<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{ocspResponderMBean.reloadCryptoToken}"/>
+						<script>document.getElementById('internalkeybinding:reloadCryptoToken').style.display = 'none';</script>
+					</h:panelGroup>
+					<h:outputText rendered="#{ocspResponderMBean.inEditMode and !ocspResponderMBean.cryptoTokenActive and ocspResponderMBean.currentCryptoTokenName != null}"
+								  value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
+					<h:outputText rendered="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.cryptoTokenActive}"
+								  value="#{ocspResponderMBean.currentCryptoTokenName != null ? ocspResponderMBean.currentCryptoTokenName : web.text.INTERNALKEYBINDING_CRYPTOTOKEN_MISSING}" title="#{ocspResponderMBean.currentCryptoToken}"/>
+				</h:panelGroup>
+				<h:message for="cryptoToken"/>
+				<h:outputLabel for="keyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_KEYPAIRALIAS}"/>
+				<h:panelGroup id="keyPairAlias">
+					<h:panelGroup rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive and !ocspResponderMBean.boundToCertificate}">
+						<h:selectOneMenu value="#{ocspResponderMBean.currentKeyPairAlias}"
+										 onchange="document.getElementById('internalkeybinding:reloadKeyPairAlias').click();">
+							<f:selectItems value="#{ocspResponderMBean.availableKeyPairAliases}"/>
+						</h:selectOneMenu>
+						<h:commandButton id="reloadKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_KEYPAIRALIAS_UPDATE}" action="#{ocspResponderMBean.reloadKeyPairAlias}"/>
+						<script>document.getElementById('internalkeybinding:reloadKeyPairAlias').style.display = 'none';</script>
+					</h:panelGroup>
+					<h:outputText rendered="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.cryptoTokenActive || ocspResponderMBean.boundToCertificate}"
+								  value="#{ocspResponderMBean.currentKeyPairAlias}"/>
+				</h:panelGroup>
+				<h:message for="keyPairAlias"/>
+				<h:outputLabel for="signatureAlgorithm" value="#{web.text.INTERNALKEYBINDING_FIELD_SIGALG}"/>
+				<h:panelGroup id="signatureAlgorithm">
+					<h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive}"
+									 value="#{ocspResponderMBean.currentSignatureAlgorithm}">
+						<f:selectItems value="#{ocspResponderMBean.availableSignatureAlgorithms}"/>
+					</h:selectOneMenu>
+					<h:panelGroup rendered="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.cryptoTokenActive}">
+						<h:outputText rendered="#{ocspResponderMBean.currentSignatureAlgorithm != null}"
+									  value="#{ocspResponderMBean.currentSignatureAlgorithm}"/>
+						<h:outputText rendered="#{ocspResponderMBean.currentSignatureAlgorithm == null}"
+									  value="#{web.text.INTERNALKEYBINDING_FIELD_NOTSPECIFIED} (error)"/>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:message for="signatureAlgorithm"/>
+				<h:outputLabel for="nextKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_NEXTKEYPAIRALIAS}"
+							   rendered="#{ocspResponderMBean.currentInternalKeyBindingId ne '0'}"/>
+				<h:panelGroup id="nextKeyPairAlias" rendered="#{ocspResponderMBean.currentInternalKeyBindingId ne '0'}">
+					<h:panelGroup rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive}">
+						<h:selectOneMenu value="#{ocspResponderMBean.currentNextKeyPairAlias}">
+							<f:selectItem itemValue="" itemLabel="#{web.text.INTERNALKEYBINDING_FIELD_NONE}"/>
+							<f:selectItems value="#{ocspResponderMBean.availableKeyPairAliases}"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.cryptoTokenActive}">
+						<h:outputText rendered="#{ocspResponderMBean.currentNextKeyPairAlias != null}"
+									  value="#{ocspResponderMBean.currentNextKeyPairAlias}"/>
+						<h:outputText rendered="#{ocspResponderMBean.currentNextKeyPairAlias == null}"
+									  value="#{web.text.INTERNALKEYBINDING_FIELD_NOTSPECIFIED}"/>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:message for="nextKeyPairAlias" rendered="#{ocspResponderMBean.currentInternalKeyBindingId ne '0'}"/>
+				<h:outputLabel for="certificateId" value="#{web.text.INTERNALKEYBINDING_FIELD_BOUNDCERT}"
+							   rendered="#{ocspResponderMBean.boundToCertificate}"/>
+				<h:panelGroup id="certificateId" rendered="#{ocspResponderMBean.boundToCertificate}">
+					<h:outputLink target="_blank" rel="noopener" value="/ejbca/adminweb/viewcertificate.xhtml?certsernoparameter=#{ocspResponderMBean.boundCaCertificateSerialNumber},#{ocspResponderMBean.boundCaCertificateIssuerDn}&amp;ref=keybindings">
+						<f:param name="returnTo" value="4"/>
+						<f:param name="keyBindingId" value="#{ocspResponderMBean.currentInternalKeyBindingId}"/>
+						<h:outputText value="#{ocspResponderMBean.boundCertificateInternalCaName}" rendered="#{ocspResponderMBean.boundCertificateInternalCaName != null}"/>
+						<h:outputText value="#{ocspResponderMBean.boundCertificateIssuerDn}" rendered="#{ocspResponderMBean.boundCertificateInternalCaName == null}"/>
+					</h:outputLink>
+					<h:outputText value="  "/>
+					<h:outputLink target="_blank" rel="noopener" value="/ejbca/adminweb/viewcertificate.xhtml?certsernoparameter=#{ocspResponderMBean.boundCertificateSerialNumber},#{ocspResponderMBean.boundCertificateIssuerDn}&amp;ref=keybindings">
+						<f:param name="returnTo" value="4"/>
+						<f:param name="keyBindingId" value="#{ocspResponderMBean.currentInternalKeyBindingId}"/>
+						<h:outputText style="font-family: monospace; text-align: right;" value="#{ocspResponderMBean.boundCertificateSerialNumber}"/>
+					</h:outputLink>
+				</h:panelGroup>
+				<h:message for="certificateId" rendered="#{ocspResponderMBean.boundToCertificate}"/>
+			</h:panelGrid>
+			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSP_TRUSTEDCERTIFICATES}"/></h3>
+			<h:outputText rendered="#{ocspResponderMBean.trustedCertificates.rowCount == 0}" value="#{web.text.INTERNALKEYBINDING_OCSP_TRUSTINGANY}"/>
+			<h:dataTable id="trustedCertificates" value="#{ocspResponderMBean.trustedCertificates}" var="trustEntry"
+						 rendered="#{ocspResponderMBean.trustedCertificates.rowCount != 0 or ocspResponderMBean.inEditMode}">
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
+					<h:outputText value="#{ocspResponderMBean.trustedCertificatesCaName}" title="#{trustEntry.caId}"/>
+					<f:facet name="footer">
+						<h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
+										 value="#{ocspResponderMBean.currentCertificateAuthority}">
+							<f:selectItems value="#{ocspResponderMBean.availableCertificateAuthorities}"/>
+						</h:selectOneMenu>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_SERIALNUMER}"/></f:facet>
+					<h:outputText rendered="#{!empty trustEntry.certificateSerialNumberDecimal}" value="#{ocspResponderMBean.trustedCertificatesSerialNumberHex}"/>
+					<h:outputText rendered="#{empty trustEntry.certificateSerialNumberDecimal}" value="ANY"/>
+					<f:facet name="footer">
+						<h:inputText id="certificateSerialNumber" rendered="#{ocspResponderMBean.inEditMode}" required="false"
+									 value="#{ocspResponderMBean.currentCertificateSerialNumber}"
+									 size="26" maxlength="255"
+									 title="#{web.text.INTERNALKEYBINDING_EMPTYFORANY}">
+							<f:validator validatorId="optionalHexSerialNumberValidator"/>
+						</h:inputText>
+						<h:message for="certificateSerialNumber" rendered="#{ocspResponderMBean.inEditMode}"/>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_DESCRIPTION}"/></f:facet>
+					<h:outputText value="#{trustEntry.trustEntryDescription}"/>
+					<f:facet name="footer">
+						<h:inputText id="trustEntryDescription" rendered="#{ocspResponderMBean.inEditMode}" required="false"
+									 value="#{ocspResponderMBean.currentTrustEntryDescription}"
+									 size="18" maxlength="255"
+									 title="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_TITLE}">
+						</h:inputText>
+						<h:message for="trustEntryDescription" rendered="#{ocspResponderMBean.inEditMode}"/>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeTrust}" rendered="#{ocspResponderMBean.inEditMode}"/>
+					<f:facet name="footer">
+						<h:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addTrust}"
+										  value="#{web.text.ADD}"/>
+					</f:facet>
+				</h:column>
+			</h:dataTable>
+			
+			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_CERTIFICATE_GROUP}"/></h3>
+			
+			<h:panelGroup rendered="#{not ocspResponderMBean.inEditMode}">
+				<h:outputText rendered="#{ocspResponderMBean.signOcspResponseForCas.rowCount == 0}" 
+								value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSES_ONLY_SELF}"/>
+			</h:panelGroup>	
+					
+			<h:panelGroup>
+				<h:dataTable id="signOcspResponseForCaList" value="#{ocspResponderMBean.signOcspResponseForCas}" var="otherCa"
+						 rendered="#{internalKeyBindingMBean.signOcspResponseForCas.rowCount != 0 or internalKeyBindingMBean.inEditMode}">
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
+					<h:outputText value="#{ocspResponderMBean.signOcspResponseForCasCaName}" title="#{otherCa.caId}"/>
+					<f:facet name="footer">
+						<h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
+										 value="#{ocspResponderMBean.currentCertificateAuthorityOcspRespToSign}">
+							<f:selectItems value="#{ocspResponderMBean.availableCertificateAuthoritiesForOcspSign}"/>
+						</h:selectOneMenu>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_DESCRIPTION}"/></f:facet>
+					<h:outputText value="#{otherCa.trustEntryDescription}"/>
+					<f:facet name="footer">
+						<h:inputText id="trustEntryDescription" rendered="#{ocspResponderMBean.inEditMode}" required="false"
+									 value="#{ocspResponderMBean.currentTrustEntryDescriptionOcspRespToSign}"
+									 size="18" maxlength="255"
+									 title="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_TITLE}">
+						</h:inputText>
+						<h:message for="trustEntryDescription" rendered="#{ocspResponderMBean.inEditMode}"/>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeCaToSignOcspResponse}" rendered="#{ocspResponderMBean.inEditMode}"/>
+					<f:facet name="footer">
+						<h:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addCaToSignOcspResponse}"
+										  value="#{web.text.ADD}"/>
+					</f:facet>
+				</h:column>
+				</h:dataTable>
+			</h:panelGroup>		
+
+			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTIES}"/></h3>
+			<h:dataTable value="#{ocspResponderMBean.internalKeyBindingPropertyList}" var="property" styleClass="propertyTable">
+				<h:column>
+					<h:outputText value="#{ocspResponderMBean.propertyNameTranslated}"/>
+				</h:column>
+				<h:column>
+					<h:panelGroup rendered="#{!property.multiValued}">
+						<h:inputText disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}"/>
+						<h:inputText disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}">
+							<f:converter converterId="javax.faces.Long"/>
+						</h:inputText>
+						<h:selectBooleanCheckbox disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
+					</h:panelGroup>
+					<h:selectOneMenu disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.multiValued}" value="#{property.encodedValue}">
+						<f:selectItems value="#{ocspResponderMBean.propertyPossibleValues}"/>
+					</h:selectOneMenu>
+				</h:column>
+			</h:dataTable>
+			<h:panelGroup rendered="#{ocspResponderMBean.internalKeyBindingPropertyList.rowCount == 0}">
+				<div><h:outputText value="#{web.text.INTERNALKEYBINDING_NOPROPERTIES}"/></div>
+			</h:panelGroup>
+
+			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPEXTENSIONHEADER}"/></h3>
+			<h:dataTable id="ocspExtensions" value="#{ocspResponderMBean.ocspExtensions}"  var="extensionEntry">
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPEXTENSION_NAME}"/></f:facet>
+					<h:outputText value="#{ocspResponderMBean.ocspExtensionDisplayName}"/>
+					<f:facet name="footer">
+						<h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
+										 value="#{ocspResponderMBean.currentOcspExtension}">
+							<f:selectItems value="#{ocspResponderMBean.availableOcspExtensions}"/>
+						</h:selectOneMenu>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPEXTENSION_OID}"/></f:facet>
+					<h:outputText value="#{ocspResponderMBean.ocspExtensionOid}"/>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeOcspExtension}" rendered="#{ocspResponderMBean.inEditMode}"/>
+					<f:facet name="footer">
+						<h:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addOcspExtension}"
+										  value="#{web.text.ADD}"/>
+					</f:facet>
+				</h:column>
+			</h:dataTable>
+
+			<!-- Settings for OCSP Archive Cutoff Extension as specified in RFC6960 section 4.4.4. Only displayed for OCSP Key Bindings with an OCSP Archive Cutoff Extension added. -->
+			<h3>
+				<h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_ARCHIVECUTOFFHEADER}" rendered="#{ocspResponderMBean.ocspArchiveCutoffExtensionEnabled}"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Archive_Cutoff.html')}" escape="false" rendered="#{ocspResponderMBean.ocspArchiveCutoffExtensionEnabled}"/>
+			</h3>
+			<h:panelGrid id="retentionPeriodSettings" columns="2" rendered="#{ocspResponderMBean.ocspArchiveCutoffExtensionEnabled}">
+				<h:outputLabel value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_USEISSUERNOTBEFOREASARCHIVECUTOFF}" for="useIssuerNotBeforeAsArchiveCutoff" />
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="useIssuerNotBeforeAsArchiveCutoff" disabled="#{not ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.useIssuerNotBeforeAsArchiveCutoff}">
+						<f:ajax render="retentionPeriodSettings"/>
+					</h:selectBooleanCheckbox>
+					<h:panelGroup styleClass="help">
+						&nbsp;
+						<h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_USEISSUERNOTBEFOREASARCHIVECUTOFF_HELP}"/>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:outputLabel for="retentionPeriod" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RETENTIONPERIOD}"
+							   rendered="#{ocspResponderMBean.ocspArchiveCutoffExtensionEnabled and !ocspResponderMBean.useIssuerNotBeforeAsArchiveCutoff}" />
+				<h:panelGroup rendered="#{ocspResponderMBean.ocspArchiveCutoffExtensionEnabled and !ocspResponderMBean.useIssuerNotBeforeAsArchiveCutoff}">
+					<h:inputText id="retentionPeriod" value="#{ocspResponderMBean.retentionPeriod}" size="6" disabled="#{not ocspResponderMBean.inEditMode}">
+						<f:validator validatorId="simpleTimeValidator"/>
+						<f:attribute name="precision" value="seconds"/>
+					</h:inputText>
+					<h:panelGroup styleClass="help">
+						&nbsp;
+						<h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RETENTIONPERIOD_HELPTEXT}"/>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGrid>
+
+			<div>
+				<h:commandButton value="#{web.text.CREATE}" action="#{ocspResponderMBean.createNew}" rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.creatingNew}"/>
+				<h:commandButton value="#{web.text.SAVE}" action="#{ocspResponderMBean.saveCurrent}" rendered="#{ocspResponderMBean.inEditMode and !ocspResponderMBean.creatingNew}"/>
+			</div>
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>
