@@ -452,7 +452,15 @@ public class CmpMessageHelper {
         }
         CertResponse[] certResponses = { new CertResponse(new ASN1Integer(requestId), pkiStatusInfo) };
         CertRepMessage certRepMessage = new CertRepMessage(null, certResponses);
-        int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+
+        int respType;
+        
+        if (requestType == PKIBody.TYPE_P10_CERT_REQ) {
+            respType = PKIBody.TYPE_INIT_REP; // 1 = intitialization response
+        } else {
+            respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+        }
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating response body of type " + respType);
         }
