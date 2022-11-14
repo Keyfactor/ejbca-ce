@@ -420,7 +420,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
 
     @Override
     public int getRequestId() {
-        return -1; //cerReqId is undefined for p10cr request types: https://www.ietf.org/id/draft-ietf-lamps-cmp-updates-23.html#name-update-section-534-certific
+        return 0; //cerReqId is undefined for p10cr request types, setting it to zero according to openssl
     }
 
     @Override
