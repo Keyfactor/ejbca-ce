@@ -11,8 +11,6 @@
     <property name="lib" value="${ejbca.home}/lib" />
     <property name="dist.dir" location="${ejbca.home}/dist" />
 	
-    <property name="hwtoken_classes" value="hwtoken"/>
-    <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
     <property name="apidoc" value="${ejbca.home}/doc/api" />
 
 	<!-- include the standard properties and paths
@@ -545,8 +543,6 @@
 		<antcall target="va_replacings_in_application.xml" inheritall="true" inheritrefs="true">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
-		<!-- This dir has to exist here -->
-		<mkdir dir="${hwtoken.class.dir}"/>
 		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
 		<condition property="bundle-hibernate-exclude" value="" else="**">
 			<isset property="bundle-hibernate-jpa"/>
@@ -719,8 +715,6 @@
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-common.jar"/>
-        	<!-- Include PrimeCard HSM libraries. TODO: Test that this works. Previously the classes were included in ejbca-ejb.jar.. -->
-        	<zipfileset prefix="lib" dir="${hwtoken.class.dir}" includes="*.jar"/>
 		</ear>
     	<antcall target="signjar" inheritall="true" inheritrefs="true">
         	<param name="signjar.file" value="${caear}"/>
@@ -1042,7 +1036,6 @@
 		    	<exclude name="dist/**" />
 		    	<exclude name="out/**" />
 		    	<exclude name="p12*/**" />
-		    	<exclude name="hwtoken/**" />
 		    	<exclude name="**/*.class" />
 		    	<exclude name=".classpath" />
 		    	<exclude name=".project" />
@@ -1110,6 +1103,7 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-common-web/src/org/ejbca/core/model/services/workers/PreCertificateRevocationWorker.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ScepRaModeExtension.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ProtocolScepHttpRATest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/upgrade/UpgradeSessionBeanEnterpriseTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ClientCertificateRenewalExtension.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ScepClientCertificateRenewalTest.java"/>
                 <exclude unless="edition.is.ee" name="src/java/profilemappings_enterprise.properties"/>
@@ -1144,11 +1138,11 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CryptoTokenRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSearchPaginationSystemTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CustomRestHeaderSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/p11ng/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/p11ng-cli/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
-                <exclude unless="edition.is.ee" name="modules/cesecore-common/src-test/org/cesecore/keys/token/p11ng/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/msae/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/cits/**"/>
                 <!-- List of modules to exclude from non-eIDAS editions -->
