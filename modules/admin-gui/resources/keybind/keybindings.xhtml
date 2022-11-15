@@ -130,7 +130,9 @@
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:outputLabel for="certificateUploadInput" value="#{web.text.INTERNALKEYBINDING_UPLOAD_CERTIFICATE}: "/>
-					<t:inputFileUpload id="certificateUploadInput" value="#{remoteAuthenticationMBean.uploadToTargetFile}"/>
+					<h:inputFile id="certificateUploadInput" value="#{remoteAuthenticationMBean.uploadToTargetFile}">
+						<f:validator validatorId="keyBindingFileUploadValidator"/>
+					</h:inputFile>
 				</h:panelGroup>
 				<h:commandButton action="#{remoteAuthenticationMBean.uploadToTarget}" value="#{web.text.INTERNALKEYBINDING_UPLOAD}"/>
 			</h:panelGrid>
