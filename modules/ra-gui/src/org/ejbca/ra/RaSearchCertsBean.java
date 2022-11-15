@@ -13,11 +13,13 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,15 +43,19 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaCertificateDetails.Callbacks;
 
@@ -80,6 +86,8 @@ public class RaSearchCertsBean implements Serializable {
     private Map<Integer,String> eepIdToNameMap = null;
     private Map<Integer,String> cpIdToNameMap = null;
     private Map<String,String> caSubjectToNameMap = new HashMap<>();
+    private Map<String, Boolean> caNameToAllowsChangeOfRevocationReason = new HashMap<>();
+    private Map<String, Boolean> cpNameToAllowsRevocationBackdating = new HashMap<>();
     private List<SelectItem> availableEeps = new ArrayList<>();
     private List<SelectItem> availableCps = new ArrayList<>();
     private List<SelectItem> availableCas = new ArrayList<>();
@@ -123,10 +131,25 @@ public class RaSearchCertsBean implements Serializable {
                     newStatus, newRevocationReason);
             if (ret) {
                 // Re-initialize object if status has changed
-                final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
-                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
+                final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(
+                        raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
+                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
+                        cpNameToAllowsRevocationBackdating);
             }
             return ret;
+        }
+        @Override
+        public void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason,
+                final Date newDate, final String issuerDn)
+                throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
+                CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException {
+            raMasterApiProxyBean.revokeCert(
+                    raAuthenticationBean.getAuthenticationToken(), new BigInteger(raCertificateDetails.getSerialnumberRaw()), newDate,
+                    issuerDn, newRevocationReason, newDate == null ? false : true);
+            final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
+                    raCertificateDetails.getFingerprint());
+            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
+                    cpNameToAllowsRevocationBackdating);
         }
         @Override
         public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException,
@@ -230,7 +253,8 @@ public class RaSearchCertsBean implements Serializable {
                 if (!stagedRequest.matchExpiresInterval(cdw.getCertificateData().getExpireDate())) { continue; }
                 if (!stagedRequest.matchRevokedInterval(cdw.getCertificateData().getRevocationDate())) { continue; }
                 if (!stagedRequest.matchStatusAndReason(cdw.getCertificateData().getStatus(), cdw.getCertificateData().getRevocationReason())) { continue; }
-                resultsFiltered.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap));
+                resultsFiltered.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap,
+                        caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating));
             }
             if (log.isDebugEnabled()) {
                 log.debug("Filtered " + lastExecutedResponse.getCdws().size() + " responses down to " + resultsFiltered.size() + " results.");
@@ -418,8 +442,12 @@ public class RaSearchCertsBean implements Serializable {
     public List<SelectItem> getAvailableCps() {
         if (availableCps.isEmpty()) {
             cpIdToNameMap = raMasterApiProxyBean.getAuthorizedCertificateProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
+            final IdNameHashMap<CertificateProfile> cpMap = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(
+                    raAuthenticationBean.getAuthenticationToken());
             availableCps.add(new SelectItem(0, raLocaleBean.getMessage("search_certs_page_criteria_cp_optionany")));
             for (final Entry<Integer,String> entry : getAsSortedByValue(cpIdToNameMap.entrySet())) {
+                final CertificateProfile currentCp = cpMap.getValue(entry.getKey());
+                cpNameToAllowsRevocationBackdating.put(entry.getValue(), currentCp.getAllowBackdatedRevocation());
                 availableCps.add(new SelectItem(entry.getKey(), "- " + entry.getValue()));
             }
         }
@@ -448,6 +476,7 @@ public class RaSearchCertsBean implements Serializable {
             });
             for (final CAInfo caInfo : caInfos) {
                 caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
+                caNameToAllowsChangeOfRevocationReason.put(caInfo.getName(), caInfo.isAllowChangingRevocationReason());
             }
             availableCas.add(new SelectItem(0, raLocaleBean.getMessage("search_certs_page_criteria_ca_optionany")));
             for (final CAInfo caInfo : caInfos) {

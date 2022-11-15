@@ -53,6 +53,7 @@ import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -277,7 +278,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     } catch (ApprovalRequestExpiredException e) {
                         addErrorMessage("APPROVALREQUESTEXPIRED");
                         closeWindow = false;
-                    } catch (ApprovalRequestExecutionException e) {
+                    } catch (ApprovalRequestExecutionException | EndEntityExistsException e) {
                         addErrorMessage("ERROREXECUTINGREQUEST");
                         closeWindow = false;
                     } catch (AuthorizationDeniedException | AuthenticationFailedException e) {

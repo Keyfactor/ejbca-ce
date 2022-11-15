@@ -65,7 +65,9 @@
 										 onchange="document.getElementById('internalkeybinding:reloadCryptoToken').click();">
 							<f:selectItems value="#{remoteAuthenticationMBean.availableCryptoTokens}"/>
 						</h:selectOneMenu>
-						<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{remoteAuthenticationMBean.reloadCryptoToken}"/>
+						<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{remoteAuthenticationMBean.reloadCryptoToken}">
+							<f:ajax execute="internalkeybinding:cryptoToken" render="internalkeybinding:keyPairAlias"/>
+                        </h:commandButton>
 						<script>document.getElementById('internalkeybinding:reloadCryptoToken').style.display = 'none';</script>
 					</h:panelGroup>
 					<h:outputText rendered="#{remoteAuthenticationMBean.inEditMode and !remoteAuthenticationMBean.cryptoTokenActive and remoteAuthenticationMBean.currentCryptoTokenName != null}"

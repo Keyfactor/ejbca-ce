@@ -66,7 +66,7 @@ public interface ICustomPublisher {
      * 
      * @return true if the certificate should be published.
      */
-    boolean willPublishCertificate(int status, int revocationReason);
+    boolean willPublishCertificate(int status, long revocationDate);
     
     /**
      * Returns true if the publisher calls external scripts, in which case setScriptWhiteList will be called to set a whitelist of allowed scripts.

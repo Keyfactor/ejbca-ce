@@ -644,6 +644,10 @@
 		<available file="${mod.ssh.path}/build.xml" />
 	</condition>
 	
+	<condition property="mod.p11ng.exists">
+		<available file="${mod.p11ng.path}/build.xml" />
+	</condition>
+
 	<condition property="mod.msae.exists">
 		<available file="${mod.msae.path}/build.xml" />
 	</condition>

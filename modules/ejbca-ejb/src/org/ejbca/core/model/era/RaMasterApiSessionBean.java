@@ -825,7 +825,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public boolean addRequestResponse(final AuthenticationToken authenticationToken, final RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
-            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
+            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException, EndEntityExistsException {
         final ApprovalDataVO approvalDataVO = getApprovalDataNoAuth(requestResponse.getId());
         if (approvalDataVO == null) {
             // Return false so the next master api backend can see if it can handle the approval
@@ -1511,8 +1511,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         RaEndEntitySearchPaginationSummary searchSummary = null;
         String queryCacheKey = authenticationToken.getUniqueId() + raEndEntitySearchRequest.toString();
-        if(raEndEntitySearchRequest.getPageNumber()!=0) {
-            if(raEndEntitySearchRequest.getSearchSummary().isOnlyUpdateCache()) {
+        if (raEndEntitySearchRequest.getPageNumber() != 1) {
+            if (raEndEntitySearchRequest.getSearchSummary().isOnlyUpdateCache()) {
                 // update for next page request
                 searchSummary = (RaEndEntitySearchPaginationSummary)
                         RaMasterApiQueryCache.INSTANCE.getCachedResult(queryCacheKey);
@@ -1525,7 +1525,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             searchSummary = (RaEndEntitySearchPaginationSummary)
                     RaMasterApiQueryCache.INSTANCE.getCachedResult(queryCacheKey);
 
-            if(raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex()!=0) {
+            if (raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex() != 0) {
                 // update in same page
                 searchSummary.setCurrentIdentifierIndex(
                         raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex());
@@ -1538,6 +1538,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
         }
 
+        searchSummary.setMaxResultsPerPage(Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), raEndEntitySearchRequest.getMaxResults()));
         RaEndEntitySearchResponse searchResponse =
                 searchForEndEntities(authenticationToken, raEndEntitySearchRequest,
                         searchSummary.getCurrentIdentifierSearchOffset(),
@@ -1898,12 +1899,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return authorizedCertificateProfiles;
     }
     
-    @Override    
+    @Override
     public RaCertificateProfileResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName) {
         final CertificateProfile profile = certificateProfileSession.getCertificateProfile(profileName);
-        if (profile!=null) {
+        if (profile != null) {
+            final Integer certProfileId = certificateProfileSession.getCertificateProfileId(profileName);
             final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
-            return RaCertificateProfileResponseV2.converter().toRaResponse(profile, caInfos);
+            return RaCertificateProfileResponseV2.converter().toRaResponse(profile, caInfos, certProfileId);
         }
         return null;
     }

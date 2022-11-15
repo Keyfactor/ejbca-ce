@@ -912,7 +912,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
     }
 
     @Override
-    public boolean willPublishCertificate(int status, int revocationReason) {
+    public boolean willPublishCertificate(int status, long revocationDate) {
         return true;
     }
     

@@ -237,7 +237,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             if (cainfo != null) {
                 certs = cainfo.getCertificateChain();
             }
-            if ((certs != null) && (certs.size() == 1) || (!scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias) && certs.size() > 1)) {
+            if (certs == null) {
+                return null;
+            } else if (certs.size() == 1 || (!scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias) && certs.size() > 1)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Returning X.509 certificate as response for GetCACert for single CA: " + caname);
                 }
@@ -247,7 +249,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
                 }
                 return ScepResponseInfo.onlyResponseBytes(cert.getEncoded());
-            } else if ((certs != null) && (certs.size() > 1 && scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias))) {
+            } else if (certs.size() > 1 && scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias)) {
                 try {
                     if (log.isDebugEnabled()) {
                         log.debug("Creating certs-only CMS message as response for GetCACert for CA chain: " + caname);
@@ -264,8 +266,6 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.info("Error creating certs-only CMS message as response for GetCACert for CA: " + caname);
                     return null;
                 }
-            } else {
-                return null;
             }
         } else if (operation.equals("GetCACertChain")) {
             // CA_IDENT is the message for this request to indicate which CA we are talking about
