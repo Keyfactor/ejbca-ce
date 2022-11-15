@@ -389,10 +389,53 @@
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:outputLabel for="subjectdn" rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
+            <h:outputLabel for="subjectdn"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_subjectdn}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectdn" rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn}"
+            <h:outputText id="subjectdn"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
                 value="#{cc.attrs.raEndEntityDetails.subjectDnUnescapedValue}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshkeyid"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_keyid}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshkeyid"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshKeyId}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshprincipals"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_principals}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshprincipals"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshPrincipalsPretty}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshcomment"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_comment}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshcomment"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshComment}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshforcecommand"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_forcecommand}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshforcecommand"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshForceCommand}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshsourceaddress"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_sourceaddress}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshsourceaddress"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshSourceAddress}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances
             		and cc.attrs.approvalRequestMode}"
@@ -416,7 +459,7 @@
 
             <h:panelGroup id="subjectDistinguishNames"
                 styleClass="subjects"
-                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}">
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectdn}"/>
                 <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectDistinguishNames.fieldInstances}"
                     msgPrefix="#{'subject_dn_'}"
@@ -424,9 +467,12 @@
                     eeEmail="#{cc.attrs.raEndEntityDetails.email}"/>
             </h:panelGroup>
 
-            <h:outputLabel for="subjectan" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
+            <h:outputLabel for="subjectan"
+                rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectan" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}"
+            <h:outputText id="subjectan"
+                rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
                 value="#{cc.attrs.raEndEntityDetails.subjectAn}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances and cc.attrs.approvalRequestMode}"
@@ -449,13 +495,95 @@
 
             <h:panelGroup id="subjectAlternativeNames"
                 styleClass="subjects"
-                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}">
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.raEndEntityBean.anySubjectAlternativeName}" value="#{msg.component_eedetails_header_subjectan}"/>
                 <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectAlternativeNames.fieldInstances}"
                     msgPrefix="#{'subject_alternative_name_'}"
                     dnEmailFieldName="#{cc.attrs.raEndEntityBean.dnEmailFieldName}"
                     eeEmail="#{cc.attrs.raEndEntityDetails.email}"/>
+            </h:panelGroup>
+
+            <h:panelGroup id="editableSshAttributes"
+                styleClass="subjects"
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
+                <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+                <h:outputLabel for="keyidinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    value="#{msg.component_eedetails_header_ssh_keyid}"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="keyidinput"
+                        value="#{cc.attrs.raEndEntityBean.sshKeyId}"/>
+                </h:panelGroup>
+                <h:outputLabel for="commentinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    value="#{msg.component_eedetails_header_ssh_comment}"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="commentinput"
+                        value="#{cc.attrs.raEndEntityBean.sshComment}"/>
+                </h:panelGroup>
+                <ui:repeat id="sshPrincipal"
+                    value="#{cc.attrs.raEndEntityBean.sshPrincipals}"
+                    var="instance"
+                    varStatus="loop">
+                    <h:outputLabel for="sshPrincipalNonModifiableField"
+                        value="#{msg.enroll_ssh_principal} "
+                        styleClass="pure-u-lg-1-3 row-even"
+                        rendered="#{!instance.required}" />
+                    <h:outputLabel for="sshPrincipalField"
+                        value="#{msg.enroll_ssh_principal} *"
+                        styleClass="pure-u-lg-1-3 row-even"
+                        rendered="#{instance.required}" />
+                    <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                        <h:inputText id="sshPrincipalField" value="#{instance.value}" 
+                            styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+                            rendered="#{instance.modifiable}">
+                            <f:validator validatorId="extendedRegexValidator" />
+                            <f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
+                            <f:validator validatorId="extendedRequiredValidator"/>
+                            <f:attribute name="_required" value="#{instance.required}"/>
+                            <f:attribute name="_label" value="#{instance.name}"/>
+                            <f:ajax event="keyup" execute="@this"
+                                render=":requestInfoForm:requestPreviewOuterPanel sshPrincipalFieldMessage"/>
+                        </h:inputText>
+                            <h:outputText id="sshPrincipalFieldNonModifiableField" value="#{instance.value}" 
+                                rendered="#{!instance.modifiable}"/>
+                        <h:message for="sshPrincipalField" id="sshPrincipalFieldMessage" styleClass="sshPrincipalErrorMessage" 
+                            errorClass="sshPrincipalErrorMessage showErrorMessage"/>
+                    </h:panelGroup>
+                </ui:repeat>
+                <h:outputLabel for="forcecommandinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{not cc.attrs.raEndEntityDetails.sshForceCommandRequired}"
+                    value="#{msg.component_eedetails_header_ssh_forcecommand}"/>
+                <h:outputLabel for="forcecommandinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{cc.attrs.raEndEntityDetails.sshForceCommandRequired}"
+                    value="#{msg.component_eedetails_header_ssh_forcecommand} *"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="forcecommandinput"
+                        value="#{cc.attrs.raEndEntityBean.sshForceCommand}"
+                        rendered="#{cc.attrs.raEndEntityDetails.sshForceCommandModifiable}"/>
+                    <h:outputText id="forcecommandtext"
+                        rendered="#{not cc.attrs.raEndEntityDetails.sshForceCommandModifiable}"
+                        value="#{cc.attrs.raEndEntityDetails.sshForceCommand}"/>
+                </h:panelGroup>
+                <h:outputLabel for="sourceaddressinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{not cc.attrs.raEndEntityDetails.sshSourceAddressRequired}"
+                    value="#{msg.component_eedetails_header_ssh_sourceaddress}"/>
+                <h:outputLabel for="sourceaddressinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{cc.attrs.raEndEntityDetails.sshSourceAddressRequired}"
+                    value="#{msg.component_eedetails_header_ssh_sourceaddress} *"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="sourceaddressinput"
+                        value="#{cc.attrs.raEndEntityBean.sshSourceAddress}"
+                        rendered="#{cc.attrs.raEndEntityDetails.sshSourceAddressModifiable}"/>
+                    <h:outputText id="sourceaddresstext"
+                        rendered="#{not cc.attrs.raEndEntityDetails.sshSourceAddressModifiable}"
+                        value="#{cc.attrs.raEndEntityDetails.sshSourceAddress}"/>
+                </h:panelGroup>
             </h:panelGroup>
 
             <h:outputLabel for="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"

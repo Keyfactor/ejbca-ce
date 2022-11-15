@@ -477,23 +477,31 @@ public class JackNJI11Provider extends Provider {
                 // re-using this session can then later result in CKR_OPERATION_ACTIVE, so upon failure it's better to close 
                 // this session so it can be re-created
             } catch (IOException e) {
-                myKey.getSlot().closeSession(session);
-                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().closeSession(session);
+                    hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                }
                 throw new SignatureException(e);
             } catch (NoSuchAlgorithmException e) {
                 log.warn("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.", e);
-                myKey.getSlot().closeSession(session);
-                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().closeSession(session);
+                    hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                }
                 throw new SignatureException(e);
             } catch (NoSuchProviderException e) {
                 log.error("The Bouncy Castle provider has not been installed.");
-                myKey.getSlot().closeSession(session);
-                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().closeSession(session);
+                    hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                }
                 throw new SignatureException(e);
             } catch (CKRException e) {
                 log.warn("PKCS#11 exception while trying to sign: ", e);
-                myKey.getSlot().closeSession(session);
-                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().closeSession(session);
+                    hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                }
                 throw new SignatureException(e);
             } finally {
                 // Signing is done, either successful or failed, release the session if there is an active one
@@ -851,16 +859,20 @@ public class JackNJI11Provider extends Provider {
                             privateBaseKey.getObject(), pubTempl);
             } catch(CKRException e) {
                 log.warn("PKCS#11 exception while trying to ecdh: ", e);
-                privateBaseKey.getSlot().closeSession(session);
-                hasActiveSession = false;
+                if (privateBaseKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    privateBaseKey.getSlot().closeSession(session);
+                    hasActiveSession = false;
+                }
                 throw new IllegalStateException("PKCS#11 exception while trying to ecdh: ", e);
             }
             
             CKA privKeyAttribute = ((NJI11ReleasebleSessionPrivateKey) privateBaseKey).getSlot().getCryptoki()
                     .GetAttributeValue(session.getId(), keyRef, CKA.VALUE);
             
-            privateBaseKey.getSlot().closeSession(session);
-            hasActiveSession = false;
+            if (privateBaseKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                privateBaseKey.getSlot().closeSession(session);
+                hasActiveSession = false;
+            }
             return privKeyAttribute.getValue();
         }
 

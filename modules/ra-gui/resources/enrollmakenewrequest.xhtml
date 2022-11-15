@@ -882,10 +882,10 @@
 						            var="instance"
 						            varStatus="loop">
 						            <h:panelGroup layout="block" styleClass="pure-control-group">
-						                <h:outputLabel for="sshPrincipalNonModifiableField"
+						                <h:outputLabel for="sshPrincipalField"
 						                    value="#{msg.enroll_ssh_principal} "
 						                    rendered="#{!instance.required}" />
-						                <h:outputLabel for="subjectDnField"
+						                <h:outputLabel for="sshPrincipalField"
 						                    value="#{msg.enroll_ssh_principal} *"
 						                    rendered="#{instance.required}" />
 						                <h:inputText id="sshPrincipalField" value="#{instance.value}" 
@@ -940,14 +940,14 @@
                             <h:message for="criticalOptionsForceCommand" id="critcialOptionForceCommandMessage" styleClass="validationErrorMessage showErrorMessage"/>
 						</h:panelGroup>
 						
-						<h:panelGroup layout="block" styleClass="pure-control-group" 
+						<!-- <h:panelGroup layout="block" styleClass="pure-control-group" 
 									rendered="#{enrollMakeNewRequestBean.renderedSshAdditionalExtensions}" >
 								<h:outputLabel for="sshAdditionalExtensions"
 									value="#{msg.enroll_ssh_additional_extensions}" />
 								<h:inputTextarea id="sshAdditionalExtensions" rows="4" cols="38"
 										value="#{enrollMakeNewRequestBean.sshAdditionalExtensions}">
 	                                 </h:inputTextarea>
-	                          </h:panelGroup>
+	                    </h:panelGroup> -->
 					</h:panelGroup>
 					
 				</h:panelGroup>
