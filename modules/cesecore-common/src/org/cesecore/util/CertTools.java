@@ -105,6 +105,8 @@ import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
+import org.cesecore.certificates.certificate.ssh.SshCertificateFactory;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -856,8 +858,10 @@ public abstract class CertTools {
      * @return String containing the subjects DN.
      */
     public static String getSubjectDN(final Certificate cert) {
-        if (cert == null || StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+        if (cert == null) {
             return "";
+        } else if(StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)){ 
+            return "CN=" + ((SshCertificate) cert).getKeyId();
         } else {
             return getDN(cert, 1);
         }
@@ -1163,6 +1167,8 @@ public abstract class CertTools {
                 log.debug("NoSuchFieldException: " + e.getMessage());
                 return null;
             }
+        } else if (StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+            ret = ((SshCertificate) cert).getValidAfter();
         }
         return ret;
     }
@@ -1186,6 +1192,8 @@ public abstract class CertTools {
                 }
                 return null;
             }
+        } else if (StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+            ret = ((SshCertificate) cert).getValidBefore();
         }
         return ret;
     }
@@ -1539,9 +1547,9 @@ public abstract class CertTools {
     }
     
     /**
-     * Creates Certificate from byte[], can be either an X509 certificate or a CVCCertificate
+     * Creates Certificate from byte[], can be either an X509 certificate, a CVCCertificate or SSH certificate
      * 
-     * @param cert byte array containing certificate in binary (DER) format, or PEM encoded X.509 certificate
+     * @param cert byte array containing certificate in binary (DER) format, or PEM encoded X.509 certificate or SSH certificiate
      * @param provider provider for example "SUN" or "BC", use null for the default provider (BC)
      * @param returnType the type of Certificate to be returned. Certificate can be used if certificate type is unknown.
      * 
@@ -1561,6 +1569,10 @@ public abstract class CertTools {
             return returnType.cast(parseCardVerifiableCertificate(cert));
         } else {
             //Let's guess...
+            SshCertificate sshCertificate = parseSshCertificate(cert);
+            if(sshCertificate!=null) {
+                return returnType.cast(sshCertificate);
+            }
             try {
                 return returnType.cast(parseX509Certificate(prov, cert));
             } catch (CertificateParsingException e) {
@@ -1571,6 +1583,19 @@ public abstract class CertTools {
                 }
             }
         }
+    }
+    
+    private static SshCertificate parseSshCertificate(byte[] cert) {
+        // SSH certificates have human readable prefix e.g. ssh-rsa|ed25519 or ecdsa-ssh 
+        if((cert[0]=='s' && cert[1]=='s' && cert[2]=='h') ||
+                (cert[0]=='e' && cert[1]=='c' && cert[2]=='d' && cert[3]=='s' && cert[4]=='a')) {
+            try {
+                return SshCertificateFactory.INSTANCE.getSshCertificate(cert);
+            } catch (Exception e) {
+                // NOPMD
+            }
+        }
+        return null;
     }
     
     /**
