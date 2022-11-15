@@ -492,6 +492,7 @@ public interface EndEntityManagementSession {
      *            certificate on hold.
      * @param approvalRequestID the ID of the approval request submitted to revoke the certificate
      * @param lastApprovingAdmin the last administrator to have approved the request
+     * @param revocationDate the date for revocation.
      * @throws AlreadyRevokedException if the certificate was already revoked
      * @throws NoSuchEndEntityException
      * @throws ApprovalException if an approval already exists for this request.
@@ -499,7 +500,7 @@ public interface EndEntityManagementSession {
      * @throws AlreadyRevokedException
      */
     void revokeCertAfterApproval(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason, int approvalRequestID,
-            AuthenticationToken lastApprovingAdmin)
+            AuthenticationToken lastApprovingAdmin, Date revocationDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
     
     /**

@@ -47,6 +47,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -96,6 +97,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
@@ -229,6 +232,12 @@ public class RestResourceSystemTestBase {
         enableRestProtocolConfiguration();
     }
 
+    protected static void setMaxSearchResults(int maxResults) throws Exception {
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration)
+                 globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setMaximumQueryCount(maxResults);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, globalCesecoreConfiguration);
+    }
     
     protected static void enableRestProtocolConfiguration() throws AuthorizationDeniedException {
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
@@ -419,6 +428,15 @@ public class RestResourceSystemTestBase {
                 log.error("Cannot remove the membership", e);
             }
         }
+    }
+    
+    public String encodeUrl(String path) {
+        try {
+            path = URLEncoder.encode(path, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.error("Error encoding parameter: " + e.getMessage());
+        }
+        return path;
     }
 
 }

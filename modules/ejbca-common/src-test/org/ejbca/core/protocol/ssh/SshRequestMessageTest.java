@@ -1,6 +1,7 @@
 package org.ejbca.core.protocol.ssh;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -148,7 +149,7 @@ public class SshRequestMessageTest {
         
         userData.setSubjectAltName(null);
         req = new SshRequestMessage("", "dnsName=COMMENT:CommentedToo", new ExtendedInformation());
-        assertEquals("principal mismatch", principals, req.getPrincipals());
+        assertTrue("principal mismatch", req.getPrincipals().isEmpty());
         assertEquals("Comment mismatch", "CommentedToo", req.getComment());
     }
     
