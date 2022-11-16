@@ -51,7 +51,7 @@ public class PerformanceTest {
                     this.random.wait();
                 } catch (InterruptedException e) {
                     // should never ever happen
-                    throw new Error(e);
+                    throw new IllegalStateException(e);
                 }
             }
             this.isSomeThreadUsingRandom = true;
@@ -214,7 +214,8 @@ public class PerformanceTest {
         for (int i = 0; i < numberOfThreads; i++) {
             threads[i].start();
         }
-        new Thread(statistic).start(); // NOPMD this is a standalone test, not run in jee app
+        final Thread statisticThread = new Thread(statistic); // NOPMD this is a standalone test, not run in jee app
+        statisticThread.start();
         printStream.println("Test client started, tail info and error files in this directory for output.");
         printStream.println("Statistic will be written to standard output each " + this.STATISTIC_UPDATE_PERIOD_IN_SECONDS + " second.");
         printStream.println("The test was started at " + new Date());
@@ -222,6 +223,7 @@ public class PerformanceTest {
         for (int i = 0; i < numberOfThreads; i++) {
             threads[i].join();
         }
+        statisticThread.join();
         printStream.format("Test exited with %d number of failures.%n", statistic.getNrOfFailures());
         System.exit(statistic.getNrOfFailures() == 0 ? 0 : 1); // Exit code 0 = success. Other numbers = failure
     }
@@ -390,7 +392,7 @@ public class PerformanceTest {
                     try {
                         wait(PerformanceTest.this.STATISTIC_UPDATE_PERIOD_IN_SECONDS * 1000);
                     } catch (InterruptedException e) {
-                        // do nothing
+                        throw new IllegalStateException("Thread was interreupted before test was finished", e);
                     }
                 }
                 final long endTime = new Date().getTime();
