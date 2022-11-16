@@ -14,17 +14,13 @@
 package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -35,39 +31,20 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
-import org.bouncycastle.asn1.cmp.CertRepMessage;
-import org.bouncycastle.asn1.cmp.CertResponse;
-import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
-import org.bouncycastle.asn1.crmf.CertReqMessages;
-import org.bouncycastle.asn1.crmf.EncryptedKey;
-import org.bouncycastle.asn1.crmf.EncryptedValue;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x9.X962Parameters;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.AsymmetricKeyUnwrapper;
-import org.bouncycastle.operator.OperatorException;
-import org.bouncycastle.operator.jcajce.JceAsymmetricKeyUnwrapper;
-import org.bouncycastle.operator.jcajce.JceInputDecryptorProviderBuilder;
-import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
-import org.bouncycastle.pkcs.PKCSException;
-import org.bouncycastle.util.Arrays;
 import org.cesecore.CaTestUtils;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -75,8 +52,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -84,7 +59,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
@@ -105,7 +79,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -135,12 +108,11 @@ public class P10CrRequestTest extends CmpTestCase {
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
     private static final String CMP_ALIAS = "CrmfRequestTestCmpConfigAlias";
-    private static final int P10CR_CERT_REQ_ID = -1; // https://www.ietf.org/id/draft-ietf-lamps-cmp-updates-23.html#name-update-section-534-certific
+    private static final int P10CR_CERT_REQ_ID = 0; //cerReqId is undefined for p10cr request types, setting it to zero according to openssl
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void beforeClass() {
@@ -199,7 +171,6 @@ public class P10CrRequestTest extends CmpTestCase {
         log.trace(">test01CrmfHttpUnknowUser");
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
-        // USER_DN = USER_DN + ", serialNumber=01234567";
         PKIMessage req = genP10CrCertReq(ISSUER_DN, USER_DN, this.keys, this.cacert, nonce, transid, false, null, new Date(), new Date(), null, null, null, false);
         assertNotNull(req);
         
@@ -243,7 +214,7 @@ public class P10CrRequestTest extends CmpTestCase {
         PKIMessage req = genP10CrCertReq(ISSUER_DN, userDN, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
         assertNotNull(req);
 
-        // 
+        // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
         req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
 
         byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
@@ -362,7 +333,6 @@ public class P10CrRequestTest extends CmpTestCase {
     public void testUnsignedConfirmationMessage() throws Exception {
         log.trace(">testUnsignedConfirmationMessage()");
         CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
-        //cmpConfRes.setSignKeyInfo(this.testx509ca.getCertificateChain(), this.keys.getPrivate(), null);
         cmpConfRes.setSender(new GeneralName(USER_DN));
         cmpConfRes.setRecipient(new GeneralName(new X500Name("CN=cmpRecipient, O=TEST")));
         cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW==");
@@ -380,7 +350,7 @@ public class P10CrRequestTest extends CmpTestCase {
         log.trace("<testUnsignedConfirmationMessage()");
     }
 
-    @Ignore
+    @Test
     public void test08SubjectDNSerialnumber() throws Exception {
         log.trace(">test08SubjectDNSerialnumber");
         // Create a new good USER
@@ -392,15 +362,17 @@ public class P10CrRequestTest extends CmpTestCase {
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
 
-            PKIMessage req = genCertReq(ISSUER_DN, userDN1, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null);
+            PKIMessage req = genP10CrCertReq(ISSUER_DN, userDN1, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
             assertNotNull(req);
-            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+
+            // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
+            req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
+            
             byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN1, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN1, this.cacert, resp, P10CR_CERT_REQ_ID);
 
             // Now revoke the certificate!
             PKIMessage rev = genRevReq(ISSUER_DN, userDN1, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
@@ -418,15 +390,17 @@ public class P10CrRequestTest extends CmpTestCase {
             KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
             final X500Name userDN2 = createCmpUser(cmpsntest2Username, "foo123", "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2", true, this.caid, -1, -1);
-            req = genCertReq(ISSUER_DN, userDN2, keys2, this.cacert, nonce, transid, false, null, null, null, null, null, null);
+            req = genP10CrCertReq(ISSUER_DN, userDN2, keys2, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
             assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+
+            // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
+            req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
+
             ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, CMP_ALIAS);
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN2, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN2, this.cacert, resp, reqId);
+            cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN2, this.cacert, resp, P10CR_CERT_REQ_ID);
 
             // Now revoke this certificate too
             rev = genRevReq(ISSUER_DN, userDN2, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
@@ -450,7 +424,7 @@ public class P10CrRequestTest extends CmpTestCase {
         log.trace("<test08SubjectDNSerialnumber");
     }
 
-    @Ignore
+    @Test
     public void test09KeyIdTest() {
         log.trace(">test09KeyIdTest()");
         DEROctetString octs = new DEROctetString("foo123".getBytes());
@@ -465,7 +439,7 @@ public class P10CrRequestTest extends CmpTestCase {
         log.trace("<test09KeyIdTest()");
     }
 
-    @Ignore
+    @Test
     public void test10EscapedCharsInDN() throws Exception {
         log.trace(">test10EscapedCharsInDN");
 
@@ -481,15 +455,17 @@ public class P10CrRequestTest extends CmpTestCase {
         final X500Name requestName = createCmpUser(sRequestName, "foo123", sRequestName, false, this.caid, -1, -1);
 
         try {
-            PKIMessage req = genCertReq(ISSUER_DN, requestName, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null);
+            PKIMessage req = genP10CrCertReq(ISSUER_DN, requestName, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
             assertNotNull(req);
-            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            
+            // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
+            req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
+
             byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
             checkCmpResponseGeneral(resp, ISSUER_DN, requestName, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, new X500Name(StringTools.strip(sRequestName)), this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, new X500Name(StringTools.strip(sRequestName)), this.cacert, resp, P10CR_CERT_REQ_ID);
             assertNotNull(cert);
 
             // Now revoke the bastard!
@@ -521,15 +497,17 @@ public class P10CrRequestTest extends CmpTestCase {
         final X500Name dn = createCmpUser(username, "foo123", sDN, false, this.caid, -1, -1);
 
         try {
-            PKIMessage req = genCertReq(ISSUER_DN, dn, key2, this.cacert, nonce, transid, false, null, null, null, null, null, null);
+            PKIMessage req = genP10CrCertReq(ISSUER_DN, dn, key2, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
             assertNotNull(req);
-            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            
+            // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
+            req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
+            
             byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
             checkCmpResponseGeneral(resp, ISSUER_DN, dn, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, dn, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, dn, this.cacert, resp, P10CR_CERT_REQ_ID);
             assertNotNull(cert);
 
             // Now revoke the bastard!
@@ -554,7 +532,7 @@ public class P10CrRequestTest extends CmpTestCase {
         log.trace("<test10EscapedCharsInDN");
     }
 
-    @Ignore
+    @Test
     public void  test11IncludingCertChainInSignedCMPResponse() throws Exception {
         //---------- Create SubCA signed by testx509ca (rootCA) ------------- //
         String subcaDN = "CN=SubTestCA";
@@ -563,7 +541,7 @@ public class P10CrRequestTest extends CmpTestCase {
         final String username = "cmptest";
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-            final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
+            final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
             extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             String caname = CertTools.getPartFromDN(subcaDN, "CN");
             boolean ldapOrder = !CertTools.isDNReversed(subcaDN);
@@ -607,15 +585,17 @@ public class P10CrRequestTest extends CmpTestCase {
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
 
-            PKIMessage req = genCertReq(subcaDN, userDN, this.keys, subcaCert, nonce, transid, false, null, null, null, null, null, null);
+            PKIMessage req = genP10CrCertReq(subcaDN, userDN, this.keys, subcaCert, nonce, transid, false, null, null, null, null, null, null, false);
             assertNotNull(req);
-            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            
+            // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
+            req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
+
             byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
             checkCmpResponseGeneral(resp, subcaDN, userDN, subcaCert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN, subcaCert, resp, reqId);
+            final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN, subcaCert, resp, P10CR_CERT_REQ_ID);
             assertNotNull(cert);
 
             // ------- Check that the entire certificate chain is in the extraCerts field in the response
@@ -635,407 +615,6 @@ public class P10CrRequestTest extends CmpTestCase {
             }
             CaTestUtils.removeCa(ADMIN, this.caSession.getCAInfo(ADMIN, subcaID));
         }
-    }
-
-    /** Tests server generated keys, which are requested by sending a missing request public key in the CRMF request
-     * message, or a SubjectPublicKeyInfo with AlgorithmId but not key bits, as specified in:
-     * RFC4210 section 5.3.4 and Appendix D.4, RFC4211 Section 6.6 and Appendix B
-     */
-    @Ignore
-    public void test12ServerGeneratedKeys() throws Exception {
-        log.trace(">test12ServerGeneratedKeys");
-        // Create a new good USER
-        final String cmptestUsername = "cmpsrvgentest";
-        //final String cmptestCPName = "CMPSRVGENTEST";
-        final String cmptestCPName = CP_DN_OVERRIDE_NAME;
-        CertificateProfile certificateProfile = this.certProfileSession.getCertificateProfile(CP_DN_OVERRIDE_NAME);
-        assertNotNull(certificateProfile);
-        // Backup the certificate profile so we can restore it afterwards, because we will modify it in this test
-        //      certificateProfile.setAvailableBitLengths(new int[] {1024, 2048});
-        //      certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA", "ECDSA"});
-        CertificateProfile backup = certificateProfile.clone();
-        final int cpID = certProfileSession.getCertificateProfileId(CP_DN_OVERRIDE_NAME);
-        final int eepID = endEntityProfileSession.getEndEntityProfileId(EEP_DN_OVERRIDE_NAME);
-        log.info("Using Certificate Profile with ID: "+cpID);
-        final X500Name userDN1 = createCmpUser(cmptestUsername, "foo123", "C=SE,O=MemyselfandI,CN="+cmptestUsername, false, this.caid, eepID, cpID);
-        String fingerprint1 = null;
-        String fingerprint2 = null;
-        String fingerprint3 = null;
-        String fingerprint4 = null;
-        try {
-            byte[] nonce = CmpMessageHelper.createSenderNonce();
-            byte[] transid = CmpMessageHelper.createSenderNonce();
-
-            // 0.
-
-            // Send a CMP request with empty public key, signaling server key generation, but where server key generation is not allowed (the default) in the CMP alias
-            // Should fail
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
-            PKIMessage req = genCertReq(ISSUER_DN, userDN1, /*keys*/null, this.cacert, nonce, transid, false, null, null, null, null, pAlg, null);
-            assertNotNull(req);
-            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // This request should fail because we did not provide a protocolEncrKey key
-            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server generated keys not allowed");
-            // checkCmpFailMessage(resp, "Request public key can not be empty without providing a protocolEncrKey", 1, reqId, 7, PKIFailureInfo.badRequest);
-
-            // 1.
-
-            // Send a CMP request with empty public key, signaling server key generation, but where there is no protoclEncrKey to encrypt the response with
-            // Should fail
-            // Allow server key generation in the CMP alias
-            this.cmpConfiguration.setAllowServerGeneratedKeys(CMP_ALIAS, true);
-            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-            pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
-            req = genCertReq(ISSUER_DN, userDN1, /*keys*/null, this.cacert, nonce, transid, false, null, null, null, null, pAlg, null);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // This request should fail because we did not provide a protocolEncrKey key
-            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)");
-            // checkCmpFailMessage(resp, "Request public key can not be empty without providing a protocolEncrKey", 1, reqId, 7, PKIFailureInfo.badRequest);
-
-            // 2.
-
-            // Add protocolEncKey that is not an RSA key, this will return an error as well
-            KeyPair protocolEncKey = KeyTools.genKeys("secp256r1", "ECDSA");
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)");
-
-            // 3.
-
-            // Add protocolEncrKey or the correct type (RSA), but have request public key null, and not a single choice of keys in the Certificate Profile, should fail
-            // Sending null means that the server should choose the keytype and size allowed by the certificate profile
-            protocolEncKey = KeyTools.genKeys("1024", "RSA");
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key algoritm, not possible to server generate keys");
-
-            // 4.
-
-            // Set a single selection in the Certificate Profile and expect a good answer
-            // Sending null means that the server should choose the keytype and size allowed by the certificate profile
-            certificateProfile.setAvailableBitLengths(new int[] {1024});
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA"});
-            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Now we should have a cert response
-            PKIMessage pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN1, this.cacert, resp, reqId);
-            assertNotNull(cert);
-            fingerprint1 = CertTools.getFingerprintAsString(cert);
-            // We should also have a private key in the response
-            {
-                // certifiedKeyPair.getCertOrEncCert().getCertificate() is what we verified above in checkCmpCertRepMessage
-                // Now lets try to dig out the encrypted private key
-                final PrivateKey privKey = decryptPrivateKey(protocolEncKey.getPrivate(), pkiMessage);
-                byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
-                byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data);
-                final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data, signedData);
-                assertTrue(signatureOK);
-                // Verify that the private/public key generated by the server is the algorithm and size that we expected
-                assertEquals("RSA", privKey.getAlgorithm());
-                assertEquals(1024, KeyTools.getKeyLength(cert.getPublicKey()));
-            }
-
-            // 5.
-
-            // Try with ECC keys
-            // Sending null means that the server should choose the keytype and size allowed by the certificate profile
-            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
-            certificateProfile.setAvailableEcCurves(new String[]{"secp256r1"});
-            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Now we should have a cert response
-            pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN1, this.cacert, resp, reqId);
-            assertNotNull(cert);
-            fingerprint2 = CertTools.getFingerprintAsString(cert);
-            // We should also have a private key in the response
-            {
-                final PrivateKey privKey = decryptPrivateKey(protocolEncKey.getPrivate(), pkiMessage);
-                byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
-                byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data);
-                final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data, signedData);
-                assertTrue(signatureOK);
-                // Verify that the private/public key generated by the server is the algorithm and size that we expected
-                assertEquals("EC", privKey.getAlgorithm());
-                final String keySpec = AlgorithmTools.getKeySpecification(cert.getPublicKey());
-                assertEquals("prime256v1", keySpec);
-            }
-
-            // 6.
-
-            // Instead of sending an empty public key, send a SubjectPublicKeyInfo with empty bitstring as specified in RFC4210:
-            // First we try specifying RSA key, but profile only allows ECDSA, should fail
-            //
-            // "Note that subjectPublicKeyInfo MAY be present and contain an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey
-            // "if it is desired to inform the CA/RA of algorithm and parameter preferences regarding the to-be-generated key pair"
-            // Server should then get the algorithm from the SubjectPublicKeyInfo
-            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
-            certificateProfile.setAvailableEcCurves(new String[]{"secp256r1"});
-            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
-            // Start with RSA public key info, with empty BITString
-            // Note for a normal RSA key the AlgorithmIdentifier.parameters is specified to be DERNull (not java null, but ASN.1 type null)
-            // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
-            SubjectPublicKeyInfo spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
-                    PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE), new byte[0]);
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "RSA key generation requested, but certificate profile specified does not allow RSA");
-
-            // 7.
-
-            // Same as above, but profile allows multiple RSA key sizes, should fail
-            //
-            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA"});
-            certificateProfile.setAvailableBitLengths(new int[] {1024, 2048});
-            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
-            // Start with RSA public key info, with empty BITString
-            // Note for a normal RSA key the AlgorithmIdentifier.parameters is specified to be DERNull (not java null, but ASN.1 type null)
-            // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key size, not possible to server generate keys");
-
-            // 8.
-
-            // Try the same but with an unsupported algorithm, should fail
-            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
-            // Start with RSA public key info, with empty BITString
-            spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
-                    PKCSObjectIdentifiers.des_EDE3_CBC, DERNull.INSTANCE), new byte[0]);
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server key generation requested, but SubjectPublicKeyInfo specifies unsupported algorithm 1.2.840.113549.3.7");
-
-            // 9.
-
-            // Instead of sending an empty public key, send a SubjectPublicKeyInfo with empty bitstring as specified in RFC4210:
-            // "Note that subjectPublicKeyInfo MAY be present and contain an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey
-            // "if it is desired to inform the CA/RA of algorithm and parameter preferences regarding the to-be-generated key pair"
-            // Server should then get the algorithm from the SubjectPublicKeyInfo
-            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA"});
-            certificateProfile.setAvailableBitLengths(new int[] {1024});
-            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
-            // Start with RSA public key info, with empty BITString
-            spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
-                    PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE), new byte[0]);
-//            SubjectPublicKeyInfo spkInfoEC = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
-//                    X9ObjectIdentifiers.id_ecPublicKey, DERNull.INSTANCE), new byte[0]);
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Now we should have a cert response
-            pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN1, this.cacert, resp, reqId);
-            assertNotNull(cert);
-            fingerprint3 = CertTools.getFingerprintAsString(cert);
-            // We should also have a private key in the response
-            {
-                final PrivateKey privKey = decryptPrivateKey(protocolEncKey.getPrivate(), pkiMessage);
-                byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
-                byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data);
-                final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data, signedData);
-                assertTrue(signatureOK);
-                // Verify that the private/public key generated by the server is the algorithm and size that we expected
-                assertEquals("RSA", privKey.getAlgorithm());
-                assertEquals(1024, KeyTools.getKeyLength(cert.getPublicKey()));
-            }
-
-            // 10.
-
-            // Same as above with ECDSA, first specify a curve that isn't allowed in the profile
-            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
-            certificateProfile.setAvailableEcCurves(new String[]{"secp256r1"});
-            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
-            // Try with an ECDSA public key info, with empty BITString
-            // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
-            // We'll specify the named curve we request here
-            X962Parameters params = new X962Parameters(X9ObjectIdentifiers.prime192v1);
-            spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
-                    X9ObjectIdentifiers.id_ecPublicKey, params), new byte[0]);
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest,
-                    "ECDSA key generation requested, but X962Parameters curve is none of the allowed named curves: prime192v1");
-
-            // 11.
-
-            // Change the profile to allow the curve we specify as params to SubjectPublicKeyInfo
-            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
-            certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
-            certificateProfile.setAvailableEcCurves(new String[]{"prime192v1", "secp256r1"});
-            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
-            // Try with an ECDSA public key info, with empty BITString, but with params specifying a curve
-            // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
-            // We'll specify the named curve we request here
-            spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
-                    X9ObjectIdentifiers.id_ecPublicKey, params), new byte[0]);
-            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
-            assertNotNull(req);
-            ir = (CertReqMessages) req.getBody().getContent();
-            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ba = CmpMessageHelper.pkiMessageToByteArray(req);
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-            // Now we should have a cert response
-            pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN1, this.cacert, resp, reqId);
-            assertNotNull(cert);
-            fingerprint4 = CertTools.getFingerprintAsString(cert);
-            // We should also have a private key in the response
-            {
-                final PrivateKey privKey = decryptPrivateKey(protocolEncKey.getPrivate(), pkiMessage);
-                byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
-                byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data);
-                final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data, signedData);
-                assertTrue(signatureOK);
-                // Verify that the private/public key generated by the server is the algorithm and size that we expected
-                assertEquals("EC", privKey.getAlgorithm());
-                final String keySpec = AlgorithmTools.getKeySpecification(cert.getPublicKey());
-                assertEquals("prime192v1", keySpec);
-            }
-
-        } finally {
-            log.debug("Deleting certificate: "+fingerprint1);
-            this.internalCertStoreSession.removeCertificate(fingerprint1);
-            log.debug("Deleting certificate: "+fingerprint2);
-            this.internalCertStoreSession.removeCertificate(fingerprint2);
-            log.debug("Deleting certificate: "+fingerprint3);
-            this.internalCertStoreSession.removeCertificate(fingerprint3);
-            log.debug("Deleting certificate: "+fingerprint4);
-            this.internalCertStoreSession.removeCertificate(fingerprint4);
-            log.debug("Deleting user: "+cmptestUsername);
-            try {
-            this.endEntityManagementSession.deleteUser(ADMIN, cmptestUsername);
-            } catch (NoSuchEndEntityException e) {
-                // NOPMD: ignore
-            }
-            // Re-set CMP alias configuration
-            this.cmpConfiguration.setAllowServerGeneratedKeys(CMP_ALIAS, false);
-            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-            // Restore certificate profile to what it was before the test
-            this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, backup);
-        }
-        log.trace("<test12ServerGeneratedKeys");
-    }
-
-    /** Extract an encrypted private key from a PKIMessage
-     * Created from:
-     * JcaEncryptedValueBuilder encBldr = new JcaEncryptedValueBuilder(
-     *   new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
-     *   new JceCRMFEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
-     * myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);
-     * 
-     * @param protocolEncKey the private key (RSA) that was used to encrypt the private key
-     * @param pkiMessage PKIMessage structure containing the encrypted private key in the CMP response message
-     * @return PrivateKey
-     * @throws OperatorException if unwrapping the symmetric encryption key fails
-     * @throws IOException if decoding keys fails
-     * @throws PKCSException if decrypting the key from the CMS message
-     * @throws InvalidKeyException if the EncryptedKey is not an EncryptedValue object
-     */
-    private PrivateKey decryptPrivateKey(final PrivateKey protocolEncKey, final PKIMessage pkiMessage)
-            throws OperatorException, IOException, PKCSException, InvalidKeyException {
-        final PKIBody pkiBody = pkiMessage.getBody();
-        final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
-        final CertResponse certResponse = certRepMessage.getResponse()[0];
-        final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-        EncryptedKey encKey = certifiedKeyPair.getPrivateKey();
-        EncryptedValue encValue;
-        if (encKey.isEncryptedValue()) {
-            encValue = (EncryptedValue)encKey.getValue();
-        } else {
-            throw new InvalidKeyException("EJBCA only supports EncryptedKey type EncryptedValue at this point");
-        }
-        AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey);
-        byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
-        // recover private key
-        PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-        PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
-        assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
-        // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
-        assertFalse(Arrays.areEqual(protocolEncKey.getEncoded(), keyInfo.getEncoded()));
-        // Verify that the private key returned matches the public key in the certificate we got
-        PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
-        return privKey;
     }
 
 
@@ -1132,475 +711,5 @@ public class P10CrRequestTest extends CmpTestCase {
             + "gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/" + "Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"
             + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
             + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
-    
-    
-    /*
-     *	header:
-     *		pvno: cmp2000 (cmp.pvno = 2)
-     *		sender: 4	(cmp.sender = 4)
-     *			directoryName: rdnSequence (0)		(x509ce.directoryName = 0)
-     *				rdnSequence: 4 items (id-at-commonName=21030533610000000012 eNodeB,id-at-organizationalUnitName=Wireless Network Product Line,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *					RDNSequence item: 1 item (id-at-countryName=CN)					(x509if.RDNSequence_item = 1)
-     *						RelativeDistinguishedName item (id-at-countryName=CN)		(x509if.RelativeDistinguishedName_item = 1)
-     *							Id: 2.5.4.6 (id-at-countryName)							(x509if.id = 2.5.4.6)
-     *							CountryName: CN											(x509sat.CountryName = CN)
-     *					RDNSequence item: 1 item (id-at-organizationName=Huawei)
-     *					RDNSequence item: 1 item (id-at-organizationalUnitName=Wireless Network Product Line)
-     *					RDNSequence item: 1 item (id-at-commonName=21030533610000000012 eNodeB)
-     *		recipient: 4
-     *			directoryName: rdnSequence (0)
-     *				rdnSequence: 6 items (id-at-commonName=enbca,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *					RDNSequence item: 1 item (id-at-countryName=cn)
-     *					RDNSequence item: 1 item (id-at-stateOrProvinceName=sh)
-     *					RDNSequence item: 1 item (id-at-localityName=qc)
-     *					RDNSequence item: 1 item (id-at-organizationName=wl)
-     *					RDNSequence item: 1 item (id-at-organizationalUnitName=lte)
-     *					RDNSequence item: 1 item (id-at-commonName=enbca)
-     *		protectionAlg (shaWithRSAEncryption)
-     *			Algorithm Id: 1.2.840.113549.1.1.5 (shaWithRSAEncryption)
-     *		transactionID: 46E72888
-     *		senderNonce: 219F0452
-     *		recipNonce: 00000000
-     *	body: ir (0)
-     *		ir: 1 item
-     *			CertReqMsg
-     *				certReq
-     *					certReqId: 355
-     *					certTemplate
-     *						version: v3 (2)
-     *						validity
-     *							notBefore: utcTime (0)
-     *								utcTime: 10-06-01 09:44:01 (UTC)
-     *							notAfter: utcTime (0)
-     *								utcTime: 11-06-01 09:44:01 (UTC)
-     *						subject: 0
-     *							rdnSequence: 1 item (id-at-commonName=21030533610000000012 eNodeB)
-     *								RDNSequence item: 1 item (id-at-commonName=21030533610000000012 eNodeB)
-     *									RelativeDistinguishedName item (id-at-commonName=21030533610000000012 eNodeB)
-     *										Id: 2.5.4.3 (id-at-commonName)
-     *										DirectoryString: uTF8String (4)
-     *											uTF8String: 21030533610000000012 eNodeB
-     *						publicKey
-     *							algorithm (rsaEncryption)
-     *								Algorithm Id: 1.2.840.113549.1.1.1 (rsaEncryption)
-     *							Padding: 0
-     *							subjectPublicKey: 3082010A02820101009C2BCD07CBB0CF2B8B75062668D64F...
-     *						extensions: 2 items
-     *							Extension
-     *								Id: 2.5.29.15 (id-ce-keyUsage)
-     *								critical: True
-     *								Padding: 3
-     *								KeyUsage: B8 (digitalSignature, keyEncipherment, dataEncipherment, keyAgreement)
-     *									1... .... = digitalSignature: True
-     *									.0.. .... = contentCommitment: False
-     *									..1. .... = keyEncipherment: True
-     *									...1 .... = dataEncipherment: True
-     *									.... 1... = keyAgreement: True
-     *									.... .0.. = keyCertSign: False
-     *									.... ..0. = cRLSign: False
-     *									.... ...0 = encipherOnly: False
-     *									0... .... = decipherOnly: False
-     *							Extension
-     *								Id: 2.5.29.17 (id-ce-subjectAltName)
-     *								critical: True
-     *								GeneralNames: 1 item
-     *									GeneralName: dNSName (2)
-     *										dNSName: 21030533610000000012.huawei.com
-     *				popo: signature (1)
-     *					signature
-     *						algorithmIdentifier (shaWithRSAEncryption)
-     *							Algorithm Id: 1.2.840.113549.1.1.5 (shaWithRSAEncryption)
-     *						Padding: 0
-     *						signature: 403F2C7C4A1C777D3F09132FBBAC3FCA058CD4EE1F461F24...
-     *		Padding: 0
-     *		protection: 73FEA50585570F1B3CD16E3A744546251D0C206FC67B2554...
-     *		extraCerts: 3 items
-     *			CMPCertificate: x509v3PKCert (0)
-     *				signedCertificate
-     *					version: v3 (2)
-     *					serialNumber : 0x00bad55b3947cb876dc391f7798438d2a5
-     *					signature (shaWithRSAEncryption) :
-     *						Algorithm Id: 1.2.840.113549.1.1.5 (shaWithRSAEncryption)
-     *					issuer: rdnSequence (0)
-     *						rdnSequence: 4 items (id-at-commonName=Huawei Wireless Network Product CA,id-at-organizationalUnitName=Wireless Network Product Line,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *					validity
-     *						notBefore: utcTime (0)
-     *							utcTime: 10-11-12 07:39:38 (UTC)
-     *						notAfter: utcTime (0)
-     *							utcTime: 34-10-17 09:00:35 (UTC)
-     *					subject: rdnSequence (0)
-     *						rdnSequence: 4 items (id-at-commonName=21030533610000000012 eNodeB,id-at-organizationalUnitName=Wireless Network Product Line,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *					subjectPublicKeyInfo
-     *						algorithm (rsaEncryption)
-     *							Algorithm Id: 1.2.840.113549.1.1.1 (rsaEncryption)
-     *						Padding: 0
-     *						subjectPublicKey: 30818902818100BE8880B56877C44F300EAB825C198B8FF3...
-     *					extensions: 2 items
-     *						Extension (id-ce-keyUsage)
-     *							Extension Id: 2.5.29.15 (id-ce-keyUsage)
-     *							critical: True
-     *							Padding: 0
-     *							KeyUsage: B8 (digitalSignature, keyEncipherment, dataEncipherment, keyAgreement)
-     *						Extension Id: 2.5.29.17 (id-ce-subjectAltName)
-     *							GeneralNames: 1 item
-     *								GeneralName: dNSName (2)
-     *									dNSName: 21030533610000000012.Huawei.com
-     *			CMPCertificate: x509v3PKCert (0)
-     *				x509v3PKCert (id-at-commonName=Huawei Wireless Network Product CA,id-at-organizationalUnitName=Wireless Network Product Line,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *					signedCertificate
-     *						version: v3 (2)
-     *						serialNumber : 0x00b2c83453e95b7df146f96729bdd7172c
-     *						signature (shaWithRSAEncryption)
-     *						issuer: rdnSequence (0)
-     *							rdnSequence: 3 items (id-at-commonName=Huawei Equipment CA,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *						validity
-     *							notBefore: utcTime (0)
-     *								utcTime: 09-10-19 09:30:34 (UTC)
-     *							notAfter: utcTime (0)
-     *								utcTime: 34-10-18 09:00:35 (UTC)
-     *						subject: rdnSequence (0)
-     *							rdnSequence: 4 items (id-at-commonName=Huawei Wireless Network Product CA,id-at-organizationalUnitName=Wireless Network Product Line,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *						subjectPublicKeyInfo
-     *							algorithm (rsaEncryption)
-     *							Padding: 0
-     *							subjectPublicKey: 3082010A0282010100C137F5D3877167EFA1CEDD31D27FAE...
-     *						extensions: 4 items
-     *							Extension (id-ce-basicConstraints)
-     *								Extension Id: 2.5.29.19 (id-ce-basicConstraints)
-     *								BasicConstraintsSyntax
-     *									cA: True
-     *							Extension (id-ce-keyUsage)
-     *								Extension Id: 2.5.29.15 (id-ce-keyUsage)
-     *									critical: True
-     *									Padding: 1
-     *									KeyUsage: 06 (keyCertSign, cRLSign)
-     *							Extension (id-ce-subjectKeyIdentifier)
-     *								Extension Id: 2.5.29.14 (id-ce-subjectKeyIdentifier)
-     *									SubjectKeyIdentifier: 5E7017DC6FA40748033787FE3DB4C720D636B8D0
-     *							Extension (id-ce-authorityKeyIdentifier)
-     *								Extension Id: 2.5.29.35 (id-ce-authorityKeyIdentifier)
-     *								AuthorityKeyIdentifier
-     *									keyIdentifier: 2AF810592780351FA77CBA3B9F2AE44AAA9B92EA
-     *					algorithmIdentifier (shaWithRSAEncryption)
-     *					Padding: 0
-     *					encrypted: 931FC67E865E1969E22B29A5C578A0EBB79E5A0AE29EC888...
-     *			CMPCertificate: x509v3PKCert (0)
-     *				x509v3PKCert (id-at-commonName=Huawei Equipment CA,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *					signedCertificate
-     *						version: v3 (2)
-     *						serialNumber : 0x00f2ff51cc6584f1980824d984b3cdbd5b
-     *						signature (shaWithRSAEncryption)
-     *						issuer: rdnSequence (0)
-     *							rdnSequence: 3 items (id-at-commonName=Huawei Equipment CA,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *						validity
-     *							notBefore: utcTime (0)
-     *								utcTime: 09-10-19 09:00:28 (UTC)
-     *							notAfter: utcTime (0)
-     *								utcTime: 34-10-19 09:00:00 (UTC)
-     *						subject: rdnSequence (0)
-     *							rdnSequence: 3 items (id-at-commonName=Huawei Equipment CA,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *						subjectPublicKeyInfo
-     *							algorithm (rsaEncryption)
-     *							Padding: 0
-     *							subjectPublicKey: 3082020A0282020100A28984270BF329F686E60275E6BBF3...
-     *						extensions: 4 items
-     *							Extension (id-ce-keyUsage)
-     *								Extension Id: 2.5.29.15 (id-ce-keyUsage)
-     *								critical: True
-     *								Padding: 1
-     *								KeyUsage: 86 (digitalSignature, keyCertSign, cRLSign)
-     *							Extension (id-ce-basicConstraints)
-     *								Extension Id: 2.5.29.19 (id-ce-basicConstraints)
-     *								BasicConstraintsSyntax
-     *									cA: True
-     *							Extension (id-ce-subjectKeyIdentifier)
-     *								Extension Id: 2.5.29.14 (id-ce-subjectKeyIdentifier)
-     *								SubjectKeyIdentifier: 2AF810592780351FA77CBA3B9F2AE44AAA9B92EA
-     *							Extension (id-ce-authorityKeyIdentifier)
-     *								Extension Id: 2.5.29.35 (id-ce-authorityKeyIdentifier)
-     *								AuthorityKeyIdentifier
-     *									keyIdentifier: 2AF810592780351FA77CBA3B9F2AE44AAA9B92EA
-     *					algorithmIdentifier (shaWithRSAEncryption)
-     *					Padding: 0
-     *					encrypted: 000B6246A8239D21F35786BBE6E6E96E8E7D7C17C7679C87...
-     */
-    static byte[] telefonica = Base64.decode(("MIIRmTCB8gIBAqRuMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdp"
-            + "cmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSQwIgYDVQQDExsyMTAzMDUzMzYxMDAwMDAwMDAx"
-            + "MiBlTm9kZUKkVDBSMQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQswCQYD"
-            + "VQQKEwJ3bDEMMAoGA1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYaEPMA0GCSqGSIb3DQEBBQUApAYE"
-            + "BEbnKIilBgQEIZ8EUqYGBAQAAAAAoIIC5DCCAuAwggLcMIIBwAICAWMwggG4gAECpCKgDxcNMTAw"
-            + "NjAxMDk0NDAxWqEPFw0xMTA2MDEwOTQ0MDFapSgwJjEkMCIGA1UEAwwbMjEwMzA1MzM2MTAwMDAw"
-            + "MDAwMTIgZU5vZGVCpoIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnCvNB8uwzyuLdQYm"
-            + "aNZPP3jAZ0DL+9iPzJPaHUdQi2qG5tkoYy6UcH/WlJM90QIgr+XHK6rLCLWnk07APf/F9UDxhCpn"
-            + "9BWM51c4MwSDnoSvFIdqOwsTSAirvkUAscF3OeW34RrXZRCmsl5jSND4MuRyUsDQcty1U/bj1U4g"
-            + "lQdC+RwjwBYFK2K580ugEuz/x4nUtfqyjv7FFPY1ct2e5dQ/9Pbg/tq06oxMLuWO53IVRZ0WwACQ"
-            + "bUIcr0bdlfwm7WqkHJEU51SdEDisfS/SyiK5NYfjEa2D/ZiGLREUgUx5uDc4NNjdHOycQ/0L1i9z"
-            + "aOoyKbadUZFITdcglHaS4wIDAQABqT8wDgYDVR0PAQH/BAQDAgO4MC0GA1UdEQEB/wQjMCGCHzIx"
-            + "MDMwNTMzNjEwMDAwMDAwMDEyLmh1YXdlaS5jb22hggEUMA0GCSqGSIb3DQEBBQUAA4IBAQBAPyx8"
-            + "Shx3fT8JEy+7rD/KBYzU7h9GHyQ9fvdvUmVuqCvIVncbXwEDk+vInvkiCoBRgJxI2tmiwguJT4mQ"
-            + "yIq4TBdunabLqEbL7Me36cYQH3mY68v4YzAnHYcM7eAcdxXDivxFuKwSxQ2yoVrncaPb8/tHmQdx"
-            + "XOzi0MmkksFe3IR25qh6G9Jz+TRmGWtTuzEuF87oyUyUb8boCLeMJ5FUKidavI/fmqSKa+iX0vVW"
-            + "T069pXCdtWdOZA4dc6ya7AEIifNUTLon03a/rtWXat+J4qnH1u2u2UgmItoiXjcur2tEGnPiGpxl"
-            + "GiP+qbWQBzNM0GRIO7ldjbMztsLYSGd2oIGEA4GBAHP+pQWFVw8bPNFuOnRFRiUdDCBvxnslVOHD"
-            + "2e5864lisPtoeSUXsLM/6Dqfa8Q8WDiKRht4t7X5QEr8aYv/Q7g4g9Q7MBl3UgV2xt44XS2c1ZXA"
-            + "cbVvE6KzTFKlq5LtVsVsTFfnO1OiGrdwXzxeTNu94QUcLg7MkvhT4AON/QzwoYINMTCCDS0wggMk"
-            + "MIICDKADAgECAhEAutVbOUfLh23Dkfd5hDjSpTANBgkqhkiG9w0BAQUFADBzMQswCQYDVQQGEwJD"
-            + "TjEPMA0GA1UEChMGSHVhd2VpMSYwJAYDVQQLEx1XaXJlbGVzcyBOZXR3b3JrIFByb2R1Y3QgTGlu"
-            + "ZTErMCkGA1UEAxMiSHVhd2VpIFdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBDQTAeFw0xMDExMTIw"
-            + "NzM5MzhaFw0zNDEwMTcwOTAwMzVaMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAk"
-            + "BgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSQwIgYDVQQDExsyMTAzMDUzMzYx"
-            + "MDAwMDAwMDAxMiBlTm9kZUIwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAL6IgLVod8RPMA6r"
-            + "glwZi4/zrgSSh1+04JLuB7Xbm3dGFmK8BoqUMqMBOtaE5x+apY6x8ZfJYLpLZQ1GfnsEEwJtUIh3"
-            + "9zsGXKW8m5nCsXK6z0j7/t1a9ZdD1/4cAVN5bap6HLxC2bLKIsiiXsMr/6bvq5hCmoHLzHEG6TAP"
-            + "I6qHAgMBAAGjPjA8MA4GA1UdDwEB/wQEAwIAuDAqBgNVHREEIzAhgh8yMTAzMDUzMzYxMDAwMDAw"
-            + "MDAxMi5IdWF3ZWkuY29tMA0GCSqGSIb3DQEBBQUAA4IBAQB0hZ1CqMQLWzyYmxB/2X5s8BWX32zM"
-            + "dk5M0X9xe7k4TuNyCCcv7GjYEVdda95VS0GPkYs8tUxaVPb2SQv7W5uNXy7sz6hr56xPJlbpkt01"
-            + "yJYknlXFK4L+nEG7tszuSdu+1Q2gcO9OUOrkrm4I9Nx7KNhJuYtXjAtrs8DSmGITKtY1r3d63CAo"
-            + "JuOGeBirRmMeiXCYlEZjLYrd14b0cp51FuKcj883DESTjHysc7Z3fHujqY3ZRhwaUqItYyGYSufN"
-            + "wPmbmzZ5vBH813qekKeTh+4nK3pUTwSx4exXhIOqpWHyx9WGsLrDJ38EC8Mw1DJh4zMyfKGuGsKH"
-            + "CukbJWkTMIIEmjCCAoKgAwIBAgIRALLINFPpW33xRvlnKb3XFywwDQYJKoZIhvcNAQEFBQAwPDEL"
-            + "MAkGA1UEBhMCQ04xDzANBgNVBAoTBkh1YXdlaTEcMBoGA1UEAxMTSHVhd2VpIEVxdWlwbWVudCBD"
-            + "QTAeFw0wOTEwMTkwOTMwMzRaFw0zNDEwMTgwOTAwMzVaMHMxCzAJBgNVBAYTAkNOMQ8wDQYDVQQK"
-            + "EwZIdWF3ZWkxJjAkBgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSswKQYDVQQD"
-            + "EyJIdWF3ZWkgV2lyZWxlc3MgTmV0d29yayBQcm9kdWN0IENBMIIBIjANBgkqhkiG9w0BAQEFAAOC"
-            + "AQ8AMIIBCgKCAQEAwTf104dxZ++hzt0x0n+uRZahqaQYMO9qr7trvKo8XE+1mrxGbfbR3Yc8ArOJ"
-            + "FQvfxq+ylI9L7qyunHEHiAfAFpWprq7ovP4lhWuzxh6At4DYKBPq0IqGZ9qVfM5Wq96uK6Vrltjj"
-            + "QwS0nuAZC3b1MRYoumHbtRemjorLssD8Vh8TgCJd87wOXf4mSmPhdLqGbbeUksbQROHwtnbZuhL2"
-            + "HGc+CqE6wBVE0oWD2JztJENj0myVQqq7fmBvs4zCb3Wh7M5AYUq8SeTmizboRML+wIF5kNUSV/wS"
-            + "GG7GDx2sJDmB+AXg/jIMawL3ml7GBaeFZiB6QIDBsyxhsVx+AHl35wIDAQABo2AwXjAMBgNVHRME"
-            + "BTADAQH/MA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUXnAX3G+kB0gDN4f+PbTHINY2uNAwHwYD"
-            + "VR0jBBgwFoAUKvgQWSeANR+nfLo7nyrkSqqbkuowDQYJKoZIhvcNAQEFBQADggIBAJMfxn6GXhlp"
-            + "4isppcV4oOu3nloK4p7IiMrlS53363z1SQpcvCo92gzGM3qePajCTTvnRDaggOi+xcpbfJbMG62z"
-            + "+e9qqKiJ53bMk+VSs3rMTRkLIhoRHmu5rIx+5r6apS4X8+g5DykaODye+sMmT0jS9OWuo8q3Ne9u"
-            + "XELSwkXjcJSy3j4n+IKC+GfY8gzM130OsHcg2rzesRxNhjc2BztYdq4tge9X0Uh5dXgjTXJnu2/Q"
-            + "hNvAqjJZVy7rbAHzl7DbRjQk9bFL2Snzawq/0IapfnywRD64bGoo/GRvW9Igs7eplFAhwiIRvw9u"
-            + "qgEGqsk9GiduIqgTtOOT/puH/5My2DEb+faN7uEqqQT6YYH/draE5R8zYWnCHqE2yXNOyqolwP9L"
-            + "OZJQunA8YBv/2rqiimvEZGR5q9F6lXpxrGAJn9tMZFNn7GmJ33Q2BrgCBkOUj+HNcXUzVzKTo/GU"
-            + "O6LimPiI367viVY5IJQlQd/WHJYjK0h7OYBLCvcTXSvUt9jNoUsah9S8SqM0vyW5QvnN9KTWuUXc"
-            + "XHkE3TRO0eem1viZVhcD/5V7b05Ib9vWfHONWs66JjUa83vfvajqciFdzXftDedfe0AejkKb30/J"
-            + "aBKRhSo9P8l0Yiwh8t/5Wxdoar2CiEneTH7HmkbmTcTKwDqOoODA18AGnUtTmymqMIIFYzCCA0ug"
-            + "AwIBAgIRAPL/UcxlhPGYCCTZhLPNvVswDQYJKoZIhvcNAQEFBQAwPDELMAkGA1UEBhMCQ04xDzAN"
-            + "BgNVBAoTBkh1YXdlaTEcMBoGA1UEAxMTSHVhd2VpIEVxdWlwbWVudCBDQTAeFw0wOTEwMTkwOTAw"
-            + "MjhaFw0zNDEwMTkwOTAwMDBaMDwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxHDAaBgNV"
-            + "BAMTE0h1YXdlaSBFcXVpcG1lbnQgQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCi"
-            + "iYQnC/Mp9obmAnXmu/Nj6rccSkEQJXlZipOv8tIjvr0B8ObpFUnU+qLojZUYlNmXH8RgRgFB1sBS"
-            + "yOuGiiP0uNtJ0lPLbylsc+2fr2Rlt/qbYs1oQGz+oNl+UdAOtm/lPzggUOVVst15Ovf0Yf6LQ3CQ"
-            + "alN2VJWgKpFUudDKWQ2fzbFT5YSfvhFxvtvWfgdntKAJt3sFvkKr9Qw+0EYNpQiw5EALeLWCZSYU"
-            + "7A939puqYR6aNA447S1K8SgWoav82P4UY/ykLXjcgTeCnvRRtUga1gdIwm5d/vRlB5il5wspGLLe"
-            + "s4SomzUYrvnvHio555NZPpvmpIXNolwvYW5opAyYzE05pVSOmHf/RY/dHto8XWexOJq/UAFBMyiH"
-            + "4NT4cZpWjYWR7W9GxRXApmQrrLXte1CF/IzXWBMA2tSL0WnRJz5HRcKzsOC6FksiqsYstFjcCE7J"
-            + "7Nicr3Bwq5FrZiqGSdLmLRn97XqVlWdN31HX16fzRhZMiOkvQe+uYT+BXbhU1fZIh6RRAH3V1APo"
-            + "bVlCXh5PDq8Ca4dClHNHYp5RP0Pb5zBowTqBzSv7ssHrNceQsWDeNjX9t59NwviaIlXIlPiWEEJc"
-            + "22XtMm4sc/+8mgOFMNXr4FWu8vdG2fgRpeWJO0E035D6TClu4So2GlN/fIccp5wVYAWF1WhxSQID"
-            + "AQABo2AwXjAOBgNVHQ8BAf8EBAMCAYYwDAYDVR0TBAUwAwEB/zAdBgNVHQ4EFgQUKvgQWSeANR+n"
-            + "fLo7nyrkSqqbkuowHwYDVR0jBBgwFoAUKvgQWSeANR+nfLo7nyrkSqqbkuowDQYJKoZIhvcNAQEF"
-            + "BQADggIBAAALYkaoI50h81eGu+bm6W6OfXwXx2ech9r/JkYiv8NDE1gXFaqbqVTgmTMVAWIIyiYF"
-            + "zFedILyhnva4zIqtBUKVTM1WU8Bx0TqLRp2/KRSX9q2AIHA7cKTYUn6XGzV4amqa3nXJ/v0q9Sty"
-            + "rYqY9piARqoOTseAu4WhMQvyPgTkQ7lFJ97HOvDBM/BNFoPo9DrdLJlBaNIUngjB1c/ZkvXfDUhP"
-            + "B7fegH8dY2hkGD/We0jnkEQA6ch6h/c24wJzVA9VZK6UX2KikYvFS9yipdS5ry6chRSt29UtbTEO"
-            + "q4airI3U/IuxkSAEiVuasLLkGTQTJgTfroFIE0/MiTsyfmxHiMZM0vN2gaPjW+zfkxpqcQcGeNRR"
-            + "jMC2Kh/bMN1is5rzoh3jWADG8tWBQjlSghxNFwAgPMV6ui3SIgNPd07LVwzMQIpMzSn670CtpGKu"
-            + "KB3wchnW2JjEGd9Zb49aP1a+83pBvgUVHaZ5KTlV4lrSe/s8e3SFMiV/6p+KAnV5/cnSnuNJfl0u"
-            + "Tjavw7DEqcXV6UN0Eg571WLRZvnsmCWAHncBMQ7prVDTdnc7OVsZw0TnTzcBYZtYl2mdxsR3tb3k"
-            + "YngXwIxzWROeEFWpNvWnuSzEH+Vv939rdvgLzHrcYgZuvknyWx5Vp9c+ezA58JWYo/nNBFzb0/U1" + "OZck9LLi").getBytes());
-
-    /*
-     *header
-     *	pvno: cmp2000 (2)
-     *	sender: 4
-     *		rdnSequence: 6 items (id-at-commonName=enbca,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *	recipient: 4
-     *		rdnSequence: 4 items (id-at-commonName=21030533610000000012 eNodeB,id-at-organizationalUnitName=Wireless Network Product Line,id-at-organizationName=Huawei,id-at-countryName=CN)
-     *	messageTime: 2011-02-22 17:56:01 (UTC)
-     *	protectionAlg (shaWithRSAEncryption)
-     *	transactionID: 46E72888
-     *	senderNonce: 13AC3DBA7D81873B06218096A2AAE044
-     *	recipNonce: 219F0452
-     *body: ip (1)
-     *	ip
-     *		caPubs: 1 item
-     *			CMPCertificate: x509v3PKCert (0)
-     *				x509v3PKCert (id-at-commonName=enbca,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *					signedCertificate
-     *						version: v3 (2)
-     *						serialNumber : 0x00b252ce935b1feb3a
-     *						signature (shaWithRSAEncryption)
-     *						issuer: rdnSequence: 6 items (id-at-commonName=enbroot,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *						validity
-     *							notBefore: utcTime (0)	utcTime: 10-06-03 08:33:28 (UTC)
-     *							notAfter: utcTime (0)	utcTime: 11-06-03 08:33:28 (UTC)
-     *						subject: rdnSequence: 6 items (id-at-commonName=enbca,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *						subjectPublicKeyInfo
-     *							algorithm (rsaEncryption)
-     *							Padding: 0
-     *							subjectPublicKey: 30818902818100CC8C0DF283FBFD3717785A4399765994A9...
-     *						extensions: 3 items
-     *							Extension (id-ce-subjectKeyIdentifier)
-     *								Extension Id: 2.5.29.14 (id-ce-subjectKeyIdentifier)
-     *								SubjectKeyIdentifier: 4C60DB752400513F2C5F659498FB55155E230045
-     *							Extension (id-ce-basicConstraints)
-     *								Extension Id: 2.5.29.19 (id-ce-basicConstraints)
-     *								BasicConstraintsSyntax
-     *									cA: True
-     *							Extension (id-ce-keyUsage)
-     *								Extension Id: 2.5.29.15 (id-ce-keyUsage)
-     *								Padding: 1
-     *								KeyUsage: F6 (digitalSignature, contentCommitment, keyEncipherment, dataEncipherment, keyCertSign, cRLSign)
-     *					algorithmIdentifier (shaWithRSAEncryption)
-     *					Padding: 0
-     *					encrypted: 2A69C2FD0A809383EACB7CA16E48C8ABB3E4038A4FA288B9...
-     *		response: 1 item
-     *			CertResponse
-     *				certReqId: 355
-     *				status
-     *					status: accepted (0)
-     *				certifiedKeyPair
-     *					certOrEncCert: certificate (0)
-     *						certificate: x509v3PKCert (0)
-     *							x509v3PKCert (id-at-commonName=21030533610000000012 eNodeB)
-     *								signedCertificate
-     *									version: v3 (2)
-     *									serialNumber: -141639098
-     *									signature (shaWithRSAEncryption)
-     *									issuer: rdnSequence: 6 items (id-at-commonName=enbca,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *									validity
-     *										notBefore: utcTime (0)	utcTime: 11-02-22 17:56:01 (UTC)
-     *										notAfter: utcTime (0)	utcTime: 11-06-03 08:33:28 (UTC)
-     *									subject: rdnSequence (0)	rdnSequence: 1 item (id-at-commonName=21030533610000000012 eNodeB)
-     *									subjectPublicKeyInfo
-     *										algorithm (rsaEncryption)
-     *										Padding: 0
-     *										subjectPublicKey: 3082010A02820101009C2BCD07CBB0CF2B8B75062668D64F...
-     *									extensions: 2 items
-     *										Extension (id-ce-keyUsage)
-     *											Extension Id: 2.5.29.15 (id-ce-keyUsage)
-     *											critical: True
-     *											Padding: 3
-     *											KeyUsage: B8 (digitalSignature, keyEncipherment, dataEncipherment, keyAgreement)
-     *										Extension (id-ce-subjectAltName)
-     *											Extension Id: 2.5.29.17 (id-ce-subjectAltName)
-     *											critical: True
-     *											GeneralNames: 1 item		dNSName: 21030533610000000012.huawei.com
-     *								algorithmIdentifier (shaWithRSAEncryption)
-     *								Padding: 0
-     *								encrypted: 64B737A8AF0A27CB19D66D3357D35B62ECFEA26C4A589CB7...
-     *	Padding: 0
-     *	protection: 7C95130034E67A9E87B05B2469B4FE5523C0213A73A32C1B...
-     *	extraCerts: 2 items
-     *		CMPCertificate: x509v3PKCert (0)
-     *			x509v3PKCert (id-at-commonName=enbca,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *				signedCertificate
-     *					version: v3 (2)
-     *					serialNumber : 0x00b252ce935b1feb3a
-     *					signature (shaWithRSAEncryption)
-     *					issuer: rdnSequence: 6 items (id-at-commonName=enbroot,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *					validity
-     *						notBefore: utcTime (0)		utcTime: 10-06-03 08:33:28 (UTC)
-     *						notAfter: utcTime (0)		utcTime: 11-06-03 08:33:28 (UTC)
-     *					subject: rdnSequence: 6 items (id-at-commonName=enbca,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *					subjectPublicKeyInfo
-     *						algorithm (rsaEncryption)
-     *						Padding: 0
-     *						subjectPublicKey: 30818902818100CC8C0DF283FBFD3717785A4399765994A9...
-     *						extensions: 3 items
-     *							Extension (id-ce-subjectKeyIdentifier)
-     *								Extension Id: 2.5.29.14 (id-ce-subjectKeyIdentifier)
-     *								SubjectKeyIdentifier: 4C60DB752400513F2C5F659498FB55155E230045
-     *							Extension (id-ce-basicConstraints)
-     *								Extension Id: 2.5.29.19 (id-ce-basicConstraints)
-     *								BasicConstraintsSyntax
-     *									cA: True
-     *							Extension (id-ce-keyUsage)
-     *								Extension Id: 2.5.29.15 (id-ce-keyUsage)
-     *								Padding: 1
-     *								KeyUsage: F6 (digitalSignature, contentCommitment, keyEncipherment, dataEncipherment, keyCertSign, cRLSign)
-     *				algorithmIdentifier (shaWithRSAEncryption)
-     *				Padding: 0
-     *				encrypted: 2A69C2FD0A809383EACB7CA16E48C8ABB3E4038A4FA288B9...
-     *		CMPCertificate: x509v3PKCert (0)
-     *			x509v3PKCert (id-at-commonName=enbroot,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *				signedCertificate
-     *					version: v3 (2)
-     *					serialNumber : 0x00a1ae2a3b2800db0e
-     *					signature (shaWithRSAEncryption)
-     *					issuer: rdnSequence: 6 items (id-at-commonName=enbroot,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *					validity
-     *						notBefore: utcTime (0)		utcTime: 10-06-03 08:32:55 (UTC)
-     *						notAfter: utcTime (0)		utcTime: 11-06-03 08:32:55 (UTC)
-     *					subject: rdnSequence: 6 items (id-at-commonName=enbroot,id-at-organizationalUnitName=lte,id-at-organizationName=wl,id-at-localityName=qc,id-at-stateOrProvinceName=sh,id-at-countryName=cn)
-     *					subjectPublicKeyInfo
-     *						algorithm (rsaEncryption)
-     *						Padding: 0
-     *						subjectPublicKey: 30818902818100B52E31F83920EAC770A9E516A953E5F162...
-     *					extensions: 3 items
-     *						Extension (id-ce-subjectKeyIdentifier)
-     *							Extension Id: 2.5.29.14 (id-ce-subjectKeyIdentifier)
-     *							SubjectKeyIdentifier: 33C563BBADA99901734613B70E24014F5145E3C7
-     *						Extension (id-ce-basicConstraints)
-     *							Extension Id: 2.5.29.19 (id-ce-basicConstraints)
-     *							BasicConstraintsSyntax
-     *								cA: True
-     *						Extension (id-ce-keyUsage)
-     *							Extension Id: 2.5.29.15 (id-ce-keyUsage)
-     *							Padding: 1
-     *							KeyUsage: F6 (digitalSignature, contentCommitment, keyEncipherment, dataEncipherment, keyCertSign, cRLSign)
-     *				algorithmIdentifier (shaWithRSAEncryption)
-     *				Padding: 0
-     *				encrypted: 7BD35EC086CBC4C2BF3DC891FD60341D6E3938B8ED26C4AD...
-     */
-    static byte[] telefonica2 = Base64
-            .decode(("MIILtTCCARECAQKkVDBSMQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQsw"
-                    + "CQYDVQQKEwJ3bDEMMAoGA1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYaRuMGwxCzAJBgNVBAYTAkNO"
-                    + "MQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5l"
-                    + "MSQwIgYDVQQDExsyMTAzMDUzMzYxMDAwMDAwMDAxMiBlTm9kZUKgERgPMjAxMTAyMjIxNzU2MDFa"
-                    + "oQ8wDQYJKoZIhvcNAQEFBQCkBgQERucoiKUSBBATrD26fYGHOwYhgJaiquBEpgYEBCGfBFKhggVD"
-                    + "MIIFP6GCAmgwggJkMIICYDCCAcmgAwIBAgIJALJSzpNbH+s6MA0GCSqGSIb3DQEBBQUAMFQxCzAJ"
-                    + "BgNVBAYTAmNuMQswCQYDVQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQL"
-                    + "EwNsdGUxEDAOBgNVBAMTB2VuYnJvb3QwHhcNMTAwNjAzMDgzMzI4WhcNMTEwNjAzMDgzMzI4WjBS"
-                    + "MQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQswCQYDVQQKEwJ3bDEMMAoG"
-                    + "A1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAzIwN"
-                    + "8oP7/TcXeFpDmXZZlKkeZ4/PAzRancAj6mmdhbeZY+lvgOt/KmQyolu1jPkUUDDy2nxzyuuADAQe"
-                    + "C9o6VHgteppQzT2XC75ol5YUc1BtCaU2CD7MmpqFC9NB/UWCP++r1mRPXWzdI/rkhAqudfberNRX"
-                    + "ouSmmHXqF0KQY+UCAwEAAaM8MDowHQYDVR0OBBYEFExg23UkAFE/LF9llJj7VRVeIwBFMAwGA1Ud"
-                    + "EwQFMAMBAf8wCwYDVR0PBAQDAgH2MA0GCSqGSIb3DQEBBQUAA4GBACppwv0KgJOD6st8oW5IyKuz"
-                    + "5AOKT6KIubIDsv8tRUHsodUku1ujedyMY6dzPytNHea87P3nz5Bx4gEUS7ItVmAPS1oCVrzOlrw8"
-                    + "Mfd22n7w+OqL4R+9Tf3vyxIzYHCa3cR5ACgLn2p8/iRx7D+IePYz0wnrRjV3RU/JzjGY2pJQMIIC"
-                    + "zzCCAssCAgFjMAMCAQAwggK+oIICujCCArYwggIfoAMCAQICBPeOwkYwDQYJKoZIhvcNAQEFBQAw"
-                    + "UjELMAkGA1UEBhMCY24xCzAJBgNVBAgTAnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAK"
-                    + "BgNVBAsTA2x0ZTEOMAwGA1UEAxMFZW5iY2EwHhcNMTEwMjIyMTc1NjAxWhcNMTEwNjAzMDgzMzI4"
-                    + "WjAmMSQwIgYDVQQDDBsyMTAzMDUzMzYxMDAwMDAwMDAxMiBlTm9kZUIwggEiMA0GCSqGSIb3DQEB"
-                    + "AQUAA4IBDwAwggEKAoIBAQCcK80Hy7DPK4t1BiZo1k8/eMBnQMv72I/Mk9odR1CLaobm2ShjLpRw"
-                    + "f9aUkz3RAiCv5ccrqssItaeTTsA9/8X1QPGEKmf0FYznVzgzBIOehK8Uh2o7CxNICKu+RQCxwXc5"
-                    + "5bfhGtdlEKayXmNI0Pgy5HJSwNBy3LVT9uPVTiCVB0L5HCPAFgUrYrnzS6AS7P/HidS1+rKO/sUU"
-                    + "9jVy3Z7l1D/09uD+2rTqjEwu5Y7nchVFnRbAAJBtQhyvRt2V/CbtaqQckRTnVJ0QOKx9L9LKIrk1"
-                    + "h+MRrYP9mIYtERSBTHm4Nzg02N0c7JxD/QvWL3No6jIptp1RkUhN1yCUdpLjAgMBAAGjQTA/MA4G"
-                    + "A1UdDwEB/wQEAwIDuDAtBgNVHREBAf8EIzAhgh8yMTAzMDUzMzYxMDAwMDAwMDAxMi5odWF3ZWku"
-                    + "Y29tMA0GCSqGSIb3DQEBBQUAA4GBAGS3N6ivCifLGdZtM1fTW2Ls/qJsSlict/WtdEVtThyZ51yX"
-                    + "50AJsvjmQtduU4Qbj0vOPETlP9+L35j3j5Lo+RRkLFTJ4FSWZzJ6ZZSF5u3eWnMZRF74wrBg32Ip"
-                    + "I9g5MA5IvyYdJb45Zcjs07QVZNQXzjBjcESwglCHC3vu4vyooIGEA4GBAHyVEwA05nqeh7BbJGm0"
-                    + "/lUjwCE6c6MsGyAV6ticmTbp+BFx6fHGk1tHNNhCcJxQxSdAv9nEsClExrhuXiBSG/SdBmrAs6lh"
-                    + "odMrRkMTQO/FooMiwDjRX7zNBGnVHBQYnXY/cGtTIAQWhwhFgBrq3HX31ogkEPOmBsTFeoxzYvxn"
-                    + "oYIEzjCCBMowggJgMIIByaADAgECAgkAslLOk1sf6zowDQYJKoZIhvcNAQEFBQAwVDELMAkGA1UE"
-                    + "BhMCY24xCzAJBgNVBAgTAnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAKBgNVBAsTA2x0"
-                    + "ZTEQMA4GA1UEAxMHZW5icm9vdDAeFw0xMDA2MDMwODMzMjhaFw0xMTA2MDMwODMzMjhaMFIxCzAJ"
-                    + "BgNVBAYTAmNuMQswCQYDVQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQL"
-                    + "EwNsdGUxDjAMBgNVBAMTBWVuYmNhMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMjA3yg/v9"
-                    + "Nxd4WkOZdlmUqR5nj88DNFqdwCPqaZ2Ft5lj6W+A638qZDKiW7WM+RRQMPLafHPK64AMBB4L2jpU"
-                    + "eC16mlDNPZcLvmiXlhRzUG0JpTYIPsyamoUL00H9RYI/76vWZE9dbN0j+uSECq519t6s1Fei5KaY"
-                    + "deoXQpBj5QIDAQABozwwOjAdBgNVHQ4EFgQUTGDbdSQAUT8sX2WUmPtVFV4jAEUwDAYDVR0TBAUw"
-                    + "AwEB/zALBgNVHQ8EBAMCAfYwDQYJKoZIhvcNAQEFBQADgYEAKmnC/QqAk4Pqy3yhbkjIq7PkA4pP"
-                    + "ooi5sgOy/y1FQeyh1SS7W6N53Ixjp3M/K00d5rzs/efPkHHiARRLsi1WYA9LWgJWvM6WvDwx93ba"
-                    + "fvD46ovhH71N/e/LEjNgcJrdxHkAKAufanz+JHHsP4h49jPTCetGNXdFT8nOMZjaklAwggJiMIIB"
-                    + "y6ADAgECAgkAoa4qOygA2w4wDQYJKoZIhvcNAQEFBQAwVDELMAkGA1UEBhMCY24xCzAJBgNVBAgT"
-                    + "AnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAKBgNVBAsTA2x0ZTEQMA4GA1UEAxMHZW5i"
-                    + "cm9vdDAeFw0xMDA2MDMwODMyNTVaFw0xMTA2MDMwODMyNTVaMFQxCzAJBgNVBAYTAmNuMQswCQYD"
-                    + "VQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQLEwNsdGUxEDAOBgNVBAMT"
-                    + "B2VuYnJvb3QwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALUuMfg5IOrHcKnlFqlT5fFiKM4D"
-                    + "RfpVznugWDrJtKrgr8rf9SoybAPi4JiwYHfWRAjNkutR9/h4KWbcrz1vBpooklEixtPzSUHJ4xfc"
-                    + "Rz39AI0bC/qzm2ru9l1qTXMfRA2qydb0Y/Q8m2S+DyJCaiP1eNinny6u4oWxx8A6Y8mLAgMBAAGj"
-                    + "PDA6MB0GA1UdDgQWBBQzxWO7ramZAXNGE7cOJAFPUUXjxzAMBgNVHRMEBTADAQH/MAsGA1UdDwQE"
-                    + "AwIB9jANBgkqhkiG9w0BAQUFAAOBgQB7017AhsvEwr89yJH9YDQdbjk4uO0mxK2SKowiYNj5BoMk"
-                    + "tAyjcA7hgNX00Wg7qLQe9IuoOCy2fdldmP+s7sLouXi1oh7OjOxk50TANQg4V28vPhfdgxAgGowi"
-                    + "GCsbCtLscLeYallqTuvg/0O2zZITN5wcoQOjackHjIJg3eAz8A==").getBytes());
 
 }
