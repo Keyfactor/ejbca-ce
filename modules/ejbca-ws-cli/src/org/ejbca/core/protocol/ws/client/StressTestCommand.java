@@ -533,7 +533,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			final String endEntityProfileName = this.args.length>4 ? this.args[4] : "EMPTY";
 			final String certificateProfileName = this.args.length>5 ? this.args[5] : "ENDUSER";
 			final TestType testType = this.args.length>6 ? TestType.valueOf(this.args[6]) : TestType.BASIC;
-			notanot.setTests(this.args.length>7 ? Integer.parseInt(this.args[7]) : -1);
+			if (notanot.getTests() == -1) {
+			    notanot.setTests(this.args.length>7 ? Integer.parseInt(this.args[7]) : -1);
+			}
 			final int maxCertificateSN;
 			final String subjectDN = System.getProperty("subjectDN", "CN="+USER_NAME_TAG);
 			{
