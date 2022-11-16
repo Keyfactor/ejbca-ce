@@ -69,7 +69,7 @@ public interface RequestMessage extends Serializable {
      * @return serial number of CA certificate for the CA target of the request, or null.
      */
     default BigInteger getSerialNo() {
-        throw new UnsupportedOperationException("getSerialNo method is not supported in this implementation!");
+        return null;
     }
 
     /**
@@ -142,7 +142,7 @@ public interface RequestMessage extends Serializable {
      * @return issuerDN of CA issuing CRL or null.
      */
     default String getCRLIssuerDN() {
-        throw new UnsupportedOperationException("getCRLIssuerDN method is not supported in this implementation!");
+        return null;
     }
 
     /**
@@ -151,7 +151,7 @@ public interface RequestMessage extends Serializable {
      * @return serial number of CA certificate for CA issuing CRL or null.
      */
     default BigInteger getCRLSerialNo() {
-        throw new UnsupportedOperationException("getCRLSerialNo method is not supported in this implementation!");
+        return null;
     }
 
     /**
@@ -199,7 +199,6 @@ public interface RequestMessage extends Serializable {
      * @see #requireKeyInfo()
      */
     default void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
-        throw new UnsupportedOperationException("setKeyInfo method is not supported in this implementation!");
     }
 
     /**
@@ -215,7 +214,7 @@ public interface RequestMessage extends Serializable {
      * @return class specific error message
      */
     default String getErrorText() {
-        throw new UnsupportedOperationException("getErrorText method is not supported in this implementation!");
+        return null;
     }
 
     /**
@@ -238,7 +237,7 @@ public interface RequestMessage extends Serializable {
      * @return request key info
      */
     default byte[] getRequestKeyInfo() {
-        throw new UnsupportedOperationException("getRequestKeyInfo method is not supported in this implementation!");
+        return new byte[0];
     }
 
     /**
@@ -278,7 +277,6 @@ public interface RequestMessage extends Serializable {
      * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      */
     default void setResponseKeyInfo(PrivateKey key, String provider) {
-        throw new UnsupportedOperationException("setResponseKeyInfo method is not supported in this implementation!");
     }
 
     /**
