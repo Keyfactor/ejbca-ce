@@ -13,14 +13,11 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -210,9 +207,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
                 pass = str.getString();
             }
         }
-
         return pass;
-
     }
 
     @Override
@@ -227,11 +222,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     
     public void setIssuerDN(final String issuer) {
         this.defaultCADN = issuer;
-    }
-
-    @Override
-    public BigInteger getSerialNo() {
-        return null;
     }
 
     @Override
@@ -317,16 +307,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     }
 
     @Override
-    public String getCRLIssuerDN() {
-        return null;
-    }
-
-    @Override
-    public BigInteger getCRLSerialNo() {
-        return null;
-    }
-
-    @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         
      // If we have generated a key pair by the server, we should use this one
@@ -365,23 +345,8 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     }
 
     @Override
-    public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
-
-    }
-
-    @Override
     public int getErrorNo() {
         return 0;
-    }
-
-    @Override
-    public String getErrorText() {
-        return null;
-    }
-
-    @Override
-    public byte[] getRequestKeyInfo() {
-        return null;
     }
 
     @Override
@@ -410,11 +375,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     @Override
     public int getRequestId() {
         return 0; //cerReqId is undefined for p10cr request types, setting it to zero according to openssl
-    }
-
-    @Override
-    public void setResponseKeyInfo(PrivateKey key, String provider) {
-
     }
 
     @Override
