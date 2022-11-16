@@ -63,8 +63,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     
     private transient JcaPKCS10CertificationRequest pc10Req = null;
     private int requestType = PKIBody.TYPE_P10_CERT_REQ;
-    private String b64SenderNonce = null;
-    private String b64TransId = null;
     /** manually set username */
     private String username = null;
     private String extractUsernameComponent = null;
@@ -233,13 +231,11 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
 
     @Override
     public BigInteger getSerialNo() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getCASequence() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -322,13 +318,11 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
 
     @Override
     public String getCRLIssuerDN() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public BigInteger getCRLSerialNo() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -367,31 +361,26 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
 
     @Override
     public boolean requireKeyInfo() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public int getErrorNo() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public String getErrorText() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public byte[] getRequestKeyInfo() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -425,7 +414,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
 
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
-        // TODO Auto-generated method stub
 
     }
 
