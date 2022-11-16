@@ -35,10 +35,12 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
@@ -47,6 +49,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -320,7 +324,7 @@ public abstract class CmpTestCase extends CaTestCase {
     
     public static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
-            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException {
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         
         return genP10CrCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm);
@@ -510,10 +514,10 @@ public abstract class CmpTestCase extends CaTestCase {
         return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
     }
     
-    private static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, SubjectPublicKeyInfo spkInfo,  
+    protected static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, SubjectPublicKeyInfo spkInfo,  
             KeyPair protocolEncrKey, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
-            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException {
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         
         ASN1EncodableVector altnameattr = new ASN1EncodableVector();
         DERSet attributes = null;
@@ -538,8 +542,18 @@ public abstract class CmpTestCase extends CaTestCase {
             attributes = new DERSet(v);
         }
         
-        CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, userDN,
-                keys.getPublic(), attributes, keys.getPrivate(), null).toASN1Structure();
+        CertificationRequest certificationRequest = null;
+        
+        if (keys != null) {
+            certificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, userDN,
+                    keys.getPublic(), attributes, keys.getPrivate(), null).toASN1Structure();
+        } else if (spkInfo != null) {
+            // If we didn't have a public key, perhaps we passed a SubjectPublicKeyInfo, which can
+            // be a AlgorithmIdentifier followed by a zero-length BIT STRING as specified for server key generation
+            // for CMP in RFC4210
+            certificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, userDN,
+                    getPublicKey(spkInfo, BouncyCastleProvider.PROVIDER_NAME), attributes, null, null).toASN1Structure();
+        } 
         
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(senderDN), new GeneralName(new X500Name(
                 issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
@@ -557,6 +571,25 @@ public abstract class CmpTestCase extends CaTestCase {
         PKIBody pkiBody = new PKIBody(PKIBody.TYPE_P10_CERT_REQ, certificationRequest);
         return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
     }
+
+    private static PublicKey getPublicKey(SubjectPublicKeyInfo spkInfo, final String provider)
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+
+        // If there is no public key here, but only an empty bit string, it means we have called for server generated keys
+        // i.e. no public key to see here...
+        if (spkInfo.getPublicKeyData().equals(DERNull.INSTANCE)) {
+            return null;
+        }
+        try {
+            final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(spkInfo).getBytes());
+            final AlgorithmIdentifier keyAlg = spkInfo.getAlgorithm();
+            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
+        } catch (InvalidKeySpecException | IOException e) {
+            final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
+            newe.initCause(e);
+            throw newe;
+        }
+    }    
 
     protected static PKIMessage genRevReq(String issuerDN, X500Name userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
             boolean noRevocationReason, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
