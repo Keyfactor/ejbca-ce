@@ -15,13 +15,15 @@ package org.ejbca.core.ejb.ca.sign;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -29,9 +31,12 @@ import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ecgost.BCECGOST3410PublicKey;
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -39,16 +44,18 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -71,37 +78,58 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
     private static final String ECGOST3410_USERNAME = "Ecgost3410User";
     
     private static KeyPair gostkeys;
     
+    private static int certificateProfileId = 0;
+    
+    private static int endEntityProfileId = 0;
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
-        if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled()) {
-            // Install BouncyCastle provider
-            CryptoProviderTools.installBCProviderIfNotAvailable();
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
+        // Install BouncyCastle provider
+        CryptoProviderTools.installBCProviderIfNotAvailable();
 
-            createECGOST3410Ca();
-            createEcgost3410EndEntity();
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECGOST3410"});
+        certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, ECGOST3410_USERNAME, certificateProfile);
+        
+        EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, ECGOST3410_USERNAME, endEntityProfile);
+        
+        createECGOST3410Ca();
+        createEcgost3410EndEntity();
+        
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("ECGOST3410", BouncyCastleProvider.PROVIDER_NAME);
+        final String keyspec = "GostR3410-2001-CryptoPro-B";
+        AlgorithmParameterSpec ecSpec = ECGOST3410NamedCurveTable.getParameterSpec(keyspec); 
+        keygen.initialize(ecSpec);
+        gostkeys = keygen.generateKeyPair();
+        
+       
             
-            final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-            gostkeys = KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
-        }
     }
-    
+
     @AfterClass
     public static void afterClass() throws Exception {
-        if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled()) {
-            EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-            userAdminSession.deleteUser(internalAdmin, ECGOST3410_USERNAME);
-            removeTestCA(TEST_ECGOST3410_CA_NAME);
-        }
+
+        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        userAdminSession.deleteUser(internalAdmin, ECGOST3410_USERNAME);      
+        CaTestUtils.removeCa(internalAdmin, ECGOST3410_USERNAME, ECGOST3410_USERNAME);
+        certificateProfileSession.removeCertificateProfile(internalAdmin, ECGOST3410_USERNAME);
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, ECGOST3410_USERNAME);
+
     }
     
     @Test
     public void testSignSessionECGOST3410WithECGOST3410CA() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
         log.trace(">test14SignSessionECGOST3410WithECGOST3410CA()");
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
@@ -129,7 +157,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
      */
     @Test
     public void testBCPKCS10ECGOST3410WithECGOST3410CA() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
         log.trace(">test15TestBCPKCS10ECGOST3410WithECGOST3410CA()");
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
@@ -201,6 +229,6 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CAInfo infoecdsa = caSession.getCAInfo(internalAdmin, TEST_ECGOST3410_CA_NAME);
         assertTrue("No active ECGOST3410 CA! Must have at least one active CA to run tests!", infoecdsa != null);
-        createEndEntity(ECGOST3410_USERNAME, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, infoecdsa.getCAId());
+        createEndEntity(ECGOST3410_USERNAME, endEntityProfileId, certificateProfileId, infoecdsa.getCAId());
     }
 }

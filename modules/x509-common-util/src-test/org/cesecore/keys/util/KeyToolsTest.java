@@ -422,7 +422,7 @@ public class KeyToolsTest {
 	
 	@Test
 	public void testGenKeysGOSTAlgorithmSpec() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
+	    AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
         log.trace(">testGenKeysGOSTAlgorithmSpec");
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("ECGOST3410", BouncyCastleProvider.PROVIDER_NAME);
         
