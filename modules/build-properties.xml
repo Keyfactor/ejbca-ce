@@ -364,6 +364,11 @@
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.adsddl.classpath"><fileset dir="${ejbca.home}/lib" includes="adsddl-*.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
+	<path id="lib.kerb4j.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb4j-server-common-*.jar"/></path>
+	<path id="lib.kerb.core.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-core-*.jar"/></path> 
+	<path id="lib.kerby.asn1.classpath"><fileset dir="${ejbca.home}/lib" includes="kerby-asn1-*.jar"/></path> 
+	<path id="lib.kerb.crypto.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-crypto-*.jar"/></path> 
+
 	<path id="lib.xmlpull.classpath">
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xpp3_min-*.jar"/>
@@ -644,6 +649,10 @@
 		<available file="${mod.ssh.path}/build.xml" />
 	</condition>
 	
+	<condition property="mod.p11ng.exists">
+		<available file="${mod.p11ng.path}/build.xml" />
+	</condition>
+
 	<condition property="mod.msae.exists">
 		<available file="${mod.msae.path}/build.xml" />
 	</condition>

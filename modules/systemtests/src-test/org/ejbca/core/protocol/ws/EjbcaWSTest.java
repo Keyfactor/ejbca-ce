@@ -181,6 +181,8 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.CesecoreException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.DateNotValidException;
+import org.ejbca.core.protocol.ws.client.gen.DateNotValidException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -1005,6 +1007,266 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         revokeCertBackdated();
     }
 
+    @Test(expected = AlreadyRevokedException_Exception.class)
+    public void test062RevokeCertChangeReasonToKeyCompromiseWithoutFlag() throws Exception {
+        // Revocation reason change should fail if not enabled on CA  level.
+
+        // Given that we have a certificate that is unrevoked, and a CA that doesn't have the "allow
+        // revocation reason change" flag enabled:
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        // First changed into SUPERSEDED
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+        assertNotNull(revokestatus);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        assertTrue(revokestatus.getCertificateSN().equals(serno));
+        assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+        assertNotNull(revokestatus.getRevocationDate());
+
+        // This should throw an exception because CA doesn't have the allow revocation reason change flag.
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+    }
+
+    @Test()
+    public void test063RevokeCertChangeReasonToKeyCompromise() throws Exception {
+        // revokeCert end point should be able to change revocation reason from allowed reasons to Key Compromise
+
+        // Given that we have a certificate that is unrevoked, and a CA has the "allow
+        // revocation reason change" flag enabled:
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+
+        try {
+            // Change the CA flag to TRUE
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            // First changed into SUPERSEDED
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+
+            // Revocation reason can be changed into KEYCOMPROMISE
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+
+            // Revocation reason cannot be changed back from KEYCOMPROMISE to SUPERSEDED
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            fail("should throw");
+
+        } catch (AlreadyRevokedException_Exception e) {
+            final String message = "Certificate with issuer: CN=CA1 and serial number: " + serno + " has previously been revoked. Revocation reason could not be changed or was not allowed.";
+            assertEquals(message, e.getMessage());
+        } finally {
+            // Clean up
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+        }
+    }
+
+    @Test
+    public void test064RevokeCertBackdatedChangeReasonWithBackdating() throws Exception {
+        // revokeCertBackdated should be able to change reason with backdating from allowed reasons to Key Compromise.
+
+        // Given that we have a certificate that is unrevoked
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+
+        try {
+            // Set the CA to allow change of revocation reason 
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            // Set the Certificate Profile to allow backdated revocation
+            cp.setAllowBackdatedRevocation(true);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
+
+            final String originalRevocationDate = "2022-05-15";
+            final String backDatedRevocationDate = "2020-05-15";
+
+            // Revoke certificate with Revocation reason KeyCompromise and with a set revocation date
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, originalRevocationDate);
+           
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+            assertEquals(originalRevocationDate, revokestatus.getRevocationDate().toString().substring(0, 10));
+
+            // Change date for revocation to earlier date
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, backDatedRevocationDate);
+
+            revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+            assertEquals(backDatedRevocationDate, revokestatus.getRevocationDate().toString().substring(0, 10));
+
+        } finally {
+            // Cleanup
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+
+            cp.setAllowBackdatedRevocation(false);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
+        }
+    }
+
+    @Test
+    public void test065RevokeCertBackdateChangeReasonFutureDateShouldFail() throws Exception {
+        // revokeCertBackdated should only allow backdating.
+
+        // Given that we have a certificate that is unrevoked
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+
+        try {
+            // Set the CA to allow change of revocation reason 
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            // Set the Certificate Profile to allow backdated revocation
+            cp.setAllowBackdatedRevocation(true);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
+            
+            final String originalRevocationDate = "2020-05-15T14:07:09Z";
+            final String forwardDatedRevocationDate = "2022-05-15T14:07:09Z";
+            
+            // Revoke certificate with Revocation reason KeyCompromise and a set revocation date
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, originalRevocationDate);
+            
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+            assertEquals(originalRevocationDate.substring(0, 10), revokestatus.getRevocationDate().toString().substring(0, 10));
+
+            // Change date for revocation to later date. Should not be possible.
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, forwardDatedRevocationDate);
+
+            fail("should throw");
+        }
+        catch (Exception e) {
+            final String message = "New revocation date must be earlier than current revocation date";
+            assertEquals(message, e.getMessage());
+            assertNotNull(e.getMessage());
+        } finally {
+            // Cleanup
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+
+            cp.setAllowBackdatedRevocation(false);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
+        }
+    }
+
+    @Test
+    public void test066RevokeCertBackdatedChangeReasonWithoutCertificateProfileAllow() throws Exception {
+        // revokeCertBackdated should not be able to use backdated revocation date if it is not allowed
+        // on the Certificate Profile level.
+
+        // Given that we have a certificate that is unrevoked
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+
+        assertEquals(false, cp.getAllowBackdatedRevocation());
+
+        try {
+            // Set the CA to allow change of revocation reason
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            final String backdatedRevocationDate = "2022-05-15T14:07:09Z";
+
+            // Revoke certificate with Revocation reason KeyCompromise and a set revocation date
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+
+            // Change date for revocation to later date. Should not be possible.
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, backdatedRevocationDate);
+
+            fail("should throw");
+        }
+        catch (Exception e) {
+            final String message = "Back dated revocation not allowed for certificate profile '" + WS_CERTPROF_EI + "'. Certificate serialNumber '" + serno + "', issuerDN 'CN=CA1'.";
+            assertEquals(message, e.getMessage());
+            assertNotNull(e.getMessage());
+        }
+        finally {
+            // Cleanup
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+        }
+    }
+    
     @Test
     public void test08CheckRevokeStatus() throws Exception {
         checkRevokeStatus();

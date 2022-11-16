@@ -33,8 +33,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
+import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -83,6 +85,11 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     private String paramEnrollmentCode;
     // Cache for certificate profile
     private CertificateProfile certificateProfile;
+    
+    //SSH enrollment
+    private String sshPublicKey;
+    private boolean sshEnrollmentMode;
+    private boolean validSshPubKey;
 
     @PostConstruct
     @Override
@@ -146,6 +153,8 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
                 endEntityInformation.setPassword(getEnrollmentCode());
             }
             setEndEntityInformation(endEntityInformation);
+            
+            sshEnrollmentMode = getCertificateProfile().getType() == CertificateConstants.CERTTYPE_SSH;
             if (username.equals("superadmin")) {
                 RaCertificateSearchResponse raCertificateSearchResponse = raMasterApiProxyBean.searchForCertificatesByUsername(raAuthenticationBean.getAuthenticationToken(), username);
                 if (raCertificateSearchResponse.getCdws().size() == 0) {
@@ -371,6 +380,66 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     /** @param enrollmentCode the enrollment code to set */
     public void setEnrollmentCode(String enrollmentCode) {
         this.enrollmentCode = enrollmentCode;
+    }
+    
+    //SSH certificate enrollment
+    public String validateSshPublicKey(String publicKey) {
+        validSshPubKey = false;
+        if(StringUtils.isBlank(publicKey)) {
+            return raLocaleBean.getMessage("enroll_ssh_pubkey_required");
+        }
+        try {
+            SshKeyFactory.INSTANCE.extractSshPublicKeyFromFile(publicKey.getBytes());
+            validSshPubKey = true;
+        } catch (Exception e) {
+            log.error("error: ", e);
+            return raLocaleBean.getMessage("enroll_invalid_ssh_pub_key");
+        }
+        return null;
+    }
+    
+    public String uploadSshPubKey() {
+        return "";
+    }
+    
+    public final void validateSshPublicKey(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        String input = value.toString();
+        String msg = validateSshPublicKey(input);
+        if(msg!=null) {
+            throw new ValidatorException(new FacesMessage(msg));
+        }
+    }
+    
+    public String getSshPublicKey() {
+        return sshPublicKey;
+    }
+
+    public void setSshPublicKey(String sshPublicKey) {
+        this.sshPublicKey = sshPublicKey;
+    }
+    
+    public boolean getSshEnrollmentMode() {
+        return sshEnrollmentMode;
+    }
+    
+    public boolean isValidSshPubKey() {
+        return validSshPubKey;
+    }
+
+    public void generateSshCertificate() {
+        validateSshPublicKey(sshPublicKey);
+        if(!validSshPubKey) {
+            return;
+        }
+        // extendedInformation SHOULD always be set with sshCustomData.sshCertificateType during EE creation
+        getEndEntityInformation().getExtendedInformation().setCertificateRequest(sshPublicKey.getBytes());
+        generateCertificateAfterCheck();
+        if (getGeneratedToken() != null) {
+            downloadToken(getGeneratedToken(), "application/octet-stream", "-cert.pub");
+        } else {
+            log.debug("No token was generated an error message should have been logged");
+        }
+        reset();
     }
 
 }

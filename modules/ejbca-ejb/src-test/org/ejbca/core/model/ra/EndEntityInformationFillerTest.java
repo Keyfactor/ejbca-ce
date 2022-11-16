@@ -26,6 +26,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** Tests DN merging
  * 
  * @version $Id$
@@ -662,6 +665,17 @@ public class EndEntityInformationFillerTest {
                                         EndEntityInformationFiller.SUBJECT_DN);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", dn2);
         
+    }
+    
+    @Test
+    public void testMergeDnForEmailInDistinguishedName() throws Exception {
+        Map<String, String> sdnMap = new HashMap<>();
+        sdnMap.put(DnComponents.DNEMAILADDRESS, "test@example.com");
+
+        String originalDn = "E=test@example.com,CN=example.com,OU=Wellcome Trust Sanger Institute,O=Genome Research Ltd.,L=ggdd,ST=STTsasad,C=GB";
+        String mergedDn = 
+                new DistinguishedName(originalDn).mergeDN(new DistinguishedName("CN=example.com"), true, sdnMap).toString();
+        assertEquals(originalDn, mergedDn);
     }
         
 }
