@@ -43,7 +43,6 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -69,12 +68,10 @@ public class ExtraAlgorithmsPKCS12Test {
     
     @Test
     public void testP12KeystoreGOST3410() throws Exception {
-        log.debug("GOST3410 configured: "+(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() ? "YES" : "NO"));
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
         log.trace(">testP12KeystoreGOST3410()");
         
-        String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-        assertNotNull("curve B is not configued!", keyspec);
+        final String keyspec = "GostR3410-2001-CryptoPro-B";
         
         AlgorithmParameterSpec spec = ECGOST3410NamedCurveTable.getParameterSpec(keyspec);
         assertNotNull(spec);

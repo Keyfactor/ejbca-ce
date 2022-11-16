@@ -41,7 +41,7 @@
 		<javac srcdir="${x509-common-util.dir}/src" destdir="${x509-common-util.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="compile.classpath"/>
 		</javac>
-		<buildservicemanifest interface="com.keyfactor.util.certificate.CertificateImplementation"
+		<buildservicemanifest interface="com.keyfactor.util.certificate.CertificateImplementation;org.cesecore.keys.token.PKCS11SlotListWrapperFactory"
 		    		file="${x509-common-util.dir}/build/classes" classpath="manifest.classpath"/>
 		<mkdir dir="${x509-common-util.dir}/dist"/>
 		<jar destfile="${x509-common-util.dir}/dist/x509-common-util.jar">
@@ -71,6 +71,8 @@
 		<javac srcdir="${x509-common-util.src-test.dir}" destdir="${x509-common-util.build-test.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
 		<copy file="${log4j.test.file}" tofile="${x509-common-util.build-test.dir}/log4j.xml" failonerror="true"/>
+		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
+		<copy file="${systemtests.properties.file}" todir="${x509-common-util.build-test.dir}" failonerror="false"/>
 	</target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">

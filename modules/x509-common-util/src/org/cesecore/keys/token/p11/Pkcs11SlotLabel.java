@@ -460,7 +460,7 @@ public class Pkcs11SlotLabel {
             return getSunP11ProviderNoExceptionHandling(is);
         } catch (Exception e) {
             final String msg = "Error constructing pkcs11 provider: " + e.getMessage();
-            log.error(msg);
+            log.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
     }

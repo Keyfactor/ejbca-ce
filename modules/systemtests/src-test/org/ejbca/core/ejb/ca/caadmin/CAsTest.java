@@ -85,6 +85,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -141,6 +142,8 @@ public class CAsTest extends CaTestCase {
             .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     // private AuthenticationToken adminTokenNoAuth;
 
@@ -414,7 +417,8 @@ public class CAsTest extends CaTestCase {
     /** Adds a CA using ECGOST3410 keys to the database. It also checks that the CA is stored correctly. */
     @Test
     public void test04primAddECGOST3410() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
+        cesecoreConfigurationProxySession.setGost3410Enabled(true);
         boolean ret = false;
         try {
             createECGOST3410Ca();
@@ -434,6 +438,7 @@ public class CAsTest extends CaTestCase {
             fail("Creating ECGOST3410 CA failed because CA exists.");
         } finally {
             removeOldCa(TEST_ECGOST3410_CA_NAME);
+            certificateProfileSession.removeCertificateProfile(admin, TEST_ECGOST3410_CA_NAME);
         }
         assertTrue("Creating ECGOST3410 CA failed", ret);
     }
@@ -445,7 +450,7 @@ public class CAsTest extends CaTestCase {
             org.bouncycastle.jce.spec.ECParameterSpec spec = gostpk.getParameters();
             assertNotNull("GOST3410 public key spec can't be null", spec);
         } else {
-            assertTrue("Public key is not GOST3410: "+pk.getClass().getName(), false);
+            fail("Public key is not GOST3410: "+pk.getClass().getName());
         }
     }
     

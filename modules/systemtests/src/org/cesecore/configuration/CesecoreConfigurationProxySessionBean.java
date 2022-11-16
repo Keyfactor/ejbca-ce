@@ -19,6 +19,7 @@ import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.StringTools;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
@@ -50,5 +51,13 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
     public char[] getForbiddenCharacters() {
         return StringConfigurationCache.INSTANCE.getForbiddenCharacters();
     }
+
+    @Override
+    public void setGost3410Enabled(boolean value) {
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(value);
+        
+    }
+    
+    
 
 }
