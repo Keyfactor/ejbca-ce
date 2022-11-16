@@ -836,7 +836,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
         // Only try to read the response if we expected a 200 (ok) response
         if (httpRespCode != 200) {
-            return null;
+            return new byte[0];
         }
             // Some appserver (Weblogic) responds with
             // "application/pkixcmp; charset=UTF-8"
