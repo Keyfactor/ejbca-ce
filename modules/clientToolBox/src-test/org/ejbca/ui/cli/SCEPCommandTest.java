@@ -41,6 +41,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -49,6 +50,9 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SCEPCommandTest {
+
+    @Rule
+    public Timeout testTimeout = new Timeout(15_000); // per test case
 
     private final SCEPTest command  = new SCEPTest();
     private static String httpReqPath;

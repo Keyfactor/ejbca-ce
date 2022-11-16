@@ -124,12 +124,15 @@ public class CertificateRestResourceUnitTest {
         final boolean expectedRevoked = true;
         final String expectedSerialNumber = "1a2b3c";
         final String expectedRevocationDateString = DATE_FORMAT_ISO8601.format(new Date());
+        final RevocationReasons revocationReason = RevocationReasons.KEYCOMPROMISE;
+        final CertificateStatus response = new CertificateStatus("REVOKED", new Date().getTime(), revocationReason.getDatabaseValue(), 123456);
         // when
         raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
+        expect(raMasterApiProxy.getCertificateStatus(anyObject(AuthenticationToken.class), anyString(), anyObject(BigInteger.class))).andReturn(response);
         replay(raMasterApiProxy);
         final Invocation.Builder request = server
                 .newRequest("/v1/certificate/TestCa/1a2b3c/revoke")
-                .queryParam("reason", RevocationReasons.KEYCOMPROMISE.getStringValue())
+                .queryParam("reason", revocationReason.getStringValue())
                 .queryParam("date", expectedRevocationDateString)
                 .request();
         final Entity<String> entity = Entity.text("");
@@ -141,7 +144,7 @@ public class CertificateRestResourceUnitTest {
         final Object actualStatus = actualJsonObject.get("revoked");
         final Object actualSerialNumber = actualJsonObject.get("serial_number");
         final Object actualRevocationDate = actualJsonObject.get("revocation_date");
-        // than
+        // then
         assertEquals(expectedCode, actualResponse.getStatus());
         assertJsonContentType(actualResponse);
         assertEquals(expectedMessage, actualMessage);
