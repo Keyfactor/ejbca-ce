@@ -128,6 +128,9 @@ public abstract class CaTestUtils {
     
     private static final Logger log = Logger.getLogger(CaTestUtils.class);
     
+    private static final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     public static final String HEX_ENCODED_ECA_ROOT_CERT = "800300810038811B455453492054657374205243"
     + "41204320636572746966696361746500000000001A5617008466A8C001028002026E81020101800"
     + "2027081030201380102A080010E80012482080301FFFC03FF0003800125820A0401FFFFFF04FF00"
@@ -165,9 +168,8 @@ public abstract class CaTestUtils {
             AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
             IllegalStateException, OperatorCreationException, CAExistsException {
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        final int cryptoTokenId = initCryptoTokenId(cryptoTokenManagementProxySession, authenticationToken, cryptoTokenName);
+        
+        final int cryptoTokenId = initCryptoTokenId(authenticationToken, cryptoTokenName);
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
         final X509CA x509Ca = createX509Ca(cryptoToken, caName, cadn, caStatus);
         caSession.addCA(authenticationToken, x509Ca);
@@ -180,9 +182,8 @@ public abstract class CaTestUtils {
                 AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
                 IllegalStateException, OperatorCreationException, CAExistsException {
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        final int cryptoTokenId = initCryptoTokenId(cryptoTokenManagementProxySession, authenticationToken, cryptoTokenName);
+        
+        final int cryptoTokenId = initCryptoTokenId(authenticationToken, cryptoTokenName);
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
         final X509CA x509Ca = createX509Ca(cryptoToken, caName, cadn, caStatus);
         x509Ca.setApprovals(approvals);
@@ -425,7 +426,6 @@ public abstract class CaTestUtils {
             throw new IllegalStateException("PKCS11(Ng) systemtest settings are not properly configured.");
         }
         // Create catoken
-        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, tokenpin, true, false, cadn, signKeySpec, encKeySpec,  true);
 
         return createTestECAOptionalGenKeysInternal(admin, cadn, caCertProfileId, caCertificateId, tokenpin, cryptoTokenId);
@@ -627,8 +627,7 @@ public abstract class CaTestUtils {
      */
     public static CA createX509ThrowAwayCa(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn, final int defaultCertificateProfileId) throws Exception {
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        final int cryptoTokenId = initCryptoTokenId(cryptoTokenManagementProxySession, authenticationToken, cryptoTokenName);
+        final int cryptoTokenId = initCryptoTokenId(authenticationToken, cryptoTokenName);
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
         final CA x509Ca = createX509ThrowAwayCa(cryptoToken, caName, cadn, defaultCertificateProfileId);
         caSession.addCA(authenticationToken, x509Ca);
@@ -671,7 +670,7 @@ public abstract class CaTestUtils {
         return x509ca;
     }
 
-    private static int initCryptoTokenId(final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession,
+    private static int initCryptoTokenId(
             final AuthenticationToken authenticationToken, final String cryptoTokenName)
             throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, CryptoTokenNameInUseException,
             InvalidAlgorithmParameterException, InvalidKeyException {
