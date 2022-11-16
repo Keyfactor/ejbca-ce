@@ -227,7 +227,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         certificateProfile.setAvailableBitLengths(availableBitLengths);
         final String[] availableAlgorithms = {"RSA"};
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
-        certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+        int certProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
         // when
         final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -240,7 +240,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
         String cas = (String) jsonArrayCas.get(0);
         // then
-        assertEquals(certProfileId.toString(), responseCertProfileId);
+        assertEquals(Integer.toString(certProfileId), responseCertProfileId);
         assertEquals("RSA", algorithms);
         assertEquals(4096, bitLengths);
         assertEquals(testCaName, cas);
