@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -106,13 +107,19 @@ public class SearchCertificatesRestResponse {
             for(final CertificateDataWrapper certificateDataWrapper : raCertificateSearchResponse.getCdws()) {
                 final Certificate certificate = certificateDataWrapper.getCertificate();
                 // We have to check for null as we can issue certificates without storing the certificate data in the database
-                if (certificate != null) { 
-                    final CertificateRestResponse certificateRestResponse = CertificateRestResponse.builder()
-                            .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
-                            .setCertificate(Base64.encode(certificate.getEncoded()))
-                            .setResponseFormat("DER")
-                            .setCertificateProfile(certificateProfileSession.getCertificateProfileName(certificateDataWrapper.getCertificateData().getCertificateProfileId()))
-                            .setEndEntityProfile(endEntityProfileSession.getEndEntityProfileName(certificateDataWrapper.getCertificateData().getEndEntityProfileId()))
+                if (certificate != null) {
+                    CertificateRestResponse.CertificateRestResponseBuilder responseBuilder = CertificateRestResponse.builder();
+                    if (certificate.getType().equals(SshCertificate.CERTIFICATE_TYPE)) {
+                        responseBuilder.setCertificate(certificate.getEncoded()).setResponseFormat("SSH");
+                    } else {
+                        responseBuilder.setCertificate(Base64.encode(certificate.getEncoded())).setResponseFormat("DER");
+                    }
+                    final CertificateRestResponse certificateRestResponse = 
+                            responseBuilder.setSerialNumber(CertTools.getSerialNumberAsString(certificate))
+                            .setCertificateProfile(certificateProfileSession
+                                    .getCertificateProfileName(certificateDataWrapper.getCertificateData().getCertificateProfileId()))
+                            .setEndEntityProfile(endEntityProfileSession
+                                    .getEndEntityProfileName(certificateDataWrapper.getCertificateData().getEndEntityProfileId()))
                             .build();
                     searchCertificatesRestResponse.getCertificates().add(certificateRestResponse);
                 }

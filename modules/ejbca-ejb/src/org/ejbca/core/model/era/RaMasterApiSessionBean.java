@@ -825,7 +825,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public boolean addRequestResponse(final AuthenticationToken authenticationToken, final RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
-            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
+            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException, EndEntityExistsException {
         final ApprovalDataVO approvalDataVO = getApprovalDataNoAuth(requestResponse.getId());
         if (approvalDataVO == null) {
             // Return false so the next master api backend can see if it can handle the approval
@@ -1511,8 +1511,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         RaEndEntitySearchPaginationSummary searchSummary = null;
         String queryCacheKey = authenticationToken.getUniqueId() + raEndEntitySearchRequest.toString();
-        if(raEndEntitySearchRequest.getPageNumber()!=0) {
-            if(raEndEntitySearchRequest.getSearchSummary().isOnlyUpdateCache()) {
+        if (raEndEntitySearchRequest.getPageNumber() != 1) {
+            if (raEndEntitySearchRequest.getSearchSummary().isOnlyUpdateCache()) {
                 // update for next page request
                 searchSummary = (RaEndEntitySearchPaginationSummary)
                         RaMasterApiQueryCache.INSTANCE.getCachedResult(queryCacheKey);
@@ -1525,7 +1525,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             searchSummary = (RaEndEntitySearchPaginationSummary)
                     RaMasterApiQueryCache.INSTANCE.getCachedResult(queryCacheKey);
 
-            if(raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex()!=0) {
+            if (raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex() != 0) {
                 // update in same page
                 searchSummary.setCurrentIdentifierIndex(
                         raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex());
@@ -1538,6 +1538,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
         }
 
+        searchSummary.setMaxResultsPerPage(Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), raEndEntitySearchRequest.getMaxResults()));
         RaEndEntitySearchResponse searchResponse =
                 searchForEndEntities(authenticationToken, raEndEntitySearchRequest,
                         searchSummary.getCurrentIdentifierSearchOffset(),
@@ -1898,12 +1899,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return authorizedCertificateProfiles;
     }
     
-    @Override    
+    @Override
     public RaCertificateProfileResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName) {
         final CertificateProfile profile = certificateProfileSession.getCertificateProfile(profileName);
-        if (profile!=null) {
+        if (profile != null) {
+            final Integer certProfileId = certificateProfileSession.getCertificateProfileId(profileName);
             final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
-            return RaCertificateProfileResponseV2.converter().toRaResponse(profile, caInfos);
+            return RaCertificateProfileResponseV2.converter().toRaResponse(profile, caInfos, certProfileId);
         }
         return null;
     }
@@ -2228,14 +2230,34 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
 
         RequestMessage req;
-        req = RequestMessageUtils.parseRequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+        boolean isSshEnroll = endEntityInformation.isSshEndEntity();
+        if(!isSshEnroll) {
+            // default
+            req = RequestMessageUtils.parseRequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+        } else {
+            // SSH certificate enrollment
+            req = new SshRequestMessage(
+                    endEntityInformation.getExtendedInformation().getCertificateRequest(), 
+                            endEntityInformation.getDN(), endEntityInformation.getSubjectAltName(),
+                            endEntityInformation.getExtendedInformation());
+        }
         req.setUsername(endEntityInformation.getUsername());
         req.setPassword(endEntityInformation.getPassword());
         final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
         req.setRequestValidityNotAfter(encodedValidity == null ? null :
             ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
         try {
-            ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
+            ResponseMessage resp = null;
+            if(isSshEnroll) {
+                resp = signSessionLocal.createCertificate(authenticationToken, req, SshResponseMessage.class, null);
+                if(resp.getFailInfo()!=null) {
+                    throw new EjbcaException(ErrorCode.BAD_REQUEST, resp.getFailText());
+                }
+                return resp.getResponseMessage();
+            } else {
+                // default
+                resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
+            }
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
             return cert.getEncoded();
         } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
@@ -2383,6 +2405,40 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
     }
+    
+    @Override
+    public byte[] enrollAndIssueSshCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation,
+            final SshRequestMessage sshRequestMessage)
+            throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
+        try {
+            endEntityInformation.setSshEndEntity(true);
+            SshResponseMessage sshResponseMessage = (SshResponseMessage) certificateRequestSession.processCertReq(authenticationToken,
+                    endEntityInformation, sshRequestMessage, SshResponseMessage.class);
+            return sshResponseMessage.getResponseMessage();
+        } catch (NotFoundException e) {
+            log.debug("EJBCA SSH enrollment error", e);
+            throw e; // NFE extends EjbcaException
+        } catch (IllegalKeyException e) {
+            log.debug("EJBCA SSH enrollment error", e);
+            throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage(), e);
+        } catch (AuthStatusException e) {
+            log.debug("EJBCA SSH enrollment error", e);
+            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage(), e);
+        } catch (AuthLoginException e) {
+            log.debug("EJBCA SSH enrollment error", e);
+            throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage(), e);
+        } catch (SignRequestSignatureException e) {
+            log.debug("EJBCA SSH enrollment error", e);
+            throw new EjbcaException(e.getMessage());
+        } catch (CesecoreException e) {
+            log.debug("EJBCA SSH enrollment error", e);
+            // Will convert the CESecore exception to an EJBCA exception with the same error code
+            throw new EjbcaException(e.getErrorCode(), e);
+        } catch (CertificateExtensionException | RuntimeException e) { // EJBException, ClassCastException, ...
+            log.debug("EJBCA SSH enrollment error", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage(), e);
+        }
+    }
 
     @Override
     public byte[] enrollAndIssueSshCertificateWs(final AuthenticationToken authenticationToken, final UserDataVOWS userDataVOWS,
@@ -2391,6 +2447,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
             final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS);
+            endEntityInformation.setSshEndEntity(true);
             SshResponseMessage sshResponseMessage = (SshResponseMessage) certificateRequestSession.processCertReq(authenticationToken,
                     endEntityInformation, sshRequestMessage, SshResponseMessage.class);
             return sshResponseMessage.getResponseMessage();

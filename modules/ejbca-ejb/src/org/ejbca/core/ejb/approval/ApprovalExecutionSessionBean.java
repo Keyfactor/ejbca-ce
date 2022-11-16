@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -96,7 +97,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     @Override
     public void approve(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, 
-            ApprovalException, SelfApprovalException, AuthenticationFailedException {
+            ApprovalException, SelfApprovalException, AuthenticationFailedException, EndEntityExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">approve: hash="+approvalId);
         }
@@ -162,7 +163,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                             approvalRequest.execute();
                         }
                         approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTED);
-                    } catch (ApprovalRequestExecutionException e) {
+                    } catch (ApprovalRequestExecutionException | EndEntityExistsException e) {
                         approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTIONFAILED);
                         throw e;
                     }
@@ -192,6 +193,13 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         } catch (ApprovalRequestExecutionException e) {
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", intres.getLocalizedMessage("approval.errorexecuting", approvalData.getId()));
+            details.put("error", e.getMessage());
+            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
+            throw e;
+        } catch (EndEntityExistsException e) {
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", intres.getLocalizedMessage("approval.duplicateusername", approvalData.getId()));
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);

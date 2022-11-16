@@ -101,7 +101,7 @@
                                         <f:selectItems value="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems}" 
                                         	itemDescription="#{enrollMakeNewRequestBean.availableKeyPairGenerationSelectItems.description}"/>
                                         <f:validateRequired/>
-                                        <f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :requestInfoForm @form"/>
+                                        <f:ajax event="change" execute="@this" render=":globalMessages :keyPairForm :sshPubKeyForm :requestInfoForm @form"/>
                                     </h:selectOneRadio>
                                     <h:message for="selectKeyPairGeneration" id="selectKeyPairGenerationMessage" styleClass="showErrorMessage"/>
                                 </h:panelGroup>
@@ -129,7 +129,7 @@
 			<h:form id="keyPairForm" styleClass="pure-form pure-form-aligned" enctype="multipart/form-data">
 
 				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.uploadCsrRendered}" id="uploadCsrOuterPanel">
+					rendered="#{enrollMakeNewRequestBean.uploadCsrRendered and not enrollMakeNewRequestBean.renderSshEnrolmentFields}" id="uploadCsrOuterPanel">
 					<h2>
 						<h:outputText value="#{msg.enroll_upload_csr}" />
 					</h2>
@@ -210,6 +210,49 @@
 				</h:panelGroup>
                 <script>ejbca.ra.handleAutoFocus();</script>
 
+			</h:form>
+			
+			<h:form id="sshPubKeyForm" styleClass="pure-form pure-form-aligned" enctype="multipart/form-data">
+			
+			<h:panelGroup layout="block"
+					rendered="#{enrollMakeNewRequestBean.uploadSshPubKeyRequestRendered}" 
+															id="uploadSshPubKeyFormOuterPanel">
+					<h2>
+						<h:outputText value="#{msg.enroll_upload_ssh_public_key}" />
+					</h2>
+					<h:panelGroup layout="block" styleClass="internal-frame">
+						<t:inputFileUpload id="sshPubKeyUploadInput" 
+							value="#{enrollMakeNewRequestBean.uploadFile}" size="20" 
+							onchange="document.getElementById('sshPubKeyForm:updateSshKeyInfoFields').click();"/>
+						
+						<br/>
+						<br/>
+						
+						<h:inputTextarea id="sshPubKeyRequest" 
+							styleClass="fineprintMono jsAutoFocusLast" style="line-height: 100%;"
+							value="#{enrollMakeNewRequestBean.sshPubKeyRequest}" cols="80" rows="20"
+							onchange="document.getElementById('sshPubKeyForm:updateSshKeyInfoFields').click();">
+							<f:ajax event="keyup" execute="@this"
+                                                render=":requestInfoForm:sshEnrollmentBlock"/>
+						</h:inputTextarea>
+						
+						<br/>
+						
+						<h:commandButton id="updateSshKeyInfoFields" 
+							value="invisible import button" style="display:none"
+							action="#{enrollMakeNewRequestBean.uploadSshPubKey}"/>
+						<br/>
+						
+						<h:outputLabel value="#{msg.enroll_upload_ssh_public_key_review} : " />
+						<h:outputText value="#{enrollMakeNewRequestBean.sshPubKeyDescription}" style="color:white;"/>
+						<br/>
+						
+						<h:message for="sshPubKeyUploadInput" id="sshPubKeyRequestMessage" styleClass="errorMessage"/>
+                        <br/>
+					</h:panelGroup>
+			</h:panelGroup>
+			<script>ejbca.ra.handleAutoFocus();</script>
+			
 			</h:form>
 
 			<h:form id="requestInfoForm" styleClass="pure-form pure-form-aligned">
@@ -805,7 +848,112 @@
 					</h:panelGroup>
 				</h:panelGroup>
 
-				<h:panelGroup layout="block" id="otherBlock" rendered="#{enrollMakeNewRequestBean.otherDataRendered}">
+				<h:panelGroup layout="block" id="sshEnrollmentBlock" rendered="#{enrollMakeNewRequestBean.renderSshEnrolmentFields}">
+					<h2>
+						<h:outputText value="#{msg.enroll_ssh_data}" />
+					</h2>
+					
+					<h:panelGroup layout="block" styleClass="internal-frame" id="sshCertificateDataGroup">
+						
+						<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="sshKeyId" value="#{msg.enroll_ssh_key_id} *" />
+							<h:inputText id="sshKeyId" value="#{enrollMakeNewRequestBean.sshKeyId}" 
+								requirred="#{enrollMakeNewRequestBean.requiredCriticalOptionsSourceAddress}" 
+								requiredMessage="#{msg.enroll_ssh_keyid_required}"
+								autocomplete="off">
+							</h:inputText>
+							<h:message for="sshKeyId" id="sshKeyIdMessage" styleClass="validationErrorMessage showErrorMessage"/>
+						</h:panelGroup>
+						
+						<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="sshCertificateComment" value="#{msg.enroll_ssh_comment}" />
+							<h:inputText id="sshCertificateComment" value="#{enrollMakeNewRequestBean.sshCertificateComment}" 
+								autocomplete="off">
+							</h:inputText>
+						</h:panelGroup>
+						
+						<h:panelGroup id="sshPrincipalsSection" layout="block">
+						    <h3>
+						        <h:outputText value="#{msg.enroll_ssh_principals}" rendered="#{enrollMakeNewRequestBean.sshPrincipals.size() gt 0}"/>
+						    </h3>
+						    <h:panelGroup layout="block" styleClass="internal-frame-with-left-margin"  rendered="#{enrollMakeNewRequestBean.sshPrincipals.size() gt 0}">
+						        <ui:repeat id="sshPrincipal"
+						            value="#{enrollMakeNewRequestBean.sshPrincipals}"
+						            var="instance"
+						            varStatus="loop">
+						            <h:panelGroup layout="block" styleClass="pure-control-group">
+						                <h:outputLabel for="sshPrincipalField"
+						                    value="#{msg.enroll_ssh_principal} "
+						                    rendered="#{!instance.required}" />
+						                <h:outputLabel for="sshPrincipalField"
+						                    value="#{msg.enroll_ssh_principal} *"
+						                    rendered="#{instance.required}" />
+						                <h:inputText id="sshPrincipalField" value="#{instance.value}" 
+						                	styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+						                     rendered="#{instance.modifiable}">
+						                    <f:validator validatorId="extendedRegexValidator" />
+						                    <f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
+						                    <f:validator validatorId="extendedRequiredValidator"/>
+						                    <f:attribute name="_required" value="#{instance.required}"/>
+						                    <f:attribute name="_label" value="#{instance.name}"/>
+						                    <f:ajax event="keyup" execute="@this"
+						                        render=":requestInfoForm:requestPreviewOuterPanel sshPrincipalFieldMessage"/>
+						                </h:inputText>
+						                 <h:outputText id="sshPrincipalField2" value="#{instance.value}" 
+						                     rendered="#{!instance.modifiable}"/>
+						                <h:message for="sshPrincipalField" id="sshPrincipalFieldMessage" styleClass="sshPrincipalErrorMessage" 
+						                	errorClass="sshPrincipalErrorMessage showErrorMessage"/>
+						            </h:panelGroup>
+						        </ui:repeat>
+						    </h:panelGroup>
+						</h:panelGroup>
+						
+						<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="criticalOptionsSourceAddress" value="#{msg.enroll_ssh_critical_source_address}" 
+								rendered="#{!enrollMakeNewRequestBean.requiredCriticalOptionsSourceAddress}"/>
+							<h:outputLabel for="criticalOptionsSourceAddress" value="#{msg.enroll_ssh_critical_source_address} *" 
+								rendered="#{enrollMakeNewRequestBean.requiredCriticalOptionsSourceAddress}"/>
+							<h:inputText id="criticalOptionsSourceAddress" value="#{enrollMakeNewRequestBean.criticalOptionsSourceAddress}" 
+								rendered="#{enrollMakeNewRequestBean.modifiableCriticalOptionsSourceAddress}"
+								requirred="#{enrollMakeNewRequestBean.requiredCriticalOptionsSourceAddress}" 
+								requiredMessage="#{msg.enroll_ssh_option_required}">
+							</h:inputText>
+							<h:outputText id="criticalOptionsSourceAddress2" value="#{enrollMakeNewRequestBean.criticalOptionsSourceAddress}" 
+								rendered="#{!enrollMakeNewRequestBean.modifiableCriticalOptionsSourceAddress}"
+								/>
+                            <h:message for="criticalOptionsSourceAddress" id="critcialOptionSourceAddressMessage" styleClass="validationErrorMessage showErrorMessage"/>
+						</h:panelGroup>
+						
+						<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="criticalOptionsForceCommand" value="#{msg.enroll_ssh_critical_force_command}" 
+								rendered="#{!enrollMakeNewRequestBean.requiredCriticalOptionsForceCommand}"/>
+							<h:outputLabel for="criticalOptionsForceCommand" value="#{msg.enroll_ssh_critical_force_command} *" 
+								rendered="#{enrollMakeNewRequestBean.requiredCriticalOptionsForceCommand}"/>
+							<h:inputText id="criticalOptionsForceCommand" value="#{enrollMakeNewRequestBean.criticalOptionsForceCommand}" 
+								rendered="#{enrollMakeNewRequestBean.modifiableCriticalOptionsForceCommand}"
+								requirred="#{enrollMakeNewRequestBean.requiredCriticalOptionsForceCommand}" 
+								requiredMessage="#{msg.enroll_ssh_option_required}">
+							</h:inputText>
+							<h:outputText id="criticalOptionsForceCommand2" value="#{enrollMakeNewRequestBean.criticalOptionsForceCommand}" 
+								rendered="#{!enrollMakeNewRequestBean.modifiableCriticalOptionsForceCommand}"
+								/>
+                            <h:message for="criticalOptionsForceCommand" id="critcialOptionForceCommandMessage" styleClass="validationErrorMessage showErrorMessage"/>
+						</h:panelGroup>
+						
+						<!-- <h:panelGroup layout="block" styleClass="pure-control-group" 
+									rendered="#{enrollMakeNewRequestBean.renderedSshAdditionalExtensions}" >
+								<h:outputLabel for="sshAdditionalExtensions"
+									value="#{msg.enroll_ssh_additional_extensions}" />
+								<h:inputTextarea id="sshAdditionalExtensions" rows="4" cols="38"
+										value="#{enrollMakeNewRequestBean.sshAdditionalExtensions}">
+	                                 </h:inputTextarea>
+	                    </h:panelGroup> -->
+					</h:panelGroup>
+					
+				</h:panelGroup>
+				
+				<h:panelGroup layout="block" id="otherBlock" 
+					rendered="#{enrollMakeNewRequestBean.otherDataRendered}">
 					<h2>
 						<h:outputText value="#{msg.enroll_other_data}" />
 					</h2>
@@ -819,6 +967,7 @@
 						</h:panelGroup>
 					</h:panelGroup>
 				</h:panelGroup>
+				
 				<h:panelGroup layout="block" id="userCredentialsOuterPanel" rendered="#{enrollMakeNewRequestBean.provideUserCredentialsRendered}">
 					<h2>
 						<h:outputText value="#{msg.enroll_provide_user_credentials}" />
@@ -939,7 +1088,15 @@
 								value="#{msg.enroll_add_end_endtity}"
 								action="#{enrollMakeNewRequestBean.addEndEntity}"
 								rendered="#{enrollMakeNewRequestBean.addEndEntityButtonRendered}"
-                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!(enrollMakeNewRequestBean.renderSshEnrolmentFields or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent) or !enrollMakeNewRequestBean.validityValid}"
+								styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
+							</h:commandButton>
+							<h:commandButton id="generateSshPub"
+								value="#{msg.enroll_ssh_pub_key}"
+								action="#{enrollMakeNewRequestBean.downloadSshCertificate}"
+								rendered="#{enrollMakeNewRequestBean.renderedDownloadSshCertificate}"
+                                disabled="#{!enrollMakeNewRequestBean.enabledDownloadSshCertificate}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>

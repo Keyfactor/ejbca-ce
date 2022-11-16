@@ -52,7 +52,6 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.p11ng.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
@@ -60,7 +59,7 @@
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
-        cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cesecore-p11-clean, cits-clean, proxy-ca-clean"/>
+        cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, p11ng-clean, msae-clean, cesecore-p11-clean, cits-clean, proxy-ca-clean"/>
 
   <target name="cesecore-p11-clean" if="build.cesecore.p11.jar">
        <ant antfile="${mod.cesecore-p11.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -167,6 +166,10 @@
 	
 	<target name="ssh-clean" if="${mod.ssh.exists}">
 	    <ant antfile="${mod.ssh.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="p11ng-clean" if="${mod.p11ng.exists}">
+	    <ant antfile="${mod.p11ng.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="msae-clean" if="${mod.msae.exists}">
@@ -665,7 +668,7 @@
 		<ant antfile="${mod.cmpclient.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="p11ng" description="Build P11NG library" depends="cesecore-common">
+	<target name="p11ng" description="Build P11NG library" depends="cesecore-common" if="${mod.p11ng.exists}">
 		<ant antfile="${mod.p11ng.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 

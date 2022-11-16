@@ -79,7 +79,7 @@ public class DummyCustomPublisher implements ICustomPublisher, Serializable {
 	}
 
     @Override
-    public boolean willPublishCertificate(int status, int revocationReason) {
+    public boolean willPublishCertificate(int status, long revocationDate) {
         return true;
     }
     

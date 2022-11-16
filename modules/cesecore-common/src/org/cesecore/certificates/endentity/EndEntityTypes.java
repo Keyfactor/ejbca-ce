@@ -38,7 +38,8 @@ public enum EndEntityTypes  {
     ADMINISTRATOR(0x40, "This user is an administrator."),
     KEYRECOVERABLE(0x80, "This users keystores are key recoverable."),
     SENDNOTIFICATION(0x100, "Notification will be sent to this users emailaddress"), 
-    PRINT(0x200, "Registration data will be printed for this user");
+    PRINT(0x200, "Registration data will be printed for this user"),
+    SSH(0x400, "This is SSH end user.");
     
     private static final Map<Integer, EndEntityTypes> lookupTable;
     

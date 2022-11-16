@@ -331,12 +331,6 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # we need some configuration option to force old behavior in new versions, until we have upgrade
 # all nodes and can set the system to use new (improved) behavior.
 
-# When upgrading a 100% up-time cluster, all nodes should be deployed with db.keepjbossserialization=true.
-# For upgrades from EJBCA version 4.0 to later versions.
-# Once all nodes are running > 4.0, set to false to increase efficiency and portability.
-# Default: false
-#db.keepjbossserialization=true
-
 # Option if we should keep internal CA keystores in the CAData table to be compatible with CeSecore 1.1/EJBCA 5.0.
 # Default to false in defaultvalues.properties, true if no value is present there. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,
 # then internal keystore in CAData will be replaced with a foreign key in to the migrated entry in CryptotokenData.

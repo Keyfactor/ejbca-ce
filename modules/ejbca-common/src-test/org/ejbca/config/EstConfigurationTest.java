@@ -13,6 +13,7 @@
 package org.ejbca.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -21,6 +22,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.string.StringConfigurationCache;
+
+
 
 /**
  * A unit test for static configuration and log value filtering.
@@ -42,15 +45,21 @@ public class EstConfigurationTest {
         EstConfiguration config = new EstConfiguration();
         config.addAlias("alias1");
         config.addAlias("alias2");
+        config.addAlias("alias4");
         config.setAllowChangeSubjectName("alias1", true);
         config.setAllowChangeSubjectName("alias3", true); // alias does not exist, value not set
         config.setPassword("alias2", "foo123");
         config.setRANameGenPostfix("alias2", "name1");
+        config.setVendorMode("alias4", true);
+        config.setVendorCaIds("alias4", "1:2:4");
         assertEquals(true, config.getAllowChangeSubjectName("alias1"));
         assertEquals(false, config.getAllowChangeSubjectName("alias2")); // default value
         assertEquals(false, config.getAllowChangeSubjectName("alias3")); // default value when alias does not exist
         assertEquals("foo123", config.getPassword("alias2"));
         assertEquals("", config.getPassword("alias1"));
+        assertTrue(config.getVendorMode("alias4"));
+        assertEquals("1:2:4", config.getVendorCaIds("alias4"));
+        assertEquals("", config.getVendorCaIds("alias1"));
         
         EstConfiguration config2 = new EstConfiguration(config);
         config2.setPassword("alias2", "bar123");

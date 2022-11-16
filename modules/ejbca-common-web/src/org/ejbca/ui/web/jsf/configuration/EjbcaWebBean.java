@@ -145,6 +145,8 @@ public interface EjbcaWebBean extends Serializable {
     @Deprecated
     String getImagefileInfix(String imagefilename);
 
+    String getEditionFolder();
+
     String[] getAvailableLanguages();
 
     String getText(final String template);

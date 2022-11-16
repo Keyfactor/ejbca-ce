@@ -101,7 +101,6 @@
         <url-pattern>/sysconfig/editoauthkey.xhtml</url-pattern>
         <url-pattern>/sysconfig/systemconfiguration.xhtml</url-pattern>
         <url-pattern>/sysconfig/editautoenrollmentconfiguration.xhtml</url-pattern>
-        <url-pattern>/keybind/keybindings.xhtml</url-pattern>
         <url-pattern>/ca/editcas/importca.xhtml</url-pattern>
         <url-pattern>/ca/editcas/editcapage.xhtml</url-pattern>
         <url-pattern>/ca/editcas/recievefile.xhtml</url-pattern>

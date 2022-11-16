@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.pkcs11.jacknji11.C;
 import org.pkcs11.jacknji11.CKG;
@@ -92,6 +93,12 @@ public class MechanismNames {
         SIGALGOS2L.put("SHA256withECDSA", Pair.of(CKM.ECDSA, T_DIGEST));
         SIGALGOS2L.put("SHA384withECDSA", Pair.of(CKM.ECDSA, T_DIGEST));
         SIGALGOS2L.put("SHA512withECDSA", Pair.of(CKM.ECDSA, T_DIGEST));
+        SIGALGOS2L.put("SHA3-256withECDSA", Pair.of(CKM.ECDSA, T_DIGEST));
+        SIGALGOS2L.put("SHA3-384withECDSA", Pair.of(CKM.ECDSA, T_DIGEST));
+        SIGALGOS2L.put("SHA3-512withECDSA", Pair.of(CKM.ECDSA, T_DIGEST));
+        SIGALGOS2L.put(NISTObjectIdentifiers.id_ecdsa_with_sha3_256.getId(), Pair.of(CKM.ECDSA, T_DIGEST));
+        SIGALGOS2L.put(NISTObjectIdentifiers.id_ecdsa_with_sha3_384.getId(), Pair.of(CKM.ECDSA, T_DIGEST));
+        SIGALGOS2L.put(NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId(), Pair.of(CKM.ECDSA, T_DIGEST));
         SIGALGOS2L.put("Ed25519", Pair.of(CKM.EDDSA, T_RAW));
         SIGALGOS2L.put("Ed448", Pair.of(CKM.EDDSA, T_RAW));
 

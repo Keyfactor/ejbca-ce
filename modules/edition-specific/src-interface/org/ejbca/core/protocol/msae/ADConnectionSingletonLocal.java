@@ -29,7 +29,7 @@ public interface ADConnectionSingletonLocal {
 
     void updateConnectionProperties(String alias);
     
-    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, String alias) throws LDAPException;
+    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, boolean followLdapReferral,String alias) throws LDAPException;
 
     public List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings(String alias);
 

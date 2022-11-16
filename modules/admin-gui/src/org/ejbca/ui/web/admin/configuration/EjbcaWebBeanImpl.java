@@ -161,16 +161,23 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private EABConfiguration eabConfiguration = null;
     private ServletContext servletContext = null;
     private WebLanguagesImpl adminsweblanguage;
-    private String usercommonname = "";
-    private String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
-    private String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
-    private boolean isAuthenticatedWithToken; // a flag to detect authentication path used
-    private String oauthAuthenticationToken; // Keep token used for authentication so we can detect changes
-    private boolean initialized = false;
-    private boolean errorpage_initialized = false;
-    private AuthenticationToken administrator;
-    private String requestServerName;
-    private String currentRemoteIp;
+
+    /** Wraps all authentication state, so it can be replaced atomically (i.e. other threads won't see "half-updated" state) */
+    private class AuthState {
+        String usercommonname = "";
+        String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
+        String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
+        boolean isAuthenticatedWithToken; // a flag to detect authentication path used
+        String oauthAuthenticationToken; // Keep token used for authentication so we can detect changes
+        boolean initialized = false;
+        boolean errorpage_initialized = false;
+        AuthenticationToken administrator;
+        String requestServerName;
+        String currentRemoteIp;
+    }
+
+    private AuthState authState = new AuthState();
+    private AuthState stagingState = new AuthState();
 
     /*
      * We should make this configurable, so GUI client can use their own time zone rather than the
@@ -234,14 +241,17 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
-    public GlobalConfiguration initialize(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
+    public synchronized GlobalConfiguration initialize(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
         try {
+            stagingState = new AuthState();
             return initializeInternal(httpServletRequest, resources);
         } finally {
-            if (!initialized) {
+            if (!stagingState.initialized && !stagingState.errorpage_initialized) {
                 // Make sure we at least have the needed information (default language strings etc.) to show an error page
-                initialize_errorpage(httpServletRequest);
+                initializeErrorPageInternal(httpServletRequest);
             }
+            authState = stagingState;
+            stagingState = new AuthState(); // make sure any half-initialized state is never used
         }
     }
 
@@ -254,27 +264,26 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String oauthBearerToken = getBearerToken(httpServletRequest);
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
-        if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId)
-                || (isAuthenticatedWithToken && !StringUtils.equals(oauthAuthenticationToken, oauthBearerToken))
-                || (!isAuthenticatedWithToken && !StringUtils.equals(fingerprint, certificateFingerprint))) {
-            if (log.isDebugEnabled() && initialized) {
+        if (!authState.initialized || !StringUtils.equals(authState.authenticationTokenTlsSessionId, currentTlsSessionId)
+                || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthAuthenticationToken, oauthBearerToken))
+                || (!authState.isAuthenticatedWithToken && !StringUtils.equals(fingerprint, authState.certificateFingerprint))) {
+            if (log.isDebugEnabled() && authState.initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
-                log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificateFingerprint+", new cert fp: "+fingerprint);
+                log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authState.authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+authState.certificateFingerprint+", new cert fp: "+fingerprint);
             }
-            resetAuthSessionState();
             // Escape value taken from the request, just to be sure there can be no XSS
             HTMLTools.htmlescape(httpServletRequest.getScheme());
-            requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
-            currentRemoteIp = httpServletRequest.getRemoteAddr();
+            stagingState.requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
+            stagingState.currentRemoteIp = httpServletRequest.getRemoteAddr();
             if (log.isDebugEnabled()) {
-                log.debug("requestServerName: "+requestServerName);
+                log.debug("requestServerName: "+stagingState.requestServerName);
             }
             if (WebConfiguration.isAdminAuthenticationRequired() && certificate == null && oauthBearerToken == null) {
                 throw new AuthenticationNotProvidedException("Client certificate or OAuth bearer token required.");
             }
             if (certificate != null) {
-                administrator = authenticationSession.authenticateUsingClientCertificate(certificate);
-                if (administrator == null) {
+                stagingState.administrator = authenticationSession.authenticateUsingClientCertificate(certificate);
+                if (stagingState.administrator == null) {
                     if (oauthBearerToken == null) {
                         throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
                     } else {
@@ -284,7 +293,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     // Check if certificate and user is an RA Admin
                     final String userdn = CertTools.getSubjectDN(certificate);
                     final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
-                    usercommonname = dn.getField(DNFieldExtractor.CN, 0);
+                    stagingState.usercommonname = dn.getField(DNFieldExtractor.CN, 0);
                     if (log.isDebugEnabled()) {
                         log.debug("Verifying authorization of '" + userdn + "'");
                     }
@@ -292,7 +301,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     final String sernostr = CertTools.getSerialNumberAsString(certificate);
                     final BigInteger serno = CertTools.getSerialNumber(certificate);
                     // Set current TLS certificate fingerprint
-                    certificateFingerprint = fingerprint;
+                    stagingState.certificateFingerprint = fingerprint;
                     // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
                     if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
                         throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN + "' did not belong to any user in the database.");
@@ -305,16 +314,16 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                         if (oauthBearerToken == null) {
                             throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
                         } else {
-                            administrator = null;
-                            certificateFingerprint = null;
+                            stagingState.administrator = null;
+                            stagingState.certificateFingerprint = null;
                             log.info("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
                         }
                     }
                 }
             }
-            if (oauthBearerToken != null && administrator == null) {
+            if (oauthBearerToken != null && stagingState.administrator == null) {
                 try {
-                    administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken);
+                    stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken);
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
                     if (refreshToken != null) {
@@ -324,17 +333,17 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                             if (token.getRefreshToken() != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                             }
-                            administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), token.getAccessToken());
+                            stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), token.getAccessToken());
                         }
                     }
                 }
-                if (administrator == null) {
+                if (stagingState.administrator == null) {
                     throw new AuthenticationFailedException("Authentication failed using OAuth Bearer Token");
                 }
-                isAuthenticatedWithToken = true;
-                oauthAuthenticationToken = oauthBearerToken;
+                stagingState.isAuthenticatedWithToken = true;
+                stagingState.oauthAuthenticationToken = oauthBearerToken;
                 final Map<String, Object> details = new LinkedHashMap<>();
-                final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) administrator;
+                final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) stagingState.administrator;
                 final OAuth2Principal principal = oauth2Admin.getClaims();
                 details.put("keyhash", oauth2Admin.getPublicKeyBase64Fingerprint());
                 putOauthTokenDetails(details, principal);
@@ -344,10 +353,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
                 }
-                usercommonname = principal.getDisplayName();
+                stagingState.usercommonname = principal.getDisplayName();
             }
-            if (administrator == null) {
-                administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
+            if (stagingState.administrator == null) {
+                stagingState.administrator = authenticationSession.authenticateUsingNothing(stagingState.currentRemoteIp, currentTlsSessionId!=null);
                 final Map<String, Object> details = new LinkedHashMap<>();
                 if (!checkRoleMembershipAndLog(httpServletRequest, "AuthenticationToken", null, null, details)) {
                     throw new AuthenticationFailedException("Authentication failed for certificate with no access");
@@ -355,12 +364,15 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
             commonInit();
             // Set the current TLS session
-            authenticationTokenTlsSessionId = currentTlsSessionId;
+            stagingState.authenticationTokenTlsSessionId = currentTlsSessionId;
             // Set ServletContext for reading language files from resources
             servletContext = httpServletRequest.getSession(true).getServletContext();
+        } else {
+            // No need to authenticate again
+            stagingState = authState;
         }
         try {
-            if (resources.length > 0 && !authorizationSession.isAuthorized(administrator, resources)) {
+            if (resources.length > 0 && !authorizationSession.isAuthorized(stagingState.administrator, resources)) {
                 throw new AuthorizationDeniedException("You are not authorized to view this page.");
             }
         } catch (final EJBException e) {
@@ -374,13 +386,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
             throw e;
         }
-        if (!initialized) {
-            currentAdminPreference = adminPreferenceSession.getAdminPreference(administrator);
+        if (!stagingState.initialized) {
+            currentAdminPreference = adminPreferenceSession.getAdminPreference(stagingState.administrator);
             if (currentAdminPreference == null) {
                 currentAdminPreference = getDefaultAdminPreference();
             }
             adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
-            initialized = true;
+            stagingState.initialized = true;
         }
 
         return globalconfiguration;
@@ -405,20 +417,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         if (principal.getEmail() != null) {
             details.put("email", principal.getEmail());
         }
-    }
-
-    private void resetAuthSessionState() {
-        authenticationTokenTlsSessionId = null;
-        isAuthenticatedWithToken = false;
-        certificateFingerprint = null;
-        oauthAuthenticationToken = null;
-        administrator = null;
-        usercommonname = null;
-        servletContext = null;
-        currentAdminPreference = null;
-        adminsweblanguage = null;
-        initialized = false;
-        errorpage_initialized = false;
     }
 
     /**
@@ -454,16 +452,16 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             final String searchDetail1, Map<String, Object> details) {
         final String caIdString = issuerDN != null ? Integer.toString(issuerDN.hashCode()) : null;
         if (WebConfiguration.getAdminLogRemoteAddress()) {
-            details.put("remoteip", currentRemoteIp);
+            details.put("remoteip", stagingState.currentRemoteIp);
         }
         if (WebConfiguration.getAdminLogForwardedFor()) {
             details.put("forwardedip", StringTools.getCleanXForwardedFor(httpServletRequest.getHeader("X-Forwarded-For")));
         }
         // Also check if this administrator is present in any role, if not, login failed
-        if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
+        if (roleSession.getRolesAuthenticationTokenIsMemberOf(stagingState.administrator).isEmpty()) {
             details.put("reason", tokenDescription + " has no access");
             auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                    administrator.toString(), caIdString, searchDetail1, null, details);
+                    stagingState.administrator.toString(), caIdString, searchDetail1, null, details);
             return false;
         }
         // Continue with login
@@ -471,39 +469,46 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             details = null;
         }
         auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                administrator.toString(), caIdString, searchDetail1, null, details);
+                stagingState.administrator.toString(), caIdString, searchDetail1, null, details);
         return true;
     }
 
     @Override
-    public GlobalConfiguration initialize_errorpage(final HttpServletRequest request) throws Exception {
-        if (!errorpage_initialized) {
-            if (administrator == null) {
-                final String remoteAddr = request.getRemoteAddr();
-                administrator = new PublicAccessAuthenticationToken(remoteAddr, true);
-            }
-            commonInit();
-            // Set ServletContext for reading language files from resources
-            servletContext = request.getSession(true).getServletContext();
-            if (currentAdminPreference == null) {
-                currentAdminPreference = getDefaultAdminPreference();
-            }
-            adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
-            errorpage_initialized = true;
+    public synchronized GlobalConfiguration initialize_errorpage(final HttpServletRequest request) throws Exception {
+        if (!authState.errorpage_initialized) {
+            stagingState = new AuthState();
+            initializeErrorPageInternal(request);
+            authState = stagingState;
+            stagingState = new AuthState();
         }
         return globalconfiguration;
+    }
+
+    private void initializeErrorPageInternal(final HttpServletRequest request) throws Exception {
+        if (stagingState.administrator == null) {
+            final String remoteAddr = request.getRemoteAddr();
+            stagingState.administrator = new PublicAccessAuthenticationToken(remoteAddr, true);
+        }
+        commonInit();
+        // Set ServletContext for reading language files from resources
+        servletContext = request.getSession(true).getServletContext();
+        if (currentAdminPreference == null) {
+            currentAdminPreference = getDefaultAdminPreference();
+        }
+        adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
+        stagingState.errorpage_initialized = true;
     }
 
     /** Returns the current users common name */
     @Override
     public String getUsersCommonName() {
-        return usercommonname;
+        return authState.usercommonname;
     }
 
     /** Returns the users certificate serialnumber, user to id the adminpreference. */
     @Override
     public String getCertificateFingerprint() {
-        return certificateFingerprint;
+        return authState.certificateFingerprint;
     }
 
     /** Return the admins selected theme including its trailing '.css' */
@@ -571,14 +576,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public boolean existsAdminPreference() {
-        return adminPreferenceSession.existsAdminPreference(administrator);
+        return adminPreferenceSession.existsAdminPreference(authState.administrator);
     }
 
     @Override
     public void addAdminPreference(final AdminPreference adminPreference) throws AdminExistsException {
         currentAdminPreference = adminPreference;
-        if (!(administrator instanceof PublicAccessAuthenticationToken)) {
-            if (!adminPreferenceSession.addAdminPreference(administrator, adminPreference)) {
+        if (!(authState.administrator instanceof PublicAccessAuthenticationToken)) {
+            if (!adminPreferenceSession.addAdminPreference(authState.administrator, adminPreference)) {
                 throw new AdminExistsException("Admin already exists in the database.");
             }
         } else {
@@ -591,8 +596,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void changeAdminPreference(final AdminPreference adminPreference) throws AdminDoesntExistException {
         currentAdminPreference = adminPreference;
-        if (!(administrator instanceof PublicAccessAuthenticationToken)) {
-            if (!adminPreferenceSession.changeAdminPreference(administrator, adminPreference)) {
+        if (!(authState.administrator instanceof PublicAccessAuthenticationToken)) {
+            if (!adminPreferenceSession.changeAdminPreference(authState.administrator, adminPreference)) {
                 throw new AdminDoesntExistException("Admin does not exist in the database.");
             }
         } else {
@@ -606,7 +611,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public AdminPreference getAdminPreference() {
         if (currentAdminPreference==null) {
-            currentAdminPreference = adminPreferenceSession.getAdminPreference(administrator);
+            currentAdminPreference = adminPreferenceSession.getAdminPreference(authState.administrator);
             if (currentAdminPreference == null) {
                 currentAdminPreference = getDefaultAdminPreference();
             }
@@ -615,13 +620,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     private void saveCurrentAdminPreference() throws AdminDoesntExistException, AdminExistsException {
-        if (!(administrator instanceof PublicAccessAuthenticationToken)) {
+        if (!(authState.administrator instanceof PublicAccessAuthenticationToken)) {
             if (existsAdminPreference()) {
-                if (!adminPreferenceSession.changeAdminPreferenceNoLog(administrator, currentAdminPreference)) {
+                if (!adminPreferenceSession.changeAdminPreferenceNoLog(authState.administrator, currentAdminPreference)) {
                     throw new AdminDoesntExistException("Admin does not exist in the database.");
                 }
             } else {
-                if (!adminPreferenceSession.addAdminPreference(administrator, currentAdminPreference)) {
+                if (!adminPreferenceSession.addAdminPreference(authState.administrator, currentAdminPreference)) {
                     throw new AdminExistsException("Admin already exists in the database.");
                 }
             }
@@ -643,9 +648,9 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public void saveDefaultAdminPreference(final AdminPreference adminPreference) throws AuthorizationDeniedException {
-        adminPreferenceSession.saveDefaultAdminPreference(administrator, adminPreference);
+        adminPreferenceSession.saveDefaultAdminPreference(authState.administrator, adminPreference);
         // Reload preferences
-        currentAdminPreference = adminPreferenceSession.getAdminPreference(administrator);
+        currentAdminPreference = adminPreferenceSession.getAdminPreference(authState.administrator);
         if (currentAdminPreference == null) {
             currentAdminPreference = getDefaultAdminPreference();
         }
@@ -665,7 +670,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     @Deprecated
     public boolean isAuthorizedNoLog(final String... resources) throws AuthorizationDeniedException { // still used by JSP/JSF code (viewcertificate.xhtml)
-        if (!authorizationSession.isAuthorizedNoLogging(administrator, resources)) {
+        if (!authorizationSession.isAuthorizedNoLogging(authState.administrator, resources)) {
             throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
         }
         return true;
@@ -679,7 +684,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public boolean isAuthorizedNoLogSilent(final String... resources) {
-        return authorizationSession.isAuthorizedNoLogging(administrator, resources);
+        return authorizationSession.isAuthorizedNoLogging(authState.administrator, resources);
     }
 
     @Override
@@ -713,7 +718,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public String getCurrentRemoteIp() {
-        return currentRemoteIp;
+        return authState.currentRemoteIp;
     }
 
     /**
@@ -760,6 +765,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public String getImagefileInfix(final String imagefilename) {
         return getAdminWebBaseUrl() + getImagePath(imagefilename);
+    }
+
+    @Override
+    public String getEditionFolder() {
+        return isRunningEnterprise() ? "EE" : "CE";
     }
 
     @Override
@@ -893,13 +903,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public void saveGlobalConfiguration(final GlobalConfiguration gc) throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfiguration(administrator, gc);
+        globalConfigurationSession.saveConfiguration(authState.administrator, gc);
         reloadGlobalConfiguration();
     }
 
     @Override
     public void saveGlobalConfiguration() throws Exception {
-        globalConfigurationSession.saveConfiguration(administrator, globalconfiguration);
+        globalConfigurationSession.saveConfiguration(authState.administrator, globalconfiguration);
     }
 
     /**
@@ -911,7 +921,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void saveCmpConfiguration(final CmpConfiguration cmpconfiguration) throws AuthorizationDeniedException {
         this.cmpconfiguration = cmpconfiguration;
-        globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
+        globalConfigurationSession.saveConfiguration(authState.administrator, cmpconfiguration);
     }
 
     /**
@@ -923,7 +933,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void saveMSAutoenrollmentConfiguration(final MSAutoEnrollmentConfiguration msAutoEnrollmentConfiguration) throws AuthorizationDeniedException {
         this.msAutoenrollmentConfig = msAutoEnrollmentConfiguration;
-        globalConfigurationSession.saveConfiguration(administrator, msAutoEnrollmentConfiguration);
+        globalConfigurationSession.saveConfiguration(authState.administrator, msAutoEnrollmentConfiguration);
     }
     
     /**
@@ -935,7 +945,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void saveEstConfiguration(final EstConfiguration estconfiguration) throws AuthorizationDeniedException {
         this.estconfiguration = estconfiguration;
-        globalConfigurationSession.saveConfiguration(administrator, estconfiguration);
+        globalConfigurationSession.saveConfiguration(authState.administrator, estconfiguration);
     }
 
     /**
@@ -967,20 +977,20 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     @Deprecated
     public List<Integer> getAuthorizedCAIds() {
-        return caSession.getAuthorizedCaIds(administrator);
+        return caSession.getAuthorizedCaIds(authState.administrator);
     }
 
     /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
     @Override
     @Deprecated
     public TreeMap<String,Integer> getCANames() {
-        return caSession.getAuthorizedCaNamesToIds(administrator);
+        return caSession.getAuthorizedCaNamesToIds(authState.administrator);
     }
 
     @Override
     public TreeMap<String,Integer> getExternalCANames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        for (final CAInfo caInfo : caSession.getAuthorizedCaInfos(administrator)) {
+        for (final CAInfo caInfo : caSession.getAuthorizedCaInfos(authState.administrator)) {
             if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
                 ret.put(caInfo.getName(), caInfo.getCAId());
             }
@@ -991,7 +1001,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public TreeMap<String,Integer> getActiveCANames() {
         final TreeMap<String, Integer> ret = new TreeMap<>();
-        final Map<Integer, String> idtonamemap = this.caSession.getActiveCAIdToNameMap(administrator);
+        final Map<Integer, String> idtonamemap = this.caSession.getActiveCAIdToNameMap(authState.administrator);
         for (final Integer id : idtonamemap.keySet()) {
             ret.put(idtonamemap.get(id), id);
         }
@@ -1005,7 +1015,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ENDENTITY);
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authState.administrator, CertificateConstants.CERTTYPE_ENDENTITY);
 
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
@@ -1020,7 +1030,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public TreeMap<String, Integer> getAuthorizedSubCACertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_SUBCA);
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authState.administrator, CertificateConstants.CERTTYPE_SUBCA);
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
@@ -1031,7 +1041,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public TreeMap<String, Integer>  getAuthorizedSshCertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_SSH);
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authState.administrator, CertificateConstants.CERTTYPE_SSH);
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
@@ -1042,7 +1052,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public TreeMap<String, Integer>  getAuthorizedItsCertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ITS);
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authState.administrator, CertificateConstants.CERTTYPE_ITS);
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
@@ -1056,7 +1066,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ROOTCA);
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authState.administrator, CertificateConstants.CERTTYPE_ROOTCA);
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
@@ -1070,7 +1080,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public TreeMap<String, Integer> getAuthorizedItsCACertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ITS);
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authState.administrator, CertificateConstants.CERTTYPE_ITS);
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
@@ -1117,7 +1127,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public TreeMap<String,Integer> getAuthorizedPublisherNamesAndIds() {
         final TreeMap<String,Integer> result = new TreeMap<>();
         final Map<Integer, String> idToNameMap = publisherSession.getPublisherIdToNameMap();
-        for(final int id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
+        for(final int id : caAdminSession.getAuthorizedPublisherIds(authState.administrator)) {
             if (idToNameMap.get(id) == null) {
                 log.warn("Publisher with ID " + id + " exists but can not be accessed. There may be a duplicate name. Please rename or delete.");
                 continue; // prevent NPE below
@@ -1159,13 +1169,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public TreeMap<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
-        final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
+        final RAAuthorization raAuthorization = new RAAuthorization(authState.administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
         return raAuthorization.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
 
     @Override
     public AuthenticationToken getAdminObject() {
-        return this.administrator;
+        return authState.administrator;
     }
 
     /**
@@ -1316,7 +1326,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         succeededHost.append(' ').append(localhostName);
         // Invalidate local GUI cache
-        initialized = false;
+        authState.initialized = false;
         if (failedHosts.length() > 0) {
             // The below will print hosts starting with a blank (space), but it's worth it to not have to consider error handling if toString is empty
             throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts.toString() + "), but succeeded on (" + succeededHost.toString() + ").");
@@ -1511,7 +1521,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
             }
         }
-        final Set<Integer> authorizedProfileIds = new HashSet<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, ""));
+        final Set<Integer> authorizedProfileIds = new HashSet<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authState.administrator, ""));
         //Exclude all aliases which refer to CAs that current admin doesn't have access to
         aliasloop: for (final String alias : new ArrayList<>(cmpConfiguration.getAliasList())) {
             //Collect CA names
@@ -1547,12 +1557,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
                 //Certificate Profiles are tested implicitly, since we can't choose any CP which isn't part of the EEP, and we can't choose the EEP if we don't have access to its CPs.
             }
-            final TreeMap<String, Integer> caNameToIdMap = caSession.getAuthorizedCaNamesToIds(administrator);
+            final TreeMap<String, Integer> caNameToIdMap = caSession.getAuthorizedCaNamesToIds(authState.administrator);
             for (final String caName : caNames) {
                 if(caName != null) { //CA might have been removed
                     final Integer caId = caNameToIdMap.get(caName);
                     if (caId != null) {
-                        if (!caSession.authorizedToCANoLogging(administrator, caId)) {
+                        if (!caSession.authorizedToCANoLogging(authState.administrator, caId)) {
                             if (log.isDebugEnabled()) {
                                 log.debug("CMP alias " + alias + " hidden because admin lacks access to CA rule: " + StandardRules.CAACCESS.resource()
                                         + caNameToIdMap.get(caName));
@@ -1578,7 +1588,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public Map<String, String> getAuthorizedEEProfileNamesAndIds(final String endEntityAccessRule) {
-        final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
+        final RAAuthorization raAuthorization = new RAAuthorization(authState.administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
         final TreeMap<String, String> authorizedEEProfileNamesAndIds = new TreeMap<>(
                 raAuthorization.getAuthorizedEndEntityProfileNames(endEntityAccessRule));
         // Add KeyId option. If used, extract the EE profile name from the senderKID field of the CMP request.
@@ -1590,7 +1600,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public Map<String, String> getAuthorizedEEProfilesAndIdsNoKeyId(final String endEntityAccessRule) {
-        final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
+        final RAAuthorization raAuthorization = new RAAuthorization(authState.administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
         return new TreeMap<>(raAuthorization.getAuthorizedEndEntityProfileNames(endEntityAccessRule));
     }
 
@@ -1622,7 +1632,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         final List<String> certificateAuthorities = new ArrayList<>();
         for (final int id : certificateAuthorityIds) {
-            final CACommon ca = caSession.getCANoLog(administrator, id, null);
+            final CACommon ca = caSession.getCANoLog(authState.administrator, id, null);
             certificateAuthorities.add(ca.getName());
         }
         return addKeyIdAndSort(certificateAuthorities);
@@ -1637,7 +1647,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public Collection<String> getAvailableCertProfilesOfEEProfile(final String endEntityProfileId) {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
-            final List<Integer> allCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, 0);
+            final List<Integer> allCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authState.administrator, 0);
             final List<String> allCertificateProfiles = new ArrayList<>(allCertificateProfileIds.size());
             for (final int id : allCertificateProfileIds) {
                 allCertificateProfiles.add(certificateProfileSession.getCertificateProfileName(id));
@@ -2002,7 +2012,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
             }
             if (caId != 0) {
-                if (!caSession.authorizedToCANoLogging(administrator, caId)) {
+                if (!caSession.authorizedToCANoLogging(authState.administrator, caId)) {
                     if (log.isDebugEnabled()) {
                         log.debug("EST alias " + alias + " hidden because admin lacks access to CA rule: " + StandardRules.CAACCESS.resource() + caId);
                     }
@@ -2035,7 +2045,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public void saveAvailableExtendedKeyUsagesConfiguration(final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
+        globalConfigurationSession.saveConfiguration(authState.administrator, ekuConfig);
         availableExtendedKeyUsagesConfig = ekuConfig;
     }
 
@@ -2058,7 +2068,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public void saveOAuthConfiguration(final OAuthConfiguration oAuthConfig) throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfiguration(administrator, oAuthConfig);
+        globalConfigurationSession.saveConfiguration(authState.administrator, oAuthConfig);
         oAuthConfiguration = oAuthConfig;
     }
     //*************************************************
@@ -2081,7 +2091,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public void saveEABConfiguration(EABConfiguration eabConfiguration) throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfiguration(administrator, eabConfiguration);
+        globalConfigurationSession.saveConfiguration(authState.administrator, eabConfiguration);
         this.eabConfiguration = eabConfiguration;
     }
 
@@ -2107,7 +2117,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void saveAvailableCustomCertExtensionsConfiguration(final AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfiguration(administrator, cceConfig);
+        globalConfigurationSession.saveConfiguration(authState.administrator, cceConfig);
         availableCustomCertExtensionsConfig = cceConfig;
     }
 

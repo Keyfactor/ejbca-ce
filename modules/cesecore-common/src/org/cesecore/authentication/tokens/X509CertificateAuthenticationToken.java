@@ -119,6 +119,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
     public boolean matches(AccessUserAspect accessUser) {
         // Protect against spoofing by checking if this token was created locally
         if (!super.isCreatedInThisJvm()) {
+            log.warn("X509CertificateAuthenticationToken has been serialied and deserialized (e.g. created in another JVM), which is not allowed.");
             return false;
         } 
         boolean returnvalue = false;

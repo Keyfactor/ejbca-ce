@@ -334,7 +334,7 @@
             <basic fetch="EAGER" name="requestdate"><column name="requestDate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="expiredate"><column name="expireDate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="remainingapprovals"><column name="remainingApprovals" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="VARCHAR(255,0)"/></basic>
+            <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="VARCHAR(400,0)"/></basic>
             <basic fetch="EAGER" name="email"><column name="email" column-definition="VARCHAR(255,0)"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>

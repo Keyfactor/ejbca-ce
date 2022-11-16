@@ -102,7 +102,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private static final float LATEST_VERSION = 16;
+    private static final float LATEST_VERSION = 17;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -168,7 +168,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     /** CA/B Forum Organization Identifier extension */
     private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";
-
 
     // Default values
     // These must be in a strict order that can never change
@@ -274,6 +273,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String PRINTINGSVGDATA        = "PRINTINGSVGDATA";
 
     private static final String PSD2QCSTATEMENT    = "PSD2QCSTATEMENT";
+    
+    private static final String PROFILETYPE        = "PROFILETYPE";
+    public static final int PROFILE_TYPE_DEFAULT = 1;
+    public static final int PROFILE_TYPE_SSH = 2;
+    public static final int DN_FIELD_TYPE_SSH = 10;
 
     /**
      * If it should be possible to add/edit certificate extension data
@@ -326,6 +330,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         data.put(SUBJECTALTNAMEFIELDORDER, new ArrayList<Integer>());
         data.put(SUBJECTDIRATTRFIELDORDER, new ArrayList<Integer>());
         data.put(SSH_FIELD_ORDER, new ArrayList<Integer>());
+        setProfileType(PROFILE_TYPE_DEFAULT);
 
         if (emptyProfile) {
         	for (final String key : DATA_CONSTANTS_USED_IN_EMPTY) {
@@ -375,6 +380,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setUse(NAMECONSTRAINTS_EXCLUDED,0,false);
         	setUse(CABFORGANIZATIONIDENTIFIER,0,false);
             setUse(RENEWDAYSBEFOREEXPIRATION,0,false);
+            
         } else {
         	// initialize profile data
         	addFieldWithDefaults(USERNAME, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
@@ -402,7 +408,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	addFieldWithDefaults(NAMECONSTRAINTS_EXCLUDED, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(CABFORGANIZATIONIDENTIFIER, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
             addFieldWithDefaults(RENEWDAYSBEFOREEXPIRATION, String.valueOf(RENEWDAYSBEFOREEXPIRATION_DEFAULT), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+            
         }
+        
+        setModifyable(SSH_CRITICAL_OPTION_FORCE_COMMAND, 0, true);
+        setModifyable(SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0, true);
     }
 
     /** Add a field with value="", required=false, use=true, modifyable=true, if the parameter exists, ignored otherwise */
@@ -499,6 +509,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			setRequired(parameter, n, isRequired(parameter, n + 1));
     			setUse(parameter, n, getUse(parameter, n + 1));
     			setModifyable(parameter, n, isModifyable(parameter, n + 1));
+			setValidation(parameter, n, getValidation(parameter, n + 1));
     		}
     		final String param = getParameter(parameter);
     		// Remove last element from Subject DN order list.
@@ -534,6 +545,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		data.remove(getFieldTypeBoundary(ISREQUIRED) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
     		data.remove(getFieldTypeBoundary(MODIFYABLE) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
     		data.remove(getFieldTypeBoundary(COPY) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
+    		data.remove(getFieldTypeBoundary(VALIDATION) + (NUMBERBOUNDRARY * (size - 1)) + parameter);
     		decrementFieldnumber(parameter);
     	}
     }
@@ -744,6 +756,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             case DNFieldExtractor.TYPE_SUBJECTDN: return getSubjectDNFieldOrderLength();
             case DNFieldExtractor.TYPE_SUBJECTALTNAME: return getSubjectAltNameFieldOrderLength();
             case DNFieldExtractor.TYPE_SUBJECTDIRATTR: return getSubjectDirAttrFieldOrderLength();
+            case DN_FIELD_TYPE_SSH: return getSshFieldOrderLength();
             default: throw new IllegalArgumentException("Invalid DN type");
         }
     }
@@ -851,6 +864,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             case DNFieldExtractor.TYPE_SUBJECTDN: return getSubjectDNFieldsInOrder(index);
             case DNFieldExtractor.TYPE_SUBJECTALTNAME: return getSubjectAltNameFieldsInOrder(index);
             case DNFieldExtractor.TYPE_SUBJECTDIRATTR: return getSubjectDirAttrFieldsInOrder(index);
+            case DN_FIELD_TYPE_SSH: return getSshFieldsInOrder(index);
             default: throw new IllegalArgumentException("Invalid DN type");
         }
     }
@@ -1470,6 +1484,38 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	return l;
     }
+    
+    public int getProfileType() {
+        if (data.get(PROFILETYPE) == null) {
+            setProfileType(PROFILE_TYPE_DEFAULT);
+        }
+        return (int) data.get(PROFILETYPE);
+    }
+    
+    public void setProfileType(int profileType) {
+        if (PROFILE_TYPE_DEFAULT!=profileType && PROFILE_TYPE_SSH!=profileType) {
+            throw new IllegalArgumentException("Invalid value for EndEntity ProfileType");
+        }
+        data.put(PROFILETYPE, profileType);
+    }
+    
+    public boolean isProfileTypeSsh() {
+        return getProfileType() == PROFILE_TYPE_SSH;
+    }
+    
+    public void initializeSshPlaceholderFields() {
+        setModifyable(DnComponents.COMMONNAME, 0, true);
+        setRequired(DnComponents.COMMONNAME, 0, false);
+        
+        final Field field = this.new Field(DnComponents.DNSNAME);
+        if (field.getInstances().isEmpty()) {
+            addFieldWithDefaults(DnComponents.DNSNAME, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        } else {
+            // we skip validations for subject DN, SAN fields
+            setModifyable(DnComponents.DNSNAME, 0, true);
+            setRequired(DnComponents.DNSNAME, 0, false);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public void addUserNotification(final UserNotification notification) {
@@ -1696,42 +1742,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (certProfile == null) {
             throw new EndEntityProfileValidationException("Certificate Profile ID " + certificateProfileId + ", referenced by End Entity, does not exist");
         }
-    	// get a DNFieldExtractor used to validate DN fields. Multi-value RDNs are "converted" into non-multi-value RDNs
-    	// just to re-use standard validation mechanisms.
-    	// DNFieldextractor validates (during construction) that only components valid for multi-value use are used.
-    	final DNFieldExtractor subjectDnFields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
-    	if (subjectDnFields.isIllegal()) {
-    		throw new EndEntityProfileValidationException("Subject DN is illegal.");
+    	
+    	if(getProfileType()==PROFILE_TYPE_DEFAULT) {
+    	    validateDefaultProfileData(username, dn, subjectAltName, subjectDirAttr, email);
+    	} else {
+        	validateSshCertificateData(subjectAltName, ei);
     	}
-        if (subjectDnFields.hasMultiValueRDN() && !getAllowMultiValueRDNs()) {
-            throw new EndEntityProfileValidationException("Subject DN has multi value RDNs, which is not allowed.");
-        }
-    	final DNFieldExtractor subjectAltNames = new DNFieldExtractor(subjectAltName, DNFieldExtractor.TYPE_SUBJECTALTNAME);
-    	if (subjectAltNames.isIllegal()) {
-    		throw new EndEntityProfileValidationException("Subject alt names are illegal.");
-    	}
-    	final DNFieldExtractor subjectDirAttrs = new DNFieldExtractor(subjectDirAttr, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
-    	if (subjectDirAttrs.isIllegal()) {
-    		throw new EndEntityProfileValidationException("Subject directory attributes are illegal.");
-    	}
-    	// Check that no other than supported dn fields exists in the subject dn.
-    	if (subjectDnFields.existsOther()) {
-    		throw new EndEntityProfileValidationException("Unsupported Subject DN Field found in:" + dn);
-    	}
-    	if (subjectAltNames.existsOther()) {
-    		throw new EndEntityProfileValidationException("Unsupported Subject Alternate Name Field found in:" + subjectAltName);
-    	}
-    	if (subjectDirAttrs.existsOther()) {
-    		throw new EndEntityProfileValidationException("Unsupported Subject Directory Attribute Field found in:" + subjectDirAttr);
-    	}
-    	// Make sure that all required fields exist
-    	checkIfAllRequiredFieldsExists(subjectDnFields, subjectAltNames, subjectDirAttrs, username, email);
-    	// Make sure that there are enough fields to cover all required in profile
-    	checkIfForIllegalNumberOfFields(subjectDnFields, subjectAltNames, subjectDirAttrs);
     	// Check username against its regex validator.
         checkUsernameWithValidators(username);
-    	// Check that all fields pass the validators (e.g. regex), if any
-    	checkWithValidators(subjectDnFields, subjectAltNames);
     	// Check contents of username
     	checkIfDataFulfillProfile(USERNAME, 0, username, "Username", null);
     	// Check Email address.
@@ -1741,35 +1759,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	checkIfDomainFulfillProfile(EMAIL, 0, email, "Email");
     	// Make sure that every value has a corresponding field in the entity profile
 
-        checkIfFieldsMatch(subjectDnFields, DNFieldExtractor.TYPE_SUBJECTDN, email, null);
-        final String commonName = subjectDnFields.getField(DNFieldExtractor.CN, 0);
-        checkIfFieldsMatch(subjectAltNames, DNFieldExtractor.TYPE_SUBJECTALTNAME, email, commonName);
-        // Check contents of Subject Directory Attributes fields.
-    	final HashMap<Integer,Integer> subjectDirAttrNumbers = subjectDirAttrs.getNumberOfFields();
-    	final List<Integer> dirAttrIds = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDIRATTR);
-    	for (final Integer dirAttrId : dirAttrIds) {
-    		final int nof = subjectDirAttrNumbers.get(dirAttrId);
-    		for (int j = 0; j < nof; j++) {
-    		    final String field = subjectDirAttrs.getField(dirAttrId, j);
-    			checkForIllegalChars(field);
-    			switch (dirAttrId) {
-    			case DNFieldExtractor.COUNTRYOFCITIZENSHIP:
-    				checkIfISO3166FulfillProfile(DnComponents.COUNTRYOFCITIZENSHIP, j, field, "COUNTRYOFCITIZENSHIP");
-    				break;
-    			case DNFieldExtractor.COUNTRYOFRESIDENCE:
-    				checkIfISO3166FulfillProfile(DnComponents.COUNTRYOFRESIDENCE, j, field, "COUNTRYOFRESIDENCE");
-    				break;
-    			case DNFieldExtractor.DATEOFBIRTH:
-    				checkIfDateFulfillProfile(DnComponents.DATEOFBIRTH, j, field, "DATEOFBIRTH");
-    				break;
-    			case DNFieldExtractor.GENDER:
-    				checkIfGenderFulfillProfile(DnComponents.GENDER, j, field, "GENDER");
-    				break;
-    			default:
-    				checkIfDataFulfillProfile(DnComponents.dnIdToProfileName(dirAttrId), j, field, DnComponents.getErrTextFromDnId(dirAttrId), email);
-    			}
-    		}
-    	}
+        
     	// Check for keyrecoverable flag.
     	if (!getUse(KEYRECOVERABLE, 0) && keyRecoverable) {
     		throw new EndEntityProfileValidationException("Key Recoverable cannot be used.");
@@ -1968,6 +1958,157 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if (log.isTraceEnabled()) {
             log.trace("<doesUserFulfillEndEntityProfileWithoutPassword()");
         }
+    }
+    
+    private void validateDefaultProfileData(final String username, final String dn, final String subjectAltName, final String subjectDirAttr,
+            String email) throws EndEntityProfileValidationException {
+        // get a DNFieldExtractor used to validate DN fields. Multi-value RDNs are "converted" into non-multi-value RDNs
+        // just to re-use standard validation mechanisms.
+        // DNFieldextractor validates (during construction) that only components valid for multi-value use are used.
+        final DNFieldExtractor subjectDnFields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
+        if (subjectDnFields.isIllegal()) {
+            throw new EndEntityProfileValidationException("Subject DN is illegal.");
+        }
+        if (subjectDnFields.hasMultiValueRDN() && !getAllowMultiValueRDNs()) {
+            throw new EndEntityProfileValidationException("Subject DN has multi value RDNs, which is not allowed.");
+        }
+        final DNFieldExtractor subjectAltNames = new DNFieldExtractor(subjectAltName, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+        if (subjectAltNames.isIllegal()) {
+            throw new EndEntityProfileValidationException("Subject alt names are illegal.");
+        }       
+        final DNFieldExtractor subjectDirAttrs = new DNFieldExtractor(subjectDirAttr, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+        if (subjectDirAttrs.isIllegal()) {
+            throw new EndEntityProfileValidationException("Subject directory attributes are illegal.");
+        }
+        // Check that no other than supported dn fields exists in the subject dn.
+        if (subjectDnFields.existsOther()) {
+            throw new EndEntityProfileValidationException("Unsupported Subject DN Field found in:" + dn);
+        }
+        if (subjectAltNames.existsOther()) {
+            throw new EndEntityProfileValidationException("Unsupported Subject Alternate Name Field found in:" + subjectAltName);
+        }
+        if (subjectDirAttrs.existsOther()) {
+            throw new EndEntityProfileValidationException("Unsupported Subject Directory Attribute Field found in:" + subjectDirAttr);
+        }
+        // Make sure that all required fields exist
+        checkIfAllRequiredFieldsExists(subjectDnFields, subjectAltNames, subjectDirAttrs, username, email);
+        // Make sure that there are enough fields to cover all required in profile
+        checkIfForIllegalNumberOfFields(subjectDnFields, subjectAltNames, subjectDirAttrs);
+        // Check that all fields pass the validators (e.g. regex), if any
+        checkWithValidators(subjectDnFields, subjectAltNames);
+        
+        checkIfFieldsMatch(subjectDnFields, DNFieldExtractor.TYPE_SUBJECTDN, email, null);
+        final String commonName = subjectDnFields.getField(DNFieldExtractor.CN, 0);
+        
+        checkIfFieldsMatch(subjectAltNames, DNFieldExtractor.TYPE_SUBJECTALTNAME, email, commonName);
+        // Check contents of Subject Directory Attributes fields.
+        final HashMap<Integer,Integer> subjectDirAttrNumbers = subjectDirAttrs.getNumberOfFields();
+        final List<Integer> dirAttrIds = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+        for (final Integer dirAttrId : dirAttrIds) {
+            final int nof = subjectDirAttrNumbers.get(dirAttrId);
+            for (int j = 0; j < nof; j++) {
+                final String field = subjectDirAttrs.getField(dirAttrId, j);
+                checkForIllegalChars(field);
+                switch (dirAttrId) {
+                case DNFieldExtractor.COUNTRYOFCITIZENSHIP:
+                    checkIfISO3166FulfillProfile(DnComponents.COUNTRYOFCITIZENSHIP, j, field, "COUNTRYOFCITIZENSHIP");
+                    break;
+                case DNFieldExtractor.COUNTRYOFRESIDENCE:
+                    checkIfISO3166FulfillProfile(DnComponents.COUNTRYOFRESIDENCE, j, field, "COUNTRYOFRESIDENCE");
+                    break;
+                case DNFieldExtractor.DATEOFBIRTH:
+                    checkIfDateFulfillProfile(DnComponents.DATEOFBIRTH, j, field, "DATEOFBIRTH");
+                    break;
+                case DNFieldExtractor.GENDER:
+                    checkIfGenderFulfillProfile(DnComponents.GENDER, j, field, "GENDER");
+                    break;
+                default:
+                    checkIfDataFulfillProfile(DnComponents.dnIdToProfileName(dirAttrId), j, field, DnComponents.getErrTextFromDnId(dirAttrId), email);
+                }
+            }
+        }
+    }
+
+    private void validateSshCertificateData(String subjectAlternateName, ExtendedInformation ei) throws EndEntityProfileValidationException {
+        String[] principals = null;
+        String allPrincipals = null;
+        
+        int requiredFields = 0;
+        final Field field = this.new Field(SshEndEntityProfileFields.SSH_PRINCIPAL);
+       
+        for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
+            if(fieldInstance.isRequired()) {
+                requiredFields++;
+            }
+        }
+        
+        if(log.isDebugEnabled()) {
+            log.debug("SSH principals count: " + field.getInstances().size());
+            log.debug("SSH principals required: " + requiredFields);
+            log.debug("SSH subjectAlternateName(pseudo): " + subjectAlternateName);
+        }
+        if(StringUtils.isNotBlank(subjectAlternateName)) {
+            subjectAlternateName = subjectAlternateName.substring("dnsName=".length());
+            int commentIndex = subjectAlternateName.indexOf(SshEndEntityProfileFields.SSH_CERTIFICATE_COMMENT);
+            if(commentIndex!=0) { // no principal
+                if(commentIndex==-1) {
+                    commentIndex = subjectAlternateName.length(); // principal is whole content
+                } else {
+                    commentIndex--;
+                }
+                allPrincipals = subjectAlternateName.substring(SshEndEntityProfileFields.SSH_PRINCIPAL.length()+1, commentIndex);
+                principals = allPrincipals.split(":");
+                for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
+                    if(fieldInstance.isRequired() && !fieldInstance.isModifiable() 
+                            && !allPrincipals.contains(fieldInstance.getValue())) {
+                        throw new EndEntityProfileValidationException(
+                                "SSH principal does not contain required and un-modifiable value: " + fieldInstance.getValue());
+                    }
+                    // TODO: add validator support
+                }
+            }            
+        }
+        
+        int principalCount = principals!=null ? principals.length : 0;
+        if(principalCount < requiredFields) {
+            throw new EndEntityProfileValidationException("SSH principals do not contain all required fields.");
+        }
+        
+        if(principals!=null && principals.length > field.getInstances().size()) {
+            throw new EndEntityProfileValidationException("SSH principals contain too many values.");
+        }
+        
+        Map<String, String> criticalOptions = ei.getSshCriticalOptions();
+        if(isSshSourceAddressRequired()) {
+            if(criticalOptions==null || 
+                    !criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP)) {
+                throw new EndEntityProfileValidationException("SSH critical option source-address is absent.");
+            }
+        }
+        
+        if(!isSshSourceAddressModifiable() && criticalOptions!=null && 
+                criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP)) {
+            // overwrite and if present
+            criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, 
+                                                    getSshSourceAddress());
+        }
+        
+        if(isSshForceCommandRequired()) {
+            if(criticalOptions==null || 
+                    !criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP)) {
+                throw new EndEntityProfileValidationException("SSH critical option force-command is absent.");
+            }
+            
+        }
+        
+        if(!isSshForceCommandModifiable() && criticalOptions!=null && 
+                criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP)) {
+            criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, 
+                    getSshForceCommand());
+        }
+
+        // TODO: additional extension validation later
+                
     }
 
     /**
@@ -2427,6 +2568,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             if (getVersion() < 15) {
                 setAllowMultiValueRDNs(false);
             }
+            if (getVersion() < 17) {
+                setProfileType(PROFILE_TYPE_DEFAULT);
+            }
 
         	// Finally, update the version stored in the map to the current version
             data.put(VERSION, LATEST_VERSION);
@@ -2684,25 +2828,28 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			}
     		}
     	}
-    	// Check if all required subject alternate name fields exists.
-    	final List<String> altNameFields = DnComponents.getAltNameFields();
-    	final List<Integer> altNameFieldExtractorIds = DnComponents.getAltNameDnIds();
-    	for (int i = 0; i < altNameFields.size(); i++) {
-    		final String currentAnField = altNameFields.get(i);
-    		if (getReverseFieldChecks()) {
-    			final int nof = subjectAltNames.getNumberOfFields(altNameFieldExtractorIds.get(i));
-    			final int numRequiredFields = getNumberOfRequiredFields(currentAnField);
-    			if (nof < numRequiredFields) {
-    				throw new EndEntityProfileValidationException("Subject Alternative Name field '" + currentAnField + "' must exist.");
-    			}
-    		} else {
-    			final int size = subjectAltNames.getNumberOfFields(altNameFieldExtractorIds.get(i));
-    			for (int j = 0; j < size; j++) {
-    				if (isRequired(currentAnField, j) && StringUtils.isBlank(subjectAltNames.getField(altNameFieldExtractorIds.get(i), j))) {
-    					throw new EndEntityProfileValidationException("Subject Alterntive Name field '" + currentAnField + "' must exist.");
-    				}
-    			}
-    		}
+    	
+    	if(subjectAltNames!=null) {
+        	// Check if all required subject alternate name fields exists.
+        	final List<String> altNameFields = DnComponents.getAltNameFields();
+        	final List<Integer> altNameFieldExtractorIds = DnComponents.getAltNameDnIds();
+        	for (int i = 0; i < altNameFields.size(); i++) {
+        		final String currentAnField = altNameFields.get(i);
+        		if (getReverseFieldChecks()) {
+        			final int nof = subjectAltNames.getNumberOfFields(altNameFieldExtractorIds.get(i));
+        			final int numRequiredFields = getNumberOfRequiredFields(currentAnField);
+        			if (nof < numRequiredFields) {
+        				throw new EndEntityProfileValidationException("Subject Alternative Name field '" + currentAnField + "' must exist.");
+        			}
+        		} else {
+        			final int size = subjectAltNames.getNumberOfFields(altNameFieldExtractorIds.get(i));
+        			for (int j = 0; j < size; j++) {
+        				if (isRequired(currentAnField, j) && StringUtils.isBlank(subjectAltNames.getField(altNameFieldExtractorIds.get(i), j))) {
+        					throw new EndEntityProfileValidationException("Subject Alterntive Name field '" + currentAnField + "' must exist.");
+        				}
+        			}
+        		}
+        	}
     	}
     	// Check if all required subject directory attribute fields exists.
     	final List<String> dirAttrFields = DnComponents.getDirAttrFields();
@@ -2743,13 +2890,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			throw new EndEntityProfileValidationException("Wrong number of " + dnFields.get(i) + " fields in Subject DN.");
     		}
     	}
-    	// Check number of subject alternate name fields.
-    	final List<String> altNameFields = DnComponents.getAltNameFields();
-    	final List<Integer> altNameFieldExtractorIds = DnComponents.getAltNameDnIds();
-    	for (int i = 0; i < altNameFields.size(); i++) {
-    		if (getNumberOfField(altNameFields.get(i)) < subjectaltnames.getNumberOfFields(altNameFieldExtractorIds.get(i))) {
-    			throw new EndEntityProfileValidationException("Wrong number of " + altNameFields.get(i) + " fields in Subject Alternative Name.");
-    		}
+    	if(subjectaltnames!=null) {
+        	// Check number of subject alternate name fields.
+        	final List<String> altNameFields = DnComponents.getAltNameFields();
+        	final List<Integer> altNameFieldExtractorIds = DnComponents.getAltNameDnIds();
+        	for (int i = 0; i < altNameFields.size(); i++) {
+        		if (getNumberOfField(altNameFields.get(i)) < subjectaltnames.getNumberOfFields(altNameFieldExtractorIds.get(i))) {
+        			throw new EndEntityProfileValidationException("Wrong number of " + altNameFields.get(i) + " fields in Subject Alternative Name.");
+        		}
+        	}
     	}
     	// Check number of subject directory attribute fields.
     	final List<String> dirAttrFields = DnComponents.getDirAttrFields();
@@ -2800,6 +2949,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
         }
 
+        if(subjectaltnames==null) {
+            return;
+        }
         final List<String> sanFields = DnComponents.getAltNameFields();
         final List<Integer> sanFieldExtractorIds = DnComponents.getAltNameDnIds();
         for (int i = 0; i < sanFields.size(); i++) {
