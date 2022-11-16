@@ -18,6 +18,7 @@ pipeline {
 				sh "docker container rm ${env.DOCKER_NAME_BASE} -f || true"
 				sh "docker network rm ${env.DOCKER_NAME_NET} || true"
 				sh "rm -rf ear"
+				sh "chmod -R a+rwX ${env.WORKSPACE}"
 			}
 		}
 		stage('network') {
@@ -37,7 +38,7 @@ pipeline {
                     sh "cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-tables-ejbca-db2.sql ./"
                     sh "cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-index-ejbca.sql ./"
                     sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
-                    sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} --privileged=true -p ${env.DB2_PORTS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
+                    sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} --privileged=true -p ${env.DB2_PORTS} -v ${env.WORKSPACE}:/database:z ${env.DOCKER_NAME_DB}"
                     sh "sleep 120"
                     echo "============ Here comes DB initialization output (always logged after 120 secs) ============"
                     sh "docker logs ${env.DOCKER_NAME_DB}"
@@ -50,7 +51,7 @@ pipeline {
 				sh "mkdir ear || true"
 				dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}") {
 					sh "docker build -t ${env.DOCKER_NAME_BASE} -m 3GB ."
-					sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}"
+					sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app:z ${env.DOCKER_NAME_BASE}"
 				}
 			}
 		}
