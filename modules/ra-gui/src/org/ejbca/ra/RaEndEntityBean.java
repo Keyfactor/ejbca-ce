@@ -1267,6 +1267,13 @@ public class RaEndEntityBean implements Serializable {
     }
     
     /**
+     * @return true if keyRecoverable is required
+     */
+    public boolean isKeyRecoverableRequired() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isKeyRecoverableRequired();
+    }
+    
+    /**
      * @return true if keyRecoverable
      */
     public boolean getKeyRecoverable() {

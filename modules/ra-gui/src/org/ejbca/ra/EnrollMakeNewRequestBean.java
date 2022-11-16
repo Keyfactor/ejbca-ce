@@ -2468,7 +2468,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (useKeyRecoverable != null) {
             return useKeyRecoverable;
         } else if (getEndEntityProfile() != null) {
-            return (getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault());
+            return (getEndEntityProfile().isKeyRecoverableUsed() || getEndEntityProfile().isKeyRecoverableDefault());
         }
         return false;
     }
