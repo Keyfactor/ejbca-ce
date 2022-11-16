@@ -80,7 +80,7 @@
 	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
-    <classpathentry kind="src" path="modules/msae/src"/>
+	<classpathentry kind="src" path="modules/msae/src"/>
 	<classpathentry kind="src" path="modules/p11ng/src"/>
 	<classpathentry kind="src" path="modules/p11ng/src-test"/>
 	<classpathentry kind="src" path="modules/p11ng-cli/src"/>
@@ -262,5 +262,7 @@
 	<classpathentry kind="lib" path="lib/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
+	<classpathentry kind="var" path="ANT_HOME"/>
+	<classpathentry kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
