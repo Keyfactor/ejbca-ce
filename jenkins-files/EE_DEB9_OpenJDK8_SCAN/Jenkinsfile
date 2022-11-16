@@ -45,7 +45,7 @@ pipeline {
         dockerBuildNoCache = ''
     }
     stages {
-        stage('Checkout code analizer tools') {
+        stage('Checkout code analyzer tools') {
             steps {
                 sh 'mkdir -p code-analyzer-tools'
                 dir("code-analyzer-tools")
