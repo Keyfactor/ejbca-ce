@@ -103,6 +103,10 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         } else {
             // Check authorization before adding
             authorizedToEditProfile(admin, profile);
+            // relevant for configdump only
+            if(profile.getProfileType()==EndEntityProfile.PROFILE_TYPE_SSH) {
+                profile.initializeSshPlaceholderFields();
+            }
             try {
                 entityManager.persist(new EndEntityProfileData(profileid, profilename, profile));
                 flushProfileCache();
@@ -501,6 +505,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         } else {
             // Check authorization before editing
             authorizedToEditProfile(admin, profile);
+            if(profile.getProfileType()==EndEntityProfile.PROFILE_TYPE_SSH) {
+                profile.initializeSshPlaceholderFields();
+            }
             // Get the diff of what changed
             Map<Object, Object> diff = pdl.getProfile().diff(profile);
             pdl.setProfile(profile);

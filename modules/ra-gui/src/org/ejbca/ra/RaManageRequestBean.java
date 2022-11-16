@@ -37,6 +37,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.roles.Role;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -63,7 +64,6 @@ import org.ejbca.util.KeyValuePair;
  * Backing bean for Manage Request page (for individual requests).
  *
  * @see RaManageRequestsBean
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -505,6 +505,9 @@ public class RaManageRequestBean implements Serializable {
                 } catch (SelfApprovalException e) {
                     raLocaleBean.addMessageError("view_request_page_error_self_approval");
                     logException("approve", e);
+                } catch (EndEntityExistsException e) {
+                    raLocaleBean.addMessageError("view_request_page_error_username_in_use");
+                    logException("approve", e);
                 }
             }
         }
@@ -540,6 +543,9 @@ public class RaManageRequestBean implements Serializable {
                 } catch (SelfApprovalException e) {
                     raLocaleBean.addMessageError("view_request_page_error_self_approval");
                     logException("reject", e);
+                } catch (EndEntityExistsException e) {
+                    raLocaleBean.addMessageError("view_request_page_error_username_in_use");
+                    logException("approve", e);
                 }
             }
         }

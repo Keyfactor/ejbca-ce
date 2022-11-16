@@ -281,7 +281,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         // Fetch a list of up to 100 "half-issued" certificates
         final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession.getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
         final Date now = new Date();
-        final RevocationReasons revocationReason = RevocationReasons.CERTIFICATEHOLD;
+        final RevocationReasons revocationReason = RevocationReasons.UNSPECIFIED;
         for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(incompleteIssuedCert.getCertificateProfileId());
             final List<Integer> publishers = certProfile.getPublisherList();

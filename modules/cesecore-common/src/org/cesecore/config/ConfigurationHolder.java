@@ -471,7 +471,7 @@ public final class ConfigurationHolder {
             }
         );
         
-        final InternalPeriodicReloadingTrigger trigger = new InternalPeriodicReloadingTrigger(builder, null, 1, TimeUnit.MINUTES);
+        final InternalPeriodicReloadingTrigger trigger = new InternalPeriodicReloadingTrigger(builder, null, 5, TimeUnit.SECONDS);
         trigger.start();
         
         final PropertiesConfiguration config = builder.getConfiguration();
