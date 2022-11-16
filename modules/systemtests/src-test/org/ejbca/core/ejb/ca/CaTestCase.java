@@ -55,7 +55,10 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -129,9 +132,12 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             EjbRemoteHelper.MODULE_TEST);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private static final Logger log = Logger.getLogger(CaTestCase.class);
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);    
+    private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
+    
+    private static final Logger log = Logger.getLogger(CaTestCase.class);
+    
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
 
     protected TestX509CertificateAuthenticationToken caAdmin;
@@ -648,7 +654,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     protected static void createECGOST3410Ca() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             InvalidAlgorithmException, AuthorizationDeniedException {
-        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+        final String keyspec = "GostR3410-2001-CryptoPro-B";
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECGOST3410_CA_NAME, keyspec);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
@@ -656,8 +662,19 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+      
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECGOST3410"});
+        int certificateProfileId;
+        try {
+             certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, TEST_ECGOST3410_CA_NAME, certificateProfile);
+        } catch (CertificateProfileExistsException | AuthorizationDeniedException e) {
+            certificateProfileId = certificateProfileSession.getCertificateProfileId(TEST_ECGOST3410_CA_NAME);
+        } 
+      
+
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
+                certificateProfileId, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit GOST3410 CA");
         cainfo.setPolicies(policies);
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
