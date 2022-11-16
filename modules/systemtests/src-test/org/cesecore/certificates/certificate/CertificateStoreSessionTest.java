@@ -269,7 +269,50 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			log.info("revocationdate (after rev)=" + rev.getRevocationDate());
 			assertTrue("Revocation date in future.", new Date().compareTo(rev.getRevocationDate()) >= 0);
 			assertTrue(rev.getStatus() == CertificateConstants.CERT_REVOKED);
+			assertTrue(rev.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
 		}
+		
+         reviter = revcerts.iterator();
+         Date yesterday = new Date(System.currentTimeMillis() - 24*60*60*1000);
+         while (reviter.hasNext()) {
+             Certificate tmpcert = reviter.next();
+             String fp = CertTools.getFingerprintAsString(tmpcert);
+             String issuerDn = CertTools.getIssuerDN(tmpcert);
+             BigInteger serialnumber = CertTools.getSerialNumber(tmpcert);
+             boolean result = true;
+             
+             // now revoke them again with Key Compromise
+             result = internalCertStoreSession.setRevokeStatus(roleMgmgToken, issuerDn, serialnumber,
+                     new Date(System.currentTimeMillis() + 1000_000), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+             assertFalse("Certificate revocation reason was updated even though date is in future", result);
+         
+             // now revoke them again with Key Compromise
+             internalCertStoreSession.setRevokeStatus(roleMgmgToken, issuerDn, serialnumber, new Date(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+             assertFalse("Certificate revocation reason was updated even though updated reason is not key compromise", result);
+             
+             // now revoke them again with Key Compromise
+             result = internalCertStoreSession.setRevokeStatus(roleMgmgToken, issuerDn, serialnumber, 
+                     yesterday, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+             assertTrue("Certificate revocation reason was updated even though updated reason is not key compromise", result);
+             log.debug("Revoked cert with key compromise: " + fp);
+         }
+         
+         revcerts = certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDN);
+         assertNotNull("failed to list certs", revcerts);
+         assertTrue("failed to list certs", revcerts.size() != 0);
+        
+         // Verify that cert are revoked
+         reviter = revcerts.iterator();
+         while (reviter.hasNext()) {
+             Certificate tmpcert = reviter.next();
+             String fp = CertTools.getFingerprintAsString(tmpcert);
+             CertificateInfo rev = certificateStoreSession.getCertificateInfo(fp);
+             log.info("revocationdate (after rev)=" + rev.getRevocationDate());
+             assertTrue("Revocation date was not updated.", new Date().compareTo(yesterday) != 0);
+             assertTrue(rev.getStatus() == CertificateConstants.CERT_REVOKED);
+             assertTrue(rev.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+         }
+
 	}
 
     /**
@@ -663,15 +706,23 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         assertEquals("Limited CertificateData entry was not created properly.",
                 certificateStatus3.revocationReason, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         // certificateStoreSession.updateLimitedCertificateDataStatus should be able to update limited CertificateData entries (e.g. ONHOLD→REVOKED)
-        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+        Date initialRevocationDate = new Date();
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, initialRevocationDate,
                 RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, caFingerprint);
         final CertificateStatus certificateStatus4 = certificateStoreSession.getStatus(issuerDn, serialNumber);
         assertTrue("Limited CertificateData entry was not updated properly.",
                 certificateStatus4.equals(CertificateStatus.REVOKED));
         assertEquals("Limited CertificateData entry was not updated properly.",
                 certificateStatus4.revocationReason, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, initialRevocationDate,
+             RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, caFingerprint);
+        final CertificateStatus certificateStatusRevocationResonUpdated = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Limited CertificateData entry was not updated properly.",
+              certificateStatusRevocationResonUpdated.equals(CertificateStatus.REVOKED));
+        assertEquals("Limited CertificateData entry was not updated properly.",
+                    certificateStatusRevocationResonUpdated.revocationReason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
         // certificateStoreSession.updateLimitedCertificateDataStatus should be able to remove limited CertificateData entries when REMOVE_FROM_CRL
-        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, initialRevocationDate,
                 RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, caFingerprint);
         final CertificateStatus certificateStatus5 = certificateStoreSession.getStatus(issuerDn, serialNumber);
         assertTrue("Limited CertificateData entry was not removed properly.",

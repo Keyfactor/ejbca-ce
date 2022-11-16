@@ -40,7 +40,7 @@
 	 			        <f:selectItems value="#{endEntityProfilesMBean.endEntityProfileItems}"/>
 	 			        <f:ajax event="change" execute="@this"/>
 	 			    </h:selectOneListbox>
-					<h:panelGrid style="width: 50em;" columns="2" border="0" columnClasses="gridColumnLeft, gridColumnRight">
+					<h:panelGrid style="width: 50em;" columns="3" border="0" columnClasses="gridColumnLeft,gridCenter,gridColumnRight">
 				    	<h:column>  
 							<h:commandButton 
 								id="editButton" 
@@ -48,7 +48,14 @@
 								value="#{web.text.EDITENDENTITYPROFILE}" 
 								rendered="#{not endEntityProfilesMBean.deleteInProgress}"/>
 						</h:column>
-						<h:column>
+                        <h:column>
+                            <h:commandButton 
+                                id="exportButton" 
+                                action="#{endEntityProfilesMBean.actionExportProfile}" 
+                                value="#{web.text.EXPORTENDENTITYPROFILE}" 
+                                rendered="#{not endEntityProfilesMBean.deleteInProgress}"/>
+                        </h:column>
+                        <h:column>
 				    		<h:commandButton 
 				    			id="deleteButton" 
 				    			action="#{endEntityProfilesMBean.actionDelete}" 
@@ -67,27 +74,22 @@
 							value="#{endEntityProfilesMBean.endEntityProfileName}" 
 							size="45" 
 							maxlength="255" 
-							title="web.text.NAME"/>
+							title="#{web.text.FORMAT_ID_STR}"/>
 						<h:commandButton 
 							id="addButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionAdd}" 
-							value="Add profile"/>
+							value="#{web.text.ADDPROFILE}"/>
 						<h:commandButton 
 							id="renameButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionRename}" 
-							value="Rename selected"/>
+							value="#{web.text.RENAME_SELECTED}"/>
 						<h:commandButton 
 							id="cloneButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionCloneProfile}" 
-							value="Clone selected"/>
-						<h:commandButton 
-							id="exportButton" 
-							class="buttonstyle" 
-							action="#{endEntityProfilesMBean.actionExportProfile}" 
-							value="Export selected"/>
+							value="#{web.text.CLONE_SELECTED}"/>
 	 				</h:panelGroup>	
 				</h:panelGroup>
 			</h:form>
@@ -119,7 +121,7 @@
 							id="exportAllProfilesButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionExportProfiles}" 
-							value="#{web.text.EXPORTROFILES}"/>
+							value="#{web.text.EXPORTPROFILES}"/>
 					</h:panelGrid>
 				</h:panelGroup>
 			</h:form>
