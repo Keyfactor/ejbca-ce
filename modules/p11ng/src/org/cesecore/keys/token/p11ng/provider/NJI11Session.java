@@ -19,41 +19,65 @@ public class NJI11Session {
 
     private boolean findObjectsStarted;
     private boolean signStarted;
+    private boolean closed;
 
     public NJI11Session(long id) {
         this.id = id;
     }
 
     public long getId() {
+        checkOpen();
         return id;
     }
 
     protected void markOperationFindObjectsStarted() {
+        checkOpen();
         this.findObjectsStarted = true;
     }
 
     protected void markOperationFindObjectsFinished() {
+        checkOpen();
         this.findObjectsStarted = false;
     }
 
     protected void markOperationSignStarted() {
+        checkOpen();
         this.signStarted = true;
     }
 
     protected void markOperationSignFinished() {
+        checkOpen();
         this.signStarted = false;
     }
 
+    protected void markClosed() {
+        checkOpen();
+        this.closed = true;
+    }
+
     public boolean isOperationFindObjectsStarted() {
+        checkOpen();
         return findObjectsStarted;
     }
 
     public boolean isOperationSignStarted() {
+        checkOpen();
         return signStarted;
     }
 
     public boolean hasOperationsActive() {
+        checkOpen();
         return findObjectsStarted || signStarted;
+    }
+
+    public boolean isClosed() {
+        return closed;
+    }
+
+    private void checkOpen() {
+        if (isClosed()) {
+            throw new IllegalStateException("Session closed already: " + id);
+        }
     }
 
     @Override

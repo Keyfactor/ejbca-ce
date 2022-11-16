@@ -207,7 +207,7 @@
       	<tr>
       	
       	<td>
-	      	<a href="//www.ejbca.org/"><img src="$relativePath/images/banner_ejbca-public.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"></a>
+	      	<a href="//www.ejbca.org/"><img src="$relativePath/images/keyfactor-ejbca-logo.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"></a>
       	</td>
       	<td style="text-align:right">
     	  	

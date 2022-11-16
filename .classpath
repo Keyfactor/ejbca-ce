@@ -168,10 +168,14 @@
 	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.7.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.19.jar"/>
+	<classpathentry kind="lib" path="lib/kerb4j-server-common-0.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/kerb-core-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/kerby-asn1-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/kerb-crypto-2.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-3.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/dnssecjava-2.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.activation-api-2.1.0.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
@@ -212,10 +216,10 @@
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-171.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk18on-171.jar"/>
-	<classpathentry kind="lib" path="lib/bctls-jdk18on-171.jar"/>
-	<classpathentry kind="lib" path="lib/bcutil-jdk18on-171.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-172.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk18on-172.jar"/>
+	<classpathentry kind="lib" path="lib/bctls-jdk18on-172.jar"/>
+	<classpathentry kind="lib" path="lib/bcutil-jdk18on-172.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.4.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-5.1.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/classmate-1.5.1.jar"/>
@@ -237,12 +241,12 @@
 	<classpathentry kind="lib" path="lib/ext/test/powermock/javassist-3.24.0-GA.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
-	<classpathentry kind="lib" path="lib/commons-text-1.9.jar"/>
+	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.4.8.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.21.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.12.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-3.3.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-3.3.12.jar"/>

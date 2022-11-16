@@ -145,15 +145,14 @@ public class DistinguishedName extends LdapName {
                 }
             } else {
                 if (useEntityEmailField && override) {
-                    boolean found = false;
+                    String value = null;
                     for (Iterator<String> dnIt = dnMap.keySet().iterator(); dnIt.hasNext();) {
                         final String key = (String) dnIt.next();
                         if (translateComponentName(key).equalsIgnoreCase(localRdn.getType())) {
-                            found = true;
+                            value = dnMap.get(key);
                         }
                     }
-                    if (found) {
-                        final String value = (String) dnMap.get(localRdn.getType().toUpperCase());
+                    if (value!=null) {
                         try {
                             localRdns.add(new Rdn(translateComponentName(localRdn.getType().toUpperCase()), value));
                         } catch (InvalidNameException e) {

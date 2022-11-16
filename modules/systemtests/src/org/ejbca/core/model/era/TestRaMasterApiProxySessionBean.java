@@ -27,6 +27,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 
 /**
@@ -67,6 +68,25 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
     public boolean addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd)
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         return raMasterApiProxyBean.addUser(authenticationToken, endEntity, clearpwd);
+    }
+
+    @Override
+    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+            throws AuthorizationDeniedException, EjbcaException {
+        return raMasterApiProxyBean.createCertificate(authenticationToken, endEntityInformation);
+    }
+
+    @Override
+    public byte[] enrollAndIssueSshCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
+            SshRequestMessage sshRequestMessage) throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
+        return raMasterApiProxyBean.enrollAndIssueSshCertificate(authenticationToken, endEntity,
+                sshRequestMessage);
+    }
+    
+    @Override
+    public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken,
+            RaCertificateSearchRequest raCertificateSearchRequest) {
+        return raMasterApiProxyBean.searchForCertificates(authenticationToken, raCertificateSearchRequest);
     }
 
 }
