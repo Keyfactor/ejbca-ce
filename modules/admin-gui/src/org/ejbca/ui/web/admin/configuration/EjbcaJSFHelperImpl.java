@@ -138,7 +138,7 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
                  ejbcawebbean = SessionBeans.getEjbcaWebBean(session);
                  ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), AccessRulesConstants.ROLE_ADMINISTRATOR);
              } catch (Exception e) {
-                 log.error(e);
+                 log.error("Failed to initialize EjbcaWebBean", e);
              }
          }
          return ejbcawebbean;
@@ -153,7 +153,7 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
                  ejbcawebbean = SessionBeans.getEjbcaWebBean(session);
                  ejbcawebbean.initialize_errorpage((HttpServletRequest) ctx.getExternalContext().getRequest());
              } catch (Exception e) {
-                 log.error(e);
+                 log.error("Failed to initialize EjbcaWebBean for error page", e);
              }
          }
          return ejbcawebbean;

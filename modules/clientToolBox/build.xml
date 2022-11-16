@@ -53,6 +53,7 @@
 		<path location="${mod.systemtest-interface.lib}"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.p11ng.lib}" />
 		<pathelement location="${mod.ejbca-common.lib}"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 	</path>

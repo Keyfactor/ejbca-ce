@@ -219,11 +219,11 @@ public class PerformanceTest {
         printStream.println("Statistic will be written to standard output each " + this.STATISTIC_UPDATE_PERIOD_IN_SECONDS + " second.");
         printStream.println("The test was started at " + new Date());
         printStream.format("%d threads will be started and %d number of tests will be performed. Each thread will wait between 0 and %d milliseconds between each test.%n", numberOfThreads, numberOfTests, waitTime);
-        synchronized (this) {
-            wait();
+        for (int i = 0; i < numberOfThreads; i++) {
+            threads[i].join();
         }
         printStream.format("Test exited with %d number of failures.%n", statistic.getNrOfFailures());
-        System.exit(statistic.getNrOfFailures());
+        System.exit(statistic.getNrOfFailures() == 0 ? 0 : 1); // Exit code 0 = success. Other numbers = failure
     }
 
     private class Statistic implements Runnable { // NOPMD this is a standalone test, not run in jee app

@@ -380,7 +380,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 try {
                     cainfo = impl.isExtraCertIssuedByVendorCA(admin, this.confAlias, extraCertPath);
                     if (cainfo == null) {
-                        this.errorMessage = "The certificate in extraCert field is not issued by any of the configured Vendor CAs: " + cmpConfiguration.getVendorCA(confAlias);
+                        this.errorMessage = "The certificate in extraCert field is not issued by any of the configured Vendor CAs.";
                         return false;
                     }
                 } catch (CertificateExpiredException | CertificateNotYetValidException e) {

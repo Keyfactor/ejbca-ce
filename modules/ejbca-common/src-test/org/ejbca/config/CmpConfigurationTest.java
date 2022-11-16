@@ -13,6 +13,7 @@
 package org.ejbca.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -47,6 +48,8 @@ public class CmpConfigurationTest {
         config.setAuthenticationModule("alias2", "HMAC");
         config.setAuthenticationParameters("alias2", "foo123");
         config.setRACAName("alias2", "name1");
+        config.setVendorMode("alias1", true);
+        config.setVendorCaIds("alias1", "1:55");
         assertEquals(true, config.getAllowRAVerifyPOPO("alias1"));
         assertEquals(false, config.getAllowRAVerifyPOPO("alias2")); // default value
         assertEquals(false, config.getAllowRAVerifyPOPO("alias3")); // default value when alias does not exist
@@ -54,6 +57,9 @@ public class CmpConfigurationTest {
         assertEquals("foo123", config.getAuthenticationParameter("HMAC", "alias2"));
         assertEquals("", config.getAuthenticationParameter("dummy", "alias2"));
         assertEquals("-;-", config.getAuthenticationParameters("alias1"));
+        assertTrue(config.getVendorMode("alias1"));
+        assertEquals("1:55", config.getVendorCaIds("alias1"));
+        assertEquals("", config.getVendorCaIds("alias2"));
         
         CmpConfiguration config2 = new CmpConfiguration(config);
         config2.setAuthenticationParameters("alias2", "bar123");

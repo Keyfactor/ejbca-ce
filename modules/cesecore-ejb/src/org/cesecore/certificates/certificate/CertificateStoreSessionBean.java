@@ -62,6 +62,10 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAData;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -84,9 +88,6 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.cvc.PublicKeyEC;
 
-/**
- * @version $Id$
- */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateStoreSessionBean implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
@@ -105,6 +106,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateDataSessionLocal certificateDataSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -1175,7 +1178,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final int caid = issuerDn.hashCode();
         final String username = certificateData.getUsername();
         final Date now = new Date();
+        final boolean isX509 = certificateData.getCertificate(entityManager) instanceof X509Certificate;
 
+        // caData should not be null if configured properly
+        boolean allowedOnCa = true;
+        final CAData caData = caSession.findById(caid);
+        if(caData!=null) {
+            final CAInfo caInfo = caData.getCA().getCAInfo();
+            // external CA for CRLReader in VA
+            allowedOnCa = caInfo.isAllowChangingRevocationReason() || caInfo.getStatus() == CAConstants.CA_EXTERNAL;
+        } 
+        
         boolean returnVal = false;
         // A normal revocation
         if ( (certificateData.getStatus()!=CertificateConstants.CERT_REVOKED || certificateData.getRevocationReason()==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) &&
@@ -1192,13 +1205,29 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
+        } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
+
+            certificateData.setUpdateTime(now.getTime());
+            certificateData.setStatus(CertificateConstants.CERT_REVOKED);
+            certificateData.setRevocationReason(reason);
+
+            if (revokeDate != null) {
+                certificateData.setRevocationDate(revokeDate);
+            }
+
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+
+            returnVal = true;
         } else if (((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL))
                 && (certificateData.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
             // Unrevoke, can only be done when the certificate was previously revoked with reason CertificateHold
             // Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
             int status = CertificateConstants.CERT_ACTIVE;
             certificateData.setStatus(status);
-            certificateData.setRevocationDate(now.getTime());
+            certificateData.setRevocationDate(now.getTime()); // used in CRL getRevokedCertInfos() and Publisher willPublishCertificate() methods to process reactivated certificates
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
 
