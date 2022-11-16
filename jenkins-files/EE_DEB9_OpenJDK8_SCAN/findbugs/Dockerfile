@@ -6,7 +6,7 @@ RUN \
     export DEBIAN_FRONTEND=noninteractive ; \
     apt-get update && \
     apt-get -qq -y upgrade && \
-    apt-get -qq -y install --no-install-recommends openjdk-8-jdk-headless ant ant-optional libfindbugs-java > /dev/null && \
+    apt-get -qq -y install --no-install-recommends apt-utils procps openjdk-8-jdk-headless ant ant-optional libfindbugs-java > /dev/null && \
     apt-get -qq autoclean #&& rm -rf /var/lib/apt/lists/*
 
 ADD imports/ /opt/imports/

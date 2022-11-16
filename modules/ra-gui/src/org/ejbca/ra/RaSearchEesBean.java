@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -589,6 +590,10 @@ public class RaSearchEesBean implements Serializable {
                 return false;
             }
             @Override
+            public void changeRevocationReason(RaCertificateDetails raCertificateDetails, int newRevocationReason, Date newDate, String issuerDn) {
+                return;
+            }
+            @Override
             public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException,
                     AuthorizationDeniedException, WaitingForApprovalException,NoSuchEndEntityException, EndEntityProfileValidationException {
                 return false;
@@ -600,7 +605,7 @@ public class RaSearchEesBean implements Serializable {
         };
         List<RaCertificateDetails> certificates = new ArrayList<>();
         for (CertificateDataWrapper cdw : response.getCdws()) {
-            certificates.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, null, null, null));
+            certificates.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, null, null, null, null, null));
         }
         // Sort by date created, descending
         Collections.sort(certificates, new Comparator<RaCertificateDetails>() {

@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.rules.Timeout;
 
 /**
  * Run stress tests with ClientToolBax command healthCheckTest
@@ -27,6 +28,9 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
  * @version $Id$
  */
 public class HealthCheckTestCommandTest {
+
+    @Rule
+    public Timeout testTimeout = new Timeout(600_000); // per test case
 
     private HealthCheckTest command = new HealthCheckTest();
     private String httpReqPath;
