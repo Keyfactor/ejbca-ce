@@ -39,6 +39,9 @@
         <path location="${plugins.build-test.dir}"/>
         <path location="${mod.ejbca-ejb-interface.lib}"/>
 	<path refid="lib.commons-io.classpath"/>
+	<path location="${mod.systemtest-common.lib}"/>
+	<path location="${mod.systemtest-interface.lib}"/>
+	<path location="${mod.systemtest-ejb.lib}"/>
     </path>
 
     <target name="clean" description="Clean up this module">
