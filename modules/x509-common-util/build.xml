@@ -28,6 +28,7 @@
 		<path location="${x509-common-util.build-test.dir}"/>
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
 	</path>
 	
 	<!-- The buildservicemanifest needs additional classes in order to run. -->
@@ -54,7 +55,6 @@
 				<include name="dncomponents.properties"/>
 				<include name="profilemappings.properties"/>
 	            <include name="profilemappings_enterprise.properties"/>
-				<include name="certextensions.properties"/> <!-- Used only for upgrade to 6.4.0, file can be dropped in future editions -->
 			</fileset>
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
 		</jar>
