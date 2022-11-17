@@ -18,6 +18,7 @@
         <path refid="lib.bouncycastle.classpath"/>
         <path refid="lib.json-simple.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
+        <path refid="lib.jsch.classpath"/>
     </path>
 
     <path id="compile-ejbca.classpath">
