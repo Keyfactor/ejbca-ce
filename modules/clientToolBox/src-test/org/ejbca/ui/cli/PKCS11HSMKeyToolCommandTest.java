@@ -271,6 +271,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testA7Rsa3IsNowExistingOnToken2() {
+        assertTrue("pkcs11.token2_number is not configured in systemtests.properties", StringUtils.isNotBlank(SLOT2_ID));
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
         int numberOfTests = 35;
@@ -546,6 +547,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testC25TestKeyOnTokenByIndex() {
+        assertTrue("pkcs11.token_index is not configured in systemtests.properties", StringUtils.isNotBlank(SLOT_INDEX));
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
         int numberOfTests = 35;
@@ -556,6 +558,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testC26TestKeyOnToken2ByIndex() {
+        assertTrue("pkcs11.token2_index is not configured in systemtests.properties", StringUtils.isNotBlank(SLOT2_INDEX));
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
         int numberOfTests = 35;
