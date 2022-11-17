@@ -15,6 +15,7 @@
         <path refid="lib.commons-config.classpath"/>
         <path refid="lib.commons-lang.classpath"/><!-- Dependency of commons-config -->
         <path refid="lib.commons-logging.classpath"/><!-- Dependency of commons-config -->
+        <path refid="lib.commons-collections4.classpath"/>
         <path refid="lib.bouncycastle.classpath"/>
         <path refid="lib.json-simple.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
@@ -27,6 +28,7 @@
         <path location="${mod.ejbca-common.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
+        <path location="${mod.ejbca-common-web.lib}"/>
     </path>
 
     <path id="test.classpath">
@@ -51,6 +53,8 @@
     <target name="build" depends="compile">
         <buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher" file="${plugins.build.dir}"
             classpath="compile-ejbca.classpath"/>
+            <buildservicemanifest interface="org.ejbca.core.model.services.IWorker" file="${plugins-ee.build.dir}" 
+			classpath="compile-ejbca.classpath"/>
         <jar destfile="${mod.plugins.lib}" basedir="${plugins.build.dir}"/>
     </target>
 
