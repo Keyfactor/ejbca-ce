@@ -170,6 +170,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @After
     public void afterTest() {
+        System.setErr(originalSystemError);
         System.err.println(errStream.toString());
         errStream.reset();
     }
