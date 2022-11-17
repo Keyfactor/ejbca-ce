@@ -48,7 +48,7 @@ public class CryptoTokenTestUtils {
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CryptoTokenTestUtils.class.getSimpleName()));
     
-    private static final String Pkcs11NgCryptoTokenClassName = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
+    private static final String PKCS11NG_CRYPTO_TOKEN_CLASS_NAME = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
 
     public static final char[] SOFT_TOKEN_PIN = "foo123".toCharArray();
     private static final String PKCS11_TOKEN_PIN = "userpin1";
@@ -131,7 +131,7 @@ public class CryptoTokenTestUtils {
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, SystemTestsConfiguration.getPkcs11Library());
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, SystemTestsConfiguration.getPkcs11SlotValue("1"));
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, SystemTestsConfiguration.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey()).getKey());
-            cryptoTokenClassName = Pkcs11NgCryptoTokenClassName;
+            cryptoTokenClassName = PKCS11NG_CRYPTO_TOKEN_CLASS_NAME;
         } else {
             // For CA export tests
             cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
