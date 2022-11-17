@@ -33,6 +33,7 @@
 
     <path id="test.classpath">
         <path refid="compile-ejbca.classpath"/>
+        <path refid="lib.cert-cvc.classpath"/>
         <path refid="lib.junit.classpath"/>
         <path location="${plugins.build.dir}"/>
         <path location="${plugins.build-test.dir}"/>
