@@ -34,10 +34,10 @@
     <path id="test.classpath">
         <path refid="compile-ejbca.classpath"/>
         <path refid="lib.junit.classpath"/>
-        <path refid="lib.cert-cvc.classpath"/>
         <path location="${plugins.build.dir}"/>
         <path location="${plugins.build-test.dir}"/>
         <path location="${mod.ejbca-ejb-interface.lib}"/>
+	<path refid="lib.commons-io.classpath"/>
     </path>
 
     <target name="clean" description="Clean up this module">
@@ -53,7 +53,7 @@
     <target name="build" depends="compile">
         <buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher" file="${plugins.build.dir}"
             classpath="compile-ejbca.classpath"/>
-            <buildservicemanifest interface="org.ejbca.core.model.services.IWorker" file="${plugins-ee.build.dir}" 
+            <buildservicemanifest interface="org.ejbca.core.model.services.IWorker" file="${plugins.build.dir}" 
 			classpath="compile-ejbca.classpath"/>
         <jar destfile="${mod.plugins.lib}" basedir="${plugins.build.dir}"/>
     </target>
