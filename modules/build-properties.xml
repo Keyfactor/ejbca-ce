@@ -104,10 +104,6 @@
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
-    <property name="mod.validationtool.dist" location="${ejbca.dist.path}/validationtool" />
-    <property name="mod.validationtool.srcdist" location="${ejbca.dist.path}/validationtool-src" />
-    <property name="mod.validationtool.lib" location="${mod.validationtool.dist}/ValidationTool.jar" />
-    <property name="mod.validationtool.path" location="${mod.path}/validationtool" />
     <property name="mod.cmpHttpProxy.dist" location="${ejbca.dist.path}/cmpHttpProxy" />
     <property name="mod.cmpProxy.path" location="${mod.path}/cmpProxy" />
     <property name="mod.externalra.path" location="${mod.path}/externalra" />
