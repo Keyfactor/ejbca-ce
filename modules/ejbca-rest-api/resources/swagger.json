@@ -383,7 +383,7 @@
           "v1/certificate"
         ],
         "summary": "Revokes the specified certificate",
-        "description": "Revokes the specified certificate",
+        "description": "Revokes the specified certificate or changes revocation reason for an already revoked certificate",
         "operationId": "revokeCertificate",
         "produces": [
           "application/json"
@@ -406,7 +406,7 @@
           {
             "name": "reason",
             "in": "query",
-            "description": "Must be valid RFC5280 reason. One of\n NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE",
+            "description": "Must be valid RFC5280 reason. One of\n NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE\n\n Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.",
             "required": false,
             "type": "string"
           },
