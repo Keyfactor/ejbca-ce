@@ -31,7 +31,6 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -41,8 +40,6 @@ import org.cesecore.util.EjbRemoteHelper;
  * <p>
  * PKCS#11 tokens will be created with the properties defined in systemtests.properties, if present.
  * Otherwise defaults will be used (see systemtest.properties.sample or {@link SystemTestsConfiguration}) 
- *
- * @version $Id$
  */
 public class CryptoTokenTestUtils {
 
@@ -50,6 +47,8 @@ public class CryptoTokenTestUtils {
 
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CryptoTokenTestUtils.class.getSimpleName()));
+    
+    private static final String Pkcs11NgCryptoTokenClassName = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
 
     public static final char[] SOFT_TOKEN_PIN = "foo123".toCharArray();
     private static final String PKCS11_TOKEN_PIN = "userpin1";
@@ -132,7 +131,7 @@ public class CryptoTokenTestUtils {
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, SystemTestsConfiguration.getPkcs11Library());
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, SystemTestsConfiguration.getPkcs11SlotValue("1"));
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, SystemTestsConfiguration.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey()).getKey());
-            cryptoTokenClassName = Pkcs11NgCryptoToken.class.getName();
+            cryptoTokenClassName = Pkcs11NgCryptoTokenClassName;
         } else {
             // For CA export tests
             cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
