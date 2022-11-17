@@ -77,6 +77,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     private static final ReentrantLock executorServiceLock = new ReentrantLock(false);
     private static final AtomicInteger beanInstanceCount = new AtomicInteger(0);
     private static volatile ExecutorService executorService = null;
+    private static final String TIMEOUT_MESSAGE_INDICATOR = "timed out";
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -306,13 +307,13 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         PublishingResult intermediateResult;
         // Repeat this process as long as we actually manage to publish something
         // this is because when publishing starts to work we want to publish everything in one go, if possible.
-        // However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
-        int totalcount = 0;
+        // However, we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
+        int totalCount = 0;
         do {
             intermediateResult = publisherQueueSession.doChunk(admin, publisher);
             result.append(intermediateResult);
-            totalcount += intermediateResult.getSuccesses();
-        } while ((intermediateResult.getSuccesses() > 0) && (totalcount < 20000));
+            totalCount += intermediateResult.getSuccesses();
+        } while ((intermediateResult.getSuccesses() > 0) && (totalCount < 20000));
         return result;
     }
 
@@ -363,6 +364,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 userDataDN = voldata.getUserDN();
             }
             boolean published = false;
+            boolean connectionTimedOut = false;
 
             try {
                 if (publishType == PublisherConst.PUBLISH_TYPE_CERT) {
@@ -437,8 +439,13 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 // Publisher session have already logged this error nicely to
                 // getLogSession().log
                 log.debug(e.getMessage());
-                // We failed to publish, update failcount so we can break early if nothing succeeds but everything fails.
+                // We failed to publish, update failcount, so we can break early if nothing succeeds but everything fails.
                 result.addFailure(fingerprint, e.getMessage());
+                // We will want to break out early on timeout exceptions, to avoid delaying
+                // Publish Queue Process Service from moving on to the next publisher.
+                if (e.getMessage() != null && e.getMessage().contains(TIMEOUT_MESSAGE_INDICATOR)){
+                    connectionTimedOut = true;
+                }
             }
             if (published) {
                 if (publisher.getKeepPublishedInQueue()) {
@@ -454,6 +461,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 int tryCount = pqd.getTryCounter() + 1;
                 updateData(pqd.getPk(), pqd.getPublishStatus(), tryCount);
                 result.addFailure(fingerprint);
+            }
+            // Break out of the loop immediately if a connection timed out.
+            // Publisher is not available for now, so we don't want to get stuck here for up to 99 timeouts.
+            if (connectionTimedOut){
+                if (log.isDebugEnabled()) {
+                    log.debug("Connection timed out. Breaking out of publisher loop.");
+                }
+                break;
             }
             // If we don't manage to publish anything, but fails on all the
             // first ten ones we expect that this publisher is dead for now. We
