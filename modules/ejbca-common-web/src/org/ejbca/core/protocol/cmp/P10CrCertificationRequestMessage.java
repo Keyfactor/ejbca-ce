@@ -14,7 +14,6 @@ package org.ejbca.core.protocol.cmp;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -68,9 +67,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     private String defaultCADN = null;
     protected Date notAfter = null;
     protected Date notBefore = null;
-    
-    /** manually set public and private key, if keys have been server generated */
-    private transient KeyPair serverGenKeyPair;
     
     /** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so 
      * we can restore the PKIMessage after serialization/deserialization. */
@@ -308,15 +304,8 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
 
     @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        
-     // If we have generated a key pair by the server, we should use this one
-        if (serverGenKeyPair != null) {
-            return serverGenKeyPair.getPublic();
-        }
-        // Else, see if we can find one in the request
         final SubjectPublicKeyInfo keyInfo = getRequestSubjectPublicKeyInfo();
         if (keyInfo == null) {
-            // No public key, which may be OK if we are requesting server generated keys
             return null;
         }
         return getPublicKey(keyInfo, BouncyCastleProvider.PROVIDER_NAME);
@@ -405,16 +394,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
         final PKCS10CertificationRequest request = getRequest();
         return request.getSubjectPublicKeyInfo();
-    }
-
-    @Override
-    public void setServerGenKeyPair(KeyPair serverGenKeyPair) {
-        this.serverGenKeyPair = serverGenKeyPair;
-    }
-
-    @Override
-    public KeyPair getServerGenKeyPair() {
-        return serverGenKeyPair;
     }
 
 }
