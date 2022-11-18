@@ -11,8 +11,6 @@
     <property name="lib" value="${ejbca.home}/lib" />
     <property name="dist.dir" location="${ejbca.home}/dist" />
 	
-    <property name="hwtoken_classes" value="hwtoken"/>
-    <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
     <property name="apidoc" value="${ejbca.home}/doc/api" />
 
 	<!-- include the standard properties and paths
@@ -545,8 +543,6 @@
 		<antcall target="va_replacings_in_application.xml" inheritall="true" inheritrefs="true">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
-		<!-- This dir has to exist here -->
-		<mkdir dir="${hwtoken.class.dir}"/>
 		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
 		<condition property="bundle-hibernate-exclude" value="" else="**">
 			<isset property="bundle-hibernate-jpa"/>
@@ -715,7 +711,6 @@
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-common.jar"/>
         	<!-- Include PrimeCard HSM libraries. TODO: Test that this works. Previously the classes were included in ejbca-ejb.jar.. -->
-        	<zipfileset prefix="lib" dir="${hwtoken.class.dir}" includes="*.jar"/>
 		</ear>
     	<antcall target="signjar" inheritall="true" inheritrefs="true">
         	<param name="signjar.file" value="${caear}"/>
@@ -1037,7 +1032,6 @@
 		    	<exclude name="dist/**" />
 		    	<exclude name="out/**" />
 		    	<exclude name="p12*/**" />
-		    	<exclude name="hwtoken/**" />
 		    	<exclude name="**/*.class" />
 		    	<exclude name=".classpath" />
 		    	<exclude name=".project" />
