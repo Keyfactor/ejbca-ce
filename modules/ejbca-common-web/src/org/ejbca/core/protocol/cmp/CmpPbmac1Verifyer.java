@@ -39,8 +39,8 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * 
  * @version $Id$
  */
-public class CmpPbmac1Verifyer {
-	private static final Logger log = Logger.getLogger(CmpPbeVerifyer.class);
+public class CmpPbmac1Verifyer implements CmpMessageProtectionVerifyer {
+	private static final Logger log = Logger.getLogger(CmpPbmac1Verifyer.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
@@ -50,7 +50,7 @@ public class CmpPbmac1Verifyer {
 	final private String macOid;
 	final private int iterationCount;
 	private String lastUsedRaSecret;
-    final private BigInteger keyLength;
+    final private BigInteger dkLen;
     final private AlgorithmIdentifier prf;
 	
 	/**
@@ -78,14 +78,14 @@ public class CmpPbmac1Verifyer {
         }
         final PBKDF2Params pbkdf2Params = PBKDF2Params.getInstance(pbmac1Params.getKeyDerivationFunc().getParameters());
         this.iterationCount = pbkdf2Params.getIterationCount().intValue();
-        this.keyLength = pbkdf2Params.getKeyLength();
+        this.dkLen = pbkdf2Params.getKeyLength();
         this.prf = pbkdf2Params.getPrf();
 		final AlgorithmIdentifier macAlg = pbmac1Params.getMessageAuthScheme();
 		macOid = macAlg.getAlgorithm().getId();
 		if (log.isDebugEnabled()) {
 			log.debug("Protection type is: " + algId.getId());
 			log.debug("Iteration count is: " + iterationCount);
-            log.debug("Key length is: " + keyLength);
+            log.debug("Key length is: " + dkLen);
             log.debug("Prf (psuedo random function) is: " + prf.getAlgorithm().getId());
 			log.debug("Mac type is: " + macAlg);
 		}
@@ -131,9 +131,20 @@ public class CmpPbmac1Verifyer {
 	public int getIterationCount() {
 		return iterationCount;
 	}
+
+	public int getDkLen() {
+		return dkLen.intValue();
+	}
+
+	public String getPrfOid() {
+		return prf.getAlgorithm().getId();
+	}
 	
 	public String getLastUsedRaSecret() {
 		return lastUsedRaSecret;
 	}
 
+	public ASN1ObjectIdentifier getProtectionAlg() {
+		return pAlg.getAlgorithm();
+	}
 }

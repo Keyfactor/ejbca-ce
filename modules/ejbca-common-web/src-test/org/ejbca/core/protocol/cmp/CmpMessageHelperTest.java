@@ -180,7 +180,7 @@ public class CmpMessageHelperTest {
         final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
         try {
             byte[] protectedPkiMessageByteArray = CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage, null, "password1",
-                    macAlgId, 1026, 100000);
+                    macAlgId, 1026, 100000, macAlgId);
             final PKIMessage protectedPKIMessage = CmpMessageHelper.getPkiMessageFromBytes(protectedPkiMessageByteArray, false);
             CmpPbmac1Verifyer verifyer = new CmpPbmac1Verifyer(protectedPKIMessage);
             assertTrue("Verificaiton should succeed", verifyer.verify("password1"));
@@ -203,7 +203,7 @@ public class CmpMessageHelperTest {
         final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
         try {
             byte[] protectedPkiMessageByteArray = CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage, null, "password1",
-                    macAlgId, 1026, 100000);
+                    macAlgId, 1026, 100000, macAlgId);
             final PKIMessage protectedPKIMessage = CmpMessageHelper.getPkiMessageFromBytes(protectedPkiMessageByteArray, false);
             CmpPbmac1Verifyer verifyer = new CmpPbmac1Verifyer(protectedPKIMessage);
             assertFalse("Verificaiton should fail because password is different.", verifyer.verify("password2"));

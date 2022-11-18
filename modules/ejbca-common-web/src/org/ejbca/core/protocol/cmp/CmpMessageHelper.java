@@ -261,8 +261,8 @@ public class CmpMessageHelper {
     }
 
     public static byte[] protectPKIMessageWithPBMAC1(final PKIMessage msg, final String keyId, final String raSecret, final String macAlgId,
-            final int iterationCount, final int dkLen) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException,
-            OperatorCreationException, IOException {
+            final int iterationCount, final int dkLen, final String prf) throws NoSuchAlgorithmException, NoSuchProviderException,
+            InvalidKeyException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">protectPKIMessageWithPBMAC1()");
         }
@@ -274,27 +274,35 @@ public class CmpMessageHelper {
             head.setSenderKID(new DEROctetString(keyIdBytes));
         }
         AlgorithmIdentifier macAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(macAlgId));
+        AlgorithmIdentifier prfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(prf));
         char[] password = raSecret.toCharArray();
         byte[] saltBytes = createSenderNonce(); // generate random nonce as salt
         // Create the new protected return message
         PBMAC1Params pbMac1Params = new PBMAC1Params(
-                new AlgorithmIdentifier(PKCSObjectIdentifiers.id_PBKDF2, new PBKDF2Params(saltBytes, iterationCount, dkLen, macAlg)), macAlg);
+                new AlgorithmIdentifier(PKCSObjectIdentifiers.id_PBKDF2, new PBKDF2Params(saltBytes, iterationCount, dkLen, prfAlg)), macAlg);
         AlgorithmIdentifier protectionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_PBMAC1, pbMac1Params);
         head.setProtectionAlg(protectionAlg);
         PKIHeader pkiHeader = head.build();
         // Do the mac
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); // TODO: This should probably be somewhere else
-        byte[] protectedBytes = getProtectedBytes(pkiHeader, msg.getBody());
-        MacCalculator mac = new JcePBMac1CalculatorBuilder(pbMac1Params).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(password);
-        mac.getOutputStream().write(protectedBytes, 0, protectedBytes.length);
-        byte[] out = mac.getMac();
-        DERBitString bs = new DERBitString(out);
-
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("<protectPKIMessageWithPBMAC1()");
+        final byte[] protectedBytes = getProtectedBytes(pkiHeader, msg.getBody());
+        MacCalculator mac;
+        byte[] out = null;
+        try {
+            mac = new JcePBMac1CalculatorBuilder(pbMac1Params).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(password);
+            mac.getOutputStream().write(protectedBytes, 0, protectedBytes.length);
+            out = mac.getMac();
+            DERBitString bs = new DERBitString(out);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("<protectPKIMessageWithPBMAC1()");
+            }
+            // Return response as byte array
+            return pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
+        } catch (IOException | OperatorCreationException e) {
+            LOG.error(e.getLocalizedMessage(), e);
+            throw new InvalidKeyException(e);
         }
-        // Return response as byte array
-        return pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
+
     }
         
     public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId,
