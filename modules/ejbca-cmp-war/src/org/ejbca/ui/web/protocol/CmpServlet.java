@@ -46,6 +46,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ConcurrentCache;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -63,6 +64,8 @@ import org.ejbca.ui.web.pub.ServletUtils;
  */
 public class CmpServlet extends HttpServlet {
 
+    public static final int CERTIFICATE_CACHE_VALIDITY = 60000;
+    public static final int CACHE_TIMEOUT = 5000;
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CmpServlet.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -72,7 +75,9 @@ public class CmpServlet extends HttpServlet {
     
     private static final String DEFAULT_CMP_ALIAS = "cmp";
     private AuthenticationToken authenticationToken;
-    
+
+    private ConcurrentCache<String, X509Certificate> extraCertIssuerCache = new ConcurrentCache<String, X509Certificate>();
+
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
@@ -102,7 +107,7 @@ public class CmpServlet extends HttpServlet {
                 return;
             }
             final String alias = getAlias(request.getPathInfo());
-            if(alias.length() > 32) {
+            if (alias.length() > 32) {
                 log.info("Unaccepted alias more than 32 characters.");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unaccepted alias more than 32 characters.");
                 return;
@@ -406,14 +411,43 @@ public class CmpServlet extends HttpServlet {
         return pkimsg;
     }
 
-    private X509Certificate getIssuerCertificate(String caName) {
+    private X509Certificate getIssuerCertificate(final String subjectDN) {
+
+        ConcurrentCache<String, X509Certificate>.Entry cacertEntry = extraCertIssuerCache.openCacheEntry(subjectDN, CACHE_TIMEOUT); // should never time out, unless a very small (< 100ms) timeout is used
+        if (cacertEntry == null) {
+            String msg = "Timed out waiting other thread to fetch certificate issuer's certificate from cache";
+            log.info(msg);
+        }
+
         try {
-            Collection<CertificateWrapper> lastCaChain = raMasterApiProxyBean.getLastCaChain(authenticationToken, caName);
-            return (X509Certificate) lastCaChain.iterator().next().getCertificate();
-        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA name: " + caName;
+            // If the CA cert is in the cache, use that CA cert
+            if ((cacertEntry != null) && (cacertEntry.isInCache())) {
+                X509Certificate cacert = cacertEntry.getValue();
+                log.info("Found CA certificate with SubjectDN " + subjectDN + " in the cache");
+                return cacert;
+            }
             if (log.isDebugEnabled()) {
-                log.debug(msg + " - " + e.getLocalizedMessage());
+                log.debug("Did not find CA certificate with SubjectDN " + subjectDN + " in the cache. Asking from RaMasterApi");
+            }
+
+            try {
+                Collection<CertificateWrapper> lastCaChain = raMasterApiProxyBean.getLastCaChain(authenticationToken, subjectDN);
+                X509Certificate cacert = (X509Certificate) lastCaChain.iterator().next().getCertificate();
+                if (cacertEntry != null) { // put the CA cert in the cache
+                    cacertEntry.putValue(cacert);
+                    cacertEntry.setCacheValidity(CERTIFICATE_CACHE_VALIDITY);
+                    return cacert;
+                }
+            } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+                String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA name: " + subjectDN;
+                if (log.isDebugEnabled()) {
+                    log.debug(msg + " - " + e.getLocalizedMessage());
+                }
+            }
+
+        } finally {
+            if (cacertEntry != null) {
+                cacertEntry.close();
             }
         }
         return null;
