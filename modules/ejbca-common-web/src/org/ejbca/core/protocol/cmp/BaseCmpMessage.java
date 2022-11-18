@@ -43,11 +43,19 @@ public abstract class BaseCmpMessage implements Serializable {
 	private transient GeneralName sender = null;	// GeneralName is not Serializable
 	private byte[] senderBytes = null;
 	private String protectionType = null;
+	// pbe parameters
 	private String pbeDigestAlg = null;
 	private String pbeMacAlg = null;
 	private int pbeIterationCount = 1024;
 	private String pbeKeyId = null;
 	private String pbeKey = null;
+	// pbmac1 parameters
+	private String pbmac1PrfAlg = null;
+	private String pbmac1MacAlg = null;
+	private int pbmac1IterationCount = 10000;
+	private String pbmac1KeyId = null;
+	private String pbmac1Key = null;
+	private int pbmac1DkLen = 4096;
 
 	private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
 	private boolean includeCaCert = true; // True because backward compatibility.
@@ -151,6 +159,33 @@ public abstract class BaseCmpMessage implements Serializable {
 	}
 	public int getPbeIterationCount() {
 		return pbeIterationCount;
+	}
+	public String getPbmac1PrfAlg() {
+		return pbmac1PrfAlg;
+	}
+	public String getPbmac1Key() {
+		return pbmac1Key;
+	}
+	public String getPbmac1KeyId() {
+		return pbmac1KeyId;
+	}
+	public String getPbmac1MacAlg() {
+		return pbmac1MacAlg;
+	}
+	public int getPbmac1IterationCount() {
+		return pbmac1IterationCount;
+	}
+	public int getPbmac1DkLen() {
+		return pbmac1DkLen;
+	}
+	public void setPbmac1Parameters(final String keyId, final String key, final String prfAlg, final String macAlg, final int iterationCount,
+			final int dkLen) {
+		this.pbmac1KeyId = keyId;
+		this.pbmac1Key = key;
+		this.pbmac1PrfAlg = prfAlg;
+		this.pbmac1MacAlg = macAlg;
+		this.pbmac1IterationCount = iterationCount;
+		this.pbmac1DkLen = dkLen;
 	}
 
 	/**
