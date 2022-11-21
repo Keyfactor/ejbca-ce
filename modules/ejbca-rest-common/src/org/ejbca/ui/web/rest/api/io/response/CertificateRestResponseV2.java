@@ -66,6 +66,16 @@ public class CertificateRestResponseV2 {
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("endEntityProfileId")
     private Integer endEntityProfileId;
+    
+    @ApiModelProperty(value = "Certificate Profile Name", example = "ENDUSER")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("certificateProfile")
+    private String certificateProfile;
+
+    @ApiModelProperty(value = "End Entity Profile Name", example = "EMPTY")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("endEntityProfile")
+    private String endEntityProfile;
 
     @ApiModelProperty(value = "Date at which certificate became valid", example = "1659952800011")
     @JsonInclude(JsonInclude.Include.ALWAYS)
@@ -140,6 +150,8 @@ public class CertificateRestResponseV2 {
         this.subjectKeyId = builder.subjectKeyId;
         this.certificateProfileId = builder.certificateProfileId;
         this.endEntityProfileId = builder.endEntityProfileId;
+        this.certificateProfile = builder.certificateProfile;
+        this.endEntityProfile = builder.endEntityProfile;
         this.expireDate = builder.expireDate;
         this.notBefore = builder.notBefore;
         this.revocationDate = builder.revocationDate;
@@ -200,6 +212,14 @@ public class CertificateRestResponseV2 {
     public Integer getEndEntityProfileId() {
         return endEntityProfileId;
     }
+    
+    public String getCertificateProfile() {
+        return certificateProfile;
+    }
+
+    public String getEndEntityProfile() {
+        return endEntityProfile;
+    }
 
     public Long getNotBefore() {
         return notBefore;
@@ -259,6 +279,8 @@ public class CertificateRestResponseV2 {
         private String subjectKeyId;
         private Integer certificateProfileId;
         private Integer endEntityProfileId;
+        private String certificateProfile;
+        private String endEntityProfile;
         private Long notBefore;
         private Long expireDate;
         private Long revocationDate;
@@ -313,6 +335,16 @@ public class CertificateRestResponseV2 {
         
         public CertificateRestResponseBuilderV2 setEndEntityProfileId(Integer id) {
             this.endEntityProfileId = id;
+            return this;
+        }
+        
+        public CertificateRestResponseBuilderV2 setCertificateProfile(String name) {
+            this.certificateProfile = name;
+            return this;
+        }
+        
+        public CertificateRestResponseBuilderV2 setEndEntityProfile(String name) {
+            this.endEntityProfile = name;
             return this;
         }
         
