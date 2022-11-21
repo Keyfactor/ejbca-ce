@@ -221,6 +221,7 @@ import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeCertificateDataWrapper;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeChallengeDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeConfigurationSessionLocal;
@@ -1035,6 +1036,156 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         retval.add(cdw);
         appendCaChain(retval, cdw.getCertificate());
         return retval;
+    }
+    
+    @Override
+    public List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash) {
+        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
+        if (Objects.isNull(cdw) || isNotAuthorizedToCert(authenticationToken, cdw)) {
+            return Collections.emptyList();
+        }
+        
+        String issuerDn = CertTools.getIssuerDN(cdw.getCertificate());
+        CAInfo internalCaInfo = caSession.getCAInfoInternal(issuerDn.hashCode());
+        if(!(internalCaInfo instanceof X509CAInfo)) {
+            return searchForCertificateChain(authenticationToken, fingerprint);
+        }
+        X509CAInfo caInfo = (X509CAInfo) internalCaInfo;
+        PublicKey currentCaPublicKey = caInfo.getCertificateChain().get(0).getPublicKey();
+        boolean signedByCurrentKey = true;
+        try {
+            cdw.getCertificate().verify(currentCaPublicKey);
+        } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
+            log.debug("Certificate with fingerprint: " + fingerprint + " signed by old CA keys.");
+            signedByCurrentKey = false;
+        }
+        List<CertificateWrapper> retval = new ArrayList<>();
+        final List<String> alternateAliases = new ArrayList<>();
+        
+        if (caInfo.getAlternateCertificateChains()!=null && !caInfo.getAlternateCertificateChains().isEmpty()) {
+            for (String rootSubjectDn: caInfo.getAlternateCertificateChains().keySet()) {
+                alternateAliases.add(CertTools.getFingerprintAsString(rootSubjectDn.trim().getBytes()));
+            }
+        }
+        
+        if (signedByCurrentKey) {
+            if (StringUtils.isEmpty(rootSubjectDnHash) || alternateAliases.isEmpty()) {
+                for (Certificate cert: caInfo.getCertificateChain()) {
+                    retval.add(EJBTools.wrap(cert));
+                }
+            } else {
+                boolean chainFound = false;
+                outer:
+                for (Entry<String, List<String>> entry: caInfo.getAlternateCertificateChains().entrySet()) {
+                    String curRootSubjectDnHash = CertTools.getFingerprintAsString(entry.getKey().trim().getBytes());
+                    if (rootSubjectDnHash.equalsIgnoreCase(curRootSubjectDnHash)) {
+                        chainFound = true;
+                        for (String fp : entry.getValue()) {
+                            // cross CA certificates are always stored in local db in CA node where the certs were uploaded
+                            CertificateDataWrapper caCertWrapper = certificateStoreSession.getCertificateData(fp);
+                            if(CertTools.getNotAfter(caCertWrapper.getCertificate()).before(new Date())) {
+                                break outer;
+                            }
+                            retval.add(EJBTools.wrap(caCertWrapper.getCertificate()));
+                        }
+                        break;
+                    }
+                }
+                
+                if (!chainFound) { // fallback to default, if not found or cross chain is expired
+                    for (Certificate cert: caInfo.getCertificateChain()) {
+                        retval.add(EJBTools.wrap(cert));
+                    } 
+                }
+            }
+             
+            // first one(leaf) is AcmeCertificateDataWrapper extending CertificateDataWrapper containing alternateAliases
+            AcmeCertificateDataWrapper leafCert = new AcmeCertificateDataWrapper(cdw);
+            leafCert.setAlternateChainAliases(alternateAliases);
+            retval.add(0, leafCert);
+                
+        } else {
+            // if old certificate i.e. CA rekeyed in meantime, alternate chains are not needed
+            String defaultRootSubjectDnHash = CertTools.getFingerprintAsString(
+                        CertTools.getIssuerDN(caInfo.getCertificateChain().get(caInfo.getCertificateChain().size()-1)).getBytes());
+            if (StringUtils.isEmpty(rootSubjectDnHash)) {
+                rootSubjectDnHash = defaultRootSubjectDnHash;
+            }
+            retval = appendRetiredCaChain(cdw, rootSubjectDnHash, defaultRootSubjectDnHash);
+            if(retval.isEmpty()) {
+                return searchForCertificateChain(authenticationToken, fingerprint);
+            }
+        }
+        return retval;
+    }
+    
+    private List<CertificateWrapper> appendRetiredCaChain(
+            CertificateWrapper endEntityCertificate, String rootSubjectDnHash, String defaultRootSubjectDnHash) {
+        
+        List<CertificateWrapper> defaultChain = new ArrayList<>();
+        // leaf certificate has least validity -> shortest range
+        Date notBefore = CertTools.getNotBefore(endEntityCertificate.getCertificate());
+        Date notAfter = CertTools.getNotAfter(endEntityCertificate.getCertificate());
+        
+        List<List<CertificateWrapper>> certificateChains = new ArrayList<>();
+        List<CertificateWrapper> leafCertificate = new ArrayList<>();
+        leafCertificate.add(endEntityCertificate);
+        certificateChains.add(leafCertificate);
+        
+        for(int level=0; level<10; level++) {
+            int candidateCertChainsSize = certificateChains.size();
+            for(int i=0; i<candidateCertChainsSize; i++) {
+                List<CertificateWrapper> curCertList = certificateChains.get(i);
+                Certificate certificate = curCertList.get(curCertList.size()-1).getCertificate();
+                final String issuerDN = CertTools.getIssuerDN(certificate);
+                
+                final Collection<Certificate> caCerts = certificateStoreSession.findCertificatesBySubject(issuerDN);
+                if (CollectionUtils.isEmpty(caCerts)) {
+                    log.info("No certificate found for CA with subjectDN: "+issuerDN);
+                    continue;
+                }
+                for (final Certificate cert : caCerts) {
+                    
+                    if (CertTools.getNotBefore(cert).after(notBefore) || 
+                            CertTools.getNotAfter(cert).before(notAfter)) {
+                        continue;
+                    }
+                    
+                    try {
+                        certificate.verify(cert.getPublicKey());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    
+                    if(CertTools.isSelfSigned(cert)) {
+                        String curRootDnHash = CertTools.getFingerprintAsString(CertTools.getIssuerDN(cert).getBytes());
+                        if(curRootDnHash.equalsIgnoreCase(rootSubjectDnHash)) {
+                            curCertList.add(EJBTools.wrap(cert));
+                            return curCertList;
+                        } else if (curRootDnHash.equalsIgnoreCase(defaultRootSubjectDnHash)){
+                            // backup, if contemporary cross chain was absent
+                            List<CertificateWrapper> appendedCertChain = new ArrayList<>();
+                            appendedCertChain.addAll(curCertList);
+                            appendedCertChain.add(EJBTools.wrap(cert));
+                            defaultChain = appendedCertChain;
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    
+                    List<CertificateWrapper> appendedCertChain = new ArrayList<>();
+                    appendedCertChain.addAll(curCertList);
+                    appendedCertChain.add(EJBTools.wrap(cert));
+                    certificateChains.add(appendedCertChain);
+                }
+            }
+            for(int i=0; i<candidateCertChainsSize; i++) {
+                certificateChains.remove(0); // keep removing first one N times
+            }
+        }
+            
+        return defaultChain;
     }
 
     @Override
