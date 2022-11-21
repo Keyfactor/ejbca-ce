@@ -25,6 +25,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletInputStream;
@@ -34,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -44,9 +46,12 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ConcurrentCache;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
@@ -56,6 +61,8 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
+import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
+import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -171,8 +178,17 @@ public class CmpServlet extends HttpServlet {
                         return;
                     }
                 }
-
-                validateMAC();
+                if (config.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_HMAC) && header.getProtectionAlg().getAlgorithm().equals(CMPObjectIdentifiers.passwordBasedMac)) {
+                    try {
+                        validateMAC(pkiMessage, alias, config, messageInformation);
+                    }catch (CmpServletValidationError cmpServletValidationError) {
+                        byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(),
+                                FailInfo.BAD_REQUEST, cmpServletValidationError.getMessage()).getResponseMessage();
+                        ServletUtils.addCacheHeaders(response);
+                        RequestHelper.sendBinaryBytes(errorMessage, response, "application/pkixcmp", null);
+                        return;
+                    }
+                }
                 validateCertificateValidity();
                 validateCertificateChainValidity();
                 validateCertificateChainStatus();
@@ -347,13 +363,70 @@ public class CmpServlet extends HttpServlet {
     /**
      * The MAC contained in the PKIProtection data structure must be cryptographically verified on the CMP proxy if “DH Key Pairs” is used as protection.
      * The DH cert/key information must be stored in the extraCerts structure.
-     *
+     * (We currently only support PBE)
+     * 
      * CmpProxyServlet.validateCmpMessage()
+     * @throws CmpServletValidationError 
      */
-    private boolean validateMAC(){
-        return true;
+    private void validateMAC(PKIMessage pkiMessage, String alias, CmpConfiguration cmpConfiguration, String messageInformation) throws CmpServletValidationError{
+        final boolean raMode = cmpConfiguration.getRAMode(alias);
+        final String caname = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
+        String passwd;
+        CmpPbeVerifyer verifier;
+        try {
+            verifier = new CmpPbeVerifyer(pkiMessage);
+        } catch (InvalidCmpProtectionException e) {
+            //Safe to ignore, because we've already checked this case.
+            throw new IllegalStateException(e);
+        }
+        if (raMode) {
+            //Ra Mode. Is the secret specified in the cmp alias? (Formerly specified in cmpProxy.properties)
+            passwd = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);
+            //Is the secret specified in CA as an ra shared secret? (Formerly configured in cmpProxy.properties)
+            if (passwd.isEmpty() || passwd.equals("-")) {
+                final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found in alias, "
+                        + "trying to fetch raSharedSecret from CA.";
+                log.debug(logmsg);
+                List<CAInfo> cainfolist = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
+                for (CAInfo cainfo : cainfolist ) {
+                    if (cainfo.getName().equals(caname)) {
+                        X509CAInfo x509cainfo = (X509CAInfo)cainfo;
+                        passwd = x509cainfo.getCmpRaAuthSecret();
+                    }
+                }
+            }
+        } else {
+            // Client Mode
+            // Extract end entity username from specified DN part to get a user clear text password for authentication of the PKIMessage
+            // The password was formerly specified in cmpProxy.properties
+            String subjectDN = pkiMessage.getHeader().getSender().toString();
+            String extractedUsername = CertTools.getPartFromDN(subjectDN, cmpConfiguration.getExtractUsernameComponent(alias));
+            if (log.isDebugEnabled()) {
+                log.debug("Username ("+extractedUsername+") was extracted from the '" + cmpConfiguration.getExtractUsernameComponent(alias) + "' part of the subjectDN provided in the request.");
+            }
+            EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(authenticationToken, extractedUsername);
+            passwd = endEntityInformation.getPassword();
+        }
+        if (passwd == null) {
+            final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found.";
+            log.info(logmsg);
+            // Use a shorter error messages that is returned to client, because we don't want to leak any information about configured secrets
+            final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Pbe HMAC field was encountered, but HMAC did not verify",
+                    messageInformation);
+            throw new CmpServletValidationError(errmsg);
+        }
+        try {
+            if (verifier.verify(passwd) == false) {
+                String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret");
+                log.info(msg);
+                throw new CmpServletValidationError(msg);
+            }
+        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            String msg = intres.getLocalizedMessage("cmp.errorauthmessage", messageInformation, e.getMessage());
+            log.info(msg);
+            throw new CmpServletValidationError(msg);
+        }
     }
-
 
     /**
      * The validity interval of the certificate must be checked
