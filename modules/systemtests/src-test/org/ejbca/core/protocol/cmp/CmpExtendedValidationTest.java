@@ -363,6 +363,32 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         shouldBeRejected();
         log.trace("<testRejectSignedMessageWithWrongCertificate");
     }
+    
+    /**
+     * This test will verify that a message signed with an expired certificate is rejected
+     */
+    @Test
+    public void testMessageSignedByExpiredCertRejected() throws Exception {
+        log.trace(">testMessageSignedByExpiredCertRejected");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_ACTIVE, true);
+        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
+
+        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: Could not validate certificate: certificate expired on 19700101000012GMT+00:00.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+        log.trace("<testMessageSignedByExpiredCertRejected");
+    }
+
 
     // TODO Enable if we add support for multiple CAs. Otherwise it should be removed.
 //    /**
@@ -416,7 +442,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
-        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_REVOKED);
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_REVOKED, false);
         final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedByRevokedCertMessage");
 
         final ArrayList<Certificate> signCertColl = new ArrayList<>();
@@ -464,15 +490,21 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     }
 
     private X509Certificate createSigningCertificate(final String issuerDn, final KeyPair signingKeyPair, final PrivateKey issuerKey) throws Exception {
-        return createSigningCertificate(issuerDn, SIGNINGCERT_EE, signingKeyPair, issuerKey, CertificateConstants.CERT_ACTIVE);
+        return createSigningCertificate(issuerDn, SIGNINGCERT_EE, signingKeyPair, issuerKey, CertificateConstants.CERT_ACTIVE, false);
     }
 
-    private X509Certificate createSigningCertificate(final String issuerDn, final String username, final KeyPair signingKeyPair, final PrivateKey issuerKey, final int certStatus) throws Exception {
+    private X509Certificate createSigningCertificate(final String issuerDn, final String username, final KeyPair signingKeyPair, final PrivateKey issuerKey, 
+            final int certStatus, boolean isExpired) throws Exception {
         // Create the signing certificate, signed by the ca certificate
         Date firstDate = new Date();
-        firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
         Date lastDate = new Date();
-        lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
+        if (isExpired) {
+            firstDate.setTime(10000);
+            lastDate.setTime(12000);
+        } else {
+            firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
+            lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
+        }
         byte[] serno = new byte[8];
         // This is a test, so randomness does not have to be secure (CSPRNG)
         Random random = new Random();
@@ -491,6 +523,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         grantAccessToCert(cert);
         return cert;
     }
+
 
     private void grantAccessToCert(final Certificate cert) throws Exception {
         roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
