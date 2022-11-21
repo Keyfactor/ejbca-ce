@@ -459,7 +459,7 @@ public class CmpMessageHelper {
      * @return IResponseMessage that can be sent to user
      */
     public static CmpErrorResponseMessage createErrorMessage(BaseCmpMessage msg, FailInfo failInfo, String failText, int requestId, int requestType,
-            CmpPbeVerifyer verifyer, String keyId, String responseProt) {
+            CmpMessageProtectionVerifyer verifyer, String keyId, String responseProt) {
         final CmpErrorResponseMessage cresp = new CmpErrorResponseMessage();
         cresp.setRecipientNonce(msg.getSenderNonce());
         cresp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
@@ -476,13 +476,24 @@ public class CmpMessageHelper {
         cresp.setRequestId(requestId);
         cresp.setRequestType(requestType);
         // Set all protection parameters, this is another message than if we generated a cert above
-        if (verifyer != null) {
-            final String pbeDigestAlg = verifyer.getOwfOid();
-            final String pbeMacAlg = verifyer.getMacOid();
-            final int pbeIterationCount = verifyer.getIterationCount();
-            final String raAuthSecret = verifyer.getLastUsedRaSecret();
-            if (StringUtils.equals(responseProt, "pbe") && (pbeDigestAlg != null) && (pbeMacAlg != null) && (raAuthSecret != null)) {
+        if (verifyer != null && StringUtils.equals(responseProt, "pbe") && verifyer instanceof CmpPbeVerifyer) {
+            CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
+            final String pbeDigestAlg = pbeVerifyer.getOwfOid();
+            final String pbeMacAlg = pbeVerifyer.getMacOid();
+            final int pbeIterationCount = pbeVerifyer.getIterationCount();
+            final String raAuthSecret = pbeVerifyer.getLastUsedRaSecret();
+            if ((pbeDigestAlg != null) && (pbeMacAlg != null) && (raAuthSecret != null)) {
                 cresp.setPbeParameters(keyId, raAuthSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+            }
+        } else if (verifyer != null && StringUtils.equals(responseProt, "pbe") && verifyer instanceof CmpPbmac1Verifyer) {
+            CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
+            final String pbmac1PrfAlg = pbmac1Verifyer.getPrfOid();
+            final String pbmac1MacAlg = pbmac1Verifyer.getMacOid();
+            final int pbmac1IterationCount = pbmac1Verifyer.getIterationCount();
+            final int pbmac1DkLen = pbmac1Verifyer.getDkLen();
+            final String raAuthSecret = pbmac1Verifyer.getLastUsedRaSecret();
+            if ((pbmac1PrfAlg != null) && (pbmac1MacAlg != null) && (raAuthSecret != null)) {
+                cresp.setPbmac1Parameters(keyId, raAuthSecret, pbmac1PrfAlg, pbmac1MacAlg, pbmac1IterationCount, pbmac1DkLen);
             }
         }
         try {
