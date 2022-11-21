@@ -257,18 +257,36 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 
 		if (StringUtils.equals(responseProtection, "pbe")) {
 		    final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
-		    final String owfAlg = hmacmodule.getCmpPbeVerifyer().getOwfOid();
-		    final String macAlg = hmacmodule.getCmpPbeVerifyer().getMacOid();
-		    final int iterationCount = 1024;
-		    final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
-		    
-		    if (owfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
-		        // Set all protection parameters
-		        if (LOG.isDebugEnabled()) {
-		            LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
-		        }
-		        rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
-		    }
+			CmpMessageProtectionVerifyer verifyer = hmacmodule.getPasswordBasedProtectionVerifyer();
+			if (verifyer instanceof CmpPbeVerifyer) {
+				final CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
+				final String owfAlg = pbeVerifyer.getOwfOid();
+				final String macAlg = pbeVerifyer.getMacOid();
+				final int iterationCount = 1024;
+				final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
+				
+				if (owfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
+					// Set all protection parameters
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
+					}
+					rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
+				}
+			} else if (verifyer instanceof CmpPbmac1Verifyer) {
+				final CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
+				final String prfAlg = pbmac1Verifyer.getPrfOid();
+				final String macAlg = pbmac1Verifyer.getMacOid();
+				final int iterationCount = 10000;
+				final int dkLen = 4096;
+				final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
+				if (prfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
+					// Set protection parameters
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(responseProtection + ", " + prfAlg + ", " + macAlg+", " + keyId + ", " + cmpRaAuthSecret);
+					}
+					rresp.setPbmac1Parameters(keyId, cmpRaAuthSecret, prfAlg, macAlg, iterationCount, dkLen);
+				}
+			}
 		} else if(StringUtils.equals(responseProtection, "signature")) {
 		    try {
 		        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());

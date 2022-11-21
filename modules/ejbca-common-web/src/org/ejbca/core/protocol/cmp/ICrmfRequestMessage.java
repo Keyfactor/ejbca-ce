@@ -29,6 +29,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
  */
 public interface ICrmfRequestMessage extends RequestMessage {
 
+    // pbe parameters
 	int getPbeIterationCount();
 
 	String getPbeDigestAlg();
@@ -38,6 +39,19 @@ public interface ICrmfRequestMessage extends RequestMessage {
 	String getPbeKeyId();
 
 	String getPbeKey();
+
+    // pbmac1 parameters
+	String getPbmac1PrfAlg();
+
+	String getPbmac1Key();
+
+	String getPbmac1KeyId();
+
+	String getPbmac1MacAlg();
+
+	int getPbmac1IterationCount();
+
+	int getPbmac1DkLen();
 	
 	/**
 	 * RFC4210 section 5.1.1.1
