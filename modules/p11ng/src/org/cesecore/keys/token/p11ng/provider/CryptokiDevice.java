@@ -176,8 +176,8 @@ public class CryptokiDevice {
                         LOG.info("Label of slot " + slotId + " / index " + slots.size() + " could not be parsed as UTF-8. This slot/token must be referenced by index or ID");
                     }
                     Slot s  = withCache ?
-                            new Slot(slotId, label, new CryptokiWithCache(new CryptokiWithoutCache(c))) :
-                            new Slot(slotId, label, new CryptokiWithoutCache(c));
+                            new Slot(slotId, label, new CryptokiWithCache(new CryptokiWithoutCache(c)), tokenInfo) :
+                            new Slot(slotId, label, new CryptokiWithoutCache(c), tokenInfo);
                     slots.add(s);
                     slotMap.put(slotId, s);
                     slotLabelMap.put(label, s);
@@ -219,11 +219,13 @@ public class CryptokiDevice {
         private final LinkedList<NJI11Session> activeSessions = new LinkedList<>();
         private final LinkedList<NJI11Session> idleSessions = new LinkedList<>();
         private final CryptokiFacade cryptoki;
+        private final CK_TOKEN_INFO tokenInfo;
         
-        private Slot(final long id, final String label, CryptokiFacade cryptoki) {
+        private Slot(final long id, final String label, CryptokiFacade cryptoki, CK_TOKEN_INFO tokenInfo) {
             this.id = id;
             this.label = label;
             this.cryptoki = cryptoki;
+            this.tokenInfo = tokenInfo;
         }
 
         public long getId() {
@@ -1393,7 +1395,7 @@ public class CryptokiDevice {
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
                     }
-                    if (StringUtils.contains(libName, "cknfast")) { // only use String for nCipher
+                    if (isNcipherHsm()) { // only use String for nCipher
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("cknfast detected, using PrintableString CKA_EC_PARAMS: " + curve);
                         }
@@ -1401,7 +1403,7 @@ public class CryptokiDevice {
                         final DERPrintableString str = new DERPrintableString(curve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
                         ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
-                    } else if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
+                    } else if (isThalesLunaHsm()) { // vendor defined mechanism for Thales Luna
                         // Workaround for EdDSA where HSMs are not up to P11v3 yet
                         // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
                         if (LOG.isTraceEnabled()) {
@@ -1415,7 +1417,7 @@ public class CryptokiDevice {
                         final DERPrintableString str = new DERPrintableString(lunacurve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
                         ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);
-                    } else if (StringUtils.contains(libName, "cs_pkcs11_R3")) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
+                    } else if (isUtimacoHsm()) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
                         // Just as the other HSMs, Utimaco only supports Ed25519 (as of today fall 2022), so we expect 
                         // keygen for Ed448 to fail with a P11 error from the HSM until it's implemented (hopefully standardized)
                         // Undocumented deviations from the OASIS PKCS#11 v3
@@ -2711,6 +2713,48 @@ public class CryptokiDevice {
                 throw new EJBException("Error retrieving objects to determine whether alias is used.", ex);
             }
             return false;
+        }
+
+        /**
+         * Returns true if the HSM library name or manufacturer ID match with the HSM brand in the method name.
+         *
+         * @return true if the HSM vendor is Utimaco otherwise false.
+         */
+        public boolean isUtimacoHsm() {
+            String utimacoManufacturerID = "Utimaco IS GmbH";
+            if (StringUtils.contains(libName, "cs_pkcs11_R")) {
+                return true;
+            } else {
+                return tokenInfo.manufacturerID != null && utimacoManufacturerID.equalsIgnoreCase(new String(tokenInfo.manufacturerID, StandardCharsets.UTF_8).trim());
+            }
+        }
+
+        /**
+         * Returns true if the HSM library name or manufacturer ID match with the HSM brand in the method name.
+         *
+         * @return true if the HSM vendor is nCipher otherwise false.
+         */
+        public boolean isNcipherHsm() {
+            String nCipherManufacturerID = "nCipher Corp. Ltd";
+            if (StringUtils.contains(libName, "cknfast")) {
+                return true;
+            } else {
+                return tokenInfo.manufacturerID != null && nCipherManufacturerID.equalsIgnoreCase(new String(tokenInfo.manufacturerID, StandardCharsets.UTF_8).trim());
+            }
+        }
+
+        /**
+         * Returns true if the HSM library name or manufacturer ID match with the HSM brand in the method name.
+         *
+         * @return true if the HSM vendor is Thales Luna otherwise false.
+         */
+        public boolean isThalesLunaHsm() {
+            String thalesLunaManufacturerID = "SafeNet Inc";
+            if (StringUtils.contains(libName, "Cryptoki2")) {
+                return true;
+            } else {
+                return tokenInfo.manufacturerID != null && thalesLunaManufacturerID.equalsIgnoreCase(new String(tokenInfo.manufacturerID, StandardCharsets.UTF_8).trim());
+            }
         }
 
         /** Returns true if an alias is used as a label or ID */
