@@ -410,14 +410,14 @@ public class CmpExtendedValidationTest extends CmpTestCase {
      */
     @Test
     public void testMessageSignedByRevokedCertRejected() throws Exception {
-        log.trace(">testVerifySignedMessage");
+        log.trace(">testMessageSignedByRevokedCertRejected");
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
         final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_REVOKED);
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
+        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedByRevokedCertMessage");
 
         final ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
@@ -428,9 +428,9 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         // FIXME message from proxy was:
         // "Failed to find CA certificate of the CMP message signing certificate. CMP message: pvno = 2, sender = 4: C=SE,O=PrimeKey,CN=testVerifySignedMessage, recipient = 4: CN=TestCA, transactionID = #ab677197b739684d876313afc80026c6"
-        checkCmpFailMessage(resp, "The certificate attached to the PKI message in the extraCert field is revoked.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Authentication failed for message. Signing certificate in CMP message was revoked.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
-        log.trace("<testVerifySignedMessage");
+        log.trace("<testMessageSignedByRevokedCertRejected");
     }
 
 
