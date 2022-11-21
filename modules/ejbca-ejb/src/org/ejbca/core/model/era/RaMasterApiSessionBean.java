@@ -73,6 +73,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
@@ -401,7 +402,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public AuthenticationToken authenticateUsingClientCertificate(final X509Certificate certificate) {
+    public X509CertificateAuthenticationToken authenticateUsingClientCertificate(final X509Certificate certificate) {
         return webAuthenticationProviderSession.authenticateUsingClientCertificate(certificate);
     }
 
