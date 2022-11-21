@@ -14,6 +14,7 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -43,6 +44,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.util.CertTools;
@@ -65,6 +67,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
 public class CmpServlet extends HttpServlet {
 
     public static final int CERTIFICATE_CACHE_VALIDITY = 60000;
+    public static final int CACHE_VALIDITY = 5000;
     public static final int CACHE_TIMEOUT = 5000;
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CmpServlet.class);
@@ -77,6 +80,7 @@ public class CmpServlet extends HttpServlet {
     private AuthenticationToken authenticationToken;
 
     private ConcurrentCache<String, X509Certificate> extraCertIssuerCache = new ConcurrentCache<String, X509Certificate>();
+    private ConcurrentCache<BigInteger, Boolean> revocationStatusCache = new ConcurrentCache<BigInteger, Boolean>(); // 'true' value=>certificate OK => certificate NOT revoked.
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -169,10 +173,8 @@ public class CmpServlet extends HttpServlet {
                 }
 
                 validateMAC();
-                validateCertificateChain();
                 validateCertificateValidity();
                 validateCertificateChainValidity();
-                validateCertificateStatus();
                 validateCertificateChainStatus();
             }
             
@@ -314,7 +316,7 @@ public class CmpServlet extends HttpServlet {
             // Because we should use values from the cache if available, and because we should update the cache if there are new information, whether
             // the extraCertificate was revoked or not, this PKIXCertPathChecker was not added to the list of checkers to be verified in
             // CertTools.verify() line above
-            // TODO checkRevocationStatus ECA-11035
+            validateCertificateStatus(extraCertificate, messageInformation);
 
             try {
                 sig.initVerify(extraCertificate.getPublicKey());
@@ -352,14 +354,6 @@ public class CmpServlet extends HttpServlet {
         return true;
     }
 
-    /**
-     * The certificate chain of the signature certificate must be validated
-     *
-     * CmpProxyServlet.validateCmpMessage()
-     */
-    private boolean validateCertificateChain(){
-        return true;
-    }
 
     /**
      * The validity interval of the certificate must be checked
@@ -380,12 +374,48 @@ public class CmpServlet extends HttpServlet {
     }
 
     /**
-     * The revocation status of the signature certificate must be checked against a current CRL of the issuing CA and/or via OCSP
+     * The revocation status of the signature certificate must be checked
      *
-     * CmpProxyServlet.checkRevocationStatus. We should be able to do this internally moving forward.
      */
-    private boolean validateCertificateStatus(){
-        return true;
+    private void validateCertificateStatus(final X509Certificate cert, final String messageInformation) throws CmpServletValidationError {
+        BigInteger certSerialnumber = CertTools.getSerialNumber(cert);
+        ConcurrentCache<BigInteger, Boolean>.Entry invokerEntry = revocationStatusCache.openCacheEntry(certSerialnumber, CACHE_TIMEOUT); // should never time out, unless a very small (< 100ms) timeout is used
+        if (invokerEntry == null) {
+            String msg = "Timed out waiting other thread to fetch revocation status from cache.";
+            log.info(msg + " " + messageInformation);
+            throw new CmpServletValidationError(msg);
+
+        }
+        try {
+            String msg = intres.getLocalizedMessage("cmp.errorauthmessage",
+                    "Signing certificate in CMP message was revoked");
+            if (invokerEntry.isInCache()) { // if the cache entry has expired, this method will return false
+                if (log.isDebugEnabled()) {
+                    log.debug("Using revocation status from the cache");
+                }
+                if (!invokerEntry.getValue()) { // 'true' value => certificate is OK => NOT revoked
+                    log.info(msg + " " + messageInformation);
+                    throw new CmpServletValidationError(msg);
+                }
+            } else {
+                CertificateStatus certificateStatus = null;
+                try {
+                    certificateStatus = raMasterApiProxyBean.getCertificateStatus(raCmpAuthCheckToken, cert.getIssuerDN().getName(), certSerialnumber);
+                } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+                    log.info(e.getLocalizedMessage());
+                    throw new CmpServletValidationError(msg);
+                }
+                boolean isRevoked = certificateStatus.equals(CertificateStatus.REVOKED);
+                invokerEntry.putValue(!isRevoked); // 'True' => certificate NOT revoked
+                invokerEntry.setCacheValidity(CACHE_VALIDITY);
+                if (isRevoked) {
+                    log.info(msg);
+                    throw new CmpServletValidationError(msg);
+                }
+            }
+        } finally {
+            invokerEntry.close();
+        }
     }
 
     /**
