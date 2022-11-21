@@ -57,6 +57,7 @@ public class OcspConfiguration {
     public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
     public static final String REVOKED_UNTIL_NEXT_UPDATE = "ocsp.revoked.untilNextUpdate";
     public static final String MAX_AGE = "ocsp.maxAge";
+    public static final String CACHE_HEADER_MAX_AGE = "ocsp.cache.maxAge";
     public static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
@@ -447,6 +448,14 @@ public class OcspConfiguration {
         } else {
             return ConfigurationHolder.instance().containsKey("ocsp." + certificateProfileId + ".revoked.untilNextUpdate");
         }
+    }
+
+    /**
+     * @return true if "Expires" header should be based on max-age rather than nextUpdate (violates RFC 5019)
+     */
+    public static boolean getCacheHeaderMaxAge() {
+        String value = ConfigurationHolder.getString(CACHE_HEADER_MAX_AGE);
+        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
 
     /**
