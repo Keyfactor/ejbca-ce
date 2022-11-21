@@ -1958,6 +1958,56 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new EjbcaException(e);
         }
     }
+    
+    private boolean populateEndEntityFromRestRequest(final AuthenticationToken admin, final EndEntityInformation endEntity) throws EjbcaException {
+        // we ignore global configuration to "ignore EEP restriction" for REST
+
+        // EEP
+        Map<Integer, String> eeProfIdToNameMap = getAuthorizedEndEntityProfileIdsToNameMap(admin);
+        Integer endEntityProfileId = null;
+        for(Entry<Integer, String> entry: eeProfIdToNameMap.entrySet() ) {
+            if(entry.getValue().equals(endEntity.getExtendedInformation().getCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME))) {
+                endEntityProfileId = entry.getKey();
+                break;
+            }
+        }
+        
+        if (endEntityProfileId == null) {
+            throw new EjbcaException("End Entity Profile is invalid or unauthorized.");
+        }
+        endEntity.setEndEntityProfileId(endEntityProfileId);
+        EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+
+        // CA
+        Integer caId = caSession.getAuthorizedCaNamesToIds(admin).get(endEntity.getExtendedInformation().getCustomData(ExtendedInformation.CA_NAME));
+        if (caId == null) {
+            throw new EjbcaException("CA name is invalid or unauthorized.");
+        }
+        endEntity.setCAId(caId);
+
+        // Certificate profile id
+        int certificateProfileId = certificateProfileSession
+                .getCertificateProfileId(endEntity.getExtendedInformation().getCustomData(ExtendedInformation.CERTIFICATE_PROFILE_NAME));
+        if (certificateProfileId == 0 || !endEntityProfile.getAvailableCertificateProfileIds().contains(certificateProfileId)) {
+            throw new EjbcaException("Certificate profile name is invalid or unauthorized.");
+        }
+        endEntity.setCertificateProfileId(certificateProfileId);
+
+        if (endEntityProfile.isSendNotificationUsed()) {
+            if (StringUtils.isNotEmpty(endEntity.getEmail()) && endEntityProfile.isSendNotificationDefault()) {
+                endEntity.setSendNotification(true);
+            }
+        }
+
+        boolean isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
+
+        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CA_NAME);
+        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CERTIFICATE_PROFILE_NAME);
+        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.END_ENTITY_PROFILE_NAME);
+
+        return isClearPwd;
+    }
 
     @Override
     public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, boolean isClearPwd) throws AuthorizationDeniedException,
@@ -1965,20 +2015,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // only for REST to avoid fetching end entity profile contents to RA
         if(endEntity.getExtendedInformation()!=null && 
                 endEntity.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE)!=null) {
-            EndEntityProfile endEntityProfile = 
-                    endEntityProfileSession.getEndEntityProfileNoClone(endEntity.getEndEntityProfileId());
-            if(endEntityProfile==null) {
-                throw new EjbcaException("End Entity Profile is invalid.");
-            }
-            if(endEntityProfile.isSendNotificationUsed()) {
-                if(StringUtils.isNotEmpty(endEntity.getEmail()) && endEntityProfile.isSendNotificationDefault()) {
-                    endEntity.setSendNotification(true);
-                }
-            }
-            isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
-            endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA +
-                    ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+            isClearPwd = populateEndEntityFromRestRequest(admin, endEntity);
         }
+        
         try {
             endEntityManagementSession.addUser(admin, endEntity, isClearPwd);
         } catch (CesecoreException e) {
