@@ -374,6 +374,16 @@ public interface RaMasterApi {
     List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint);
 
     /**
+     * Searches for a certificate chain. Allows cross certificate chain to be specified based on root subjectDn SHA1 hash.
+     * If no matching cross chain with said root DN is found or the public key does not match the current CA key, then
+     * CA default certificate chain is returned.   
+     * 
+     * @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise
+     * @since RA Master API version 15 (EJBCA 7.11.0)
+     */
+    List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash);
+
+    /**
      * Searches for a certificate. If present locally, then the data (revocation status etc.) from the local database will be returned
      * @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise
      * @since Added between Master RA API version 1 and 2 (EJBCA 6.9.0), lacks an exact API version
