@@ -137,11 +137,20 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** used to match request with response */
     private transient int requestId;
 
+    // pbe parameters
     private transient int pbeIterationCount = 1024;
     private transient String pbeDigestAlg = null;
     private transient String pbeMacAlg = null;
     private transient String pbeKeyId = null;
     private transient String pbeKey = null;
+    // pbmac1 parameters
+	private transient String pbmac1PrfAlg = null;
+	private transient String pbmac1MacAlg = null;
+	private transient int pbmac1IterationCount = 10000;
+	private transient String pbmac1KeyId = null;
+	private transient String pbmac1Key = null;
+	private transient int pbmac1DkLen = 4096;
+
     private transient boolean implicitConfirm = false;
     private transient CertificateData certificateData;
     private transient Base64CertData base64CertData;
@@ -376,23 +385,33 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 myPKIBody = new PKIBody(23, myErrorContent); // 23 = error                
             }
             
-            if ((pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null)) {
+            final boolean pbeProtected = (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null);
+            final boolean pbmac1Protected = (pbmac1KeyId != null) && (pbmac1Key != null) && (pbmac1PrfAlg != null) && (pbmac1MacAlg != null);
+            if (pbeProtected) {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
                 PKIHeader header = myPKIHeader.build();
                 CMPCertificate [] extraCertsList = null;
                 if (!extraCerts.isEmpty()) {
-                    extraCertsList = new CMPCertificate[extraCerts.size()];
+                    extraCertsList = getExtraCertsList();
                     if (log.isDebugEnabled()) {
                         log.debug("Adding extraCerts to PBE protected message: " + extraCerts.size());
-                    }
-                    int i = 0;
-                    for (Certificate certificate : extraCerts) {
-                        extraCertsList[i++] = CMPCertificate.getInstance(((X509Certificate)certificate).getEncoded());
                     }
                 }
                 myPKIMessage = new PKIMessage(header, myPKIBody, null, extraCertsList);
                 responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
                         pbeIterationCount);
+            } else if (pbmac1Protected) {
+                PKIHeader header = myPKIHeader.build();
+                CMPCertificate [] extraCertsList = null;
+                if (!extraCerts.isEmpty()) {
+                    extraCertsList = getExtraCertsList();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Adding extraCerts to PBE protected message: " + extraCerts.size());
+                    }
+                }
+                myPKIMessage = new PKIMessage(header, myPKIBody, null, extraCertsList);
+                responseMessage = CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, pbmac1KeyId, pbmac1Key, pbmac1MacAlg,
+                        pbmac1IterationCount, pbmac1DkLen, pbmac1PrfAlg);
             } else {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digest)));
                 if (signCert != null) {
@@ -433,6 +452,20 @@ public class CmpResponseMessage implements CertificateResponseMessage {
         }
 
         return ret;
+    }
+
+    private CMPCertificate[] getExtraCertsList() throws CertificateEncodingException {
+        if (extraCerts.isEmpty()) {
+            return new CMPCertificate[0];
+        } else {
+            final CMPCertificate[] returnList = new CMPCertificate[extraCerts.size()];
+            int i = 0;
+            for (Certificate cert : extraCerts) {
+                returnList[i] = CMPCertificate.getInstance(((X509Certificate) cert).getEncoded());
+                i++;
+            }
+            return returnList;
+        }
     }
 
     @Override
@@ -495,6 +528,12 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             this.pbeMacAlg = crmf.getPbeMacAlg();
             this.pbeKeyId = crmf.getPbeKeyId();
             this.pbeKey = crmf.getPbeKey();
+            this.pbmac1IterationCount = crmf.getPbmac1IterationCount();
+            this.pbmac1PrfAlg = crmf.getPbmac1PrfAlg();
+            this.pbmac1MacAlg = crmf.getPbmac1MacAlg();
+            this.pbmac1DkLen = crmf.getPbmac1DkLen();
+            this.pbmac1KeyId = crmf.getPbmac1KeyId();
+            this.pbmac1Key = crmf.getPbmac1Key();
             this.implicitConfirm = crmf.isImplicitConfirm();
         }
     }
