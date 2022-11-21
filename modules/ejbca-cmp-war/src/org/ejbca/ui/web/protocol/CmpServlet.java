@@ -352,14 +352,6 @@ public class CmpServlet extends HttpServlet {
         return true;
     }
 
-    /**
-     * The certificate chain of the signature certificate must be validated
-     *
-     * CmpProxyServlet.validateCmpMessage()
-     */
-    private boolean validateCertificateChain(){
-        return true;
-    }
 
     /**
      * The validity interval of the certificate must be checked
