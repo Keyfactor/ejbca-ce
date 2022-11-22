@@ -249,4 +249,9 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
     public boolean isPeerAuthorizedAcme() {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
+
+    @Override
+    public List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
 }

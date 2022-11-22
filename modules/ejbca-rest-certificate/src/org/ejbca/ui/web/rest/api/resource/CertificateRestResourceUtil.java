@@ -20,8 +20,6 @@ import javax.ws.rs.core.Response;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRequest;
@@ -43,11 +41,12 @@ public class CertificateRestResourceUtil {
     public static void authorizeSearchCertificatesRestRequestReferences(
             final AuthenticationToken authenticationToken,
             final RaMasterApiProxyBeanLocal raMasterApi,
-            final SearchCertificateCriteriaRequest searchCertificatesRestRequest
+            final SearchCertificateCriteriaRequest searchCertificatesRestRequest,
+            final Map<Integer, String> availableEndEntityProfiles,
+            final Map<Integer, String> availableCertificateProfiles,
+            final Map<Integer, String> availableCAs
     ) throws RestException {
-        Map<Integer, String> availableEndEntityProfiles = new HashMap<>();
-        Map<Integer, String> availableCertificateProfiles = new HashMap<>();
-        Map<Integer, String> availableCAs = new HashMap<>();
+        
         for(SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest : searchCertificatesRestRequest.getCriteria()) {
             final SearchCertificateCriteriaRestRequest.CriteriaProperty criteriaProperty = SearchCertificateCriteriaRestRequest.CriteriaProperty.resolveCriteriaProperty(searchCertificateCriteriaRestRequest.getProperty());
             if(criteriaProperty == null) {
@@ -58,7 +57,6 @@ public class CertificateRestResourceUtil {
             }
             switch (criteriaProperty) {
                 case END_ENTITY_PROFILE:
-                    availableEndEntityProfiles = loadAuthorizedEndEntityProfiles(authenticationToken, raMasterApi, availableEndEntityProfiles);
                     final String criteriaEndEntityProfileName = searchCertificateCriteriaRestRequest.getValue();
                     final Integer criteriaEndEntityProfileId = getKeyFromMapByValue(availableEndEntityProfiles, criteriaEndEntityProfileName);
                     if(criteriaEndEntityProfileId == null) {
@@ -70,7 +68,6 @@ public class CertificateRestResourceUtil {
                     searchCertificateCriteriaRestRequest.setIdentifier(criteriaEndEntityProfileId);
                     break;
                 case CERTIFICATE_PROFILE:
-                    availableCertificateProfiles = loadAuthorizedCertificateProfiles(authenticationToken, raMasterApi, availableCertificateProfiles);
                     final String criteriaCertificateProfileName = searchCertificateCriteriaRestRequest.getValue();
                     final Integer criteriaCertificateProfileId = getKeyFromMapByValue(availableCertificateProfiles, criteriaCertificateProfileName);
                     if(criteriaCertificateProfileId == null) {
@@ -82,7 +79,6 @@ public class CertificateRestResourceUtil {
                     searchCertificateCriteriaRestRequest.setIdentifier(criteriaCertificateProfileId);
                     break;
                 case CA:
-                    availableCAs = loadAuthorizedCAs(authenticationToken, raMasterApi, availableCAs);
                     final String criteriaCAName = searchCertificateCriteriaRestRequest.getValue();
                     final Integer criteriaCAId = getKeyFromMapByValue(availableCAs, criteriaCAName);
                     if(criteriaCAId == null) {
@@ -99,28 +95,19 @@ public class CertificateRestResourceUtil {
         }
     }
     
-    public static Map<Integer, String> loadAuthorizedEndEntityProfiles(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi, final  Map<Integer, String> availableEndEntityProfiles) {
-        if(availableEndEntityProfiles.isEmpty()) {
-            return raMasterApi.getAuthorizedEndEntityProfileIdsToNameMap(authenticationToken);
-        }
-        return availableEndEntityProfiles;
+    public static Map<Integer, String> loadAuthorizedEndEntityProfiles(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi) {
+        return raMasterApi.getAuthorizedEndEntityProfileIdsToNameMap(authenticationToken);
     }
 
-    public static Map<Integer, String> loadAuthorizedCertificateProfiles(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi, final Map<Integer, String> availableCertificateProfiles) {
-        if(availableCertificateProfiles.isEmpty()) {
-            return raMasterApi.getAuthorizedCertificateProfileIdsToNameMap(authenticationToken);
-        }
-        return availableCertificateProfiles;
+    public static Map<Integer, String> loadAuthorizedCertificateProfiles(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi) {
+        return raMasterApi.getAuthorizedCertificateProfileIdsToNameMap(authenticationToken);
     }
 
-    public static Map<Integer, String> loadAuthorizedCAs(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi, final Map<Integer, String> availableCAs) {
-        if(availableCAs.isEmpty()) {
-            final Map<Integer, String> authorizedCAIds = new HashMap<>();
-            final List<CAInfo> caInfosList = raMasterApi.getAuthorizedCas(authenticationToken);
-            for(final CAInfo caInfo : caInfosList) {
-                authorizedCAIds.put(caInfo.getCAId(), caInfo.getName());
-            }
-            return authorizedCAIds;
+    public static Map<Integer, String> loadAuthorizedCAs(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi) {
+        final Map<Integer, String> availableCAs = new HashMap<>();
+        final List<CAInfo> caInfosList = raMasterApi.getAuthorizedCas(authenticationToken);
+        for(final CAInfo caInfo : caInfosList) {
+            availableCAs.put(caInfo.getCAId(), caInfo.getName());
         }
         return availableCAs;
     }
