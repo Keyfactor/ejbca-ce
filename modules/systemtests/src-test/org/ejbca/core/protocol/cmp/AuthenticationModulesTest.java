@@ -273,7 +273,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         final CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         final Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
@@ -318,7 +318,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, revUserDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
             Assert.assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
@@ -371,7 +371,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, testUserDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -477,7 +477,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
 
@@ -530,7 +530,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, "CN=cmprevuser1,C=SE", USER_DN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
             assertEquals("Revocation request succeeded", RevokedCertInfo.NOT_REVOKED, revStatus);
             PKIMessage respObject = PKIMessage.getInstance(resp);
@@ -585,7 +585,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
         Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
@@ -617,7 +617,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         // We configured PBE response protection above, so make sure it's correct
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                .getTransactionID().getOctets(), false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
@@ -647,7 +647,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
         final PKIBody body = respObject.getBody();
@@ -684,7 +684,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
         PKIBody body = respObject.getBody();
@@ -730,7 +730,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
         PKIBody body = respObject.getBody();
@@ -772,7 +772,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         ir = (CertReqMessages) req.getBody().getContent();
         Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
@@ -791,7 +791,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             byte[] respNoIssuer = sendCmpHttp(ba2, 200, ALIAS);
             checkCmpResponseGeneral(respNoIssuer, issuerDN, clientDN, this.cacert, reqNoIssuer.getHeader().getSenderNonce().getOctets(), reqNoIssuer
-                    .getHeader().getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getHeader().getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             ir = (CertReqMessages) reqNoIssuer.getBody().getContent();
             Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, respNoIssuer, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -807,7 +807,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp3 = sendCmpHttp(ba3, 200, ALIAS);
             checkCmpResponseGeneral(resp3, issuerDN, USER_DN, this.cacert, this.nonce, this.transid, true, null,
-                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             checkCmpPKIConfirmMessage(USER_DN, this.cacert, resp3);
         } finally {
             this.endEntityManagementSession.deleteUser(ADMIN, clientUsername);
@@ -883,7 +883,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                     .intValue());
@@ -916,7 +916,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                     .intValue());
@@ -960,7 +960,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull(respObject);
             PKIBody body = respObject.getBody();
@@ -1033,7 +1033,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
                 // This should have failed
                 checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                        .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                        .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
                 PKIMessage respObject = PKIMessage.getInstance(resp);
                 assertNotNull(respObject);
                 PKIBody body = respObject.getBody();
@@ -1071,7 +1071,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
                 // This should have failed
                 checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                        .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha384WithRSAEncryption.getId());
+                        .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha384WithRSAEncryption.getId(), false);
                 PKIMessage respObject = PKIMessage.getInstance(resp);
                 assertNotNull(respObject);
                 PKIBody body = respObject.getBody();
@@ -1101,7 +1101,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             // This should have failed
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull(respObject);
@@ -1127,7 +1127,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             final byte[] resp3 = sendCmpHttp(ba, 200, ALIAS);
             // This should have failed
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             PKIMessage respObject3 = PKIMessage.getInstance(resp3);
             assertNotNull(respObject);
             PKIBody body3 = respObject3.getBody();
@@ -1174,7 +1174,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
         final PKIBody body = respObject.getBody();
@@ -1207,7 +1207,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
         PKIBody body = respObject.getBody();
@@ -1414,7 +1414,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, ecdsaCaInfo.getSubjectDN(), userDN, ecdsaCaCert, _nonce, _transid, true, null,
-                    X9ObjectIdentifiers.ecdsa_with_SHA256.getId());
+                    X9ObjectIdentifiers.ecdsa_with_SHA256.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, ecdsaCaCert, resp, reqId);
             fp2 = CertTools.getFingerprintAsString(cert);
 
@@ -1428,7 +1428,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
             //Since pAlg was not set in the ConfirmationRequest, the default DigestAlgorithm (SHA1) will be used
             checkCmpResponseGeneral(resp, ecdsaCaInfo.getSubjectDN(), userDN, ecdsaCaCert, _nonce, _transid, true, null,
-                    X9ObjectIdentifiers.ecdsa_with_SHA256.getId());
+                    X9ObjectIdentifiers.ecdsa_with_SHA256.getId(), false);
             checkCmpPKIConfirmMessage(userDN, ecdsaCaCert, resp);
 
             //-------------------------  Send a CMP revocation request
@@ -1441,7 +1441,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(barev, 200, ALIAS);
             checkCmpResponseGeneral(resp, ecdsaCaInfo.getSubjectDN(), userDN, ecdsaCaCert, _nonce, _transid, true, null,
-                    X9ObjectIdentifiers.ecdsa_with_SHA256.getId());
+                    X9ObjectIdentifiers.ecdsa_with_SHA256.getId(), false);
             int revStatus = checkRevokeStatus(ecdsaCaInfo.getSubjectDN(), CertTools.getSerialNumber(cert));
             assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
@@ -1519,7 +1519,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, _nonce, _transid, true, null,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             fp2 = CertTools.getFingerprintAsString(cert);
         } finally {
@@ -1559,7 +1559,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
         final PKIBody body = respObject.getBody();
