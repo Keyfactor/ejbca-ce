@@ -601,6 +601,7 @@ public class CAInterfaceBean implements Serializable {
                             .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
                             .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
                             .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
+                            .setAllowChangingRevocationReason(caInfoDto.isAllowChangingRevocationReason())
                             .setCrlPublishers(crlPublishers)
                             .setValidators(keyValidators)
                             .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -1066,6 +1067,7 @@ public class CAInterfaceBean implements Serializable {
                        .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
                        .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
                        .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
+                       .setAllowChangingRevocationReason(caInfoDto.isAllowChangingRevocationReason())
                        .setCrlPublishers(crlpublishers)
                        .setValidators(keyValidators)
                        .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -1107,7 +1109,8 @@ public class CAInterfaceBean implements Serializable {
                        .setCrlPartitions(caInfoDto.getCrlPartitions())
                        .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                        .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
-                       .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
+                       .setRequestPreProcessor(caInfoDto.getRequestPreProcessor())
+                       .setAlternateCertificateChains(caInfoDto.getAlternateCertificateChains());
                cainfo = x509CAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
                // Info specific for CVC CA
