@@ -22,6 +22,7 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.EjbcaException;
@@ -105,5 +106,12 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
             RaCertificateSearchRequest raCertificateSearchRequest) {
         return raMasterApiProxyBean.searchForCertificates(authenticationToken, raCertificateSearchRequest);
     }
+    
+    @Override
+    public List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, 
+            String fingerprint, String rootSubjectDnHash) {
+        return raMasterApiProxyBean.searchForCertificateChainWithPreferredRoot(authenticationToken, fingerprint, rootSubjectDnHash);
+    }
+        
 
 }
