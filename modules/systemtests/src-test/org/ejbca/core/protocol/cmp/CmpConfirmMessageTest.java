@@ -130,7 +130,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test01ConfRespSignedByRecepient");
@@ -163,7 +164,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null,
+                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test02ConfRespSignedByDefaultCA");
@@ -201,7 +203,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "password", null /*response is not signed*/);
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "password",
+                null /*response is not signed*/, false);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");
@@ -238,7 +241,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "foo123", null /*response is not signed*/);
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "foo123",
+                null /*response is not signed*/, false);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");
