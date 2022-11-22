@@ -943,6 +943,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
                 globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
         AcmeConfiguration acmeAlias;
+        if (globalConfig == null) {
+            return result;
+        }
         for (String acmeAliasId : globalConfig.getAcmeConfigurationIds()) {
             acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId);
             if (acmeAlias != null) {

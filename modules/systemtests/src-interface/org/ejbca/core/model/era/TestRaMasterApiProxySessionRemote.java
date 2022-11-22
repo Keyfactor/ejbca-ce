@@ -12,10 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.util.List;
+
 import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -101,5 +104,8 @@ public interface TestRaMasterApiProxySessionRemote {
             throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException;
 
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
+
+    List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, String fingerprint,
+            String rootSubjectDnHash);
     
 }
