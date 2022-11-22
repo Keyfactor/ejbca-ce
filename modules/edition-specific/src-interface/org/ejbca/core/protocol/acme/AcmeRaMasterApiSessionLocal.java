@@ -161,4 +161,6 @@ public interface AcmeRaMasterApiSessionLocal {
     
     boolean isPeerAuthorizedAcme();
 
+    List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash);
+
 }
