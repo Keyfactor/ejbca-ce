@@ -263,7 +263,7 @@ public class JackNJI11Provider extends Provider {
                 }
                 long mechanism = MechanismNames.longFromSigAlgoName(this.algorithm).get();
                 if (mechanism == CKM.EDDSA) {
-                    if (StringUtils.contains(myKey.getSlot().getLibName(), "Cryptoki2")) {
+                    if (myKey.getSlot().isThalesLunaHsm()) {
                         // Workaround, like ED key generation in CryptokiDevice, for EdDSA where HSMs are not up to P11v3 yet
                         // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
                         if (LOG.isTraceEnabled()) {
@@ -272,9 +272,9 @@ public class JackNJI11Provider extends Provider {
                         // From cryptoki_v2.h in the lunaclient sample package
                         final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
                         mechanism = LUNA_CKM_EDDSA;
-                    } else if (StringUtils.contains(myKey.getSlot().getLibName(), "cs_pkcs11_R3")) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
+                    } else if (myKey.getSlot().isUtimacoHsm()) { // utimaco SecurityServer / CryptoServer Se52 Series "P11R3"
                         if (LOG.isTraceEnabled()) {
-                            LOG.trace("cs_pkcs11_R3 / utimaco detected. CKM.EDDSA=>CKM.ECDSA");
+                            LOG.trace("cs_pkcs11_R* / utimaco detected. CKM.EDDSA=>CKM.ECDSA");
                         }
                         mechanism = CKM.ECDSA;
                     }
