@@ -14,7 +14,6 @@ package org.cesecore;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -60,7 +59,6 @@ import org.bouncycastle.oer.its.ieee1609dot2.VerificationKeyIndicator;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CrlSeries;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId3;
 import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Hostname;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.SubjectAssurance;
 import org.bouncycastle.operator.ContentVerifier;
 import org.bouncycastle.operator.OperatorCreationException;

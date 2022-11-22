@@ -76,6 +76,9 @@ public class X509CAInfo extends CAInfo {
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
 	private String requestPreProcessor;
+	
+	// Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
+	private Map<String, List<String>> alternateCertificateChains;
 
     /**
      * This constructor can be used when creating a CA.
@@ -108,6 +111,7 @@ public class X509CAInfo extends CAInfo {
                 .setCrlOverlapTime(10 * SimpleTime.MILLISECONDS_PER_MINUTE)
                 .setDeltaCrlPeriod(0L)
                 .setGenerateCrlUponRevocation(false)
+                .setAllowChangingRevocationReason(false)
                 .setCrlPublishers(new ArrayList<>())
                 .setValidators(new ArrayList<>())
                 .setMsCaCompatible(false)
@@ -154,7 +158,7 @@ public class X509CAInfo extends CAInfo {
     /** Constructor that should be used when updating CA data. */
     private X509CAInfo(final String encodedValidity, final CAToken catoken, final String description, final int caSerialNumberOctetSize,
                       final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
-                      final boolean generateCrlUponRevocation, final Collection<Integer> crlpublishers,
+                      final boolean generateCrlUponRevocation, final boolean allowChangingRevocationReason, final Collection<Integer> crlpublishers,
                       final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
                       final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
                       final String defaultocspservicelocator, final List<String> crlAuthorityInformationAccess,
@@ -167,7 +171,8 @@ public class X509CAInfo extends CAInfo {
                       final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage,
                       final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand, final boolean acceptRevocationNonExistingEntry, 
                       final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId, 
-                      final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions, final String requestPreProcessor, final boolean msCaCompatible) {
+                      final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions, 
+                      final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains) {
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
         this.description = description;
@@ -177,6 +182,7 @@ public class X509CAInfo extends CAInfo {
         this.crlOverlapTime = crlOverlapTime;
         this.deltacrlperiod = deltacrlperiod;
         this.generateCrlUponRevocation = generateCrlUponRevocation;
+        this.allowChangingRevocationReason = allowChangingRevocationReason;
         this.crlpublishers = crlpublishers;
         this.validators = keyValidators;
         this.msCaCompatible = msCaCompatible;
@@ -218,6 +224,7 @@ public class X509CAInfo extends CAInfo {
         this.usePartitionedCrl = usePartitionedCrl;
         this.crlPartitions = crlPartitions;
         this.suspendedCrlPartitions = suspendedCrlPartitions;
+        this.alternateCertificateChains = alternateCertificateChains;
         setRequestPreProcessor(requestPreProcessor);
     }
 
@@ -586,6 +593,14 @@ public class X509CAInfo extends CAInfo {
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
     }
+    
+    public Map<String, List<String>> getAlternateCertificateChains() {
+        return alternateCertificateChains;
+    }
+
+    public void setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains) {
+        this.alternateCertificateChains = alternateCertificateChains;
+    }
 
     public static class X509CAInfoBuilder {
         private int caId;
@@ -613,6 +628,7 @@ public class X509CAInfo extends CAInfo {
         private long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_MINUTE;
         private long deltaCrlPeriod = 0L;
         private boolean generateCrlUponRevocation = false;
+        private boolean allowChangingRevocationReason = false;
         private Collection<Integer> crlPublishers = new ArrayList<>();
         private Collection<Integer> validators = new ArrayList<>();
         private boolean msCaCompatible = false;
@@ -653,6 +669,7 @@ public class X509CAInfo extends CAInfo {
         private int crlPartitions;
         private int suspendedCrlPartitions;
         private String requestPreProcessor;
+        private Map<String, List<String>> alternateCertificateChains;
 
         public X509CAInfoBuilder  setCaId(int caId) {
             this.caId = caId;
@@ -840,6 +857,14 @@ public class X509CAInfo extends CAInfo {
          */
         public X509CAInfoBuilder setGenerateCrlUponRevocation(boolean generate) {
             generateCrlUponRevocation = generate;
+            return this;
+        }
+
+        /**
+         * @param allow changing revocation reason if a certificate is revoked.
+         */
+        public X509CAInfoBuilder setAllowChangingRevocationReason(boolean allow) {
+            allowChangingRevocationReason = allow;
             return this;
         }
 
@@ -1082,14 +1107,24 @@ public class X509CAInfo extends CAInfo {
             this.requestPreProcessor = requestPreProcessor;
             return this;
         }
+        
+        public Map<String, List<String>> getAlternateCertificateChains() {
+            return alternateCertificateChains;
+        }
+
+        public X509CAInfoBuilder setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains) {
+            this.alternateCertificateChains = alternateCertificateChains;
+            return this;
+        }
 
         public X509CAInfo build() {
-            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, crlPublishers, validators,
+            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, allowChangingRevocationReason, crlPublishers, validators,
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, requestPreProcessor, msCaCompatible);
+                                               acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, 
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains);
             caInfo.setSubjectDN(subjectDn);
             caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
             caInfo.setName(name);
@@ -1122,12 +1157,13 @@ public class X509CAInfo extends CAInfo {
         }
 
         public X509CAInfo buildForUpdate() {
-            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, crlPublishers, validators,
+            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, allowChangingRevocationReason, crlPublishers, validators,
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, requestPreProcessor, msCaCompatible);
+                                               acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, 
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains);
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);
             caInfo.setSubjectAltName(subjectAltName);

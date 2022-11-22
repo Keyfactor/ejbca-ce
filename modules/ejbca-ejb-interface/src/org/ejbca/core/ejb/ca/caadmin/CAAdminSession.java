@@ -124,6 +124,24 @@ public interface CAAdminSession {
                          String nextKeyAlias) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
 
     /**
+     * Receives a cross certificate chain for a CA
+     *
+     * @param authenticationToken The administrator performing the action
+     * @param caInfo              CAInfo of the certificate,
+     * @param responsemessage     X509ResponseMessage with the certificate issued to this CA
+     * @param caCertificateChain             an optional collection with the CA certificate(s), or null. If
+     *                            given the complete chain (except this CAs own certificate must
+     *                            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates.
+     * @throws AuthorizationDeniedException if the administrators isn't authorized
+     * @throws CertPathValidatorException   An exception indicating one of a variety of problems encountered when
+     *                                      validating a certification path.
+     * @throws EjbcaException               specific application exceptions thrown by EJBCA
+     * @throws CesecoreException            specific application exceptions thrown by EJBCA
+     */
+    void updateCrossCaCertificateChain(AuthenticationToken authenticationToken, CAInfo caInfo,
+            Collection<?> caCertificateChain) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
+
+    /**
      * Receives a certificate response from an external CA and sets the newly
      * created CAs status to active.
      *

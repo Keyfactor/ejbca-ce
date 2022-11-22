@@ -1227,6 +1227,46 @@
 							value="#{web.text.VIEW_CERTIFICATE}"
 							disabled="#{not editCAsMBean.editCA or editCAsMBean.waitingForResponse}" />
 					</h:panelGroup>
+					
+					<h:panelGroup
+						rendered="#{(not editCAsMBean.waitingResponse) 
+									and (not editCAsMBean.caUninitialized)}">
+						<h:outputLabel 
+							value="#{web.text.CACERTIFICATEALTERNATECHAIN}" style="font-weight: bold;" />
+						<br />
+						<h:outputText styleClass="smallHelp"
+							value="#{web.text.CACERTIFICATEALTERNATECHAIN_HELP}"/>
+						<br/>
+						<h:outputText
+							value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#X509CrossCertificateChain(s)')}"
+							escape="false" styleClass="helpReference" />
+					</h:panelGroup>
+					<h:panelGroup 
+						rendered="#{(not editCAsMBean.waitingForResponse) 
+									and (not editCAsMBean.caUninitialized)}">
+							<h:panelGroup id="alternatecertchainssection">
+								<ui:repeat value="#{editCAsMBean.alternateCertChains}" var="altchain">
+									<h:selectBooleanCheckbox rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
+										value="#{editCAsMBean.removeAlternateCertChain[altchain]}">
+										<f:ajax/>
+									</h:selectBooleanCheckbox>
+									<h:outputLink
+										value="#{editCAsMBean.getDownloadCertLink()}?cmd=cacertaltchain&amp;level=0&amp;issuer=#{editCAsMBean.escapeDnString(editCAsMBean.caInfoDto.caSubjectDN)}&amp;root=#{editCAsMBean.escapeDnString(altchain)}">
+										<h:outputText value="&nbsp;&nbsp;#{altchain}&nbsp;" style="font-size: 11pt"/>
+									</h:outputLink>
+									<br/>
+								</ui:repeat>
+							</h:panelGroup>
+							<h:outputText value="#{web.text.NONE}" rendered="#{empty editCAsMBean.alternateCertChains}"/>
+							<br/>
+							<h:commandButton type="button" 
+							    rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight and (not empty editCAsMBean.alternateCertChains)}"
+								name="altcertchainremove"
+								action="#{editCAsMBean.unlinkAlternateCertChains}"
+								value="#{web.text.REMOVE}">
+								<f:ajax render=":editcapage:alternatecertchainssection"/>
+							</h:commandButton>
+					</h:panelGroup>
 				</c:if>
 					
 			</h:panelGrid>
@@ -1552,7 +1592,8 @@
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DELTACRLPERIOD_HELP}" styleClass="smallHelp" />
 				</h:panelGroup>
-				
+
+				<!-- Generate CRL Upon Revocation -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_CA_GENERATEUPONREVOCATION}" 
 						rendered="#{not editCAsMBean.caExternal}" />
@@ -1569,6 +1610,20 @@
 					<h:outputLabel value="#{web.text.CRL_CA_GENERATEUPONREVOCATION_HELP}" styleClass="smallHelp" />
 				</h:panelGroup>
 
+				<!-- Allow changing revocation reason -->
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:outputText value="#{web.text.ALLOW_CHANGING_REVOCATION_REASON}" rendered="#{not editCAsMBean.caExternal}" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:selectBooleanCheckbox id="checkboxallowchangingrevocationreason"
+											 value="#{editCAsMBean.caInfoDto.allowChangingRevocationReason}"
+											 disabled="#{not editCAsMBean.hasEditRight}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxallowchangingrevocationreason" value="#{web.text.USE}" />
+				</h:panelGroup>
+
+				<!-- Publishers -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.PUBLISHERS}"
 						rendered="#{not editCAsMBean.caExternal}" />
@@ -2133,6 +2188,21 @@
 								disabled="#{not editCAsMBean.hasEditRight}" />
 							<h:outputText for="checkboxfuturerollover"
 								value="#{web.text.EXTERNALLYSIGNED_FUTUREROLLOVER}" />
+						</h:panelGroup>
+						<h:panelGroup
+							rendered="#{editCAsMBean.editCA and editCAsMBean.caInfoDto.caTypeX509}">
+							<h:outputText
+								value="#{web.text.EXTERNALLYSIGNED_CROSS_CERT_HELP}"
+								styleClass="smallHelp" />
+						</h:panelGroup>
+						<h:panelGroup
+							rendered="#{editCAsMBean.editCA and editCAsMBean.caInfoDto.caTypeX509}">
+							<h:selectBooleanCheckbox name="checkboxuploadAsAlternateChain"
+								id="checkboxuploadAsAlternateChain"
+								value="#{editCAsMBean.uploadAsAlternateChain}"
+								disabled="#{not editCAsMBean.hasEditRight}" />
+							<h:outputText for="checkboxuploadAsAlternateChain"
+								value="#{web.text.EXTERNALLYSIGNED_CROSS_CERT}" />
 						</h:panelGroup>
 						<h:panelGroup />
 						<h:panelGroup rendered="#{editCAsMBean.editCA}">
