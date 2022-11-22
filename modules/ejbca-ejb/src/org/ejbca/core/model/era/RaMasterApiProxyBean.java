@@ -67,7 +67,6 @@ import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -298,20 +297,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return false;
-    }
-    
-    @Override
-    public X509CertificateAuthenticationToken authenticateUsingClientCertificate(final X509Certificate certificate) {
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-        	if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
-                try {
-                    return raMasterApi.authenticateUsingClientCertificate(certificate);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return null;
     }
 
     @Override

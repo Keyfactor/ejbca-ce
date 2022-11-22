@@ -16,7 +16,6 @@ import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -169,15 +168,6 @@ public interface RaMasterApi {
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
     boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String...resources);
-
-    /**
-     * Authenticates the user by its client certificate on the CA (web.reqcertindb=true).
-     * 
-     * @param certificate the client certificate.
-     * @return the X509CertificateAuthenticationToken or null, if the DB does not contain the certificate or it is 
-     *      invalid (not CertificateConstants.CERT_ACTIVE or status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION).  
-     */
-    X509CertificateAuthenticationToken authenticateUsingClientCertificate(X509Certificate certificate);
 
     /**
      * @return the access rules and corresponding authorization system update number for the specified AuthenticationToken.
