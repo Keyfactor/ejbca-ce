@@ -410,8 +410,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                     }
                 }
                 myPKIMessage = new PKIMessage(header, myPKIBody, null, extraCertsList);
-                responseMessage = CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, pbmac1KeyId, pbmac1Key, pbmac1MacAlg,
-                        pbmac1IterationCount, pbmac1DkLen, pbmac1PrfAlg);
+                responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, pbmac1KeyId,
+                        pbmac1Key, pbmac1MacAlg, pbmac1IterationCount, pbmac1DkLen, pbmac1PrfAlg));
             } else {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digest)));
                 if (signCert != null) {
