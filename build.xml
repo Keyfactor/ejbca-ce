@@ -38,7 +38,6 @@
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
         <delete file="velocity.log" />
-        <delete file="validationtool.log" />
         <ant antfile="modules/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 	
@@ -590,6 +589,11 @@
                 <include name="guava-*.jar" />
             	<include name="jsch-*.jar" />
             	<include name="jna-*.jar"/>
+				<include name="kerb4j-server-common-*.jar"/>
+				<include name="kerb-core-*.jar"/>
+				<include name="kerby-asn1-*.jar"/>
+            	<include name="kerb-crypto-*.jar"/>
+            	
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->
@@ -1080,7 +1084,6 @@
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/ca/sign/SignSessionCvcTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/cesecore/certificates/ca/CaCvcSessionTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/cesecore/certificates/certificatetransparency/CertificateTransparencyTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/validationtool/**"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/cmp/authentication/CmpVendorModeImpl.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/cmp/VendorAuthenticationTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/cmpProxy/**"/>
@@ -1198,7 +1201,6 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-entity/**"/>
                 <exclude unless="edition.is.ee" name="modules/configdump/**"/>
                 <exclude unless="edition.is.ee" name="modules/externalra/**"/>
-                <exclude unless="edition.is.ee" name="modules/validationtool/**"/>
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
@@ -1629,14 +1631,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 	<target name="p11ng-cli" depends="deprecated:check" description="Build EJBCA P11NgCli">
 		<ant dir="modules" target="p11ng-cli" />
     </target>	
-	
-    <target name="validationtool" depends="doc, deprecated:check" description="Builds the ValidationTool standalone client application">
-    	<ant dir="modules" target="validationtool" />
-    </target>
-    
-    <target name="validationtool-src" depends="doc, deprecated:check" description="Builds source distribution of the ValidationTool">
-    	<ant dir="modules" target="validationtool-src" />
-    </target>
 	
     <target name="cmpHttpProxy" depends="deprecated:check" description="Builds a CMP HTTP proxy. (Enterprise only)">
     	<ant dir="modules" target="cmpHttpProxy" />

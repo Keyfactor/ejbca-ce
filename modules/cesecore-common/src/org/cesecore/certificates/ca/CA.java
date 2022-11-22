@@ -63,6 +63,10 @@ public interface CA extends CACommon {
 
     void setGenerateCrlUponRevocation(boolean generate);
 
+    boolean getAllowChangingRevocationReason();
+
+    void setAllowChangingRevocationReason(boolean allow);
+
     long getCRLIssueInterval();
 
     void setCRLIssueInterval(long crlIssueInterval);

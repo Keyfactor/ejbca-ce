@@ -155,8 +155,7 @@ public class AddEndEntityRestRequest {
 
     public static class AddEndEntityRestRequestConverter {
 
-        public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest, Integer caId,
-        		Integer endEntityProfileId, Integer certificateProfileId) throws RestException {
+        public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest) throws RestException {
             final ExtendedInformation extendedInfo = new ExtendedInformation();
             if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
                 if (addEndEntityRestRequest.getAccountBindingId() != null) {
@@ -169,19 +168,22 @@ public class AddEndEntityRestRequest {
                 }
             }
             extendedInfo.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
+            extendedInfo.setCustomData(ExtendedInformation.CA_NAME, addEndEntityRestRequest.getCaName());
+            extendedInfo.setCustomData(ExtendedInformation.CERTIFICATE_PROFILE_NAME, addEndEntityRestRequest.getCertificateProfileName());
+            extendedInfo.setCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME, addEndEntityRestRequest.getEndEntityProfileName());
             
             final Date now = new Date();
             final int tokenType = TokenType.resolveEndEntityTokenByName(addEndEntityRestRequest.getToken()).getTokenValue();
             final EndEntityInformation eeInformation = new EndEntityInformation(
                     addEndEntityRestRequest.getUsername(), 
                     addEndEntityRestRequest.getSubjectDn(), 
-                    caId, 
+                    Integer.MIN_VALUE,  
                     addEndEntityRestRequest.getSubjectAltName(), 
                     addEndEntityRestRequest.getEmail(),
                     EndEntityConstants.STATUS_NEW, 
                     EndEntityTypes.ENDUSER.toEndEntityType(), 
-                    endEntityProfileId, 
-                    certificateProfileId, 
+                    Integer.MIN_VALUE, 
+                    Integer.MIN_VALUE, 
                     now,
                     now,
                     tokenType,
