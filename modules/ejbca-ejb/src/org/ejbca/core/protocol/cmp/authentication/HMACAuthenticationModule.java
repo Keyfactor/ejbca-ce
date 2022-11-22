@@ -121,7 +121,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             return false;
         }
         try {
-            if (pkiMessage.getHeader().getProtectionAlg().getAlgorithm() == PKCSObjectIdentifiers.id_PBMAC1) {
+            if (pkiMessage.getHeader().getProtectionAlg().getAlgorithm().equals(PKCSObjectIdentifiers.id_PBMAC1)) {
                 verifyer = new CmpPbmac1Verifyer(pkiMessage);
             } else {
                 verifyer = new CmpPbeVerifyer(pkiMessage);
