@@ -260,7 +260,7 @@ public class CmpMessageHelper {
         return result;
     }
 
-    public static byte[] protectPKIMessageWithPBMAC1(final PKIMessage msg, final String keyId, final String raSecret, final String macAlgId,
+    public static PKIMessage protectPKIMessageWithPBMAC1(final PKIMessage msg, final String keyId, final String raSecret, final String macAlgId,
             final int iterationCount, final int dkLen, final String prf) throws NoSuchAlgorithmException, NoSuchProviderException,
             InvalidKeyException {
         if (LOG.isTraceEnabled()) {
@@ -296,8 +296,8 @@ public class CmpMessageHelper {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("<protectPKIMessageWithPBMAC1()");
             }
-            // Return response as byte array
-            return pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
+            // Return response
+            return new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts());
         } catch (IOException | OperatorCreationException e) {
             LOG.error(e.getLocalizedMessage(), e);
             throw new InvalidKeyException(e);

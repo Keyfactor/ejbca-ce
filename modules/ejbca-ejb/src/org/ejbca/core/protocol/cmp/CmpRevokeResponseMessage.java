@@ -160,8 +160,8 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 					getPbeIterationCount());
 		} else if (pbmac1Protected) {
 			myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-			responseMessage = CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, getPbmac1KeyId(), getPbmac1Key(), getPbmac1MacAlg(),
-					getPbmac1IterationCount(), getPbmac1DkLen(), getPbmac1PrfAlg());
+			responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, getPbmac1KeyId(),
+					getPbmac1Key(), getPbmac1MacAlg(), getPbmac1IterationCount(), getPbmac1DkLen(), getPbmac1PrfAlg()));
 		} else {
 		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digestAlg)));
             if (CollectionUtils.isNotEmpty(signCertChain)) {
