@@ -68,6 +68,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
 
 import java.io.File;
@@ -90,6 +91,9 @@ import static org.junit.Assert.assertNotNull;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CMPKeyUpdateStressTestCommandTest {
+
+    @Rule
+    public Timeout testTimeout = new Timeout(60_000); // per test case
 
     private static final String END_ENTITY_PROFILE_NAME = "CMPKeyUpdateStressTestCommandTestEEP";
     private static final String CA_NAME = "CMPKeyUpdateStressTestCommandTestCA";

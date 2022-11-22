@@ -111,6 +111,9 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public static final int DEFAULT_REMAININGLOGINATTEMPTS = -1;
     
     public static final String MARKER_FROM_REST_RESOURCE = "__zzz_marker_rest_";
+    public static final String CA_NAME = "__zzz_ca_name";
+    public static final String CERTIFICATE_PROFILE_NAME = "__zzz_cp_name";
+    public static final String END_ENTITY_PROFILE_NAME = "__zzz_eep_name";
     
     /** Map key for certificate serial number */
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
