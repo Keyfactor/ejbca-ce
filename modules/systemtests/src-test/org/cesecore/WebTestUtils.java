@@ -495,7 +495,7 @@ public final class WebTestUtils {
                 
         public HttpClientConfig build() throws Exception {
             trustManagerFactory = createTrustManagerFactory(trustStorePath, trustStorePwd, serverCaInfo);            
-            issueAndStoreClientCert(admin, keyStorePath, username, subjectDn, keyStorePwd, clientCaInfo.getCAId(), serverCaInfo.getCertificateChain());
+            clientCertificate = issueAndStoreClientCert(admin, keyStorePath, username, subjectDn, keyStorePwd, clientCaInfo.getCAId(), serverCaInfo.getCertificateChain());
             keyManagerFactory = createKeyManagerFactory(keyStorePath, keyStorePwd);
             sslContext = WebTestUtils.createSslContext(trustManagerFactory, keyManagerFactory);
             return this;
