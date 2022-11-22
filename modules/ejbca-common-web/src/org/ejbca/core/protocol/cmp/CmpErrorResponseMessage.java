@@ -142,8 +142,8 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(),
 					getPbeIterationCount());
 		} else if (pbmac1Protected) {
-			responseMessage = CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, getPbmac1KeyId(), getPbmac1Key(), getPbmac1MacAlg(),
-					getPbmac1IterationCount(), getPbmac1DkLen(), getPbmac1PrfAlg());
+			responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, getPbmac1KeyId(),
+					getPbmac1Key(), getPbmac1MacAlg(), getPbmac1IterationCount(), getPbmac1DkLen(), getPbmac1PrfAlg()));
 		} else {
 			responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);			
 		}
