@@ -27,7 +27,6 @@ import javax.ejb.EJBException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -189,7 +188,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("CRMF request message header has protection alg: " + crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
-                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId())); // TODO: add pbmac1 scenario
+                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("CRMF request message header has no protection alg, using default alg in response.");
                 }
@@ -411,26 +410,30 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         if (StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
             final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
             verifyer = hmacmodule.getPasswordBasedProtectionVerifyer();
-            if (LOG.isDebugEnabled() && verifyer instanceof CmpPbeVerifyer) { 
+            if (verifyer instanceof CmpPbeVerifyer) { 
                 final CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
                 final String pbeDigestAlg = pbeVerifyer.getOwfOid();
                 final String pbeMacAlg = pbeVerifyer.getMacOid();
                 final int pbeIterationCount = pbeVerifyer.getIterationCount();
                 final String raSecret = pbeVerifyer.getLastUsedRaSecret();
-                LOG.debug("responseProt=" + this.responseProt + ", pbeDigestAlg=" + pbeDigestAlg + ", pbeMacAlg=" + pbeMacAlg + ", keyId=" + keyId
-                        + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("responseProt=" + this.responseProt + ", pbeDigestAlg=" + pbeDigestAlg + ", pbeMacAlg=" + pbeMacAlg + ", keyId=" + keyId
+                            + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+                }
                 if (StringUtils.equals(this.responseProt, "pbe")) {
                     crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
                 }
-            } else if (LOG.isDebugEnabled() && verifyer instanceof CmpPbmac1Verifyer) {
+            } else if (verifyer instanceof CmpPbmac1Verifyer) {
                 final CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
                 final String pbmac1PrfAlg = pbmac1Verifyer.getPrfOid();
                 final String pbmac1MacAlg = pbmac1Verifyer.getMacOid();
                 final int pbmac1IterationCount = pbmac1Verifyer.getIterationCount();
                 final int pbmac1DkLen = pbmac1Verifyer.getDkLen();
                 final String raSecret = pbmac1Verifyer.getLastUsedRaSecret();
-                LOG.debug("responseProt=" + this.responseProt + ", pbmac1PrfAlg=" + pbmac1PrfAlg + ", pbmac1MacAlg=" + pbmac1MacAlg
-                        + ", keyId=" + keyId + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("responseProt=" + this.responseProt + ", pbmac1PrfAlg=" + pbmac1PrfAlg + ", pbmac1MacAlg=" + pbmac1MacAlg
+                            + ", keyId=" + keyId + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+                }
                 if (StringUtils.equals(this.responseProt, "pbe")) {
                     crmfreq.setPbmac1Parameters(keyId, raSecret, pbmac1PrfAlg, pbmac1MacAlg, pbmac1IterationCount, pbmac1DkLen);
                 }
