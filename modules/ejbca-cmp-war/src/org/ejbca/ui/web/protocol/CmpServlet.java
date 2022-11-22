@@ -371,7 +371,7 @@ public class CmpServlet extends HttpServlet {
     private void validateMAC(PKIMessage pkiMessage, String alias, CmpConfiguration cmpConfiguration, String messageInformation) throws CmpServletValidationError{
         final boolean raMode = cmpConfiguration.getRAMode(alias);
         final String caname = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
-        String passwd;
+        String passwd = null;
         CmpPbeVerifyer verifier;
         try {
             verifier = new CmpPbeVerifyer(pkiMessage);
@@ -405,7 +405,9 @@ public class CmpServlet extends HttpServlet {
                 log.debug("Username ("+extractedUsername+") was extracted from the '" + cmpConfiguration.getExtractUsernameComponent(alias) + "' part of the subjectDN provided in the request.");
             }
             EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(authenticationToken, extractedUsername);
-            passwd = endEntityInformation.getPassword();
+            if (endEntityInformation!=null) {
+                passwd = endEntityInformation.getPassword();
+            }        
         }
         if (passwd == null) {
             final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found.";
