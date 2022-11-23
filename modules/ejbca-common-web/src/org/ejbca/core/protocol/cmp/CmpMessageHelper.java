@@ -456,7 +456,7 @@ public class CmpMessageHelper {
         int respType;
         
         if (requestType == PKIBody.TYPE_P10_CERT_REQ) {
-            respType = PKIBody.TYPE_INIT_REP; // 1 = intitialization response
+            respType = PKIBody.TYPE_CERT_REP; 
         } else {
             respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
         }
