@@ -49,7 +49,9 @@ public interface ICrmfRequestMessage extends RequestMessage {
 	 * Returns the protocolEncrKey, as sent by the client to encrypt server generated private keys with 
 	 * @return PublicKey to be used to encrypt a private key set by {@link #setServerGenKeyPair(KeyPair)}
 	 */
-    PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
+    default PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+        return null;
+    }
 
     /**
      * Gets a SubjectPublicKeyInfo form the request. This is separate from the {@link #getRequestPublicKey()}, because the 
