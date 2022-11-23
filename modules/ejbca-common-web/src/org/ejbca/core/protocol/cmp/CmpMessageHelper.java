@@ -23,7 +23,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -260,6 +259,21 @@ public class CmpMessageHelper {
         return result;
     }
 
+    /**
+     * Adds password based MAC using the protection standard PBMAC1 defined in PKCS#5 RFC 8018.
+     * The usage of PBMAC1 for protecting CMP messages in currently in draft (CMP Lightweight Profile).
+     * @param msg the message to protect
+     * @param keyId key ID String
+     * @param raSecret password used to protect the message
+     * @param macAlgId OID for the mac algorithm to use, e.g. 1.2.840.113549.2.9 hmacWithSHA256
+     * @param iterationCount number of iterations when deriving symmetric key from password
+     * @param dkLen length of the derived symmetric key
+     * @param prf psuedo random function used when deriving symmetric key
+     * @return new PKIMessage with protection
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidKeyException
+     */
     public static PKIMessage protectPKIMessageWithPBMAC1(final PKIMessage msg, final String keyId, final String raSecret, final String macAlgId,
             final int iterationCount, final int dkLen, final String prf) throws NoSuchAlgorithmException, NoSuchProviderException,
             InvalidKeyException {

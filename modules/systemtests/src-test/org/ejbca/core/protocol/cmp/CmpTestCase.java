@@ -665,6 +665,14 @@ public abstract class CmpTestCase extends CaTestCase {
         return protectPKIMessageWithPbmac1(msg, badObjectId, password, "primekey", iterations);
     }
 
+    /**
+     * Helper function used in testing for creating a PBMAC1 protected message
+     * @param msg message to protect
+     * @param badObjectId boolean declaring if protection header should have an invalid OID (to facilitate testing error case)
+     * @param password the password used for the password based MAC
+     * @param iterations number of iterations when generating the symmetric key
+     * @return message with PBMAC1 protection
+     */
     protected static PKIMessage protectPKIMessageWithPbmac1(final PKIMessage msg, final boolean badObjectId, final String password,
             final String keyId, final int iterations) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         final String macWithSha256Oid = "1.2.840.113549.2.9";
