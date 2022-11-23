@@ -126,7 +126,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -152,7 +151,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     private final int caid;
     private final X509Certificate cacert;
     private final CA testx509ca;
-    private final CmpConfiguration cmpConfiguration;
+    private CmpConfiguration cmpConfiguration;
     private final static String ALIAS = "AuthenticationModuleTstConfAlias";
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -255,8 +254,34 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test03HMACCrmfReq() throws Exception {
+    public void test02HMACModulePbmac1() throws Exception {
+        log.trace(">test02HMACModulePbmac1");
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
+        assertFalse("this.caid is 0", (this.caid == 0));
+        assertNotNull("this.cacert is null", this.cacert);
+
+        // regToken is hardcoded as foo123 in genCertReq
+        PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        // Using the CMP RA Authentication secret
+        PKIMessage req = protectPKIMessageWithPbmac1(msg, false, "foo123", "mykeyid", 567);
+        assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+
+        HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", ALIAS, this.cmpConfiguration, this.caSession.getCAInfo(ADMIN,
+                this.caid), this.eeAccessSession);
+        boolean ret = hmac.verifyOrExtract(req, null);
+        assertTrue("Authentication using HMAC faied", ret);
+        assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
+        assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
+
+        log.trace("<test02HMACModulePbmac1");
+    }
+
+    @Test
+    public void test03HMACCrmfReq() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123");
         this.cmpConfiguration.setRAMode(ALIAS, true);
@@ -264,7 +289,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-
         final PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
         assertNotNull("Generating CrmfRequest failed.", msg);
         final PKIMessage req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
@@ -281,7 +305,31 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test04HMACRevReq() throws Exception {
+    public void test04HMACCrmfReqPbmac1() throws Exception {
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123");
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        final PKIMessage req = protectPKIMessageWithPbmac1(msg, false, "foo123", "mykeyid", 567);
+        assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+        checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
+                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
+        final CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        final Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+                .intValue());
+        assertNotNull("Crmf request did not return a certificate", cert1);
+    }
+
+    @Test
+    public void test05HMACRevReq() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123");
         this.cmpConfiguration.setRAMode(ALIAS, true);
@@ -330,14 +378,63 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test05EECrmfReq() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
+    public void test06HMACRevReqPbmac1() throws Exception {
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123");
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        final X500Name revUserDN = new X500Name("CN=cmprevuser1,C=SE");
+        final String revUsername = "cmprevuser1";
+        String fingerprint = null;
+        try {
+            Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(revUserDN.toString(), issuerDN);
+            log.debug("Found " + certs.size() + " certificates for userDN \"" + USER_DN + "\"");
+            Certificate cert = null;
+            for (final Certificate tmp : certs) {
+                if (!this.certificateStoreSession.isRevoked(issuerDN, CertTools.getSerialNumber(tmp))) {
+                    cert = tmp;
+                    break;
+                }
+            }
+            if (cert == null) {
+                createUser(revUsername, revUserDN.toString(), "foo123", true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+                KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
+                cert = this.signSession.createCertificate(ADMIN, revUsername, "foo123", new PublicKeyWrapper(admkeys.getPublic()));
+            }
+            assertNotNull("No certificate to revoke.", cert);
+
+            fingerprint = CertTools.getFingerprintAsString(cert); // to be able to remove
+
+            PKIMessage msg = genRevReq(issuerDN, revUserDN, CertTools.getSerialNumber(cert), this.cacert, this.nonce, this.transid, false, null, null);
+            assertNotNull("Generating RevocationRequest failed.", msg);
+            PKIMessage req = protectPKIMessageWithPbmac1(msg, false, "foo123", "mykeyid", 567);
+            assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+            final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpResponseGeneral(resp, issuerDN, revUserDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
+            int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
+            Assert.assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
+        } finally {
+            if (this.eeAccessSession.findUser(ADMIN, revUsername) != null) {
+                this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, revUsername, ReasonFlags.unused);
+            }
+            this.internalCertStoreSession.removeCertificate(fingerprint);
+        }
+    }
+
+    @Test
+    public void test07EECrmfReq() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
-        final X500Name testUserDN = new X500Name("CN=cmptestuser5,C=SE");
-        final String testUsername = "cmptestuser5";
+        final X500Name testUserDN = new X500Name("CN=cmptestuser7,C=SE");
+        final String testUsername = "cmptestuser7";
         String fingerprint = null;
         String fingerprint2 = null;
         AuthenticationToken admToken = null;
@@ -437,7 +534,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test06EERevReq() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
+    public void test08EERevReq() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, true);
@@ -485,30 +582,18 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test07EERevReqWithUnknownCA() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
+    public void test09EERevReqWithUnknownCA() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
-        Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(USER_DN.toString(), issuerDN);
-        log.debug("Found " + certs.size() + " certificates for userDN \"" + USER_DN + "\"");
-        Certificate cert = null, tmp = null;
-        Iterator<Certificate> itr = certs.iterator();
-        while (itr.hasNext()) {
-            tmp = itr.next();
-            if (!this.certificateStoreSession.isRevoked(issuerDN, CertTools.getSerialNumber(tmp))) {
-                cert = tmp;
-                break;
-            }
-        }
+        Certificate cert;
         final String userName = "cmprevuser1";
-        if (cert == null) {
-            createUser(userName, "CN=" + userName + ",C=SE", "foo123", true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
-            cert = this.signSession.createCertificate(ADMIN, "cmprevuser1", "foo123", new PublicKeyWrapper(admkeys.getPublic()));
-        }
+        createUser(userName, "CN=" + userName + ",C=SE", "foo123", true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
+        cert = this.signSession.createCertificate(ADMIN, "cmprevuser1", "foo123", new PublicKeyWrapper(admkeys.getPublic()));
         try {
             assertNotNull("No certificate to revoke.", cert);
 
@@ -518,12 +603,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
             assertNotNull("Generating CrmfRequest failed.", msg);
 
             String adminName = "cmpTestAdmin";
-            KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
-            AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE", this.caid,
+            KeyPair keys = KeyTools.genKeys("1024", "RSA");
+            AuthenticationToken adminToken = createAdminToken(keys, adminName, "CN=" + adminName + ",C=SE", this.caid,
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             Certificate admCert = getCertFromCredentials(adminToken);
             CMPCertificate[] extraCert = getCMPCert(admCert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, keys.getPrivate(), 
                     AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(msg);
             final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(msg);
@@ -550,7 +635,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test08EECrmfReqMultipleAuthModules() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
+    public void test10EECrmfReqMultipleAuthModules() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         String modules = CmpConfiguration.AUTHMODULE_HMAC + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE;
         String parameters = "foo123" + ";" + "TestCA";
         this.cmpConfiguration.setAuthenticationModule(ALIAS, modules);
@@ -595,7 +680,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test09HMACCrmfReqMultipleAuthenticationModules() throws Exception {
+    public void test11HMACCrmfReqMultipleAuthenticationModules() throws Exception {
         final String pbeSecret = "foo123hmac";
         String modules = CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";"
                 + CmpConfiguration.AUTHMODULE_HMAC;
@@ -631,7 +716,43 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test10HMACCrmfReqWrongAuthenticationModule() throws Exception {
+    public void test12HMACCrmfReqMultipleAuthenticationModulesPbmac1() throws Exception {
+        final String pbeSecret = "foo123hmac";
+        String modules = CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";"
+                + CmpConfiguration.AUTHMODULE_HMAC;
+        String parameters = "-;TestCA;" + pbeSecret;
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, modules);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, parameters);
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.cmpConfiguration.setResponseProtection(ALIAS, "pbe");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        PKIMessage req = protectPKIMessageWithPbmac1(msg, false, pbeSecret, "mykeyid", 567);
+        assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+        // We configured PBE response protection above, so make sure it's correct
+        checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
+                .getTransactionID().getOctets(), false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), true);
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+                .intValue());
+        assertNotNull("Crmf request did not return a certificate", cert1);
+
+        VerifyPKIMessage verifier = new VerifyPKIMessage(this.caSession.getCAInfo(ADMIN, this.caid), ALIAS, ADMIN, this.caSession,
+                this.eeAccessSession, this.certificateStoreSession, this.authorizationSession, this.endEntityProfileSession, this.certProfileSession, null,
+                this.endEntityManagementSession, this.cmpConfiguration);
+        ICMPAuthenticationModule authmodule = verifier.getUsedAuthenticationModule(req, null, false);
+        assertEquals(CmpConfiguration.AUTHMODULE_HMAC, authmodule.getName());
+    }
+
+    @Test
+    public void test13HMACCrmfReqWrongAuthenticationModule() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_DN_PART_PWD);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "UID");
         this.cmpConfiguration.setRAMode(ALIAS, true);
@@ -659,7 +780,35 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test11EECrmfCheckAdminAuthorization() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
+    public void test14HMACCrmfReqWrongAuthenticationModulePbmac1() throws Exception {
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_DN_PART_PWD);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "UID");
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        PKIMessage req = protectPKIMessageWithPbmac1(msg, false, "foo123hmac", "mykeyid", 567);
+        assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+        checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
+                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), true);
+        PKIMessage respObject = PKIMessage.getInstance(resp);
+        assertNotNull(respObject);
+        final PKIBody body = respObject.getBody();
+        assertEquals(PKIBody.TYPE_ERROR, body.getType());
+        ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String expectedErrMsg = "The authentication module 'DnPartPwd' cannot be used in RA mode";
+        assertEquals(expectedErrMsg, errMsg);
+    }
+
+    @Test
+    public void test15EECrmfCheckAdminAuthorization() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, true);
@@ -695,7 +844,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test12EECrmfNotCheckAdmin() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
+    public void test16EECrmfNotCheckAdmin() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setOmitVerificationsInECC(ALIAS, true);
@@ -743,7 +892,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test13CrmfReqClientModeHMAC() throws Exception {
+    public void test17CrmfReqClientModeHMAC() throws Exception {
         String clientPassword = "foo123client";
 
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
@@ -815,7 +964,80 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test14HMACModuleInClientMode() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
+    public void test18CrmfReqClientModeHMACPbmac1() throws Exception {
+        String clientPassword = "foo123client";
+
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, clientPassword);
+        this.cmpConfiguration.setRAMode(ALIAS, false);
+        this.cmpConfiguration.setAllowRAVerifyPOPO(ALIAS, true);
+        this.cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        String clientUsername = "clientTestUser";
+        final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
+        createUser(clientUsername, clientDN.toString(), clientPassword, true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        PKIMessage msg = genCertReq(issuerDN, clientDN, keys, this.cacert, this.nonce, this.transid, true, null, null, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
+        X500Name reqissuer = ir.toCertReqMsgArray()[0].getCertReq().getCertTemplate().getIssuer();
+        assertNotNull("reqissuer is null", reqissuer);
+
+        PKIMessage req = protectPKIMessageWithPbmac1(msg, false, clientPassword, "mykeyid", 567);
+        assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+        checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
+                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
+        ir = (CertReqMessages) req.getBody().getContent();
+        Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+                .intValue());
+        assertNotNull("Crmf request did not return a certificate", cert1);
+
+        //
+        // Try a request with no issuerDN in the certTemplate
+        createUser(clientUsername, clientDN.toString(), clientPassword, true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        try {
+            PKIMessage msgNoIssuer = genCertReq(null, clientDN, keys, this.cacert, this.nonce, this.transid, true, null, null, null, null, null, null);
+            assertNotNull("Generating CrmfRequest with no issuer failed.", msgNoIssuer);
+            PKIMessage reqNoIssuer = protectPKIMessageWithPbmac1(msgNoIssuer, false, clientPassword, "mykeyid", 567);
+            assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+            final byte[] ba2 = CmpMessageHelper.pkiMessageToByteArray(reqNoIssuer);
+            // Send request and receive response
+            byte[] respNoIssuer = sendCmpHttp(ba2, 200, ALIAS);
+            checkCmpResponseGeneral(respNoIssuer, issuerDN, clientDN, this.cacert, reqNoIssuer.getHeader().getSenderNonce().getOctets(), reqNoIssuer
+                    .getHeader().getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
+            ir = (CertReqMessages) reqNoIssuer.getBody().getContent();
+            Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, respNoIssuer, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+                    .getValue().intValue());
+            assertNotNull("Crmf request did not return a certificate", cert2);
+
+            // Send a confirm message to the CA
+            String hash = CertTools.getFingerprintAsString(cert2);
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            PKIMessage confirm = genCertConfirm(USER_DN, this.cacert, this.nonce, this.transid, hash, reqId, null);
+            PKIMessage protectedConfirm = protectPKIMessageWithPbmac1(confirm, false, clientPassword, null, 567);
+            assertNotNull(protectedConfirm);
+            final byte[] ba3 = CmpMessageHelper.pkiMessageToByteArray(protectedConfirm);
+            // Send request and receive response
+            byte[] resp3 = sendCmpHttp(ba3, 200, ALIAS);
+            checkCmpResponseGeneral(resp3, issuerDN, USER_DN, this.cacert, this.nonce, this.transid, true, null,
+                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
+            checkCmpPKIConfirmMessage(USER_DN, this.cacert, resp3);
+        } finally {
+            this.endEntityManagementSession.deleteUser(ADMIN, clientUsername);
+        }
+    }
+
+
+    @Test
+    public void test19HMACModuleInClientMode() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
             IOException, InvalidAlgorithmParameterException, AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, EjbcaException, java.lang.Exception {
 
@@ -856,7 +1078,48 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test15CrmfReqClientModeRegToken() throws Exception {
+    public void test20HMACModuleInClientModePbmac1() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
+            IOException, InvalidAlgorithmParameterException, AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, EjbcaException, java.lang.Exception {
+
+        this.cmpConfiguration.setRAMode(ALIAS, false);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        final String clientUsername = "clientTestUser";
+        final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
+        final String clientPassword = "foo123client";
+
+        createUser(clientUsername, clientDN.toString(), clientPassword, true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        try {
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+            PKIMessage msg = genCertReq(issuerDN, clientDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            PKIMessage req = protectPKIMessageWithPbmac1(msg, false, clientPassword, "mykeyid", 567);
+            assertNotNull("Protecting PKIMessage failed", req);
+
+            HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", ALIAS, this.cmpConfiguration, this.caSession.getCAInfo(ADMIN,
+                    this.caid), this.eeAccessSession);
+            hmac.verifyOrExtract(req, null);
+            assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
+            assertEquals("HMAC returned the wrong password", clientPassword, hmac.getAuthenticationString());
+
+            // Test the same but without issuerDN in the request
+            msg = genCertReq(null, clientDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            req = protectPKIMessageWithPbmac1(msg, false, clientPassword, "mykeyid", 567);
+            assertNotNull("Protecting PKIMessage failed", req);
+            hmac.verifyOrExtract(req, null);
+            assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
+            assertEquals("HMAC returned the wrong password", clientPassword, hmac.getAuthenticationString());
+        } finally {
+            this.endEntityManagementSession.deleteUser(ADMIN, clientUsername);
+        }
+    }
+
+    @Test
+    public void test21CrmfReqClientModeRegToken() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
         this.cmpConfiguration.setRAMode(ALIAS, false);
@@ -894,7 +1157,45 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test16CrmfReqClientModeMultipleModules() throws Exception {
+    public void test22CrmfReqClientModeRegTokenPbmac1() throws Exception {
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
+        this.cmpConfiguration.setRAMode(ALIAS, false);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        final String clientUsername = "clientTestUser";
+        final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
+        final String clientPassword = "foo123client";
+        try {
+            this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
+        } catch (Exception e) {
+            log.debug(e.getMessage());
+        }
+        createUser(clientUsername, clientDN.toString(), "foo123", true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        try {
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+            PKIMessage msg = genCertReq(issuerDN, clientDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            PKIMessage req = protectPKIMessageWithPbmac1(msg, false, clientPassword, "mykeyid", 567);
+            assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+            final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+                    .intValue());
+            assertNotNull("Crmf request did not return a certificate", cert1);
+        } finally {
+            this.endEntityManagementSession.deleteUser(ADMIN, clientUsername);
+        }
+    }
+
+    @Test
+    public void test23CrmfReqClientModeMultipleModules() throws Exception {
         String authmodules = CmpConfiguration.AUTHMODULE_HMAC + ";" + CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD;
 
         this.cmpConfiguration.setAuthenticationModule(ALIAS, authmodules);
@@ -934,7 +1235,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     @Test
-    public void test17HMACCrmfReqClientModeHMACInvalidPassword() throws Exception {
+    public void test24HMACCrmfReqClientModeHMACInvalidPassword() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123client");
         this.cmpConfiguration.setRAMode(ALIAS, false);
@@ -974,6 +1275,47 @@ public class AuthenticationModulesTest extends CmpTestCase {
         }
     }
 
+    @Test
+    public void test25HMACCrmfReqClientModeHMACInvalidPasswordPbmac1() throws Exception {
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123client");
+        this.cmpConfiguration.setRAMode(ALIAS, false);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        final String clientUsername = "clientTestUser";
+        final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
+        String clientPassword = "foo123client";
+        try {
+            this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
+        } catch (Exception e) {//do nothing
+        }
+        createUser(clientUsername, clientDN.toString(), "foo123ee", true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        try {
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+            PKIMessage msg = genCertReq(issuerDN, clientDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            PKIMessage req = protectPKIMessageWithPbmac1(msg, false, clientPassword, "mykeyid", 567);
+            assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+            final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
+                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), true);
+            PKIMessage respObject = PKIMessage.getInstance(resp);
+            assertNotNull(respObject);
+            PKIBody body = respObject.getBody();
+            assertEquals(PKIBody.TYPE_ERROR, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String expectedErrMsg = "Authentication failed for message. clientTestUser.";
+            assertEquals(expectedErrMsg, errMsg);
+        } finally {
+            this.endEntityManagementSession.deleteUser(ADMIN, clientUsername);
+        }
+    }
+
     /** Test CMP initial request against EJBCA CMP in client mode (operationmode=normal) using End Entity certificate signature authentication,
      * i.e. the request is signed by a certificate of the same end entity making the request, and this signature is used for authenticating the end entity.
      * Test:
@@ -986,16 +1328,16 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * @throws Exception on some errors
      */
     @Test
-    public void test18CrmfReqClientModeEESignature() throws Exception {
+    public void test26CrmfReqClientModeEESignature() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
         this.cmpConfiguration.setRAMode(ALIAS, false);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
-        final X500Name testUserDN = new X500Name("CN=cmptestuser16,C=SE");
-        final String testUsername = "cmptestuser16";
-        final String otherUserDN = "CN=cmptestotheruser16,C=SE";
-        final String otherUsername = "cmptestotheruser16";
+        final X500Name testUserDN = new X500Name("CN=cmptestuser26,C=SE");
+        final String testUsername = "cmptestuser26";
+        final String otherUserDN = "CN=cmptestotheruser26,C=SE";
+        final String otherUsername = "cmptestotheruser26";
         String fingerprint = null;
         String fingerprint2 = null;
         String fingerprint3 = null;
@@ -1109,7 +1451,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: cmptestuser16.";
+            String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: cmptestuser26.";
             assertEquals(expectedErrMsg, errMsg);
             // Step 4 now set status to NEW, and a clear text password, then it should finally work
             createUser(testUsername, testUserDN.toString(), "randompasswordhere", true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
@@ -1159,7 +1501,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * @throws Exception on some errors
      */
     @Test
-    public void test19NoHMACAuthentication() throws Exception {
+    public void test27NoHMACAuthentication() throws Exception {
 
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123");
@@ -1191,7 +1533,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * @throws Exception on some errors
      */
     @Test
-    public void test20NoEECAuthentication() throws Exception {
+    public void test28NoEECAuthentication() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, false);
@@ -1224,14 +1566,14 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * @throws Exception
      */
     @Test
-    public void test21CrmfRequestClientModeEECNotClearPassword() throws Exception {
+    public void test29CrmfRequestClientModeEECNotClearPassword() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
         this.cmpConfiguration.setRAMode(ALIAS, false);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
-        final X500Name testUserDN = new X500Name("CN=cmptestuser21,C=SE");
-        final String testUsername = "cmptestuser21";
+        final X500Name testUserDN = new X500Name("CN=cmptestuser29,C=SE");
+        final String testUsername = "cmptestuser29";
         String fingerprint = null;
         String fingerprint2 = null;
         try {
@@ -1292,7 +1634,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * @throws Exception
      */
     @Test
-    public void test22EECAuthWithSHA256AndECDSA() throws Exception {
+    public void test30EECAuthWithSHA256AndECDSA() throws Exception {
         log.trace(">test22EECAuthWithSHA256AndECDSA()");
 
         //---------------------- Create the test CA
@@ -1473,7 +1815,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * @throws Exception
      */
     @Test
-    public void test23EECAuthWithRSAandECDSA() throws Exception {
+    public void test31EECAuthWithRSAandECDSA() throws Exception {
         log.trace(">test23EECAuthWithRSAandECDSA()");
 
         //-------------- Set the necessary configurations
@@ -1539,7 +1881,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * Other authentication modules are not used in RA mode
      */
     @Test
-    public void test24HMACUnacceptedKeyId() throws Exception {
+    public void test32HMACUnacceptedKeyId() throws Exception {
 
         this.cmpConfiguration.setRAMode(ALIAS, true);
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
@@ -1560,6 +1902,41 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
                 .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+        PKIMessage respObject = PKIMessage.getInstance(resp);
+        assertNotNull(respObject);
+        final PKIBody body = respObject.getBody();
+        assertEquals(PKIBody.TYPE_ERROR, body.getType());
+        ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String expectedErrMsg = "Unaccepted KeyId 'EMPTY' in CMP request";
+        assertEquals(expectedErrMsg, errMsg);
+    }
+
+    /**
+     * Same as HMACUnacceptedKeyId using PBMAC1 protection.
+     */
+    @Test
+    public void test33HMACUnacceptedKeyIdPbmac1() throws Exception {
+
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123hmac");
+        this.cmpConfiguration.setRAEEProfile(ALIAS, CmpConfiguration.PROFILE_USE_KEYID);
+        this.cmpConfiguration.setRACertProfile(ALIAS, CmpConfiguration.PROFILE_DEFAULT);
+        this.cmpConfiguration.setRACAName(ALIAS, "TestCA");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        PKIMessage req = protectPKIMessageWithPbmac1(msg, false, "foo123hmac", "EMPTY", 567);
+        assertNotNull("Protecting PKIMessage with HMAC PBMAC1 failed.", req);
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+        checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
+                .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), true);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
         final PKIBody body = respObject.getBody();
