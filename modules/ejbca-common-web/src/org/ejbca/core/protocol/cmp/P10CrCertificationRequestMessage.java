@@ -40,8 +40,6 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMException;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -377,17 +375,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
             }
         }
         return false;
-    }
-
-    @Override
-    public PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        SubjectPublicKeyInfo pkInfo = getRequest().getSubjectPublicKeyInfo();
-        JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-        try {
-            return converter.getPublicKey(pkInfo);
-        } catch (PEMException e) {
-            throw new IllegalStateException("Unable to parse the public key from pkcs10 request!");
-        }
     }
 
     @Override

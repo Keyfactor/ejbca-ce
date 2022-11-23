@@ -180,7 +180,7 @@ public class P10CrRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_CERT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
         log.trace("<test01CrmfHttpUnknowUser");
     }
 
@@ -199,7 +199,7 @@ public class P10CrRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_CERT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
     }
 
     @Test
