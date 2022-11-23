@@ -843,10 +843,15 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             log.trace("<cvcRequest");
             return EJBTools.wrapCertCollection(result);
-        } catch ( NoSuchEndEntityException | ParseException | ConstructionException | NoSuchFieldException
-                | InvalidKeyException | CertificateException // | CertificateEncodingException
-                | CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
-                | IOException e) {
+        } catch (CADoesntExistsException | CertificateCreateException | NoSuchEndEntityException e) {
+            ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
+            if (e.getErrorCode() != null) {
+                throw new EjbcaException(e.getErrorCode(), e.getMessage());
+            } else {
+                throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+            }
+        } catch (ParseException | ConstructionException | NoSuchFieldException| InvalidKeyException | CertificateException // | CertificateEncodingException
+                | CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException | IOException e) {
             ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
