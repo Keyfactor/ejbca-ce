@@ -284,7 +284,6 @@ public class CmpMessageHelper {
         head.setProtectionAlg(protectionAlg);
         PKIHeader pkiHeader = head.build();
         // Do the mac
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); // TODO: This should probably be somewhere else
         final byte[] protectedBytes = getProtectedBytes(pkiHeader, msg.getBody());
         MacCalculator mac;
         byte[] out = null;
