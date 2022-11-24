@@ -62,6 +62,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
+import org.ejbca.core.protocol.cmp.CrmfRequestMessage;
 import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
@@ -373,6 +374,8 @@ public class CmpServlet extends HttpServlet {
         final String caname = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
         String passwd = null;
         CmpPbeVerifyer verifier;
+        CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
+                cmpConfiguration.getExtractUsernameComponent(alias));
         try {
             verifier = new CmpPbeVerifyer(pkiMessage);
         } catch (InvalidCmpProtectionException e) {
@@ -399,8 +402,8 @@ public class CmpServlet extends HttpServlet {
             // Client Mode
             // Extract end entity username from specified DN part to get a user clear text password for authentication of the PKIMessage
             // The password was formerly specified in cmpProxy.properties
-            String subjectDN = pkiMessage.getHeader().getSender().toString();
-            String extractedUsername = CertTools.getPartFromDN(subjectDN, cmpConfiguration.getExtractUsernameComponent(alias));
+            String requestDN = crmfRequestMessage.getRequestDN();
+            String extractedUsername = CertTools.getPartFromDN(requestDN, cmpConfiguration.getExtractUsernameComponent(alias));
             if (log.isDebugEnabled()) {
                 log.debug("Username ("+extractedUsername+") was extracted from the '" + cmpConfiguration.getExtractUsernameComponent(alias) + "' part of the subjectDN provided in the request.");
             }
