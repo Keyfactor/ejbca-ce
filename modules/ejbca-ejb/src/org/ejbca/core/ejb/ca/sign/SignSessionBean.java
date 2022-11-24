@@ -174,6 +174,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Creates and signs certificates.
@@ -466,6 +467,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         } else {
             ca = (CA) caSession.getCANoLog(admin, suppliedUserData.getCAId(), null); // Take the CAId from the supplied userdata, if any
         }
+        
+        if(Objects.isNull(ca)) {
+            throw new CADoesntExistsException();
+        }
+        
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             final String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
             throw new CAOfflineException(msg);
