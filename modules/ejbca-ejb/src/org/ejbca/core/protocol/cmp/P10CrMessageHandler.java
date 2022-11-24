@@ -201,7 +201,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                                 authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
                         final ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(p10CrReq.getPKIMessage(),
                                 username, authenticated);
-                        if (authenticationModule == null && !(authenticationModule instanceof RegTokenPasswordExtractor)) {
+                        if (authenticationModule == null) {
                             String errmsg = messageVerifyer.getErrorMessage();
                             LOG.error(errmsg);
                             return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
