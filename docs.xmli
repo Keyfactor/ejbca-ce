@@ -10,6 +10,7 @@
     <property name="project.name" value="ejbca"/>
     <property name="docs.tools.dest"    location="tmp/docs-tools"/>
     <property name="docs.dist"    location="doc/dist"/>
+    <property name="docs.dest"    location="tmp/htdocs/docs"/>
     <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
     <property name="docs.dest.rest" location="tmp/htdocs/docs/rest"/>
