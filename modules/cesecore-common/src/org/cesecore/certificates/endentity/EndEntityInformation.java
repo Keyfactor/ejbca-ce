@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
@@ -172,7 +173,10 @@ public class EndEntityInformation implements Serializable {
     }
 
 
-    public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.stripUsername(user));}
+    public void setUsername(String user) {
+        this.username = StringTools.putBase64String(StringTools.stripUsername(user));
+    }
+
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {
         if (dn==null) {
@@ -292,6 +296,28 @@ public class EndEntityInformation implements Serializable {
             endEntityType.addType(EndEntityTypes.PRINT);
         } else {
             endEntityType.removeType(EndEntityTypes.PRINT);
+        }
+        setType(endEntityType);
+    }
+    
+    public boolean isSshEndEntity(){
+        return getType().contains(EndEntityTypes.SSH);
+    }
+
+    public void setSshEndEntity(final boolean sshEndEntity){
+        final EndEntityType endEntityType = getType();
+        if (sshEndEntity) {
+            endEntityType.addType(EndEntityTypes.SSH);
+            if(extendedinformation==null) {
+                extendedinformation = new ExtendedInformation();
+            }
+            // sets to invalid value
+            extendedinformation.setSshCustomData(SshEndEntityProfileFields.SSH_CERTIFICATE_TYPE, 0);
+        } else {
+            endEntityType.removeType(EndEntityTypes.SSH);
+            if(extendedinformation!=null) {
+                extendedinformation.removeSshCustomData(SshEndEntityProfileFields.SSH_CERTIFICATE_TYPE);
+            }
         }
         setType(endEntityType);
     }

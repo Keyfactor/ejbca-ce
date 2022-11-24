@@ -52,11 +52,6 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     private EntityManager entityManager;
 
     @Override
-    protected String getTableName() {
-        return "CertificateData";
-    }
-
-    @Override
     protected EntityManager getEntityManager() {
         return entityManager;
     }
@@ -234,11 +229,48 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     }
 
     @Override
-    public Collection<RevokedCertInfo> getRevokedCertInfos(final String issuerDN, final int crlPartitionIndex, final long lastbasecrldate) {
+    public Collection<RevokedCertInfo> getRevokedCertInfos(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate) {
         if (log.isDebugEnabled()) {
-            log.debug("Quering for revoked certificates. IssuerDN: '" + issuerDN + "', Last Base CRL Date: " + FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastbasecrldate));
+            log.debug("Querying for revoked certificates. IssuerDN: '" + issuerDN + "'" +
+                    ", Delta CRL: " + deltaCrl +
+                    ", Last Base CRL Date: " + FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastBaseCrlDate));
         }
-        return getRevokedCertInfosInternal(issuerDN, crlPartitionIndex, lastbasecrldate, false);
+        final String crlPartitionExpression;
+        final String ordering;
+        final Query query;
+        if (crlPartitionIndex != 0) {
+            crlPartitionExpression = " AND crlPartitionIndex = :crlPartitionIndex";
+        } else {
+            crlPartitionExpression = " AND (crlPartitionIndex = :crlPartitionIndex OR crlPartitionIndex IS NULL)";
+        }
+        if (CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered()) {
+            ordering = " ORDER BY revocationDate, fingerprint ASC";
+        } else {
+            ordering = "";
+        }
+        if (deltaCrl) {
+            // Delta CRL
+            query = getEntityManager().createNativeQuery(
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM CertificateData a WHERE "
+                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
+                            + crlPartitionExpression + ordering,
+                    "RevokedCertInfoSubset");
+            query.setParameter("revocationDate", lastBaseCrlDate);
+            query.setParameter("status1", CertificateConstants.CERT_REVOKED);
+            query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
+            query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
+        } else {
+            // Base CRL
+            query = getEntityManager().createNativeQuery(
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM CertificateData a WHERE "
+                            + "a.issuerDN=:issuerDN AND a.status=:status"
+                            + crlPartitionExpression + ordering,
+                    "RevokedCertInfoSubset");
+            query.setParameter("status", CertificateConstants.CERT_REVOKED);
+        }
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        return getRevokedCertInfosInternal(query);
     }
 
     @Override
@@ -259,6 +291,18 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         final TypedQuery<String> query = entityManager
                 .createQuery("SELECT a.serialNumber FROM CertificateData a WHERE a.issuerDN=:issuerDN", String.class);
         query.setParameter("issuerDN", issuerDN);
+        query.setMaxResults(limit);
+        query.setFirstResult(offset);
+        return query.getResultList();
+    }
+    
+    @Override
+    public List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, long expireDate, int limit, int offset) {
+        // we ignore the certificate status
+        final TypedQuery<String> query = entityManager
+                .createQuery("SELECT a.serialNumber FROM CertificateData a WHERE a.issuerDN=:issuerDN and a.expireDate>:expireDate", String.class);
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("expireDate", expireDate);
         query.setMaxResults(limit);
         query.setFirstResult(offset);
         return query.getResultList();
@@ -294,7 +338,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     public List<CertificateData> findByExpireDateAndIssuerWithLimit(final long expireDate, final String issuerDN, final int maxNumberOfResults) {
         final long now = System.currentTimeMillis();
         final TypedQuery<CertificateData> query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND a.expireDate>=:now AND (a.status=:status1 OR a.status=:status2) AND issuerDN=:issuerDN", CertificateData.class);
+                .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND a.expireDate>=:now AND (a.status=:status1 OR a.status=:status2) AND a.issuerDN=:issuerDN", CertificateData.class);
         query.setParameter("expireDate", expireDate);
         query.setParameter("now", now);
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);

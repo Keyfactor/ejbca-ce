@@ -494,16 +494,16 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		getPrintStream().println("The command will start up a number of threads.");
 		getPrintStream().println("Each thread will continuously add new users to EJBCA. After adding a new user the thread will fetch a certificate for it.");
 		getPrintStream().println();
-		getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>] [<certificate profile name>] [<type of test>]");
+		getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>] [<certificate profile name>] [<type of test>] [<nr of tests>]");
 		getPrintStream().println();
 		getPrintStream().println("Here is an example of how the test could be started:");
-		getPrintStream().println("./ejbcawsracli.sh stress ManagementCA 20 5000");
+		getPrintStream().println("./ejbcaClientToolBox.sh EjbcaWsRaCli stress ManagementCA 20 5000");
 		getPrintStream().println("20 threads is started. After adding a user the thread waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA ManagementCA.");
 		getPrintStream().println("You should use the CA with 'Enforce unique public keys' unchecked to avoid 'User ... is not allowed to use same key as another user is using.' error");
 		getPrintStream().println();
 		getPrintStream().println("To define a template for the subject DN of each new user use the java system property 'subjectDN'.");
 		getPrintStream().println("If the property value contains one or several '<userName>' string these strings will be substituted with the user name.");
-		getPrintStream().println("Example: JAVA_OPT=\"-DsubjectDN=CN=<userName>,O=Acme,UID=hej<userName>,OU=,OU=First Fixed,OU=sfsdf,OU=Middle Fixed,OU=fsfsd,OU=Last Fixed\" ../../PWE/ejbca_3_11/dist/clientToolBox/ejbcaClientToolBox.sh EjbcaWsRaCli stress ldapDirect 1 1000 ldapClientOUTest ldapClientDirect");
+		getPrintStream().println("Example: JAVA_OPT=\"-DsubjectDN=CN=<userName>,O=Acme,UID=hej<userName>,OU=,OU=First Fixed,OU=sfsdf,OU=Middle Fixed,OU=fsfsd,OU=Last Fixed\" ./ejbcaClientToolBox.sh EjbcaWsRaCli stress ldapDirect 1 1000 ldapClientOUTest ldapClientDirect");
         getPrintStream().println();
         getPrintStream().println("To specify a key size, use the java system property 'keySize'.");
         getPrintStream().println("To specify a key algorithm, use the java system property 'keyAlgorithm'.  'RSA' and 'EC' are supported.");
@@ -523,16 +523,19 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {
-			if(this.args.length <  2){
+			if(this.args.length < 2){
 				usage();
 				System.exit(-1); // NOPMD, this is not a JEE app
 			}
-            final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(this.args.length>2 ? this.args[2] : null);
+			NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(this.args.length>2 ? this.args[2] : null);
 			final int waitTime = this.args.length>3 ? Integer.parseInt(this.args[3]) : -1;
 			final String caName = this.args[1];
 			final String endEntityProfileName = this.args.length>4 ? this.args[4] : "EMPTY";
 			final String certificateProfileName = this.args.length>5 ? this.args[5] : "ENDUSER";
 			final TestType testType = this.args.length>6 ? TestType.valueOf(this.args[6]) : TestType.BASIC;
+			if (notanot.getTests() == -1) {
+			    notanot.setTests(this.args.length>7 ? Integer.parseInt(this.args[7]) : -1);
+			}
 			final int maxCertificateSN;
 			final String subjectDN = System.getProperty("subjectDN", "CN="+USER_NAME_TAG);
 			{

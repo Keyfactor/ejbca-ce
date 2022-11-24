@@ -132,14 +132,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private String localKeyRecoveryKeyAlias;
         private boolean enableIcaoCANameChange;
         private boolean issueHardwareToken;
-        private boolean useAutoEnrollment;
-        private int autoEnrollmentCA;
-        private boolean autoEnrollUseSSLConnection;
-        private String autoEnrollAdServer;
-        private int autoEnrollAdServerPort;
-        private String autoEnrollConnectionDN;
-        private String autoEnrollUserBaseDN;
-        private String autoEnrollConnectionPassword;
+
         private Set<String> nodesInCluster;
         private boolean enableCommandLine;
         private boolean enableCommandLineDefaultUser;
@@ -180,14 +173,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.localKeyRecovery = globalConfig.getLocalKeyRecovery();
                 this.localKeyRecoveryCryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId() != null ? globalConfig.getLocalKeyRecoveryCryptoTokenId() : 0;
                 this.localKeyRecoveryKeyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
-                this.useAutoEnrollment = globalConfig.getAutoEnrollUse();
-                this.autoEnrollmentCA = globalConfig.getAutoEnrollCA();
-                this.autoEnrollUseSSLConnection = globalConfig.getAutoEnrollSSLConnection();
-                this.autoEnrollAdServer = globalConfig.getAutoEnrollADServer();
-                this.autoEnrollAdServerPort = globalConfig.getAutoEnrollADPort();
-                this.autoEnrollConnectionDN = globalConfig.getAutoEnrollConnectionDN();
-                this.autoEnrollUserBaseDN = globalConfig.getAutoEnrollBaseDNUser();
-                this.autoEnrollConnectionPassword = globalConfig.getAutoEnrollConnectionPwd();
                 this.nodesInCluster = globalConfig.getNodesInCluster();
                 this.enableCommandLine = globalConfig.getEnableCommandLineInterface();
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
@@ -237,22 +222,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setLocalKeyRecoveryKeyAlias(String localKeyRecoveryKeyAlias) { this.localKeyRecoveryKeyAlias=localKeyRecoveryKeyAlias; }
         public boolean getIssueHardwareToken() { return this.issueHardwareToken; }
         public void setIssueHardwareToken(boolean issueHWtoken) { this.issueHardwareToken=issueHWtoken; }
-        public boolean getUseAutoEnrollment() { return this.useAutoEnrollment; }
-        public void setUseAutoEnrollment(boolean useAutoEnrollment) { this.useAutoEnrollment=useAutoEnrollment; }
-        public int getAutoEnrollmentCA() { return this.autoEnrollmentCA; }
-        public void setAutoEnrollmentCA(int caid) {this.autoEnrollmentCA=caid; }
-        public boolean getAutoEnrollUseSSLConnection() { return autoEnrollUseSSLConnection; }
-        public void setAutoEnrollUseSSLConnection(boolean useSSLConnection) { this.autoEnrollUseSSLConnection=useSSLConnection; }
-        public String getAutoEnrollAdServer() { return this.autoEnrollAdServer; }
-        public void setAutoEnrollAdServer(String server) { this.autoEnrollAdServer=server; }
-        public int getAutoEnrollAdServerPort() { return this.autoEnrollAdServerPort; }
-        public void setAutoEnrollAdServerPort(int port) { this.autoEnrollAdServerPort=port; }
-        public String getAutoEnrollConnectionDN() { return this.autoEnrollConnectionDN; }
-        public void setAutoEnrollConnectionDN(String dn) { this.autoEnrollConnectionDN=dn; }
-        public String getAutoEnrollUserBaseDN() { return this.autoEnrollUserBaseDN; }
-        public void setAutoEnrollUserBaseDN(String dn) { this.autoEnrollUserBaseDN=dn; }
-        public String getAutoEnrollConnectionPassword() { return this.autoEnrollConnectionPassword; }
-        public void setAutoEnrollConnectionPassword(String password) { this.autoEnrollConnectionPassword=password; }
         public Set<String> getNodesInCluster() { return this.nodesInCluster; }
         public void setNodesInCluster(Set<String> nodes) { this.nodesInCluster=nodes; }
         public boolean getEnableCommandLine() { return this.enableCommandLine; }
@@ -378,6 +347,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
     private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
 
+    private boolean enableCustomHeaderRest;
+    private String customHeaderRestName;
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -1022,14 +993,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
                 globalConfig.setLocalKeyRecoveryCryptoTokenId(zeroToNull(currentConfig.getLocalKeyRecoveryCryptoTokenId()));
                 globalConfig.setLocalKeyRecoveryKeyAlias(currentConfig.getLocalKeyRecoveryKeyAlias());
-                globalConfig.setAutoEnrollUse(currentConfig.getUseAutoEnrollment());
-                globalConfig.setAutoEnrollCA(currentConfig.getAutoEnrollmentCA());
-                globalConfig.setAutoEnrollSSLConnection(currentConfig.getAutoEnrollUseSSLConnection());
-                globalConfig.setAutoEnrollADServer(currentConfig.getAutoEnrollAdServer());
-                globalConfig.setAutoEnrollADPort(currentConfig.getAutoEnrollAdServerPort());
-                globalConfig.setAutoEnrollConnectionDN(currentConfig.getAutoEnrollConnectionDN());
-                globalConfig.setAutoEnrollBaseDNUser(currentConfig.getAutoEnrollUserBaseDN());
-                globalConfig.setAutoEnrollConnectionPwd(currentConfig.getAutoEnrollConnectionPassword());
                 globalConfig.setNodesInCluster(currentConfig.getNodesInCluster());
                 globalConfig.setEnableCommandLineInterface(currentConfig.getEnableCommandLine());
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
@@ -1144,9 +1107,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         googleCtPolicy = null;
         validatorSettings = null;
         incompleteIssuanceServiceCheckDone = false;
+        enableCustomHeaderRest = getAvailableProtocolsConfiguration().isCustomHeaderForRestEnabled();
+        customHeaderRestName = getAvailableProtocolsConfiguration().getCustomHeaderForRest();
     }
 
-    public void toggleUseAutoEnrollment() { getCurrentConfig().setUseAutoEnrollment(!getCurrentConfig().getUseAutoEnrollment()); }
     public void toggleEnableKeyRecovery() { getCurrentConfig().setEnableKeyRecovery(!getCurrentConfig().getEnableKeyRecovery()); }
     public void toggleLocalKeyRecovery() { getCurrentConfig().setLocalKeyRecovery(!getCurrentConfig().getLocalKeyRecovery()); }
 
@@ -1318,13 +1282,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().isRunningEnterprise();
     }
 
-    /** @return true if REST is enabled. Should be false for EJBCA CE */
-    public boolean isRestAvailable() {
+    /** @return true if ACME is enabled. Should be false for EJBCA CE */
+    public boolean isAcmeAvailable() {
         return getEjbcaWebBean().isRunningEnterprise();
     }
 
-    /** @return true if ACME is enabled. Should be false for EJBCA CE */
-    public boolean isAcmeAvailable() {
+    /** @return true if running Enterprise Edition */
+    public boolean isRunningEnterprise() {
         return getEjbcaWebBean().isRunningEnterprise();
     }
 
@@ -1342,7 +1306,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public ProtocolGuiInfo(String protocol, boolean enabled) {
             this.protocol = protocol;
             this.enabled = enabled;
-            this.url = AvailableProtocols.getContextPathByName(protocol);
+            this.url = AvailableProtocols.getContextPathByName(protocol, isRunningEnterprise());
             this.available = true;
         }
 
@@ -1369,22 +1333,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (protocol.equals(AvailableProtocols.MSAE.getName()) && !isMSAESettingsAvailable()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) && !isRestAvailable()) {
-                available = false;
-            }
-            if (protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_SSH_V1.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.ACME.getName()) && !isAcmeAvailable()) {
@@ -1401,7 +1362,36 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return enabled ? getEjbcaWebBean().getText("PC_STATUS_ENABLED") : getEjbcaWebBean().getText("PC_STATUS_DISABLED");
         }
     }
+    
+    public boolean isEnableCustomHeaderRest() {
+        return enableCustomHeaderRest;
+    }
+    
+    public void setEnableCustomHeaderRest(boolean value) {
+        enableCustomHeaderRest = value;
+    }
+    
+    public String getCustomHeaderRestName() {
+        return customHeaderRestName;
+    }
+    
+    public void setCustomHeaderRestName(String value) {
+        customHeaderRestName = value;
+    }
 
+    public void saveProtocolConfigurations() {
+        final AvailableProtocolsConfiguration availableProtocolsConfiguration = getAvailableProtocolsConfiguration();
+        getAvailableProtocolsConfiguration().setCustomHeaderForRestEnabled(enableCustomHeaderRest);
+        getAvailableProtocolsConfiguration().setCustomHeaderForRest(customHeaderRestName);
+        // Save config
+        try {
+            getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), availableProtocolsConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+            log.info("Administrator '" + getAdmin() + "' " + msg);
+            super.addNonTranslatedErrorMessage(msg);
+        }
+    }
 
     // --------------------------------------------
     //               Extended Key Usage
@@ -2112,7 +2102,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Extended Key Usages");
         }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().isRunningEnterprise()) {
             availableTabs.add("Trusted OAuth Providers");
         }
         if (getEjbcaWebBean().isRunningBuildWithCA()

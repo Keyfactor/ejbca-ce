@@ -435,8 +435,31 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             assertNonImportantRoleMembership(authenticationToken, role, roleIdsCallerBelongsTo);
         }
     }
-
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean assertNonImportantRoleMembershipUnsafe(final AuthenticationToken authenticationToken, final int roleId) {
+        final Role role = roleDataSession.getRole(roleId);
+        if (role!=null) {
+            // Check that authenticationToken is allowed to remove the role with all its rights
+            final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+            String status = assertNonImportantRoleMembershipUnsafe(authenticationToken, role, roleIdsCallerBelongsTo);
+            if(StringUtils.isNotBlank(status)) {
+                log.warn(status);
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private void assertNonImportantRoleMembership(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) throws AuthorizationDeniedException {
+        String status = assertNonImportantRoleMembershipUnsafe(authenticationToken, role, roleIdsCallerBelongsTo);
+        if(StringUtils.isNotBlank(status)) {
+            throw new AuthorizationDeniedException(status);
+        }
+    }
+
+    private String assertNonImportantRoleMembershipUnsafe(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) {
         if (role.getRoleId()!=Role.ROLE_ID_UNASSIGNED) {
             // Check that authenticationToken is not about to lock itself out by modifying its own role
             if (roleIdsCallerBelongsTo.contains(role.getRoleId())) {
@@ -461,11 +484,11 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                     }
                 }
                 if (!accessRulesBefore.equals(accessRulesAfter)) {
-                    throw new AuthorizationDeniedException("Granted access of the current administrator might be affected by this change.");
+                    return "Granted access of the current administrator might be affected by this change.";
                 }
                 if (!accessToNamespacesBefore.equals(accessToNamespacesAfter) &&
                         !(accessToNamespacesBefore.contains("") && accessToNamespacesAfter.contains(""))) {
-                    throw new AuthorizationDeniedException("Granted namespace access of the current administrator would be affected by this change.");
+                    return "Granted namespace access of the current administrator would be affected by this change.";
                 }
                 if (log.isDebugEnabled()) {
                     log.debug("Access granted to '"+authenticationToken+"' would not be affected by not being a member of Role with id " + role.getRoleId() + ".");
@@ -476,6 +499,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 }
             }
         }
+        return "";
     }
     
     /** @throws AuthorizationDeniedException if the nameSpace is not "owned" by the caller. */

@@ -13,8 +13,27 @@
 
 package org.ejbca.core.ejb.keyrecovery;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.ByteArrayInputStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -22,6 +41,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -29,7 +49,10 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -45,6 +68,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -59,6 +83,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -72,6 +97,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -80,23 +106,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Random;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests the key recovery modules.
@@ -255,6 +264,132 @@ public class KeyRecoveryTest extends CaTestCase {
             endEntityManagementSession.deleteUser(internalAdmin, userec);
         }
         log.trace("<testAddAndRemoveKeyPairEC()");
+    }
+    
+    /**
+     * Test key archival with ECCDH, using a non-covariant curve, which should fail. 
+     */
+    @Test
+    public void testECCDHNonCovariant() throws Exception {
+        final String encryptionCipher =  "brainpoolP256t1";
+        //Create a new CA with a EC crypto token
+        final String caName = "testAddAndRemoveKeyPairECEncryptWithECCDH_Ca";
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "secp256r1", encryptionCipher);
+        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
+                CAInfo.SELFSIGNED, null, caToken);
+        final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
+        extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        caInfo.setExtendedCAServiceInfos(extendedCaServices);
+        final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        try {
+            caAdminSession.createCA(internalAdmin, caInfo);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalArgumentException("Could not create CA.", e);
+        }
+        X509Certificate endEntityCertificate = null;
+        String certificateFingerprint = null;
+        final String username = "testAddAndRemoveKeyPairECEncryptWithECCDH";      
+        try {
+          KeyPair endEntityKeypair = null;
+            try {
+                if (!endEntityManagementSession.existsUser(username)) {
+                    endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
+                    final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
+                            "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
+                            EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                            SecConst.TOKEN_SOFT_P12, null);
+                    ee.setPassword("foo123");
+                    endEntityManagementSession.addUser(internalAdmin, ee, false);
+                    endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
+                            new PublicKeyWrapper(endEntityKeypair.getPublic()));
+                    certificateFingerprint = CertTools.getFingerprintAsString(endEntityCertificate);
+                }
+            } catch (Exception e) {
+                log.error("Exception generating keys/cert: ", e);
+                fail("Exception generating keys/cert");
+            }    
+            // Save the keys as key recovery data in the database 
+            assertFalse("Operation should have failed due to incorrect curve.",
+                    keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate), username, EJBTools.wrap(endEntityKeypair)));
+            
+        } finally {
+            // Only clean up left.
+            if (endEntityCertificate != null) {
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(endEntityCertificate)));
+            }
+            internalCertStoreSession.removeCertificate(certificateFingerprint);
+            endEntityManagementSession.deleteUser(internalAdmin, username);
+            CaTestUtils.removeCa(internalAdmin, caName, caName);
+        }
+    }
+    
+    
+    /**
+     * Tests adding a EC keypair and checks if it can be read again, but on a CA running EC keys 
+     */
+    @Test
+    public void testAddAndRemoveKeyPairECEncryptWithECCDH() throws Exception {
+        //Create a new CA with a EC crypto token
+        final String caName = "testAddAndRemoveKeyPairECEncryptWithECCDH_Ca";
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "secp256r1", "secp256r1");
+        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
+                CAInfo.SELFSIGNED, null, caToken);
+        final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
+        extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        caInfo.setExtendedCAServiceInfos(extendedCaServices);
+        final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        try {
+            caAdminSession.createCA(internalAdmin, caInfo);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalArgumentException("Could not create CA.", e);
+        }
+        X509Certificate endEntityCertificate = null;
+        String certificateFingerprint = null;
+        final String username = "testAddAndRemoveKeyPairECEncryptWithECCDH";      
+        try {
+          KeyPair endEntityKeypair = null;
+            try {
+                if (!endEntityManagementSession.existsUser(username)) {
+                    endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
+                    final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
+                            "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
+                            EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                            SecConst.TOKEN_SOFT_P12, null);
+                    ee.setPassword("foo123");
+                    endEntityManagementSession.addUser(internalAdmin, ee, false);
+                    endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
+                            new PublicKeyWrapper(endEntityKeypair.getPublic()));
+                    certificateFingerprint = CertTools.getFingerprintAsString(endEntityCertificate);
+                }
+            } catch (Exception e) {
+                log.error("Exception generating keys/cert: ", e);
+                fail("Exception generating keys/cert");
+            }    
+            // Save the keys as key recovery data in the database 
+            assertTrue("Key recovery data could not be added to database.",
+                    keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate), username, EJBTools.wrap(endEntityKeypair)));
+            assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(endEntityCertificate)));
+            assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(username));
+            //Perform the decryption operation through the ssb
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, endEntityCertificate);
+            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(username));
+            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(internalAdmin, username, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            assertNotNull("Couldn't recover keys from database", data);
+            assertTrue("Couldn't recover keys from database",
+                    Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), endEntityKeypair.getPrivate().getEncoded()));                   
+        } finally {
+            // Only clean up left.
+            if (endEntityCertificate != null) {
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(endEntityCertificate)));
+            }
+            internalCertStoreSession.removeCertificate(certificateFingerprint);
+            endEntityManagementSession.deleteUser(internalAdmin, username);
+            CaTestUtils.removeCa(internalAdmin, caName, caName);
+        }
     }
 
     /**

@@ -34,11 +34,14 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -65,8 +68,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * Handles execution of approved tasks. Separated from ApprovealSessionBean to avoid
  * circular dependencies, since execution will require SSBs that originally created the
  * approval request.
- * 
- * @version $Id$
  */
 @SuppressWarnings("deprecation")
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalExecutionSessionRemote")
@@ -87,6 +88,8 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
+    private RoleSessionLocal roleSession;
+    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
@@ -94,7 +97,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     @Override
     public void approve(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, 
-            ApprovalException, SelfApprovalException, AuthenticationFailedException {
+            ApprovalException, SelfApprovalException, AuthenticationFailedException, EndEntityExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">approve: hash="+approvalId);
         }
@@ -121,8 +124,9 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
                 throw new ApprovalException("Wrong status of approval request, expected STATUS_WAITINGFORAPPROVAL(-1): "+approvalData.getStatus());
             }
+            final List<Role> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
-            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
+            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval, rolesWhichApprovalAuthTokenIsMemberOf)) {
                 throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
                                 + " in step " + approval.getStepId() + " of approval profile " + approvalProfile.getProfileName());
             }
@@ -159,7 +163,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                             approvalRequest.execute();
                         }
                         approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTED);
-                    } catch (ApprovalRequestExecutionException e) {
+                    } catch (ApprovalRequestExecutionException | EndEntityExistsException e) {
                         approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTIONFAILED);
                         throw e;
                     }
@@ -193,6 +197,13 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
             throw e;
+        } catch (EndEntityExistsException e) {
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", intres.getLocalizedMessage("approval.duplicateusername", approvalData.getId()));
+            details.put("error", e.getMessage());
+            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
+            throw e;
         }
         if (log.isTraceEnabled()) {
             log.trace("<approve: hash=" + approvalId+", id="+approvalData.getId()+", "+approvalData.getStatus());
@@ -221,8 +232,9 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
             }
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
+            final List<Role> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
-            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
+            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval, rolesWhichApprovalAuthTokenIsMemberOf)) {
                 throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
                                 + " in step " + approval.getStepId() + " of approval profile " + approvalProfile.getProfileName());
             }
@@ -341,6 +353,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         boolean allowed = false;
         final ApprovalStep nextStep;
         final ApprovalProfile approvalProfile = approvalData.getApprovalProfile();
+
         try {
             nextStep = approvalProfile.getStepBeingEvaluated(approvalData.getApprovals());
         } catch (AuthenticationFailedException e) {
@@ -349,14 +362,11 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         
         if (nextStep != null) {
             final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
+            List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
             for (ApprovalPartition partition : partitions.values()) {
-                try {
-                    if (approvalProfile.canApprovePartition(admin, partition)) {
-                        allowed = true;
-                        break;
-                    }
-                } catch (AuthenticationFailedException e) {
-                    // If this admin cannot approve this partition, check the next partition
+                if (approvalProfile.canApprove(roles, partition)) {
+                    allowed = true;
+                    break;
                 }
             }
         }

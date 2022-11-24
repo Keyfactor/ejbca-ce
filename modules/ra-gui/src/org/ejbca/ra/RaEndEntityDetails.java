@@ -14,16 +14,23 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -38,6 +45,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SshCertificateUtils;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -61,6 +69,7 @@ public class RaEndEntityDetails {
     private final String username;
     private final EndEntityInformation endEntityInformation;
     private final ExtendedInformation extendedInformation;
+    private final String extensionData;
     private final String subjectDn;
     private final String subjectAn;
     private final String subjectDa;
@@ -72,6 +81,14 @@ public class RaEndEntityDetails {
     private final String created;
     private final String modified;
     private final int status;
+
+    // SSH End entity fields
+    private final boolean sshTypeEndEntity;
+    private final String sshKeyId;
+    private final String sshPrincipals;
+    private final String sshComment;
+    private final String sshForceCommand;
+    private final String sshSourceAddress;
 
     private EndEntityProfile endEntityProfile = null;
     private SubjectDn subjectDistinguishedName = null;
@@ -95,6 +112,7 @@ public class RaEndEntityDetails {
         this.endEntityInformation = endEntity;
         final ExtendedInformation extendedInformation = endEntity.getExtendedInformation();
         this.extendedInformation = extendedInformation==null ? new ExtendedInformation() : extendedInformation;
+        this.extensionData = getExtensionData(endEntityInformation.getExtendedInformation());
         this.callbacks = callbacks;
         this.username = endEntity.getUsername();
         this.subjectDn = endEntity.getDN();
@@ -106,6 +124,22 @@ public class RaEndEntityDetails {
         this.eepName = eeProfName;
         this.caName = caName;
         final Date timeCreated = endEntity.getTimeCreated();
+        if (endEntity.isSshEndEntity()) {
+            this.sshTypeEndEntity = true;
+            this.sshKeyId = SshCertificateUtils.getKeyId(this.subjectDn);
+            this.sshPrincipals = SshCertificateUtils.getPrincipalsAsString(this.subjectAn);
+            this.sshComment = SshCertificateUtils.getComment(this.subjectAn);
+            Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
+            this.sshForceCommand = sshCriticalOptions.containsKey("force-command") ? sshCriticalOptions.get("force-command") : null;
+            this.sshSourceAddress = sshCriticalOptions.containsKey("source-address") ? sshCriticalOptions.get("source-address") : null;
+        } else {
+            this.sshTypeEndEntity = false;
+            this.sshKeyId = null;
+            this.sshPrincipals = null;
+            this.sshComment = null;
+            this.sshForceCommand = null;
+            this.sshSourceAddress = null;
+        }
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
         } else {
@@ -157,6 +191,42 @@ public class RaEndEntityDetails {
     public int getCaId() {
         return endEntityInformation.getCAId();
     }
+    public boolean isSshTypeEndEntity() { return sshTypeEndEntity; }
+    public String getSshKeyId() { return sshKeyId; }
+    public String getSshPrincipals() { return sshPrincipals; }
+
+    /**
+     * Converts colon separated list of principals to colon separated.
+     * @return String with principals separated by ,
+     */
+    public String getSshPrincipalsPretty() {
+        String principals = getSshPrincipals().replace(":", ", ");
+        if (StringUtils.endsWith(principals, ", ")) {
+            principals = principals.substring(0, principals.length() -2);
+        }
+        return principals;
+    }
+
+    public String getSshComment() { return sshComment; }
+    public String getSshForceCommand() { return sshForceCommand; }
+    public String getSshSourceAddress() { return sshSourceAddress; }
+
+    public boolean isSshForceCommandRequired() {
+        return this.endEntityProfile.isSshForceCommandRequired();
+    }
+
+    public boolean isSshForceCommandModifiable() {
+        return this.endEntityProfile.isSshForceCommandModifiable();
+    }
+
+    public boolean isSshSourceAddressRequired() {
+        return this.endEntityProfile.isSshSourceAddressRequired();
+    }
+
+    public boolean isSshSourceAddressModifiable() {
+        return this.endEntityProfile.isSshSourceAddressModifiable();
+    }
+
     public String getCreated() { return created; }
     public String getModified() { return modified; }
     public String getStatus() {
@@ -520,6 +590,120 @@ public class RaEndEntityDetails {
             }
         }
         return ret.toString();
+    }
+    
+    
+    /**
+     * @return Certificate extension data after it has already been read from extended information
+     */
+    public String getExtensionData() {
+        return extensionData;
+    }
+    
+    public boolean isExtensionDataConfigured() {
+        if (endEntityProfile != null) {
+            return endEntityProfile.getUseExtensiondata();
+        }
+        return false;
+    }
+    
+    /**
+     * @return Certificate extension data read from extended information
+     */
+    public String getExtensionData(ExtendedInformation extendedInformation) {
+        final String result;
+        if (extendedInformation == null) {
+            return null;
+        } else {
+            @SuppressWarnings("rawtypes")
+            Map data = (Map) extendedInformation.getData();
+            Properties properties = new Properties();
+
+            for (Object o : data.keySet()) {
+                if (o instanceof String) {
+                    String key = (String) o;
+                    if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
+                        String subKey = key.substring(ExtendedInformation.EXTENSIONDATA.length());
+                        properties.put(subKey, data.get(key));
+                    }
+                }
+
+            }
+
+            // Render the properties and remove the first line created by the Properties class.
+            StringWriter out = new StringWriter();
+            try {
+                properties.store(out, null);
+            } catch (IOException ex) {
+                // Should not happen as we are using a StringWriter
+                throw new RuntimeException(ex);
+            }
+
+            StringBuffer buff = out.getBuffer();
+            String lineSeparator = System.getProperty("line.separator");
+            int firstLineSeparator = buff.indexOf(lineSeparator);
+
+            result = firstLineSeparator >= 0 ? buff.substring(firstLineSeparator + lineSeparator.length()) : buff.toString();
+        }
+        return result;
+    }
+
+    /**
+     * @return true if the Revised Payment Service Directive (PSD2) Qualified Certificate statement field usage is enabled in End Entity profile.
+     */
+    public boolean isPsd2QcStatementEnabled() {
+        return getEndEntityProfile() != null ? getEndEntityProfile().isPsd2QcStatementUsed() : false;
+    }
+
+    /**
+     * @return the PSD2 National Competent Authority (NCA) Name stored in the extended information
+     */
+    public String getPsd2NcaName() {
+        return extendedInformation.getQCEtsiPSD2NCAName();
+    }
+
+    /**
+     * @return the PSD2 National Competent Authority (NCA) Identifier stored in the extended information
+     */
+    public String getPsd2NcaId() {
+        return extendedInformation.getQCEtsiPSD2NCAId();
+    }
+
+    /**
+     * @return selected roles of PSD2 third party Payment Service Providers (PSPs)
+     */
+    public List<String> getSelectedPsd2PspRoles() {
+        return Optional.ofNullable(extendedInformation.getQCEtsiPSD2RolesOfPSP())
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .map(role -> role.getName())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * @return all available roles of PSD2 third party Payment Service Providers (PSPs)
+     */
+    public List<SelectItem> getAvailablePsd2PspRoles() {
+        final List<SelectItem> pspRoles = new ArrayList<>();
+        pspRoles.add(new SelectItem("PSP_AS", callbacks.getRaLocaleBean().getMessage("enroll_psd2_psp_as")));
+        pspRoles.add(new SelectItem("PSP_PI", callbacks.getRaLocaleBean().getMessage("enroll_psd2_psp_pi")));
+        pspRoles.add(new SelectItem("PSP_AI", callbacks.getRaLocaleBean().getMessage("enroll_psd2_psp_ai")));
+        pspRoles.add(new SelectItem("PSP_IC", callbacks.getRaLocaleBean().getMessage("enroll_psd2_psp_ic")));
+        return pspRoles;
+    }
+
+    /**
+     * @return true if CA/B Forum Organization Identifier field usage is enabled in End Entity profile.
+     */
+    public boolean isCabfOrganizationIdentifierEnabled() {
+        return getEndEntityProfile() != null ? getEndEntityProfile().isCabfOrganizationIdentifierUsed() : false;
+    }
+
+    /**
+     * @return the CA/B Forum Organization Identifier stored in the extended information
+     */
+    public String getCabfOrganizationIdentifier() {
+        return extendedInformation.getCabfOrganizationIdentifier();
     }
 
     /** @return true every twice starting with every forth call */

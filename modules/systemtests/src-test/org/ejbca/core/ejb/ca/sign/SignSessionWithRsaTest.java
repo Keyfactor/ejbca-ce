@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -555,7 +556,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.XMPPADDR);
         profile.addField(DnComponents.SRVNAME);
         profile.addField(DnComponents.SUBJECTIDENTIFICATIONMETHOD);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName, profile);
         try {
             int eeprofile = endEntityProfileSession.getEndEntityProfileId(multipleAltNameEndEntityProfileName);
@@ -685,7 +686,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.XMPPADDR);
         profile.addField(DnComponents.SRVNAME);
         profile.addField(DnComponents.FASCN);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName, profile);
         try {
             int eeprofile = endEntityProfileSession.getEndEntityProfileId(multipleAltNameEndEntityProfileName);
@@ -796,8 +797,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, qcCertProfileName, profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(qcCertProfileName);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
@@ -956,9 +957,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        profile.setUse(EndEntityProfile.CARDNUMBER, 0, true);
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
+        profile.setCardNumberUsed(true);
         endEntityProfileSession.addEndEntityProfile(internalAdmin, validityOverrideProfileName, profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(validityOverrideProfileName);
         // Change a user that we know...
@@ -1125,8 +1126,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
         KeyPair anotherKey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
@@ -1257,8 +1258,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, testName, profile);
         try {
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(testName);
@@ -1322,8 +1323,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
         List<String> issuedFingerprints = new ArrayList<String>();
         try {
@@ -1531,9 +1532,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
-        profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
-        profile.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
+        profile.setAvailableCAs(Collections.singleton(rsacaid));
+        profile.setAllowedRequestsUsed(true);
+        profile.setAllowedRequests(3);
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTREQUESTCOUNTER", profile);
         pid = endEntityProfileSession.getEndEntityProfileId("TESTREQUESTCOUNTER");
         // Change already existing user
@@ -1621,8 +1622,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTDNOVERRIDE", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTDNOVERRIDE");
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();

@@ -206,4 +206,17 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
         }
         return result;
     }
+    
+    public int getKeyValidatorSettingsTemplate() {
+        return getSettingsTemplate();
+    }
+    
+    public void setKeyValidatorSettingsTemplate(int settings) {
+        setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate.fromIndex(settings));
+    }
+    
+    public boolean hasKeyValidatorSettingsTemplate() {
+        return getValidatorTypeIdentifier().equalsIgnoreCase(EccKeyValidator.TYPE_IDENTIFIER) ||
+                getValidatorTypeIdentifier().equalsIgnoreCase(RsaKeyValidator.TYPE_IDENTIFIER); 
+    }
 }

@@ -13,8 +13,8 @@
 
 package org.cesecore.config;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConversionException;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -346,14 +346,6 @@ public class OcspConfiguration {
             return new ArrayList<>();
         }
         return Arrays.asList(value.split(";"));
-    }
-
-    /**
-     * Intended for debugging.
-     * @return OID of extension to always respond with, even if not requested.
-     */
-    public static String getAlwaysSendCustomOCSPExtension() {
-        return ConfigurationHolder.getString("ocsp.alwayssendcustomextension");
     }
 
     /**

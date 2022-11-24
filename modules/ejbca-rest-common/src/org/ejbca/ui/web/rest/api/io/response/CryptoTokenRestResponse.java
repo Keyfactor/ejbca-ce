@@ -1,13 +1,18 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise CryptoToken Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * A class representing information about a crypto token. Is used for REST services' responses.
@@ -16,6 +21,7 @@ package org.ejbca.ui.web.rest.api.io.response;
  */
 public class CryptoTokenRestResponse {
 
+    @ApiModelProperty(value = "Response message", example = "The crypto token was deactivated successfully.")
     private String message;
 
     private CryptoTokenRestResponse(String message) {

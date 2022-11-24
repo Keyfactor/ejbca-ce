@@ -30,6 +30,12 @@
 		
 		<h:panelGroup id="informationGroup">
 			<h2><h:outputText value="Installation"/></h2>
+            <h:outputText value="#{web.text.VERSION} #{web.ejbcaVersion}" />
+            <br/>
+            <h:outputText value="#{web.text.NODEHOSTNAME} #{ejbcawebbean.hostName}"/>
+            <br/>
+            <h:outputText value="#{web.text.SERVERTIME} #{ejbcawebbean.serverTime}"/>
+            <br/><br/>
 			<h:outputText value="This node is not initialized. Please select a setup procedure."/>
 			<br/><br/>
 			<h:outputText value="The wizard will create an Administrative CA (Management CA) and a Super Administrator with default setting. For advanced setup, this guide can be skipped."/>

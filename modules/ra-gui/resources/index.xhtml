@@ -50,7 +50,7 @@
 					<script>ejbca.ra.toggleDetails(document.getElementById("expandRequest"), messageshowmore, messagehidemore);</script>
 				</h:panelGroup>
 	        </h:panelGroup>
-            <h:panelGroup layout="block" class="content-body" id="content-body-requeststatus" rendered="#{raAccessBean.authorizedToEnrollCertificate}">
+            <h:panelGroup layout="block" class="content-body" id="content-body-requeststatus" rendered="#{raAccessBean.authorizedToEnrollUsingApprovalRequestId}">
    	            <h2><h:outputText value="#{msg.status_of_certificate_request}"/></h2>
                 <h:panelGroup layout="block" styleClass="internal-frame">
 					<h:panelGroup layout="block" id="requestStatusButtonGroup">

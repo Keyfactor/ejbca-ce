@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
@@ -12,13 +15,16 @@ package org.ejbca.ui.web.rest.api.io.response;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.Base64CertData;
@@ -35,6 +41,7 @@ import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
 import org.ejbca.ui.web.rest.api.io.request.Pagination;
 import org.ejbca.ui.web.rest.api.io.request.PaginationSummary;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
 
@@ -71,6 +78,15 @@ public class SearchCertificatesRestResponseV2UnitTest {
             certificateProfileId, endEntityProfileId,
             CertificateConstants.NO_CRL_PARTITION, tag, updateTime, true, true);
     
+    Map<Integer, String> availableEndEntityProfiles = new HashMap<>();
+    Map<Integer, String> availableCertificateProfiles = new HashMap<>();
+    
+    @Before
+    public void init() {
+        availableEndEntityProfiles.put(EndEntityConstants.NO_END_ENTITY_PROFILE, "EMPTY");
+        availableCertificateProfiles.put(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "ENDUSER");
+    }
+    
     @Test
     public void testConvertRaCertificateSearchResponse() throws CertificateEncodingException, CertificateParsingException {
      
@@ -81,7 +97,9 @@ public class SearchCertificatesRestResponseV2UnitTest {
         raResponse.setTotalCount(list.size());
         
         // when
-        final SearchCertificatesRestResponseV2 restResponse = SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, new Pagination(10, 1));
+        final SearchCertificatesRestResponseV2 restResponse = 
+                SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, new Pagination(10, 1), 
+                        availableEndEntityProfiles, availableCertificateProfiles);
         
         // then
         assertPaginationSummary(restResponse, list.size());
@@ -103,11 +121,39 @@ public class SearchCertificatesRestResponseV2UnitTest {
         raResponse.setTotalCount(list.size());
         
         // when
-        final SearchCertificatesRestResponseV2 restResponse = SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, new Pagination(10, 1));
+        final SearchCertificatesRestResponseV2 restResponse = 
+                SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, new Pagination(10, 1),
+                        availableEndEntityProfiles, availableCertificateProfiles);
         
         // then
         assertPaginationSummary(restResponse, list.size());
         assertCertificateResultList(restResponse);
+    }
+
+    @Test
+    public void testConvertRaCertificateSearchResponseWhenCurrentPageNegativeOne() throws CertificateEncodingException, CertificateParsingException {
+
+        // given
+        final Long total = 77l;
+        final List<CertificateDataWrapper> list = new ArrayList<>();
+        final RaCertificateSearchResponseV2 raResponse = new RaCertificateSearchResponseV2();
+        raResponse.setCdws(list);
+        raResponse.setTotalCount(total);
+
+        // when
+        final int currentPage = -1;
+        final SearchCertificatesRestResponseV2 restResponse = 
+                SearchCertificatesRestResponseV2.converter().toRestResponse(
+                        raResponse, new Pagination(10, currentPage), availableEndEntityProfiles, availableCertificateProfiles);
+
+        // then
+        final PaginationSummary summary = restResponse.getPaginationSummary();
+        Long totalCount = summary.getTotalCerts();
+        List certificates = restResponse.getCertificates();
+        assertNotNull("PaginationSummary must not be null.", summary);
+        assertEquals("Total count does not match.", total, totalCount);
+        assertNotNull("List of certificates must not be null.", certificates);
+        assertTrue("Certificates list is not empty.", certificates.isEmpty());
     }
     
     private final void assertPaginationSummary(final SearchCertificatesRestResponseV2 response, final int listSize) {
@@ -124,6 +170,8 @@ public class SearchCertificatesRestResponseV2UnitTest {
             assertEquals("CA certificate fingerprint does not match.", caFingerprint, payload.getCaFingerprint());
             assertEquals("Certificate profile ID does not match.", (Integer) CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, payload.getCertificateProfileId());
             assertEquals("End entity profile ID does not match.", (Integer) EndEntityConstants.NO_END_ENTITY_PROFILE, payload.getEndEntityProfileId());
+            assertEquals("Certificate profile name does not match.", "ENDUSER", payload.getCertificateProfile());
+            assertEquals("End entity profile name does not match.", "EMPTY", payload.getEndEntityProfile());
             assertEquals("Expire date does not match.", expireDate, payload.getExpireDate());
             assertEquals("Issuer DN does not match.", DNFieldsUtil.dnStringToMap(issuerDn), DNFieldsUtil.dnStringToMap(payload.getIssuerDN()));
             assertEquals("Not before does not match.", notBefore, payload.getNotBefore());

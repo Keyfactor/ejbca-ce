@@ -59,6 +59,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
     // MSAE Settings
     public static final String IS_USE_SSL = "isUseSSL";
+    public static final String IS_FOLLOW_LDAP_REFERRAL = "isFollowLdapReferral";
     public static final String AD_CONNECTION_PORT = "adConnectionPort";
     public static final String AD_LOGIN_DN = "adLoginDN";
     public static final String AD_LOGIN_PASSWORD = "adLoginPassword";
@@ -110,6 +111,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             data.put(alias + MSAE_KRB5_CONF_BYTES, null);
             data.put(alias + MSAE_KRB5_CONF_FILENAME, "");
             data.put(alias + IS_USE_SSL, "false");
+            data.put(alias + IS_FOLLOW_LDAP_REFERRAL, "false");
             data.put(alias + AD_CONNECTION_PORT, String.valueOf(DEFAULT_AD_CONNECTION_PORT));
             data.put(alias + AD_LOGIN_DN, "");
             data.put(alias + AD_LOGIN_PASSWORD, "");
@@ -134,6 +136,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         keys.add(alias + MSAE_KRB5_CONF_BYTES);
         keys.add(alias + MSAE_KRB5_CONF_FILENAME);
         keys.add(alias + IS_USE_SSL);
+        keys.add(alias + IS_FOLLOW_LDAP_REFERRAL);
         keys.add(alias + AD_CONNECTION_PORT);
         keys.add(alias + AD_LOGIN_DN);
         keys.add(alias + AD_LOGIN_PASSWORD);
@@ -263,6 +266,17 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public void setIsUseSsl(String alias, final boolean isUseSsl) {
         String key = alias + "." + IS_USE_SSL;
         setValue(key, isUseSsl ? "true" : "false", alias);
+    }
+
+    public boolean isFollowLdapReferral(String alias) {
+        String key = alias + "." + IS_FOLLOW_LDAP_REFERRAL;
+        String value = getValue(key, alias);
+        return StringUtils.equals(value, "true") ? true : false;
+    }
+
+    public void setFollowLdapReferral(String alias, final boolean followLdapReferral) {
+        String key = alias + "." + IS_FOLLOW_LDAP_REFERRAL;
+        setValue(key, followLdapReferral ? "true" : "false", alias);
     }
 
     public int getADConnectionPort(String alias) {

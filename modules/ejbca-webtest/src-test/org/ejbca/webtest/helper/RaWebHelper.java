@@ -67,7 +67,9 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXT_INFO_MESSAGE = By.xpath("//li[@class='infoMessage']");
         static final By INPUT_NAME_CONSTRAINT_PERMITTED = By.id("requestInfoForm:nameConstraintPermitted");
         static final By INPUT_NAME_CONSTRAINT_EXCLUDED = By.id("requestInfoForm:nameConstraintExcluded");
-        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");       
+        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");
+        static final By INPUT_ORGANIZATION = By.id("requestInfoForm:subjectDnOptionalFields:0:subjectDnFieldOptional");
+        static final By INPUT_COUNTRY = By.id("requestInfoForm:subjectDnOptionalFields:1:subjectDnFieldOptional");
 
         // Manage Requests
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
@@ -96,7 +98,11 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
         static final By INPUT_EMAIL = By.id("requestInfoForm:emailField");
         static final By BUTTON_ADD_END_ENDTITY = By.id("requestInfoForm:addEndEntity");
-        
+        static final By ENROLL_LABEL_PERMITTED_NAME_CONSTR_REQ = By.xpath("//*[text()=\"Permitted Name Constraints *\"]");
+        static final By ENROLL_LABEL_PERMITTED_NAME_CONSTR = By.xpath("//*[text()=\"Permitted Name Constraints\"]");
+        static final By ENROLL_LABEL_EXCLUDED_NAME_CONSTR_REQ = By.xpath("//*[text()=\"Excluded Name Constraints *\"]");
+        static final By ENROLL_LABEL_EXCLUDED_NAME_CONSTR = By.xpath("//*[text()=\"Excluded Name Constraints\"]");
+
         // Search End Entities
         static final By BUTTON_MENU_SEARCH_END_ENTITIES = By.xpath(".//a[@href=\"search_ees.xhtml\"]");
         static final By INPUT_SEARCH_END_ENTITES = By.id("contentForm:genericSearchString");
@@ -108,7 +114,13 @@ public class RaWebHelper extends BaseHelper {
         static final By SECTION_PERMITTED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsPermitted')]");
         static final By SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsExcluded')]");
         static final By EDIT_BUTTON_VIEW_ENTITY = By.xpath("//*[contains(@value, 'Edit')]");
-        
+        static final By LABEL_PERMITTED_NAME_CONSTR_REQ = By.xpath("//*[text()=\"Name constraints, permitted *\"]");
+        static final By LABEL_PERMITTED_NAME_CONSTR = By.xpath("//*[text()=\"Name constraints, permitted\"]");
+        static final By LABEL_EXCLUDED_NAME_CONSTR_REQ = By.xpath("//*[text()=\"Name constraints, excluded *\"]");
+        static final By LABEL_EXCLUDED_NAME_CONSTR = By.xpath("//*[text()=\"Name constraints, excluded\"]");
+        static final By LABEL_EXCLUDED_NAME_CONSTR_NONE = By.xpath("//*[contains(@id, 'nameConstraintsExcludedNone')]");
+        static final By LABEL_PERMITTED_NAME_CONSTR_NONE = By.xpath("//*[contains(@id, 'nameConstraintsPermittedNone')]");
+
         // Edit End Entity
         static final By INPUT_PERMITTED_NAME_CONSTRAINT_EDIT_ENTITY = By.xpath("//*[contains(@id, 'newNameConstraintPermitted')]");
         static final By INPUT_EXCLUDED_NAME_CONSTRAINT_EDIT_ENTITY = By.xpath("//*[contains(@id, 'newNameConstraintExcluded')]");
@@ -117,6 +129,9 @@ public class RaWebHelper extends BaseHelper {
         // Containers
         static final By CONTAINER_ENROLL_BUTTONS = By.id("requestInfoForm:enrollButtons");
         static final By CSR_FILE_INPUT_FIELD = By.id("keyPairForm:certificateUploadInput");
+        
+        // View End Entity and Approval
+        static final By TEXT_EMAIL = By.xpath("//*[contains(@id, 'email')]");
 
         static By getRequestInfoFormSubjectDnSubjectDnField(final int index) {
             return By.id("requestInfoForm:subjectDn:" + index + ":subjectDnField");
@@ -503,6 +518,18 @@ public class RaWebHelper extends BaseHelper {
     public void assertRequestRejectButtonDoesNotExist() {
         assertElementDoesNotExist(Page.BUTTON_REQUEST_REJECT, "Found 'Reject' button.");
     }
+    
+    /**
+     * Asserts the email exists and it's content.
+     */
+    public void assertEmailContent(String email) {
+        final WebElement emailWebElement = findElement(Page.TEXT_EMAIL);
+        assertNotNull("Cannot find end entity email.", emailWebElement);
+        assertTrue("End entity or Approval data email does not match. Should contains '" + email 
+                + "', but was '" + emailWebElement.getText() + "'",
+                emailWebElement.getText().contains(email));
+        
+    }
 
     /**
      * Triggers the link 'Edit data' in request review form.
@@ -511,7 +538,7 @@ public class RaWebHelper extends BaseHelper {
         clickLink(Page.BUTTON_REQUEST_EDIT);
     }    
   
-    public void fillUsernameProvodeUserCredentials(String userName) {
+    public void fillUsernameProvideUserCredentials(String userName) {
         fillTextarea(Page.INPUT_USERNAME,userName);
         
     }
@@ -587,7 +614,26 @@ public class RaWebHelper extends BaseHelper {
     public void fillRequiredSubjectDNAttributes(String commonName) {
         fillInput(Page.INPUT_COMMON_NAME, commonName);
     }
-    
+
+    public void  verifyCommonNameValue(String commonName, String errorMessage) {
+        verifyInputValue(Page.INPUT_COMMON_NAME, commonName, errorMessage);
+    }
+
+    public void  verifyOrganizationValue(String organization, String errorMessage) {
+        verifyInputValue(Page.INPUT_ORGANIZATION, organization, errorMessage);
+    }
+
+    public void  verifyCountryValue(String country, String errorMessage) {
+        verifyInputValue(Page.INPUT_COUNTRY, country, errorMessage);
+    }
+
+    public void  verifyInputValue(final By inputId, String value, String errorMessage) {
+        assertEquals(
+                errorMessage,
+                value,
+                getElementValue(inputId)
+        );
+    }
     
     /**
      * Fills the username 
@@ -682,5 +728,51 @@ public class RaWebHelper extends BaseHelper {
     public void assertDownloadedFileExits(final String filePath) {        
         assertTrue(filePath, Files.exists(Paths.get(filePath)));
     }
-    
+
+    public void assertRequiredPermittedConstraintDisplayed(){
+        assertElementDisplayed(Page.ENROLL_LABEL_PERMITTED_NAME_CONSTR_REQ, "required permitted name constraint");
+    }
+
+    public void assertPermittedConstraintDisplayed(){
+        assertElementDisplayed(Page.ENROLL_LABEL_PERMITTED_NAME_CONSTR, "permitted name constraint");
+    }
+
+    public void assertPermittedConstraintNotDisplayed(){
+        assertElementNotDisplayed(Page.ENROLL_LABEL_PERMITTED_NAME_CONSTR, "permitted name constraint");
+    }
+
+    public void assertRequiredExcludedConstraintDisplayed(){
+        assertElementDisplayed(Page.ENROLL_LABEL_EXCLUDED_NAME_CONSTR_REQ, "required excluded name constraint");
+    }
+
+    public void assertExcludedConstraintDisplayed(){
+        assertElementDisplayed(Page.ENROLL_LABEL_EXCLUDED_NAME_CONSTR, "excluded name constraint");
+    }
+
+    public void assertExcludedConstraintNotDisplayed(){
+        assertElementNotDisplayed(Page.ENROLL_LABEL_EXCLUDED_NAME_CONSTR, "excluded name constraint");
+    }
+
+    public void assertRequiredPermittedConstraintDisplayedOnViewPage(){
+        assertElementDisplayed(Page.LABEL_PERMITTED_NAME_CONSTR_REQ, "required permitted name constraint");
+    }
+
+    public void assertPermittedConstraintDisplayedOnViewPage(){
+        assertElementDisplayed(Page.LABEL_PERMITTED_NAME_CONSTR, "permitted name constraint");
+    }
+    public void assertRequiredExcludedConstraintDisplayedOnViewPage(){
+        assertElementDisplayed(Page.LABEL_EXCLUDED_NAME_CONSTR_REQ, "required excluded name constraint");
+    }
+
+    public void assertExcludedConstraintDisplayedOnViewPage(){
+        assertElementDisplayed(Page.LABEL_EXCLUDED_NAME_CONSTR, "excluded name constraint");
+    }
+
+    public void assertExcludedConstraintNoneDisplayed(){
+        assertElementDisplayed(Page.LABEL_EXCLUDED_NAME_CONSTR_NONE, "none excluded name constraint");
+    }
+
+    public void assertPermittedConstraintNoneDisplayed(){
+        assertElementDisplayed(Page.LABEL_PERMITTED_NAME_CONSTR_NONE, "none permitted name constraint");
+    }
 }

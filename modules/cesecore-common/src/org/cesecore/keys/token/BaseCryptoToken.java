@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -363,12 +364,19 @@ public abstract class BaseCryptoToken implements CryptoToken {
      */
     protected void setProviders(String jcaProviderClassName, String jceProviderClassName) throws InstantiationException, IllegalAccessException,
             ClassNotFoundException {
-        Provider jcaProvider = (Provider) Class.forName(jcaProviderClassName).newInstance();
+        Provider jcaProvider;
+        try {
+            jcaProvider = (Provider) Class.forName(jcaProviderClassName).getConstructor().newInstance();
+        } catch ( IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+                | SecurityException | ClassNotFoundException e) {       
+            log.error(intres.getLocalizedMessage("token.jceinitfail"), e);
+            throw new IllegalStateException(intres.getLocalizedMessage("token.jceinitfail"), e);
+        }
         setProvider(jcaProvider);
         this.mJcaProviderName = jcaProvider.getName();
         if (jceProviderClassName != null) {
             try {
-                Provider jceProvider = (Provider) Class.forName(jceProviderClassName).newInstance();
+                Provider jceProvider = (Provider) Class.forName(jceProviderClassName).getConstructor().newInstance();
                 setProvider(jceProvider);
                 this.mJceProviderName = jceProvider.getName();
             } catch (Exception e) {

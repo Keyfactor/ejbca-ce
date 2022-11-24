@@ -12,18 +12,6 @@
 # Default is '/${app.name}/publicweb/status'
 #ocsp.contextroot=/status
 
-# DEPRECATED VALUE
-# Deprecated since 6.2.4. The current value will be used to perform upgrade at first startup, and may be removed afterwards. 
-#
-# Specifies the subject of a certificate which is used to identify the 
-# responder which will generate responses when no real CA can be found from the request. 
-# This is used to generate 'unknown' responses when a request is received for a certificate 
-# that is not signed by any CA on this server. Recommended to use same as ca.dn.
-#
-# For the internal OCSP responder this is the subject DN of the CA to use for signing
-# For an external OCSP responder this is the issuer DN of the OCSP responders certificate to use for signing, i.e. the CAs subject DN.
-ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
-
 # If set to false the OCSP responses will only contain the signature certificate (if ocsp.includesignercertinresponse is set to 'true'), 
 # and not the whole certificate chain of the OCSP responder.
 # Default true.
@@ -157,11 +145,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # If this configuration is set, its value will override the global value in case of certificate with a revoked status.
 #ocsp.999.revoked.maxAge = 100
 
-# Specifies OCSP extension by OID that will result in a call to an extension class.
-# Intended for debugging post EJBCA 6.12.0.
-# All other extension configuration may be selected in the CA UI for each Ocsp Key Binding.
-#ocsp.alwayssendcustomextension=1.3.36.8.3.13
-
 # Setting this to true will enable unidfnr extension in EJBCA.
 # Default is false since it is not normally used by many customers.
 # Prior to setting this to true the appropriate data source must be set in JBoss.
@@ -212,12 +195,3 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Limits what hosts may request a manual rekeying via web service. Multiple hosts may be separated with a semicolon. 
 # Default: 127.0.0.1
 #ocsp.rekeying.trigging.hosts=
-
-#------------------- OCSP Logging settings -------------
-# By enabling configuration of OCSP Audit and Transaction logging it is possible to get detailed logging of every request and response.
-# See the documentation how to enable this feature.
-#
-# As an additional, rare, setting it is possible to configure the system to aborted transactions when logging fails, for example if the disk is full.
-# This option needs other configuration changes as well, see  "Safer Log4j Logging" in the documentation for more information.
-# Default: false
-#ocsp.log-safer = true

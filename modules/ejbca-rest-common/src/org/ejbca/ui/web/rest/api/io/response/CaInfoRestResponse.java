@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
@@ -13,6 +16,7 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CertTools;
@@ -24,10 +28,15 @@ import org.cesecore.util.CertTools;
  */
 public class CaInfoRestResponse {
 
+    @ApiModelProperty(value = "CA identifier", example = "12345678")
     private Integer id;
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
     private String name;
+    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String subjectDn;
+    @ApiModelProperty(value = "Issuer Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String issuerDn;
+    @ApiModelProperty(value = "Expiration date", example = "2038-01-19T03:14:07Z")
     private Date expirationDate;
 
     /**

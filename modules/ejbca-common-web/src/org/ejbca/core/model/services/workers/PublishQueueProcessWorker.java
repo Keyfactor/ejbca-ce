@@ -75,7 +75,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * Checks if there are any publishing jobs in the publisher queue that should be
      * published.
      * 
-     * @see org.ejbca.core.model.services.IWorker#work()
+     * @see org.ejbca.core.model.services.IWorker#work(Map<Class<?>, Object>)
      */
     @Override
     public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) {
@@ -112,7 +112,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     for (int i = 0; i < ids.length; i++) {
                         int publisherId = Integer.valueOf(ids[i]);
                         // Get everything from the queue for this publisher id
-                        BasePublisher publisher = publisherSession.getPublisher(publisherId);                  
+                        BasePublisher publisher = publisherSession.getPublisher(publisherId);
                         publishingResult.append(publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisher));
                     }
                 } else {

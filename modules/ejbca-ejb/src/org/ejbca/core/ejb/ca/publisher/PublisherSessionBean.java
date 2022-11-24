@@ -40,7 +40,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
@@ -176,27 +176,27 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             return true;
         }
         final int status = certificateData.getStatus();
-        final int revocationReason = certificateData.getRevocationReason();
+        final long revocationDate = certificateData.getRevocationDate();
         final String username = certificateData.getUsername();
         boolean returnval = true;
         final List<BasePublisher> publishersToTryDirect = new ArrayList<>();
         final List<BasePublisher> publishersToQueuePending = new ArrayList<>();
         final List<BasePublisher> publishersToQueueSuccess = new ArrayList<>();
         for (final Integer id : publisherids) {
-            BasePublisher publ = getPublisherInternal(id, null, true);
-            if (publ != null) {
+            BasePublisher publisher = getPublisherInternal(id, null, true);
+            if (publisher != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
-                if (publ.willPublishCertificate(status, revocationReason)) {
-                    if (publ.getOnlyUseQueue() || publ.getSafeDirectPublishing()) {
-                        if (publ.getUseQueueForCertificates()) {
-                            publishersToQueuePending.add(publ);
+                if (publisher.willPublishCertificate(status, revocationDate)) {
+                    if (publisher.getOnlyUseQueue() || publisher.getSafeDirectPublishing()) {
+                        if (publisher.getUseQueueForCertificates()) {
+                            publishersToQueuePending.add(publisher);
                             // Publishing to the queue directly is not considered a successful write to the publisher (since we don't know that it will be)
                             returnval = false;
                         } else {
                             // NOOP: This publisher is configured to only write to the queue, but not for certificates
                         }
                     } else {
-                        publishersToTryDirect.add(publ);
+                        publishersToTryDirect.add(publisher);
                     }
                 } else {
                     if (log.isDebugEnabled()) {
@@ -318,10 +318,18 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                                 throw e;
                             }
                         }
-                        final String msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
+                        final String msg;
                         final Map<String, Object> details = new LinkedHashMap<>();
+                        EventStatus status;
+                        if (publishStatus == PublisherConst.STATUS_SUCCESS) {
+                            msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
+                            status = EventStatus.SUCCESS;
+                        } else {
+                            msg = intres.getLocalizedMessage("publisher.store.fail", "CRL", name, publishStatus);
+                            status = EventStatus.FAILURE;
+                        }
                         details.put("msg", msg);
-                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
+                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, status, EjbcaModuleTypes.PUBLISHER,
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                     } catch (PublisherException pe) {
                         final String msg = intres.getLocalizedMessage("publisher.errorstore", name, "CRL");

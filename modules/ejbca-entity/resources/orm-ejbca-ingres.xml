@@ -96,6 +96,10 @@
             <id name="authorizationId"><column name="authorizationId" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="orderId"><column name="orderId" column-definition="VARCHAR(256)" nullable="true"/></basic>
             <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(256)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="identifier"><column name="identifier" column-definition="VARCHAR(256)"/></basic>
+            <basic fetch="EAGER" name="identifierType"><column name="identifierType" column-definition="VARCHAR(20)"/></basic>
+            <basic fetch="EAGER" name="expires"><column name="expires" column-definition="INT8"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="VARCHAR(20)"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="LONG VARCHAR"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
@@ -334,7 +338,7 @@
             <basic fetch="EAGER" name="requestdate"><column name="requestDate" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="expiredate"><column name="expireDate" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="remainingapprovals"><column name="remainingApprovals" column-definition="INT4" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="VARCHAR(256)"/></basic>
+            <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="VARCHAR(400)"/></basic>
             <basic fetch="EAGER" name="email"><column name="email" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>

@@ -954,49 +954,6 @@ Content-Type: text/html; charset=iso-8859-1
         log.trace("<test50OcspUnknownMayBeGood()");
     }
     
-    /**
-     * This test tests the feature of extensions of setting a '*' in front of the value in ocsp.extensionoid
-     * forces that extension to be used for all requests. 
-     * The Common PKI CertHash extension is on such extension that is always used, if configured to be used. 
-     * This extension is specified in the German Common PKI standard:
-     * <a href="http://www.t7ev.org/T7-de/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testUseAlwaysExtensions() throws Exception {
-        log.trace(">testUseAlwaysExtensions");
-        final String ALWAYSUSE_EXT = "ocsp.alwayssendcustomextension";
-        final String oldAlwaysUseExt = cesecoreConfigurationProxySession.getConfigurationValue(ALWAYSUSE_EXT);
-        try {
-            cesecoreConfigurationProxySession.setConfigurationValue(ALWAYSUSE_EXT, OcspCertHashExtension.CERT_HASH_OID);
-            ocspResponseGeneratorSession.reloadOcspExtensionsCache();
-
-            // An OCSP request, ocspTestCert is already created in earlier tests
-            OCSPReqBuilder gen = new OCSPReqBuilder();
-            loadUserCert(this.caid);
-            this.helper.reloadKeys();
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-            OCSPReq req = gen.build();
-            BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-            if (response == null) {
-                throw new Exception("Could not retrieve response, test could not continue.");
-            }
-            // The CertHash is an extension in the responseItem, not in the full response
-            Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID));
-            assertNull("There should be no CertHash extension in the ResponseExtensions, it should be in the responseItem Extensions", responseExtension);
-            SingleResp[] responseItems = response.getResponses();
-            assertNotNull("There should be one response item in the OCSP response", responseItems);
-            assertEquals("There should be one response item in the OCSP response", 1, responseItems.length);
-            responseExtension = responseItems[0].getExtension(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID));
-            assertNotNull("No extension sent with reply in the responseItem", responseExtension);
-        } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(ALWAYSUSE_EXT, oldAlwaysUseExt);
-            ocspResponseGeneratorSession.reloadOcspExtensionsCache();
-            log.trace("<testUseAlwaysExtensions");
-        }
-    }
-    
     @Test
     public void testBase64EncodeInURINonExistingGood() throws Exception {
         log.trace(">testBase64EncodeInURINonExistingGood");

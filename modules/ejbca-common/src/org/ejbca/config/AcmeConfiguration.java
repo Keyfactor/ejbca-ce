@@ -11,26 +11,31 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
+import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
 import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
 
 /**
- * Configuration used by specifying the configurationId as part of the request URL path.
+ * Configuration used by specifying the configurationId as part of the request URL path or as URL parameter.
  */
 public class AcmeConfiguration extends UpgradeableDataHashMap implements Serializable {
 
@@ -41,7 +46,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     protected static final InternalResources intres = InternalResources.getInstance();
     
-    protected static final float LATEST_VERSION = 7;
+    protected static final float LATEST_VERSION = 11;
     
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
@@ -62,6 +67,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_PRE_AUTHORIZATION_VALIDITY = "preAuthorizationValidity";
     private static final String KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = "wildcardCertificateIssuanceAllowed";
     private static final String KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = "wildcardWithHttp01ChallengeAllowed";
+    private static final String KEY_DNS_IDENTIFIER_CHALLENGE_TYPES = "dnsIdentifierChallengeTypes";
     private static final String KEY_DNS_RESOLVER = "dnsResolver";
     private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
     private static final String KEY_DNS_PORT = "dnsPort";
@@ -72,8 +78,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
     private static final String KEY_RETRY_AFTER = "retryAfter";
     private static final String KEY_AUTHORIZED_REDIRECT_PORTS = "authorizedRedirectPorts";
-    private static final String APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
-    private static final String APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
+    private static final String KEY_APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
+    private static final String KEY_APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
+    private static final String KEY_CLIENT_AUTHENTICATION_REQUIRED = "clientAuthenticationRequired";
+    private static final String KEY_PREFERRED_ROOT_CA_SUBJECTDN = "preferredrootcasubjectdn";
 
     private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.RANDOM;
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
@@ -86,6 +94,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final boolean DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED = true;
     private static final boolean DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = false;
     private static final boolean DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = true;
+    public static final String DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES = "any-dns-challenge";
     
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
     private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
@@ -96,6 +105,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     public static final int DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID = -1;
     public static final int DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID = -1;
+    private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
+    public static final String DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN = "default";
 
     public AcmeConfiguration() {}
 
@@ -114,15 +125,43 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
+            // v10. Added client authentication required.
+            if (data.get(KEY_CLIENT_AUTHENTICATION_REQUIRED) == null) {
+                data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED));
+            }
+            if (data.get(KEY_PREFERRED_ROOT_CA_SUBJECTDN) == null) {
+                data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, String.valueOf(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN));
+            }
+            // v9. Added DNS identifier chaleenge Types selection.
+            if (data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES) == null) {
+                data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            }
+            // v8. ACME EAB with multiple keys -> multiple EAB.
+            try {
+                if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) { 
+                    setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
+                            AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
+                } else if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof LinkedHashMap) {
+                    final LinkedList<LinkedHashMap<Object,Object>> clones = new LinkedList<>();
+                    clones.add((LinkedHashMap<Object,Object>)data.get(KEY_EXTERNAL_ACCOUNT_BINDING));
+                    data.put(KEY_EXTERNAL_ACCOUNT_BINDING, clones);
+                } else if (!(data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof List)) { // Should never happen.
+                    log.error("Invalida data type during upgrade. Verify ACME configuration with alias '" + getConfigurationId() + "'");
+                    setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
+                            AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
+                }
+            } catch (AccountBindingException e) {
+                log.error("Could not upgrade ACME configuration with default ACME EAB implementation: " + e.getMessage());
+            }
             // v7. Authorized redirect ports are not upgraded.
             if (data.get(KEY_AUTHORIZED_REDIRECT_PORTS) == null) {
                 setAuthorizedRedirectPorts("");
             }
             // v6. Added approvals for account management.
-            if (data.get(APPROVAL_FOR_NEW_ACCOUNT_ID) == null) {
+            if (data.get(KEY_APPROVAL_FOR_NEW_ACCOUNT_ID) == null) {
                 setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
             }
-            if (data.get(APPROVAL_FOR_KEY_CHANGE_ID) == null) {
+            if (data.get(KEY_APPROVAL_FOR_KEY_CHANGE_ID) == null) {
                 setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
             }
             if (data.get(KEY_RA_NAMEGENERATIONSCHEME) == null) {
@@ -155,8 +194,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             }
             // v2. ACME external account binding implementation.
             try {
-                if (getExternalAccountBinding() == null) {
-                    setExternalAccountBinding(AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation());
+                // Should not be reached anymore with version 8.
+                if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) { 
+                    setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
+                            AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
                 }
             } catch (AccountBindingException e) {
                 log.error("Could not upgrade ACME configuration with default ACME EAB implementation: " + e.getMessage());
@@ -171,7 +212,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Getter for RA Name Generation Scheme for given alias
-     * @param alias the EST alias to get the name generation scheme for
      * @return name generation scheme, one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
      */
     public String getRANameGenScheme() {
@@ -185,7 +225,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Setter for RA Name Generation Scheme
-     * @param alias the EST alias to set the name generation scheme for
      * @param scheme one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
      */
     public void setRANameGenScheme(String scheme) {
@@ -194,7 +233,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     /**
      * Getter for RA Name Generation Params for given alias
-     * @param alias the EST alias to get the name generation DN parameters for
      * @return RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
      */
     public String getRANameGenParams() {
@@ -203,7 +241,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Setter for RA Name Generation Parameters
-     * @param alias the EST alias to set the name generation DN parameters for
      * @param params RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
      */    
     public void setRANameGenParams(String params) {
@@ -212,8 +249,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Getter for RA Name Generation Prefix for given alias
-     * @param alias the EST alias to get the name generation prefix for
-     *
      */
     public String getRANameGenPrefix() {
         //Set default to empty String for aliases created before RA name generation was added.
@@ -226,7 +261,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Setter for RA Name Generation Prefix
-     * @param alias the EST alias to set the name generation prefix for
      * @param prefix RA name prefix
      *
      */ 
@@ -236,8 +270,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     /**
      * Getter for RA Name Generation Postfix
-     * @param alias the EST alias to set the name generation postfix for
-     *
      */     
     public String getRANameGenPostfix() {
         // Set default to empty String for aliases created before RA name generation was added.
@@ -249,8 +281,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
      /**
-     * Setter for RA Name Generation Postfix
-     * @param alias the EST alias to set the name generation postfix for
+     * Setter for RA Name Generation Postfix.
      * @param postfix RA name postfix
      *
      */    
@@ -275,19 +306,33 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
     @SuppressWarnings("unchecked")
-    public AcmeExternalAccountBinding getExternalAccountBinding() throws AccountBindingException {
-        if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof LinkedHashMap) {
-            final LinkedHashMap<Object,Object> eabData = (LinkedHashMap<Object,Object>) data.get(KEY_EXTERNAL_ACCOUNT_BINDING);
-            final AcmeExternalAccountBinding eab = AcmeExternalAccountBindingFactory.INSTANCE.getArcheType((String) eabData.get("typeIdentifier"));
-            eab.setDataMap(eabData);
-            return eab;
+    public LinkedList<AcmeExternalAccountBinding> getExternalAccountBinding() throws AccountBindingException {
+        final LinkedList<AcmeExternalAccountBinding> result = new LinkedList<>();
+        
+        if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof List) {
+            for (Object o : (List<?>) data.get(KEY_EXTERNAL_ACCOUNT_BINDING)) {
+                if (o instanceof LinkedHashMap) {
+                    final LinkedHashMap<Object,Object> eabData = (LinkedHashMap<Object,Object>) o;
+                    final AcmeExternalAccountBinding eab = AcmeExternalAccountBindingFactory.INSTANCE.getArcheType((String) eabData.get("typeIdentifier"));
+                    eab.setDataMap(eabData);
+                    result.add(eab);
+                } else {
+                    log.error("Failed to read ACME EAB data. Invalid data type '" + o + "'.");
+                    throw new AccountBindingException("Failed to read ACME EAB data. Invalid data type.");
+                }
+            }
         }
-        return null;
+        return result;
     }
 
-    public void setExternalAccountBinding(final AcmeExternalAccountBinding eab) {
-        if (eab != null) {
-            data.put(KEY_EXTERNAL_ACCOUNT_BINDING, eab.clone().getDataMap());
+    public void setExternalAccountBinding(final LinkedList<AcmeExternalAccountBinding> eabs) {
+        if (eabs != null) {
+            final List<LinkedHashMap<Object,Object>> clones = new ArrayList<>();
+            for (AcmeExternalAccountBinding eab : eabs) {
+                final LinkedHashMap<Object,Object> clone = eab.clone().getDataMap();
+                clones.add(clone);
+            }
+            data.put(KEY_EXTERNAL_ACCOUNT_BINDING, clones);
         }
     }
 
@@ -314,7 +359,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_END_ENTITY_PROFILE_ID, Integer.valueOf(endEntityProfileId));
     }
 
-    /** @return the pattern we will use for "http-01" challenge validation. Defaults to example from RFC draft 06. */
+    /** 
+     * For testing purposes only, the identifier can be set to 'localhost', if you want to issue certificates 
+     * for arbitrary DNS names on your host -> http://localhost/.well-known/acme-challenge/{token}
+     * 
+     * @return the pattern we will use for "http-01" challenge validation. Defaults to example from RFC draft 06.
+     * */
     public String getValidationHttpCallBackUrlTemplate() {
         final String urlTemplate = (String) super.data.get(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE);
         return urlTemplate==null ? "http://{identifer}/.well-known/acme-challenge/{token}" : urlTemplate;
@@ -395,7 +445,40 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setWildcardWithHttp01ChallengeAllowed(final boolean allowed) {
         super.data.put(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED, String.valueOf(allowed));
     }
-
+    
+    public String getDnsIdentifiersChallengeTypes() {
+        return (String) super.data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES);
+    }
+    
+    public List<String> getDnsIdentifiersChallengeTypesList() {
+        final List<String> result = new ArrayList<>();
+        final String types = getDnsIdentifiersChallengeTypes();
+        if (types != null && types.length() > 0) {
+            result.addAll(Arrays.asList(types.split(",")));
+        }
+        return result;
+    }
+    
+    public void setDnsIdentifiersChallengeTypes(String types) throws Exception {
+        if (types != null && !types.trim().isEmpty()) {
+            // Remove duplicates.
+            Set<String> challengeTypes = Stream.of(types.trim().split(",")).collect(Collectors.toSet());
+            // Check value range.
+            final List<String> availableChallengeTypes = AcmeChallenge.AcmeChallengeType.getDnsIdentifierChallengeTypes(AcmeIdentifier.AcmeIdentifierTypes.DNS);
+            availableChallengeTypes.add(DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            if (!availableChallengeTypes.containsAll(challengeTypes)) {
+                throw new Exception("Invalid ACME DNS identifier challenge type. Use one of: " + availableChallengeTypes);
+            }
+            // Normalize selection any.
+            if (challengeTypes.size() >= availableChallengeTypes.size() - 1) {
+                challengeTypes = Collections.singleton(AcmeConfiguration.DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            }
+            super.data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, challengeTypes.stream().collect(Collectors.joining(",")));
+        } else {
+            super.data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+        }
+    }
+    
     public String getDnssecTrustAnchor() {
         return (String) super.data.get(KEY_DNSSEC_TRUST_ANCHOR);
     }
@@ -477,21 +560,21 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
     public int getApprovalForNewAccountId() {
-        final Integer value = (Integer) data.get(APPROVAL_FOR_NEW_ACCOUNT_ID);
+        final Integer value = (Integer) data.get(KEY_APPROVAL_FOR_NEW_ACCOUNT_ID);
         return Objects.isNull(value) ? DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID : value;
     }
 
     public void setApprovalForNewAccountId(int approvalForNewAccountId) {
-        data.put(APPROVAL_FOR_NEW_ACCOUNT_ID, approvalForNewAccountId);
+        data.put(KEY_APPROVAL_FOR_NEW_ACCOUNT_ID, approvalForNewAccountId);
     }
 
     public int getApprovalForKeyChangeId() {
-        final Integer value = (Integer) data.get(APPROVAL_FOR_KEY_CHANGE_ID);
+        final Integer value = (Integer) data.get(KEY_APPROVAL_FOR_KEY_CHANGE_ID);
         return Objects.isNull(value) ? DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID : value;
     }
 
     public void setApprovalForKeyChangeId(int approvalForKeyChangeId) {
-        data.put(APPROVAL_FOR_KEY_CHANGE_ID, approvalForKeyChangeId);
+        data.put(KEY_APPROVAL_FOR_KEY_CHANGE_ID, approvalForKeyChangeId);
     }
     
     public boolean isApprovalForNewAccountRequired() {
@@ -500,6 +583,28 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     public boolean isApprovalForKeyChangeRequired() {
         return DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID != getApprovalForKeyChangeId();
+    }
+    
+    public boolean isClientAuthenticationRequired() {
+        return Boolean.valueOf((String) super.data.get(KEY_CLIENT_AUTHENTICATION_REQUIRED));
+    }
+    
+    public void setClientAuthenticationRequired(final boolean required) {
+        super.data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(required));
+    }
+    
+    public String getPreferredRootCaSubjectDn() {
+        String value = (String) data.get(KEY_PREFERRED_ROOT_CA_SUBJECTDN);
+        if (StringUtils.isBlank(value)) {
+            data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN);
+            return DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN;
+        } else {
+            return value;
+        }
+    }
+    
+    public void setPreferredRootCaSubjectDn(String preferredRootCaSubjectDn) {
+        data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, preferredRootCaSubjectDn);
     }
     
     /** Initializes a new acme configuration with default values. */
@@ -511,11 +616,11 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setRANameGenPostfix(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
         setEndEntityProfileId(DEFAULT_END_ENTITY_PROFILE_ID);
         setRequireExternalAccountBinding(DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING);
-        try {
-            setExternalAccountBinding(AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation());
-        } catch (AccountBindingException e) {
-            // NOOP
-        }
+//        try {
+//            setExternalAccountBinding(Collections.singletonList(AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation()));
+//        } catch (AccountBindingException e) {
+//            // NOOP
+//        }
         setPreAuthorizationAllowed(DEFAULT_PRE_AUTHORIZATION_ALLOWED);
         setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL);
         setTermsOfServiceChangeUrl(DEFAULT_TERMS_OF_SERVICE_CHANGE_URL);
@@ -523,6 +628,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setAgreeToNewTermsOfServiceAllowed(DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED);
         setWildcardCertificateIssuanceAllowed(DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
         setWildcardWithHttp01ChallengeAllowed(DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED);
+        data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
         setWebSiteUrl(DEFAULT_WEBSITE_URL);
         setOrderValidity(DEFAULT_ORDER_VALIDITY);
         setDnsResolver(DNS_RESOLVER_DEFAULT);
@@ -532,5 +638,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setAuthorizedRedirectPorts(DEFAULT_AUTHORIZED_REDIRECT_PORTS);
         setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
         setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
+        setClientAuthenticationRequired(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED);
+        setPreferredRootCaSubjectDn(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN);
     }
 }
