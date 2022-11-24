@@ -40,5 +40,14 @@ public enum SshExtension {
     public byte[] getValue() {
         return value;
     }
+    
+    public static SshExtension findbyLabel(final String label) {
+        for(SshExtension sshExtension : SshExtension.values()) {
+            if(sshExtension.getLabel().equalsIgnoreCase(label)) {
+                return sshExtension;
+            }
+        }
+        return null;
+    }
 
 }
