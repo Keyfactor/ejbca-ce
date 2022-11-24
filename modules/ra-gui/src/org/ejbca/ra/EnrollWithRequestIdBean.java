@@ -42,6 +42,7 @@ import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
@@ -591,21 +592,36 @@ public class EnrollWithRequestIdBean implements Serializable {
         return endEntityInformation.getExtendedInformation() != null && endEntityInformation.getExtendedInformation().getCertificateRequest() != null;
     }
 
-    private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
+      private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
         if (token == null) {
             return;
         }
         // Download the token
-        String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
-        if(fileName == null){
-            fileName = "certificatetoken";
-        }
+        final String fileName = getFileName();
+
         try {
             DownloadHelper.sendFile(token, responseContentType, fileName + fileExtension);
         } catch (IOException e) {
             log.info("Token " + fileName + " could not be downloaded", e);
             raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", fileName);
         }
+    }
+
+    /**
+     * Calculates the filename for a token (P12 or PEM file) sent back to the client based on
+     * the common name of the certificate.
+     *
+     * @return the file name to use in the content disposition header, filename safe characters
+     */
+    private String getFileName() {
+        final String commonName = CertTools.getPartFromDN(getEndEntityInformation().getDN(), "CN");
+        if (StringUtils.isEmpty(commonName)) {
+            return "certificatetoken";
+        }
+        if (StringUtils.isAsciiPrintable(commonName)) {
+            return StringTools.stripFilename(commonName);
+        }
+        return Base64.encodeBase64String(commonName.getBytes());
     }
 
     /** @return true if the the CSR has been uploaded */
