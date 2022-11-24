@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.cmp.authentication;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationSession;
 import org.cesecore.certificates.ca.CAInfo;
@@ -108,6 +109,12 @@ public class VerifyPKIMessage {
             if (log.isDebugEnabled()) {
                 log.debug("Trying to verify the message using CMP authentication module '" + moduleName + "' with parameter '" + moduleParameter + "'");
             }
+            
+            // In case of p10cr, the reg token password authentication does not apply.
+            if (pkiMessage.getBody().getContent() instanceof CertificationRequest && moduleName.equals(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD)) {
+                continue;
+            }
+            
             final ICMPAuthenticationModule module = getAuthModule(raMode, moduleName, moduleParameter, pkiMessage, authenticated);
             if (module != null) {
                 if (module.verifyOrExtract(pkiMessage, username)) {
