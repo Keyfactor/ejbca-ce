@@ -1508,12 +1508,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setRequired(DnComponents.COMMONNAME, 0, false);
         
         final Field field = this.new Field(DnComponents.DNSNAME);
-        if (field.getInstances().isEmpty()) {
+        if (field.getInstances().size() < 1) {
             addFieldWithDefaults(DnComponents.DNSNAME, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+            addFieldWithDefaults(DnComponents.RFC822NAME, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         } else {
             // we skip validations for subject DN, SAN fields
             setModifyable(DnComponents.DNSNAME, 0, true);
             setRequired(DnComponents.DNSNAME, 0, false);
+            setModifyable(DnComponents.RFC822NAME, 0, true);
+            setRequired(DnComponents.RFC822NAME, 0, false);
         }
     }
 
@@ -2047,8 +2050,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             log.debug("SSH principals required: " + requiredFields);
             log.debug("SSH subjectAlternateName(pseudo): " + subjectAlternateName);
         }
-        if(StringUtils.isNotBlank(subjectAlternateName)) {
+        if(StringUtils.isNotBlank(subjectAlternateName) && subjectAlternateName.startsWith("dnsName=")) {
             subjectAlternateName = subjectAlternateName.substring("dnsName=".length());
+            if (subjectAlternateName.indexOf("rfc822Name=")!=-1) {
+                subjectAlternateName = subjectAlternateName.substring(0, subjectAlternateName.indexOf("rfc822Name=")-1);
+            }
             int commentIndex = subjectAlternateName.indexOf(SshEndEntityProfileFields.SSH_CERTIFICATE_COMMENT);
             if(commentIndex!=0) { // no principal
                 if(commentIndex==-1) {
