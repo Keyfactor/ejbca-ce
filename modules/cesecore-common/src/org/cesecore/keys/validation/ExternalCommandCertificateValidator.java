@@ -21,11 +21,11 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CA;
@@ -152,7 +152,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
                 newValues.put("testOut", StringUtils.join(out, System.getProperty("line.separator")));
                 newValues.put("testPath", null);
                 uiModel.firePropertyChange(oldValues, newValues);
-                setTestCertificates(ListUtils.EMPTY_LIST);
+                setTestCertificates(Collections.EMPTY_LIST);
             }
             @Override
             public List<String> getRender() {

@@ -49,6 +49,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
+import org.ejbca.ui.web.rest.api.resource.swagger.CaRestResourceSwagger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -73,7 +74,7 @@ public class CaRestResourceUnitTest {
 
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
-    private static class CaRestResourceWithoutSecurity extends CaRestResource {
+    private static class CaRestResourceWithoutSecurity extends CaRestResourceSwagger {
         @Override
         protected AuthenticationToken getAdmin(final HttpServletRequest requestContext, final boolean allowNonAdmins) {
             return authenticationToken;

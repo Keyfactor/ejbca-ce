@@ -1,20 +1,24 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api;
 
+import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.converter.ModelConverters;
+
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.ui.web.rest.api.resource.IllegalWildCardSyntaxExceptionWrapper;
 import org.ejbca.util.swagger.SnakeCaseConverter;
+import org.reflections.Reflections;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
@@ -22,7 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * EJBCA rest api application based on RESTEasy
+ * EJBCA REST API application based on RESTEasy
  */
 @ApplicationPath("/")
 public class RestApiApplication extends Application {
@@ -33,32 +37,19 @@ public class RestApiApplication extends Application {
         if (!EjbcaConfiguration.getIsInProductionMode()) {
             ModelConverters.getInstance().addConverter(new SnakeCaseConverter());
         }
-
-        // Configure what can't be configured with annotations using a BeanConfig
-        //final io.swagger.jaxrs.config.BeanConfig beanConfig = new io.swagger.jaxrs.config.BeanConfig();
-        //beanConfig.setPrettyPrint(true);
-        //beanConfig.setBasePath("/ejbca/ejbca-rest-api");
-        //beanConfig.setResourcePackage("org.ejbca.ui.web.rest.api");
-        //beanConfig.setScan(true);
-
     }
 
     /* In order to use swagger which requires manual registration, we also need to manually register out @Provider annotated classes now. */
     @Override
     public Set<Class<?>> getClasses() {
         final Set<Class<?>> resources = new HashSet<>();
-        resources.add(org.ejbca.ui.web.rest.api.resource.CertificateRestResource.class);
-        resources.add(org.ejbca.ui.web.rest.api.resource.CertificateRestResourceV2.class);
-        resources.add(org.ejbca.ui.web.rest.api.resource.CaRestResource.class);
         resources.add(org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver.class);
         resources.add(org.ejbca.ui.web.rest.api.config.ExceptionHandler.class);
+        resources.add(org.ejbca.ui.web.rest.api.exception.IllegalWildCardSyntaxExceptionWrapper.class);
 
-        resources.add(org.ejbca.ui.web.rest.api.resource.swagger.CryptoTokenRestResourceSwagger.class);
-        resources.add(org.ejbca.ui.web.rest.api.resource.swagger.CaManagementRestResourceSwagger.class);
-        resources.add(org.ejbca.ui.web.rest.api.resource.swagger.EndEntityRestResourceSwagger.class);
-        resources.add(org.ejbca.ui.web.rest.api.resource.swagger.ConfigdumpRestResourceSwagger.class);
-        
-        resources.add(IllegalWildCardSyntaxExceptionWrapper.class);
+        Reflections restResourceDefinitions = new Reflections("org.ejbca.ui.web.rest.api.resource.swagger");
+        Set<Class<?>> restResources = restResourceDefinitions.getTypesAnnotatedWith(SwaggerDefinition.class);
+        resources.addAll(restResources);
 
         if (EjbcaConfiguration.getIsInProductionMode()) {
             log.debug("Swagger is not available in distribution.");

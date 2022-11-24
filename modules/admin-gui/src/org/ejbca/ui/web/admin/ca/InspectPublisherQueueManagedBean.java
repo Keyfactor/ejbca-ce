@@ -37,6 +37,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1L;
     private static final int MAX_RESULTS = 20;
     private static final int DESCRIPTION_MAX_LENGTH = 80;
+    private static final String FLUSH_ITEM_PARAMETER = "fingerprintOfItemToFlush";
     @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
@@ -100,6 +102,8 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
                 if (isAuthorizedToViewCertificate(certificateInfo)) {
                     return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CERTIFICATE_DESCRIPTION", false,
                             certificateInfo.getSubjectDN()), DESCRIPTION_MAX_LENGTH);
+                } else if (certificateInfo == null) {
+                    return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NONEXISTENT_ENTRY");
                 } else {
                     return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NOT_AUTHORIZED");
                 }
@@ -108,6 +112,8 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
                 if (isAuthorizedToViewCrl(crlInfo)) {
                     return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CRL_DESCRIPTION", false,
                             crlInfo.getLastCRLNumber(), crlInfo.getSubjectDN()), DESCRIPTION_MAX_LENGTH);
+                } else if (crlInfo == null) {
+                    return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NONEXISTENT_ENTRY");
                 } else {
                     return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NOT_AUTHORIZED");
                 }
@@ -247,9 +253,14 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
         return "";
     }
 
-    public String flushItem(final PublisherQueueItem item) {
-        log.info("Attempting to flush item with fingerprint " + item.getFingerprint());
-        publisherQueueSession.removeQueueData(item.getPrimaryKey());
+    public String flushItem() {
+        final String fingerprint = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(FLUSH_ITEM_PARAMETER);
+        if (StringUtils.isNotBlank(fingerprint)) {
+            log.info("Attempting to flush item with fingerprint " + fingerprint + " from queue with publisher ID " + getPublisherId() + ".");
+            publisherQueueSession.getEntriesByFingerprint(fingerprint).stream()
+                    .filter(item -> item.getPublisherId() == Integer.parseInt(getPublisherId()))
+                    .forEach(item -> publisherQueueSession.removeQueueData(item.getPk()));
+        }
         return "";
     }
 

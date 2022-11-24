@@ -26,7 +26,7 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-fileupload.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.jee.classpath"/>

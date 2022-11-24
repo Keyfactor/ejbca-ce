@@ -103,8 +103,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         } else {
             // Check authorization before adding
             authorizedToEditProfile(admin, profile);
+            // relevant for configdump only
+            if(profile.getProfileType()==EndEntityProfile.PROFILE_TYPE_SSH) {
+                profile.initializeSshPlaceholderFields();
+            }
             try {
-                entityManager.persist(new EndEntityProfileData(Integer.valueOf(profileid), profilename, profile));
+                entityManager.persist(new EndEntityProfileData(profileid, profilename, profile));
                 flushProfileCache();
                 final String msg = INTRES.getLocalizedMessage("ra.addedprofile", profilename);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -296,7 +300,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	final HashSet<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(admin));
     	final HashSet<Integer> allCaIds = new HashSet<>(caSession.getAllCaIds());
 		// If this is the special value ALLCAs we are authorized
-    	authorizedCaIds.add(Integer.valueOf(SecConst.ALLCAS));
+    	authorizedCaIds.add(SecConst.ALLCAS);
 
     	final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         // We have to manually add the EMPTY end entity profile because it is not included in the profile cache
@@ -316,7 +320,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs(final AuthenticationToken admin) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
-        allcaids.add(Integer.valueOf(SecConst.ALLCAS));
+        allcaids.add(SecConst.ALLCAS);
         if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             // we can only see profiles with missing CA Ids if we have root rule access
             return returnval;
@@ -349,7 +353,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public boolean isAuthorizedToView(final AuthenticationToken admin, final int id) {
         final HashSet<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(admin));
         final HashSet<Integer> allCaIds = new HashSet<>(caSession.getAllCaIds());
-        authorizedCaIds.add(Integer.valueOf(SecConst.ALLCAS));
+        authorizedCaIds.add(SecConst.ALLCAS);
         final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         final EndEntityProfile profile = getEndEntityProfileNoClone(id);
         return isAuthorizedToProfile(admin, id, profile, rootAccess, authorizedCaIds, allCaIds, AccessRulesConstants.VIEW_END_ENTITY);
@@ -397,9 +401,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         final EndEntityProfile profile = getEndEntityProfileNoClone(entityProfileId);
         final TreeMap<String,Integer> result = new TreeMap<>();
         if (profile != null) {
-            final Collection<Integer> ids = profile.getAvailableCAs();
+            Collection<Integer> ids = profile.getAvailableCAs();
             final Map<Integer,String> map = caSession.getCAIdToNameMap();
             String name;
+            if (ids.contains(SecConst.ALLCAS)) {
+                ids = caSession.getAuthorizedCaIds(admin);
+            }
             for (int id : ids) {
                 name = map.get(id);
                 if (name != null) {
@@ -426,7 +433,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             returnval = new EndEntityProfile(true);
         } else {
             // We need to clone the profile, otherwise the cache contents will be modifyable from the outside
-            returnval = EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).get(Integer.valueOf(id));
+            returnval = EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).get(id);
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfileNoClone(id): " + (returnval == null ? "null" : "not null"));
@@ -442,7 +449,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         final Integer id = EndEntityProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(profilename.trim());
         if (id != null) {
-            int result = id.intValue();
+            int result = id;
             if (LOG.isTraceEnabled()) {
                 LOG.trace("<getEndEntityProfileId(" + profilename + "): " + result);
             }
@@ -458,7 +465,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfilename(" + id + ")");
         }
-        final String returnval = EndEntityProfileCache.INSTANCE.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
+        final String returnval = EndEntityProfileCache.INSTANCE.getIdNameMapCache(entityManager).get(id);
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfilename(" + id + "): " + returnval);
         }
@@ -498,6 +505,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         } else {
             // Check authorization before editing
             authorizedToEditProfile(admin, profile);
+            if(profile.getProfileType()==EndEntityProfile.PROFILE_TYPE_SSH) {
+                profile.initializeSshPlaceholderFields();
+            }
             // Get the diff of what changed
             Map<Object, Object> diff = pdl.getProfile().diff(profile);
             pdl.setProfile(profile);
@@ -602,8 +612,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                     availablecas[index++] = id.toString();
                 }
             }
-            for (int j = 0; j < availablecas.length; j++) {
-                Integer caid = Integer.valueOf(availablecas[j]);
+            for (String availableca : availablecas) {
+                Integer caid = Integer.valueOf(availableca);
                 if (!authorizedcaids.contains(caid)) {
                     // We want to allow removal of the EE profile if the CA does not exists, it can happen that a rogue CAId
                     // sneaks in under "availableCAs" in the profile. So make a double check here, and let it pass if the CA does not exist
@@ -612,7 +622,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                         final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
                         throw new AuthorizationDeniedException(msg);
                     } catch (CADoesntExistsException e) {
-                        LOG.info("Admin was not authorized to CA "+caid+", but this CA does not even exist so we allow it.");
+                        LOG.info("Admin was not authorized to CA " + caid + ", but this CA does not even exist so we allow it.");
                     }
                 }
             }
@@ -637,7 +647,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     private boolean isFreeEndEntityProfileId(final int id) {
         boolean foundfree = false;
-        if ( (id > 1) && (EndEntityProfileData.findById(entityManager, Integer.valueOf(id)) == null) ) {
+        if ( (id > 1) && (EndEntityProfileData.findById(entityManager, id) == null) ) {
         	foundfree = true;
         }
         return foundfree;

@@ -40,13 +40,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -194,6 +195,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String CRLPARTITIONS = "crlpartitions";
     protected static final String SUSPENDEDCRLPARTITIONS = "suspendedcrlpartitions";
     protected static final String REQUESTPREPROCESSOR = "requestpreprocessor";
+    protected static final String ALTERNATECHAINS = "alternatechains";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -297,6 +299,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCrlOverlapTime(getCRLOverlapTime())
                 .setDeltaCrlPeriod(getDeltaCRLPeriod())
                 .setGenerateCrlUponRevocation(getGenerateCrlUponRevocation())
+                .setAllowChangingRevocationReason(getAllowChangingRevocationReason())
                 .setCrlPublishers(getCRLPublishers())
                 .setValidators(getValidators())
                 .setUseAuthorityKeyIdentifier(getUseAuthorityKeyIdentifier())
@@ -335,6 +338,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
                 .setRequestPreProcessor(getRequestPreProcessor())
                 .setMsCaCompatible(isMsCaCompatible())
+                .setAlternateCertificateChains(getAlternateCertificateChains())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
@@ -790,6 +794,19 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public void setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand) {
         data.put(DO_STORE_OCSP_ON_DEMAND, doStoreOcspResponsesOnDemand);
     }
+    
+    @Override
+    public Map<String, List<String>> getAlternateCertificateChains() {
+        if (data.containsKey(ALTERNATECHAINS)) {
+            return (Map<String, List<String>>) data.get(ALTERNATECHAINS);
+        }
+        return null;
+    }
+
+    @Override
+    public void setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains) {
+        data.put(ALTERNATECHAINS, alternateCertificateChains);
+    }
 
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#updateCA(org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
@@ -827,6 +844,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setMsCaCompatible(info.isMsCaCompatible());
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
+        setAlternateCertificateChains(info.getAlternateCertificateChains());
     }
 
     /* (non-Javadoc)
@@ -1138,7 +1156,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
      * @throws IllegalKeyException if selected public key (check providedRequestMessage, providedPublicKey, subject) is not allowed with certProfile
      */
-    private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
+    protected Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
                                             final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
@@ -1516,7 +1534,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 }
             }
         }
+
         if (!requestOids.isEmpty()) {
+            log.debug("No match found for requested OIDs: " + requestOids);
             // All requested OIDs must match a CCE configuration
             throw new CertificateCreateException(ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR,
                     "Request contained custom certificate extensions which couldn't match any configuration");

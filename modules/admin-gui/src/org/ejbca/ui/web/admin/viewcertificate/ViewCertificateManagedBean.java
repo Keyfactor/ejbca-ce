@@ -168,7 +168,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         if (certificateData != null) {
             caName = caBean.getName(caId);
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
-            issuerDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getIssuerDN());
+            issuerDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getIssuerDNUnEscaped());
             subjectDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getSubjectDNUnescaped());
             subjectDnEscapedWithLanguageConsideration = certificateData.getUnescapedRdnValue(certificateData.getSubjectDnEscapedWithLanguageConsideration());
             subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().replace("\\,", ",").split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();

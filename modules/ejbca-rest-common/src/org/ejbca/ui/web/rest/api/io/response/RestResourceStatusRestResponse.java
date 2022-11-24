@@ -1,14 +1,18 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.io.response;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * A class representing the status information of a REST resource.
@@ -17,10 +21,12 @@ package org.ejbca.ui.web.rest.api.io.response;
  */
 public class RestResourceStatusRestResponse {
 
+    @ApiModelProperty(value = "Status", example = "OK")
     private String status;
+    @ApiModelProperty(value = "Resource version", example = "1.0")
     private String version;
+    @ApiModelProperty(value = "Application revision", example = "EJBCA 1.0.0 Enterprise")
     private String revision;
-    // TODO Possible extra info: Authentication info, token information, token validity and etc.
 
     public RestResourceStatusRestResponse() {
     }

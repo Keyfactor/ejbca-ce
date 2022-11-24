@@ -28,6 +28,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -148,7 +149,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
                 }
             }
             if (allocatedId == null) {
-                throw new RuntimeException("Failed to allocate a new internalKeyBindingId.");
+                throw new IllegalStateException("Failed to allocate a new internalKeyBindingId.");
             }
             internalKeyBindingId = allocatedId.intValue();
             // We need to replace this object with an object that has the correct ID if we are going to cache it later
@@ -214,16 +215,16 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isNameUsed(final String name) {
-        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = TRIM(LOWER(:name))");
-        query.setParameter("name", name);
+        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name)");
+        query.setParameter("name", StringUtils.trim(name));
         return !query.getResultList().isEmpty();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isNameUsedByIdOnly(final String name, final int id) {
-        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = TRIM(LOWER(:name))");
-        query.setParameter("name", name);
+        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name)");
+        query.setParameter("name", StringUtils.trim(name));
         @SuppressWarnings("unchecked")
         final List<InternalKeyBindingData> internalKeyBindingDatas = query.getResultList();
         for (final InternalKeyBindingData internalKeyBindingData: internalKeyBindingDatas) {

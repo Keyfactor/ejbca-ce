@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -30,15 +32,11 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 
-import static org.junit.Assert.assertNotNull;
-
 /**
  * Utility methods for creating CAs and CryptoTokens for tests. Both soft and PKCS#11 tokens.
  * <p>
  * PKCS#11 tokens will be created with the properties defined in systemtests.properties, if present.
  * Otherwise defaults will be used (see systemtest.properties.sample or {@link SystemTestsConfiguration}) 
- *
- * @version $Id$
  */
 public class CryptoTokenTestUtils {
 
@@ -80,13 +78,13 @@ public class CryptoTokenTestUtils {
         return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec);
     }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
             String tokenName, String signKeySpec) {
-        return createCryptoTokenForCAInternal(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec);
+        return createCryptoTokenForCA(authenticationToken, pin, generateKeys, pkcs11, tokenName, signKeySpec, signKeySpec);
     }
 
-    private static int createCryptoTokenForCAInternal(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
-            String tokenName, String signKeySpec) {
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
+            String tokenName, String signKeySpec, String encKeySpec) {
         if (authenticationToken == null) {
             authenticationToken = alwaysAllowToken;
         }
@@ -130,11 +128,11 @@ public class CryptoTokenTestUtils {
         try {
             cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName,
                     cryptoTokenProperties, null, pin);
-            if (genenrateKeys) {
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder(signKeySpec).build());
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
-            }
-        } catch (Exception e) {
+                if (generateKeys) {
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder(signKeySpec).build());
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder(encKeySpec).build());
+                }
+            } catch (Exception e) {
             // Cleanup token if we failed during the key creation stage
             try {
                 removeCryptoToken(null, cryptoTokenId);

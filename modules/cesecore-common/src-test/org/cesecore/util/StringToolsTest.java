@@ -12,6 +12,21 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import java.security.InvalidKeyException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Random;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.ConfigurationHolder;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -19,19 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.security.InvalidKeyException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
-import java.util.Collections;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.config.ConfigurationHolder;
-import org.junit.Test;
 
 /**
  * Tests the StringTools class.
@@ -57,8 +59,8 @@ public class StringToolsTest {
         final String str = "file name";
         final String str1 = "file  name ";
         final String str2 = "fileName";
-        assertEquals("file_name", StringTools.stripFilenameReplaceSpaces(str));
-        assertEquals("file__name_", StringTools.stripFilenameReplaceSpaces(str1));
+        assertEquals("file_esc_spc_name", StringTools.stripFilenameReplaceSpaces(str));
+        assertEquals("file_esc_spc__esc_spc_name_esc_spc_", StringTools.stripFilenameReplaceSpaces(str1));
         assertEquals("fileName", StringTools.stripFilenameReplaceSpaces(str2));        
         log.trace("<testIpOctetsToString");
     }
@@ -180,6 +182,7 @@ public class StringToolsTest {
         log.trace(">test05Strip()");
         final Object originalValue = ConfigurationHolder.instance().getProperty(FORBIDDEN_CHARS_KEY);
         try {
+            assertEquals("\n\r;!\u0000%`?$~", new String(CesecoreConfiguration.getForbiddenCharacters()));
             final String input =  "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|\\<|\\>|\\\"|\\\\";
             final String defaultOutput = "|/|/|/|foo bar|/|/|/|/|/|/|\\<|\\>|\\\"|\\\\";
             forbiddenTest(null, input, defaultOutput);
@@ -211,12 +214,19 @@ public class StringToolsTest {
     @Test
     public void testObfuscate() throws Exception {
         String obf = StringTools.obfuscate("foo123");
+        assertEquals("OBF:1jg21l181ku51kqp1kxu1jd8", obf);
         String deobf = StringTools.deobfuscate(obf);
         assertEquals("foo123", deobf);
         String obfif = StringTools.obfuscate("foo123qw");
+        assertEquals("OBF:1wtq1xfh1l8b18qm18qo1l4z1xfl1wuo", obfif);
         String deobfif = StringTools.deobfuscate(obfif);
         assertEquals("foo123qw", deobfif);
         assertEquals("foo123qwe", StringTools.deobfuscateIf("foo123qwe"));
+        // Non-ASCII should be handled
+        String obf2 = StringTools.obfuscate("euro\u20ac.");
+        assertEquals("OBF:1i9i1l1k1c6n1uh8390y2qkv2zhy1i6g", obf2);
+        String deobf2 = StringTools.deobfuscate(obf2);
+        assertEquals("euro\u20ac.", deobf2);
         // Empty String should be handled
         assertEquals("", StringTools.obfuscate(""));
         assertEquals("", StringTools.deobfuscateIf("OBF:"));
@@ -226,6 +236,60 @@ public class StringToolsTest {
         assertNull(StringTools.obfuscate(null));
     }
 
+    @Test
+    public void testObfuscateEmoji() throws Exception {
+        String obf = StringTools.obfuscate("euro\u20acemoji\uD83E\uDDD1\uD83C\uDFFF.");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("euro\u20ACemoji\uD83E\uDDD1\uD83C\uDFFF.", deobf);
+    }
+    
+    @Test
+    public void testObfuscateNoRepeat() throws Exception {
+        String obf = StringTools.obfuscate("aabc");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("aabc", deobf);
+        assertNotEquals(obf.substring(0, 4), obf.substring(4, 8));
+
+        obf = StringTools.obfuscate("\u20ac\u20ac\u20ac\u20acaabc");
+        deobf = StringTools.deobfuscate(obf);
+        assertEquals("\u20ac\u20ac\u20ac\u20acaabc", deobf);
+        obf = obf.substring(4);
+        assertNotEquals(obf.substring(0, 12), obf.substring(12, 24));
+        assertEquals(obf.substring(24, 36), obf.substring(36, 48));
+    }
+    
+    @Test
+    public void testObfuscateFuzz() throws Exception {
+        Random random = new Random(1);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 99999; i++) {
+            builder.setLength(0);
+            int length = 40 + random.nextInt(50);
+            for (int j = 0; j < length; j++) {
+                int codePoint = random.nextInt(Character.MAX_CODE_POINT + 1);
+                if (!Character.isDefined(codePoint) || Character.isSurrogate((char)codePoint)) {
+                    continue;
+                }
+                builder.appendCodePoint(codePoint);
+                codePoint = random.nextInt(500);
+                if (codePoint < 128) {
+                    builder.appendCodePoint(codePoint);
+                }
+            }
+            String input = builder.toString();
+            String obf = StringTools.obfuscate(input);
+            String deobf = StringTools.deobfuscate(obf);
+            assertEquals(input, deobf);
+        }
+    }
+
+    @Test
+    public void testObfuscateNuls() throws Exception {
+        String obf = StringTools.obfuscate("a\0\0\0\0\0\0\0c");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("a\0\0\0\0\0\0\0c", deobf);
+    }
+    
     @Test
     public void testPbe() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -265,18 +329,42 @@ public class StringToolsTest {
         byte[] ipv6oct = StringTools.ipStringToOctets(ipv6);
         assertNotNull(ipv6oct);
         assertEquals(16, ipv6oct.length);
+        String compressedIpv6Loopback = "::1";
+        byte[] compressedIpv6octLoopback = StringTools.ipStringToOctets(compressedIpv6Loopback);
+        assertNotNull(compressedIpv6octLoopback);
+        assertEquals(16, compressedIpv6octLoopback.length);
+        String compressedIpv6 = "FE82:1234::1235:1416:1A12:1B12:1C1F";
+        byte[] compressedIpv6oct = StringTools.ipStringToOctets(compressedIpv6);
+        assertNotNull(compressedIpv6oct);
+        assertEquals(16, compressedIpv6oct.length);
+        String furtherCompressedIpv6 = "FE82::1A12:1234:1A12";
+        byte[] furtherCompressedIpv6oct = StringTools.ipStringToOctets(furtherCompressedIpv6);
+        assertNotNull(furtherCompressedIpv6oct);
+        assertEquals(16, furtherCompressedIpv6oct.length);
+        String compressedIpv6RightSide = "2001:db8::";
+        byte[] compressedIpv6octRightSide = StringTools.ipStringToOctets(compressedIpv6RightSide);
+        assertNotNull(compressedIpv6octRightSide);
+        assertEquals(16, compressedIpv6octRightSide.length);
         String invalid = "foo";
-        byte[] oct = StringTools.ipStringToOctets(invalid);
-        assertNotNull(oct);
-        assertEquals(0, oct.length);
+        byte[] octInvalid = StringTools.ipStringToOctets(invalid);
+        assertNotNull(octInvalid);
+        assertEquals(0, octInvalid.length);
         String invalidipv4 = "192.177.333.22";
-        oct = StringTools.ipStringToOctets(invalidipv4);
-        assertNotNull(oct);
-        assertEquals(0, oct.length);
+        byte[] octInvalidipv4 = StringTools.ipStringToOctets(invalidipv4);
+        assertNotNull(octInvalidipv4);
+        assertEquals(0, octInvalidipv4.length);
         String invalidipv6 = "2001:0db8:85a3:0000:0000:8a2e:11111:7334";
-        oct = StringTools.ipStringToOctets(invalidipv6);
-        assertNotNull(oct);
-        assertEquals(0, oct.length);
+        byte[] octInvalidipv6 = StringTools.ipStringToOctets(invalidipv6);
+        assertNotNull(octInvalidipv6);
+        assertEquals(0, octInvalidipv6.length);
+        String anotherInvalidipv6 = "2001:0db8:85a3:0000:0000:8a2e:1111:7334:0000";
+        byte[] octAnotherInvalidipv6 = StringTools.ipStringToOctets(anotherInvalidipv6);
+        assertNotNull(octAnotherInvalidipv6);
+        assertEquals(0, octAnotherInvalidipv6.length);
+        String invalidCompressedipv6 = "2001::0db8::85a3";
+        byte[] octInvalidCompressedipv6 = StringTools.ipStringToOctets(invalidCompressedipv6);
+        assertNotNull(octInvalidCompressedipv6);
+        assertEquals(0, octInvalidCompressedipv6.length);
     }
 
     @Test

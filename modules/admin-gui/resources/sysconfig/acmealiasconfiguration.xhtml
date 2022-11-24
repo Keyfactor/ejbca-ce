@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -21,21 +22,21 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{acmeConfigMBean}" />
+    <ui:param name="resourceBean" value="#{acmeAliasConfigMBean}" />
 	<ui:define name="content">
 
 			<h1>
-                <h:outputText value="#{acmeConfigMBean.currentAlias.alias}"/>
+                <h:outputText value="#{acmeAliasConfigMBean.currentAlias.alias}"/>
             </h1>
 
             <h:form id="currentAliasForm" enctype="multipart/form-data">
                 <h:panelGrid columns="2" columnClasses="fixEditColumn1,fixEditColumn2">
                     <h:outputLink value="acmeconfiguration.xhtml"><h:outputText value="#{web.text.ACME_ALIAS_NAV_BACK}"/></h:outputLink>
-                    <h:commandButton  actionListener="#{acmeConfigMBean.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" 
-                    	rendered="#{!acmeConfigMBean.currentAliasEditMode and acmeConfigMBean.allowedToEdit}"/>
+                    <h:commandButton  actionListener="#{acmeAliasConfigMBean.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" 
+                    	rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.allowedToEdit}" immediate="true"/>
                     	
                     <h:panelGroup id="placeholder1" />
-                    <h:panelGroup id="placeholder2" rendered="#{!acmeConfigMBean.currentAliasEditMode and acmeConfigMBean.allowedToEdit}"/>
+                    <h:panelGroup id="placeholder2" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.allowedToEdit}"/>
 
 					<h:panelGroup>
 						<h:outputText value="#{web.text.ACME_RANAMEGENERATIONSCHEME}"
@@ -65,43 +66,43 @@
 					<h:panelGroup>
 						<h:panelGroup id="namegenerationscheme">
 							<h:selectOneRadio id="ranamegenschemeselectradio"
-								value="#{acmeConfigMBean.currentAlias.raNameGenScheme}"
-								disabled="#{!acmeConfigMBean.currentAliasEditMode}">
+								value="#{acmeAliasConfigMBean.currentAlias.raNameGenScheme}"
+								disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
 								<f:selectItems
-									value="#{acmeConfigMBean.availableRaNameGenSchemes}" />
+									value="#{acmeAliasConfigMBean.availableRaNameGenSchemes}" />
 								<f:ajax render=":currentAliasForm:namegenerationscheme" />
 							</h:selectOneRadio>
 							<h:inputText id="ranamegeninputfield"
-								value="#{acmeConfigMBean.currentAlias.raNameGenParams}"
-								rendered="#{acmeConfigMBean.currentAlias.raNameGenScheme eq 'FIXED'}"
-								disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+								value="#{acmeAliasConfigMBean.currentAlias.raNameGenParams}"
+								rendered="#{acmeAliasConfigMBean.currentAlias.raNameGenScheme eq 'FIXED'}"
+								disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
 							<h:panelGroup id="ranameschemednpart"
-								rendered="#{acmeConfigMBean.currentAlias.raNameGenScheme eq 'DN'}">
+								rendered="#{acmeAliasConfigMBean.currentAlias.raNameGenScheme eq 'DN'}">
 								<h:selectOneMenu id="ranameschemednpartselectmenu"
-									value="#{acmeConfigMBean.selectedRaNameSchemeDnPart}"
-									disabled="#{!acmeConfigMBean.currentAliasEditMode}">
-									<f:selectItems value="#{acmeConfigMBean.dnFieldSelectItems}" />
+									value="#{acmeAliasConfigMBean.selectedRaNameSchemeDnPart}"
+									disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
+									<f:selectItems value="#{acmeAliasConfigMBean.dnFieldSelectItems}" />
 									<f:ajax event="change" update="@this" />
 								</h:selectOneMenu>
 		                  &nbsp;
 		                  <h:commandButton id="addranameschemednpartbutton"
 									value="#{web.text.ADD}"
-									action="#{acmeConfigMBean.actionAddRaNameSchemeDnPart}">
+									action="#{acmeAliasConfigMBean.actionAddRaNameSchemeDnPart}">
 									<f:ajax render=":currentAliasForm:namegenerationscheme"
-										disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+										disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
 								</h:commandButton>
 		                  &nbsp;
 		                  <h:commandButton id="removeranameschemednpartbutton"
 									value="#{web.text.REMOVE}"
-									action="#{acmeConfigMBean.actionRemoveRaNameSchemeDnPart}">
+									action="#{acmeAliasConfigMBean.actionRemoveRaNameSchemeDnPart}">
 									<f:ajax render=":currentAliasForm:namegenerationscheme"
-										disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+										disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
 								</h:commandButton>
 							</h:panelGroup>
 							<br />
 							<h:outputText id="selectedranameschemednparts"
-								value="#{acmeConfigMBean.currentAlias.raNameGenParams}"
-								rendered="#{acmeConfigMBean.currentAlias.raNameGenScheme eq 'DN'}" />
+								value="#{acmeAliasConfigMBean.currentAlias.raNameGenParams}"
+								rendered="#{acmeAliasConfigMBean.currentAlias.raNameGenScheme eq 'DN'}" />
 						</h:panelGroup>
 						<h:panelGroup>
 							<h:outputText value="#{web.text.ACME_RANAMEGENERATIONPREFIX}"
@@ -110,8 +111,9 @@
 							<h:outputText value="#{web.text.ACME_RANAMEGENERATIONPREFIX_HELP}"
 								styleClass="help" style="font-size: smaller"/>
 						</h:panelGroup>
-							<br /><h:inputText value="#{acmeConfigMBean.currentAlias.raNameGenPrefix}"
-								disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+							<br /><h:inputText value="#{acmeAliasConfigMBean.currentAlias.raNameGenPrefix}"
+							    title="#{web.text.FORMAT_STRING}"
+								disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
 							<br />
 						<h:panelGroup>
 							<br /><h:outputText value="#{web.text.ACME_RANAMEGENERATIONPOSTFIX}"
@@ -121,8 +123,9 @@
 								styleClass="help" style="font-size: smaller"/>
 							<br />
 						</h:panelGroup>
-						<h:inputText value="#{acmeConfigMBean.currentAlias.raNameGenPostfix}"
-							disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+						<h:inputText value="#{acmeAliasConfigMBean.currentAlias.raNameGenPostfix}"
+						    title="#{web.text.FORMAT_STRING}"
+							disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
 					</h:panelGroup>
 					
 					<h:panelGroup>
@@ -134,9 +137,9 @@
 					</h:panelGroup>
                     <h:panelGroup id="eep" >
                         <h:panelGroup layout="block" styleClass="">
-                            <h:selectOneMenu id="selectOneMenuEEP" value="#{acmeConfigMBean.currentAlias.endEntityProfileId}"
-                                             disabled="#{!acmeConfigMBean.currentAliasEditMode}">
-                                <f:selectItems value="#{acmeConfigMBean.usableEEProfileNames}"/>
+                            <h:selectOneMenu id="selectOneMenuEEP" value="#{acmeAliasConfigMBean.currentAlias.endEntityProfileId}"
+                                             disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
+                                <f:selectItems value="#{acmeAliasConfigMBean.usableEEProfileNames}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
                     </h:panelGroup>
@@ -146,30 +149,45 @@
                     	<br />
                     	<h:outputText value="#{web.text.ACME_PREAUTHORIZATION_ALLOWED_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
-                    <h:selectBooleanCheckbox id="preautorisation" value="#{acmeConfigMBean.currentAlias.preAuthorizationAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+                    <h:selectBooleanCheckbox id="preautorisation" value="#{acmeAliasConfigMBean.currentAlias.preAuthorizationAllowed}" disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
 
 					<h:panelGroup>
                     	<h:outputLabel for="wildcard" value="#{web.text.ACME_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED}" styleClass="titles"/>
                     	<br />
                     	<h:outputText value="#{web.text.ACME_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
-                    <h:selectBooleanCheckbox id="wildcard" value="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" >
+                    <h:selectBooleanCheckbox id="wildcard" value="#{acmeAliasConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" >
                     	<f:ajax render=":currentAliasForm:httpChallengeWildcardLabel :currentAliasForm:httpChallengeWildcardField"/>
                     </h:selectBooleanCheckbox>
                     
                     <h:panelGroup id="httpChallengeWildcardLabel">
-                    	<h:outputLabel for="httpChallengeWildcard" value="#{web.text.ACME_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED}" rendered="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" styleClass="titles"/>
-                    	<h:outputLabel for="httpChallengeWildcard" value="" rendered="#{!acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                    	<h:outputLabel for="httpChallengeWildcard" value="#{web.text.ACME_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED}" rendered="#{acmeAliasConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" styleClass="titles"/>
+                    	<h:outputLabel for="httpChallengeWildcard" value="" rendered="#{!acmeAliasConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
                     	<br />
-                    	<h:outputText value="#{web.text.ACME_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED_HELP}" rendered="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" styleClass="help" style="font-size: smaller"/>
-                    	<h:outputText value="" rendered="#{!acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" styleClass="help" style="font-size: smaller"/>
+                    	<h:outputText value="#{web.text.ACME_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED_HELP}" rendered="#{acmeAliasConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" styleClass="help" style="font-size: smaller"/>
+                    	<h:outputText value="" rendered="#{!acmeAliasConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" styleClass="help" style="font-size: smaller"/>
                    	</h:panelGroup>
                    	<h:panelGroup id="httpChallengeWildcardField">
                     	<h:selectBooleanCheckbox id="httpChallengeWildcard" 
-                    		value="#{acmeConfigMBean.currentAlias.wildcardWithHttp01ChallengeAllowed}" 
-                    		disabled="#{!acmeConfigMBean.currentAliasEditMode}"
-                    		rendered="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
-                        <h:outputLabel value="" rendered="#{!acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                    		value="#{acmeAliasConfigMBean.currentAlias.wildcardWithHttp01ChallengeAllowed}" 
+                    		disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}"
+                    		rendered="#{acmeAliasConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                        <h:outputLabel value="" rendered="#{!acmeAliasConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                    </h:panelGroup>
+                    
+                    <h:panelGroup id="dnsIdentifierChallengeTypesLabel">
+                    	<h:outputLabel for="dnsIdentifierChallengeTypesLabel" value="#{web.text.ACME_DNS_IDENTIFIER_CHALLENGE_TYPES}" styleClass="titles"/>
+                    	<h:outputLabel for="dnsIdentifierChallengeTypesLabel" value="" />
+                    	<br />
+                    	<h:outputText value="#{web.text.ACME_DNS_IDENTIFIER_CHALLENGE_TYPES_HELP}" styleClass="help" style="font-size: smaller"/>
+                    	<h:outputText value="" styleClass="help" style="font-size: smaller"/>
+                   	</h:panelGroup>
+                   	<h:panelGroup id="dnsIdentifierChallengeTypesField">
+	                   	<h:selectManyListbox id="dnsIdentifierChallengeTypes" value="#{acmeAliasConfigMBean.currentAlias.selectedDnsIdentifierChallengeTypes}" 
+	                   		required="true" requiredMessage="#{web.text.ACME_DNS_IDENTIFIER_CHALLENGE_TYPES_REQUIRED}" size="3" styleClass="select-list" style="min-width: 220px;"
+	                        disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
+	                        <f:selectItems value="#{acmeAliasConfigMBean.currentAlias.availableDnsIdentifierChallengeTypes}" />
+	                    </h:selectManyListbox> 
                     </h:panelGroup>
 
 					<h:panelGroup>
@@ -178,10 +196,12 @@
                     	<h:outputText value="#{web.text.ACME_WEBSITE_URL_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:panelGroup id="webUrl" >
-                        <h:inputText  value="#{acmeConfigMBean.currentAlias.urlTemplate}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                        <h:inputText  value="#{acmeAliasConfigMBean.currentAlias.urlTemplate}" size="45"
+                            title="#{web.text.FORMAT_URL}"
+                            rendered="#{acmeAliasConfigMBean.currentAliasEditMode}">
                             <f:validator validatorId="urlValidator"/>
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.urlTemplate}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
 
 					<h:panelGroup>
@@ -190,11 +210,12 @@
                     	<h:outputText value="#{web.text.ACME_TERMS_URL_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:panelGroup id="termsUrl" >
-                        <h:inputText id="termsOfServiceUrl" value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" size="45" 
-                        rendered="#{acmeConfigMBean.currentAliasEditMode}" required="true" requiredMessage="#{web.text.ACME_TERMS_URL_REQUIRED}">
+                        <h:inputText id="termsOfServiceUrl" value="#{acmeAliasConfigMBean.currentAlias.termsOfServiceUrl}" size="45" 
+                        title="#{web.text.FORMAT_URL}"
+                        rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" required="true" requiredMessage="#{web.text.ACME_TERMS_URL_REQUIRED}">
                             <f:validator validatorId="urlValidator"/>
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
                     
                     <h:panelGroup>
@@ -203,11 +224,12 @@
                     	<h:outputText value="#{web.text.ACME_TERMS_CHANGE_URL_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:panelGroup id="termsChangeUrl" >
-                        <h:inputText id="termsOfServiceChangeUrl" value="#{acmeConfigMBean.currentAlias.termsOfServiceChangeUrl}" size="45" 
-                        rendered="#{acmeConfigMBean.currentAliasEditMode}" required="true" requiredMessage="#{web.text.ACME_TERMS_CHANGE_URL_REQUIRED}">
+                        <h:inputText id="termsOfServiceChangeUrl" value="#{acmeAliasConfigMBean.currentAlias.termsOfServiceChangeUrl}" size="45" 
+                        title="#{web.text.FORMAT_URL}"
+                        rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" required="true" requiredMessage="#{web.text.ACME_TERMS_CHANGE_URL_REQUIRED}">
                             <f:validator validatorId="urlValidator"/>
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.termsOfServiceChangeUrl}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.termsOfServiceChangeUrl}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
 
 					<h:panelGroup>
@@ -215,8 +237,8 @@
                     	<br />
                     	<h:outputText value="#{web.text.ACME_TERMS_APPROVAL_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
-                    <h:selectBooleanCheckbox id="versionApproval" value="#{acmeConfigMBean.currentAlias.termsOfServiceApproval}" 
-                    	disabled="#{!acmeConfigMBean.currentAliasEditMode}" >
+                    <h:selectBooleanCheckbox id="versionApproval" value="#{acmeAliasConfigMBean.currentAlias.termsOfServiceApproval}" 
+                    	disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" >
                     	<f:ajax render=":currentAliasForm:changedApproval :currentAliasForm:changedApprovalLabel"/>
                    	</h:selectBooleanCheckbox>
                     
@@ -225,8 +247,8 @@
                     	<br />
                     	<h:outputText value="#{web.text.ACME_TERMS_CHANGED_APPROVAL_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
-                    <h:selectBooleanCheckbox id="changedApproval" value="#{acmeConfigMBean.currentAlias.agreeToNewTermsOfServiceAllowed}" 
-                    	disabled="#{!acmeConfigMBean.currentAliasEditMode or !acmeConfigMBean.currentAlias.termsOfServiceApproval}"/>
+                    <h:selectBooleanCheckbox id="changedApproval" value="#{acmeAliasConfigMBean.currentAlias.agreeToNewTermsOfServiceAllowed}" 
+                    	disabled="#{!acmeAliasConfigMBean.currentAliasEditMode or !acmeAliasConfigMBean.currentAlias.termsOfServiceApproval}"/>
                     
                     <h:panelGroup>
                     	<h:outputLabel for="dnsResolver" value="#{web.text.ACME_DNS_RESOLVER}" styleClass="titles"/>
@@ -234,11 +256,11 @@
                     	<h:outputText value="#{web.text.ACME_DNS_RESOLVER_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:panelGroup id="dnsResolver" >
-                        <h:inputText  value="#{acmeConfigMBean.currentAlias.dnsResolver}" size="45" 
-                        			  rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                        <h:inputText  value="#{acmeAliasConfigMBean.currentAlias.dnsResolver}" size="45" 
+                        			  rendered="#{acmeAliasConfigMBean.currentAliasEditMode}">
                             <f:validator validatorId="org.ejbca.util.validator.ipAddressValidator"/>
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.dnsResolver}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.dnsResolver}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
 
 					<h:panelGroup>
@@ -247,11 +269,11 @@
                     	<h:outputText value="#{web.text.ACME_DNS_PORT_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:panelGroup id="dnsPort" >
-                        <h:inputText  value="#{acmeConfigMBean.currentAlias.dnsPort}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}" 
+                        <h:inputText  value="#{acmeAliasConfigMBean.currentAlias.dnsPort}" size="45" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" 
                         			  validatorMessage="#{web.text.INVALID_DNS_PORT}" label="DNS Port">
   							<f:validateLongRange minimum="53" maximum="65535" />
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.dnsPort}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.dnsPort}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
                     
                     <h:panelGroup>
@@ -259,7 +281,7 @@
                     	<br />
                     	<h:outputText value="#{web.text.ACME_USE_DNSSEC_VALIDATION_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
-                    <h:selectBooleanCheckbox id="useDnsSec" value="#{acmeConfigMBean.currentAlias.useDnsSecValidation}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" >
+                    <h:selectBooleanCheckbox id="useDnsSec" value="#{acmeAliasConfigMBean.currentAlias.useDnsSecValidation}" disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" >
                     	<f:ajax render=":currentAliasForm:dnssecTrustAnchorText"/>
                     </h:selectBooleanCheckbox>
                     
@@ -269,12 +291,12 @@
                     	<h:outputText value="#{web.text.ACME_DNSSEC_TRUST_ANCHOR_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:panelGroup id="dnssecTrustAnchor" >
-                        <h:inputTextarea  id="dnssecTrustAnchorText" value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}"  
-                        				  rendered="#{acmeConfigMBean.currentAliasEditMode}" disabled="#{!acmeConfigMBean.currentAlias.useDnsSecValidation}"
+                        <h:inputTextarea  id="dnssecTrustAnchorText" value="#{acmeAliasConfigMBean.currentAlias.dnssecTrustAnchor}"  
+                        				  rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" disabled="#{!acmeAliasConfigMBean.currentAlias.useDnsSecValidation}"
                         				  cols="45" rows="3" >
                             <f:validator validatorId="multiLineFreeTextValidator"/>
                         </h:inputTextarea>
-                        <pre><h:outputText value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/></pre>
+                        <pre><h:outputText value="#{acmeAliasConfigMBean.currentAlias.dnssecTrustAnchor}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/></pre>
                     </h:panelGroup>
                     
                     <h:panelGroup>
@@ -283,11 +305,11 @@
                     	<h:outputText value="#{web.text.ACME_RETRY_AFTER_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:panelGroup id="retryAfter" >
-                        <h:inputText title="#{web.text.FORMAT_INTEGER}" value="#{acmeConfigMBean.currentAlias.retryAfter}" 
-                        			 validatorMessage="#{web.text.ONLYNUMBERS_INRETRYAFTER}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                        <h:inputText title="#{web.text.FORMAT_SECONDS}" value="#{acmeAliasConfigMBean.currentAlias.retryAfter}" 
+                        			 validatorMessage="#{web.text.ONLYNUMBERS_INRETRYAFTER}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}">
                             <f:validateLongRange minimum="0" maximum="2147483647"/>
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.retryAfter}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.retryAfter}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
                     
                     <h:panelGroup>
@@ -296,11 +318,11 @@
 						<h:outputText value="#{web.text.ACME_AUTHORIZED_REDIRECT_PORTS_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>	
                     <h:panelGroup id="authorizedRedirectPorts" >
-                        <h:inputText  value="#{acmeConfigMBean.currentAlias.authorizedRedirectPorts}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}" 
+                        <h:inputText  value="#{acmeAliasConfigMBean.currentAlias.authorizedRedirectPorts}" size="45" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" 
                         			  validatorMessage="#{web.text.INVALID_AUTHORIZED_REDIRECT_PORTS}" label="Authorized Redirect Ports">
                         	<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.PortListValidator"/>
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.authorizedRedirectPorts}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.authorizedRedirectPorts}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
                     
                     <h:panelGroup>
@@ -309,14 +331,14 @@
                     	<h:outputText value="#{web.text.ACME_ORDER_VALIDITY_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:panelGroup id="orderValidity" >
-                        <h:inputText title="#{web.text.FORMAT_LONG}" value="#{acmeConfigMBean.currentAlias.orderValidity}" 
-                        			 validatorMessage="#{web.text.ONLYVALIDITY_INORDERVALIDATY}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                        <h:inputText title="#{web.text.FORMAT_TIME_DHMS}" value="#{acmeAliasConfigMBean.currentAlias.orderValidity}" 
+                        			 validatorMessage="#{web.text.ONLYVALIDITY_INORDERVALIDATY}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}">
                         			<f:validator validatorId="validityDateValidator" />
                         			<f:attribute name="precision" value="seconds" />
                         			<f:attribute name="minimumValue" value="1000" />
                         			<f:attribute name="allowNull" value="false" />
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.orderValidity}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.orderValidity}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
                     
                     <h:panelGroup>
@@ -326,9 +348,9 @@
                     </h:panelGroup>
                     <h:panelGroup id="approvalForNewAccount" >
                         <h:panelGroup layout="block" styleClass="">
-                            <h:selectOneMenu id="approvalForNewAccountId" value="#{acmeConfigMBean.currentAlias.approvalForNewAccountId}"
-                                             disabled="#{!acmeConfigMBean.currentAliasEditMode}">
-                                <f:selectItems value="#{acmeConfigMBean.availableApprovalProfiles}"/>
+                            <h:selectOneMenu id="approvalForNewAccountId" value="#{acmeAliasConfigMBean.currentAlias.approvalForNewAccountId}"
+                                             disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
+                                <f:selectItems value="#{acmeAliasConfigMBean.availableApprovalProfiles}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
                     </h:panelGroup>
@@ -340,11 +362,31 @@
                     </h:panelGroup>
                     <h:panelGroup id="approvalForKeyChange" >
                         <h:panelGroup layout="block" styleClass="">
-                            <h:selectOneMenu id="approvalForKeyChangeId" value="#{acmeConfigMBean.currentAlias.approvalForKeyChangeId}"
-                                             disabled="#{!acmeConfigMBean.currentAliasEditMode}">
-                                <f:selectItems value="#{acmeConfigMBean.availableApprovalProfiles}"/>
+                            <h:selectOneMenu id="approvalForKeyChangeId" value="#{acmeAliasConfigMBean.currentAlias.approvalForKeyChangeId}"
+                                             disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
+                                <f:selectItems value="#{acmeAliasConfigMBean.availableApprovalProfiles}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup>
+                    	<h:outputLabel for="clientAuthenticationRequired" value="#{web.text.ACME_CLIENT_AUTHENTICATION_REQUIRED}" styleClass="titles"/>
+                    	<br />
+                    	<h:outputText value="#{web.text.ACME_CLIENT_AUTHENTICATION_REQUIRED_HELP}" styleClass="help" style="font-size: smaller"/>
+                    </h:panelGroup>
+                    <h:selectBooleanCheckbox id="clientAuthenticationRequired" value="#{acmeAliasConfigMBean.currentAlias.clientAuthenticationRequired}" disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
+                    
+                    <h:panelGroup>
+                    	<h:outputLabel for="preferredRootCaSubjectDnText" value="#{web.text.ACME_PREFERRED_ROOT_CA_SUBJECTDN}" styleClass="titles"/>
+                    	<br />
+                    	<h:outputText value="#{web.text.ACME_PREFERRED_ROOT_CA_SUBJECTDN_HELP}" styleClass="help" style="font-size: smaller"/>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                    	<h:inputText id="preferredRootCaSubjectDnText" value="#{acmeAliasConfigMBean.currentAlias.preferredRootCaSubjectDn}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" />
+                    	<h:outputText id="preferredRootCaSubjectDnText1" value="#{acmeAliasConfigMBean.currentAlias.preferredRootCaSubjectDn}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}" />
+                    	<br/>
+                    	<h:outputText value="#{web.text.ACME_PREFERRED_ROOT_CA_SUBJECTDN_MISCONFIGURED}" styleClass="help" style="font-size: smaller; color: red"
+                    					rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.showMisconfiguredCrossRootError}"/>
                     </h:panelGroup>
                     
                     <h:panelGroup>
@@ -352,30 +394,37 @@
                     	<br />
                     	<h:outputText value="#{web.text.ACME_REQUIRE_EXTERNAL_ACCOUNT_BINDING_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
-                    <h:selectBooleanCheckbox id="externalAccountBinding" value="#{acmeConfigMBean.currentAlias.requireExternalAccountBinding}" disabled="#{!acmeConfigMBean.currentAliasEditMode}">
-                    	<f:ajax listener="#{acmeConfigMBean.toggleCurrentEabEditMode}" render="@all"></f:ajax>
+                    <h:selectBooleanCheckbox id="externalAccountBinding" value="#{acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
+                    	<f:ajax listener="#{acmeAliasConfigMBean.toggleCurrentEabEditMode}" render="@all"></f:ajax>
                     </h:selectBooleanCheckbox>
                     
-                    <h:outputLabel for="eabType" value="#{web.text.ACME_EAB_TYPE}" rendered="#{acmeConfigMBean.currentAlias.requireExternalAccountBinding}" styleClass="titles"/>
-					<h:selectOneMenu id="eabType" value="#{acmeConfigMBean.eabType}" 
-						rendered="#{acmeConfigMBean.currentAlias.requireExternalAccountBinding}"
-						disabled="#{!acmeConfigMBean.currentAliasEditMode}">
-						<f:ajax listener="#{acmeConfigMBean.eabTypeChanged}" render="@all"/>
-						<f:selectItems value="#{acmeConfigMBean.availableEabs}" />
-					</h:selectOneMenu>	                    
+                    <h:outputLabel for="eabType" value="#{web.text.ACME_EAB_TYPE}" rendered="#{acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" styleClass="titles"/>
+					<h:selectOneMenu id="eabType" value="#{acmeAliasConfigMBean.eabType}" 
+						rendered="#{acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}"
+						disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
+						<f:ajax listener="#{acmeAliasConfigMBean.eabTypeChanged}" render="@all"/>
+						<f:selectItems value="#{acmeAliasConfigMBean.availableEabs}" />
+					</h:selectOneMenu>
+					
+					<h:outputLabel for="addEab" value="#{web.text.ACME_ADD_REMOVE_EAB}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" styleClass="titles"/>
+					<h:panelGroup rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}">
+						<h:commandButton action="#{acmeAliasConfigMBean.addEab}" value="#{web.text.ACME_ADD_EAB}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" style="margin-right:3px;" immediate="true"/>					
+						<h:commandButton action="#{acmeAliasConfigMBean.removeEab}" value="#{web.text.ACME_REMOVE_EAB}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" style="margin-right:3px;" immediate="true"/>
+					</h:panelGroup>
+						                    
                 </h:panelGrid>
-                <h:panelGrid binding="#{acmeConfigMBean.dataGrid}" columnClasses="fixEditColumn1,fixEditColumn2"
-                	rendered="#{acmeConfigMBean.currentAlias.requireExternalAccountBinding}" 
-                	disabled="#{!acmeConfigMBean.currentAliasEditMode}">
-				</h:panelGrid>
+                
+                <h:panelGroup id="eab-group" binding="#{acmeAliasConfigMBean.dataGridContainer}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}">
+				</h:panelGroup>
+				
                 <h:panelGrid columns="1">
                 <h:panelGroup>
-                        <h:commandButton action="#{acmeConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{acmeConfigMBean.currentAliasEditMode}" style="margin-right:3px;" immediate="true"/>
-                        <h:commandButton action="#{acmeConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{acmeConfigMBean.currentAliasEditMode}"
-                        	disabled="#{acmeConfigMBean.saveCurrentAliasDisabled}"/>
+                        <h:commandButton action="#{acmeAliasConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" style="margin-right:3px;" immediate="true"/>
+                        <h:commandButton action="#{acmeAliasConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}"
+                        	disabled="#{acmeAliasConfigMBean.saveCurrentAliasDisabled}"/>
                     </h:panelGroup>
                 </h:panelGrid>
-            </h:form>	
+            </h:form>
 	</ui:define>
 </ui:composition>
 </html>
