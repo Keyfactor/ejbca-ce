@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services.worker;
+package org.ejbca.core.services.worker;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

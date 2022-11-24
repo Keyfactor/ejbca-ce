@@ -14,7 +14,6 @@ package org.ejbca.core.model.services;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -69,8 +68,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.CertificateCrlReader;
