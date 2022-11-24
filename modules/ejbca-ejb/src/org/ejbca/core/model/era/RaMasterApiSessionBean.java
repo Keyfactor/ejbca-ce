@@ -333,9 +333,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AcmeChallengeDataSessionLocal acmeChallengeDataSession;
     @EJB
     private EtsiEcaOperationsSessionLocal ecaOperationsSession;
-    @EJB
-    private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
-
+    
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
