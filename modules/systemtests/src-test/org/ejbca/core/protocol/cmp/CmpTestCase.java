@@ -34,6 +34,7 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -56,6 +57,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -773,6 +775,19 @@ public abstract class CmpTestCase extends CaTestCase {
             assertNotNull(respBytes);
             assertTrue(respBytes.length > 0);
             return respBytes;
+    }
+
+    protected void clearCmpCaches() throws IOException {
+        final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resourceCmp) + "/?clearcache=true";
+        log.info("http URL: " + urlString);
+        URL url = new URL(urlString);
+        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.connect();
+        assertEquals("HTTP request to clear caches was unsuccessful.", 200, con.getResponseCode());
+        assertEquals("text/plain", con.getContentType());
+        try (InputStream is = con.getInputStream()) {
+            assertEquals("Caches cleared.\n", IOUtils.toString(is, StandardCharsets.UTF_8));
+        }
     }
 
     public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
