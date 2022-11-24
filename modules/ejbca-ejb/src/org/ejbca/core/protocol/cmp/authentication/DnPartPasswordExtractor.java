@@ -11,20 +11,20 @@
  *                                                                       *
  *************************************************************************/
 
-
 package org.ejbca.core.protocol.cmp.authentication;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 
 /**
- * Extracts password from the request DN of a CMRF request message
+ * Extracts password from the request DN of a CMRF/PKCS#10 request message
  *
  */
 public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
@@ -41,19 +41,26 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         this.errorMessage = null;
     }
     
-    @Override
     /*
-     * Extracts the value of 'dnPart' from the subjectDN of the certificate request template.
+     * Extracts the value of 'dnPart' from the subjectDN of the certificate request template or 
+     * PKC#10 subject part based on the message type.
      */
+    @Override
     public boolean verifyOrExtract(final PKIMessage msg, final String username) {
         
-        CertReqMsg req = getReq(msg);
+        Object req = getReq(msg);
         if(req == null) {
             this.errorMessage = "No request was found in the PKIMessage";
             return false;
         }
+
+        String dnString = null;
+        if(req instanceof CertReqMsg) {
+            dnString = ((CertReqMsg)req).getCertReq().getCertTemplate().getSubject().toString();
+        } else if (req instanceof CertificationRequest) {
+            dnString = ((CertificationRequest)req).getCertificationRequestInfo().getSubject().toString();
+        }
         
-        final String dnString = req.getCertReq().getCertTemplate().getSubject().toString();
         if(log.isDebugEnabled()) {
             log.debug("Extracting password from SubjectDN '" + dnString + "' and DN part '" + dnPart + "'");
         }
@@ -62,18 +69,20 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         }
             
         if(password == null) {
-            this.errorMessage = "Could not extract password from CRMF request using the " + getName() + " authentication module";
+            this.errorMessage = "Could not extract password from certificate request using the " + getName() + " authentication module";
             return false;
         }
         
         return true;    
     }
     
-    private CertReqMsg getReq(PKIMessage msg) {
-        CertReqMsg req = null;
+    private Object getReq(PKIMessage msg) {
+        Object req = null;
         int tagnr = msg.getBody().getType();
         if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST || tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) {
             req = ((CertReqMessages) msg.getBody().getContent()).toCertReqMsgArray()[0];
+        } else if (tagnr == CmpPKIBodyConstants.IMPORTEDFROMPKCS10) {
+            req = msg.getBody().getContent();
         }
         return req;
     }

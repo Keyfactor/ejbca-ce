@@ -166,10 +166,14 @@
 	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.7.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.19.jar"/>
+	<classpathentry kind="lib" path="lib/kerb4j-server-common-0.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/kerb-core-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/kerby-asn1-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/kerb-crypto-2.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-3.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/dnssecjava-2.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.activation-api-2.1.0.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
