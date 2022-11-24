@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.rules.Timeout;
 
 /**
  * Unit tests for ClientToolBax command healthCheck
@@ -27,6 +28,9 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
  * @version $Id$
  */
 public class HealthCheckCommandTest {
+
+    @Rule
+    public Timeout testTimeout = new Timeout(60_000); // per test case
 
     private HealthCheck command = new HealthCheck();
     private String httpReqPath;
