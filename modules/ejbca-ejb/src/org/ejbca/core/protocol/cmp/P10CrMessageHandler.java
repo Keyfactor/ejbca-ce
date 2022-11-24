@@ -171,11 +171,11 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                 // If message was signed, use the same signature alg in response
                 if(p10CrReq.getHeader().getProtectionAlg() != null) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("CRMF request message header has protection alg: " + p10CrReq.getHeader().getProtectionAlg().getAlgorithm().getId());
+                        LOG.debug("P10CR request message header has protection alg: " + p10CrReq.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
                     p10CrReq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(p10CrReq.getHeader().getProtectionAlg().getAlgorithm().getId()));
                 } else if (LOG.isDebugEnabled()) {
-                    LOG.debug("CRMF request message header has no protection alg, using default alg in response.");
+                    LOG.debug("P10CR request message header has no protection alg, using default alg in response.");
                 }
 
                 // If we have usernameGeneratorParams we want to generate usernames automagically for requests
@@ -207,7 +207,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                             return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
                         }
 						
-						p10CrReq.setPassword(endEntityInformation.getPassword());
+                        p10CrReq.setPassword(authenticationModule.getAuthenticationString());
 		                resp = signSession.createCertificate(admin, p10CrReq, CmpResponseMessage.class, endEntityInformation);
 					} else {
 						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
