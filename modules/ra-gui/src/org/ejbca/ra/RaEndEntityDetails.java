@@ -38,6 +38,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -130,8 +131,12 @@ public class RaEndEntityDetails {
             this.sshPrincipals = SshCertificateUtils.getPrincipalsAsString(this.subjectAn);
             this.sshComment = SshCertificateUtils.getComment(this.subjectAn);
             Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
-            this.sshForceCommand = sshCriticalOptions.containsKey("force-command") ? sshCriticalOptions.get("force-command") : null;
-            this.sshSourceAddress = sshCriticalOptions.containsKey("source-address") ? sshCriticalOptions.get("source-address") : null;
+            this.sshForceCommand = sshCriticalOptions.containsKey(
+                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP) ?
+                    sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP) : null;
+            this.sshSourceAddress = sshCriticalOptions.containsKey(
+                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) ?
+                    sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) : null;
         } else {
             this.sshTypeEndEntity = false;
             this.sshKeyId = null;
