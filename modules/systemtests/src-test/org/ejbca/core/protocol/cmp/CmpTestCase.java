@@ -324,7 +324,7 @@ public abstract class CmpTestCase extends CaTestCase {
     
     public static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
-            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
         
         return genP10CrCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm);
@@ -517,26 +517,35 @@ public abstract class CmpTestCase extends CaTestCase {
     protected static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, SubjectPublicKeyInfo spkInfo,  
             KeyPair protocolEncrKey, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
-            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
         
         ASN1EncodableVector altnameattr = new ASN1EncodableVector();
         DERSet attributes = null;
-
-        // Building the altnames
-        if(StringUtils.isNotBlank(altNames)) {
-         // Create a P10 with extensions, in this case altNames with a DNS name
+        
+        // If we did not pass any extensions as parameter, we will create some of our own, standard ones
+        Extensions exts = extensions;
+        if (exts == null) {
             altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            // AltNames
-            GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
+            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut);
             ExtensionsGenerator extgen = new ExtensionsGenerator();
-            try {
-                extgen.addExtension(Extension.subjectAlternativeName, false, san);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
+            if (StringUtils.isNotBlank(altNames)) {
+                // SubjectAltName
+                // Some altNames
+                GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
+                dOut.writeObject(san);
+                byte[] value = bOut.toByteArray();
+                extgen.addExtension(Extension.subjectAlternativeName, false, value);
             }
-            Extensions exts = extgen.generate();
+
+            // KeyUsage
+            KeyUsage keyUsage = new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.nonRepudiation);
+            extgen.addExtension(Extension.keyUsage, false, new DERBitString(keyUsage));
+
+            exts = extgen.generate();
             altnameattr.add(new DERSet(exts));
-            
+
+            // Make the complete extension package
             ASN1EncodableVector v = new ASN1EncodableVector();
             v.add(new DERSequence(altnameattr));
             attributes = new DERSet(v);
@@ -836,7 +845,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
         // Only try to read the response if we expected a 200 (ok) response
         if (httpRespCode != 200) {
-            return null;
+            return new byte[0];
         }
             // Some appserver (Weblogic) responds with
             // "application/pkixcmp; charset=UTF-8"
