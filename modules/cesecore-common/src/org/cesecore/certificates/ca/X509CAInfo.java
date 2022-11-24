@@ -108,6 +108,7 @@ public class X509CAInfo extends CAInfo {
                 .setCrlOverlapTime(10 * SimpleTime.MILLISECONDS_PER_MINUTE)
                 .setDeltaCrlPeriod(0L)
                 .setGenerateCrlUponRevocation(false)
+                .setAllowChangingRevocationReason(false)
                 .setCrlPublishers(new ArrayList<>())
                 .setValidators(new ArrayList<>())
                 .setMsCaCompatible(false)
@@ -154,7 +155,7 @@ public class X509CAInfo extends CAInfo {
     /** Constructor that should be used when updating CA data. */
     private X509CAInfo(final String encodedValidity, final CAToken catoken, final String description, final int caSerialNumberOctetSize,
                       final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
-                      final boolean generateCrlUponRevocation, final Collection<Integer> crlpublishers,
+                      final boolean generateCrlUponRevocation, final boolean allowChangingRevocationReason, final Collection<Integer> crlpublishers,
                       final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
                       final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
                       final String defaultocspservicelocator, final List<String> crlAuthorityInformationAccess,
@@ -177,6 +178,7 @@ public class X509CAInfo extends CAInfo {
         this.crlOverlapTime = crlOverlapTime;
         this.deltacrlperiod = deltacrlperiod;
         this.generateCrlUponRevocation = generateCrlUponRevocation;
+        this.allowChangingRevocationReason = allowChangingRevocationReason;
         this.crlpublishers = crlpublishers;
         this.validators = keyValidators;
         this.msCaCompatible = msCaCompatible;
@@ -613,6 +615,7 @@ public class X509CAInfo extends CAInfo {
         private long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_MINUTE;
         private long deltaCrlPeriod = 0L;
         private boolean generateCrlUponRevocation = false;
+        private boolean allowChangingRevocationReason = false;
         private Collection<Integer> crlPublishers = new ArrayList<>();
         private Collection<Integer> validators = new ArrayList<>();
         private boolean msCaCompatible = false;
@@ -840,6 +843,14 @@ public class X509CAInfo extends CAInfo {
          */
         public X509CAInfoBuilder setGenerateCrlUponRevocation(boolean generate) {
             generateCrlUponRevocation = generate;
+            return this;
+        }
+
+        /**
+         * @param allow changing revocation reason if a certificate is revoked.
+         */
+        public X509CAInfoBuilder setAllowChangingRevocationReason(boolean allow) {
+            allowChangingRevocationReason = allow;
             return this;
         }
 
@@ -1084,7 +1095,7 @@ public class X509CAInfo extends CAInfo {
         }
 
         public X509CAInfo build() {
-            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, crlPublishers, validators,
+            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, allowChangingRevocationReason, crlPublishers, validators,
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
@@ -1122,7 +1133,7 @@ public class X509CAInfo extends CAInfo {
         }
 
         public X509CAInfo buildForUpdate() {
-            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, crlPublishers, validators,
+            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, allowChangingRevocationReason, crlPublishers, validators,
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
