@@ -40,6 +40,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
 
 import java.io.File;
@@ -54,6 +55,9 @@ import java.util.Collections;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CmpTestCommandTest {
     private final CMPTest command = new CMPTest();
+
+    @Rule
+    public Timeout testTimeout = new Timeout(30_000); // per test case
 
     private static final String CERTIFICATE_PROFILE_NAME = "CmpTestCommandTestCP";
     private static final String END_ENTITY_PROFILE_NAME = "CmpTestCommandTestEEP";

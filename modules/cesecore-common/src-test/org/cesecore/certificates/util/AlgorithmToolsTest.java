@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -212,37 +213,71 @@ public class AlgorithmToolsTest {
         KeyPair keys = keygen.generateKeyPair();
         assertEquals(keyspec, AlgorithmTools.getKeySpecification(keys.getPublic()));
     }
+   
 
     @Test
-    public void testGetEncSigAlgFromSigAlg() {
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_DSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_RSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_RSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_DSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_RSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_RSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1));
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1));
-        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1));
-        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1));
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410));
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145));
-        assertEquals(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA,
-                AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA));
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_ED25519));
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_ED448));
-        assertEquals("Foobar", AlgorithmTools.getEncSigAlgFromSigAlg("Foobar"));
+    public void testGetEncSigAlgFromSigAlgRSA() throws InvalidAlgorithmParameterException {
+        PublicKey publicKey = KeyTools.genKeys("1024", "RSA").getPublic();
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_DSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_ED25519, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_ED448, publicKey));
+        assertEquals("Foobar", AlgorithmTools.getEncSigAlgFromSigAlg("Foobar", publicKey));
     }
+    
+    @Test
+    public void testGetEncSigAlgFromSigAlgECDSA() throws InvalidAlgorithmParameterException {
+        PublicKey publicKey = KeyTools.genKeys("secp256k1", "ECDSA").getPublic();
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_DSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_ED25519, publicKey));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_ED448, publicKey));
+        assertEquals("Foobar", AlgorithmTools.getEncSigAlgFromSigAlg("Foobar", publicKey));
+    }
+    
+  
     
     @Test
     public void testGetAlgorithmNameFromDigestAndKey() {

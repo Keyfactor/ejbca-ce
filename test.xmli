@@ -13,9 +13,11 @@
     	<antcall target="optionalteststatedump" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestplugins" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestplugins-ee" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestssh-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestcits-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     	<!-- The name of the output from the profiling result will vary slightly -->
 		<fileset id="profilingtest.logfile.id" dir="${reports.base.dir}/test/html/org/ejbca/core/ejb" includes="*_ProfilingTest-out.html"/>
@@ -38,7 +40,7 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
-        <antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
+      	<antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -48,7 +50,8 @@
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/cli-util" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/p11ng" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -59,6 +62,7 @@
     	<antcall target="optionaltestcmpproxy" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestssh-unit" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestcits-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
@@ -86,8 +90,12 @@
     <target name="optionaltestpeerconnector" if="${peerconnector.exists}">
         <ant antfile="build.xml" dir="modules/peerconnector" target="test" inheritall="true" inheritrefs="true"/>
     </target>
-    <condition property="ee-plugins.exist"><available file="modules/plugins-ee/build.xml" /></condition>
-    <target name="optionaltestplugins" if="${ee-plugins.exist}">
+    <condition property="plugins.exist"><available file="modules/plugins/build.xml" /></condition>
+    <target name="optionaltestplugins" if="${plugins.exist}">
+        <ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
+    <condition property="plugins-ee.exist"><available file="modules/plugins-ee/build.xml" /></condition>
+    <target name="optionaltestplugins-ee" if="${plugins-ee.exist}">
         <ant antfile="build.xml" dir="modules/plugins-ee" target="test" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="acme.exists"><available file="modules/acme"/></condition>
@@ -128,7 +136,13 @@
     <target name="optionaltestssh-system" if="${ssh.exists}">
         <ant antfile="build.xml" dir="modules/ssh" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
-
+    <condition property="cits.exists"><available file="modules/cits/build.xml" /></condition>
+    <target name="optionaltestcits-unit" if="${cits.exists}">
+        <ant antfile="build.xml" dir="modules/cits" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="optionaltestcits-system" if="${cits.exists}">
+        <ant antfile="build.xml" dir="modules/cits" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" inheritall="true" inheritrefs="true"/>
@@ -165,12 +179,14 @@
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-common/src-test/**/${test.runone}.java" />
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
+                    <include name="modules/plugins/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins-ee/src-test/**/${test.runone}.java" />
                     <include name="modules/cli-util/src-test/**/${test.runone}.java" />
                     <include name="modules/ejbca-ejb-cli/src-test/**/${test.runone}.java" />
                     <include name="modules/ssh/src-test/**/${test.runone}.java" />
                     <include name="modules/msae/src-test/**/${test.runone}.java" />
                     <include name="modules/cits/src-test/**/${test.runone}.java" />
+                    <include name="modules/p11ng/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -257,6 +273,9 @@
         <condition property="module" value="modules/admin-gui">
             <matches string="${test-fullname}" pattern="^modules/admin-gui/.*$"/>
         </condition>
+        <condition property="module" value="modules/plugins">
+            <matches string="${test-fullname}" pattern="^modules/plugins/.*$"/>
+        </condition>
         <condition property="module" value="modules/plugins-ee">
             <matches string="${test-fullname}" pattern="^modules/plugins-ee/.*$"/>
         </condition>
@@ -271,6 +290,9 @@
         </condition>
         <condition property="module" value="modules/cits">
             <matches string="${test-fullname}" pattern="^modules/cits/.*$"/>
+        </condition>
+        <condition property="module" value="modules/p11ng">
+            <matches string="${test-fullname}" pattern="^modules/p11ng/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>

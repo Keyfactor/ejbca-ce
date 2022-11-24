@@ -1358,6 +1358,19 @@ public class CAsTest extends CaTestCase {
             }
             final long beforeFirstCACert = System.currentTimeMillis();
             final X509Certificate oldCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            try {
+                caAdminSession.importCACertificate(admin, "", EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
+                fail("Import of CA with empty string as caName should fail.");
+            } catch (CertificateImportException e) {
+                // Expected
+            }
+            try {
+                caAdminSession.importCACertificate(admin, "  ", EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] { oldCaCertificate })));
+                fail("Import of CA with blankspaces as caName should fail.");
+            } catch (CertificateImportException e) {
+                // Expected
+            }
+
             caAdminSession.importCACertificate(admin, TEST_NAME, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
             final CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
             assertEquals("Wrong certificate profile.", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, caInfo.getCertificateProfileId());

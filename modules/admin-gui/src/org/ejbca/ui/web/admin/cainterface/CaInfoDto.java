@@ -13,11 +13,19 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.MutableTriple;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.ca.EditCaUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Wrapper class for holding CaInfo properties.
@@ -86,17 +94,28 @@ public class CaInfoDto {
     private String crlCaOverlapTime;
     private String crlCaDeltaCrlPeriod;
     private boolean generateCrlUponRevocation = false;
+    private boolean allowChangingRevocationReason = false;
     private String requestPreProcessor;
+    private Map<String, List<String>> alternateCertificateChains;
     
     //cits
     private String certificateId;
     private String region;
-    
-    long getDeltaCrlPeriod() {
+
+    //proxy-ca
+    private String upstreamUrl;
+    private String username;
+    private String password;
+    private List<MutableTriple<Boolean, String, String>> headers;
+    private String upstreamCa;
+    private String upstreamTemplate;
+    private String sansJson; // Subject Attribute Names in JSON format for Upstream CA
+
+    public long getDeltaCrlPeriod() {
         return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
 
-    long getcrlOverlapTime() {
+    public long getcrlOverlapTime() {
         return SimpleTime.getInstance(crlCaOverlapTime, "10" + SimpleTime.TYPE_MINUTES).getLong();
     }
 
@@ -104,7 +123,7 @@ public class CaInfoDto {
         return SimpleTime.getInstance(crlCaIssueInterval, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
 
-    long getCrlPeriod() {
+    public long getCrlPeriod() {
         return SimpleTime.getInstance(crlCaCrlPeriod, "1" + SimpleTime.TYPE_DAYS).getLong();
     }
 
@@ -122,6 +141,10 @@ public class CaInfoDto {
     
     public boolean isCaTypeCits() {
         return caType == CAInfo.CATYPE_CITS;
+    }
+
+    public boolean isCaTypeProxy() {
+        return caType == CAInfo.CATYPE_PROXY;
     }
 
 
@@ -644,12 +667,28 @@ public class CaInfoDto {
         generateCrlUponRevocation = generate;
     }
 
+    public boolean isAllowChangingRevocationReason() {
+        return allowChangingRevocationReason;
+    }
+
+    public void setAllowChangingRevocationReason(boolean allowChangingRevocationReason) {
+        this.allowChangingRevocationReason = allowChangingRevocationReason;
+    }
+
     public String getRequestPreProcessor() {
         return requestPreProcessor;
     }
 
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
+    }
+    
+    public Map<String, List<String>> getAlternateCertificateChains() {
+        return alternateCertificateChains;
+    }
+
+    public void setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains) {
+        this.alternateCertificateChains = alternateCertificateChains;
     }
 
     private void resetUseCrlPartitionsSettings() {
@@ -672,6 +711,83 @@ public class CaInfoDto {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public String getUpstreamUrl() {
+        return upstreamUrl;
+    }
+
+    public void setUpstreamUrl(String upstreamUrl) {
+        this.upstreamUrl = upstreamUrl;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public List<MutableTriple<Boolean, String, String>> getHeaders() {
+        if (headers == null) {
+            headers = new ArrayList<>();
+        }
+        return headers;
+    }
+
+    public void setHeaders(List<MutableTriple<Boolean, String, String>> headers) {
+        this.headers = headers;
+    }
+
+    public String getUpstreamCa() {
+        return upstreamCa;
+    }
+
+    public void setUpstreamCa(String upstreamCa) {
+        this.upstreamCa = upstreamCa;
+    }
+
+    public String getUpstreamTemplate() {
+        return upstreamTemplate;
+    }
+
+    public void setUpstreamTemplate(String upstreamTemplate) {
+        this.upstreamTemplate = upstreamTemplate;
+    }
+
+    public String getSansJson() {
+        return sansJson;
+    }
+
+    public void setSansJson(String sansJson) {
+        this.sansJson = sansJson;
+    }
+    
+    public ProxyCaInfo buildProxyCaInfo() {
+        List<MutablePair<String, String>> pairs = getHeaders().stream().map(triple -> new MutablePair<String, String>(triple.getMiddle(), triple.getRight())).collect(Collectors.toList());
+        ProxyCaInfo proxyCaInfo = new ProxyCaInfo.ProxyCaInfoBuilder()
+            .setCaId(getCaSubjectDN().hashCode())
+            .setName(getCaName())
+            .setSubjectDn(getCaSubjectDN())
+            .setEnrollWithCsrUrl(getUpstreamUrl())
+            .setHeaders(pairs)
+            .setUsername(getUsername())
+            .setPassword(getPassword())
+            .setCa(getUpstreamCa())
+            .setTemplate(getUpstreamTemplate())
+            .setSans(getSansJson())
+            .build();
+
+        return proxyCaInfo;
     }
 }
 

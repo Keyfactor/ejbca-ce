@@ -77,10 +77,12 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -128,6 +130,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private String cryptoTokenType;
     private int currentCryptoTokenId = 0;
     private boolean installed = false;
+    private boolean deletePublicRole = true;
     
     @EJB
     private AuthorizationSystemSessionLocal authorizationSystemSession;
@@ -141,6 +144,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private KeyStoreCreateSessionLocal keyStoreCreateSession;
+    @EJB
+    private RoleSessionLocal roleSession;
     
     private CAInterfaceBean caBean;
     
@@ -271,6 +276,14 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
     public void setCryptoTokenType(String cryptoTokenType) {
         this.cryptoTokenType = cryptoTokenType;
+    }
+
+    public boolean isDeletePublicRole() {
+        return deletePublicRole;
+    }
+
+    public void setDeletePublicRole(boolean deletePublicRole) {
+        this.deletePublicRole = deletePublicRole;
     }
 
     // Read from cryptotoken.xhtml in order to determine whether an option
@@ -414,6 +427,15 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("ACCESSRULES_ERROR_UNAUTH", getAdmin() + " not authorized to create CA");
             log.error("Not authorized to create CA: " + e.getMessage());
             return;
+        }
+        if (isDeletePublicRole()) {
+            try {
+                roleSession.deleteRoleIdempotent(getAdmin(), null, AuthorizationSystemSession.PUBLIC_ACCESS_ROLE);
+            } catch (AuthorizationDeniedException e) {
+                addErrorMessage("ACCESSRULES_ERROR_UNAUTH", getAdmin() + " not authorized to delete role");
+                log.error("Not authorized to delete role: " + e.getMessage());
+                return;
+            }
         }
         installed = true;
     }

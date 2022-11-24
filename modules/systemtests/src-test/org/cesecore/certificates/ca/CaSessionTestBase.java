@@ -121,7 +121,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 caSession.removeCA(alwaysAllowToken, testcvcca.getCAId());
             }
     	} finally {
-    		// Be sure to to this, even if the above fails
+    		// Be sure to do this, even if the above fails
     	    super.tearDownRemoveRole();
     	}
     }

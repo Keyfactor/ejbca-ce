@@ -35,7 +35,6 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
@@ -198,23 +197,6 @@ public final class CAIdTools {
         }
         if (changed) {
             keybind.setTrustedCertificateReferences(trustentries);
-        }
-        return changed;
-    }
-
-    /**
-     * Updates any references to a CA's CAId and Subject DN.
-     * @param globalConfig Global configuration object to modify.
-     * @param fromId Old CA Id to replace.
-     * @param toId New CA Id to replace with.
-     * @param toSubjectDN New CA Subject DN.
-     * @return true if the configuration was changed. If so it should be persisted to the database.
-     */
-    public static boolean updateCAIds(final GlobalConfiguration globalConfig, final int fromId, final int toId, final String toSubjectDN) {
-        boolean changed = false;
-        if (globalConfig.getAutoEnrollCA() == fromId) {
-            globalConfig.setAutoEnrollCA(toId);
-            changed = true;
         }
         return changed;
     }

@@ -213,8 +213,8 @@ body#header {
 	-webkit-text-shadow: .04em .04em 0em rgba(0,0,0,.1);
 }
 #header div#banner img {
-	max-height: 84px;
-	margin-top: 0px;
+	max-height: 60px;
+	margin: 10px;
 }
 #header div#banner span {
 	vertical-align: 5px;
@@ -445,7 +445,13 @@ table span.help {
 table#addendentity .help {
 	font-size: .8em;
 }
-
+table .warning {
+    line-height: 1.40em;
+    white-space: normal;
+/*  font-size: .9em;    /* Smaller font size */
+    color: #E15E66;     /* Keep it, for old web browsers */
+    color: rgba(224,0,0,.6);
+}
 
 /* --- Forms: Grid */
 

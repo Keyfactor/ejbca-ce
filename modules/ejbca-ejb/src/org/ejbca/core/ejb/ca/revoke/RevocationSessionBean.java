@@ -36,8 +36,11 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -80,7 +83,9 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
-
+    
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
@@ -162,6 +167,15 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             postRevokeCertificate(admin, cdw);
     	}
     }
+    
+    private AuthenticationToken getOrCreateAuthotizedTokenCreateCrl(final AuthenticationToken admin, String caName) {
+        // ca_access permission is checked already
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CREATECRL.resource())) {
+            log.warn("Admin: " + admin + " is not authorized to create CRL for CA: " + caName + ", creating pseudo-token.");
+            return new AlwaysAllowLocalAuthenticationToken("" + admin.toString());
+        }
+        return admin;
+    }
 
     /**
      * Performs post-revocation actions. Currently, it only generates a new CRL, if CRL generation on revocation is configured.
@@ -173,9 +187,10 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity)
         if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
             log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
+            AuthenticationToken newAdmin = getOrCreateAuthotizedTokenCreateCrl(admin, caInfo.getName());
             try {
-                publishCrlSession.forceCRL(admin, caId);
-                publishCrlSession.forceDeltaCRL(admin, caId);
+                publishCrlSession.forceCRL(newAdmin, caId);
+                publishCrlSession.forceDeltaCRL(newAdmin, caId);
             } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException e) {
                 log.error("Failed to sign new CRL upon revocation: " + e.getMessage());
             } catch (AuthorizationDeniedException e) {
@@ -266,7 +281,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         // Fetch a list of up to 100 "half-issued" certificates
         final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession.getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
         final Date now = new Date();
-        final RevocationReasons revocationReason = RevocationReasons.CERTIFICATEHOLD;
+        final RevocationReasons revocationReason = RevocationReasons.UNSPECIFIED;
         for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(incompleteIssuedCert.getCertificateProfileId());
             final List<Integer> publishers = certProfile.getPublisherList();

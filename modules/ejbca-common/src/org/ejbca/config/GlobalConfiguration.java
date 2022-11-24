@@ -28,7 +28,6 @@ import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
-import org.cesecore.util.StringTools;
 import org.ejbca.util.URIUtil;
 
 
@@ -89,17 +88,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     private static final String OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
     private static final String OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
-
-
-    // Default values for AutoEnroll
-    private static final  String  AUTOENROLL_DEFAULT_ADSERVER = "dc1.company.local";
-    private static final  int  AUTOENROLL_DEFAULT_ADPORT = 0;
-    private static final  String  AUTOENROLL_DEFAULT_BASEDN_USER = "CN=Users,DC=company,DC=local";
-    public static final  int  AUTOENROLL_DEFAULT_CA = -1;
-    private static final  String  AUTOENROLL_DEFAULT_CONNECTIONDN = "CN=ADReader,CN=Users,DC=company,DC=local";
-    private static final  String  AUTOENROLL_DEFAULT_CONNECTIONPWD = "foo123";
-    private static final  boolean  AUTOENROLL_DEFAULT_SSLCONNECTION = false;
-    private static final  boolean  AUTOENROLL_DEFAULT_USE = false;
 
     /** Default value for Enable Command Line Interface. */
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACE = true;
@@ -175,16 +163,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String ENABLECOMMANDLINEINTERFACEDEFAULTUSER = "enablecommandlineinterfacedefaultuser";
 
     private static final   String ENABLEEXTERNALSCRIPTS        = "enableexternalscripts";
-
-    // Configuration for Auto Enrollment
-    private static final   String AUTOENROLL_USE = "autoenroll.use";
-    private static final   String AUTOENROLL_ADSERVER = "autoenroll.adserver";
-    private static final   String AUTOENROLL_ADPORT = "autoenroll.adport";
-    private static final   String AUTOENROLL_SSLCONNECTION = "autoenroll.sslconnection";
-    private static final   String AUTOENROLL_CONNECTIONDN = "autoenroll.connectiondn";
-    private static final   String AUTOENROLL_CONNECTIONPWD = "autoenroll.connectionpwd";
-    private static final   String AUTOENROLL_BASEDN_USER = "autoenroll.basedn.user";
-    private static final   String AUTOENROLL_CA = "autoenroll.caid";
 
       // Paths
     private static final   String AUTHORIZATION_PATH  = "authorization_path";
@@ -466,44 +444,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
          final Object value = data.get(APPROVALNOTIFICATIONFROMADDR);
          return value == null ? "" : (String) value;
      }
-
-       public void setAutoEnrollADServer(String server) { data.put(AUTOENROLL_ADSERVER, server); }
-       public String getAutoEnrollADServer() {
-    	   String ret = (String) data.get(AUTOENROLL_ADSERVER);
-   		   return (ret == null ? AUTOENROLL_DEFAULT_ADSERVER : ret);
-       }
-       public void setAutoEnrollADPort(int caid) { data.put(AUTOENROLL_ADPORT, Integer.valueOf(caid)); }
-       public int getAutoEnrollADPort() {
-    	   Integer ret = (Integer) data.get(AUTOENROLL_ADPORT);
-   		   return (ret == null ? AUTOENROLL_DEFAULT_ADPORT : ret);
-       }
-       public void setAutoEnrollBaseDNUser(String baseDN) { data.put(AUTOENROLL_BASEDN_USER, baseDN); }
-       public String getAutoEnrollBaseDNUser() {
-    	   String ret = (String) data.get(AUTOENROLL_BASEDN_USER);
-   		   return (ret == null ? AUTOENROLL_DEFAULT_BASEDN_USER : ret);
-   	   }
-       public void setAutoEnrollCA(int caid) { data.put(AUTOENROLL_CA, Integer.valueOf(caid)); }
-       public int getAutoEnrollCA() {
-    	   Integer ret = (Integer) data.get(AUTOENROLL_CA);
-    	   return (ret == null ? AUTOENROLL_DEFAULT_CA : ret);
-       }
-       public void setAutoEnrollConnectionDN(String connectionDN) { data.put(AUTOENROLL_CONNECTIONDN, connectionDN); }
-       public String getAutoEnrollConnectionDN() {
-    	   String ret = (String) data.get(AUTOENROLL_CONNECTIONDN);
-   		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONDN : ret);
-       }
-       public void setAutoEnrollConnectionPwd(String connectionPwd) {
-           data.put(AUTOENROLL_CONNECTIONPWD, StringTools.obfuscateIfNot(connectionPwd));
-       }
-       public String getAutoEnrollConnectionPwd() {
-    	   String ret = (String) data.get(AUTOENROLL_CONNECTIONPWD);
-   		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONPWD : StringTools.deobfuscateIf(ret));
-       }
-       public void setAutoEnrollSSLConnection(final boolean value) { putBoolean(AUTOENROLL_SSLCONNECTION, value); }
-       public boolean getAutoEnrollSSLConnection() { return getBoolean(AUTOENROLL_SSLCONNECTION, AUTOENROLL_DEFAULT_SSLCONNECTION); }
-
-       public void setAutoEnrollUse(final boolean value) { putBoolean(AUTOENROLL_USE, value); }
-       public boolean getAutoEnrollUse() { return getBoolean(AUTOENROLL_USE, AUTOENROLL_DEFAULT_USE); }
 
        public void setOcspCleanupUse(final boolean value) { putBoolean(OCSP_CLEANUP_USE, value);}
        public boolean getOcspCleanupUse() {return getBoolean(OCSP_CLEANUP_USE, OCSP_CLEANUP_USE_DEFAULT); }

@@ -790,7 +790,8 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   border-radius: 0; }
 
 .showErrorMessage {
-  display: block !important; }
+  display: block !important;
+  color: white }
 
 #messages {
   padding-left: 0; }
@@ -1237,7 +1238,10 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
       div#menu.ejbca-menu ul.pure-menu-list input[type="checkbox"].web-express.tablet:checked ~ hr {
         display: inline-block; }
       div#menu.ejbca-menu ul.pure-menu-list input[type="checkbox"].web-express.tablet:checked ~ a {
-        color: #fcba00; }
+        color: #fcba00;
+        padding-bottom: 0.625em; /* un-do padding for :last-child */ }
+      div#menu.ejbca-menu ul.pure-menu-list input[type="checkbox"].web-express.tablet:checked ~ a ~ ul a {
+        padding-bottom: 0.625em; /* un-do padding for :last-child */ }
 
   div#content.content {
     margin-top: 65.3125px; } }

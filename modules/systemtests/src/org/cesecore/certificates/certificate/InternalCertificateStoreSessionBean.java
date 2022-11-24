@@ -108,6 +108,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 
     @Override
     public int removeCertificate(String fingerPrint) {
+        deleteRow("NoConflictCertificateData", fingerPrint);
         deleteRow("CertificateData", fingerPrint);
         return deleteRow("Base64CertData", fingerPrint);
     }
