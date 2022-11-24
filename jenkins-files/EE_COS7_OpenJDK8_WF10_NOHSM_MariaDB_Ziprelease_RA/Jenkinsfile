@@ -9,6 +9,7 @@ pipeline {
                 sh "docker container rm ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra -f || true"
                 sh "docker network rm bridge net_ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra || true"
                 sh "rm -rf ear"
+                sh "chmod -R a+rwX ${env.WORKSPACE}"
             }
         }
         stage('network') {
@@ -26,7 +27,7 @@ pipeline {
                 sh "mkdir ear || true"
                 dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_MariaDB_Ziprelease_RA') {
                     sh "docker build -t ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra -m 2GB ."
-                    sh "docker run --name ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra --net=net_ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra -v " + "$env.WORKSPACE" + ":/app ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra"
+                    sh "docker run --name ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra --net=net_ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra -v " + "$env.WORKSPACE" + ":/app:z ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra"
                 }
             }
         }
