@@ -68,7 +68,9 @@ public interface RequestMessage extends Serializable {
      *
      * @return serial number of CA certificate for the CA target of the request, or null.
      */
-    BigInteger getSerialNo();
+    default BigInteger getSerialNo() {
+        return null;
+    }
 
     /**
      * Tries to get the Key Sequence of the target CA, if available in the request.
@@ -139,14 +141,18 @@ public interface RequestMessage extends Serializable {
      *
      * @return issuerDN of CA issuing CRL or null.
      */
-    String getCRLIssuerDN();
+    default String getCRLIssuerDN() {
+        return null;
+    }
 
     /**
      * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
      *
      * @return serial number of CA certificate for CA issuing CRL or null.
      */
-    BigInteger getCRLSerialNo();
+    default BigInteger getCRLSerialNo() {
+        return null;
+    }
 
     /**
      * Get the key from a certification request.
@@ -192,7 +198,8 @@ public interface RequestMessage extends Serializable {
      *
      * @see #requireKeyInfo()
      */
-    void setKeyInfo(Certificate cert, PrivateKey key, String provider);
+    default void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
+    }
 
     /**
      * Returns an error number after an error has occurred processing the request
@@ -206,7 +213,9 @@ public interface RequestMessage extends Serializable {
      *
      * @return class specific error message
      */
-    String getErrorText();
+    default String getErrorText() {
+        return null;
+    }
 
     /**
      * Returns a senderNonce if present in the request
@@ -227,7 +236,9 @@ public interface RequestMessage extends Serializable {
      *
      * @return request key info
      */
-    byte[] getRequestKeyInfo();
+    default byte[] getRequestKeyInfo() {
+        return new byte[0];
+    }
 
     /**
      * Returns the name of the preferred Digest algorithm to be used in the response if applicable.
@@ -265,7 +276,8 @@ public interface RequestMessage extends Serializable {
      * @param key private key.
      * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      */
-    void setResponseKeyInfo(PrivateKey key, String provider);
+    default void setResponseKeyInfo(PrivateKey key, String provider) {
+    }
 
     /**
      * Gets the list of additional CA certificates
