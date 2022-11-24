@@ -28,10 +28,12 @@ import java.util.Collections;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.PKIHeader;
@@ -79,8 +81,8 @@ public class CmpServlet extends HttpServlet {
     private static final String DEFAULT_CMP_ALIAS = "cmp";
     private AuthenticationToken authenticationToken;
 
-    private ConcurrentCache<String, X509Certificate> extraCertIssuerCache = new ConcurrentCache<String, X509Certificate>();
-    private ConcurrentCache<BigInteger, Boolean> revocationStatusCache = new ConcurrentCache<BigInteger, Boolean>(); // 'true' value=>certificate OK => certificate NOT revoked.
+    private ConcurrentCache<String, X509Certificate> extraCertIssuerCache = new ConcurrentCache<>();
+    private ConcurrentCache<BigInteger, Boolean> revocationStatusCache = new ConcurrentCache<>(); // 'true' value=>certificate OK => certificate NOT revoked.
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -201,8 +203,27 @@ public class CmpServlet extends HttpServlet {
         if (log.isTraceEnabled()) {
             log.trace(">doGet()");
         }
-        log.info("Received un-allowed method GET in CMP servlet: query string=" + request.getQueryString());
-        response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "You can only use POST!");
+        boolean ok = false;
+        final boolean clearCache = StringUtils.equals(request.getParameter("clearcache"), "true");
+        if (clearCache) {
+            final String ip = request.getRemoteAddr();
+            if (StringUtils.equals(ip, "127.0.0.1") || StringUtils.equals(ip, "::1")) { // IPv4 and IPv6
+                log.info("Clearing caches in CMP servlet.");
+                extraCertIssuerCache.clear();
+                revocationStatusCache.clear();
+                response.setContentType("text/plain");
+                try (ServletOutputStream os = response.getOutputStream()) {
+                    os.print("Caches cleared.\n");
+                }
+                ok = true;
+            } else {
+                log.info("Clearing of caches is only allowed from localhost, but request was received from: " + ip);
+            }
+        }
+        if (!ok) {
+            log.info("Received un-allowed method GET in CMP servlet: query string=" + request.getQueryString());
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "You can only use POST!");
+        }
         if (log.isTraceEnabled()) {
             log.trace("<doGet()");
         }
