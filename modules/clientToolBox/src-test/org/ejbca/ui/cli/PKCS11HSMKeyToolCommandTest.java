@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -30,14 +32,16 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.util.keystore.KeyStoreToolsFactory;
+import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
 
 import javax.security.auth.x500.X500Principal;
@@ -76,12 +80,22 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 /**
- * Run tests with ClientToolBax command HSMKeyTool
+ * Run tests with ClientToolBax command HSMKeyTool.
+ *
+ * Note: This test tries to move keys, including existing keys, so make sure that the tokens configured
+ * in systemtests.properties do not contain any existing keys (that you want to keep and/or that are marked
+ * are sensitive and cannot be moved).
  *
  * @version Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PKCS11HSMKeyToolCommandTest {
+
+    private static final Logger log = Logger.getLogger(PKCS11HSMKeyToolCommandTest.class);
+
+    /** 15 second timeout per test case, in case some test case freezes */
+    @Rule
+    public Timeout testTimeout = new Timeout(15_000);
 
     private final HSMKeyTool command = new HSMKeyTool();
 
@@ -114,9 +128,39 @@ public class PKCS11HSMKeyToolCommandTest {
     @ClassRule
     public static TemporaryFolder folder = new TemporaryFolder();
 
-    @BeforeClass
-    public static void setUp() {
-        String data = "xx";
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        System.setIn(originalSystemIn);
+        // Restore original System.err
+        System.setErr(originalSystemError);
+        KeyStore.ProtectionParameter protectionParameter = new KeyStore.PasswordProtection(TOKEN_PIN.toCharArray());
+        ;
+        final KeyStoreTools store1 = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT_LABEL,
+                Pkcs11SlotLabelType.SLOT_LABEL, null, protectionParameter, "batch-" + new Date().getTime());
+        for (String alias : aliases) {
+            try {
+                store1.getKeyStore().deleteEntry(alias);
+            } catch (Exception e) {
+                log.warn("Failed to delete key: " + alias);
+            }
+        }
+        final KeyStoreTools store2 = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT2_LABEL,
+                Pkcs11SlotLabelType.SLOT_LABEL, null, protectionParameter, "batch-" + new Date().getTime());
+        for (String alias : aliases) {
+            try {
+                store2.getKeyStore().deleteEntry(alias);
+            } catch (Exception e) {
+                log.warn("Failed to delete key: " + alias);
+            }
+        }
+    }
+
+    @Before
+    public void beforeTest() {
+        // In some commands the user needs to press X + Enter to exit.
+        // If this is not done, then those test cases will just freeze until aborted.
+        // Simulate this by overriding System.in
+        String data = StringUtils.repeat("x\n", 5);
         final ByteArrayInputStream inStream = new ByteArrayInputStream(data.getBytes());
         inStream.mark(0);
         inStream.reset();
@@ -124,29 +168,15 @@ public class PKCS11HSMKeyToolCommandTest {
         System.setErr(new PrintStream(errStream));
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        System.setIn(originalSystemIn);
-        // Restore original System.err
-        System.setErr(originalSystemError);
+    @After
+    public void afterTest() {
         System.err.println(errStream.toString());
         errStream.reset();
-        KeyStore.ProtectionParameter protectionParameter = new KeyStore.PasswordProtection(TOKEN_PIN.toCharArray());
-        ;
-        final KeyStoreTools store1 = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT_LABEL,
-                Pkcs11SlotLabelType.SLOT_LABEL, null, protectionParameter, "batch-" + new Date().getTime());
-        for (String alias : aliases) {
-            store1.getKeyStore().deleteEntry(alias);
-        }
-        final KeyStoreTools store2 = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT2_LABEL,
-                Pkcs11SlotLabelType.SLOT_LABEL, null, protectionParameter, "batch-" + new Date().getTime());
-        for (String alias : aliases) {
-            store2.getKeyStore().deleteEntry(alias);
-        }
     }
 
     @Test
     public void testA1Token1WithIx() {
+        assertNotNull("pkcs11.token_index is not configured in systemtests.properties", SLOT_INDEX);
         //no exit, because no alias.
         //PKCS11HSMKeyTool test ${p11m} i${ix_1} -password ${userPass_2}
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
@@ -197,6 +227,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testA3CfgKeyRsa2OnToken1WithId() {
+        assertNotNull("pkcs11.token_number is not configured in systemtests.properties", SLOT_ID);
         //uses alias, so uses StressTest->Perfomance test exits, status= number of failures.
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
@@ -209,6 +240,8 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testA4MoveAllKeysFromToken1ToToken2() {
+        assertNotNull("pkcs11.token_label is not configured in systemtests.properties", SLOT_LABEL);
+        assertNotNull("pkcs11.token2_label is not configured in systemtests.properties", SLOT2_LABEL);
         //PKCS11HSMKeyTool move ./p11m.so ${label_1} ${label_2}
         String[] args = new String[]{"PKCS11HSMKeyTool", "move", PKCS11_LIBRARY,
                 SLOT_LABEL, SLOT2_LABEL, "-password", TOKEN_PIN};
@@ -614,13 +647,9 @@ public class PKCS11HSMKeyToolCommandTest {
     public X509Certificate[] signCertificate(InputStream certReqStream, KeyStore.PrivateKeyEntry ca, Provider p11Provider, String algorithm) throws Exception {
         X509Certificate caCert = (X509Certificate) ca.getCertificate();
         PrivateKey issuerPrivateKey = ca.getPrivateKey();
-        PemReader reader = new PemReader(new InputStreamReader(certReqStream));
-
         PemObject pemObject;
-        try {
+        try (PemReader reader = new PemReader(new InputStreamReader(certReqStream))) {
             pemObject = reader.readPemObject();
-        } finally {
-            reader.close();
         }
 
         JcaPKCS10CertificationRequest a = new JcaPKCS10CertificationRequest(pemObject.getContent());

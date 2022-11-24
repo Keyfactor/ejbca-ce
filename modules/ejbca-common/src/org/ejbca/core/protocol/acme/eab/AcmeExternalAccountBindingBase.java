@@ -92,4 +92,6 @@ public abstract class AcmeExternalAccountBindingBase extends AccountBindingBase 
         }
         return new ArrayList<ConfigdumpProperty<?>>(configdumpProperties);
     }
+    
+    public abstract String getKeyIdentifier();
 }

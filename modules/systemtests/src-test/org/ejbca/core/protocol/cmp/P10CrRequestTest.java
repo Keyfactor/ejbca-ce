@@ -18,10 +18,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.security.KeyPair;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -30,18 +28,13 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
-import org.bouncycastle.asn1.cmp.PKIHeader;
-import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -62,7 +55,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -167,8 +159,8 @@ public class P10CrRequestTest extends CmpTestCase {
     }
 
     @Test
-    public void test01CrmfHttpUnknowUser() throws Exception {
-        log.trace(">test01CrmfHttpUnknowUser");
+    public void p10CrHttpUnknowUser() throws Exception {
+        log.trace(">p10CrRequestHttpUnknowUser");
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
         PKIMessage req = genP10CrCertReq(ISSUER_DN, USER_DN, this.keys, this.cacert, nonce, transid, false, null, new Date(), new Date(), null, null, null, false);
@@ -180,12 +172,13 @@ public class P10CrRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
-        log.trace("<test01CrmfHttpUnknowUser");
+        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_CERT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
+        log.trace("<p10CrRequestHttpUnknowUser");
     }
 
     @Test
-    public void test02CrmfHttpUnknowUserSignedMessage() throws Exception {
+    public void p10CrHttpUnknowUserSignedMessage() throws Exception {
+        log.trace(">p10CrHttpUnknowUserSignedMessage");
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
         PKIMessage req = genP10CrCertReq(ISSUER_DN, USER_DN, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
@@ -199,12 +192,13 @@ public class P10CrRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_CERT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
+        log.trace("<p10CrHttpUnknowUserSignedMessage");
     }
 
     @Test
-    public void test03CrmfHttpOkUser() throws Exception {
-        log.trace(">test03CrmfHttpOkUser");
+    public void p10CrHttpOkUser() throws Exception {
+        log.trace(">p10CrHttpOkUser");
         // Create a new good USER
         X500Name userDN = createCmpUser("cmptest", "foo123", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
 
@@ -265,94 +259,13 @@ public class P10CrRequestTest extends CmpTestCase {
         altNames = CertTools.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
-        log.trace("<test03CrmfHttpOkUser");
+        log.trace("<p10CrHttpOkUser");
         
     }
 
     @Test
-    public void test04BlueXCrmf() throws Exception {
-        log.trace(">test04BlueXCrmf");
-        // An EE with a matching subject and clear text password set to "foo123" must exist for HMAC validation in this test.
-        // foo123 is not the correct password however, so we will fail HMAC verification
-        final String username = "Some Common Name";
-        try {
-            super.createCmpUser(username, "password", "CN=Some Common Name", false, this.caid, -1, -1);
-            byte[] resp = sendCmpHttp(bluexir, 200, CMP_ALIAS);
-            assertNotNull(resp);
-            // In this very old BlueX message, POP verification fails. 
-            // The HMAC password used to protect the request is 'password', which is set on the CMP user "Some Common Name" above
-            checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null); // expecting a bad_pop
-        } finally {
-            endEntityManagementSession.deleteUser(ADMIN, username);        	
-        }
-
-        try {
-            super.createCmpUser(username, "foo123", "CN=Some Common Name", false, this.caid, -1, -1);
-            byte[] resp = sendCmpHttp(bluexir, 200, CMP_ALIAS);
-            assertNotNull(resp);
-            // If we don't know the HMAC password, the below error will be instead
-            checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badRequest, null); // expecting a bad_pop
-        } finally {
-            endEntityManagementSession.deleteUser(ADMIN, username);         
-        }
-
-        log.trace("<test04BlueXCrmf");
-    }
-
-    @Test
-    public void test05BadBytes() throws Exception {
-        log.trace(">test05BadBytes");
-        byte[] msg = bluexirBad;
-        
-        /* Before EJBCA 6.8.0 we responded with HTTP 400, but now we send a PKIFailureInfo.badRequest instead. */
-        byte[] resp = sendCmpHttp(msg, 200, CMP_ALIAS);
-        assertNotNull(resp);
-        checkCmpFailMessage(resp, "Not a valid CMP message.", PKIBody.TYPE_ERROR, 123, PKIFailureInfo.badRequest);
-        log.trace("<test05BadBytes");
-    }
-
-    @Test
-    public void test07SignedConfirmationMessage() throws Exception {
-        log.trace(">test07SignedConfirmationMessage()");
-        CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
-        cmpConfRes.setSignKeyInfo(this.testx509ca.getCertificateChain(), this.keys.getPrivate(), null);
-        cmpConfRes.setSender(new GeneralName(USER_DN));
-        cmpConfRes.setRecipient(new GeneralName(new X500Name("CN=cmpRecipient, O=TEST")));
-        cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW==");
-        cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY==");
-        cmpConfRes.setTransactionId("MTMzNwo=");
-        cmpConfRes.create();
-        byte[] resp = cmpConfRes.getResponseMessage();
-        PKIMessage msg = PKIMessage.getInstance(ASN1Primitive.fromByteArray(resp));
-        boolean veriStatus = CmpMessageHelper.verifyCertBasedPKIProtection(msg, this.keys.getPublic());
-        assertTrue("Verification failed.", veriStatus);
-        log.trace("<test07SignedConfirmationMessage()");
-    }
-
-    @Test
-    public void testUnsignedConfirmationMessage() throws Exception {
-        log.trace(">testUnsignedConfirmationMessage()");
-        CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
-        cmpConfRes.setSender(new GeneralName(USER_DN));
-        cmpConfRes.setRecipient(new GeneralName(new X500Name("CN=cmpRecipient, O=TEST")));
-        cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW==");
-        cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY==");
-        cmpConfRes.setTransactionId("MTMzNwo=");
-        cmpConfRes.create();
-        byte[] resp = cmpConfRes.getResponseMessage();
-        PKIMessage msg = PKIMessage.getInstance(ASN1Primitive.fromByteArray(resp));
-        try {
-            CmpMessageHelper.verifyCertBasedPKIProtection(msg, this.keys.getPublic());
-            fail("Attempting to verify signature on an unsigned message should have failed.");
-        } catch (SignatureException e) {
-            log.debug("Expected exception: " + e.getMessage());
-        }
-        log.trace("<testUnsignedConfirmationMessage()");
-    }
-
-    @Test
-    public void test08SubjectDNSerialnumber() throws Exception {
-        log.trace(">test08SubjectDNSerialnumber");
+    public void p10CrSubjectDNSerialnumber() throws Exception {
+        log.trace(">p10CrSubjectDNSerialnumber");
         // Create a new good USER
         String cmpsntestUsername = "cmpsntest";
         String cmpsntest2Username = "cmpsntest2";
@@ -421,27 +334,12 @@ public class P10CrRequestTest extends CmpTestCase {
                 this.endEntityManagementSession.deleteUser(ADMIN, cmpsntest2Username);
             } catch (NoSuchEndEntityException e) {} // NOOMD;
         }
-        log.trace("<test08SubjectDNSerialnumber");
+        log.trace("<p10CrSubjectDNSerialnumber");
     }
 
     @Test
-    public void test09KeyIdTest() {
-        log.trace(">test09KeyIdTest()");
-        DEROctetString octs = new DEROctetString("foo123".getBytes());
-        String keyid = CmpMessageHelper.getStringFromOctets(octs);
-        assertEquals("foo123", keyid);
-
-        PKIHeaderBuilder headerbuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name("CN=Sender")), new GeneralName(new X500Name("CN=Recipient")));
-        headerbuilder.setSenderKID(new DEROctetString("foo123".getBytes()));
-        PKIHeader header = headerbuilder.build();
-        keyid = CmpMessageHelper.getStringFromOctets(header.getSenderKID());
-        assertEquals("foo123", keyid);
-        log.trace("<test09KeyIdTest()");
-    }
-
-    @Test
-    public void test10EscapedCharsInDN() throws Exception {
-        log.trace(">test10EscapedCharsInDN");
+    public void p10CrEscapedCharsInDN() throws Exception {
+        log.trace(">p10CrEscapedCharsInDN");
 
         this.cmpConfiguration.setExtractUsernameComponent(CMP_ALIAS, "DN");
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
@@ -529,11 +427,13 @@ public class P10CrRequestTest extends CmpTestCase {
                 log.debug("Failed to delete USER: " + escapedName);
             }
         }
-        log.trace("<test10EscapedCharsInDN");
+        log.trace("<p10CrEscapedCharsInDN");
     }
 
     @Test
-    public void  test11IncludingCertChainInSignedCMPResponse() throws Exception {
+    public void p10CrIncludingCertChainInSignedCMPResponse() throws Exception {
+        log.trace(">p10CrIncludingCertChainInSignedCMPResponse");
+
         //---------- Create SubCA signed by testx509ca (rootCA) ------------- //
         String subcaDN = "CN=SubTestCA";
         int subcaID = subcaDN.hashCode();
@@ -615,101 +515,6 @@ public class P10CrRequestTest extends CmpTestCase {
             }
             CaTestUtils.removeCa(ADMIN, this.caSession.getCAInfo(ADMIN, subcaID));
         }
+        log.trace("<p10CrIncludingCertChainInSignedCMPResponse");
     }
-
-
-    /*
-     *     header
-     *         pvno: cmp2000 (2)
-     *         sender: 4
-     *             directoryName: rdnSequence (0)
-     *                 rdnSequence: 0 items
-     *         recipient: 4
-     *             directoryName: rdnSequence (0)
-     *                 rdnSequence: 4 items (id-at-commonName=Test CA 1,id-at-organizationalUnitName=Development,id-at-organizationName=A.E.T. Europe B.V.,id-at-countryName=NL)
-     *                     RDNSequence item: 1 item (id-at-countryName=NL)
-     *                         RelativeDistinguishedName item (id-at-countryName=NL)
-     *                             Id: 2.5.4.6 (id-at-countryName)
-     *                             CountryName: NL
-     *                     RDNSequence item: 1 item (id-at-organizationName=A.E.T. Europe B.V.)
-     *                         RelativeDistinguishedName item (id-at-organizationName=A.E.T. Europe B.V.)
-     *                             Id: 2.5.4.10 (id-at-organizationName)
-     *                             DirectoryString: printableString (1)
-     *                                 printableString: A.E.T. Europe B.V.
-     *                     RDNSequence item: 1 item (id-at-organizationalUnitName=Development)
-     *                         RelativeDistinguishedName item (id-at-organizationalUnitName=Development)
-     *                             Id: 2.5.4.11 (id-at-organizationalUnitName)
-     *                             DirectoryString: printableString (1)
-     *                                 printableString: Development
-     *                     RDNSequence item: 1 item (id-at-commonName=Test CA 1)
-     *                         RelativeDistinguishedName item (id-at-commonName=Test CA 1)
-     *                             Id: 2.5.4.3 (id-at-commonName)
-     *                             DirectoryString: printableString (1)
-     *                                 printableString: Test CA 1
-     *         protectionAlg (PasswordBasedMac)
-     *             Algorithm Id: 1.2.840.113533.7.66.13 (PasswordBasedMac)
-     *             PBMParameter
-     *                 salt: 02bf1fb0e8fb9e4def6e0a76fc66ecd7
-     *                 owf (SHA-1)
-     *                     Algorithm Id: 1.3.14.3.2.26 (SHA-1)
-     *                 iterationCount: 1000
-     *                 mac (HMAC SHA-1)
-     *                     Algorithm Id: 1.3.6.1.5.5.8.1.2 (HMAC SHA-1)
-     *         senderKID: 73736c636c69656e74
-     *         transactionID: a45a41b289df8675bc89ad68b46721ad
-     *         senderNonce: 32cddde790a033709a8616b0f0d23918
-     *     body: ir (0)
-     *         ir: 1 item
-     *             CertReqMsg
-     *                 certReq
-     *                     certReqId: 0
-     *                     certTemplate
-     *                         validity
-     *                             notBefore: generalTime (1)
-     *                                 generalTime: 2006-09-19 16:11:26 (UTC)
-     *                             notAfter: generalTime (1)
-     *                                 generalTime: 2009-06-15 16:11:26 (UTC)
-     *                         subject: 0
-     *                             rdnSequence: 1 item (id-at-commonName=Some Common Name)
-     *                                 RDNSequence item: 1 item (id-at-commonName=Some Common Name)
-     *                                     RelativeDistinguishedName item (id-at-commonName=Some Common Name)
-     *                                         Id: 2.5.4.3 (id-at-commonName)
-     *                                         DirectoryString: uTF8String (4)
-     *                                             uTF8String: Some Common Name
-     *                         publicKey
-     *                             algorithm (rsaEncryption)
-     *                                 Algorithm Id: 1.2.840.113549.1.1.1 (rsaEncryption)
-     *                             Padding: 0
-     *                             subjectPublicKey: 30818a02818100b8181318f817ad2dc020f37a8973ba2cd7...
-     *                         extensions: 1 item
-     *                             Extension
-     *                                 Id: 2.5.29.17 (id-ce-subjectAltName)
-     *                                 GeneralNames: 1 item
-     *                                     GeneralName: otherName (0)
-     *                                         otherName
-     *                                             type-id: 1.3.6.1.4.1.311.20.2.3 (id-ms-user-principal-name)
-     *                                             UTF8String: upn@aeteurope.nl
-     *                 popo: raVerified (0)
-     *                     raVerified
-     *     Padding: 0
-     *     protection: 32fef4a83547af71d5315e4090c777efc648e1e8
-     */
-    static byte[] bluexir = Base64.decode(("MIICIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"
-            + "IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz" + "dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"
-            + "AhoFAAICA+gwDAYIKwYBBQUIAQIFAKILBAlzc2xjbGllbnSkEgQQpFpBsonfhnW8" + "ia1otGchraUSBBAyzd3nkKAzcJqGFrDw0jkYoIIBLjCCASowggEmMIIBIAIBADCC"
-            + "ARmkJqARGA8yMDA2MDkxOTE2MTEyNlqhERgPMjAwOTA2MTUxNjExMjZapR0wGzEZ" + "MBcGA1UEAwwQU29tZSBDb21tb24gTmFtZaaBoDANBgkqhkiG9w0BAQEFAAOBjgAw"
-            + "gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/" + "Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"
-            + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
-            + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
-
-    
-    
-    static byte[] bluexirBad = Base64.decode(("BADCIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"
-            + "IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz" + "dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"
-            + "AhoFAAICA+gwDAYIKwYBBQUIAQIFAKILBAlzc2xjbGllbnSkEgQQpFpBsonfhnW8" + "ia1otGchraUSBBAyzd3nkKAzcJqGFrDw0jkYoIIBLjCCASowggEmMIIBIAIBADCC"
-            + "ARmkJqARGA8yMDA2MDkxOTE2MTEyNlqhERgPMjAwOTA2MTUxNjExMjZapR0wGzEZ" + "MBcGA1UEAwwQU29tZSBDb21tb24gTmFtZaaBoDANBgkqhkiG9w0BAQEFAAOBjgAw"
-            + "gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/" + "Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"
-            + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
-            + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
-
 }

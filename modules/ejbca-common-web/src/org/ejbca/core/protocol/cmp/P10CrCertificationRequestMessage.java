@@ -13,14 +13,10 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -44,8 +40,6 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMException;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -63,8 +57,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     
     private transient JcaPKCS10CertificationRequest pc10Req = null;
     private int requestType = PKIBody.TYPE_P10_CERT_REQ;
-    private String b64SenderNonce = null;
-    private String b64TransId = null;
     /** manually set username */
     private String username = null;
     private String extractUsernameComponent = null;
@@ -73,9 +65,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     private String defaultCADN = null;
     protected Date notAfter = null;
     protected Date notBefore = null;
-    
-    /** manually set public and private key, if keys have been server generated */
-    private transient KeyPair serverGenKeyPair;
     
     /** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so 
      * we can restore the PKIMessage after serialization/deserialization. */
@@ -212,9 +201,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
                 pass = str.getString();
             }
         }
-
         return pass;
-
     }
 
     @Override
@@ -232,14 +219,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     }
 
     @Override
-    public BigInteger getSerialNo() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public String getCASequence() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -321,28 +301,9 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     }
 
     @Override
-    public String getCRLIssuerDN() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public BigInteger getCRLSerialNo() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        
-     // If we have generated a key pair by the server, we should use this one
-        if (serverGenKeyPair != null) {
-            return serverGenKeyPair.getPublic();
-        }
-        // Else, see if we can find one in the request
         final SubjectPublicKeyInfo keyInfo = getRequestSubjectPublicKeyInfo();
         if (keyInfo == null) {
-            // No public key, which may be OK if we are requesting server generated keys
             return null;
         }
         return getPublicKey(keyInfo, BouncyCastleProvider.PROVIDER_NAME);
@@ -367,32 +328,12 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
 
     @Override
     public boolean requireKeyInfo() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public int getErrorNo() {
-        // TODO Auto-generated method stub
         return 0;
-    }
-
-    @Override
-    public String getErrorText() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public byte[] getRequestKeyInfo() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override
@@ -424,12 +365,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     }
 
     @Override
-    public void setResponseKeyInfo(PrivateKey key, String provider) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public boolean isImplicitConfirm() {
         InfoTypeAndValue[] infos = this.getHeader().getGeneralInfo();
         if (infos != null) {
@@ -443,30 +378,9 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     }
 
     @Override
-    public PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        SubjectPublicKeyInfo pkInfo = getRequest().getSubjectPublicKeyInfo();
-        JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-        try {
-            return converter.getPublicKey(pkInfo);
-        } catch (PEMException e) {
-            throw new IllegalStateException("Unable to parse the public key from pkcs10 request!");
-        }
-    }
-
-    @Override
     public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
         final PKCS10CertificationRequest request = getRequest();
         return request.getSubjectPublicKeyInfo();
-    }
-
-    @Override
-    public void setServerGenKeyPair(KeyPair serverGenKeyPair) {
-        this.serverGenKeyPair = serverGenKeyPair;
-    }
-
-    @Override
-    public KeyPair getServerGenKeyPair() {
-        return serverGenKeyPair;
     }
 
 }

@@ -29,9 +29,19 @@
 #database.name=db2
 #database.name=ingres
 
+# The encoded certificate may be stored in the table Base64CertData instead of
+# in a column in the CertificateData table. Using a separate table for the
+# certificate data may speed up searching for certificates if there are lots of
+# them (>100Million).
+# Default: false
+#database.useSeparateCertificateTable=true
+
 #
 # The below settings are needed to build and run tools the interact directly with the database
 # For example ejbca-db-cli
+# NOTE: Do not set these properties for the deployment build of ejbca.ear, it does not need database 
+# information as that is configured in the application server, including possible usage 
+# of a Vault for the password
 #
 
 # Database connection URL.
@@ -72,10 +82,3 @@
 # Database password.
 # Default: sa (works with H2 on JBoss 7)
 #database.password=ejbca
-
-# The encoded certificate may be stored in the table Base64CertData instead of
-# in a column in the CertificateData table. Using a separate table for the
-# certificate data may speed up searching for certificates if there are lots of
-# them (>100Million).
-# Default: false
-#database.useSeparateCertificateTable=true
