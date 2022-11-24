@@ -784,6 +784,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (enforceUniqueDistinguishedName) {
             subjectDN = endEntityInformation.getCertificateDN();
         }
+        if(StringUtils.isBlank(subjectDN)) {
+            return;
+        }
         //boolean multipleCheckOk = false;
         
         // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 

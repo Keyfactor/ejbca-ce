@@ -212,6 +212,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_CREATECERTIFICATE, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_USEUSERNAME, Role.STATE_ALLOW),
                     // From legacy JS
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW),

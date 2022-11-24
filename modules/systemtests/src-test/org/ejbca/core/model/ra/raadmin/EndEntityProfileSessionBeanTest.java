@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
+import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -20,8 +21,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
@@ -59,6 +63,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -256,7 +261,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @throws Exception any exception.
      */
     @Test
-    public void test05GetAvailableCertificateProfiles() throws Exception {
+    public void test06GetAvailableCertificateProfiles() throws Exception {
+        log.trace(">test06GetAvailableCertificateProfiles()");
         final String cpProfileName1 = "test05CertificateProfile1";
         final String cpProfileName2 = "test05CertificateProfile2";
         final String eepProfileName = "test05EndEntityProfile";
@@ -283,6 +289,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             certificateProfileSession.removeCertificateProfile(alwaysAllowToken, cpProfileName1);
             certificateProfileSession.removeCertificateProfile(alwaysAllowToken, cpProfileName2);
         }
+        log.trace("<test06GetAvailableCertificateProfiles()");
     }
     
     /**
@@ -291,7 +298,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @throws Exception any exception.
      */
     @Test
-    public void test05GetAvailableCAsInProfile() throws Exception {
+    public void test07GetAvailableCAsInProfile() throws Exception {
+        log.trace("<test07GetAvailableCAsInProfile()");
         final String caName1 = "test05CA1";
         final String caName2 = "test05CA2";
         final String eepProfileName = "test05EndEntityProfile";
@@ -336,6 +344,14 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             assertEquals("CA name and ID must match.", (int) map.get(caName1), caInfo1.getCAId());
             assertEquals("CA name and ID must match.", (int) map.get(caName2), caInfo2.getCAId());
             
+            // 1.4 Test AnyCa available for this EEP
+            int anyCAId = SecConst.ALLCAS;
+            eeProfile.setAvailableCAs(Collections.singletonList(anyCAId));
+            endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
+            List<Integer> allCaIds = caSession.getAuthorizedCaIds(alwaysAllowToken);
+            assertEquals("getAvailaBleCAsInProfile for EEP with AnyCA chosen should return a map with all CAs", allCaIds.size(), map.size() );
+            
             // 2. Test exception handling.
             // 2.1 Test end entity profile not found.
             final int notExistingEepId = eepId + 1234;
@@ -363,6 +379,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId1);
             cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId1);
         }
+        log.trace("<test07GetAvailableCAsInProfile()");
     }
     
     /**
@@ -381,6 +398,12 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         return cainfo;
     }
     
+    private LinkedHashMap<String, Serializable> validationFromRegex(final String regex) {
+        final LinkedHashMap<String, Serializable> validation = new LinkedHashMap<>();
+        validation.put(RegexFieldValidator.class.getName(), StringUtils.defaultString(regex));
+        return validation;
+    }
+    
     /**
      * Test if dynamic fields behave as expected
      * 
@@ -388,11 +411,13 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void test06EndEntityProfilesDynamicFields() throws Exception {
-        log.trace(">test06testEndEntityProfilesDynamicFields()");
+    public void test08EndEntityProfilesDynamicFields() throws Exception {
+        log.trace(">test08EndEntityProfilesDynamicFields()");
         String testProfileName = "TESTDYNAMICFIELDS";
         String testString1 = "testString1";
         String testString2 = "testString2";
+        String validatorString1 = "(Abc111)?[1-9]+";
+        String validatorString2 = "(Xyz222)?[1-9]+";
         boolean returnValue;
         // Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
@@ -403,10 +428,14 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         profile.addField(DnComponents.ORGANIZATIONALUNIT);
         profile.setValue(DnComponents.ORGANIZATIONALUNIT, 0, testString1);
         profile.setValue(DnComponents.ORGANIZATIONALUNIT, 1, testString2);
+        profile.setValidation(DnComponents.ORGANIZATIONALUNIT, 0, validationFromRegex(validatorString1));
+        profile.setValidation(DnComponents.ORGANIZATIONALUNIT, 1, validationFromRegex(validatorString2));
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.DNSNAME);
         profile.setValue(DnComponents.DNSNAME, 0, testString1);
         profile.setValue(DnComponents.DNSNAME, 1, testString2);
+        profile.setValidation(DnComponents.DNSNAME, 0, validationFromRegex(validatorString1));
+        profile.setValidation(DnComponents.DNSNAME, 1, validationFromRegex(validatorString2));
         endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, testProfileName, profile);
         // Remove first field
         profile = endEntityProfileSession.getEndEntityProfile(testProfileName);
@@ -418,10 +447,13 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         returnValue = testString2.equals(profile.getValue(DnComponents.ORGANIZATIONALUNIT, 0));
         returnValue &= testString2.equals(profile.getValue(DnComponents.DNSNAME, 0));
         assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
+        returnValue = profile.getValidation(DnComponents.ORGANIZATIONALUNIT, 0).containsValue(validatorString2);
+        returnValue = profile.getValidation(DnComponents.DNSNAME, 0).containsValue(validatorString2);
+        assertTrue("Adding and removing validators dynamic fields to profile does not work properly.", returnValue);
         // Remove profile
         endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, testProfileName);
-        log.trace("<test06testEndEntityProfilesDynamicFields()");
-    } // test06testEndEntityProfilesDynamicFields
+        log.trace("<test08EndEntityProfilesDynamicFields()");
+    } 
 
     /**
      * Test if password autogeneration behaves as expected
@@ -430,8 +462,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void test07PasswordAutoGeneration()  {
-        log.trace(">test07PasswordAutoGeneration()");
+    public void test09PasswordAutoGeneration()  {
+        log.trace(">test09PasswordAutoGeneration()");
         // Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
         profile.setAutoGeneratedPasswordType(PasswordGeneratorFactory.PASSWORDTYPE_DIGITS);
@@ -444,7 +476,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                 assertTrue("Password was generated with a improper char '" + password.charAt(j) + "'.", DIGITS.contains("" + password.charAt(j)));
             }
         }
-        log.trace("<test07PasswordAutoGeneration()");
+        log.trace("<test09PasswordAutoGeneration()");
     }
 
     /**
@@ -454,8 +486,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-   public void test08FieldIds() {
-        log.trace(">test08FieldIds()");
+   public void test10FieldIds() {
+        log.trace(">test10FieldIds()");
         EndEntityProfile profile = new EndEntityProfile();
 
         // Simple one that is guaranteed to succeed.
@@ -472,12 +504,13 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         assertEquals(1, profile.getNumberOfField(EndEntityProfile.STARTTIME));
         profile.addField(EndEntityProfile.STARTTIME);
         assertEquals(2, profile.getNumberOfField(EndEntityProfile.STARTTIME));
-        log.trace("<test08FieldIds()");
+        log.trace("<test10FieldIds()");
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
-    public void test09Clone() throws Exception {
+    public void test11Clone() throws Exception {
+        log.trace("<test11Clone()");
         EndEntityProfile profile = new EndEntityProfile();
         EndEntityProfile clone = (EndEntityProfile)profile.clone();
         HashMap profmap = (HashMap)profile.saveData();
@@ -492,6 +525,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         String clonestr = (String)clonemap.get("FOO");
         assertEquals("FAR", profstr);
         assertEquals("BAR", clonestr);
+        log.trace("<test11Clone()");
     }
     
     /**
@@ -500,8 +534,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @throws EndEntityProfileNotFoundException 
      */
     @Test
-    public void test10CardnumberRequired() throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
- 	log.trace(">test10CardnumberRequired()");
+    public void test12CardnumberRequired() throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
+ 	log.trace(">test12CardnumberRequired()");
 
     	try {
     	    int caid = "CN=TEST EndEntityProfile,O=PrimeKey,C=SE".hashCode();
@@ -546,13 +580,13 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     	} finally {
     	    endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTCARDNUMBER");
     	}
-    	log.trace("<test10CardnumberRequired()");
+    	log.trace("<test12CardnumberRequired()");
     }
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
     @Test
-   public void test11EndEntityProfileReferenceDetection() throws Exception {
-        log.trace(">test11EndEntityProfileReferenceDetection()");
+   public void test13EndEntityProfileReferenceDetection() throws Exception {
+        log.trace(">test13EndEntityProfileReferenceDetection()");
         final String NAME = "EndEntityProfileReferenceDetection";
         try {
             // Get a CA that really does exist, otherwise we will not be "authorized" to this CA
@@ -573,13 +607,13 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         } finally {
         	endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, NAME);
         }
-        log.trace("<test11EndEntityProfileReferenceDetection()");
+        log.trace("<test13EndEntityProfileReferenceDetection()");
     }
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
     @Test
-   public void test12OperationsOnEmptyProfile() throws Exception {
-        log.trace(">test12OperationsOnEmptyProfile()");
+   public void test14OperationsOnEmptyProfile() throws Exception {
+        log.trace(">test14OperationsOnEmptyProfile()");
     	final EndEntityProfile profile = new EndEntityProfile();
         try {
         	endEntityProfileSession.addEndEntityProfile(roleMgmgToken, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME, profile);
@@ -612,7 +646,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
-        log.trace("<test12OperationsOnEmptyProfile()");
+        log.trace("<test14OperationsOnEmptyProfile()");
     }
     
     @Test

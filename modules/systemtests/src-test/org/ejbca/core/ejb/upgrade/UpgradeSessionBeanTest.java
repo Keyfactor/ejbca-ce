@@ -12,6 +12,28 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -70,6 +92,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
@@ -102,27 +125,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * System tests for the upgrade session bean. 
  * 
@@ -153,8 +155,7 @@ public class UpgradeSessionBeanTest {
     private UpgradeTestSessionRemote upgradeTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CesecoreConfigurationProxySessionRemote cesecoreConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private InternalKeyBindingMgmtSessionRemote internalKeyBindingSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-
-
+        
     private static AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
@@ -1290,6 +1291,136 @@ public class UpgradeSessionBeanTest {
         
     }
 
+    /** Tests addition of new access rules for Public Access RA added in 7.10.0 */
+    @Test
+    public void testUpgradeAccessRules7100() throws AuthorizationDeniedException, RoleExistsException {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.9.0");
+        guc.setPostUpgradedToVersion("7.9.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        // Add role
+        Role role = new Role("UpgradeTestNamespace", "Role", Arrays.asList(AccessRulesConstants.REGULAR_CREATECERTIFICATE + "/"), Collections.emptyList());
+        role.normalizeAccessRules();
+        roleSession.deleteRoleIdempotent(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+        try {
+            roleSession.persistRole(alwaysAllowtoken, role);
+            // Perform upgrade
+            upgradeSession.upgrade(null, "7.9.0", false);
+            // Check role
+            role = roleSession.getRole(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+            assertEquals("New access rule was not added", Boolean.TRUE, role.getAccessRules().get(AccessRulesConstants.REGULAR_USEUSERNAME + "/"));
+            assertEquals("New access rule was not added", Boolean.TRUE, role.getAccessRules().get(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID + "/"));
+        } finally {
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+        }
+    }
+
+    @Test
+    public void testUpgradeCmpVendorCaConfiguration7110() throws AuthorizationDeniedException {
+        // Set previous upgraded to 7.10
+        final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.10.0");
+        guc.setPostUpgradedToVersion("7.10.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        String cmpAlias = "testUpgradeVendorCaCmp";
+        String cmpAliasNoVendors = "testUpgradeVendorCACmpNoVendors";
+        CmpConfiguration cmpConfiguration =
+                (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        try {
+            // One vendor CA
+            cmpConfiguration.addAlias(cmpAlias);
+            String caName = testCaInfo.getName();
+            // testCa should be converted to the new ID format, BogusCA should disappear during upgrade since no CA with that name exists
+            cmpConfiguration.setValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, caName + ";BogusCA", cmpAlias);
+            assertEquals("Vendor CAs should not be stored as IDs yet (default value is empty string)",
+                    cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCAIDS, cmpAlias), "");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
+            upgradeSession.upgrade(null, "7.10.0", false);
+            // Update cmp config
+            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            String vendorIdString = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCAIDS, cmpAlias);
+            assertEquals("Vendor CAs should now be stored with the new ID format",
+                    vendorIdString, String.valueOf(testCaInfo.getCAId()));
+            assertEquals("Vendors with the old name format should still be present",
+                    cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAlias),
+                    caName + ";BogusCA");
+            upgradeSession.upgrade(null, "7.10.0", true);
+            // Update cmp config
+            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            assertNull("After running post-upgrade vendor CAs with the old format should be gone",
+                    cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAlias));
+            // No vendor CAs
+            cmpConfiguration.addAlias(cmpAliasNoVendors);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
+            assertNull("No vendor CAs should be stored",
+                    cmpConfiguration.getValue(cmpAliasNoVendors + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAliasNoVendors));
+            assertEquals("Vendor CA IDs should be initialized but empty",
+                    "",
+                    cmpConfiguration.getValue(cmpAliasNoVendors + "." + CmpConfiguration.CONFIG_VENDORCAIDS, cmpAliasNoVendors));
+            upgradeSession.upgrade(null, "7.10.0", false);
+            // Update cmp config
+            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            assertNull("Still, no vendor CAs should be stored",
+                    cmpConfiguration.getValue(cmpAliasNoVendors + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAliasNoVendors));
+            assertEquals("Vendor CA IDs should be initialized but empty",
+                    "",
+                    cmpConfiguration.getValue(cmpAliasNoVendors + "." + CmpConfiguration.CONFIG_VENDORCAIDS, cmpAliasNoVendors));
+        } finally {
+            cmpConfiguration.removeAlias(cmpAlias);
+            cmpConfiguration.removeAlias(cmpAliasNoVendors);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
+        }
+    }
+
+    @Test
+    public void testUpgradeEstVendorCaConfiguration7110() throws AuthorizationDeniedException {
+        // Set previous upgraded to 7.10
+        final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.10.0");
+        guc.setPostUpgradedToVersion("7.10.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        String estAlias = "testUpgradeVendorCaEst";
+        String estAliasNoVendors = "testUpgradeVendorCaEstNoVendors";
+        EstConfiguration estConfiguration =
+                (EstConfiguration) globalConfigSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+        try {
+            // One vendor CA
+            estConfiguration.addAlias(estAlias);
+            String caName = testCaInfo.getName();
+            // testCa should be converted to the new ID format, BogusCA should disappear during upgrade since no CA with that name exists
+            estConfiguration.setValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCA, caName + ";BogusCA", estAlias);
+            assertEquals("Vendor CAs should not be stored as IDs yet (default value is empty string)",
+                    estConfiguration.getValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCAIDS, estAlias), "");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, estConfiguration);
+            upgradeSession.upgrade(null, "7.10.0", false);
+            // Update est config
+            estConfiguration = (EstConfiguration) globalConfigSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            String vendorIdString = estConfiguration.getValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCAIDS, estAlias);
+            assertEquals("Vendor CAs should now be stored with the new ID format",
+                    vendorIdString, String.valueOf(testCaInfo.getCAId()));
+            assertEquals("Vendors with the old name format should still be present",
+                    estConfiguration.getValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCA, estAlias),
+                    caName + ";BogusCA");
+            upgradeSession.upgrade(null, "7.10.0", true);
+            // Update est config
+            estConfiguration = (EstConfiguration) globalConfigSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            assertNull("After running post-upgrade vendor CAs with the old format should be gone",
+                    estConfiguration.getValue(estAlias + "." + CmpConfiguration.CONFIG_VENDORCA, estAlias));
+            // No vendor CAs
+            estConfiguration.addAlias(estAliasNoVendors);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, estConfiguration);
+            assertNull("No vendor CAs should be stored",
+                    estConfiguration.getValue(estAliasNoVendors + "." + EstConfiguration.CONFIG_VENDORCA, estAliasNoVendors));
+            assertEquals("Vendor CA IDs should be initialized but empty",
+                    "",
+                    estConfiguration.getValue(estAliasNoVendors + "." + EstConfiguration.CONFIG_VENDORCAIDS, estAliasNoVendors));
+        } finally {
+            estConfiguration.removeAlias(estAlias);
+            estConfiguration.removeAlias(estAliasNoVendors);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, estConfiguration);
+        }
+    }
+        
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
         final ExtendedInformation extInfo = new ExtendedInformation();
         if (startTime != null) {

@@ -88,7 +88,7 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
         final Collection<Integer> caIds = caSession.getAuthorizedCaIds(getAdmin());
         for (final Integer caId : caIds) {
             final CAInfo cainfo = caSession.getCAInfoInternal(caId);
-            if (cainfo == null || cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
+            if (cainfo == null || cainfo.getStatus() == CAConstants.CA_EXTERNAL || cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
                 continue;
             }
             final String caName = cainfo.getName();

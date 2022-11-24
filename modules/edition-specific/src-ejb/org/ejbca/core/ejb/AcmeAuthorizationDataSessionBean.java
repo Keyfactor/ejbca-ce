@@ -23,14 +23,12 @@ import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionRemote;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 
 /**
  * Class that receives a Acme message and passes it on to the correct message handler.
  * Not available in Community Edition
- *
- * @version $Id$
  */
-
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAuthorizationDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSessionRemote, AcmeAuthorizationDataSessionLocal {
@@ -53,6 +51,11 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
     }
 
     @Override
+    public List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AcmeAuthorizationData find(String authorizationId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
@@ -70,12 +73,22 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
     }
 
     @Override
+    public List<AcmeAuthorizationData> findPreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
     public String createOrUpdate(AcmeAuthorization acmeAuthorization) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
     @Override
     public void createOrUpdateList(List<AcmeAuthorization> acmeAuthorizations) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
+    @Override
+    public void persistAcmeAuthorizationData(AcmeAuthorizationData data) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 

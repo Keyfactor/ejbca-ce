@@ -316,6 +316,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.oauthKeyBeingEdited = oauthKey;
             this.defaultKeyLabel = defaultKeyLabel;
             this.keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
+            this.publicKeyUrl = oauthKey.getPublicKeyUrl();
             
             this.logoutUrl = oauthKey.getLogoutUrl();
             this.tokenUrl = oauthKey.getTokenUrl();
@@ -541,7 +542,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_FAILEDKEYURL", oauthKeyEditor.getPublicKeyUrl());
             return StringUtils.EMPTY;
         }
-        oauthKeyEditor.setPublicKeyUrl(null);
+        // oauthKeyEditor.setPublicKeyUrl(null);
         return null;
     }
 
@@ -663,6 +664,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
         newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
+        if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
+            newOauthKey.setPublicKeyUrl(oauthKeyEditor.getPublicKeyUrl());
+        }
         if (oauthKeyEditor.getKeyBinding() != null) {
             newOauthKey.setKeyBinding(oauthKeyEditor.getKeyBinding());
         }
@@ -835,7 +839,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
         oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
-
+        if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
+            oauthKeyToUpdate.setPublicKeyUrl(oauthKeyEditor.getPublicKeyUrl());
+        }
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;

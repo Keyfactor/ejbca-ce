@@ -18,11 +18,13 @@
 	<path id="clientToolBox.lib.classpath">
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-io.classpath"/>	
 		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-text.classpath"/><!-- Dependency of commons-configuration2 -->
+		<path refid="lib.commons-beanutils.classpath"/><!-- Dependency of commons-configuration2 -->
 		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.jacknji.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.log4j.classpath"/> 		
@@ -50,6 +52,7 @@
 		<path location="${mod.systemtest-interface.lib}"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.p11ng.lib}" />
 		<pathelement location="${mod.ejbca-common.lib}"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 	</path>

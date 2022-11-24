@@ -21,9 +21,10 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-text.classpath"/><!-- Dependency of commons-configuration2 -->
 		<path refid="lib.commons-beanutils.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
@@ -36,11 +37,12 @@
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
-		<path location="${mod.cli-util.lib}"/>
+		<path refid="lib.keyfactor-cli-commons.classpath"/>
 		<path location="${mod.peerconnector-cli.lib}"/>
 		<path location="${mod.peerconnector-interface.lib}"/>
 		<path location="${mod.peerconnector-common.lib}"/>
 		<path location="${mod.peerconnector-publ.lib}"/>
+        <path location="${mod.plugins.lib}"/>
         <path location="${mod.plugins-ee.lib}"/>
 		<path refid="lib.xstream.classpath"/>
 	</path>
@@ -53,6 +55,7 @@
         <path refid="lib.junit.classpath"/>
         <path location="${ejbca-ejb-cli.build.dir}"/>
         <path location="${ejbca-ejb-cli.dir}/../dist/systemtests-interfaces.jar"/>
+        <path location="${mod.p11ng.lib}" />
     </path>
 
     <path id="test.classpath">
@@ -127,6 +130,7 @@
     		<!-- slf4j-log4j.jar is needed just to avoid errors when running the CLI with later versions of JBoss -->
        		<path refid="lib.slf4jlog4j.classpath"/>
        		<path refid="lib.jacknji.classpath"/>
+    		<path refid="lib.commons-config.classpath"/>
     	</copy>
     	<copy todir="${mod.ejbca-ejb-cli.dist}">
     		<fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>

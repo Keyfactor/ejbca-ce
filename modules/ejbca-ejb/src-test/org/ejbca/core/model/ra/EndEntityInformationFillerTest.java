@@ -18,12 +18,16 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.util.dn.DistinguishedName;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /** Tests DN merging
  * 
@@ -90,7 +94,7 @@ public class EndEntityInformationFillerTest {
         user.setDN("");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
-        
+                
         // Run it again, now everything is the same as default, and should turn out the same again
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
@@ -139,30 +143,32 @@ public class EndEntityInformationFillerTest {
 
         // Remove the last (third) OU, we should now override the second
         p.setValue(DnComponents.ORGANIZATIONALUNIT, 2, null);
+        p.addField(DnComponents.DNEMAILADDRESS);
+        p.setUse(DnComponents.DNEMAILADDRESS, 0, true);
         user.setDN("C=NO,O=MyOrg,OU=MyOrgU,CN=Name3");
         user.setEmail("myEmail@dom.com");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name3,OU=MyOrgU,OU=Unit1,OU=Unit2,O=MyOrg,O=Org1,C=NO", user.getDN());
+        assertEquals("E=myEmail@dom.com,CN=Name3,OU=MyOrgU,OU=Unit1,OU=Unit2,O=MyOrg,O=Org1,C=NO", user.getDN());
 
         // Trim it down a little again
         user.setDN("CN=Name3,OU=MyOrgU");
         user.setEmail("myEmail@dom.com");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name3,OU=MyOrgU,OU=Unit1,OU=Unit2,O=Org1,C=SE", user.getDN());
+        assertEquals("E=myEmail@dom.com,CN=Name3,OU=MyOrgU,OU=Unit1,OU=Unit2,O=Org1,C=SE", user.getDN());
 
         // Try the same again, just to be sure
         p.removeField(DnComponents.ORGANIZATIONALUNIT, 0);
         user.setDN("CN=Name3,OU=MyOrgU");
         user.setEmail("myEmail@dom.com");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name3,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
+        assertEquals("E=myEmail@dom.com,CN=Name3,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
 
         // Add serialnumber
         p.addField(DnComponents.DNSERIALNUMBER);
         user.setDN("SN=123456789,OU=MyOrgU");
         user.setEmail("myEmail@dom.com");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2,SN=123456789,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
+        assertEquals("E=myEmail@dom.com,CN=Name2,SN=123456789,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
 
         // Add serial number
         user.setDN("SERIALNUMBER=12345,OU=MyOrgU");
@@ -367,9 +373,9 @@ public class EndEntityInformationFillerTest {
         p.setModifyable(DnComponents.ORGANIZATIONALUNIT, 1, false);
         
         user = new EndEntityInformation();
-        user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
+        user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,1.2.3.4=qwerty");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=DE", user.getDN());
+        assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=DE,1.2.3.4=qwerty", user.getDN());
     
         try {
             user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=MyOrg4");
@@ -397,22 +403,23 @@ public class EndEntityInformationFillerTest {
         p.setValue(DnComponents.ORGANIZATION, 0, "Org1");
         
         EndEntityInformation user = new EndEntityInformation(); 
-        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2+MyOrg3");
+        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2\\+MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2\\+MyOrg3,O=Org1,C=SE", user.getDN());
         
-        user.setDN("CN=Name2+OU=MyOrg1\\+MyOrg111,OU=MyOrg2+MyOrg3");
+        user.setDN("CN=Name2+OU=MyOrg1\\+MyOrg111,OU=MyOrg2\\+MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2+OU=MyOrg1\\+MyOrg111,OU=MyOrg2\\+MyOrg3,O=Org1,C=SE", user.getDN());
         
         try {
         user.setDN("CN=Name2+OU=MyOrg1+MyOrg111,OU=MyOrg2+MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        fail("Unescaped + is accepted in non-multi-valued DN value.");
         } catch(Exception e) {
             
         }
         
-        // + does not need to be escaped but in previous EJBCA versions it was needed to be
+        // + does need to be escaped same as in previous EJBCA versions
         user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2\\+MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2\\+MyOrg3,O=Org1,C=SE", user.getDN());
@@ -427,7 +434,7 @@ public class EndEntityInformationFillerTest {
         
         user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\=org02");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\\\=org02,O=Org1,C=SE", user.getDN());
+        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\=org02,O=Org1,C=SE", user.getDN());
         
         //illegal: user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\,org02");
         
@@ -522,6 +529,9 @@ public class EndEntityInformationFillerTest {
         p.setValue(DnComponents.DNSNAME, 2, "server.bad.com");
         p.setValue(DnComponents.DNSNAME, 3, "server.superbad.com");
         
+        p.setUse(DnComponents.RFC822NAME,0,true);
+        p.setUse(DnComponents.RFC822NAME,1,true);
+        
         String san = "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com";
         EndEntityInformation user = new EndEntityInformation();
         user.setSubjectAltName(san);
@@ -529,7 +539,7 @@ public class EndEntityInformationFillerTest {
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com", user.getSubjectAltName());
-        
+                
         user.setSubjectAltName(san);
         user.setEmail("myEmail@dom.com");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
@@ -545,6 +555,127 @@ public class EndEntityInformationFillerTest {
             assertEquals("User DN has too many components for RFC822NAME", e.getMessage());
         }
         
+        p.addField(DnComponents.DIRECTORYNAME);
+        user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY", user.getSubjectAltName());
+        
+        user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY\\,C=DE");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY\\,C=DE", user.getSubjectAltName());
+        
+        user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY", user.getSubjectAltName());
+        
+        // URI may include + and = in queryparam, this functionality ensures input=output
+        // for single valued RDNs(not multi value)
+        p.addField(DnComponents.UNIFORMRESOURCEID);
+        user.setSubjectAltName(san+",uniformResourceId=http://xxx.de/en?que\\=res");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
+                + "uniformResourceId=http://xxx.de/en?que\\=res", user.getSubjectAltName());
+        
+        user.setSubjectAltName(san+",uniformResourceIdentifier=http://xxx.de/en?que=res");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
+                + "uniformResourceIdentifier=http://xxx.de/en?que=res", user.getSubjectAltName());
+        
+        user.setSubjectAltName(san+",uniformResourceId=http://xxx.de/en?que\\=res\\+q2\\=r2");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
+                + "uniformResourceId=http://xxx.de/en?que\\=res\\+q2\\=r2", user.getSubjectAltName());
+        
+        user.setSubjectAltName(san+",uniformResourceId=http://xxx.de/en?que=res+q2=r2,1.2.3.4=qwerty");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
+                + "uniformResourceId=http://xxx.de/en?que=res+q2=r2,1.2.3.4=qwerty", user.getSubjectAltName());
+        
     }
     
+    @Test
+    public void testUniqueEntriesSan() throws Exception {
+        EndEntityProfile p = new EndEntityProfile();
+        p.addField(DnComponents.DNSNAME);
+        p.addField(DnComponents.DNSNAME);
+        p.addField(DnComponents.DNSNAME);
+        p.addField(DnComponents.RFC822NAME);
+        p.addField(DnComponents.RFC822NAME);
+        p.addField(DnComponents.DNSNAME);
+        p.setValue(DnComponents.DNSNAME, 2, "server.bad.com");
+        p.setValue(DnComponents.DNSNAME, 3, "server.superbad.com");
+        p.addField(DnComponents.DIRECTORYNAME);
+        
+        String san = "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com,DIRECTORYNAME=CN=yyyy\\,OU=abcd";
+        EndEntityInformation user = new EndEntityInformation();
+        user.setSubjectAltName(san);
+        user.setEmail("");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,DIRECTORYNAME=CN=yyyy\\,OU=abcd", user.getSubjectAltName());
+        
+        String sanInChangeuser = new DistinguishedName(user.getSubjectAltName()).mergeDN(
+                new DistinguishedName("dnsName=foo.bar.com,dnsName=foo1.bar.com,dnsName=server.bad.com,"
+                + "dnsName=server.superbad.com,rfc822Name=foo@bar.com"), false, null).toString();
+        String san2 = EndEntityInformationFiller.getDnEntriesUniqueOnly(sanInChangeuser, 
+                                        EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME);
+        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,DIRECTORYNAME=CN=yyyy\\,OU=abcd", san2);
+    }
+    
+    @Test
+    public void testUniqueEntriesDn() throws Exception {
+        EndEntityProfile p = new EndEntityProfile();
+        //p.addField(DnComponents.COMMONNAME); by  default an empty CN field is created
+        p.addField(DnComponents.ORGANIZATIONALUNIT);//11
+        p.addField(DnComponents.ORGANIZATIONALUNIT);
+        p.addField(DnComponents.ORGANIZATIONALUNIT);
+        p.addField(DnComponents.ORGANIZATION);//12
+        p.addField(DnComponents.ORGANIZATION);        
+        p.addField(DnComponents.COUNTRY);//16
+
+        p.setValue(DnComponents.COMMONNAME, 0, "User Usersson");
+        p.setValue(DnComponents.ORGANIZATIONALUNIT, 0, "Unit1");
+        p.setValue(DnComponents.ORGANIZATIONALUNIT, 1, "Unit2");
+        p.setValue(DnComponents.ORGANIZATIONALUNIT, 2, "Unit3");
+        p.setValue(DnComponents.COUNTRY, 0, "SE");
+        p.setValue(DnComponents.ORGANIZATION, 0, "Org1");
+        
+        EndEntityInformation user = new EndEntityInformation();
+        // No DN in end entity to start with
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
+        // Null should be the same as empty to start with
+        user.setDN(null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
+        
+        String dnInChangeuser = 
+                new DistinguishedName(user.getDN()).mergeDN(
+                new DistinguishedName("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE"),
+                false, null).toString();
+        String dn2 = EndEntityInformationFiller.getDnEntriesUniqueOnly(dnInChangeuser, 
+                                        EndEntityInformationFiller.SUBJECT_DN);
+        assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", dn2);
+        
+    }
+    
+    @Test
+    public void testMergeDnForEmailInDistinguishedName() throws Exception {
+        Map<String, String> sdnMap = new HashMap<>();
+        sdnMap.put(DnComponents.DNEMAILADDRESS, "test@example.com");
+
+        String originalDn = "E=test@example.com,CN=example.com,OU=Wellcome Trust Sanger Institute,O=Genome Research Ltd.,L=ggdd,ST=STTsasad,C=GB";
+        String mergedDn = 
+                new DistinguishedName(originalDn).mergeDN(new DistinguishedName("CN=example.com"), true, sdnMap).toString();
+        assertEquals(originalDn, mergedDn);
+    }
+        
 }

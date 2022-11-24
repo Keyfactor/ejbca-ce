@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -26,6 +26,7 @@ import org.bouncycastle.its.ETSISignedData;
 import org.bouncycastle.its.ETSISignedDataBuilder;
 import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.its.jcajce.JcaITSContentSigner;
+import org.bouncycastle.its.operator.ITSContentSigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
 import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
@@ -842,10 +843,15 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             log.trace("<cvcRequest");
             return EJBTools.wrapCertCollection(result);
-        } catch ( NoSuchEndEntityException | ParseException | ConstructionException | NoSuchFieldException
-                | InvalidKeyException | CertificateException // | CertificateEncodingException
-                | CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
-                | IOException e) {
+        } catch (CADoesntExistsException | CertificateCreateException | NoSuchEndEntityException e) {
+            ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
+            if (e.getErrorCode() != null) {
+                throw new EjbcaException(e.getErrorCode(), e.getMessage());
+            } else {
+                throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+            }
+        } catch (ParseException | ConstructionException | NoSuchFieldException| InvalidKeyException | CertificateException // | CertificateEncodingException
+                | CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException | IOException e) {
             ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
@@ -1547,8 +1553,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
         try {
             // Psid is same for EC enroll and authorization validation
-            JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
-                    .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
+            ITSContentSigner dataSigner = eca.getITSContentSigner(privateKey, ecaCertificate); 
+
             HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
             ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
 

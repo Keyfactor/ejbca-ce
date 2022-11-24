@@ -13,6 +13,8 @@
 package org.ejbca.ui.web.admin.upgrade;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
@@ -21,6 +23,9 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
@@ -34,6 +39,36 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 @ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
 @ManagedBean
 public class UpgradeBean extends BaseManagedBean implements Serializable {
+
+	/** Wrapper of Log4J LoggingEvents for use in the GUI */
+    public static class LogEvent {
+        final LoggingEvent loggingEvent;
+        public LogEvent(final LoggingEvent loggingEvent) {
+            this.loggingEvent = loggingEvent;
+        }
+
+        /** @return true for FATAL and ERROR level messages */
+        public boolean isLevelError() { return loggingEvent.getLevel().isGreaterOrEqual(Level.ERROR); }
+        public boolean isLevelWarning() { return loggingEvent.getLevel().equals(Level.WARN); }
+        public boolean isLevelInfo() { return !loggingEvent.getLevel().isGreaterOrEqual(Level.WARN); }
+
+        public String getLevel() { return loggingEvent.getLevel().toString(); }
+
+        public String getTime() { return ValidityDate.formatAsISO8601ServerTZ(loggingEvent.getTimeStamp(), TimeZone.getDefault()); }
+
+        public String getMessage() {
+            final StringBuilder sb = new StringBuilder(loggingEvent.getRenderedMessage());
+            final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
+            if (throwableInformation!=null) {
+                Throwable throwable = throwableInformation.getThrowable();
+                while (throwable!=null) {
+                    sb.append(" <- " + throwable.getMessage());
+                    throwable = throwable.getCause();
+                }
+            }
+            return sb.toString();
+        }
+    }
     
     private static final long serialVersionUID = 1L;
     
@@ -69,7 +104,7 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
 
     /** @return true if an upgrade is currently in progress on this node */
     public boolean isPostUpgradeFailed() {
-        return isActionStartUpgradeAllowed();
+        return isActionStartUpgradeAllowed() && getLogged().stream().anyMatch(logEvent -> logEvent.isLevelError());
     }
 
     /** @return true if an upgrade is currently in progress on any node */
@@ -102,6 +137,17 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
     /** @return true is this post-upgrade will include an upgrade to EJBCA 6.8.0 */
     public boolean isRenderPostUpgradeInfoTo680() {
         return upgradeSession.isLesserThan(getLastPostUpgradedToVersion(), "6.8.0");
+    }
+
+    /** @return info logged by the upgrade code */
+    public List<LogEvent> getLogged() {
+        final List<LogEvent> ret = new ArrayList<>();
+        for (final LoggingEvent loggingEvent: new ArrayList<>(upgradeStatusSingleton.getLogged())) {
+            if (loggingEvent.getLevel().isGreaterOrEqual(Level.INFO)) {
+                ret.add(new LogEvent(loggingEvent));
+            }
+        }
+        return ret;
     }
 
     /** @return the newest version of EJBCA connected to the common database */

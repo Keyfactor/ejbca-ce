@@ -56,17 +56,18 @@ import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import java.io.File;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -87,8 +88,8 @@ import java.util.stream.Collectors;
  * Session scoped and will cache the list of tokens and keys.
  *
  */
-@ManagedBean
-@SessionScoped
+@Named
+@ViewScoped
 public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     
     public String localize(String stringId) {
@@ -802,7 +803,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (int caId : caSession.getAllCaIds()) {
             final CAInfo cainfo = caSession.getCAInfoInternal(caId);
             // We may have CAIds that can not be resolved to a real CA, for example CVC CAs on Community
-            if (cainfo != null) {
+            if (cainfo != null && cainfo.getCAToken() != null) {
                 ret.add(cainfo.getCAToken().getCryptoTokenId());
             }
         }
@@ -941,19 +942,28 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final List<String> result = new ArrayList<>();
         final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
                 globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
-        AcmeConfiguration acmeAlias; 
+        AcmeConfiguration acmeAlias;
+        if (globalConfig == null) {
+            return result;
+        }
         for (String acmeAliasId : globalConfig.getAcmeConfigurationIds()) {
-            acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId); 
-            try {
-                if (acmeAlias != null && acmeAlias.isRequireExternalAccountBinding() 
-                        && acmeAlias.getExternalAccountBinding().getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
-                        && (Boolean) acmeAlias.getExternalAccountBinding().getDataMap().get("encryptKey")
-                        && Integer.toString(cryptoTokenId).equals(acmeAlias.getExternalAccountBinding().getDataMap().get("encryptionKeyId"))) {
-                    result.add(acmeAlias.getConfigurationId());
+            acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId);
+            if (acmeAlias != null) {
+                try {
+                    final List<AcmeExternalAccountBinding> eabs = acmeAlias.getExternalAccountBinding();
+                    if (eabs != null) {
+                        for (AcmeExternalAccountBinding eab :eabs) {
+                            if (eab.getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
+                                    && (Boolean) eab.getDataMap().get("encryptKey")
+                                    && Integer.toString(cryptoTokenId).equals(eab.getDataMap().get("encryptionKeyId"))) {
+                                result.add(acmeAlias.getConfigurationId());
+                            }
+                        }
+                    }
+                } catch (AccountBindingException e) {
+                    log.warn("Could not load ACME EAB '" + acmeAliasId 
+                            + "' to verify if it contains a reference to the crypto token to be deleted.");
                 }
-            } catch (AccountBindingException e) {
-                log.warn("Could not load ACME EAB '" + acmeAliasId 
-                        + "' to verify if it contains a reference to the crypto token to be deleted.");
             }
         }
         return result;

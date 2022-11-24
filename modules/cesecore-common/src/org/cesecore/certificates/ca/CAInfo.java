@@ -43,7 +43,8 @@ public abstract class CAInfo implements Serializable {
     public static final int CATYPE_CVC = 2;
     public static final int CATYPE_SSH = 3;
     public static final int CATYPE_CITS = 4;
-    
+    public static final int CATYPE_PROXY = 5;
+
     // Used to indicate CITS certificateId in database in subjectDN column
     public static final String CITS_SUBJECTDN_PREFIX = "cits:";
 
@@ -93,6 +94,7 @@ public abstract class CAInfo implements Serializable {
     /** Default value 0 = disabled */
     protected long deltacrlperiod = 0;
     protected boolean generateCrlUponRevocation = false;
+    protected boolean allowChangingRevocationReason = false;
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
     protected boolean keepExpiredCertsOnCRL = false;
@@ -213,6 +215,9 @@ public abstract class CAInfo implements Serializable {
         }
         if (catype == CAInfo.CATYPE_CITS) {
             return "CITS";
+        }
+        if (catype == CAInfo.CATYPE_PROXY) {
+            return "KeyfactorEnrollmentProxyCA";
         }
         return String.valueOf(catype);
     }
@@ -364,6 +369,14 @@ public abstract class CAInfo implements Serializable {
 
     public void setGenerateCrlUponRevocation(boolean generate) {
         generateCrlUponRevocation = generate;
+    }
+
+    public boolean isAllowChangingRevocationReason() {
+        return allowChangingRevocationReason;
+    }
+
+    public void setAllowChangingRevocationReason(boolean allow) {
+        this.allowChangingRevocationReason = allow;
     }
 
     public long getCRLIssueInterval() {

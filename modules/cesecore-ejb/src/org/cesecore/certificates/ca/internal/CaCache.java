@@ -15,7 +15,9 @@ package org.cesecore.certificates.ca.internal;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CACommon;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.CommonCache;
 import org.cesecore.internal.CommonCacheBase;
@@ -27,6 +29,8 @@ import org.cesecore.internal.CommonCacheBase;
  */
 public enum CaCache implements CommonCache<CACommon> {
     INSTANCE;
+
+    private static final org.apache.log4j.Logger log = Logger.getLogger(CaCache.class);
 
     final private CommonCache<CACommon> caCache = new CommonCacheBase<CACommon>() {
         @Override

@@ -87,8 +87,27 @@ public final class AlgorithmConstants {
     public static final String KEYALGORITHM_ED448       = "Ed448";
     public static final String KEYALGORITHM_ECGOST3410  = "ECGOST3410";
     public static final String KEYALGORITHM_DSTU4145    = "DSTU4145";
+    
+    public static final String HASHALGORITHM_SHA1 = "SHA1";
+    public static final String HASHALGORITHM_SHA224 = "SHA224";
+    public static final String HASHALGORITHM_SHA256 = "SHA256";
+    public static final String HASHALGORITHM_SHA384 = "SHA384";
+    public static final String HASHALGORITHM_SHA512 = "SHA512";
+    public static final String HASHALGORITHM_SHA3_256 = "SHA3-256";
+    public static final String HASHALGORITHM_SHA3_384 = "SHA3-384";
+    public static final String HASHALGORITHM_SHA3_512 = "SHA3-512";
 
     public static final String KEYSPECPREFIX_ECGOST3410 = "GostR3410-";
+    
+    //The following curves may be used for ECCDH: P-224, P-256, P-384, P-521, K-233, K-283, K-409, K-571, B-233, B-283, B-409, B-571
+    //See https://pages.nist.gov/ACVP/draft-hammett-acvp-kas-ecc-sp800-56ar3.html#name-ecc-cdh-component-test
+    public static final List<String> ECCDH_PERMITTED_CURVES = Arrays.asList("secp224r1", "P-224", "prime256v1", "secp256r1", "P-256", "prime384v1", "secp384r1",
+            "P-384", "prime521v1", "secp521r1", "P-521", "sect233k1", "K-233", "sect283k1", "K-283", "sect409k1", "K-409", "sect571k1", "K-571",
+            "sect233r1", "B-233", "sect283r1", "B-283", "sect309r1", "B-409", "sect571r1", "B-571"
+
+    );
+    
+    
 
     public static final List<String> BLACKLISTED_EC_CURVES = Arrays.asList(
             // No blacklisted EC curves at the moment

@@ -88,7 +88,7 @@ public class CesecoreException extends Exception {
      * @param errorCode defines the cause of the exception.
      * @param exception exception to be embedded.
      */
-    public CesecoreException(final ErrorCode errorCode, final Exception exception) {
+    public CesecoreException(final ErrorCode errorCode, final Throwable exception) {
         super(exception);
         this.errorCode = errorCode;
     }

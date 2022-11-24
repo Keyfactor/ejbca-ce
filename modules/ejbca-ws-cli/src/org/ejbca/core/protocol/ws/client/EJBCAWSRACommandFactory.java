@@ -41,13 +41,13 @@ public class EJBCAWSRACommandFactory {
         
         if (args[0].equals("edituser")) {
             return new EditUserCommand(args);
-        }else if (args[0].equals("finduser")) {
+        } else if (args[0].equals("finduser")) {
             return new FindUserCommand(args);
-        }else if (args[0].equals("findcerts")) {
+        } else if (args[0].equals("findcerts")) {
             return new FindCertsCommand(args);
-        }else if (args[0].equals("getprofile")) {
+        } else if (args[0].equals("getprofile")) {
             return new GetProfileCommand(args);
-        }else if (args[0].equals("pkcs10req")) {
+        } else if (args[0].equals("pkcs10req")) {
             return new PKCS10ReqCommand(args);
         } else if (args[0].equals("pkcs12req")) {
             return new PKCS12ReqCommand(args);
@@ -63,9 +63,9 @@ public class EJBCAWSRACommandFactory {
             return new RevokeUserCommand(args);
         } else if (args[0].equals("checkrevokationstatus") || args[0].equals("checkrevocationstatus")) {
             return new CheckRevokeStatusCommand(args);
-        }else if (args[0].equals("generatenewuser")) {
+        } else if (args[0].equals("generatenewuser")) {
             return new GenerateNewUserCommand(args);        
-        }else if (args[0].equals("createcrl")) {
+        } else if (args[0].equals("createcrl")) {
             return new CreateCRLCommand(args);        
         } else if (args[0].equals("cacertrequest")) {
             return new CaCertRequestCommand(args);
@@ -91,7 +91,7 @@ public class EJBCAWSRACommandFactory {
             return new CreateCACommand(args);
         } else if (args[0].equals("importcacert")) {
            return new ImportCaCertCommand(args);
-        }  else if (args[0].equals("updatecacert")) {
+        } else if (args[0].equals("updatecacert")) {
             return new UpdateCaCertCommand(args);
         } else if (args[0].equals("addadmintorole")) {
             return new AddSubjectToRoleCommand(args);

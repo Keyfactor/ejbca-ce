@@ -18,6 +18,8 @@ DROP INDEX certificatedata_idx12 ON CertificateData;
 -- Only added when MySQL partition pruning is used:
 -- ALTER TABLE CertificateData DROP INDEX certificatedata_idx13;
 -- ALTER TABLE CertificateData DROP INDEX certificatedata_idx14;
+DROP INDEX certificatedata_idx15 ON CertificateData;
+DROP INDEX certificatedata_idx16 ON CertificateData;
 
 DROP INDEX historydata_idx1 ON CertReqHistoryData;
 DROP INDEX historydata_idx3 ON CertReqHistoryData;

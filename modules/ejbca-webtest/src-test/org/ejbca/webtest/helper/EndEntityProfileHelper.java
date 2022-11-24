@@ -102,12 +102,14 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By SELECT_DEFAULT_TOKEN = By.id("eeProfiles:defaultTokenMenu");
         static final By SELECT_AVAILABLE_TOKENS = By.id("eeProfiles:availableToken");
 
+        static final By SELECT_SUBJECT_DN_ATTRS = By.id("eeProfiles:subjectDnAttributeType");
         static final By SELECT_SUBJECT_ALTERNATIVE_NAME = By.id("eeProfiles:subjectAltNameAttributeType");
         static final By NOTIFICATION = By.xpath("//tr[td/strong[text()='Send Notification']]/following-sibling::tr[1]/td[2][contains(text(), 'Notification')]");
         // Other Data / Send Notification  / Add
         static final By BUTTON_ADD_NOTIFICATION = By.id("eeProfiles:addButton");
         static final By CONTAINER_NOTIFICATION_FORM = By.id("eeProfiles:userNotificationsWrapper");
         static final By BUTTON_ADD_SUBJECT_ALT_NAME = By.id("eeProfiles:addSubjectAltNameAttributeButton");
+        static final By BUTTON_ADD_SUBJECT_DN_NAME = By.id("eeProfiles:addSubjectDnAttributeButton");
         // Other Data / Send Notification  / Delete all
         static final By BUTTON_DELETE_ALL_NOTIFICATION = By.id("eeProfiles:sendNotificationsDeleteAllButton");
 
@@ -598,6 +600,11 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void setSubjectAlternativeName(final String subjectAltName) {
         selectOptionByName(Page.SELECT_SUBJECT_ALTERNATIVE_NAME, subjectAltName);
         clickLink(Page.BUTTON_ADD_SUBJECT_ALT_NAME);
+    }
+
+    public void setSubjectDNName(final String subjectAltName) {
+        selectOptionByName(Page.SELECT_SUBJECT_DN_ATTRS, subjectAltName);
+        clickLink(Page.BUTTON_ADD_SUBJECT_DN_NAME);
     }
 
     /**

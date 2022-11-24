@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
@@ -14,12 +17,14 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
@@ -103,7 +108,10 @@ public class SearchCertificatesRestResponseV2 {
 
     public static class SearchCertificatesRestResponseConverterV2 {
 
-        public SearchCertificatesRestResponseV2 toRestResponse(final RaCertificateSearchResponseV2 raCertificateSearchResponse, final Pagination pagination) throws CertificateEncodingException, CertificateParsingException {
+        public SearchCertificatesRestResponseV2 toRestResponse(
+                final RaCertificateSearchResponseV2 raCertificateSearchResponse, final Pagination pagination,
+                final Map<Integer, String> availableEndEntityProfiles,
+                final Map<Integer, String> availableCertificateProfiles) throws CertificateEncodingException, CertificateParsingException {
             final SearchCertificatesRestResponseV2 result = new SearchCertificatesRestResponseV2();
             final int count = raCertificateSearchResponse.getCdws().size();
             
@@ -112,8 +120,9 @@ public class SearchCertificatesRestResponseV2 {
                 final int pageSize = pagination.getPageSize();
                 final int currentPage = pagination.getCurrentPage();
                 summary = new PaginationSummary(pageSize, currentPage);
-                // Sets the totalCount if possible. totalCount == null means former hasMoreResults == true.
-                if (count > 0 && count < pageSize) {
+                if (currentPage == -1) {
+                    summary.setTotalCerts(raCertificateSearchResponse.getTotalCount());
+                } else if (count > 0) {
                     summary.setTotalCerts((long) pageSize * (currentPage - 1) + count);
                 }
             } else {
@@ -136,12 +145,23 @@ public class SearchCertificatesRestResponseV2 {
                 }
                 
                 if (certificate != null && cd != null) {
-                    final byte[] certificateBytes = certificate.getEncoded();
+                    byte[] certificateBytes = certificate.getEncoded();
+                    byte[] encodedCertificateBytes = certificateBytes;
+                    if (!certificate.getType().equals(SshCertificate.CERTIFICATE_TYPE)) {
+                        encodedCertificateBytes = Base64.encode(certificateBytes);
+                    }
+                    final byte[] skidBytes = CertTools.getSubjectKeyId(certificate);
+                    String skid = "";
+                    if (skidBytes != null && skidBytes.length > 0) {
+                        skid = new String(Hex.encode(skidBytes));
+                    }
                     final CertificateRestResponseV2 response = CertificateRestResponseV2.builder()
                         .setFingerprint(CertTools.getFingerprintAsString(certificateBytes))
                         .setCAFingerprint(cd.getCaFingerprint())
                         .setCertificateProfileId(cd.getCertificateProfileId())
+                        .setCertificateProfile(availableCertificateProfiles.get(cd.getCertificateProfileId()))
                         .setEndEntityProfileId(cd.getEndEntityProfileId())
+                        .setEndEntityProfile(availableEndEntityProfiles.get(cd.getEndEntityProfileId()))
                         .setExpireDate(cd.getExpireDate())
                         .setIssuerDN(cd.getIssuerDN())
                         .setNotBefore(cd.getNotBefore())
@@ -151,12 +171,12 @@ public class SearchCertificatesRestResponseV2 {
                         .setStatus(cd.getStatus())
                         .setSubjectAltName(cd.getSubjectAltName())
                         .setSubjectDN(cd.getSubjectDN())
-                        .setSubjectKeyId(new String(Hex.encode(CertTools.getSubjectKeyId(certificate))))
+                        .setSubjectKeyId(skid)
                         .setTag(cd.getTag())
                         .setType(cd.getType())
                         .setUpdateTime(cd.getUpdateTime())
                         .setUsername(cd.getUsername())
-                        .setCertificate(Base64.encode(certificateBytes))
+                        .setCertificate(encodedCertificateBytes)
                         .setCertificateRequest(cd.getCertificateRequest())
                         .build();
                     result.getCertificates().add(response);

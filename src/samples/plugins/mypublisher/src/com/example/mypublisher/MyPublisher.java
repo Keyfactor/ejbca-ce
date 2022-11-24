@@ -68,8 +68,8 @@ public class MyPublisher implements ICustomPublisher {
 	}
 
 	@Override
-	public boolean willPublishCertificate(int status, int revocationReason) {
-            log.debug("MyPublisher, willPublishCertificate with status " + status + " and revocation reason " + revocationReason);
+	public boolean willPublishCertificate(int status, long revocationDate) {
+            log.debug("MyPublisher, willPublishCertificate with status: " + status + " and revocationDate: " + revocationDate);
             return true;
 	}
 

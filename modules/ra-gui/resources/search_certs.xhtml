@@ -260,10 +260,19 @@
 	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectDnUnescapedValue.length() gt 100 ? raSearchCertificate.subjectDnUnescapedValue.substring(0,97).concat('&lt;br/&gt;...')  : raSearchCertificate.subjectDnUnescapedValue}" escape="false"/>
+	                            <h:panelGrid columns="1" styleClass="nopadding noborder" rendered="#{!raSearchCertificate.typeSsh}">
+	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectDnUnescapedValue.length() gt 100 ? raSearchCertificate.subjectDnUnescapedValue.substring(0,95).concat('.....')  : raSearchCertificate.subjectDnUnescapedValue}"/>
 	                                <ui:fragment rendered="#{raSearchCertificate.subjectAn.length() gt 0}"><hr /></ui:fragment>
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectAn.length() gt 100 ? raSearchCertificate.subjectAnUnescapedComma.substring(0,97).concat('&lt;br/&gt;...') : raSearchCertificate.subjectAnUnescapedComma}" escape="false"/>
+	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectAn.length() gt 100 ? raSearchCertificate.subjectAnUnescapedComma.substring(0,95).concat('.....') : raSearchCertificate.subjectAnUnescapedComma}"/>
+	                            </h:panelGrid>
+	                            <h:panelGrid columns="1" styleClass="nopadding noborder" rendered="#{raSearchCertificate.typeSsh}">
+	                                <h:outputText styleClass="fineprintMono" value="KeyId: #{raSearchCertificate.sshKeyId.length() gt 90 ? raSearchCertificate.sshKeyId.substring(0,85).concat('.....')  : raSearchCertificate.sshKeyId}"/>
+	                                <ui:fragment rendered="#{raSearchCertificate.principals.length() gt 0}"><hr /></ui:fragment>
+	                                <h:outputText styleClass="fineprintMono" rendered="#{raSearchCertificate.principals.length() gt 0}"
+	                                    value="Principals: #{raSearchCertificate.principals.length() gt 90 ? raSearchCertificate.principals.substring(0,85).concat('.....') : raSearchCertificate.principals}"/>
+	                                <ui:fragment rendered="#{raSearchCertificate.comment.length() gt 0}"><hr /></ui:fragment>
+	                                <h:outputText styleClass="fineprintMono" rendered="#{raSearchCertificate.comment.length() gt 0}" 
+	                                	value="Comment: #{raSearchCertificate.comment.length() gt 90 ? raSearchCertificate.comment.substring(0,85).concat('.....') : raSearchCertificate.comment}"/>
 	                            </h:panelGrid>
 	                        </h:column>
 	                        <h:column>

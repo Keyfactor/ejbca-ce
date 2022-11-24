@@ -16,12 +16,11 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.apache.commons.configuration2.CompositeConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.config.ConfigurationHolder;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -62,10 +61,8 @@ public class UploadFileCommand extends BaseCmpConfigCommand {
         File f = null;
         try {
             f = new File(filename);
-            final PropertiesConfiguration pc = new PropertiesConfiguration(f);
-            pc.setReloadingStrategy(new FileChangedReloadingStrategy());
             config = new CompositeConfiguration();
-            config.addConfiguration(pc);
+            config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
             log.info("Reading CMP configuration from file: " + f.getAbsolutePath());
         } catch (ConfigurationException e) {
             log.error("Failed to load configuration from file " + f.getAbsolutePath());

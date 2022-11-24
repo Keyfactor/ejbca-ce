@@ -64,7 +64,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
     public static final String CONFIG_RA_NAMEGENERATIONPOSTFIX= "ra.namegenerationpostfix";
     public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
+    /** @deprecated since 7.11.0, but remains to allow 100% uptime during upgrades. Use CONFIG_VENDORCAIDS instead */
+    @Deprecated
     public static final String CONFIG_VENDORCA                = "vendorca";
+    public static final String CONFIG_VENDORCAIDS             = "vendorcaids";
     public static final String CONFIG_OPERATIONMODE = "operationmode";
     public static final String CONFIG_EXTRACTUSERNAMECOMPONENT= "extractusernamecomponent";
     public static final String CONFIG_EXTRACTDNPARTPWDCOMPONENT = "extractdnpartpwdcomponent";
@@ -74,12 +77,14 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_AUTHMODULE_CHALLENGE_PWD         = "ChallengePwd";
     public static final String CONFIG_AUTHMODULE_DN_PART_PWD           = "DnPartPwd";
     public static final String CONFIG_AUTHMODULE_HTTP_BASIC_AUTH       = "HttpBasicAuth";
+    // support proxy ca
+    public static final String CONFIG_SUPPORT_PROXY_CA   = "supportproxyca";
         
     private final String ALIAS_LIST = "aliaslist";
-    public static final String EST_CONFIGURATION_ID = "4";
+    public static final String EST_CONFIGURATION_ID = "4";    
 
     // Default Values
-    public static final float LATEST_VERSION = 4f;
+    public static final float LATEST_VERSION = 5f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
     // Default values
@@ -96,12 +101,13 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_USERNAME_GENERATION_PREFIX = "";
     private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
     private static final String DEFAULT_VENDOR_CERTIFICATE_MODE = "false";
-    private static final String DEFAULT_VENDOR_CA = "";
+    private static final String DEFAULT_VENDOR_CA_IDS = "";
     private static final String DEFAULT_OPERATION_MODE = EstConfiguration.OPERATION_MODE_RA; // Use what we had before EJBCA 7.5.0 as default
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
     private static final String DEFAULT_EXTRACTDNPARTPWD_COMPONENT = "DN";
     private static final String DEFAULT_ALLOW_CHANGESUBJECTNAME = "false";
     private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = "";
+    private static final String DEFAULT_SUPPORT_PROXY_CA = "false";
         
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> EST_BOOLEAN_KEYS = Arrays.asList(CONFIG_REQCERT, CONFIG_ALLOWUPDATEWITHSAMEKEY);
@@ -148,12 +154,13 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_RA_NAMEGENERATIONPREFIX, DEFAULT_RA_USERNAME_GENERATION_PREFIX);
             data.put(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX, DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
             data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_CERTIFICATE_MODE);
-            data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+            data.put(alias + CONFIG_VENDORCAIDS, DEFAULT_VENDOR_CA_IDS);
             data.put(alias + CONFIG_OPERATIONMODE, DEFAULT_OPERATION_MODE);
             data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
             data.put(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT, DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
             data.put(alias + CONFIG_AUTHENTICATIONMODULE, DEFAULT_CLIENT_AUTHENTICATION_MODULE);
             data.put(alias + CONFIG_ALLOWCHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
+            data.put(alias + CONFIG_SUPPORT_PROXY_CA, DEFAULT_SUPPORT_PROXY_CA);
         }
     }
     
@@ -204,13 +211,25 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
     
     
-    public String getVendorCAs(String alias) {
-        String key = alias + "." + CONFIG_VENDORCA;
+    /**
+     * Gets the semicolon separated list of CA IDs for accepted vendor certificates
+     * @param alias
+     * @return the semicolon separated list of CA IDs
+     */
+    public String getVendorCaIds(String alias) {
+        String key = alias + "." + CONFIG_VENDORCAIDS;
         return getValue(key, alias);
     }
-    public void setVendorCAs(String alias, String vendorCA) {
-        String key = alias + "." + CONFIG_VENDORCA;
-        setValue(key, vendorCA, alias);
+
+    /**
+     * Sets the semicolon separated list of CA IDs, to add or remove vendor CAs.
+     * There are no checks performed, if the CAs for the IDs exist.
+     * @param alias the EST configuration alias
+     * @param vendorCaIds the semicolon separated list of CA IDs
+     */
+    public void setVendorCaIds(String alias, String vendorCaIds) {
+        String key = alias + "." + CONFIG_VENDORCAIDS;
+        setValue(key, vendorCaIds, alias);
     }
     
     // return all the key with an alias
@@ -228,13 +247,14 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPARAMS);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPREFIX);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX);
-        keys.add(alias + CONFIG_VENDORCA);
+        keys.add(alias + CONFIG_VENDORCAIDS);
         keys.add(alias + CONFIG_OPERATIONMODE);
         keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
         keys.add(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT);
         keys.add(alias + CONFIG_AUTHENTICATIONMODULE);
         keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
         keys.add(alias + CONFIG_ALLOWCHANGESUBJECTNAME);
+        keys.add(alias + CONFIG_SUPPORT_PROXY_CA);
         return keys;
     }
 
@@ -715,6 +735,32 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         String key = alias + "." + CONFIG_RA_NAMEGENERATIONPOSTFIX;
         setValue(key, postfix, alias);
     }
+    
+    /**
+     * Getter for support for proxy Ca
+     * @param alias the EST alias to set the name generation postfix for
+     *
+     */     
+    public boolean getSupportProxyCa(String alias) {
+        String key = alias + "." + CONFIG_SUPPORT_PROXY_CA;
+        
+        String value = getValue(key, alias);
+        if (value == null) {
+            value = DEFAULT_SUPPORT_PROXY_CA;
+        }
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+
+     /**
+     * Setter for support for proxy Ca
+     * @param alias the EST alias to set support for proxy Ca for
+     * @param supportProxyCa supports proxy Ca
+     *
+     */    
+    public void setSupportProxyCa(String alias, boolean supportProxyCa) {
+        String key = alias + "." + CONFIG_SUPPORT_PROXY_CA;
+        setValue(key, Boolean.toString(supportProxyCa), alias);
+    }
 
     /** Implementation of UpgradableDataHashMap function upgrade. */
     @Override
@@ -727,8 +773,8 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
                 if (data.get(alias + CONFIG_VENDORCERTIFICATEMODE) == null) {
                     data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_CERTIFICATE_MODE);
                 }
-                if (data.get(alias + CONFIG_VENDORCA) == null) {
-                    data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+                if (data.get(alias + CONFIG_VENDORCAIDS) == null) {
+                    data.put(alias + CONFIG_VENDORCAIDS, DEFAULT_VENDOR_CA_IDS);
                 }
                 if (data.get(alias + CONFIG_OPERATIONMODE) == null) {
                     data.put(alias + CONFIG_OPERATIONMODE, "ra"); // when upgrading from previous version when ra was the only mode available
@@ -744,6 +790,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
                 }
                 if (data.get(alias + CONFIG_ALLOWCHANGESUBJECTNAME) == null) {
                     data.put(alias + CONFIG_ALLOWCHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
+                }
+                // v5 support proxy ca
+                if (data.get(alias + CONFIG_SUPPORT_PROXY_CA) == null) {
+                    data.put(alias + CONFIG_SUPPORT_PROXY_CA, DEFAULT_SUPPORT_PROXY_CA);
                 }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));

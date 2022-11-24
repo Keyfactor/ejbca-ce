@@ -438,9 +438,10 @@
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
         <%= ejbcawebbean.getText("ALLOWEDREQUESTS") %> 
       </td>
-      <td><% if (counter != null)
-                  out.write(counter);
-             else out.write("&nbsp;"); %>
+      <td>
+          <% if (counter != null) { %>
+          <c:out value="<%= counter %>"/>
+             <% } else out.write("&nbsp;"); %>
       </td>
     </tr>
     <% } %>

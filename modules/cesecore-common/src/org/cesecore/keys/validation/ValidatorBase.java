@@ -324,4 +324,6 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         return result;
     }
     
+    public void setValidatorTypeIdentifier(String dummy) {}
+    
 }

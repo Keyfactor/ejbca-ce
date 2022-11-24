@@ -334,7 +334,7 @@ public class RaRoleMemberBean implements Serializable {
             caId = RoleMember.NO_ISSUER;
         }
         if (!tokenTypeInfo.isIssuedByOauthProvider()) {
-            caId = RoleMember.NO_PROVIDER;
+            providerId = RoleMember.NO_PROVIDER;
         }
                
         if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) &&

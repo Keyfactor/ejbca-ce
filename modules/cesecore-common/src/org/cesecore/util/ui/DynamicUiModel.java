@@ -58,11 +58,23 @@ public class DynamicUiModel {
     // True if the dynamic UI input components shall be disabled (i.e. view only).
     protected boolean disabled = false;
 
+    /** Index variable to render a list of DynamicUiModel in the PSM (has IDs for the form fields). */
+    private int index = -1;
+
     /**
      * Default constructor, required for serialization.
      */
     public DynamicUiModel() {
         super();
+    }
+    
+    /**
+     * Constructor with index.
+     * @param index the index.
+     */
+    public DynamicUiModel(final int index) {
+        super();
+        setIndex(index);
     }
 
     /**
@@ -71,6 +83,15 @@ public class DynamicUiModel {
      */
     public DynamicUiModel(final LinkedHashMap<Object, Object> data) {
         this(data, data);
+    }
+    
+    /**
+     * Constructor with reference to the entity backing map.
+     * @param data the map.
+     */
+    public DynamicUiModel(final LinkedHashMap<Object, Object> data, final int index) {
+        this(data, data);
+        setIndex(index);
     }
 
     /**
@@ -302,4 +323,13 @@ public class DynamicUiModel {
             }
         }
     }
+    
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
 }

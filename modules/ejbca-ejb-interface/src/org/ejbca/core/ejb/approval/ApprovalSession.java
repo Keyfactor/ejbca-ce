@@ -179,14 +179,4 @@ public interface ApprovalSession {
      */
     ApprovalDataVO findApprovalDataByRequestId(int requestId);
 
-    /**
-     * Update the approval/view rights of the Approval
-     * 
-     * @param admin administrator triggering the approval rights update
-     * @param roleId the affected role which needs an approval rights refresh
-     * @param roleName the name of the affected role
-     * @throws AuthorizationDeniedException if the user is not authorized to perform this action.
-     */    
-    void updateApprovalRights(AuthenticationToken admin, int roleId, String roleName) throws AuthorizationDeniedException;
-
 }

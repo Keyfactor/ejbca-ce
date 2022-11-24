@@ -28,7 +28,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
@@ -40,6 +40,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -191,20 +192,25 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         }
         // If not found, take most recent certificate from NoConflictCertificateData
         final Collection<NoConflictCertificateData> certDatas = noConflictCertificateDataSession.findByFingerprint(fingerprint);
-        return new CertificateDataWrapper(filterMostRecentCertData(certDatas));
+        final NoConflictCertificateData mostRecent = filterMostRecentCertData(certDatas);
+        if (mostRecent == null) {
+            // Not found in either CertificateData or NoConflictCertificateData.
+            return null;
+        }
+        return new CertificateDataWrapper(mostRecent);
     }
     
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, int crlPartitionIndex, long lastbasecrldate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl) {
         if (log.isTraceEnabled()) {
-            log.trace(">listRevokedCertInfo('" + issuerdn + "', " + crlPartitionIndex + ", " + lastbasecrldate + ")");
+            log.trace(">listRevokedCertInfo('" + issuerDN + "', " + deltaCrl + ", " + crlPartitionIndex + ", " + lastBaseCrlDate + ", " + keepExpiredCertsOnCrl + ")");
         }
-        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerdn, crlPartitionIndex, lastbasecrldate);
-        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerdn, crlPartitionIndex, lastbasecrldate);
+        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate);
+        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate, keepExpiredCertsOnCrl);
         if (log.isDebugEnabled()) {
             log.debug("listRevokedCertInfo: Got " + revokedInCertData.size() + " entries from CertificateData and " + revokedInNoConflictData.size() + " entries from NoConflictCertificateData");
         }
-        return RevokedCertInfo.mergeByDateAndStatus(revokedInCertData, revokedInNoConflictData, lastbasecrldate);
+        return RevokedCertInfo.mergeByDateAndStatus(revokedInCertData, revokedInNoConflictData, lastBaseCrlDate);
     }
     
     /**
@@ -223,7 +229,6 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
      * Permanent revocations always take precedence over other updates, the first one wins.
      * Otherwise, the most recent update wins.
      * @param certDatas Collection of NoConflictCertificateData to filter.
-     * @param serno Certificate serial number
      * @return NoConflictCertificateData entry, or null if not found. Entity is append-only, so do not modify it.
      */
     private NoConflictCertificateData filterMostRecentCertData(final Collection<NoConflictCertificateData> certDatas) {
@@ -231,29 +236,46 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             log.trace("<findMostRecentCertData(): no certificates found");
             return null;
         }
+
+        final int caId = certDatas.stream().findFirst().get().getIssuerDN().hashCode();
+        final CAData cadata = caSession.findById(caId);
+        final boolean allowRevocationReasonChange = cadata != null && cadata.getCA().getCAInfo().isAllowChangingRevocationReason();
+
         NoConflictCertificateData mostRecentData = null;
-        for (final NoConflictCertificateData data : certDatas) {
+        for (final NoConflictCertificateData currentData : certDatas) {
             if (mostRecentData == null) {
-                mostRecentData = data;
+                mostRecentData = currentData;
                 continue;
             }
-            long timestampThis = data.getUpdateTime() != null ? data.getUpdateTime() : 0;
-            long timestampRecent = mostRecentData.getUpdateTime() != null ? mostRecentData.getUpdateTime() : 0;
-            if (RevokedCertInfo.isPermanentlyRevoked(data.getRevocationReason())) {
-                // Permanently revoked certificate always takes precedence over non-permanently revoked one.
-                // Older permanent revocations take precedence over newer ones.
-                if (!RevokedCertInfo.isPermanentlyRevoked(mostRecentData.getRevocationReason()) || timestampRecent > timestampThis) {
-                    mostRecentData = data;
+
+            long updateTimeCurrent = currentData.getUpdateTime() != null ? currentData.getUpdateTime() : 0;
+            long updateTimeMostRecent = mostRecentData.getUpdateTime() != null ? mostRecentData.getUpdateTime() : 0;
+
+            if (RevokedCertInfo.isPermanentlyRevoked(currentData.getRevocationReason())) {
+                // Permanently revoked certificate always takes precedence over non-permanently revoked ones.
+                if (!RevokedCertInfo.isPermanentlyRevoked(mostRecentData.getRevocationReason())) {
+                    mostRecentData = currentData;
                     continue;
+                } else {
+                    // If both permanently revoked... older permanent revocation takes precedences over newer ones,
+                    // unless revocation reason change flag is enabled on CA level. (See relevant epic: ECA-10973)
+
+                    if ((allowRevocationReasonChange && updateTimeCurrent > updateTimeMostRecent) ||
+                        (!allowRevocationReasonChange && updateTimeCurrent < updateTimeMostRecent)) {
+                        mostRecentData = currentData;
+                        continue;
+                    }
                 }
             }
+
             // Permanent revocations take precedence over temporary ones
             if (RevokedCertInfo.isPermanentlyRevoked(mostRecentData.getRevocationReason())) {
                 continue;
             }
+
             // Otherwise, most recent status takes precedence
-            if (timestampThis > timestampRecent) {
-                mostRecentData = data;
+            if (updateTimeCurrent > updateTimeMostRecent) {
+                mostRecentData = currentData;
             }
         }
         return mostRecentData;
@@ -277,6 +299,11 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     public boolean setStatus(final AuthenticationToken admin, final String fingerprint, final int status) throws AuthorizationDeniedException {
         if (!certificateStoreSession.setStatus(admin, fingerprint, status)) {
             // Perhaps stored in NoConflictCertificateData
+
+            // Don't create a redundant entry with status ARCHIVED in NoConflictCertificateData table
+            if (status == CertificateConstants.CERT_ARCHIVED){
+                return true;
+            }
             final List<NoConflictCertificateData> certDatas = noConflictCertificateDataSession.findByFingerprint(fingerprint);
             NoConflictCertificateData certData = filterMostRecentCertData(certDatas);
             if (certData != null) {

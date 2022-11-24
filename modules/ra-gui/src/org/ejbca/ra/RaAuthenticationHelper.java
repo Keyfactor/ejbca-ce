@@ -138,6 +138,12 @@ public class RaAuthenticationHelper implements Serializable {
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;
     }
+    
+    /** @return any X509Certificate the client has provided with the request*/
+    public X509Certificate getX509CertificateFromRequest(final HttpServletRequest httpServletRequest) {
+        X509Certificate x509Certificate = getClientX509Certificate(httpServletRequest);
+        return x509Certificate;
+    }
 
     /** Checks if an authentication token is accepted by the CA. */
     private boolean isAuthenticationTokenAccepted() {
@@ -149,7 +155,7 @@ public class RaAuthenticationHelper implements Serializable {
             return authorizedCas != null && !authorizedCas.isEmpty();
         }
     }
-
+    
     /**
      * Gets bearer token from Authorization header or from session
      * @param httpServletRequest

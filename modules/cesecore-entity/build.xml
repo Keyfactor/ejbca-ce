@@ -20,7 +20,6 @@
 		<path refid="lib.commons-logging.classpath" />
 		<path refid="lib.commons-lang.classpath" />
 		<path refid="lib.commons-config.classpath" />
-		<path refid="lib.commons-collections.classpath" />
 		<path location="${cesecore-entity.dir}/../cesecore-common/dist/cesecore-common.jar" />
 	</path>
 

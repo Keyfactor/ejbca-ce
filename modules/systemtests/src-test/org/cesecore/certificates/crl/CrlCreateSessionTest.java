@@ -137,7 +137,7 @@ public class CrlCreateSessionTest {
         final int caid = caSession.getCAInfo(authenticationToken, className).getCAId();
         final CA ca = (CA)caTestSessionRemote.getCA(authenticationToken, caid);
         final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-        final Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, CertificateConstants.NO_CRL_PARTITION, -1);
+        final Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
         final int fullnumber = getLastCrlNumber(certSubjectDN, false);
         final int deltanumber = getLastCrlNumber(certSubjectDN, true);
         final int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
@@ -161,7 +161,7 @@ public class CrlCreateSessionTest {
         int caid = caSession.getCAInfo(authenticationToken, className).getCAId();
         CA ca = (CA)caTestSessionRemote.getCA(authenticationToken, caid);
         final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-        Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, CertificateConstants.NO_CRL_PARTITION, -1);
+        Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
         int fullnumber = getLastCrlNumber(certSubjectDN, false);
         int deltanumber = getLastCrlNumber(certSubjectDN, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -484,12 +484,12 @@ public class CrlCreateSessionTest {
             long crlperiod = cainfo.getCRLPeriod();
             // Find all revoked certificates for a complete CRL
 
-            Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, CertificateConstants.NO_CRL_PARTITION, -1);
+            Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             Date now = new Date();
             Date check = new Date(now.getTime() - crlperiod);
             AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
             for (RevokedCertInfo data : revcerts) {
-                // We want to include certificates that was revoked after the last CRL was issued, but before this one
+                // We want to include certificates that were revoked after the last CRL was issued, but before this one
                 // so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
                 if (data.getExpireDate().before(check)) {
                     // Certificate has expired, set status to archived in the database
@@ -535,7 +535,7 @@ public class CrlCreateSessionTest {
             baseCrlNumber = basecrlinfo.getLastCRLNumber();
         }
         // Find all revoked certificates
-        Collection<RevokedCertInfo> revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, CertificateConstants.NO_CRL_PARTITION, baseCrlCreateTime);
+        Collection<RevokedCertInfo> revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, CertificateConstants.NO_CRL_PARTITION, baseCrlCreateTime, false);
         if (log.isDebugEnabled()) {
             log.debug("Found " + revcertinfos.size() + " revoked certificates.");
         }

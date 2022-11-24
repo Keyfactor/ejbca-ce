@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -379,7 +379,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 try {
                     cainfo = impl.isExtraCertIssuedByVendorCA(admin, this.confAlias, extraCertPath);
                     if (cainfo == null) {
-                        this.errorMessage = "The certificate in extraCert field is not issued by any of the configured Vendor CAs: " + cmpConfiguration.getVendorCA(confAlias);
+                        this.errorMessage = "The certificate in extraCert field is not issued by any of the configured Vendor CAs.";
                         return false;
                     }
                 } catch (CertificateExpiredException | CertificateNotYetValidException e) {

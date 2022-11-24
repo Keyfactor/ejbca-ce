@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -36,6 +36,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -366,7 +367,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 endEntity.setUsername(autousername);
             }
         }
+        // Trim
+        endEntity.setUsername(StringTools.trim(endEntity.getUsername()));
         final String username = endEntity.getUsername();
+        unCanonicalized.setUsername(username);
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
@@ -817,7 +821,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final EndEntityInformation originalCopy = userData.toEndEntityInformation();
         
         // Merge all DN and SAN values from previously saved end entity
-        if( profile.getAllowMergeDn()) {
+        if (profile.getAllowMergeDn()) {
             try {
                 // SubjectDN is not mandatory so
                 if (dn == null) {
@@ -829,7 +833,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
                               
                 dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
-                dn = EndEntityInformationFiller.mergeDnString(dn, profile, EndEntityInformationFiller.SUBJECT_DN, null);
+                dn = EndEntityInformationFiller.getDnEntriesUniqueOnly(dn, EndEntityInformationFiller.SUBJECT_DN);
+
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
@@ -846,14 +851,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
                 }
                 altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
-                altName = EndEntityInformationFiller.mergeDnString(altName, profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);                
+                altName = EndEntityInformationFiller.getDnEntriesUniqueOnly(altName, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME);
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
                 }
                 altName = "";
             }
-            
+
         }
         
         altName = getAddDnsFromCnToAltName(dn, altName, profile);
@@ -865,6 +870,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
         final EndEntityType type = endEntityInformation.getType();
         final ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+        final String trimmedNewUsername = StringTools.trim(newUsername);
+
         // Check if user fulfills it's profile.
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
@@ -875,7 +882,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
 
                 // User change might include a new username
-                final String usernameToValidate = StringUtils.isEmpty(newUsername) ? username : newUsername;
+                final String usernameToValidate = StringUtils.isEmpty(trimmedNewUsername) ? username : trimmedNewUsername;
 
                 final EABConfiguration eabConfiguration = (EABConfiguration) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
 
@@ -942,8 +949,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (approvalProfile != null) {
                 final EndEntityInformation orguserdata = userData.toEndEntityInformation();
                 final EndEntityInformation requestInfo = new EndEntityInformation(endEntityInformation);
-                if (newUsername != null && !newUsername.equals(username)) {
-                    requestInfo.setUsername(newUsername);
+                if (trimmedNewUsername != null && !trimmedNewUsername.equals(username)) {
+                    requestInfo.setUsername(trimmedNewUsername);
                 }
                 final List<ValidationResult> validationResults = runApprovalRequestValidation(authenticationToken, requestInfo, ca);
                 final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(requestInfo, clearPwd, orguserdata, authenticationToken, null, caId,
@@ -955,17 +962,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Rename the end entity if there's a new username
-        if (newUsername != null && !newUsername.equals(username)) {
+        if (trimmedNewUsername != null && !trimmedNewUsername.equals(username)) {
             boolean success;
             try {
-                success = renameEndEntity(authenticationToken, username, newUsername);
+                success = renameEndEntity(authenticationToken, username, trimmedNewUsername);
             } catch (EndEntityExistsException e) {
                 throw new IllegalNameException("Username already taken");
             }
             if (!success) {
                 throw new NoSuchEndEntityException("End entity does not exist");
             }
-            username = newUsername;
+            username = trimmedNewUsername;
             userData = endEntityAccessSession.findByUsername(username);
         }
         // Check if the subjectDN serialnumber already exists.
@@ -1107,23 +1114,27 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (altName == null) {
             altName = "";
         }
-        if (StringUtils.isNotEmpty(altName) && StringUtils.isNotEmpty(dnsNameValueFromCn)) {
-            altName += ", ";
-        }
+        if (StringUtils.isNotEmpty(dnsNameValueFromCn) && !altName.contains(dnsNameValueFromCn)) {
+       
+            if (StringUtils.isNotEmpty(altName)) {
+                altName += ", ";
+            }
         altName += dnsNameValueFromCn;
+        }
+        
         return altName;
     }
 
     @Override
-    public void deleteUser(
-            final AuthenticationToken authenticationToken, final String username
-    ) throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+    public void deleteUser(final AuthenticationToken authenticationToken, final String username)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {  
+        final String trimmedUsername = StringTools.trim(username);
         if (log.isTraceEnabled()) {
-            log.trace(">deleteUser(" + username + ")");
+            log.trace(">deleteUser(" + trimmedUsername + ")");
         }
         // Check if administrator is authorized to delete user.
         Integer caId;
-        final UserData data1 = endEntityAccessSession.findByUsername(username);
+        final UserData data1 = endEntityAccessSession.findByUsername(trimmedUsername);
         if (data1 != null) {
             caId = data1.getCaId();
             endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
@@ -1131,7 +1142,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_END_ENTITY, caId);
             }
         } else {
-            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", trimmedUsername));
             // This exception message is used to not leak information to the user
             final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
@@ -1141,20 +1152,20 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             entityManager.remove(data1);
             logAuditEvent(
                     EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.SUCCESS,
-                    authenticationToken, caId, null, username,
-                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("ra.removedentity", username)).build()
+                    authenticationToken, caId, null, trimmedUsername,
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("ra.removedentity", trimmedUsername)).build()
             );
         } catch (Exception e) {
-            final String msg = intres.getLocalizedMessage("ra.errorremoveentity", username);
+            final String msg = intres.getLocalizedMessage("ra.errorremoveentity", trimmedUsername);
             logAuditEvent(
                     EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE,
-                    authenticationToken, caId, null, username,
+                    authenticationToken, caId, null, trimmedUsername,
                     SecurityEventProperties.builder().withMsg(msg).withError(e.getMessage()).build()
             );
             throw new CouldNotRemoveEndEntityException(msg);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<deleteUser(" + username + ")");
+            log.trace("<deleteUser(" + trimmedUsername + ")");
         }
     }
 
@@ -1758,13 +1769,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public void revokeCertAfterApproval(
             final AuthenticationToken authenticationToken, final BigInteger certSerNo, final String issuerDn,
-            final int reason, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin
+            final int reason, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin, 
+            final Date revocationDate
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, null, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
+            revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
-            throw new IllegalStateException("This should not happen since there is no back dating.",e);
+            throw new IllegalStateException("Back dating is not allowed in Certificate Profile",e);
         } catch (CertificateProfileDoesNotExistException e) {
             throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
         }
@@ -1869,6 +1881,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, endEntityProfileId, AccessRulesConstants.REVOKE_END_ENTITY, caId);
             }
         }
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
+        // Check if revocation can be backdated
+        if (checkDate && revocationDate != null && revocationDate.getTime() != certificateData.getRevocationDate()
+                && (certificateProfile == null || !certificateProfile.getAllowBackdatedRevocation())) {
+            final String profileName = this.certificateProfileSession.getCertificateProfileName(certificateProfileId);
+            final String msg = intres.getLocalizedMessage("ra.norevokebackdate", profileName, certSerNo.toString(16), issuerDn);
+            throw new RevokeBackDateNotAllowedForProfileException(msg);
+        }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (!RevokedCertInfo.isRevoked(reason)) {
             if (revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
@@ -1882,9 +1902,28 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD &&
                     // a valid certificate could have reason "REVOCATION_REASON_REMOVEFROMCRL" if it has been revoked in the past.
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
-                final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
-                log.info(msg);
-                throw new AlreadyRevokedException(msg);
+
+                final CAData cadata = caSession.findById(certificateData.getIssuerDN().hashCode());
+                final boolean allowedOnCa = cadata != null ? cadata.getCA().getCAInfo().isAllowChangingRevocationReason() : false;
+
+                final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
+                if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
+                    // use the previous revocation date if a new one was not provided
+                    if (revocationDate == null){
+                        revocationDate = new Date(certificateData.getRevocationDate());
+                    }
+                }
+                else {
+                    // Revocation reason cannot be changed, find out why and throw appropriate exception
+                    if (!RevokedCertInfo.isDateOk(revocationDate, certificateData.getRevocationDate())) {
+                        final String msg = intres.getLocalizedMessage("ra.invalidrevocationdate");
+                        log.info(msg);
+                        throw new AlreadyRevokedException(msg);
+                    }
+                    final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerDn, certSerNo.toString(16));
+                    log.info(msg);
+                    throw new AlreadyRevokedException(msg);
+                }
             }
         }
         if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
@@ -1902,7 +1941,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     certProfile);
             if (approvalProfile != null) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certSerNo, issuerDn, username, reason, authenticationToken, caId,
-                        endEntityProfileId, approvalProfile);
+                        endEntityProfileId, approvalProfile, revocationDate);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     final int requestId = approvalSession.addApprovalRequest(authenticationToken, ar);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
@@ -1911,7 +1950,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Finally find the publishers for the certificate profileId that we found
         Collection<Integer> publishers = new ArrayList<>(0);
-        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
         if (certificateProfile != null) {
             publishers = certificateProfile.getPublisherList();
             if (publishers == null || publishers.isEmpty()) {
@@ -1921,11 +1959,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         } else {
             log.warn("No certificate profile for certificate with serial #" + certSerNo.toString(16) + " issued by " + issuerDn);
-        }
-        if ( checkDate && revocationDate!=null && (certificateProfile==null || !certificateProfile.getAllowBackdatedRevocation()) ) {
-        	final String profileName = this.certificateProfileSession.getCertificateProfileName(certificateProfileId);
-        	final String msg = intres.getLocalizedMessage("ra.norevokebackdate", profileName, certSerNo.toString(16), issuerDn);
-        	throw new RevokeBackDateNotAllowedForProfileException(msg);
         }
 
         if(approvalRequestID != 0) {
@@ -2173,8 +2206,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public boolean existsUser(String username) {
         // Selecting 1 column is optimal speed
-        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE TRIM(LOWER(a.username)) = TRIM(LOWER(:username))");
-        query.setParameter("username", username);
+        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE a.username = :username");
+        query.setParameter("username", StringTools.trim(username));
         return !query.getResultList().isEmpty();
     }
 
@@ -2256,7 +2289,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final EndEntityProfile prof = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         String value = null;
         if (prof != null) {
-            if (prof.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+            if (prof.isAllowedRequestsUsed()) {
                 value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
             }
         } else {

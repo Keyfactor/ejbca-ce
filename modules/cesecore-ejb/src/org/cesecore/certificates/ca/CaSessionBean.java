@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
@@ -87,6 +87,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import static java.util.Objects.nonNull;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -205,6 +207,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public void addCA(final AuthenticationToken admin, final CACommon ca) throws CAExistsException, AuthorizationDeniedException {
         if (ca != null) {
             final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+            log.info("cryptoTokenId: " + cryptoTokenId);
             if (!authorizationSession.isAuthorized(admin, StandardRules.CAADD.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), ca.getCAId());
                 throw new AuthorizationDeniedException(msg);
@@ -230,8 +233,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             String msg = intres.getLocalizedMessage("caadmin.addedca", ca.getCAId(), cainfo.getName(), cainfo.getStatus());
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
-            details.put("tokenproperties", ca.getCAToken().getProperties());
-            details.put("tokensequence", ca.getCAToken().getKeySequence());
+            if (ca.nonNullCaToken()) {
+                CAToken caToken = ca.getCAToken();
+                if (nonNull(caToken)) {
+                    details.put("tokenproperties", caToken.getProperties());
+                    details.put("tokensequence", caToken.getKeySequence());
+                }
+            }
             logSession.log(EventTypes.CA_CREATION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), null, null, details);
         } else {
             log.debug("Trying to add null CA, nothing done.");
@@ -246,34 +254,39 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         	}
     		try {
     			final CACommon ca = getCAInternal(cainfo.getCAId(), null, null, false);
-    			// Check if we can edit the CA (also checks authorization)
+                final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
+
+                // Check if we can edit the CA (also checks authorization)
                 checkForPreProductionAndNonceConflict(cainfo, ca);
-    			int newCryptoTokenId = ca.getCAToken().getCryptoTokenId();
-    			if (cainfo.getCAToken() != null) {
-    			    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
-    			}
+                int newCryptoTokenId = ca.getCAToken().getCryptoTokenId();
+                if (cainfo.getCAToken() != null) {
+                    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
+                }
                 assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
 
                 if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
                     throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
 
                 @SuppressWarnings("unchecked")
-                final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
-                AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
-                        globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+                AvailableCustomCertificateExtensionsConfiguration cceConfig = null;
+                if (cainfo.getCAType() != CAInfo.CATYPE_PROXY) {
+                    cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+                }
                 ca.updateCA(cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId()), cainfo, cceConfig);
+                
                 // Audit log
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> newmap = (Map<Object, Object>)ca.saveData();
-    			// Get the diff of what changed
+                // Get the diff of what changed
                 final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
                 final String msg = intres.getLocalizedMessage("caadmin.editedca", ca.getCAId(), ca.getName(), ca.getStatus());
-    			// Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly
+                // Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
-    			for (final Map.Entry<Object,Object> entry : diff.entrySet()) {
-    				details.put(entry.getKey().toString(), entry.getValue().toString());
-    			}
+                for (final Map.Entry<Object,Object> entry : diff.entrySet()) {
+                    details.put(entry.getKey().toString(), entry.getValue().toString());
+                }
                 details.put("tokenproperties", ca.getCAToken().getProperties());
                 details.put("tokensequence", ca.getCAToken().getKeySequence());
                 logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(ca.getCAId()), null, null, details);
@@ -518,7 +531,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
+    public List<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException {
         final CAInfo info = getCAInfo(authenticationToken, caName);
         if(info == null) {
@@ -673,6 +686,22 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
         }
         return names;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public TreeMap<Integer,String> getAuthorizedCaIdsToNames(final AuthenticationToken admin) {
+        final Collection<Integer> availableCaIds = getAllCaIds();
+        final TreeMap<Integer,String> ids = new TreeMap<>();
+        for (Integer caid : availableCaIds) {
+            if (authorizedToCANoLogging(admin, caid)) {
+                final CAInfo caInfo = getCAInfoInternal(caid);
+                if (caInfo != null) {
+                    ids.put(caInfo.getCAId(), caInfo.getName());
+                }
+            }
+        }
+        return ids;
     }
 
 
@@ -978,6 +1007,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 // Since getCAData has already run upgradeAndMergeToDatabase we can just get the CA here..
                 final CACommon ca = caData.getCA();
                 if (ca != null) {
+                    // CaCache.INSTANCE.removeEntry(caId); // TODO: remove later
                     // Note that we store using the "real" CAId in the cache.
                     CaCache.INSTANCE.updateWith(caData.getCaId(), digest, ca.getName(), ca);
                 }
@@ -1027,34 +1057,44 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data
         // and perhaps upgrading
         final float oldversion = ((Float) caDataMap.get(UpgradeableDataHashMap.VERSION)).floatValue();
-        // Perform "live" upgrade from 5.0.x and earlier
-        boolean adhocUpgrade = adhocUpgradeFrom50(cadata.getCaId().intValue(), caDataMap, cadata.getName());
-        if (adhocUpgrade) {
-            // Convert map into storage friendly format now since we changed it
-            cadata.setDataMap(caDataMap);
-        }
         // Fetching the CA object will trigger UpgradableHashMap upgrades
         CACommon ca = cadata.getCA();
-        if (ca != null) {
-            final boolean expired = hasCAExpiredNow(ca);
-            if (expired) {
-                ca.setStatus(CAConstants.CA_EXPIRED);
+        // Perform "live" upgrade from 5.0.x and earlier
+        // if (oldversion <= 5.0) {
+        boolean adhocUpgrade;
+        if (ca != null && ca.getCAType() == CAInfo.CATYPE_PROXY) {
+            adhocUpgrade = false;
+        } else {
+            adhocUpgrade = adhocUpgradeFrom50(cadata.getCaId().intValue(), caDataMap, cadata.getName());
+        }
+
+            if (adhocUpgrade) {
+                // Convert map into storage friendly format now since we changed it
+                cadata.setDataMap(caDataMap);
             }
-            final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
-            // Compare old version with current version and save the data if there has been a change
-            final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
-            if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
+            if (ca != null) {
+                final boolean expired = hasCAExpiredNow(ca);
+                if (expired) {
+                    ca.setStatus(CAConstants.CA_EXPIRED);
+                }
+                final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
+                // Compare old version with current version and save the data if there has been a change
+                final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
+                if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
                             ", adhocUpgrade: " + adhocUpgrade+", upgradedExtendedService: " + upgradedExtendedService +
                             ", upgradeCA: " + upgradeCA + ", expired: " + expired);
+                    }
+                    ca.getCAToken();
+                    final int caId = caSession.mergeCa(ca);
+                    caDataReturn = entityManager.find(CAData.class, caId);
                 }
-                ca.getCAToken();
-                final int caId = caSession.mergeCa(ca);
-                caDataReturn = entityManager.find(CAData.class, caId);
-            }            
-        }
-        return caDataReturn;
+            }
+            return caDataReturn;
+        /*} else {
+            return cadata;
+        }*/
     }
 
     /**

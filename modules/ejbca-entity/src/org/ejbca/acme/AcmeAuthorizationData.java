@@ -32,6 +32,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.SecureXMLDecoder;
+import org.ejbca.core.protocol.acme.AcmeAuthorization;
 
 /**
  * @version $Id$
@@ -44,6 +45,10 @@ public class AcmeAuthorizationData extends ProtectedData implements Serializable
     private static final Logger log = Logger.getLogger(AcmeAuthorizationData.class);
     
     private String authorizationId;
+    private String identifier;
+    private String identifierType;
+    private long expires;
+    private String status;
     private String orderId;
     private String accountId;
     private String rawData;
@@ -51,7 +56,6 @@ public class AcmeAuthorizationData extends ProtectedData implements Serializable
     private String rowProtection;
 
     public AcmeAuthorizationData() {
-        
     }
             
     public AcmeAuthorizationData(final String authorizationId, final String orderId, final String accountId, final LinkedHashMap<Object, Object> dataMap) {
@@ -60,6 +64,14 @@ public class AcmeAuthorizationData extends ProtectedData implements Serializable
         setAccountId(accountId);
         setDataMap(dataMap);
     }
+    
+    public AcmeAuthorizationData(final AcmeAuthorization authorization) {    	
+    	this(authorization.getAuthorizationId(), authorization.getOrderId(), authorization.getAccountId(), authorization.getRawData());
+        setIdentifier(authorization.getAcmeIdentifier().getValue());
+        setIdentifierType(authorization.getAcmeIdentifier().getType());
+        setExpires(authorization.getExpires());
+        setStatus(authorization.getStatus().getJsonValue());        
+    }
 
     //@Column
     public String getAuthorizationId() {
@@ -67,6 +79,38 @@ public class AcmeAuthorizationData extends ProtectedData implements Serializable
     }
     public void setAuthorizationId(String authorizationId) {
         this.authorizationId = authorizationId;
+    }
+    
+    //@Column
+    public String getIdentifier() {
+        return identifier;
+    }
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    //@Column
+    public String getIdentifierType() {
+        return identifierType;
+    }
+    public void setIdentifierType(String identifierType) {
+        this.identifierType = identifierType;
+    }
+
+    //@Column
+    public long getExpires() {
+        return expires;
+    }
+    public void setExpires(long expires) {
+        this.expires = expires;
+    }
+
+    //@Column
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     //@Column
@@ -77,6 +121,7 @@ public class AcmeAuthorizationData extends ProtectedData implements Serializable
         this.orderId = orderId;
     }
 
+    //@Column
     public String getAccountId() {
         return accountId;
     }
@@ -92,7 +137,6 @@ public class AcmeAuthorizationData extends ProtectedData implements Serializable
     public void setRawData(String rawData) {
         this.rawData = rawData;
     }
-
 
     @Transient
     @SuppressWarnings("unchecked")

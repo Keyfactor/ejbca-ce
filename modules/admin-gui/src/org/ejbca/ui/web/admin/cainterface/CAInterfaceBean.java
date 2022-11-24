@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,16 +38,18 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJBException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.util.encoders.Hex;
@@ -68,6 +71,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -339,6 +343,10 @@ public class CAInterfaceBean implements Serializable {
             String availablePublisherValues, String availableKeyValidatorValues,
             boolean buttonCreateCa, boolean buttonMakeRequest,
             byte[] fileBuffer) throws Exception {
+        // Proxy Ca is exceptional in behavior, so, just saving it straight
+        if (caInfoDto.isCaTypeProxy()) {
+            return actionCreateCaMakeRequestInternal(caInfoDto, null, null, null, buttonCreateCa, buttonMakeRequest, 0, fileBuffer);
+        }
         // This will occur if administrator has insufficient access to crypto tokens, which won't provide any
         // selectable items for Crypto Token when creating a CA.
         if (StringUtils.isEmpty(caInfoDto.getCryptoTokenIdParam())) {
@@ -383,6 +391,10 @@ public class CAInterfaceBean implements Serializable {
                         log.error("No matching curve for signing algorithm: " + caInfoDto.getSignatureAlgorithmParam());
                         throw new Exception("No matching curve for ECDSA signing algorithm.");
                     }
+                } else if(AlgorithmConstants.KEYALGORITHM_ED25519.equals(caSignKeyAlgo)) {
+                    caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED25519;
+                } else if(AlgorithmConstants.KEYALGORITHM_ED448.equals(caSignKeyAlgo)) {
+                    caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED448;
                 } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
                 } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
@@ -419,6 +431,26 @@ public class CAInterfaceBean implements Serializable {
             int cryptoTokenId,
             byte[] fileBuffer) throws Exception {
 
+        if (caInfoDto.isCaTypeProxy()) {
+            ProxyCaInfo.ProxyCaInfoBuilder proxyCaInfoBuilder = createProxyCaInfoBuilder(caInfoDto);
+            if (buttonCreateCa) {
+                ProxyCaInfo proxyCaInfo =  proxyCaInfoBuilder
+                    //.setIncludeInHealthCheck(false) // TODO: to be confirmed
+                    .build();
+                proxyCaInfo.setSubjectDN(caInfoDto.getCaSubjectDN());
+                proxyCaInfo.setEncodedValidity("99y");
+                final int caid = CertTools.stringToBCDNString(proxyCaInfo.getSubjectDN()).hashCode();
+                proxyCaInfo.setCAId(caid);
+
+                try {
+                    caadminsession.createCA(authenticationToken, proxyCaInfo);
+                } catch (EJBException e) {
+                        throw e;
+                }
+            }
+            return false;
+        }
+
 	    boolean illegaldnoraltname = false;
 
 	    final List<String> keyPairAliases = cryptoTokenManagementSession.getKeyPairAliases(authenticationToken, cryptoTokenId);
@@ -452,8 +484,9 @@ public class CAInterfaceBean implements Serializable {
             throw new Exception("No signature algorithm supplied!");
         }
         caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
-        caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam()));
-
+        PublicKey encryptionKey = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+        caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
+                
         if (caInfoDto.getSignKeySpec() == null || caInfoDto.getSignKeySpec().length() == 0) {
             throw new Exception("No extended CA service key specification supplied.");
         }
@@ -568,6 +601,7 @@ public class CAInterfaceBean implements Serializable {
                             .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
                             .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
                             .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
+                            .setAllowChangingRevocationReason(caInfoDto.isAllowChangingRevocationReason())
                             .setCrlPublishers(crlPublishers)
                             .setValidators(keyValidators)
                             .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -1033,6 +1067,7 @@ public class CAInterfaceBean implements Serializable {
                        .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
                        .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
                        .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
+                       .setAllowChangingRevocationReason(caInfoDto.isAllowChangingRevocationReason())
                        .setCrlPublishers(crlpublishers)
                        .setValidators(keyValidators)
                        .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -1074,7 +1109,8 @@ public class CAInterfaceBean implements Serializable {
                        .setCrlPartitions(caInfoDto.getCrlPartitions())
                        .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                        .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
-                       .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
+                       .setRequestPreProcessor(caInfoDto.getRequestPreProcessor())
+                       .setAlternateCertificateChains(caInfoDto.getAlternateCertificateChains());
                cainfo = x509CAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
                // Info specific for CVC CA
@@ -1281,10 +1317,18 @@ public class CAInterfaceBean implements Serializable {
     public List<String> getAvailableCryptoTokenEncryptionAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
         final List<String> aliases = new ArrayList<>();
         for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+            if (cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_ECDSA)
+                    || cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_EC)) {
+                //Only a limited subset of EC curves are available for ECCDH
+                if (AlgorithmConstants.ECCDH_PERMITTED_CURVES.contains(cryptoTokenKeyPairInfo.getKeySpecification())) {
+                    aliases.add(cryptoTokenKeyPairInfo.getAlias());
+                }
+            } else {
+                //Or in case of RSA
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
         }
+        
         return aliases;
     }
 
@@ -1303,8 +1347,10 @@ public class CAInterfaceBean implements Serializable {
 	public boolean isCaExportable(CAInfo caInfo) {
 	    boolean ret = false;
 	    final int caInfoStatus = caInfo.getStatus();
-	    if ((caInfoStatus != CAConstants.CA_EXTERNAL && caInfo.getCAType()!=CAInfo.CATYPE_CITS) && 
-	                                    caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+	    if ((caInfoStatus != CAConstants.CA_EXTERNAL
+            && caInfo.getCAType()!=CAInfo.CATYPE_CITS)
+            && caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE
+            && caInfo.getCAType() != CAInfo.CATYPE_PROXY) {
 	        final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
 	        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
 	        if (cryptoTokenInfo!=null) {
@@ -1463,6 +1509,23 @@ public class CAInterfaceBean implements Serializable {
     
     public String getExpiryTime(Date expireTime) {
         return ejbcawebbean.formatAsISO8601(expireTime);
+    }
+
+    private ProxyCaInfo.ProxyCaInfoBuilder createProxyCaInfoBuilder(CaInfoDto ca) {
+        List<MutablePair<String, String>> headerPairs = ca.getHeaders().stream().map(triple -> new MutablePair<String, String>(triple.getMiddle(), triple.getRight())).collect(Collectors.toList());
+        ProxyCaInfo.ProxyCaInfoBuilder proxyCaInfoBuilder = new ProxyCaInfo.ProxyCaInfoBuilder()
+            .setName(ca.getCaName())
+            .setStatus(CAConstants.CA_ACTIVE)
+            .setDescription(ca.getDescription())
+            .setSubjectDn(ca.getCaSubjectDN())
+            .setEnrollWithCsrUrl(ca.getUpstreamUrl())
+            .setHeaders(headerPairs)
+            .setUsername(ca.getUsername())
+            .setPassword(ca.getPassword())
+            .setCa(ca.getUpstreamCa())
+            .setTemplate(ca.getUpstreamTemplate())
+            .setSans(ca.getSansJson());
+        return proxyCaInfoBuilder;
     }
 
 }

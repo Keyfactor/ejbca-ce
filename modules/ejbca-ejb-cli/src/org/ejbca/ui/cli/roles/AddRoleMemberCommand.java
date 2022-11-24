@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.roles;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -200,11 +200,6 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             }
             roleMemberSession.persist(getAuthenticationToken(), roleMember);
             getLogger().info("Role member was successfully added.");
-            try {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class).updateApprovalRights(getAuthenticationToken(), role.getRoleId(), roleName);
-            } catch (AuthorizationDeniedException e) {
-                getLogger().warn("Approval rights were not updated after adding role member due to insufficient rights. In most cases this is not a big problem.");
-            }
         } catch (AuthorizationDeniedException e) {
             getLogger().error("CLI user not authorized to edit role");
             return CommandResult.AUTHORIZATION_FAILURE;

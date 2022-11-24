@@ -21,6 +21,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.time.FastDateFormat;
@@ -42,11 +43,6 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
-    
-    @Override
-    protected String getTableName() {
-        return "NoConflictCertificateData";
-    }
     
     @Override
     protected EntityManager getEntityManager() {
@@ -92,11 +88,57 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
     }
     
     @Override
-    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final int crlPartitionIndex, final long lastbasecrldate) {
+    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate, final boolean keepExpiredCertsOnCrl) {
         if (log.isDebugEnabled()) {
-            log.debug("Quering for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "', Last Base CRL Date: " +  FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastbasecrldate));
+            log.debug("Querying for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "'" +
+                    ", Delta CRL: " + deltaCrl +
+                    ", Last Base CRL Date: " +  FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastBaseCrlDate) +
+                    ", Keep expired certificates on CRL: " + keepExpiredCertsOnCrl);
         }
-        return getRevokedCertInfosInternal(issuerDN, crlPartitionIndex, lastbasecrldate, true);
+        final String crlPartitionExpression;
+        final String excludeExpiredExpression;
+        final String ordering;
+        final Query query;
+        if (crlPartitionIndex != 0) {
+            crlPartitionExpression = " AND crlPartitionIndex = :crlPartitionIndex";
+        } else {
+            crlPartitionExpression = " AND (crlPartitionIndex = :crlPartitionIndex OR crlPartitionIndex IS NULL)";
+        }
+        if (keepExpiredCertsOnCrl) {
+            excludeExpiredExpression = "";
+        } else {
+            excludeExpiredExpression = " AND a.expireDate >= :expiredAfter";
+        }
+        if (CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered()) {
+            ordering = " ORDER BY revocationDate, fingerprint ASC";
+        } else {
+            ordering = "";
+        }
+        if (deltaCrl) {
+            // Delta CRL
+            query = getEntityManager().createNativeQuery(
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM NoConflictCertificateData a WHERE "
+                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
+                            + crlPartitionExpression + ordering,
+                    "RevokedCertInfoSubset");
+            query.setParameter("revocationDate", lastBaseCrlDate);
+        } else {
+            // Base CRL
+            query = getEntityManager().createNativeQuery(
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM NoConflictCertificateData a WHERE "
+                            + "a.issuerDN=:issuerDN AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
+                            + crlPartitionExpression + excludeExpiredExpression + ordering,
+                    "RevokedCertInfoSubset");
+            if (!keepExpiredCertsOnCrl) {
+                query.setParameter("expiredAfter", lastBaseCrlDate);
+            }
+        }
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        query.setParameter("status1", CertificateConstants.CERT_REVOKED);
+        query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
+        query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
+        return getRevokedCertInfosInternal(query);
     }
     
 }

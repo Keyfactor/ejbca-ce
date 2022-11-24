@@ -32,7 +32,7 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  */
 public abstract class BaseWorker implements IWorker {
 
-    private static final String ERROR_EXPIRE_WORKER_MISCONFIG = "services.errorexpireworker.errorconfig";
+    public static final String ERROR_EXPIRE_WORKER_MISCONFIG = "services.errorexpireworker.errorconfig";
     private static final String ERROR_ACTION_CLASSPATH_MISCONFIG = "services.erroractionclasspath";
     
 	private static final Logger log = Logger.getLogger(BaseWorker.class);

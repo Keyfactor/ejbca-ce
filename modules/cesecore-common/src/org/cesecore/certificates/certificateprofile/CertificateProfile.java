@@ -63,7 +63,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 48.0;
+    public static final float LATEST_VERSION = (float) 49.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -258,6 +258,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USELDAPDNORDER = "useldapdnorder";
     protected static final String USEMICROSOFTTEMPLATE = "usemicrosofttemplate";
     protected static final String MICROSOFTTEMPLATE = "microsofttemplate";
+    /**Microsoft szOID_NTDS_CA_SECURITY_EXT for ADCS vuln. CVE-2022-26931 */
+    protected static final String USE_MS_OBJECTSID_SECURITY_EXTENSION = "usemsobjectsidextension";
     protected static final String USECARDNUMBER = "usecardnumber";
     protected static final String USEQCSTATEMENT = "useqcstatement";
     protected static final String USEPKIXQCSYNTAXV2 = "usepkixqcsyntaxv2";
@@ -391,6 +393,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
         useStandardCertificateExtensions.put(USEOCSPNOCHECK, OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
         useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
+        useStandardCertificateExtensions.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT);
         useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
         useStandardCertificateExtensions.put(USECABFORGANIZATIONIDENTIFIER, CabForumOrganizationIdentifier.OID);
     }
@@ -510,6 +513,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setUseMicrosoftTemplate(false);
         setMicrosoftTemplate("");
+        setUseMsObjectSidSecurityExtension(true);
         setUseCardNumber(false);
 
         setUseCNPostfix(false);
@@ -1620,6 +1624,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseMicrosoftTemplate(boolean use) {
         data.put(USEMICROSOFTTEMPLATE, use);
     }
+    
+    public boolean getUseMsObjectSidSecurityExtension() {
+        return (Boolean) data.get(USE_MS_OBJECTSID_SECURITY_EXTENSION);
+    }
+
+    public void setUseMsObjectSidSecurityExtension(boolean use) {
+        data.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, use);
+    }
 
     public String getMicrosoftTemplate() {
         return (String) data.get(MICROSOFTTEMPLATE);
@@ -1982,6 +1994,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Set<String> getEabNamespaces() {
         if (data.get(EABNAMESPACES) == null) {
             return new LinkedHashSet<>();
@@ -3232,6 +3245,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if (data.get(USEMICROSOFTTEMPLATE) == null) {
                 setUseMicrosoftTemplate(false);
                 setMicrosoftTemplate("");
+            }
+            
+            if (data.get(USE_MS_OBJECTSID_SECURITY_EXTENSION) == null) {
+                setUseMsObjectSidSecurityExtension(true);
             }
 
             if (data.get(USECNPOSTFIX) == null) {

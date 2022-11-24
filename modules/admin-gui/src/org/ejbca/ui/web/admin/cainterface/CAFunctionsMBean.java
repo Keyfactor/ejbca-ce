@@ -106,12 +106,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
-            this.certificatechain = new ArrayList<>(certificatechain);
+            this.certificatechain = certificatechain!= null ? new ArrayList<>(certificatechain) : new ArrayList<>();
             Collections.reverse(this.certificatechain);
             this.crlinfo = crlinfo;
             this.deltacrlinfo = deltacrlinfo;
             this.deltaPeriodEnabled = deltaPeriodEnabled;
-            showJksDownloadForm = new boolean[certificatechain.size()];
+            showJksDownloadForm = new boolean[this.certificatechain.size()];
             this.caStatusActive = caStatusActive;
             this.caType = caType;
         }
@@ -279,8 +279,10 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
             final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
-            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlInfos, deltacrlinfo,
-                    cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
+            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), 
+                    cainfo.getCAType()!=CAInfo.CATYPE_PROXY ? cainfo.getCertificateChain() : null, 
+                    crlInfos, deltacrlinfo, cainfo.getDeltaCRLPeriod() > 0, 
+                    cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
             caGuiInfos.add(caGuiInfo);
         }
     }

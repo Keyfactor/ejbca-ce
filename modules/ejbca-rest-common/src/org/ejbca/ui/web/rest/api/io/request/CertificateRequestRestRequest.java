@@ -1,25 +1,32 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.io.request;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
 /**
  * A class representing the input for certificate request REST method.
  */
 public class CertificateRequestRestRequest {
+    @ApiModelProperty(value = "Certificate request", example = "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     private String certificateRequest;
+    @ApiModelProperty(value = "Username", example = "JohnDoe")
     private String username;
+    @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
     private boolean includeChain;
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
     private String certificateAuthorityName;
     
     public CertificateRequestRestRequest() {

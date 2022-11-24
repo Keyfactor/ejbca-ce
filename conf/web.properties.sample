@@ -56,6 +56,9 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default: set automatically, so no need to change this property unless you want something specific.
 #httpsserver.an=dnsName=${httpsserver.hostname}
 
+# Desired token type for the SSL server certificate:  P12, JKS. default value is JKS
+httpsserver.tokentype=JKS
+
 # END: Installation settings.
 
 # The public port JBoss will listen to http on
@@ -273,6 +276,8 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #cryptotoken.p11.lib.132.file=/usr/local/primus/lib/libprimusP11.so
 #cryptotoken.p11.lib.133.name=Primus HSM
 #cryptotoken.p11.lib.133.file=/opt/primus/lib/libprimusP11.so
+#cryptotoken.p11.lib.135.name=GCP KMS P11
+#cryptotoken.p11.lib.135.file=/opt/gcp/libkmsp11-1.1-linux-amd64/libkmsp11.so
 
 
 
@@ -293,7 +298,9 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # (for a capability that is disabled you have the chance to specify a message that may be displayed in the GUI)
 # canGenerateKey can be used to disable key generation in the Web UI, if this does not work properly (typically due to limited p11 support)
 #cryptotoken.p11.lib.114.canGenerateKey=false
-#cryptotoken.p11.lib.114.canGenerateKeyMsg=ClientToolBox must be used to generate keys on AWS CloudHSM PrimeKey
+#cryptotoken.p11.lib.114.canGenerateKeyMsg=ClientToolBox must be used to generate keys on AWS CloudHSM
+#cryptotoken.p11.lib.135.canGenerateKey=false
+#cryptotoken.p11.lib.135.canGenerateKeyMsg=The GCP Console must be used to generate keys on GCP Cloud KMS
 
 # Available PKCS#11 CryptoToken attribute files and their display names
 # Use if the default PKCS#11 attributes are not good for the PKCS#11 module and if needs specific attributes 

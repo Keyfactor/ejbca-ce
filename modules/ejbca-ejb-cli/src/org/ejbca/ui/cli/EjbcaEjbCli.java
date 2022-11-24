@@ -13,10 +13,10 @@
 
 package org.ejbca.ui.cli;
 
+import org.apache.log4j.Logger;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.library.CommandLibrary;
-
 
 /**
  * Main entry point for the EJBCA EJB CLI
@@ -25,15 +25,20 @@ import org.ejbca.ui.cli.infrastructure.library.CommandLibrary;
  */
 public class EjbcaEjbCli {
 
+    private static final Logger log = Logger.getLogger(EjbcaEjbCli.class);
+
     public static void main(String[] args) {
-        if (args.length == 0 || !CommandLibrary.INSTANCE.doesCommandExist(args)) {
-            CommandLibrary.INSTANCE.listRootCommands();
-        } else {
-            CryptoProviderTools.installBCProvider();
-            CommandResult result = CommandLibrary.INSTANCE.findAndExecuteCommandFromParameters(args);
-            if(result != CommandResult.SUCCESS) {
-                System.exit(result.getReturnCode());
+
+            if (args.length == 0 || !CommandLibrary.INSTANCE.doesCommandExist(args)) {
+                CommandLibrary.INSTANCE.listRootCommands();
+            } else {
+                CryptoProviderTools.installBCProvider();
+
+                CommandResult result = CommandLibrary.INSTANCE.findAndExecuteCommandFromParameters(args);
+                if (result != CommandResult.SUCCESS) {
+                    System.exit(result.getReturnCode());
+                }
+
             }
-        }
     }
 }

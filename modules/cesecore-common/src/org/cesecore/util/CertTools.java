@@ -84,18 +84,10 @@ import org.bouncycastle.cms.CMSAbsentContent;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
-import org.bouncycastle.oer.OEREncoder;
-import org.bouncycastle.oer.OERInputStream;
-import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Duration;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.ValidityPeriod;
-import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -113,6 +105,8 @@ import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
+import org.cesecore.certificates.certificate.ssh.SshCertificateFactory;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -190,6 +184,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -277,6 +272,8 @@ public abstract class CertTools {
     public static final String id_pda_countryOfResidence = id_pda + ".5";
     /** OID used for creating MS Templates certificate extension */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
+    /** OID used for creating Microsoft szOID_NTDS_CA_SECURITY_EXT for ADCS vuln. CVE-2022-26931 */
+    public static final String OID_MS_SZ_OID_NTDS_CA_SEC_EXT = "1.3.6.1.4.1.311.25.2";
     /** extended key usage OID Intel AMT (out of band) network management */
     public static final String Intel_amt = "2.16.840.1.113741.1.2.3";
     
@@ -861,8 +858,10 @@ public abstract class CertTools {
      * @return String containing the subjects DN.
      */
     public static String getSubjectDN(final Certificate cert) {
-        if (cert == null || StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+        if (cert == null) {
             return "";
+        } else if(StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)){ 
+            return "CN=" + ((SshCertificate) cert).getKeyId();
         } else {
             return getDN(cert, 1);
         }
@@ -1168,6 +1167,8 @@ public abstract class CertTools {
                 log.debug("NoSuchFieldException: " + e.getMessage());
                 return null;
             }
+        } else if (StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+            ret = ((SshCertificate) cert).getValidAfter();
         }
         return ret;
     }
@@ -1191,6 +1192,8 @@ public abstract class CertTools {
                 }
                 return null;
             }
+        } else if (StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+            ret = ((SshCertificate) cert).getValidBefore();
         }
         return ret;
     }
@@ -1544,9 +1547,9 @@ public abstract class CertTools {
     }
     
     /**
-     * Creates Certificate from byte[], can be either an X509 certificate or a CVCCertificate
+     * Creates Certificate from byte[], can be either an X509 certificate, a CVCCertificate or SSH certificate
      * 
-     * @param cert byte array containing certificate in binary (DER) format, or PEM encoded X.509 certificate
+     * @param cert byte array containing certificate in binary (DER) format, or PEM encoded X.509 certificate or SSH certificiate
      * @param provider provider for example "SUN" or "BC", use null for the default provider (BC)
      * @param returnType the type of Certificate to be returned. Certificate can be used if certificate type is unknown.
      * 
@@ -1566,6 +1569,10 @@ public abstract class CertTools {
             return returnType.cast(parseCardVerifiableCertificate(cert));
         } else {
             //Let's guess...
+            SshCertificate sshCertificate = parseSshCertificate(cert);
+            if(sshCertificate!=null) {
+                return returnType.cast(sshCertificate);
+            }
             try {
                 return returnType.cast(parseX509Certificate(prov, cert));
             } catch (CertificateParsingException e) {
@@ -1576,6 +1583,19 @@ public abstract class CertTools {
                 }
             }
         }
+    }
+    
+    private static SshCertificate parseSshCertificate(byte[] cert) {
+        // SSH certificates have human readable prefix e.g. ssh-rsa|ed25519 or ecdsa-ssh 
+        if((cert[0]=='s' && cert[1]=='s' && cert[2]=='h') ||
+                (cert[0]=='e' && cert[1]=='c' && cert[2]=='d' && cert[3]=='s' && cert[4]=='a')) {
+            try {
+                return SshCertificateFactory.INSTANCE.getSshCertificate(cert);
+            } catch (Exception e) {
+                // NOPMD
+            }
+        }
+        return null;
     }
     
     /**
@@ -1889,22 +1909,28 @@ public abstract class CertTools {
     public static X509Certificate genSelfCertForPurpose(String dn, Date firstDate, Date lastDate, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
             List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
+        return genCertForPurpose(dn, dn, firstDate, lastDate, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, ldapOrder, additionalExtensions);
+    }
+    
+    public static X509Certificate genCertForPurpose(String subjectDn, String issuerDn, Date firstDate, Date lastDate, String policyId, PrivateKey issuerPrivKey, PublicKey entityPubKey,
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
+            List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
         // Transform the PublicKey to be sure we have it in a format that the X509 certificate generator handles, it might be
         // a CVC public key that is passed as parameter
         PublicKey publicKey = null;
-        if (pubKey instanceof RSAPublicKey) {
-            RSAPublicKey rsapk = (RSAPublicKey) pubKey;
+        if (entityPubKey instanceof RSAPublicKey) {
+            RSAPublicKey rsapk = (RSAPublicKey) entityPubKey;
             RSAPublicKeySpec rSAPublicKeySpec = new RSAPublicKeySpec(rsapk.getModulus(), rsapk.getPublicExponent());
             try {
                 publicKey = KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating RSAPublicKey from spec: ", e);
-                publicKey = pubKey;
+                publicKey = entityPubKey;
             } catch (NoSuchAlgorithmException e) {
                 throw new IllegalStateException("RSA was not a known algorithm", e);
             }
-        } else if (pubKey instanceof ECPublicKey) {
-            ECPublicKey ecpk = (ECPublicKey) pubKey;
+        } else if (entityPubKey instanceof ECPublicKey) {
+            ECPublicKey ecpk = (ECPublicKey) entityPubKey;
             try {
                 ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
                 final String algo = ecpk.getAlgorithm();
@@ -1929,14 +1955,14 @@ public abstract class CertTools {
                 }
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating ECPublicKey from spec: ", e);
-                publicKey = pubKey;
+                publicKey = entityPubKey;
             } catch (NullPointerException e) {
                 log.debug("NullPointerException, probably it is implicitlyCA generated keys: " + e.getMessage());
-                publicKey = pubKey;
+                publicKey = entityPubKey;
             }
         } else {
-            log.debug("Not converting key of class. " + pubKey.getClass().getName());
-            publicKey = pubKey;
+            log.debug("Not converting key of class. " + entityPubKey.getClass().getName());
+            publicKey = entityPubKey;
         }
 
         // Serial number is random bits
@@ -1950,8 +1976,8 @@ public abstract class CertTools {
         random.nextBytes(serno);
 
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn, ldapOrder), new BigInteger(serno).abs(),
-                firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(issuerDn, ldapOrder), new BigInteger(serno).abs(),
+                firstDate, lastDate, CertTools.stringToBcX500Name(subjectDn, ldapOrder), pkinfo);
 
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
@@ -1998,7 +2024,7 @@ public abstract class CertTools {
                 certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
             }
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(privKey), 20480);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(issuerPrivKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate selfcert;
         try {
@@ -4723,7 +4749,7 @@ public abstract class CertTools {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
                         validator.checkPermitted(sangn);
-                        if (isAllDNSNamesExcluded(excluded)) {
+                        if (sangn.getTagNo() == 2 && isAllDNSNamesExcluded(excluded)) {
                             final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
                                     NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
                             throw new IllegalNameException(msg);
@@ -4738,11 +4764,13 @@ public abstract class CertTools {
             }
         }
     }
-    
-
 
     // Check if we should exclude all dns names
     private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
+        if (Objects.isNull(excluded)) {
+            return false;
+        }
+        
         for (int i = 0; i < excluded.length; i++) {
             if (excluded[i].getBase().toString().equals("2: ")) {
                 return true;

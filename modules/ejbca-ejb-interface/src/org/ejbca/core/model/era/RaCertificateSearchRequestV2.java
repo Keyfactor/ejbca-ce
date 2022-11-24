@@ -52,6 +52,8 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
     private long expiresBefore = Long.MAX_VALUE;
     private long revokedAfter = 0L;
     private long revokedBefore = Long.MAX_VALUE;
+    private long updatedAfter = 0L;
+    private long updatedBefore = Long.MAX_VALUE;
     private List<Integer> statuses = new ArrayList<>();
     private List<Integer> revocationReasons = new ArrayList<>();
 
@@ -83,6 +85,8 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         expiresBefore = request.expiresBefore;
         revokedAfter = request.revokedAfter;
         revokedBefore = request.revokedBefore;
+        updatedAfter = request.updatedAfter;
+        updatedBefore = request.updatedBefore;
         statuses.addAll(request.statuses);
         revocationReasons.addAll(request.revocationReasons);
     }
@@ -110,6 +114,8 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         expiresBefore = request.getExpiresBefore();
         revokedAfter = request.getRevokedAfter();
         revokedBefore = request.getRevokedBefore();
+        updatedAfter = request.getUpdatedAfter();
+        updatedBefore = request.getUpdatedBefore();
         statuses.addAll(request.getStatuses());
         revocationReasons.addAll(request.getRevocationReasons());
     }
@@ -229,6 +235,16 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
     public boolean isRevokedBeforeUsed() { return revokedBefore<Long.MAX_VALUE; }
     public void resetRevokedBefore() { this.revokedBefore = Long.MAX_VALUE; }
 
+    public long getUpdatedAfter() { return updatedAfter; }
+    public void setUpdatedAfter(final long updatedAfter) { this.updatedAfter = updatedAfter; }
+    public boolean isUpdatedAfterUsed() { return updatedAfter>0L; }
+    public void resetUpdatedAfter() { this.updatedAfter = 0L; }
+
+    public long getUpdatedBefore() { return updatedBefore; }
+    public void setUpdatedBefore(final long updatedBefore) { this.updatedBefore = updatedBefore; }
+    public boolean isUpdatedBeforeUsed() { return updatedBefore<Long.MAX_VALUE; }
+    public void resetUpdatedBefore() { this.updatedBefore = Long.MAX_VALUE; }
+
     public List<Integer> getStatuses() { return statuses; }
     public void setStatuses(final List<Integer> statuses) { this.statuses = statuses; }
     public List<Integer> getRevocationReasons() { return revocationReasons; }
@@ -262,6 +278,7 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
                 issuedAfter<other.issuedAfter || issuedBefore>other.issuedBefore ||
                 expiresAfter<other.expiresAfter || expiresBefore>other.expiresBefore ||
                 revokedAfter<other.revokedAfter || revokedBefore>other.revokedBefore ||
+                updatedAfter<other.updatedAfter || updatedBefore>other.updatedBefore ||
                 isWider(subjectDnSearchString, other.subjectDnSearchString) ||
                 isWider(subjectDnSearchExact, other.subjectDnSearchExact) ||
                 isWider(subjectAnSearchString, other.subjectAnSearchString) ||
@@ -282,6 +299,7 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
                 issuedAfter>other.issuedAfter || issuedBefore<other.issuedBefore ||
                 expiresAfter>other.expiresAfter || expiresBefore<other.expiresBefore ||
                 revokedAfter>other.revokedAfter || revokedBefore<other.revokedBefore ||
+                updatedAfter>other.updatedAfter || updatedBefore<other.updatedBefore ||
                 isMoreNarrow(subjectDnSearchString, other.subjectDnSearchString) ||
                 isMoreNarrow(subjectDnSearchExact, other.subjectDnSearchExact) ||
                 isMoreNarrow(subjectAnSearchString, other.subjectAnSearchString) ||
@@ -353,12 +371,23 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         return true;
     }
 
-    /** @return true if the expireDate is matched by this search. */
+    /** @return true if the revocationDate is matched by this search. */
     public boolean matchRevokedInterval(long revocationDate) {
         if (isRevokedAfterUsed() && revocationDate<revokedAfter) {
             return false;
         }
         if (isRevokedBeforeUsed() && revocationDate>revokedBefore) {
+            return false;
+        }
+        return true;
+    }
+
+    /** @return true if the updateTime is matched by this search. */
+    public boolean matchUpdateTimeInterval(final long updateTime) {
+        if (isUpdatedAfterUsed() && updateTime<updatedAfter) {
+            return false;
+        }
+        if (isUpdatedBeforeUsed() && updateTime>updatedBefore) {
             return false;
         }
         return true;

@@ -20,11 +20,11 @@ import org.cesecore.authorization.access.AccessSet;
 /**
  * Interface for high level authorization system tasks.
  *
- * @version $Id$
  */
 public interface AuthorizationSystemSession {
 
     public static final String SUPERADMIN_ROLE = "Super Administrator Role";
+    public static final String PUBLIC_ACCESS_ROLE = "Public Access Role";
 
     /**
      * Returns all rules that the given authenticationToken is allowed to access. Includes *SOME wildcard rules

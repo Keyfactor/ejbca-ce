@@ -80,8 +80,20 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
      */
     List<String> findSerialNrByIssuerWithLimitAndOffset(String issuerDN, int limit, int offset);
     
+    /**
+     * 
+     * @param issuerDN of the issing CA to find entries for
+     * @param expireDate earliest expireDate of the certificate, can be past or future 
+     * @param limit maximum number of results
+     * @param offset starting offset. E.g. if previous 'limit' was 100. Next results will be available at 'offset' 100
+     * @return the query results as a List<String>
+     */
+    List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, 
+                                                        long expireDate, int limit, int offset);
+
+    
     /** @return return the query results as a Collection<RevokedCertInfo>. */
-    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, int crlPartitionIndex, long lastbasecrldate);
+    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate);
     
     /** @return return the query results as a List. */
     List<CertificateData> findByExpireDateWithLimit(long expireDate, int maxNumberOfResults);
@@ -151,7 +163,6 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
      */
     List<Object[]> findExpirationInfo(Collection<String> cas, Collection<Integer> certificateProfiles,
             long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
-
     
     
 }

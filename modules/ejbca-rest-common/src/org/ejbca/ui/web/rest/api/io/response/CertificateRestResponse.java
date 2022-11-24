@@ -1,15 +1,19 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.SecConst;
 
@@ -22,14 +26,20 @@ import java.util.stream.Collectors;
  * A class representing general information about certificate. Is used for REST services' responses.
  */
 public class CertificateRestResponse {
+    @ApiModelProperty(value = "Certificate", example = "MIIDXzCCA...eW1Zro0=")
     private byte[] certificate;
+    @ApiModelProperty(value = "Hex Serial Number", example = "1234567890ABCDEF")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String serialNumber;
+    @ApiModelProperty(value = "Response format", example = "DER")
     private String responseFormat;
+    @ApiModelProperty(value = "Certificate chain", example = "[ “ABC123efg...345xyz0=“ ]")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<byte[]> certificateChain;
+    @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String certificateProfile;
+    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String endEntityProfile;
     

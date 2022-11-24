@@ -15,14 +15,11 @@ package org.ejbca.core.ejb.keyrecovery;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.List;
 
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -210,40 +207,6 @@ public class KeyRecoveryData extends ProtectedData implements Serializable {
     //
     // End Database integrity protection methods
     //
-
-	//
-    // Search functions. 
-    //
-
-	/** @return the found entity instance or null if the entity does not exist */
-    public static KeyRecoveryData findByPK(EntityManager entityManager, KeyRecoveryDataPK pk) {
-    	return entityManager.find(KeyRecoveryData.class, pk);
-    }
-
-	/** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
-    public static List<KeyRecoveryData> findByUsername(EntityManager entityManager, String username) {
-    	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:username");
-    	query.setParameter("username", username);
-    	return query.getResultList();
-    }    
 	 
-	/** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
-    public static List<KeyRecoveryData> findByUserMark(EntityManager entityManager, String usermark) {
-    	List<KeyRecoveryData> ret = null;
-    	try {
-        	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverableBool=TRUE");
-        	query.setParameter("usermark", usermark);
-    		ret = query.getResultList();
-    	} catch (Exception e) {
-    		if (log.isDebugEnabled()) {
-        		log.debug("If database does not support boolean (like Ingres) we would expect an Exception here. Trying to treat markedAsRecoverable as an Integer.", e);
-    		}
-        	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverableInt=1");
-        	query.setParameter("usermark", usermark);
-    		ret = query.getResultList();
-    	}
-    	return ret;
-    }    
+  
 }

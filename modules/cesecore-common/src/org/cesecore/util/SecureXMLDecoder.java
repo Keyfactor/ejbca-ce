@@ -16,6 +16,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
@@ -49,6 +50,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Objects.nonNull;
 
 
 /**
@@ -349,11 +352,9 @@ public class SecureXMLDecoder implements AutoCloseable {
                     case "org.cesecore.keybind.InternalKeyBindingTrustEntry":
                         value = parseObject(new InternalKeyBindingTrustEntry());
                         break;
-                    case "org.ejbca.core.model.ra.ExtendedInformation":
-                        value = parseLegacyExtendedInformation();
-                        break;
                     case "org.ejbca.core.model.ra.raadmin.UserNotification":
                     case "org.ejbca.core.model.ra.UserDataVO":
+                    case "org.ejbca.core.model.ra.ExtendedInformation": // Used by UserDataVO
                     case "org.ejbca.core.protocol.acme.logic.AcmeAuthorizationImpl":
                     case "org.ejbca.core.protocol.acme.logic.AcmeChallengeImpl":
                     case "org.ejbca.core.protocol.acme.logic.AcmeIdentifierImpl":
@@ -374,6 +375,9 @@ public class SecureXMLDecoder implements AutoCloseable {
                     case "java.util.Collections":
                         value = parseSpecialCollection(method);
                         method = null; // value has been used, don't report error
+                        break;
+                    case "org.apache.commons.lang3.tuple.MutablePair":
+                        value = parseMutablePair(parser);
                         break;
                     case "java.util.Date":
                         long dateLongValue = (long) readValue();
@@ -735,60 +739,37 @@ public class SecureXMLDecoder implements AutoCloseable {
         }
     }
 
-    /**
-     * <p>Parses the XML representation of <code>org.ejbca.core.model.ra.ExtendedInformation</code>.</p>
-     *
-     * <p><b>Implementation note:</b> Some data is lost during serialisation and will be recreated from the
-     * "default" data created during instantiation.</p>
-     *
-     * <p>Example of what it might look like:</p>
-     * <pre>
-     *     {@code
-     *      <object class="org.ejbca.core.model.ra.ExtendedInformation" id="ExtendedInformation0">
-     *        <void id="LinkedHashMap0" property="data">
-     *          <void method="put">
-     *            <string>CERTIFICATESERIALNUMBER</string>
-     *            <string>ew==</string>
-     *          </void>
-     *        </void>
-     *        <void property="data">
-     *          <object idref="LinkedHashMap0"/>
-     *        </void>
-     *      </object>
-     *     }
-     * </pre>
-     *
-     * @return the parsed object.
-     * @throws IOException if the object could not be parsed.
-     */
-    private Object parseLegacyExtendedInformation() throws IOException, XmlPullParserException {
-        try {
-            // Ignore <void id="LinkedHashMap0" property="data">
+    // Only supports String value
+    private Object parseMutablePair(final XmlPullParser parser) throws XmlPullParserException, IOException {
+        MutablePair pair = new MutablePair();
+        final String clazz = parser.getAttributeValue(null, "class");
+        final String method = parser.getAttributeValue(null, "method");
+        if(nonNull(clazz) && nonNull(method) && clazz.equals("org.apache.commons.lang3.tuple.MutablePair") && method.equals("getField")) {
             parser.nextTag();
-            final LinkedHashMap<Object, Object> parsedData = new LinkedHashMap<>();
-            parseMap(parsedData);
-            expectEndTag("void");
-            parser.nextTag();
-            final Object extendedInformation = Class.forName("org.ejbca.core.model.ra.ExtendedInformation")
-                    .getConstructor()
-                    .newInstance();
-            @SuppressWarnings("unchecked")
-            final LinkedHashMap<Object, Object> rawData = (LinkedHashMap<Object, Object>) MethodUtils.invokeMethod(extendedInformation, "getRawData");
-            rawData.putAll(parsedData);
-            // Skip
-            //   <void property="data">
-            //    <object idref="LinkedHashMap0"/>
-            //   </void>
-            // </object>
+            parser.next();
             parser.nextTag();
             parser.nextTag();
             parser.nextTag();
             parser.nextTag();
-            return extendedInformation;
-        } catch (IllegalArgumentException | ReflectiveOperationException | SecurityException e) {
-            throw new IOException(errorMessage("Deserialization of class 'org.ejbca.core.model.ra.ExtendedInformation' failed: "
-                    + e.getMessage()), e);
+            parser.nextTag();
+            pair.setLeft(parser.nextText());
+            parser.next();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.next();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            pair.setRight(parser.nextText());
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
         }
+        return pair;
     }
 
     /**
@@ -828,7 +809,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
                             throw new IOException(errorMessage("Method \"" + setterName + "\" could not be called."), e);
                         } catch (NoSuchMethodException e) {
-                            throwOrLog(errorMessage("No setter method \"" + setterName + "\" was found with parameter type " + ClassUtils.getShortClassName(value, "null")), e);
+                            throwOrLog(errorMessage("No setter method \"" + setterName + "\" was found with parameter type " + ClassUtils.getShortClassName(value, "null") + " in object " + obj), e);
                         }
                     }
                     storeObjectById(id, value);

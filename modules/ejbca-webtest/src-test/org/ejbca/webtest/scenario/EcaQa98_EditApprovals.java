@@ -66,6 +66,8 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         static final String END_ENTITY_NAME = "EcaQa98EE" + new Random().nextInt();
         static final String END_ENTITY_NAME_MODIFIED = END_ENTITY_NAME + "_Modified";
         static final String END_ENTITY_PASSWORD = "foo123";
+        static final String END_ENTITY_EMAIL = END_ENTITY_NAME + "email";
+        static final String END_ENTITY_EMAIL_DOMAIN =  "sampledomain.xx";
         static final String RA_PENDING_APPROVAL_TYPE = "Add End Entity";
         static final String RA_PENDING_APPROVAL_STATUS = "Waiting for Approval";
 
@@ -81,7 +83,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         static final String USER_NAME = "SeleniumRaAdmin";
         static final String USER_NAME1 = "SeleniumRaAdmin1";
         static final String ROLE_NAME = "SeleniumRaAdminRoleECAQA98";
-        static final String MATCH_WITH = "PublicAccessAuthenticationToken : Any transport (HTTP or HTTPS)";
+        static final String MATCH_WITH = "X509: CN, Common name";
         static final String APPROVE_MESSAGE_CANNOT_EDIT = "You have edited this request and cannot approve it";
         static final String APPROVE_MESSAGE_APPROVED_AND_EXECUTED = "This request has been approved and executed already";
     }
@@ -169,6 +171,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         addEndEntityHelperDefault.openPage(getAdminWebUrl());
         addEndEntityHelperDefault.setEndEntityProfile(TestData.END_ENTITY_PROFILE);
         addEndEntityHelperDefault.setCa(TestData.CA_NAME);
+        addEndEntityHelperDefault.fillFieldEmail(TestData.END_ENTITY_EMAIL, TestData.END_ENTITY_EMAIL_DOMAIN);
         addEndEntityHelperDefault.fillFields(TestData.INPUT_END_ENTITY_FIELDMAP);
         addEndEntityHelperDefault.addEndEntity();
         addEndEntityHelperDefault.assertEndEntityAlertMessageDisplayed();
@@ -196,6 +199,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         raWebHelperRaAdmin.triggerRequestReviewLinkFromRequestRow(approveRequestRow);
         raWebHelperRaAdmin.assertRequestApproveButtonExists();
         raWebHelperRaAdmin.assertRequestRejectButtonExists();
+        raWebHelperRaAdmin.assertEmailContent(TestData.END_ENTITY_EMAIL + "@" + TestData.END_ENTITY_EMAIL_DOMAIN);
         raWebHelperRaAdmin.triggerRequestEditLink();
         raWebHelperRaAdmin.fillManageRequestEditCommonName(TestData.END_ENTITY_NAME_MODIFIED);
         raWebHelperRaAdmin.triggerRequestEditSaveForm();

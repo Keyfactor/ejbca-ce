@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -29,6 +30,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -86,6 +89,11 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    
+
+    private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_KEYRECOVERY = {
+        new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest.class.getName(),null),        
+    };
     
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
@@ -200,12 +208,14 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
     
     @Override
-    public boolean addKeyRecoveryDataInternal(final AuthenticationToken admin, final CertificateWrapper certificateWrapper, final String username, final KeyPairWrapper keyPairWrapper,
-            final int cryptoTokenId, final String keyAlias) {
+    public boolean addKeyRecoveryDataInternal(final AuthenticationToken admin, final CertificateWrapper caCertificateWrapper,
+            final CertificateWrapper certificateWrapper, final String username, final KeyPairWrapper keyPairWrapper, final int cryptoTokenId,
+            final String keyAlias) {
         if (log.isTraceEnabled()) {
             log.trace(">addKeyRecoveryDataInternal(user: " + username + ")");
         }
         final Certificate certificate = EJBTools.unwrap(certificateWrapper);
+        final X509Certificate caCertificate = (X509Certificate) EJBTools.unwrap(caCertificateWrapper);
         final KeyPair keypair = EJBTools.unwrap(keyPairWrapper);
         final String certSerialNumber = CertTools.getSerialNumberAsString(certificate);
         boolean returnval = false;
@@ -213,7 +223,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
             final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
             
-            final byte[] encryptedKeyData = CryptoTools.encryptKeys(cryptoToken, keyAlias, keypair);
+            final byte[] encryptedKeyData = CryptoTools.encryptKeys(caCertificate, cryptoToken, keyAlias, keypair);
             entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
                             .getIssuerDN(certificate), username, encryptedKeyData, cryptoTokenId, keyAlias, publicKeyId));
             // same method to make hex serno as in KeyRecoveryDataBean
@@ -251,7 +261,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         final int caid = dn.hashCode();
         try {
             String username = null;
-        	org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByPK(entityManager, new KeyRecoveryDataPK(hexSerial, dn));
+        	org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = findByPK(new KeyRecoveryDataPK(hexSerial, dn));
         	if (krd == null) {
         		throw new FinderException();
         	}
@@ -277,7 +287,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             log.trace(">removeAllKeyRecoveryData(user: " + username + ")");
     	}
         try {
-        	Collection<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> result = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByUsername(entityManager, username);
+        	Collection<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> result = findByUsername(username);
             Iterator<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> iter = result.iterator();
             while (iter.hasNext()) {
             	entityManager.remove(iter.next());
@@ -303,7 +313,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         KeyRecoveryInformation returnval = null;
         X509Certificate certificate = null;
         if (authorizedToKeyRecover(admin, endEntityProfileId)) { 
-        	Collection<KeyRecoveryData> result = KeyRecoveryData.findByUserMark(entityManager, username);
+        	Collection<KeyRecoveryData> result = findByUserMark(username);
         	try {
         		String caidString = null;
         		String certSerialNumber = null;
@@ -312,11 +322,12 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         			if (returnval == null) {
         				final int caid = krd.getIssuerDN().hashCode();
         				caidString = String.valueOf(caid);
-        				final KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
-        						new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray(),
-        						        krd.getCryptoTokenId(), krd.getKeyAlias()));
-        				final KeyPair keys = response.getKeyPair();
         				certificate = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(krd.getIssuerDN(), krd.getCertificateSN());
+                        final KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
+                                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray(),
+                                        krd.getCryptoTokenId(), krd.getKeyAlias()));
+                        final KeyPair keys = response.getKeyPair();
+        				
         				returnval = new KeyRecoveryInformation(krd.getCertificateSN(), krd.getIssuerDN(),
         						krd.getUsername(), krd.getMarkedAsRecoverable(), keys, certificate);
                 		certSerialNumber = CertTools.getSerialNumberAsString(certificate);
@@ -346,12 +357,13 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
     
     @Override
-    public KeyRecoveryInformation recoverKeysInternal(final AuthenticationToken admin, final String username, final int cryptoTokenId, final String keyAlias) {
+    public KeyRecoveryInformation recoverKeysInternal(final AuthenticationToken admin, final String username, final int cryptoTokenId,
+            final String keyAlias, final X509Certificate caCertificate) {
         if (log.isTraceEnabled()) {
             log.trace(">recoverKeysInternal(user: " + username + ")");
         }
         KeyRecoveryInformation returnval = null;
-        Collection<KeyRecoveryData> result = KeyRecoveryData.findByUserMark(entityManager, username);
+        Collection<KeyRecoveryData> result = findByUserMark(username);
         try {
             String caidString = null;
             String certSerialNumber = null;
@@ -360,7 +372,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                 if (returnval == null) {
                     final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
                     final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
-                    final KeyPair keys = CryptoTools.decryptKeys(cryptoToken, keyAlias, krd.getKeyDataAsByteArray());
+                    final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(keyAlias), krd.getKeyDataAsByteArray());
                     returnval = new KeyRecoveryInformation(krd.getCertificateSN(), krd.getIssuerDN(),
                             krd.getUsername(), krd.getMarkedAsRecoverable(), keys, null);
                     certSerialNumber = krd.getCertificateSN().toString(16);
@@ -386,9 +398,27 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return returnval;
     }
 
-	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_KEYRECOVERY = {
-		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest.class.getName(),null),		
-	};
+
+    /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
+	@Override
+    public List<KeyRecoveryData> findByUserMark(final String usermark) {
+        List<KeyRecoveryData> ret = null;
+        try {
+            Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverableBool=TRUE");
+            query.setParameter("usermark", usermark);
+            ret = query.getResultList();
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug("If database does not support boolean (like Ingres) we would expect an Exception here. Trying to treat markedAsRecoverable as an Integer.", e);
+            }
+            Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverableInt=1");
+            query.setParameter("usermark", usermark);
+            ret = query.getResultList();
+        }
+        return ret;
+    }  
+	
 	
 	@Override
     public boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException, 
@@ -404,7 +434,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         if (!isUserMarked(username)) {
             String caidString = null;
             String certSerialNumber = null;
-        	final Collection<KeyRecoveryData> result = KeyRecoveryData.findByUsername(entityManager, username);
+        	final Collection<KeyRecoveryData> result = findByUsername(username);
     		for (final KeyRecoveryData krd : result) {
         		caidString = String.valueOf(krd.getIssuerDN().hashCode());
         		certificate = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(krd.getIssuerDN(), krd.getCertificateSN());
@@ -451,7 +481,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             log.trace(">markAsRecoverable(issuer: "+dn+"; certificatesn: " + hexSerial + ")");
     	}
         boolean returnval = false;
-    	org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByPK(entityManager, new KeyRecoveryDataPK(hexSerial, dn));
+    	org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = findByPK(new KeyRecoveryDataPK(hexSerial, dn));
         if (krd != null) {
             String username = krd.getUsername();
             // Check that the administrator is authorized to keyrecover
@@ -486,7 +516,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             log.trace(">markAsRecoverable(issuer: "+dn+"; certificatesn: " + hexSerial + ")");
         }
         boolean returnval = false;
-        org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByPK(entityManager, new KeyRecoveryDataPK(hexSerial, dn));
+        org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = findByPK(new KeyRecoveryDataPK(hexSerial, dn));
         if (krd != null) {
                 krd.setMarkedAsRecoverable(true);
                 int caid = krd.getIssuerDN().hashCode();
@@ -510,7 +540,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             log.trace(">unmarkUser(user: " + username + ")");
     	}
     	KeyRecoveryData krd = null;
-    	Collection<KeyRecoveryData> result = KeyRecoveryData.findByUserMark(entityManager, username);
+    	Collection<KeyRecoveryData> result = findByUserMark(username);
     	Iterator<KeyRecoveryData> i = result.iterator();
     	while (i.hasNext()) {
     		krd = i.next();
@@ -526,7 +556,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             log.trace(">isUserMarked(user: " + username + ")");
     	}
         boolean returnval = false;       
-        Collection<KeyRecoveryData> result = KeyRecoveryData.findByUserMark(entityManager, username);
+        Collection<KeyRecoveryData> result = findByUserMark(username);
         for(KeyRecoveryData krd : result) {
         	if (krd.getMarkedAsRecoverable()) {
         		returnval = true;
@@ -551,7 +581,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         boolean returnval = false;
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);
-    	KeyRecoveryData krd = KeyRecoveryData.findByPK(entityManager, new KeyRecoveryDataPK(hexSerial, dn));
+    	KeyRecoveryData krd = findByPK(new KeyRecoveryDataPK(hexSerial, dn));
     	if (krd != null) {
             log.debug("Found key for user: "+krd.getUsername());
             returnval = true;
@@ -561,4 +591,18 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     	}
         return returnval;
     }
+    
+    /** @return the found entity instance or null if the entity does not exist */
+    @Override
+    public KeyRecoveryData findByPK(final KeyRecoveryDataPK pk) {
+        return entityManager.find(KeyRecoveryData.class, pk);
+    }
+
+    /** @return return the query results as a List. */
+    @Override
+    public List<KeyRecoveryData> findByUsername(final String username) {
+        TypedQuery<KeyRecoveryData> query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:username", KeyRecoveryData.class);
+        query.setParameter("username", username);
+        return query.getResultList();
+    }  
 }

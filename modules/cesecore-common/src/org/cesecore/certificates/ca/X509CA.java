@@ -15,6 +15,7 @@ package org.cesecore.certificates.ca;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
@@ -181,5 +182,8 @@ public interface X509CA extends CA {
 
     void setRequestPreProcessor(final String preProcessorClass);
 
+    Map<String, List<String>> getAlternateCertificateChains();
+    
+    void setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains);
 
 }

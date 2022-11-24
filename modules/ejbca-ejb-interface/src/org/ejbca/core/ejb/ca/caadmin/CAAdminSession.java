@@ -124,6 +124,24 @@ public interface CAAdminSession {
                          String nextKeyAlias) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
 
     /**
+     * Receives a cross certificate chain for a CA
+     *
+     * @param authenticationToken The administrator performing the action
+     * @param caInfo              CAInfo of the certificate,
+     * @param responsemessage     X509ResponseMessage with the certificate issued to this CA
+     * @param caCertificateChain             an optional collection with the CA certificate(s), or null. If
+     *                            given the complete chain (except this CAs own certificate must
+     *                            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates.
+     * @throws AuthorizationDeniedException if the administrators isn't authorized
+     * @throws CertPathValidatorException   An exception indicating one of a variety of problems encountered when
+     *                                      validating a certification path.
+     * @throws EjbcaException               specific application exceptions thrown by EJBCA
+     * @throws CesecoreException            specific application exceptions thrown by EJBCA
+     */
+    void updateCrossCaCertificateChain(AuthenticationToken authenticationToken, CAInfo caInfo,
+            Collection<?> caCertificateChain) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
+
+    /**
      * Receives a certificate response from an external CA and sets the newly
      * created CAs status to active.
      *
@@ -175,6 +193,22 @@ public interface CAAdminSession {
      * @throws CertificateImportException   in the case the certificate was already imported or the provided certificates could not be used.
      */
     void importCACertificate(AuthenticationToken authenticationToken, String caName, Collection<CertificateWrapper> wrappedCerts)
+            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
+
+    /**
+     * Add an external CA's certificate and other custom CA attributes as a CA.
+     *
+     * @param authenticationToken The administrator performing the action
+     * @param caName              CA name.
+     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param caInfo              contains other custom CA fields including CA type in simplified format
+     * @throws AuthorizationDeniedException if the administrators isn't authorized
+     * @throws CAExistsException            if the CA already exists
+     * @throws IllegalCryptoTokenException  the certificate chain is incomplete
+     * @throws CertificateImportException   in the case the certificate was already imported or the provided certificates could not be used.
+     */
+    void importExternalCA(AuthenticationToken authenticationToken, String caName, 
+            Collection<CertificateWrapper> wrappedCerts, CAInfo caInfo)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
 
     /**

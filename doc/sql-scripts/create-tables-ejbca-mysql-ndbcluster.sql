@@ -50,7 +50,7 @@ CREATE TABLE ApprovalData (
     endEntityProfileId INT(11) NOT NULL,
     expireDate BIGINT(20) NOT NULL,
     remainingApprovals INT(11) NOT NULL,
-    subjectDn VARCHAR(250) BINARY,
+    subjectDn VARCHAR(400) BINARY,
     email VARCHAR(250) BINARY,
     reqAdminCertIssuerDn VARCHAR(250) BINARY,
     reqAdminCertSn VARCHAR(250) BINARY,
@@ -435,6 +435,10 @@ CREATE TABLE AcmeChallengeData (
 
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(250) BINARY NOT NULL,
+    identifier VARCHAR(250) BINARY,
+    identifierType VARCHAR(20) BINARY,
+    expires BIGINT(20),
+    status VARCHAR(20) BINARY,
     orderId VARCHAR(250) BINARY,
     accountId VARCHAR(250) BINARY NOT NULL,
     rawData LONGTEXT,

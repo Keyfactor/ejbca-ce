@@ -18,12 +18,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cesecore.util.IndexEnum;
+
 /**
  * An enum domain class representing all key validator base parameter options.
  *
  * @version $Id$
  */
-public enum KeyValidatorSettingsTemplate {
+public enum KeyValidatorSettingsTemplate implements IndexEnum {
 
     // @formatter:off
     USE_CERTIFICATE_PROFILE_SETTINGS(0, "VALIDATORSETTINGSTEMPLATE_USE_CP_SETTINGS"), 
@@ -97,5 +99,19 @@ public enum KeyValidatorSettingsTemplate {
             }
         }
         return result;
+    }
+
+    @Override
+    public int getIndex() {
+        return getOption();
+    }
+    
+    /**
+     * Retrieve an template settings from its index. Currently used in configdump.
+     * @param index the index of the template settings
+     * @return the corresponding template settings enum or null if not found
+     */
+    public static KeyValidatorSettingsTemplate fromIndex(final int index) {
+        return optionOf(index);
     }
 }
