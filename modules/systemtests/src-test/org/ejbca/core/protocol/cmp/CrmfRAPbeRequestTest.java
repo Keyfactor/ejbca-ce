@@ -589,7 +589,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             out.writeObject(revReq);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), new X500Name(userdata.getDN()), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false, approvalProfileName, false);
+            checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), new X500Name(userdata.getDN()), newCACert, nonce, transid, false,
+                    PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpRevokeConfirmMessage(cainfo.getSubjectDN(), new X500Name(userdata.getDN()), cert.getSerialNumber(), newCACert, resp, true);
             int reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
@@ -738,7 +739,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), SANTest);
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             // Check that validity override works
             assertEquals("'Not Before' should be limited by the CA not before date.", cacert.getNotBefore(), cert.getNotBefore());
@@ -770,7 +771,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), SANTest);
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
             // no extraCerts in Confirm Message
             respObject = PKIMessage.getInstance(resp);
@@ -788,7 +789,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), SANTest);
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, true);
             int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
@@ -808,7 +809,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), SANTest);
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, false);
             // no extraCerts in Revoke Response Message
             respObject = PKIMessage.getInstance(resp);
