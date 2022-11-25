@@ -51,7 +51,6 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.FailInfo;
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ConcurrentCache;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
@@ -62,7 +61,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
-import org.ejbca.core.protocol.cmp.CrmfRequestMessage;
 import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
@@ -374,8 +372,6 @@ public class CmpServlet extends HttpServlet {
         final String caname = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
         String passwd = null;
         CmpPbeVerifyer verifier;
-        CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
-                cmpConfiguration.getExtractUsernameComponent(alias));
         try {
             verifier = new CmpPbeVerifyer(pkiMessage);
         } catch (InvalidCmpProtectionException e) {
@@ -388,29 +384,14 @@ public class CmpServlet extends HttpServlet {
             //Is the secret specified in CA as an ra shared secret? (Formerly configured in cmpProxy.properties)
             if (passwd.isEmpty() || passwd.equals("-")) {
                 final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found in alias, "
-                        + "trying to fetch raSharedSecret from CA.";
+                        + "trying to get CMP RA Authentication Secret from CA.";
                 log.debug(logmsg);
-                List<CAInfo> cainfolist = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
-                for (CAInfo cainfo : cainfolist ) {
-                    if (cainfo.getName().equals(caname)) {
-                        X509CAInfo x509cainfo = (X509CAInfo)cainfo;
-                        passwd = x509cainfo.getCmpRaAuthSecret();
-                    }
-                }
+                passwd = getCmpRaAuthSecretForCa(caname);
             }
         } else {
-            // Client Mode
-            // Extract end entity username from specified DN part to get a user clear text password for authentication of the PKIMessage
-            // The password was formerly specified in cmpProxy.properties
-            String requestDN = crmfRequestMessage.getRequestDN();
-            String extractedUsername = CertTools.getPartFromDN(requestDN, cmpConfiguration.getExtractUsernameComponent(alias));
-            if (log.isDebugEnabled()) {
-                log.debug("Username ("+extractedUsername+") was extracted from the '" + cmpConfiguration.getExtractUsernameComponent(alias) + "' part of the subjectDN provided in the request.");
-            }
-            EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(authenticationToken, extractedUsername);
-            if (endEntityInformation!=null) {
-                passwd = endEntityInformation.getPassword();
-            }        
+            final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation not supported for Client Mode",
+                    messageInformation);
+            throw new CmpServletValidationError(errmsg);
         }
         if (passwd == null) {
             final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found.";
@@ -559,6 +540,20 @@ public class CmpServlet extends HttpServlet {
             }
         }
         return null;
+    }
+    
+    private String getCmpRaAuthSecretForCa(String caName) {
+        //Create method for this getCmpRaAuthSecretForCa
+        System.out.println("*************** secret fetching from CA in client mode");
+        String sharedSecret = null;
+        List<CAInfo> cainfolist = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
+        for (CAInfo cainfo : cainfolist ) {
+            if (cainfo.getName().equals(caName)) {
+                X509CAInfo x509cainfo = (X509CAInfo)cainfo;
+                sharedSecret = x509cainfo.getCmpRaAuthSecret();
+            }
+        }
+        return sharedSecret;
     }
 
 }
