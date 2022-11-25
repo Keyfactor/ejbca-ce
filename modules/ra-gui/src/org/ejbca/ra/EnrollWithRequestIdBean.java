@@ -42,7 +42,6 @@ import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
@@ -621,7 +620,8 @@ public class EnrollWithRequestIdBean implements Serializable {
         if (StringUtils.isAsciiPrintable(commonName)) {
             return StringTools.stripFilename(commonName);
         }
-        return Base64.encodeBase64String(commonName.getBytes());
+        return  org.apache.commons.lang3.StringUtils.stripAccents(commonName);
+
     }
 
     /** @return true if the the CSR has been uploaded */
