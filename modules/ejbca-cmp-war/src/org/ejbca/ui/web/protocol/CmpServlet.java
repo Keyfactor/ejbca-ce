@@ -543,8 +543,6 @@ public class CmpServlet extends HttpServlet {
     }
     
     private String getCmpRaAuthSecretForCa(String caName) {
-        //Create method for this getCmpRaAuthSecretForCa
-        System.out.println("*************** secret fetching from CA in client mode");
         String sharedSecret = null;
         List<CAInfo> cainfolist = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
         for (CAInfo cainfo : cainfolist ) {
