@@ -251,7 +251,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (cainfo != null) {
             return cainfo.getCertificateChain();
         } else {
-            return new ArrayList<Certificate>();
+            return new ArrayList<>();
         }
     }
 
@@ -469,7 +469,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         
         if(Objects.isNull(ca)) {
-            throw new CADoesntExistsException();
+            final String msg = intres.getLocalizedMessage("signsession.cadoesnotexists");
+            throw new CADoesntExistsException(msg);
         }
         
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
