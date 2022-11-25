@@ -468,7 +468,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             ca = (CA) caSession.getCANoLog(admin, suppliedUserData.getCAId(), null); // Take the CAId from the supplied userdata, if any
         }
         
-        if(Objects.isNull(ca)) {
+        if (Objects.isNull(ca)) {
             final String msg = intres.getLocalizedMessage("signsession.cadoesnotexists");
             throw new CADoesntExistsException(msg);
         }
