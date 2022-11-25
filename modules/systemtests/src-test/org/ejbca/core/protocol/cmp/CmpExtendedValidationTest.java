@@ -14,17 +14,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +44,6 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -215,10 +210,32 @@ public class CmpExtendedValidationTest extends CmpTestCase {
      * This test will verify that a signed message not containing the signing certificate as payload is rejected.
      */
     @Test
-    public void testRejectBadPayload() throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, IOException,
-            NoSuchAlgorithmException, InvalidKeyException, SignatureException, NoSuchProviderException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        log.trace(">testRejectBadPayload");
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectBadPayload");
+    public void testRejectMissingExtraCert() throws Exception {
+        log.trace(">testRejectMissingExtraCert");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+
+        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectMissingExtraCert");
+
+        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpFailMessage(resp, "Authentication failed for message. ExtraCerts field was blank, could not verify signature..", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+        log.trace("<testRejectMissingExtraCert");
+    }
+
+    /**
+     * This test will verify that a message containing a signature without extraCerts is rejected also when HMAC is configured.
+     */
+    @Test
+    public void testRejectMissingExtraCertButExpectingHmac() throws Exception {
+        log.trace(">testRejectSignedButExpectingHmac");
+        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectMissingExtraCertButExpectingHmac");
 
         final ArrayList<Certificate> signCertColl = new ArrayList<>();
         final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
@@ -229,7 +246,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         // "Authentication failed for message. ExtraCerts field was blank, could not verify signature. CMP message: pvno = 2, sender = 4: C=SE,O=PrimeKey,CN=testRejectBadPayload, recipient = 4: CN=TestCA, transactionID = #4d6a225ea14f011959948a9181f3a46a."
         checkCmpFailMessage(resp, "Protection algorithm id expected '1.2.840.113533.7.66.13' (passwordBasedMac) but was '1.2.840.113549.1.1.5'.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
-        log.trace("<testRejectBadPayload");
+        log.trace("<testRejectSignedButExpectingHmac");
     }
 
     @Test
@@ -354,9 +371,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, ISSUER_CA_NAME, incorrectPassword, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        // FIXME message from proxy was:
-        // "Pbe HMAC field was encountered, but HMAC did not verify correctly"
-        checkCmpFailMessage(resp, "Authentication failed for message. Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testRejectHmacProtectedMessage");
     }
@@ -388,6 +403,32 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         shouldBeRejected();
         log.trace("<testRejectSignedMessageWithWrongCertificate");
     }
+    
+    /**
+     * This test will verify that a message signed with an expired certificate is rejected
+     */
+    @Test
+    public void testMessageSignedByExpiredCertRejected() throws Exception {
+        log.trace(">testMessageSignedByExpiredCertRejected");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_ACTIVE, true);
+        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testMessageSignedByExpiredCertRejected");
+
+        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: Could not validate certificate: certificate expired on 19700101000012GMT+00:00.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+        log.trace("<testMessageSignedByExpiredCertRejected");
+    }
+
 
     // TODO Enable if we add support for multiple CAs. Otherwise it should be removed.
 //    /**
@@ -441,7 +482,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
-        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_REVOKED);
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_REVOKED, false);
         final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedByRevokedCertMessage");
 
         final ArrayList<Certificate> signCertColl = new ArrayList<>();
@@ -451,8 +492,6 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        // FIXME message from proxy was:
-        // "Failed to find CA certificate of the CMP message signing certificate. CMP message: pvno = 2, sender = 4: C=SE,O=PrimeKey,CN=testVerifySignedMessage, recipient = 4: CN=TestCA, transactionID = #ab677197b739684d876313afc80026c6"
         checkCmpFailMessage(resp, "Authentication failed for message. Signing certificate in CMP message was revoked.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testMessageSignedByRevokedCertRejected");
@@ -468,7 +507,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     /** Checks that the request was blocked  (and would NOT had been passed to the CA in a RA-CA setup) */
     private void shouldBeRejected() {
         checkCalled("isAuthorizedNoLogging"); // Always called. Sanity check.
-        //checkNotCalled("cmpDispatch"); // TODO enable when check has been added to CmpServlet
+        checkNotCalled("cmpDispatch");
     }
 
     private void checkCalled(final String methodName) {
@@ -489,15 +528,21 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     }
 
     private X509Certificate createSigningCertificate(final String issuerDn, final KeyPair signingKeyPair, final PrivateKey issuerKey) throws Exception {
-        return createSigningCertificate(issuerDn, SIGNINGCERT_EE, signingKeyPair, issuerKey, CertificateConstants.CERT_ACTIVE);
+        return createSigningCertificate(issuerDn, SIGNINGCERT_EE, signingKeyPair, issuerKey, CertificateConstants.CERT_ACTIVE, false);
     }
 
-    private X509Certificate createSigningCertificate(final String issuerDn, final String username, final KeyPair signingKeyPair, final PrivateKey issuerKey, final int certStatus) throws Exception {
+    private X509Certificate createSigningCertificate(final String issuerDn, final String username, final KeyPair signingKeyPair, final PrivateKey issuerKey, 
+            final int certStatus, boolean isExpired) throws Exception {
         // Create the signing certificate, signed by the ca certificate
         Date firstDate = new Date();
-        firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
         Date lastDate = new Date();
-        lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
+        if (isExpired) {
+            firstDate.setTime(10000);
+            lastDate.setTime(12000);
+        } else {
+            firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
+            lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
+        }
         byte[] serno = new byte[8];
         // This is a test, so randomness does not have to be secure (CSPRNG)
         Random random = new Random();
@@ -516,6 +561,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         grantAccessToCert(cert);
         return cert;
     }
+
 
     private void grantAccessToCert(final Certificate cert) throws Exception {
         roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);

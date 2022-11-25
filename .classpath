@@ -112,8 +112,6 @@
 	<classpathentry kind="src" path="modules/systemtests/src"/>
 	<classpathentry kind="src" path="modules/unidfnr/src-ejb"/>
 	<classpathentry kind="src" path="modules/va/src-war"/>
-	<classpathentry kind="src" path="modules/validationtool/src"/>
-	<classpathentry kind="src" path="modules/validationtool/test"/>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="modules/cits/src"/>
 	<classpathentry kind="src" path="modules/cits/src-test"/>
@@ -190,7 +188,6 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-cli-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>

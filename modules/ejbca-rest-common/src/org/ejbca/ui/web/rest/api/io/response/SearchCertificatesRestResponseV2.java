@@ -17,6 +17,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -107,7 +108,10 @@ public class SearchCertificatesRestResponseV2 {
 
     public static class SearchCertificatesRestResponseConverterV2 {
 
-        public SearchCertificatesRestResponseV2 toRestResponse(final RaCertificateSearchResponseV2 raCertificateSearchResponse, final Pagination pagination) throws CertificateEncodingException, CertificateParsingException {
+        public SearchCertificatesRestResponseV2 toRestResponse(
+                final RaCertificateSearchResponseV2 raCertificateSearchResponse, final Pagination pagination,
+                final Map<Integer, String> availableEndEntityProfiles,
+                final Map<Integer, String> availableCertificateProfiles) throws CertificateEncodingException, CertificateParsingException {
             final SearchCertificatesRestResponseV2 result = new SearchCertificatesRestResponseV2();
             final int count = raCertificateSearchResponse.getCdws().size();
             
@@ -155,7 +159,9 @@ public class SearchCertificatesRestResponseV2 {
                         .setFingerprint(CertTools.getFingerprintAsString(certificateBytes))
                         .setCAFingerprint(cd.getCaFingerprint())
                         .setCertificateProfileId(cd.getCertificateProfileId())
+                        .setCertificateProfile(availableCertificateProfiles.get(cd.getCertificateProfileId()))
                         .setEndEntityProfileId(cd.getEndEntityProfileId())
+                        .setEndEntityProfile(availableEndEntityProfiles.get(cd.getEndEntityProfileId()))
                         .setExpireDate(cd.getExpireDate())
                         .setIssuerDN(cd.getIssuerDN())
                         .setNotBefore(cd.getNotBefore())
