@@ -16,13 +16,12 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 
 /**
@@ -100,8 +99,8 @@ public class SearchCertificatesRestResponse {
     public static class SearchCertificatesRestResponseConverter {
 
         public SearchCertificatesRestResponse toRestResponse(final RaCertificateSearchResponse raCertificateSearchResponse, 
-                final CertificateProfileSession certificateProfileSession,
-                final EndEntityProfileSession endEntityProfileSession) throws CertificateEncodingException {
+                final Map<Integer, String> availableEndEntityProfiles,
+                final Map<Integer, String> availableCertificateProfiles) throws CertificateEncodingException {
             final SearchCertificatesRestResponse searchCertificatesRestResponse = new SearchCertificatesRestResponse();
             searchCertificatesRestResponse.setMoreResults(raCertificateSearchResponse.isMightHaveMoreResults());
             for(final CertificateDataWrapper certificateDataWrapper : raCertificateSearchResponse.getCdws()) {
@@ -116,11 +115,9 @@ public class SearchCertificatesRestResponse {
                     }
                     final CertificateRestResponse certificateRestResponse = 
                             responseBuilder.setSerialNumber(CertTools.getSerialNumberAsString(certificate))
-                            .setCertificateProfile(certificateProfileSession
-                                    .getCertificateProfileName(certificateDataWrapper.getCertificateData().getCertificateProfileId()))
-                            .setEndEntityProfile(endEntityProfileSession
-                                    .getEndEntityProfileName(certificateDataWrapper.getCertificateData().getEndEntityProfileId()))
-                            .build();
+                            .setCertificateProfile(availableCertificateProfiles.get(certificateDataWrapper.getCertificateData().getCertificateProfileId()))
+                            .setEndEntityProfile(availableEndEntityProfiles.get(certificateDataWrapper.getCertificateData().getEndEntityProfileId()))
+			    .build();
                     searchCertificatesRestResponse.getCertificates().add(certificateRestResponse);
                 }
             }

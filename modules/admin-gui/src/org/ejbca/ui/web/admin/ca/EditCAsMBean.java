@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
@@ -225,6 +226,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private UploadedFile fileRecieveFileMakeRequest;
     private UploadedFile fileRecieveFileRecieveRequest;
     private UploadedFile fileRecieveFileImportRenewal;
+    private boolean uploadAsAlternateChain;
+    private List<String> alternateChainRoots;
+    private Map<String, Boolean> removeAlternateCertChain;
 
     private String viewCertLink;
     private boolean hasLinkCertificate;
@@ -1753,6 +1757,61 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             return "";
         }
     }
+    
+    public boolean isUploadAsAlternateChain() {
+        return uploadAsAlternateChain;
+    }
+
+    public void setUploadAsAlternateChain(boolean uploadAsAlternateChain) {
+        this.uploadAsAlternateChain = uploadAsAlternateChain;
+    }
+    
+    public String escapeDnString(String subjectDn) {
+        try {
+            return URLEncoder.encode(subjectDn, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            // NOPMD
+            log.error("Error while encoding subjectDn: ", e);
+            return null;
+        }
+    }
+    
+    public List<String> getAlternateCertChains(){
+        if(alternateChainRoots!=null) {
+            return alternateChainRoots;
+        }
+        removeAlternateCertChain = new HashMap<>();
+        if(isEditCaAndCaTypeX509() && ((X509CAInfo)cainfo).getAlternateCertificateChains()!=null) {
+            alternateChainRoots = new ArrayList<>(caInfoDto.getAlternateCertificateChains().keySet());
+            for (String alias: alternateChainRoots) {
+                removeAlternateCertChain.put(alias, false);
+            }
+        } else {
+            alternateChainRoots = new ArrayList<>();
+        }
+        return alternateChainRoots;
+    }
+        
+    public Map<String, Boolean> getRemoveAlternateCertChain() {
+        return removeAlternateCertChain;
+    }
+
+    public void setRemoveAlternateCertChain(Map<String, Boolean> removeAlternateCertChain) {
+        this.removeAlternateCertChain = removeAlternateCertChain;
+    }
+
+    public void unlinkAlternateCertChains() {
+        for (Entry<String, Boolean> altChain: removeAlternateCertChain.entrySet()) {
+            if (altChain.getValue()) {
+                caInfoDto.getAlternateCertificateChains().remove(altChain.getKey());
+                alternateChainRoots.remove(altChain.getKey());
+            }
+        }
+    }
+    
+    public String getDownloadCertLink(){
+        return getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getCaPath() + "/cacert";
+    }
 
     /**
      * Receives a request (in editcas page) and navigates to managecas.xhtml page
@@ -1775,7 +1834,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 } catch (CADoesntExistsException | AuthorizationDeniedException e) {
                     log.warn("Failed to get CA notAfter and/or rollover date", e);
                 }
-                if (rolloverNotBefore != null) {
+                if (isUploadAsAlternateChain()) {
+                    addInfoMessage(getEjbcaWebBean().getText("CACROSSCHAINIMPORTED"));
+                } else if (rolloverNotBefore != null) {
                     addInfoMessage(getEjbcaWebBean().getText("CAROLLOVERPENDING") + getEjbcaWebBean().formatAsISO8601(rolloverNotBefore));
                 } else {
                     addInfoMessage(getEjbcaWebBean().getText("CAACTIVATED"));
@@ -1805,6 +1866,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
             if (certChain.size()==0) {
                 throw new IllegalArgumentException("No certificate(s) could be read.");
+            }
+            if (isUploadAsAlternateChain()) {
+                caAdminSession.updateCrossCaCertificateChain(administrator, cainfo, certChain);
+                return;
             }
             Certificate caCertificate = certChain.get(0);
             final X509ResponseMessage resmes = new X509ResponseMessage();
@@ -2287,7 +2352,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setDoPreProduceOcspResponses(x509cainfo.isDoPreProduceOcspResponses());
             caInfoDto.setDoStoreOcspResponsesOnDemand(x509cainfo.isDoStoreOcspResponsesOnDemand());
             caInfoDto.setMsCaCompatible(x509cainfo.isMsCaCompatible());
-
+            Map<String, List<String>> alternateChains = new HashMap<>();
+            if(x509cainfo.getAlternateCertificateChains()!=null) {
+                alternateChains.putAll(x509cainfo.getAlternateCertificateChains());
+            }
+            caInfoDto.setAlternateCertificateChains(alternateChains);
+            
             if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().isEmpty())) {
                 caInfoDto.setPolicyId(getEjbcaWebBean().getText("NONE"));
              } else {
