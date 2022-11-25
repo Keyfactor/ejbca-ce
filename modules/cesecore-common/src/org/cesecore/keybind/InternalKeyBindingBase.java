@@ -179,7 +179,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     /** Replace existing postfix or generate add a new one (using current time with millisecond granularity). */
     private String getNewAlias(final String oldAlias) {
         final Matcher matcherMs = DATE_FORMAT_PATTERN_MS.matcher(oldAlias);
-        final String newPostFix = "_" + DATE_FORMAT_MS.format(new Date());
+        final String newPostFix = "-" + DATE_FORMAT_MS.format(new Date());
         // Check if the key alias postfix is in EJBCA 6.2.4+ format
         if (matcherMs.find()) {
             // Replace postfix in millisecond format
