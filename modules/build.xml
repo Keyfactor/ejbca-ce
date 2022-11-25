@@ -539,7 +539,7 @@
 		<ant antfile="${mod.plugins.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common" if="${mod.plugins-ee.exists}">
+	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common, plugins" if="${mod.plugins-ee.exists}">
 		<ant antfile="${mod.plugins-ee.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
