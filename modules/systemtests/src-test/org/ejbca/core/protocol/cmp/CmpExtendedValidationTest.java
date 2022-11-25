@@ -371,7 +371,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, ISSUER_CA_NAME, incorrectPassword, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpFailMessage(resp, "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Authentication failed for message. Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testRejectHmacProtectedMessage");
     }
