@@ -250,7 +250,7 @@ public class OCSPServlet extends HttpServlet {
                 byte[] requestBytes = checkAndGetRequestBytes(request, httpMethod);
                 X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
                 ocspResponseInformation = integratedOcspResponseGeneratorSession.getOcspResponse(
-                        requestBytes, requestCertificates, remoteAddress, xForwardedFor, requestUrl, auditLogger, transactionLogger, false, false);
+                        requestBytes, requestCertificates, remoteAddress, xForwardedFor, requestUrl, auditLogger, transactionLogger, false, false, false);
             } catch (MalformedRequestException e) {
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
