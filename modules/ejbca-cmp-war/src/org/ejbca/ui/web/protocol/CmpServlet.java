@@ -80,6 +80,7 @@ public class CmpServlet extends HttpServlet {
     private AuthenticationToken authenticationToken;
 
     private ConcurrentCache<String, X509Certificate> extraCertIssuerCache = new ConcurrentCache<String, X509Certificate>();
+    private ConcurrentCache<Integer, X509Certificate> extraCertIssuerCacheByCaId = new ConcurrentCache<Integer, X509Certificate>();
     private ConcurrentCache<BigInteger, Boolean> revocationStatusCache = new ConcurrentCache<BigInteger, Boolean>(); // 'true' value=>certificate OK => certificate NOT revoked.
 
     @EJB
@@ -161,8 +162,7 @@ public class CmpServlet extends HttpServlet {
                 }
                 if (config.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
                     try {
-                        final String issuerCaName = config.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, alias);
-                        validateMessageSignature(pkiMessage, messageInformation, issuerCaName);
+                        validateMessageSignature(pkiMessage, messageInformation, config, alias);
                     } catch (CmpServletValidationError cmpServletValidationError) {
                         byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(),
                                 FailInfo.BAD_REQUEST, cmpServletValidationError.getMessage()).getResponseMessage();
@@ -266,7 +266,7 @@ public class CmpServlet extends HttpServlet {
      * CmpProxyServlet.assertMessageSignature()
      *
      */
-    private void validateMessageSignature(final PKIMessage pkimsg, String messageInformation, final String issuerCaName) throws CmpServletValidationError {
+    private void validateMessageSignature(final PKIMessage pkimsg, String messageInformation, final CmpConfiguration cmpConfig, final String alias) throws CmpServletValidationError {
         final PKIHeader header = pkimsg.getHeader();
         AlgorithmIdentifier protectionAlgorithm = header.getProtectionAlg();
         Signature sig;
@@ -295,14 +295,16 @@ public class CmpServlet extends HttpServlet {
                 log.info(msg + " " + messageInformation);
                 throw new CmpServletValidationError(msg);
             }
+            X509Certificate extraCertIssuerCertificate;
+            if (cmpConfig.getRAMode(alias)) {
+                final String issuerCaName = cmpConfig.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, alias);
+                extraCertIssuerCertificate = getIssuerCertificate(issuerCaName, messageInformation);
+            } else {
+                final String issuerCaSubjectDn = CertTools.getIssuerDN(extraCertificate);
+                extraCertIssuerCertificate = getIssuerCertificateByCaId(issuerCaSubjectDn, messageInformation);
+            }
             // - verifying the certificate in extraCerts, with the chain configured in the cmp alias
             // - verifying the PKIProtection, using a PKIXPathValidator so both certificate signatures and validity is verified
-            X509Certificate extraCertIssuerCertificate = getIssuerCertificate(issuerCaName);
-            if (extraCertIssuerCertificate == null) {
-                String msg = intres.getLocalizedMessage("Failed to find Issuer CA " + issuerCaName);
-                log.info(msg + " " + messageInformation);
-                throw new CmpServletValidationError(msg);
-            }
             Collection<X509Certificate> caCertificateChain = Collections.singleton(extraCertIssuerCertificate);
 
             try {
@@ -327,14 +329,12 @@ public class CmpServlet extends HttpServlet {
                     log.info(msg);
                     throw new CmpServletValidationError(msg);
                 }
-                // - if verification is successful, put message in External RA database (i.e. continue from this point on)
             } catch (InvalidKeyException | SignatureException e) {
                 String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Signature defined in CMP message could not be initialized. " + messageInformation, e);
                 log.info(msg);
                 throw new CmpServletValidationError(msg);
             }
         } else {
-            // We've ended up here if HMAC or Signature were specified, but neither fulfilled.
             String msg = intres.getLocalizedMessage("cmp.errorauthmessage",
                     "CMP Message Protection verification failed. Server is configured for "
                             +  "Signature validation. " + "Algorithm with ID ("
@@ -441,9 +441,9 @@ public class CmpServlet extends HttpServlet {
         return pkimsg;
     }
 
-    private X509Certificate getIssuerCertificate(final String subjectDN) {
+    private X509Certificate getIssuerCertificate(final String caName, String messageInformation) throws CmpServletValidationError {
 
-        ConcurrentCache<String, X509Certificate>.Entry cacertEntry = extraCertIssuerCache.openCacheEntry(subjectDN, CACHE_TIMEOUT); // should never time out, unless a very small (< 100ms) timeout is used
+        ConcurrentCache<String, X509Certificate>.Entry cacertEntry = extraCertIssuerCache.openCacheEntry(caName, CACHE_TIMEOUT); // should never time out, unless a very small (< 100ms) timeout is used
         if (cacertEntry == null) {
             String msg = "Timed out waiting other thread to fetch certificate issuer's certificate from cache";
             log.info(msg);
@@ -453,15 +453,15 @@ public class CmpServlet extends HttpServlet {
             // If the CA cert is in the cache, use that CA cert
             if ((cacertEntry != null) && (cacertEntry.isInCache())) {
                 X509Certificate cacert = cacertEntry.getValue();
-                log.info("Found CA certificate with SubjectDN " + subjectDN + " in the cache");
+                log.info("Found CA certificate with CaName " + caName + " in the cache");
                 return cacert;
             }
             if (log.isDebugEnabled()) {
-                log.debug("Did not find CA certificate with SubjectDN " + subjectDN + " in the cache. Asking from RaMasterApi");
+                log.debug("Did not find CA certificate with CaName " + caName + " in the cache. Asking from RaMasterApi");
             }
 
             try {
-                Collection<CertificateWrapper> lastCaChain = raMasterApiProxyBean.getLastCaChain(authenticationToken, subjectDN);
+                Collection<CertificateWrapper> lastCaChain = raMasterApiProxyBean.getLastCaChain(authenticationToken, caName);
                 X509Certificate cacert = (X509Certificate) lastCaChain.iterator().next().getCertificate();
                 if (cacertEntry != null) { // put the CA cert in the cache
                     cacertEntry.putValue(cacert);
@@ -469,7 +469,7 @@ public class CmpServlet extends HttpServlet {
                     return cacert;
                 }
             } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-                String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA name: " + subjectDN;
+                String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA name: " + caName;
                 if (log.isDebugEnabled()) {
                     log.debug(msg + " - " + e.getLocalizedMessage());
                 }
@@ -480,7 +480,54 @@ public class CmpServlet extends HttpServlet {
                 cacertEntry.close();
             }
         }
-        return null;
+
+        String msg = intres.getLocalizedMessage("Failed to find Issuer CA " + caName);
+        log.info(msg + " " + messageInformation);
+        throw new CmpServletValidationError(msg);
+    }
+
+    private X509Certificate getIssuerCertificateByCaId(final String caSubjectDn, String messageInformation) throws CmpServletValidationError {
+        final int caId = caSubjectDn.hashCode();
+        ConcurrentCache<Integer, X509Certificate>.Entry cacertEntry = extraCertIssuerCacheByCaId.openCacheEntry(caId, CACHE_TIMEOUT); // should never time out, unless a very small (< 100ms) timeout is used
+        if (cacertEntry == null) {
+            String msg = "Timed out waiting other thread to fetch certificate issuer's certificate from cache";
+            log.info(msg);
+        }
+
+        try {
+            // If the CA cert is in the cache, use that CA cert
+            if ((cacertEntry != null) && (cacertEntry.isInCache())) {
+                X509Certificate cacert = cacertEntry.getValue();
+                log.info("Found CA certificate with subject dn " + caSubjectDn + " in the cache");
+                return cacert;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Did not find CA certificate with subject dn " + caSubjectDn + " in the cache. Asking from RaMasterApi");
+            }
+
+            try {
+                Collection<CertificateWrapper> lastCaChain = raMasterApiProxyBean.getCertificateChain(authenticationToken, caId);
+                X509Certificate cacert = (X509Certificate) lastCaChain.iterator().next().getCertificate();
+                if (cacertEntry != null) { // put the CA cert in the cache
+                    cacertEntry.putValue(cacert);
+                    cacertEntry.setCacheValidity(CERTIFICATE_CACHE_VALIDITY);
+                    return cacert;
+                }
+            } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+                String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: " + caSubjectDn;
+                if (log.isDebugEnabled()) {
+                    log.debug(msg + " - " + e.getLocalizedMessage());
+                }
+            }
+
+        } finally {
+            if (cacertEntry != null) {
+                cacertEntry.close();
+            }
+        }
+        String msg = intres.getLocalizedMessage("Failed to find Issuer CA " + caSubjectDn);
+        log.info(msg + " " + messageInformation);
+        throw new CmpServletValidationError(msg);
     }
 
 }
