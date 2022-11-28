@@ -121,13 +121,13 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** Certificate to be in certificate response message, not serialized */
     private transient Certificate cert = null;
     /** The CA certificate to be included in the response message to be used to verify the end entity certificate */
-    private transient List<Certificate> cacert = new ArrayList<Certificate>();
+    private transient List<Certificate> cacert = new ArrayList<>();
     /** Include the signing CA certificate at index 0 in the caPubs field. */
     private transient boolean includeCaCert = true;
     /** Certificate for the signer of the response message (CA) */
     private transient Collection<Certificate> signCertChain = null;
     /** Additions CA certificate for the outer PKI response message extraCerts field. */
-    private transient Collection<Certificate> extraCerts = new ArrayList<Certificate>();
+    private transient Collection<Certificate> extraCerts = new ArrayList<>();
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
     /** The request message this response is for */
@@ -316,15 +316,20 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                             
                             // Add the user certificates signing CA certificate (at index 0) and the others by the CMP configuration to the CMP 
                             // response 'caPubs' field (added previously to the response with CertificateResponseMessage.addAdditionalCaCertificates().
-                            final List<CMPCertificate> caPubs = new ArrayList<CMPCertificate>();
+                            final List<CMPCertificate> caPubs = new ArrayList<>();
                             for (Certificate certificate : this.cacert) {
                                 try (ASN1InputStream stream = new ASN1InputStream(new ByteArrayInputStream(certificate.getEncoded()));) {
                                     caPubs.add(CMPCertificate.getInstance(stream.readObject()));
                                 }
                             }
 
-                            final CertRepMessage myCertRepMessage = new CertRepMessage(caPubs.size() > 0 ? caPubs.toArray( new CMPCertificate[] {}) : null, certResponses);
-                            int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+                            final CertRepMessage myCertRepMessage = new CertRepMessage(!caPubs.isEmpty() ? caPubs.toArray( new CMPCertificate[] {}) : null, certResponses);
+                            int respType = PKIBody.TYPE_INIT_REQ;
+                            if(requestType == PKIBody.TYPE_P10_CERT_REQ) { // For P10Cr requests, response should be certificate response
+                                respType = PKIBody.TYPE_CERT_REP;
+                            } else {
+                                respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+                            }
                             if (log.isDebugEnabled()) {
                                 log.debug("Creating response body of type " + respType);
                             }
@@ -401,7 +406,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                     myPKIHeader.setSenderKID(CertTools.getSubjectKeyId(signCert));
                 }
                 PKIHeader header = myPKIHeader.build();
-                final Collection<Certificate> extraCertsList = new ArrayList<Certificate>(signCertChain);
+                final Collection<Certificate> extraCertsList = new ArrayList<>(signCertChain);
                 for (Certificate extraCert : extraCerts) {
                     if (log.isDebugEnabled()) {
                         log.debug("Adding extraCerts to Signature protected message: " + extraCerts.size());
@@ -416,22 +421,10 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             
             ret = true;
             
-        } catch (CertificateEncodingException e) {
-            log.error("Error creating CertRepMessage: ", e);
-        } catch (InvalidKeyException e) {
-            log.error("Error creating CertRepMessage: ", e);
-        } catch (NoSuchProviderException e) {
-            log.error("Error creating CertRepMessage: ", e);
-        } catch (NoSuchAlgorithmException e) {
-            log.error("Error creating CertRepMessage: ", e);
-        } catch (SecurityException e) {
-            log.error("Error creating CertRepMessage: ", e);
-        } catch (SignatureException e) {
-            log.error("Error creating CertRepMessage: ", e);
-        } catch (CRMFException e) {
+        } catch (CertificateEncodingException | InvalidKeyException | NoSuchProviderException | NoSuchAlgorithmException | SecurityException
+                | SignatureException | CRMFException e) {
             log.error("Error creating CertRepMessage: ", e);
         }
-
         return ret;
     }
 
