@@ -173,8 +173,8 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     }
 
     private static final SimpleDateFormat DATE_FORMAT_MS = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-    private static final Pattern DATE_FORMAT_PATTERN = Pattern.compile("_\\d{8}\\d{6}$");
-    private static final Pattern DATE_FORMAT_PATTERN_MS = Pattern.compile("_\\d{8}\\d{9}$");
+    private static final Pattern DATE_FORMAT_PATTERN = Pattern.compile("[_-]\\d{8}\\d{6}$");
+    private static final Pattern DATE_FORMAT_PATTERN_MS = Pattern.compile("[_-]\\d{8}\\d{9}$");
     
     /** Replace existing postfix or generate add a new one (using current time with millisecond granularity). */
     private String getNewAlias(final String oldAlias) {
