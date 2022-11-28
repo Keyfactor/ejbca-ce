@@ -17,7 +17,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -26,8 +25,6 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -38,8 +35,6 @@ import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OutputStream;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.InfoTypeAndValue;
 import org.bouncycastle.asn1.cmp.PKIBody;
@@ -94,8 +89,6 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
     private int requestType = 0;
     private int requestId = 0;
-    private String b64SenderNonce = null;
-    private String b64TransId = null;
     /** Default CA DN */
     private String defaultCADN = null;
     private boolean allowRaVerifyPopo = false;
@@ -193,34 +186,14 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             // No public key, which may be OK if we are requesting server generated keys
             return null;
         }
-        final PublicKey pk = getPublicKey(keyInfo, BouncyCastleProvider.PROVIDER_NAME);
-        return pk;
+        return getPublicKey(keyInfo, BouncyCastleProvider.PROVIDER_NAME);
     }
 
     @Override
     public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
         final CertRequest request = getReq().getCertReq();
         final CertTemplate templ = request.getCertTemplate();
-        final SubjectPublicKeyInfo keyInfo = templ.getPublicKey();
-        return keyInfo;
-    }
-
-    private PublicKey getPublicKey(final SubjectPublicKeyInfo subjectPKInfo, final String provider) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeyException {
-        // If there is no public key here, but only an empty bit string, it means we have called for server generated keys
-        // i.e. no public key to see here...
-        if (subjectPKInfo.getPublicKeyData().equals(DERNull.INSTANCE)) {
-            return null;
-        }
-        try {
-            final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
-            final AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithm();
-            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
-        } catch (InvalidKeySpecException | IOException e) {
-            final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
-            newe.initCause(e);
-            throw newe;
-        }
+        return templ.getPublicKey();
     }
 
     @Override
@@ -586,24 +559,6 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     @Override
     public String getErrorText() {
         return null;
-    }
-
-    public void setSenderNonce(final String b64nonce) {
-        this.b64SenderNonce = b64nonce;
-    }
-
-    @Override
-    public String getSenderNonce() {
-        return b64SenderNonce;
-    }
-
-    public void setTransactionId(final String b64transid) {
-        this.b64TransId = b64transid;
-    }
-
-    @Override
-    public String getTransactionId() {
-        return b64TransId;
     }
 
     @Override

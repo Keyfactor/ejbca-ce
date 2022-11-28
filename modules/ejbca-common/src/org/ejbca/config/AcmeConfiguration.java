@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -45,7 +46,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     protected static final InternalResources intres = InternalResources.getInstance();
     
-    protected static final float LATEST_VERSION = 10;
+    protected static final float LATEST_VERSION = 11;
     
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
@@ -80,6 +81,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
     private static final String KEY_APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
     private static final String KEY_CLIENT_AUTHENTICATION_REQUIRED = "clientAuthenticationRequired";
+    private static final String KEY_PREFERRED_ROOT_CA_SUBJECTDN = "preferredrootcasubjectdn";
 
     private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.RANDOM;
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
@@ -104,6 +106,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public static final int DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID = -1;
     public static final int DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID = -1;
     private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
+    public static final String DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN = "default";
 
     public AcmeConfiguration() {}
 
@@ -125,6 +128,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // v10. Added client authentication required.
             if (data.get(KEY_CLIENT_AUTHENTICATION_REQUIRED) == null) {
                 data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED));
+            }
+            if (data.get(KEY_PREFERRED_ROOT_CA_SUBJECTDN) == null) {
+                data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, String.valueOf(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN));
             }
             // v9. Added DNS identifier chaleenge Types selection.
             if (data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES) == null) {
@@ -587,6 +593,20 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(required));
     }
     
+    public String getPreferredRootCaSubjectDn() {
+        String value = (String) data.get(KEY_PREFERRED_ROOT_CA_SUBJECTDN);
+        if (StringUtils.isBlank(value)) {
+            data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN);
+            return DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN;
+        } else {
+            return value;
+        }
+    }
+    
+    public void setPreferredRootCaSubjectDn(String preferredRootCaSubjectDn) {
+        data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, preferredRootCaSubjectDn);
+    }
+    
     /** Initializes a new acme configuration with default values. */
     public void initialize(String alias) {
         alias += ".";
@@ -619,5 +639,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
         setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
         setClientAuthenticationRequired(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED);
+        setPreferredRootCaSubjectDn(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN);
     }
 }
