@@ -32,6 +32,7 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -254,6 +255,36 @@ public class AuthenticationModulesTest extends CmpTestCase {
         log.trace("<test01HMACModule()");
     }
 
+    
+    @Test
+    public void test02HMACModulePc10Cr() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException,
+            InvalidAlgorithmParameterException, CADoesntExistsException, AuthorizationDeniedException, OperatorCreationException {
+        log.trace(">test02HMACModulePc10Cr()");
+
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        assertFalse("this.caid is 0", (this.caid == 0));
+        assertNotNull("this.cacert is null", this.cacert);
+        PKIMessage msg = genP10CrCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null,false);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        // Using the CMP RA Authentication secret
+        PKIMessage req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
+        assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
+
+        HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", ALIAS, this.cmpConfiguration, this.caSession.getCAInfo(ADMIN,
+                this.caid), this.eeAccessSession);
+        boolean ret = hmac.verifyOrExtract(req, null);
+        assertTrue("Authentication using HMAC faied", ret);
+        assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
+        assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
+
+        log.trace("<test02HMACModulePc10Cr()");
+    }
+    
+    
     @Test
     public void test03HMACCrmfReq() throws Exception {
 
