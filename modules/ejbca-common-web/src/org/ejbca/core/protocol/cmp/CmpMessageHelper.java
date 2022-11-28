@@ -114,6 +114,13 @@ public class CmpMessageHelper {
     private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
     public static final int MAX_LEVEL_OF_NESTING = 15;
 
+    // Default values for passwordBasedMac message protection
+    public static final int DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT = 1024;
+
+    // Default values for PBMAC1 message protection, from https://github.com/siemens/LightweightCmpRa/tree/main/doc/config
+    public static final int DEFAULT_PBMAC1_ITERATION_COUNT = 10000;
+    public static final int DEFAULT_PBMAC1_DERIVED_KEY_LENGTH = 4096;
+
     /** Array that converts our error codes from FailInfo to CMP BITString error codes. FailInfo use plain integer codes, which are
      * the same as positions in the CMP bit string
      * @see org.bouncycastle.asn1.cmp.PKIFailureInfo
