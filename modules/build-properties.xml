@@ -104,10 +104,6 @@
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
-    <property name="mod.validationtool.dist" location="${ejbca.dist.path}/validationtool" />
-    <property name="mod.validationtool.srcdist" location="${ejbca.dist.path}/validationtool-src" />
-    <property name="mod.validationtool.lib" location="${mod.validationtool.dist}/ValidationTool.jar" />
-    <property name="mod.validationtool.path" location="${mod.path}/validationtool" />
     <property name="mod.cmpHttpProxy.dist" location="${ejbca.dist.path}/cmpHttpProxy" />
     <property name="mod.cmpProxy.path" location="${mod.path}/cmpProxy" />
     <property name="mod.externalra.path" location="${mod.path}/externalra" />
@@ -362,6 +358,11 @@
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.adsddl.classpath"><fileset dir="${ejbca.home}/lib" includes="adsddl-*.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
+	<path id="lib.kerb4j.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb4j-server-common-*.jar"/></path>
+	<path id="lib.kerb.core.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-core-*.jar"/></path> 
+	<path id="lib.kerby.asn1.classpath"><fileset dir="${ejbca.home}/lib" includes="kerby-asn1-*.jar"/></path> 
+	<path id="lib.kerb.crypto.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-crypto-*.jar"/></path> 
+
 	<path id="lib.xmlpull.classpath">
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xpp3_min-*.jar"/>

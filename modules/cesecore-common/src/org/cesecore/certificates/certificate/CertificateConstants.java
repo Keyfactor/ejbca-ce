@@ -71,6 +71,8 @@ public final class CertificateConstants {
     public static final int CERTTYPE_SSH        =     0xa;
     /** Certificate belongs to an ITS user */
     public static final int CERTTYPE_ITS        =     0xc;
+    /** Certificate belongs to an CA cross chain. These are not loaded in CaCertificateCache. */
+    public static final int CERTTYPE_CROSS_CA_CHAIN   =     0xf0;
     
     // Certificate types used to create certificates
     /** Certificate used for encryption. */

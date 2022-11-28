@@ -24,6 +24,7 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -93,7 +94,9 @@ public class CaInfoDto {
     private String crlCaOverlapTime;
     private String crlCaDeltaCrlPeriod;
     private boolean generateCrlUponRevocation = false;
+    private boolean allowChangingRevocationReason = false;
     private String requestPreProcessor;
+    private Map<String, List<String>> alternateCertificateChains;
     
     //cits
     private String certificateId;
@@ -664,12 +667,28 @@ public class CaInfoDto {
         generateCrlUponRevocation = generate;
     }
 
+    public boolean isAllowChangingRevocationReason() {
+        return allowChangingRevocationReason;
+    }
+
+    public void setAllowChangingRevocationReason(boolean allowChangingRevocationReason) {
+        this.allowChangingRevocationReason = allowChangingRevocationReason;
+    }
+
     public String getRequestPreProcessor() {
         return requestPreProcessor;
     }
 
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
+    }
+    
+    public Map<String, List<String>> getAlternateCertificateChains() {
+        return alternateCertificateChains;
+    }
+
+    public void setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains) {
+        this.alternateCertificateChains = alternateCertificateChains;
     }
 
     private void resetUseCrlPartitionsSettings() {
