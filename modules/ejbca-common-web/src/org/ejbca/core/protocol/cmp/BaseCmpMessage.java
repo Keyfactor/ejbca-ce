@@ -57,16 +57,16 @@ public abstract class BaseCmpMessage implements Serializable {
 	// pbe parameters
 	private String pbeDigestAlg = null;
 	private String pbeMacAlg = null;
-	private int pbeIterationCount = 1024;
+	private int pbeIterationCount = CmpMessageHelper.DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT;
 	private String pbeKeyId = null;
 	private String pbeKey = null;
 	// pbmac1 parameters
 	private String pbmac1PrfAlg = null;
 	private String pbmac1MacAlg = null;
-	private int pbmac1IterationCount = 10000;
+	private int pbmac1IterationCount = CmpMessageHelper.DEFAULT_PBMAC1_ITERATION_COUNT;
 	private String pbmac1KeyId = null;
 	private String pbmac1Key = null;
-	private int pbmac1DkLen = 4096;
+	private int pbmac1DkLen = CmpMessageHelper.DEFAULT_PBMAC1_DERIVED_KEY_LENGTH;
 
 	private List<Certificate> additionalCaCertificates = new ArrayList<>();
 	private boolean includeCaCert = true; // True because backward compatibility.

@@ -99,7 +99,7 @@ public class CmpPbmac1Verifyer implements CmpMessageProtectionVerifyer {
 	 * @throws NoSuchAlgorithmException if the algorithm for the Owf or the MAC weren't found
 	 * @throws CMPException if an exception occurs while verifying the MAC
 	 */
-	public boolean verify(String raAuthenticationSecret) throws InvalidKeyException, NoSuchAlgorithmException, CMPException {
+	public boolean verify(final String raAuthenticationSecret) throws InvalidKeyException, NoSuchAlgorithmException, CMPException {
 	    if (raAuthenticationSecret == null) {
             throw new IllegalArgumentException("RA authentication secret is null.");
 	    }
