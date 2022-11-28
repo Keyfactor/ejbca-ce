@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -61,6 +62,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
+import org.ejbca.core.protocol.cmp.CrmfRequestMessage;
 import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
@@ -369,7 +371,6 @@ public class CmpServlet extends HttpServlet {
      */
     private void validateMAC(PKIMessage pkiMessage, String alias, CmpConfiguration cmpConfiguration, String messageInformation) throws CmpServletValidationError{
         final boolean raMode = cmpConfiguration.getRAMode(alias);
-        final String caname = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
         String passwd = null;
         CmpPbeVerifyer verifier;
         try {
@@ -379,18 +380,26 @@ public class CmpServlet extends HttpServlet {
             throw new IllegalStateException(e);
         }
         if (raMode) {
-            //Ra Mode. Is the secret specified in the cmp alias? (Formerly specified in cmpProxy.properties)
-            passwd = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);
-            //Is the secret specified in CA as an ra shared secret? (Formerly configured in cmpProxy.properties)
-            if (passwd.isEmpty() || passwd.equals("-")) {
-                final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found in alias, "
-                        + "trying to get CMP RA Authentication Secret from CA.";
-                log.debug(logmsg);
-                passwd = getCmpRaAuthSecretForCa(caname);
+            //Ra Mode.
+            //The secret should be specified in CA as a cmp ra shared secret. (Formerly configured in cmpProxy.properties)
+            if (pkiMessage.getBody().getType() == PKIBody.TYPE_CERT_REQ) {
+                CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
+                        cmpConfiguration.getExtractUsernameComponent(alias));
+                String caDN = crmfRequestMessage.getIssuerDN();
+                List<CAInfo> cainfolist = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
+                for (CAInfo cainfo : cainfolist ) {
+                    if (cainfo.getSubjectDN().equals(caDN)) {
+                        X509CAInfo x509cainfo = (X509CAInfo)cainfo;
+                        passwd = x509cainfo.getCmpRaAuthSecret();
+                    }
+                }
+            } else {
+                final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation not supported for CMP format: ",
+                        pkiMessage.getBody().getType());
+                throw new CmpServletValidationError(errmsg);
             }
         } else {
-            final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation not supported for Client Mode",
-                    messageInformation);
+            final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation not supported for Client Mode");
             throw new CmpServletValidationError(errmsg);
         }
         if (passwd == null) {
