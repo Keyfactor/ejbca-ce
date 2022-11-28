@@ -314,37 +314,13 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         log.trace("<testVerifySignedMessageWithHmacEnabled");
     }
 
-    
     /**
-     * This test will verify that a message protected by HMAC will pass when secret is specified in alias
-     */
-    @Test
-    public void testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret() throws Exception {
-        log.trace(">testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
-        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(ALIAS, PBEPASSWORD);
-        cmpConfiguration.setRAMode(ALIAS, true);
-        cmpConfiguration.setResponseProtection(ALIAS, "signature");
-        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
-        final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
-        final PKIMessage req = genCertReq(userDn);
-        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
-        // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
-        shouldBeAccepted();
-        log.trace("<testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
-    }
-
-    /**
-     * This test will verify that a message protected by HMAC wil pass when ra shared secret is used
+     * This test will verify that a message protected by HMAC will pass when ca cmp ra shared secret is used
      */
     @Test
     public void testVerifyHmacProtectedMessageRaModeCaRaSharedSecret() throws Exception {
         log.trace(">testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(ALIAS, "");
         cmpConfiguration.setRAMode(ALIAS, true);
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
