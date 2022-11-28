@@ -59,8 +59,14 @@ public class SshCertificateUtils {
     public static String[] parsePrincipalsAndComment(String subjectAlternateName) {
         String comment = "";
         String principals = "";
-        if(StringUtils.isNotBlank(subjectAlternateName)) {
+        if(StringUtils.isNotBlank(subjectAlternateName) && subjectAlternateName.startsWith("dnsName=")) {
             subjectAlternateName = subjectAlternateName.substring("dnsName=".length());
+            if (subjectAlternateName.indexOf("rfc822Name=")!=-1) {
+                subjectAlternateName = subjectAlternateName.substring(0, subjectAlternateName.indexOf("rfc822Name=")-1);
+            }
+            if(StringUtils.isBlank(subjectAlternateName)) {
+                return new String[] {principals, comment};
+            }
             int commentIndex = subjectAlternateName.indexOf(SshEndEntityProfileFields.SSH_CERTIFICATE_COMMENT);
             if(commentIndex!=0) { // no principal
                 if(commentIndex==-1) {
@@ -87,7 +93,8 @@ public class SshCertificateUtils {
      * @return SSH subject AN text field formatted for storage
      */
     public static String createSanForStorage(SshCertificate sshCertificate) {
-        return createSanForStorage(sshCertificate.getPrincipals(), sshCertificate.getComment());
+        return createSanForStorage(sshCertificate.getPrincipals(), sshCertificate.getComment(), 
+                sshCertificate.getCriticalOptions().get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP));
     }
     
     /**
@@ -96,7 +103,7 @@ public class SshCertificateUtils {
      * @param comment
      * @return SSH subject AN text field formatted for storage
      */
-    public static String createSanForStorage(List<String> principals, String comment) {
+    public static String createSanForStorage(List<String> principals, String comment, String sourceAddress) {
         StringBuilder placeHolderSan = new StringBuilder();
         if(principals!=null && !principals.isEmpty()) {
             placeHolderSan.append(SshEndEntityProfileFields.SSH_PRINCIPAL + ":");
@@ -115,9 +122,15 @@ public class SshCertificateUtils {
         
         String placeHolderSanString = placeHolderSan.toString();
         if(StringUtils.isNotBlank(placeHolderSanString)) {
-            return "dnsName=" + placeHolderSanString;
+            placeHolderSanString = "dnsName=" + placeHolderSanString;
         }
-        return "";
+        if(StringUtils.isNotBlank(sourceAddress)) {
+            if(StringUtils.isNotBlank(placeHolderSanString)) {
+                placeHolderSanString += ",";
+            }
+            placeHolderSanString += "rfc822Name=" + sourceAddress.replaceAll(",", ":");
+        }
+        return placeHolderSanString;
     }
 
     /**
@@ -126,8 +139,8 @@ public class SshCertificateUtils {
      * @param comment
      * @return SSH subject AN text field formatted for storage
      */
-    public static String createSanForStorage(final String principalString, final String comment) {
-        return createSanForStorage(Arrays.asList(principalString.split(":")), comment);
+    public static String createSanForStorage(final String principalString, final String comment, String sourceAddress) {
+        return createSanForStorage(Arrays.asList(principalString.split(":")), comment, sourceAddress);
     }
 
 }
