@@ -138,18 +138,18 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private transient int requestId;
 
     // pbe parameters
-    private transient int pbeIterationCount = 1024;
+    private transient int pbeIterationCount = CmpMessageHelper.DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT;
     private transient String pbeDigestAlg = null;
     private transient String pbeMacAlg = null;
     private transient String pbeKeyId = null;
     private transient String pbeKey = null;
     // pbmac1 parameters
-	private transient String pbmac1PrfAlg = null;
-	private transient String pbmac1MacAlg = null;
-	private transient int pbmac1IterationCount = 10000;
-	private transient String pbmac1KeyId = null;
-	private transient String pbmac1Key = null;
-	private transient int pbmac1DkLen = 4096;
+    private transient String pbmac1PrfAlg = null;
+    private transient String pbmac1MacAlg = null;
+    private transient int pbmac1IterationCount = CmpMessageHelper.DEFAULT_PBMAC1_ITERATION_COUNT;
+    private transient String pbmac1KeyId = null;
+    private transient String pbmac1Key = null;
+    private transient int pbmac1DkLen = CmpMessageHelper.DEFAULT_PBMAC1_DERIVED_KEY_LENGTH;
 
     private transient boolean implicitConfirm = false;
     private transient CertificateData certificateData;
@@ -411,7 +411,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 if (!extraCerts.isEmpty()) {
                     extraCertsList = getExtraCertsList();
                     if (log.isDebugEnabled()) {
-                        log.debug("Adding extraCerts to PBE protected message: " + extraCerts.size());
+                        log.debug("Adding extraCerts to PBMAC1 protected message: " + extraCerts.size());
                     }
                 }
                 myPKIMessage = new PKIMessage(header, myPKIBody, null, extraCertsList);
@@ -448,17 +448,13 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     private CMPCertificate[] getExtraCertsList() throws CertificateEncodingException {
-        if (extraCerts.isEmpty()) {
-            return new CMPCertificate[0];
-        } else {
-            final CMPCertificate[] returnList = new CMPCertificate[extraCerts.size()];
-            int i = 0;
-            for (Certificate cert : extraCerts) {
-                returnList[i] = CMPCertificate.getInstance(((X509Certificate) cert).getEncoded());
-                i++;
-            }
-            return returnList;
+        final CMPCertificate[] returnList = new CMPCertificate[extraCerts.size()];
+        int i = 0;
+        for (Certificate cert : extraCerts) {
+            returnList[i] = CMPCertificate.getInstance(((X509Certificate) cert).getEncoded());
+            i++;
         }
+        return returnList;
     }
 
     @Override
