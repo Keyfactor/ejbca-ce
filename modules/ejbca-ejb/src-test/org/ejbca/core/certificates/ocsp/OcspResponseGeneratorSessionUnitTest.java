@@ -318,8 +318,8 @@ public class OcspResponseGeneratorSessionUnitTest {
     }
 
     @Test
-    public void getOCSPResponseWichExistingMsCompatibleCA() throws Exception {
-        log.trace(">getOCSPResponseWichExistingMsCompatibleCA");
+    public void getOCSPResponseWithExistingMsCompatibleCA() throws Exception {
+        log.trace(">getOCSPResponseWithExistingMsCompatibleCA");
         OcspDataConfigCache.INSTANCE.setCaModeCompatiblePresent(true);
         OcspDataConfigCache.INSTANCE.stagingCommit();
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
@@ -331,7 +331,7 @@ public class OcspResponseGeneratorSessionUnitTest {
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock, ocspDataSessionMock);
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertGoodResponse(respInfo);
-        log.trace("<getOCSPResponseWichExistingMsCompatibleCA");
+        log.trace("<getOCSPResponseWithExistingMsCompatibleCA");
     }
 
     @Test(expected = MalformedRequestException.class)
@@ -375,7 +375,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     
     @Test
     public void zzza_basicCachedRequestWithPresigning() throws Exception {
-        log.trace(">basicRequest");
+        log.trace(">zzza_basicCachedRequestWithPresigning");
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
@@ -386,12 +386,12 @@ public class OcspResponseGeneratorSessionUnitTest {
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false, false);
         assertGoodResponse(respInfo);
         verify(ocspDataSessionMock);
-        log.trace("<basicRequest");
+        log.trace("<zzza_basicCachedRequestWithPresigning");
     }
     
     @Test
     public void zzzb_basicCachedRequestWithPresigningExpiredCert() throws Exception {
-        log.trace(">basicRequest");
+        log.trace(">zzzb_basicCachedRequestWithPresigningExpiredCert");
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         status.setExpirationDate(System.currentTimeMillis() - 3600 * 1000); // expired
@@ -402,7 +402,25 @@ public class OcspResponseGeneratorSessionUnitTest {
         prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false, false);
         assertNull(respInfo);
-        log.trace("<basicRequest");
+        log.trace("<zzzb_basicCachedRequestWithPresigningExpiredCert");
+    }
+
+    @Test
+    public void zzzc_basicCachedRequestWithPresigningExpiredCertIncluded() throws Exception {
+        log.trace(">zzzc_basicCachedRequestWithPresigningExpiredCertIncluded");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
+        expectLoggerChecks();
+        status.setExpirationDate(System.currentTimeMillis() - 3600 * 1000); // expired
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+
+        setupOcspResponseCache();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false, true);
+
+        assertNotNull("If presigning and includeExpiredCerts selected, a response should be returned.", respInfo);
+        assertGoodResponse(respInfo);
+        log.trace("<zzzc_basicCachedRequestWithPresigningExpiredCertIncluded");
     }
 
     @Test
