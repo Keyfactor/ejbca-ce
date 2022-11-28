@@ -382,7 +382,7 @@ public class CmpServlet extends HttpServlet {
         if (raMode) {
             //Ra Mode.
             //The secret should be specified in CA as a cmp ra shared secret. (Formerly configured in cmpProxy.properties)
-            if (pkiMessage.getBody().getType() == PKIBody.TYPE_CERT_REQ) {
+            if (pkiMessage.getBody().getType() == PKIBody.TYPE_INIT_REQ) {
                 CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
                         cmpConfiguration.getExtractUsernameComponent(alias));
                 String caDN = crmfRequestMessage.getIssuerDN();
@@ -394,7 +394,7 @@ public class CmpServlet extends HttpServlet {
                     }
                 }
             } else {
-                final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation not supported for CMP format: ",
+                final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation only supported for Initial Requests. Type is: ",
                         pkiMessage.getBody().getType());
                 throw new CmpServletValidationError(errmsg);
             }
@@ -550,17 +550,4 @@ public class CmpServlet extends HttpServlet {
         }
         return null;
     }
-    
-    private String getCmpRaAuthSecretForCa(String caName) {
-        String sharedSecret = null;
-        List<CAInfo> cainfolist = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
-        for (CAInfo cainfo : cainfolist ) {
-            if (cainfo.getName().equals(caName)) {
-                X509CAInfo x509cainfo = (X509CAInfo)cainfo;
-                sharedSecret = x509cainfo.getCmpRaAuthSecret();
-            }
-        }
-        return sharedSecret;
-    }
-
 }
