@@ -516,16 +516,18 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         Collection<CertificateWrapper> wrappedCertificates = certificateStoreSession.findCertificatesByUsername(username);
         Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(wrappedCertificates);
         int approvedRevocations = 0;
-        for(Certificate cert : userCerts) {
+        for (Certificate cert : userCerts) {
             String issuerDN = CertTools.getIssuerDN(cert);
             BigInteger serialNumber = CertTools.getSerialNumber(cert);
             boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);
             if ((reason != RevokedCertInfo.NOT_REVOKED && !isRevoked) || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked)) {
                 int approvalID;
                 if (approvalType == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
-                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuerDN, approvalProfile.getProfileName());
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuerDN,
+                            approvalProfile.getProfileName(), null);
                 } else {
-                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null, approvalProfile.getProfileName());
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null,
+                            approvalProfile.getProfileName(), null);
                 }
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
@@ -533,6 +535,48 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                         "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
                 if (queryResults.size() > 0) {
                     ApprovalDataVO approvalData = queryResults.get(0);
+                    Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
+                    approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
+                    approvalData = approvalSession.findApprovalDataVO(approvalID).iterator().next();
+                    Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
+                    CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
+                    Assert.assertEquals(status.revocationReason, reason);
+                    approvalSession.removeApprovalRequest(internalAdmin, approvalData.getId());
+                    approvedRevocations++;
+                }
+            }
+        }
+        return approvedRevocations;
+    }
+    
+    protected int approveRevocationWithBackDate(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason,
+            int approvalType, int approvalCAID, final ApprovalProfile approvalProfile, final int sequenceId, final int partitionId, final int endEntityProfileId,
+            Date backDatedRevocationDate) throws Exception {
+        log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
+                + " approvalCAID=" + approvalCAID + " revocationDate=" + backDatedRevocationDate);
+        Collection<CertificateWrapper> wrappedCertificates = certificateStoreSession.findCertificatesByUsername(username);
+        Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(wrappedCertificates);
+        int approvedRevocations = 0;
+        for (Certificate cert : userCerts) {
+            String issuerDN = CertTools.getIssuerDN(cert);
+            BigInteger serialNumber = CertTools.getSerialNumber(cert);
+            boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);
+            if ((reason != RevokedCertInfo.NOT_REVOKED && !isRevoked) || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked)
+                    || reason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE && isRevoked) {
+                int approvalID;
+                if (approvalType == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuerDN,
+                            approvalProfile.getProfileName(), backDatedRevocationDate);
+                } else {
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null,
+                            approvalProfile.getProfileName(), backDatedRevocationDate);
+                }
+                Query q = new Query(Query.TYPE_APPROVALQUERY);
+                q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
+                List<ApprovalDataVO> queryResults = approvalSessionProxyRemote.query(q, 0, 1, "cAId=" + approvalCAID,
+                        "(endEntityProfileId=" + endEntityProfileId + ")");
+                if (!queryResults.isEmpty()) {
+                    ApprovalDataVO approvalData;
                     Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
                     approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
                     approvalData = approvalSession.findApprovalDataVO(approvalID).iterator().next();
