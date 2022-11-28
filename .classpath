@@ -80,7 +80,7 @@
 	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
-    <classpathentry kind="src" path="modules/msae/src"/>
+	<classpathentry kind="src" path="modules/msae/src"/>
 	<classpathentry kind="src" path="modules/p11ng/src"/>
 	<classpathentry kind="src" path="modules/p11ng/src-test"/>
 	<classpathentry kind="src" path="modules/p11ng-cli/src"/>
