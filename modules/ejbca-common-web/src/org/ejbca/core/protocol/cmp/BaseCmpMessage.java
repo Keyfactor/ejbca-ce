@@ -15,16 +15,27 @@ package org.ejbca.core.protocol.cmp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.util.Base64;
 
 /**
@@ -57,10 +68,10 @@ public abstract class BaseCmpMessage implements Serializable {
 	private String pbmac1Key = null;
 	private int pbmac1DkLen = 4096;
 
-	private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
+	private List<Certificate> additionalCaCertificates = new ArrayList<>();
 	private boolean includeCaCert = true; // True because backward compatibility.
 	
-	private List<Certificate> additionalExtraCerts = new ArrayList<Certificate>();
+	private List<Certificate> additionalExtraCerts = new ArrayList<>();
 	
 	/** @return the ASN.1 encoded octets as a bas64 encoded String or null if no such data is available */
 	protected String getBase64FromAsn1OctetString(final ASN1OctetString asn1OctetString) {
@@ -246,4 +257,23 @@ public abstract class BaseCmpMessage implements Serializable {
     public void setAdditionalExtraCertsCertificates(final List<Certificate> certificates) {
         this.additionalExtraCerts = certificates;
     }
+
+    protected PublicKey getPublicKey(final SubjectPublicKeyInfo subjectPKInfo, final String provider)
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+        // If there is no public key here, but only an empty bit string, it means we have called for server generated keys
+        // i.e. no public key to see here...
+        if (subjectPKInfo.getPublicKeyData().equals(DERNull.INSTANCE)) {
+            return null;
+        }
+        try {
+            final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
+            final AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithm();
+            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
+        } catch (InvalidKeySpecException | IOException e) {
+            final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
+            newe.initCause(e);
+            throw newe;
+        }
+    }
+    
 }

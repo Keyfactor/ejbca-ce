@@ -1909,22 +1909,28 @@ public abstract class CertTools {
     public static X509Certificate genSelfCertForPurpose(String dn, Date firstDate, Date lastDate, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
             List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
+        return genCertForPurpose(dn, dn, firstDate, lastDate, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, ldapOrder, additionalExtensions);
+    }
+    
+    public static X509Certificate genCertForPurpose(String subjectDn, String issuerDn, Date firstDate, Date lastDate, String policyId, PrivateKey issuerPrivKey, PublicKey entityPubKey,
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
+            List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
         // Transform the PublicKey to be sure we have it in a format that the X509 certificate generator handles, it might be
         // a CVC public key that is passed as parameter
         PublicKey publicKey = null;
-        if (pubKey instanceof RSAPublicKey) {
-            RSAPublicKey rsapk = (RSAPublicKey) pubKey;
+        if (entityPubKey instanceof RSAPublicKey) {
+            RSAPublicKey rsapk = (RSAPublicKey) entityPubKey;
             RSAPublicKeySpec rSAPublicKeySpec = new RSAPublicKeySpec(rsapk.getModulus(), rsapk.getPublicExponent());
             try {
                 publicKey = KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating RSAPublicKey from spec: ", e);
-                publicKey = pubKey;
+                publicKey = entityPubKey;
             } catch (NoSuchAlgorithmException e) {
                 throw new IllegalStateException("RSA was not a known algorithm", e);
             }
-        } else if (pubKey instanceof ECPublicKey) {
-            ECPublicKey ecpk = (ECPublicKey) pubKey;
+        } else if (entityPubKey instanceof ECPublicKey) {
+            ECPublicKey ecpk = (ECPublicKey) entityPubKey;
             try {
                 ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
                 final String algo = ecpk.getAlgorithm();
@@ -1949,14 +1955,14 @@ public abstract class CertTools {
                 }
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating ECPublicKey from spec: ", e);
-                publicKey = pubKey;
+                publicKey = entityPubKey;
             } catch (NullPointerException e) {
                 log.debug("NullPointerException, probably it is implicitlyCA generated keys: " + e.getMessage());
-                publicKey = pubKey;
+                publicKey = entityPubKey;
             }
         } else {
-            log.debug("Not converting key of class. " + pubKey.getClass().getName());
-            publicKey = pubKey;
+            log.debug("Not converting key of class. " + entityPubKey.getClass().getName());
+            publicKey = entityPubKey;
         }
 
         // Serial number is random bits
@@ -1970,8 +1976,8 @@ public abstract class CertTools {
         random.nextBytes(serno);
 
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn, ldapOrder), new BigInteger(serno).abs(),
-                firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(issuerDn, ldapOrder), new BigInteger(serno).abs(),
+                firstDate, lastDate, CertTools.stringToBcX500Name(subjectDn, ldapOrder), pkinfo);
 
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
@@ -2018,7 +2024,7 @@ public abstract class CertTools {
                 certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
             }
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(privKey), 20480);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(issuerPrivKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate selfcert;
         try {

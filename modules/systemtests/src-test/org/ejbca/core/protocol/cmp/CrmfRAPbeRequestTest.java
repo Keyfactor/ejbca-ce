@@ -696,10 +696,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                 int approvalID;
                 if (approvalType == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
                     approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuer, 
-                            approvalProfile.getProfileName());
+                            approvalProfile.getProfileName(), null);
                 } else {
                     approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null, 
-                            approvalProfile.getProfileName());
+                            approvalProfile.getProfileName(), null);
                 }
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));

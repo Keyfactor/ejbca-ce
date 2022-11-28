@@ -780,6 +780,44 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return searchResponse;
     }
+    
+    @Override
+    public List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash) {
+        List<CertificateWrapper> searchResponse = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.getApiVersion() >= 15) {
+                        searchResponse = raMasterApi.searchForCertificateChainWithPreferredRoot(authenticationToken, fingerprint, rootSubjectDnHash);
+                        if (searchResponse != null) {
+                            break;
+                        }
+                    } else if (raMasterApi.getApiVersion() >= 10) {
+                        searchResponse = raMasterApi.searchForCertificateChain(authenticationToken, fingerprint);
+                        if (searchResponse != null) {
+                            break;
+                        }
+                    } else {
+                        searchResponse = new ArrayList<>();
+                        do {
+                            CertificateDataWrapper cdw = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
+                            searchResponse.add(cdw);
+                            if (cdw != null && !cdw.getCertificateData().getCaFingerprint().equals(cdw.getCertificateData().getFingerprint())) {
+                                fingerprint = cdw.getCertificateData().getCaFingerprint();
+                            } else {
+                                fingerprint = null;
+                            }
+
+                        } while (fingerprint != null);
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return searchResponse;
+    }
 
     @Override
     public CertificateDataWrapper searchForCertificateByIssuerAndSerial(final AuthenticationToken authenticationToken, final String issuerDN, final String serNo) {

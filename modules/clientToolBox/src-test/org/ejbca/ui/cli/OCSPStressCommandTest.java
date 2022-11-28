@@ -68,6 +68,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -91,6 +92,9 @@ import static org.junit.Assert.assertNotNull;
  */
 public class OCSPStressCommandTest {
     Ocsp command = new Ocsp();
+
+    @Rule
+    public Timeout testTimeout = new Timeout(60_000); // per test case
 
     private static final String END_ENTITY_PROFILE_NAME = "OCSPStressCommandTestEEP";
     private static final String CA_NAME = "OCSPStressCommandTestCA";
