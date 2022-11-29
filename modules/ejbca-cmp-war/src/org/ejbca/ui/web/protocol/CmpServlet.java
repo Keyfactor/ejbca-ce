@@ -589,6 +589,7 @@ public class CmpServlet extends HttpServlet {
         }
         return null;
     }
+    /*
     private String getCaSecretFromCaUsingCaName(final String caName){
         List<CAInfo> cainfolist = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
         for (CAInfo cainfo : cainfolist ) {
@@ -610,4 +611,5 @@ public class CmpServlet extends HttpServlet {
         }
         return null;
      }
+     */
 }
