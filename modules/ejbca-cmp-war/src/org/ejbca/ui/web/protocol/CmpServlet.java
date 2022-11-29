@@ -56,7 +56,9 @@ import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
@@ -397,14 +399,14 @@ public class CmpServlet extends HttpServlet {
                     caName = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
                     passwd = getCaSecretFromCaUsingCaName(caName);
                     //If not from sender KID, try RA CA Name configuration in alias to get Ca and secret... 
-                } else if(cmpConfiguration.getRACAName(alias) != null) {
+                } else if(!cmpConfiguration.getRACAName(alias).equals(CmpConfiguration.PROFILE_DEFAULT)) {
                     caName = cmpConfiguration.getRACAName(alias);
                     passwd = getCaSecretFromCaUsingCaName(caName);
                 } else {
                     //Finally, try to get ca from end entity profile and get secret
-                    final String profile = cmpConfiguration.getRAEEProfile(alias);
+                    final String profile = cmpIdNameHashMap.getRAEEProfile(alias);
                     IdNameHashMap<EndEntityProfile> eeplist = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY);
-                    KeyToValueHolder<EndEntityProfile> holder = eeplist.get(profile);
+                    KeyToValueHolder<EndEntityProfile> holder = eeplist.get(Integer.valueOf(profile));
                     EndEntityProfile eep = holder.getValue();
                     if (eep != null) {
                         int caid = eep.getDefaultCA();
