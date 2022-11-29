@@ -41,17 +41,29 @@ public interface ICrmfRequestMessage extends RequestMessage {
 	String getPbeKey();
 
     // pbmac1 parameters
-	String getPbmac1PrfAlg();
+	default String getPbmac1PrfAlg() {
+        return null;
+    }
 
-	String getPbmac1Key();
+	default String getPbmac1Key() {
+        return null;
+    }
 
-	String getPbmac1KeyId();
+	default String getPbmac1KeyId() {
+        return null;
+    }
 
-	String getPbmac1MacAlg();
+	default String getPbmac1MacAlg() {
+        return null;
+    }
 
-	int getPbmac1IterationCount();
+	default int getPbmac1IterationCount() {
+        return 0;
+    }
 
-	int getPbmac1DkLen();
+	default int getPbmac1DkLen() {
+        return 0;
+    }
 	
 	/**
 	 * RFC4210 section 5.1.1.1

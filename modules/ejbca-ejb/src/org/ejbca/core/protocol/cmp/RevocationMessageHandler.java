@@ -262,7 +262,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 				final CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
 				final String owfAlg = pbeVerifyer.getOwfOid();
 				final String macAlg = pbeVerifyer.getMacOid();
-				final int iterationCount = 1024;
+				final int iterationCount = CmpMessageHelper.DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT;
 				final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
 				
 				if (owfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
@@ -276,8 +276,8 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 				final CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
 				final String prfAlg = pbmac1Verifyer.getPrfOid();
 				final String macAlg = pbmac1Verifyer.getMacOid();
-				final int iterationCount = 10000;
-				final int dkLen = 4096;
+				final int iterationCount = CmpMessageHelper.DEFAULT_PBMAC1_ITERATION_COUNT;
+				final int dkLen = CmpMessageHelper.DEFAULT_PBMAC1_DERIVED_KEY_LENGTH;
 				final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
 				if (prfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
 					// Set protection parameters
