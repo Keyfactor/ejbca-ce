@@ -57,7 +57,7 @@ public class OcspConfiguration {
     public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
     public static final String REVOKED_UNTIL_NEXT_UPDATE = "ocsp.revoked.untilNextUpdate";
     public static final String MAX_AGE = "ocsp.maxAge";
-    public static final String CACHE_HEADER_MAX_AGE = "ocsp.cache.maxAge";
+    public static final String CACHE_HEADER_MAX_AGE = "ocsp.expires.useMaxAge";
     public static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
