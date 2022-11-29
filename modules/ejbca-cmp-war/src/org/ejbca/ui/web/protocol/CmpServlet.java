@@ -26,13 +26,11 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 import javax.ejb.EJB;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
@@ -58,11 +56,7 @@ import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.era.IdNameHashMap;
-import org.ejbca.core.model.era.KeyToValueHolder;
-import org.ejbca.core.model.era.RaEndEntityProfileResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
@@ -71,7 +65,7 @@ import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
-import org.ejbca.ui.web.rest.api.io.response.EndEntityProfileResponse;
+
 
 /**
  * Servlet implementing server side of the Certificate Management Protocols (CMP)
