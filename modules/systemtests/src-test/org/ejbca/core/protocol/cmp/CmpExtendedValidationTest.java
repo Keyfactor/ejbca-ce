@@ -330,11 +330,34 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), caRaSharedSecret, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
     }
+    
+    /**
+     * This test will verify that a message protected by HMAC will pass when secret is specified in alias
+     */
+    @Test
+    public void testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret() throws Exception {
+        log.trace(">testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, PBEPASSWORD);
+        cmpConfiguration.setRAMode(ALIAS, true);
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
+        final PKIMessage req = genCertReq(userDn);
+        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+        log.trace("<testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
+    }
+
     
     /**
      * This test will verify that a message protected by HMAC is rejected if passwords don't match
