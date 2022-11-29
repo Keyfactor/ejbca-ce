@@ -404,7 +404,7 @@ public class CmpServlet extends HttpServlet {
                     passwd = getCaSecretFromCaUsingCaName(caName);
                 } else {
                     //Finally, try to get ca from end entity profile and get secret
-                    final String profile = cmpIdNameHashMap.getRAEEProfile(alias);
+                    final String profile = cmpConfiguration.getRAEEProfile(alias);
                     IdNameHashMap<EndEntityProfile> eeplist = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY);
                     KeyToValueHolder<EndEntityProfile> holder = eeplist.get(Integer.valueOf(profile));
                     EndEntityProfile eep = holder.getValue();
