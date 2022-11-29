@@ -236,30 +236,6 @@ public class UnidFnrHandlerTest {
 		public String getPbeKey() {
 			return null;
 		}
-		@Override
-		public String getPbmac1PrfAlg() {
-			return null;
-		}
-		@Override
-		public String getPbmac1MacAlg() {
-			return null;
-		}
-		@Override
-		public String getPbmac1Key() {
-			return null;
-		}
-		@Override
-		public int getPbmac1IterationCount() {
-			return 0;
-		}
-		@Override
-		public int getPbmac1DkLen() {
-			return 0;
-		}
-		@Override
-		public String getPbmac1KeyId() {
-			return null;
-		}
         @Override
         public boolean isImplicitConfirm() {
             return false;
