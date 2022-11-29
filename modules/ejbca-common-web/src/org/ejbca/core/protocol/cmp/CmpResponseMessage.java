@@ -450,8 +450,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private CMPCertificate[] getExtraCertsList() throws CertificateEncodingException {
         final CMPCertificate[] returnList = new CMPCertificate[extraCerts.size()];
         int i = 0;
-        for (Certificate cert : extraCerts) {
-            returnList[i] = CMPCertificate.getInstance(((X509Certificate) cert).getEncoded());
+        for (Certificate c : extraCerts) {
+            returnList[i] = CMPCertificate.getInstance(((X509Certificate) c).getEncoded());
             i++;
         }
         return returnList;
@@ -509,22 +509,20 @@ public class CmpResponseMessage implements CertificateResponseMessage {
 
     @Override
     public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
-        if (reqMsg instanceof ICrmfRequestMessage) {
-            ICrmfRequestMessage crmf = (ICrmfRequestMessage) reqMsg;
-            this.reqMsg = crmf;
-            this.pbeIterationCount = crmf.getPbeIterationCount();
-            this.pbeDigestAlg = crmf.getPbeDigestAlg();
-            this.pbeMacAlg = crmf.getPbeMacAlg();
-            this.pbeKeyId = crmf.getPbeKeyId();
-            this.pbeKey = crmf.getPbeKey();
-            this.pbmac1IterationCount = crmf.getPbmac1IterationCount();
-            this.pbmac1PrfAlg = crmf.getPbmac1PrfAlg();
-            this.pbmac1MacAlg = crmf.getPbmac1MacAlg();
-            this.pbmac1DkLen = crmf.getPbmac1DkLen();
-            this.pbmac1KeyId = crmf.getPbmac1KeyId();
-            this.pbmac1Key = crmf.getPbmac1Key();
-            this.implicitConfirm = crmf.isImplicitConfirm();
-        }
+        ICrmfRequestMessage crmf = (ICrmfRequestMessage) reqMsg;
+        this.reqMsg = crmf;
+        this.pbeIterationCount = crmf.getPbeIterationCount();
+        this.pbeDigestAlg = crmf.getPbeDigestAlg();
+        this.pbeMacAlg = crmf.getPbeMacAlg();
+        this.pbeKeyId = crmf.getPbeKeyId();
+        this.pbeKey = crmf.getPbeKey();
+        this.pbmac1IterationCount = crmf.getPbmac1IterationCount();
+        this.pbmac1PrfAlg = crmf.getPbmac1PrfAlg();
+        this.pbmac1MacAlg = crmf.getPbmac1MacAlg();
+        this.pbmac1DkLen = crmf.getPbmac1DkLen();
+        this.pbmac1KeyId = crmf.getPbmac1KeyId();
+        this.pbmac1Key = crmf.getPbmac1Key();
+        this.implicitConfirm = crmf.isImplicitConfirm();
     }
 
     @Override
