@@ -321,6 +321,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     public void testVerifyHmacProtectedMessageRaModeCaRaSharedSecret() throws Exception {
         log.trace(">testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
         cmpConfiguration.setRAMode(ALIAS, true);
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
