@@ -237,9 +237,10 @@ public class CmpMessageHelper {
      * @throws NoSuchAlgorithmException message is signed by an unknown algorithm
      * @throws InvalidKeyException pubKey is not valid for signature verification
      * @throws SignatureException if the passed-in signature is improperly encoded or of the wrong type, if this signature algorithm is unable to process the input data provided, etc.
+     * @throws IllegalStateException something goes wrong during the creating of the MAC protection
      */
     public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws NoSuchAlgorithmException,
-             InvalidKeyException, SignatureException {
+             InvalidKeyException, SignatureException, IllegalStateException {
         if(pKIMessage.getProtection() == null) {
             throw new SignatureException("Message was not signed.");
         }
@@ -277,15 +278,17 @@ public class CmpMessageHelper {
      * @param dkLen length of the derived symmetric key
      * @param prf psuedo random function used when deriving symmetric key
      * @return new PKIMessage with protection
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws InvalidKeyException
      */
     public static PKIMessage protectPKIMessageWithPBMAC1(final PKIMessage msg, final String keyId, final String raSecret, final String macAlgId,
-            final int iterationCount, final int dkLen, final String prf) throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidKeyException {
+            final int iterationCount, final int dkLen, final String prf) throws IllegalStateException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">protectPKIMessageWithPBMAC1()");
+        }
+        if (raSecret == null) {
+            throw new NullPointerException("raSecret (password) used for protection cannot be null");
+        }
+        if (msg == null) {
+            throw new NullPointerException("PKI message (msg) to protect cannot be null");
         }
         // Create the password based protection of the message
         PKIHeaderBuilder head = getHeaderBuilder(msg.getHeader());
@@ -306,6 +309,9 @@ public class CmpMessageHelper {
         PKIHeader pkiHeader = head.build();
         // Do the mac
         final byte[] protectedBytes = getProtectedBytes(pkiHeader, msg.getBody());
+        if (protectedBytes == null) {
+            throw new IllegalStateException("Protected bytes should not be null");
+        }
         MacCalculator mac;
         byte[] out = null;
         try {
@@ -320,9 +326,8 @@ public class CmpMessageHelper {
             return new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts());
         } catch (IOException | OperatorCreationException e) {
             LOG.error(e.getLocalizedMessage(), e);
-            throw new InvalidKeyException(e);
+            throw new IllegalStateException(e);
         }
-
     }
         
     public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId,
@@ -465,7 +470,7 @@ public class CmpMessageHelper {
             resp.setFailInfo(failInfo);
             resp.setFailText(failText);
             resp.create();
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | IllegalStateException e) {
             LOG.error("Exception during CMP processing: ", e);
         } 
         return resp;
