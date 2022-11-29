@@ -387,7 +387,7 @@ public class OCSPServlet extends HttpServlet {
         if (OcspConfiguration.getCacheHeaderMaxAge()) {
             response.setDateHeader("Expires", thisUpdate + ocspResponseInformation.getMaxAge());
             if (log.isDebugEnabled()) {
-                log.debug("ocsp.cache.maxAge enabled. Setting 'Expires' header to thisUpdate + max-age");
+                log.debug("ocsp.expires.useMaxAge enabled. Setting 'Expires' header to thisUpdate + max-age");
             }
         } else {
             // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
