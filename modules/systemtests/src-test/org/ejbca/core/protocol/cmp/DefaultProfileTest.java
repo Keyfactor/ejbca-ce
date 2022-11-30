@@ -599,7 +599,8 @@ public class DefaultProfileTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             
-            checkCmpResponseGeneral(resp, ca2.getSubjectDN(), USERDN, cacert2, nonce, transid, true, null, PKCSObjectIdentifiers.sha384WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, ca2.getSubjectDN(), USERDN, cacert2, nonce, transid, true, null,
+                    PKCSObjectIdentifiers.sha384WithRSAEncryption.getId(), false);
             X509Certificate cert = checkKurCertRepMessage(USERDN, cacert2, resp, reqId);
             assertNotNull("Failed to renew the certificate", cert);
             fp2 = CertTools.getFingerprintAsString(cert);
