@@ -429,7 +429,6 @@ public class CmpServlet extends HttpServlet {
             if (pkiMessage.getBody().getType() == PKIBody.TYPE_INIT_REQ) {
                 CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
                         cmpConfiguration.getExtractUsernameComponent(alias));
-                requestAuthParam = crmfRequestMessage.getPassword();
                 //Is the secret specified in the cmp alias? (Formerly specified in cmpProxy.properties)
                 passwd = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);
                 //Password might be specified as CA CMP RA Shared Secret... fetch CA 
@@ -456,7 +455,7 @@ public class CmpServlet extends HttpServlet {
             final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation not supported for Client Mode");
             throw new CmpServletValidationError(errmsg);
         }
-        if ((passwd == null) || (requestAuthParam == null)) {
+        if (passwd == null) {
             final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found.";
             log.info(logmsg);
             // Use a shorter error messages that is returned to client, because we don't want to leak any information about configured secrets
