@@ -392,6 +392,7 @@ public class CmpServlet extends HttpServlet {
     private void validateMAC(PKIMessage pkiMessage, String alias, CmpConfiguration cmpConfiguration, String messageInformation) throws CmpServletValidationError{
         final boolean raMode = cmpConfiguration.getRAMode(alias);
         String passwd = null;
+        String requestAuthParam = null;
         CmpPbeVerifyer verifier;
         try {
             verifier = new CmpPbeVerifyer(pkiMessage);
@@ -400,63 +401,62 @@ public class CmpServlet extends HttpServlet {
             throw new IllegalStateException(e);
         }
         if (raMode) {
-            //Ra Mode. Is the secret specified in the cmp alias? (Formerly specified in cmpProxy.properties)
-            passwd = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);
-            //Password might be specified as CA CMP RA Shared Secret... fetch CA 
-            if (passwd.isEmpty() || passwd.equals("-")) {
-                final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found in alias, "
-                        + "trying to fetch raSharedSecret from CA.";
-                log.debug(logmsg);
-                //If Secret not found in alias Specified Secret...
-                /*
-                final boolean isRaCaNameKeyId = cmpConfiguration.getRACAName(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
-                final boolean isRaEEPKeyId = cmpConfiguration.getRAEEProfile(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
-                final boolean isRaCPKeyId = cmpConfiguration.getRACertProfile(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
-                String caName = "-";
-                if (isRaCaNameKeyId && (isRaEEPKeyId || isRaCPKeyId)) {
-                    // If true, then senderKeyId has caname... get Ca CMP Ra Shared Secret
-                    caName = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
-                    passwd = getCaSecretFromCaUsingCaName(caName);
-                    //If not from sender KID, try RA CA Name configuration in alias to get Ca and secret... 
-                } else if(!cmpConfiguration.getRACAName(alias).equals(CmpConfiguration.PROFILE_DEFAULT)) {
-                    caName = cmpConfiguration.getRACAName(alias);
-                    passwd = getCaSecretFromCaUsingCaName(caName);
-                } else {
-                    //Finally, try to get ca from end entity profile and get secret
-                    final String profile = cmpConfiguration.getRAEEProfile(alias);
-                    IdNameHashMap<EndEntityProfile> eeplist = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY);
-                    KeyToValueHolder<EndEntityProfile> holder = eeplist.get(Integer.valueOf(profile));
-                    EndEntityProfile eep = holder.getValue();
-                    if (eep != null) {
-                        int caid = eep.getDefaultCA();
-                        passwd = getCaSecretFromCaUsingCaId(caid);
-                    }
+            /*
+            final boolean isRaCaNameKeyId = cmpConfiguration.getRACAName(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
+            final boolean isRaEEPKeyId = cmpConfiguration.getRAEEProfile(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
+            final boolean isRaCPKeyId = cmpConfiguration.getRACertProfile(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
+            String caName = "-";
+            if (isRaCaNameKeyId && (isRaEEPKeyId || isRaCPKeyId)) {
+                // If true, then senderKeyId has caname... get Ca CMP Ra Shared Secret
+                caName = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
+                passwd = getCaSecretFromCaUsingCaName(caName);
+                //If not from sender KID, try RA CA Name configuration in alias to get Ca and secret... 
+            } else if(!cmpConfiguration.getRACAName(alias).equals(CmpConfiguration.PROFILE_DEFAULT)) {
+                caName = cmpConfiguration.getRACAName(alias);
+                passwd = getCaSecretFromCaUsingCaName(caName);
+            } else {
+                //Finally, try to get ca from end entity profile and get secret
+                final String profile = cmpConfiguration.getRAEEProfile(alias);
+                IdNameHashMap<EndEntityProfile> eeplist = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY);
+                KeyToValueHolder<EndEntityProfile> holder = eeplist.get(Integer.valueOf(profile));
+                EndEntityProfile eep = holder.getValue();
+                if (eep != null) {
+                    int caid = eep.getDefaultCA();
+                    passwd = getCaSecretFromCaUsingCaId(caid);
                 }
-                */
-                //The below code tries to fetch the the caname from a CrmfRequestMessage.issuerDN()...     
-                //The above code should instead be improved, verified and implemented for full, correct ra mode support    
-                if (pkiMessage.getBody().getType() == PKIBody.TYPE_INIT_REQ) {
-                    CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
-                            cmpConfiguration.getExtractUsernameComponent(alias));
-                    String caDN = crmfRequestMessage.getIssuerDN();
-                    List<CAInfo> cainfolist2 = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
-                    for (CAInfo cainfo : cainfolist2 ) {
+            }
+            */
+            if (pkiMessage.getBody().getType() == PKIBody.TYPE_INIT_REQ) {
+                CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
+                        cmpConfiguration.getExtractUsernameComponent(alias));
+                requestAuthParam = crmfRequestMessage.getPassword();
+                //Is the secret specified in the cmp alias? (Formerly specified in cmpProxy.properties)
+                passwd = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);
+                //Password might be specified as CA CMP RA Shared Secret... fetch CA 
+                if (passwd.isEmpty() || passwd.equals("-")) {
+                    final String caDN = crmfRequestMessage.getIssuerDN();
+                    final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found in alias, "
+                            + "trying to fetch raSharedSecret from CA.";
+                    log.debug(logmsg);
+                    //If Secret not found in alias Specified Secret...
+                    List<CAInfo> cainfolist = raMasterApiProxyBean.getAuthorizedCas(authenticationToken);
+                    for (CAInfo cainfo : cainfolist ) {
                         if (cainfo.getSubjectDN().equals(caDN)) {
                             X509CAInfo x509cainfo = (X509CAInfo)cainfo;
                             passwd = x509cainfo.getCmpRaAuthSecret();
                         }
                     }
-                } else {
-                    final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation only supported for Initial Requests. Type is: ",
-                            pkiMessage.getBody().getType());
-                    throw new CmpServletValidationError(errmsg);
                 }
+            } else {
+                final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation only supported for Initial Requests. Type is: ",
+                        pkiMessage.getBody().getType());
+                throw new CmpServletValidationError(errmsg);
             }
         } else {
             final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation not supported for Client Mode");
             throw new CmpServletValidationError(errmsg);
         }
-        if (passwd == null) {
+        if ((passwd == null) || (requestAuthParam == null)) {
             final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found.";
             log.info(logmsg);
             // Use a shorter error messages that is returned to client, because we don't want to leak any information about configured secrets
