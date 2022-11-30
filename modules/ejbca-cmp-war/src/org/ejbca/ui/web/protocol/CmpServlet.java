@@ -210,6 +210,7 @@ public class CmpServlet extends HttpServlet {
             if (StringUtils.equals(ip, "127.0.0.1") || StringUtils.equals(ip, "::1")) { // IPv4 and IPv6
                 log.info("Clearing caches in CMP servlet.");
                 extraCertIssuerCache.clear();
+                extraCertIssuerCacheByCaId.clear();
                 revocationStatusCache.clear();
                 response.setContentType("text/plain");
                 try (ServletOutputStream os = response.getOutputStream()) {
