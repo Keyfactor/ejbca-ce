@@ -166,6 +166,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         cmpConfiguration.setAuthenticationParameters(ALIAS, PBEPASSWORD);
         cmpConfiguration.setUseExtendedValidation(ALIAS, true);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        clearCmpCaches();
 
         testRaMasterApiProxyBean.enableFunctionTracingForTest();
     }
@@ -174,14 +175,16 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        clearCmpCaches();
         testRaMasterApiProxyBean.restoreFunctionTracingAfterTest();
         caSession.removeCA(ADMIN, testx509ca.getCAId());
         cmpConfiguration.removeAlias(ALIAS);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
         roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
-        internalCertificateStoreSession.removeCertificatesByIssuer(ISSUER_DN);
-        internalCertificateStoreSession.removeCertificatesByIssuer(ISSUER_1_DN);
-        internalCertificateStoreSession.removeCertificatesByIssuer(ISSUER_2_DN);
+        internalCertificateStoreSession.removeCertificatesByIssuer(CertTools.stringToBCDNString(ISSUER_DN));
+        internalCertificateStoreSession.removeCertificatesByIssuer(CertTools.stringToBCDNString(ISSUER_1_DN));
+        internalCertificateStoreSession.removeCertificatesByIssuer(CertTools.stringToBCDNString(ISSUER_2_DN));
+        internalCertificateStoreSession.removeCertificatesByUsername(CLIENT_MODE_ENDENTITY);
         if (endEntityManagementSession.existsUser(CLIENT_MODE_ENDENTITY)) {
             endEntityManagementSession.deleteUser(ADMIN, CLIENT_MODE_ENDENTITY);
         }
@@ -276,17 +279,25 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     public void testVerifySignedMessageClientMode() throws Exception {
         log.trace(">testVerifySignedMessageClientMode");
         cmpConfiguration.setRAMode(ALIAS, false);
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
+        cmpConfiguration.setExtractUsernameComponent(ALIAS, "UID");
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
-        final String clientUserDn = "C=SE,O=PrimeKey,CN=testVerifySignedMessageClientMode";
+        final String clientUserDn = "C=SE,O=PrimeKey,CN=testVerifySignedMessageClientMode,UID="+CLIENT_MODE_ENDENTITY;
         createCmpUser(CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
 
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, CLIENT_MODE_ENDENTITY, keys, caPrivateKey, CertificateConstants.CERT_ACTIVE, false);
         final PKIMessage req = genCertReq(clientUserDn);
 
-        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, ISSUER_CA_NAME, PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifySignedMessageClientMode");
