@@ -519,7 +519,7 @@ public class RaEndEntityBean implements Serializable {
                     || raEndEntityDetails.getSshPrincipals() != sshPrincipalFieldsToString(getSshPrincipals())) {
                 changed = true;
                 endEntityInformation.setSubjectAltName(
-                        SshCertificateUtils.createSanForStorage(sshPrincipalFieldsToString(getSshPrincipals()), sshComment));
+                        SshCertificateUtils.createSanForStorage(sshPrincipalFieldsToString(getSshPrincipals()), sshComment, sshCriticalOptionsSourceAddress));
             }
             if (sshCriticalOptionsForceCommand != raEndEntityDetails.getSshForceCommand()
                     || sshCriticalOptionsSourceAddress != raEndEntityDetails.getSshSourceAddress()) {

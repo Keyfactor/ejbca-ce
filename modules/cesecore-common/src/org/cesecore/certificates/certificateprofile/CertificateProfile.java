@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -2986,13 +2987,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public Map<String, byte[]> getSshExtensionsMap() {
         if(!data.containsKey(SSH_EXTENSIONS)) {
-            Map<String, byte[]> extensions = new HashMap<>();
+            Map<String, String> extensions = new HashMap<>();
             for(SshExtension sshExtension : SshExtension.values()) {
-                extensions.put(sshExtension.getLabel(), sshExtension.getValue());
+                extensions.put(sshExtension.getLabel(), Base64.encodeBase64String(sshExtension.getValue()));
             }
             data.put(SSH_EXTENSIONS, extensions);
         }
-        return (Map<String, byte[]>) data.get(SSH_EXTENSIONS);
+        Map<String, byte[]> extensions = new HashMap<>();
+        for(Entry<String, String> sshExtension : ((Map<String, String>) data.get(SSH_EXTENSIONS)).entrySet()) {
+            extensions.put(sshExtension.getKey(), Base64.decodeBase64(sshExtension.getValue()));
+        }
+        return extensions;
     }
 
     public List<String> getSshExtensions() {
@@ -3000,13 +3005,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setSshExtensions(Map<String, byte[]> extensions) {
-        data.put(SSH_EXTENSIONS, extensions);
+        Map<String, String> extensionMap = new HashMap<>();
+        for(Entry<String, byte[]> sshExtension : extensions.entrySet()) {
+            extensionMap.put(sshExtension.getKey(), Base64.encodeBase64String(sshExtension.getValue()));
+        }
+        data.put(SSH_EXTENSIONS, extensionMap);
     }
 
     public void setSshExtensions(List<String> extensionsList) {
         Map<String, String> extensions = new HashMap<>();
         for(String extension : extensionsList) {
-            extensions.put(extension, "");
+            // may need to enhance for custom extensions
+            SshExtension sshExtension = SshExtension.findbyLabel(extension);
+            if(sshExtension==null) {
+                continue;
+            }
+            extensions.put(extension, Base64.encodeBase64String(sshExtension.getValue()));
         }
         data.put(SSH_EXTENSIONS, extensions);
     }

@@ -34,11 +34,14 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
@@ -47,6 +50,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -56,6 +61,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -74,6 +80,7 @@ import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
@@ -107,6 +114,7 @@ import org.bouncycastle.asn1.crmf.Controls;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -122,6 +130,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
@@ -150,6 +159,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -314,6 +324,14 @@ public abstract class CmpTestCase extends CaTestCase {
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
     }
     
+    public static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+        
+        return genP10CrCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm);
+    }
+ 
     public static PKIMessage genCertReqWithSAN(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
@@ -495,9 +513,94 @@ public abstract class CmpTestCase extends CaTestCase {
             pkiHeaderBuilder.setGeneralInfo(genInfo);
         }
         PKIBody pkiBody = new PKIBody(PKIBody.TYPE_INIT_REQ, certReqMessages);
-        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
-        return pkiMessage;
+        return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
     }
+    
+    protected static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, SubjectPublicKeyInfo spkInfo,  
+            KeyPair protocolEncrKey, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+        
+        ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+        DERSet attributes = null;
+        
+        // If we did not pass any extensions as parameter, we will create some of our own, standard ones
+        Extensions exts = extensions;
+        if (exts == null) {
+            altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut);
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            if (StringUtils.isNotBlank(altNames)) {
+                // SubjectAltName
+                // Some altNames
+                GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
+                dOut.writeObject(san);
+                byte[] value = bOut.toByteArray();
+                extgen.addExtension(Extension.subjectAlternativeName, false, value);
+            }
+
+            // KeyUsage
+            KeyUsage keyUsage = new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.nonRepudiation);
+            extgen.addExtension(Extension.keyUsage, false, new DERBitString(keyUsage));
+
+            exts = extgen.generate();
+            altnameattr.add(new DERSet(exts));
+
+            // Make the complete extension package
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new DERSequence(altnameattr));
+            attributes = new DERSet(v);
+        }
+        
+        CertificationRequest certificationRequest = null;
+        
+        if (keys != null) {
+            certificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, userDN,
+                    keys.getPublic(), attributes, keys.getPrivate(), null).toASN1Structure();
+        } else if (spkInfo != null) {
+            // If we didn't have a public key, perhaps we passed a SubjectPublicKeyInfo, which can
+            // be a AlgorithmIdentifier followed by a zero-length BIT STRING as specified for server key generation
+            // for CMP in RFC4210
+            certificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, userDN,
+                    getPublicKey(spkInfo, BouncyCastleProvider.PROVIDER_NAME), attributes, null, null).toASN1Structure();
+        } 
+        
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(senderDN), new GeneralName(new X500Name(
+                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
+        
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        pkiHeaderBuilder.setProtectionAlg(pAlg);
+        pkiHeaderBuilder.setSenderKID(senderKID);
+        
+        if (implicitConfirm) {
+            final InfoTypeAndValue genInfo = new InfoTypeAndValue(CMPObjectIdentifiers.it_implicitConfirm);
+            pkiHeaderBuilder.setGeneralInfo(genInfo);
+        }
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_P10_CERT_REQ, certificationRequest);
+        return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+    }
+
+    private static PublicKey getPublicKey(SubjectPublicKeyInfo spkInfo, final String provider)
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+
+        // If there is no public key here, but only an empty bit string, it means we have called for server generated keys
+        // i.e. no public key to see here...
+        if (spkInfo.getPublicKeyData().equals(DERNull.INSTANCE)) {
+            return null;
+        }
+        try {
+            final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(spkInfo).getBytes());
+            final AlgorithmIdentifier keyAlg = spkInfo.getAlgorithm();
+            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
+        } catch (InvalidKeySpecException | IOException e) {
+            final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
+            newe.initCause(e);
+            throw newe;
+        }
+    }    
 
     protected static PKIMessage genRevReq(String issuerDN, X500Name userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
             boolean noRevocationReason, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
@@ -744,7 +847,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
         // Only try to read the response if we expected a 200 (ok) response
         if (httpRespCode != 200) {
-            return null;
+            return new byte[0];
         }
             // Some appserver (Weblogic) responds with
             // "application/pkixcmp; charset=UTF-8"
@@ -773,6 +876,19 @@ public abstract class CmpTestCase extends CaTestCase {
             assertNotNull(respBytes);
             assertTrue(respBytes.length > 0);
             return respBytes;
+    }
+
+    protected void clearCmpCaches() throws IOException {
+        final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resourceCmp) + "/?clearcache=true";
+        log.info("http URL: " + urlString);
+        URL url = new URL(urlString);
+        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.connect();
+        assertEquals("HTTP request to clear caches was unsuccessful.", 200, con.getResponseCode());
+        assertEquals("text/plain", con.getContentType());
+        try (InputStream is = con.getInputStream()) {
+            assertEquals("Caches cleared.\n", IOUtils.toString(is, StandardCharsets.UTF_8));
+        }
     }
 
     public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
