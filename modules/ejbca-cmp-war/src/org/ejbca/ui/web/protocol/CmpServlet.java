@@ -390,9 +390,9 @@ public class CmpServlet extends HttpServlet {
                 log.debug(logmsg);
                 //If Secret not found in alias Specified Secret...
                 /*
-                final boolean isRaCaNameKeyId = cmpConfiguration.getRACAName(alias).equals("KeyId");
-                final boolean isRaEEPKeyId = cmpConfiguration.getRAEEProfile(alias).equals("KeyId");
-                final boolean isRaCPKeyId = cmpConfiguration.getRACertProfile(alias).equals("KeyId");
+                final boolean isRaCaNameKeyId = cmpConfiguration.getRACAName(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
+                final boolean isRaEEPKeyId = cmpConfiguration.getRAEEProfile(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
+                final boolean isRaCPKeyId = cmpConfiguration.getRACertProfile(alias).equals(CmpConfiguration.PROFILE_USE_KEYID);
                 String caName = "-";
                 if (isRaCaNameKeyId && (isRaEEPKeyId || isRaCPKeyId)) {
                     // If true, then senderKeyId has caname... get Ca CMP Ra Shared Secret
@@ -414,7 +414,7 @@ public class CmpServlet extends HttpServlet {
                     }
                 }
                 */
-                //The below code tries to fetch the the caname from a CrmfRequestMessage.issuerDN()... which is not the correct way to do it...    
+                //The below code tries to fetch the the caname from a CrmfRequestMessage.issuerDN()...     
                 //The above code should instead be improved, verified and implemented for full, correct ra mode support    
                 if (pkiMessage.getBody().getType() == PKIBody.TYPE_INIT_REQ) {
                     CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
