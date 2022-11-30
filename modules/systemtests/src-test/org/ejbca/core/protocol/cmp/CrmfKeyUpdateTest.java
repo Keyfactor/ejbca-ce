@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
+import org.bouncycastle.cert.cmp.CMPException;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -282,7 +283,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         assertTrue("The new certificate's keys are incorrect.", cert.getPublicKey().equals(keys.getPublic()));
@@ -360,7 +362,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -448,7 +451,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -533,7 +537,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -581,7 +586,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         
         respObject = null;
         asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -664,7 +670,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -754,7 +760,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha384WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha384WithRSAEncryption.getId(), verified);
         X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         assertTrue("The new certificate's keys are incorrect.", cert.getPublicKey().equals(newkeys.getPublic()));
@@ -822,7 +828,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
@@ -831,6 +837,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     /**
      * Performs a CMP request in RA mode where the requesting admin isn't issued by the same CA. Should fail due to missing authorization. 
      * @throws OperatorCreationException 
+     * @throws CMPException
+     * @throws InvalidCmpProtectionException
      */
     @Test
     public void testRAModeForAdminFromDifferentCa() throws AuthorizationDeniedException, CADoesntExistsException, ApprovalException,
@@ -839,7 +847,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             CertificateCreateException, CertificateRevokeException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, InvalidKeyException,
             CertificateEncodingException, NoSuchAlgorithmException, SignatureException, RoleNotFoundException, NoSuchProviderException,
-            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, CouldNotRemoveEndEntityException, CAExistsException, OperatorCreationException {
+            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, CouldNotRemoveEndEntityException, CAExistsException, OperatorCreationException, InvalidCmpProtectionException, CMPException {
         final String cmpAdminUsername = "cmpTestAdmin";
         final String cmpAdminDn = "CN=" + cmpAdminUsername +",C=SE";
         final String cmpAdminPassword = "foo123";
@@ -879,7 +887,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             byte[] ba = bao.toByteArray();
             //send request and recieve response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-            checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             PKIMessage respObject = null;
             ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
             try {
@@ -955,7 +963,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
         try {
@@ -1040,7 +1049,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         
@@ -1114,7 +1123,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -1205,7 +1214,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         
@@ -1281,7 +1290,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -1373,7 +1382,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
         try {
@@ -1465,7 +1474,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -1544,7 +1553,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         assertTrue("The new certificate's keys are incorrect.", cert.getPublicKey().equals(keys.getPublic()));
@@ -1698,7 +1707,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             //send request and recieve response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
             checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
-                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull("No respose object was received.", respObject);
             final PKIBody body = respObject.getBody();
@@ -1760,7 +1769,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
             checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
-                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull(respObject);
             final PKIBody body = respObject.getBody();
@@ -1831,7 +1840,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             //send request and recieve response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
             checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
-                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull("No respose object was received.", respObject);
             final PKIBody body = respObject.getBody();
