@@ -276,6 +276,37 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     }
 
     @Test
+    public void testRejectSignedMessageClientMode() throws Exception {
+        log.trace(">testRejectSignedMessageClientMode");
+        cmpConfiguration.setRAMode(ALIAS, false);
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
+        cmpConfiguration.setExtractUsernameComponent(ALIAS, "UID");
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+
+        final String clientUserDn = "C=SE,O=PrimeKey,CN=testRejectSignedMessageClientMode,UID="+CLIENT_MODE_ENDENTITY;
+        createCmpUser(CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
+
+        final X509CA ca2 = CaTestUtils.createTestX509CA(ISSUER_2_DN, null, false, KEYUSAGE);
+        final PrivateKey ca2PrivateKey = CaTestUtils.getCaPrivateKey(ca2);
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_2_DN, keys, ca2PrivateKey);
+
+        final PKIMessage req = genCertReq(clientUserDn);
+
+        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        CaTestUtils.removeCa(ADMIN, ISSUER_CA_2_NAME, ISSUER_CA_2_NAME);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpFailMessage(resp, "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: CN=CmpExternalValidationTestCA2,OU=FoooUåäö,O=CmpTests", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+        log.trace("<testRejectSignedMessageClientMode");
+    }
+
+    @Test
     public void testVerifySignedMessageClientMode() throws Exception {
         log.trace(">testVerifySignedMessageClientMode");
         cmpConfiguration.setRAMode(ALIAS, false);
