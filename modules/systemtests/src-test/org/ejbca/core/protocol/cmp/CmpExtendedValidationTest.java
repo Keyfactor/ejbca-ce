@@ -326,26 +326,51 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     }
 
     /**
-     * This test will verify that signed message passes through while bypassing any possible HMAC checks.
+     * This test will verify that a message protected by HMAC will pass when ca cmp ra shared secret is used
      */
     @Test
-    public void testVerifyHmacProtectedMessage() throws Exception {
-        log.trace(">testVerifyHmacProtectedMessage");
-        final String caName = "ca1";
-        final String password = "foo123";
-        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(ALIAS, "bar456;" + password);
-
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifyHmacProtectedMessage");
-        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, caName, password, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+    public void testVerifyHmacProtectedMessageRaModeCaRaSharedSecret() throws Exception {
+        log.trace(">testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
+        cmpConfiguration.setRAMode(ALIAS, true);
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
+        final String caRaSharedSecret = "foo123";
+        final PKIMessage req = genCertReq(userDn);
+        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), caRaSharedSecret, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, password, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
-        log.trace("<testVerifyHmacProtectedMessage");
+        log.trace("<testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
+    }
+    
+    /**
+     * This test will verify that a message protected by HMAC will pass when secret is specified in alias
+     */
+    @Test
+    public void testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret() throws Exception {
+        log.trace(">testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, PBEPASSWORD);
+        cmpConfiguration.setRAMode(ALIAS, true);
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
+        final PKIMessage req = genCertReq(userDn);
+        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+        log.trace("<testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
     }
 
+    
     /**
      * This test will verify that a message protected by HMAC is rejected if passwords don't match
      */
@@ -357,7 +382,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, ISSUER_CA_NAME, incorrectPassword, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpFailMessage(resp, "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Authentication failed for message. Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testRejectHmacProtectedMessage");
     }
