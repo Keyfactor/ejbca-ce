@@ -2463,6 +2463,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
+
+    public boolean isKeyRecoveryRequired() {
+        if (getEndEntityProfile() != null && getEndEntityProfile().isKeyRecoverableUsed()) {
+            return getEndEntityProfile().isKeyRecoverableRequired();
+        }
+        return false;
+    }
     
     public boolean getKeyRecoverableUse() {
         if (useKeyRecoverable != null) {
