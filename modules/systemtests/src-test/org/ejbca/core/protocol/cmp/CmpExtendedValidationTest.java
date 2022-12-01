@@ -233,23 +233,51 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     }
 
     /**
-     * This test will verify that a message containing a signature without extraCerts is rejected also when HMAC is configured.
+     * Checks that messages authenticated with the wrong authentication method are rejected.
      */
     @Test
-    public void testRejectMissingExtraCertButExpectingHmac() throws Exception {
-        log.trace(">testRejectSignedButExpectingHmac");
+    public void testRejectWrongAuthenticationMethod() throws Exception {
+        log.trace(">testRejectWrongAuthenticationMethod");
+
+        final X509Certificate signingCertificate = createSigningCertificate();
         final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectMissingExtraCertButExpectingHmac");
 
         final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        // Message is signed but an HMAC'ed message is expected
         final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        // FIXME message from proxy was:
-        // "Authentication failed for message. ExtraCerts field was blank, could not verify signature. CMP message: pvno = 2, sender = 4: C=SE,O=PrimeKey,CN=testRejectBadPayload, recipient = 4: CN=TestCA, transactionID = #4d6a225ea14f011959948a9181f3a46a."
-        checkCmpFailMessage(resp, "Protection algorithm id expected '1.2.840.113533.7.66.13' (passwordBasedMac) but was '1.2.840.113549.1.1.5'.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Message is not authenticated with a supported authentication method.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
-        log.trace("<testRejectSignedButExpectingHmac");
+        log.trace("<testRejectWrongAuthenticationMethod");
+    }
+
+    /**
+     * Checks that a message can be accepted when multiple authentication modules are enabled.
+     */
+    @Test
+    public void testMultipleAuthenticationModules() throws Exception {
+        log.trace(">testMultipleAuthenticationModules");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, PBEPASSWORD + ";" +testx509ca.getName());
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+
+        final X509Certificate signingCertificate = createSigningCertificate();
+        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
+
+        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+        log.trace("<testMultipleAuthenticationModules");
     }
 
     @Test
@@ -269,7 +297,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
                 BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifySignedMessage");
@@ -297,7 +325,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
                 BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifySignedMessageClientMode");
@@ -319,7 +347,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         // Send CMP request
         byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
         // XXX should the response really be unsigned? (signed=false)
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifySignedMessageWithHmacEnabled");
@@ -342,7 +370,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), caRaSharedSecret, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
@@ -364,7 +392,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
@@ -409,7 +437,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
                 BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: TrustAnchor found but certificate validation failed..", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testRejectSignedMessageWithWrongCertificate");
@@ -434,7 +462,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: Could not validate certificate: certificate expired on 19700101000012GMT+00:00.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testMessageSignedByExpiredCertRejected");
@@ -476,7 +504,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
 //                BouncyCastleProvider.PROVIDER_NAME);
 //        // Send CMP request
 //        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-//        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+//        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
 //        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
 //        shouldBeAccepted();
 //        log.trace("<testVerifySignedMessageWithMultipleExtraCertIssuers");
@@ -502,7 +530,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
                 BouncyCastleProvider.PROVIDER_NAME);
         // Send CMP request
         final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpFailMessage(resp, "Authentication failed for message. Signing certificate in CMP message was revoked.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testMessageSignedByRevokedCertRejected");
