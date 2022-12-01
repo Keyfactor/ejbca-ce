@@ -164,32 +164,26 @@ public class CmpServlet extends HttpServlet {
                     String msg = intres.getLocalizedMessage("cmp.errorauthmessage",
                             "Signature/HMAC verification was required by CMP RA, but not found in message");
                     log.info(msg + " " + messageInformation);
-                    byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(), FailInfo.BAD_REQUEST, msg).getResponseMessage();
-                    ServletUtils.addCacheHeaders(response);
-                    RequestHelper.sendBinaryBytes(errorMessage, response, "application/pkixcmp", null);
+                    sendUnprotectedError(response, pkiMessage, msg);
                     return;
-                }
-                if (config.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
-                    try {
-                        validateMessageSignature(pkiMessage, messageInformation, config, alias);
-                    } catch (CmpServletValidationError cmpServletValidationError) {
-                        byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(),
-                                FailInfo.BAD_REQUEST, cmpServletValidationError.getMessage()).getResponseMessage();
-                        ServletUtils.addCacheHeaders(response);
-                        RequestHelper.sendBinaryBytes(errorMessage, response, "application/pkixcmp", null);
-                        return;
-                    }
                 }
                 if (config.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_HMAC) && header.getProtectionAlg().getAlgorithm().equals(CMPObjectIdentifiers.passwordBasedMac)) {
                     try {
                         validateMAC(pkiMessage, alias, config, messageInformation);
-                    }catch (CmpServletValidationError cmpServletValidationError) {
-                        byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(),
-                                FailInfo.BAD_REQUEST, cmpServletValidationError.getMessage()).getResponseMessage();
-                        ServletUtils.addCacheHeaders(response);
-                        RequestHelper.sendBinaryBytes(errorMessage, response, "application/pkixcmp", null);
+                    } catch (CmpServletValidationError cmpServletValidationError) {
+                        sendUnprotectedError(response, pkiMessage, cmpServletValidationError.getMessage());
                         return;
                     }
+                } else if (config.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
+                    try {
+                        validateMessageSignature(pkiMessage, messageInformation, config, alias);
+                    } catch (CmpServletValidationError cmpServletValidationError) {
+                        sendUnprotectedError(response, pkiMessage, cmpServletValidationError.getMessage());
+                        return;
+                    }
+                } else {
+                    sendUnprotectedError(response, pkiMessage, "Message is not authenticated with a supported authentication method.");
+                    return;
                 }
                 validateCertificateValidity();
                 validateCertificateChainValidity();
@@ -204,6 +198,14 @@ public class CmpServlet extends HttpServlet {
         if (log.isTraceEnabled()) {
             log.trace("<doPost()");
         }
+    }
+
+    private void sendUnprotectedError(final HttpServletResponse response, final PKIMessage pkiMessage, final String message)
+            throws IOException {
+        byte[] errorMessage = CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(),
+                FailInfo.BAD_REQUEST, message).getResponseMessage();
+        ServletUtils.addCacheHeaders(response);
+        RequestHelper.sendBinaryBytes(errorMessage, response, "application/pkixcmp", null);
     }
 
     /**
