@@ -430,7 +430,7 @@ public class CmpServlet extends HttpServlet {
                 }
             }
             */
-            if (pkiMessage.getBody().getType() == PKIBody.TYPE_INIT_REQ) {
+            if (pkiMessage.getBody().getType() == PKIBody.TYPE_INIT_REQ || pkiMessage.getBody().getType() == PKIBody.TYPE_CERT_REQ) {
                 CrmfRequestMessage crmfRequestMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(alias), cmpConfiguration.getAllowRAVerifyPOPO(alias),
                         cmpConfiguration.getExtractUsernameComponent(alias));
                 //Is the secret specified in the cmp alias? (Formerly specified in cmpProxy.properties)
