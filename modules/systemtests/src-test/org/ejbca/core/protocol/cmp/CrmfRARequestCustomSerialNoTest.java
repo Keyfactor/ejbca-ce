@@ -176,7 +176,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
-            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             if (sFailMessage == null) {
             	ret = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
                 // verify if custom cert serial number was used
@@ -199,7 +199,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
         }
         return ret;
