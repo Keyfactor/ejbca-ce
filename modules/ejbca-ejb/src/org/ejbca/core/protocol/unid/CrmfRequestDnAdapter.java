@@ -230,4 +230,28 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
     public void setRequestValidityNotAfter(Date notAfter) {
         this.original.setRequestValidityNotAfter(notAfter);
     }
+	@Override
+	public String getPbmac1PrfAlg() {
+		return this.original.getPbmac1PrfAlg();
+	}
+	@Override
+	public String getPbmac1Key() {
+		return this.original.getPbmac1Key();
+	}
+	@Override
+	public String getPbmac1KeyId() {
+		return this.original.getPbmac1KeyId();
+	}
+	@Override
+	public String getPbmac1MacAlg() {
+		return this.original.getPbmac1MacAlg();
+	}
+	@Override
+	public int getPbmac1IterationCount() {
+		return this.original.getPbmac1IterationCount();
+	}
+	@Override
+	public int getPbmac1DkLen() {
+		return this.original.getPbmac1DkLen();
+	}
 }
