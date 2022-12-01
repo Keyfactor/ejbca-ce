@@ -451,7 +451,7 @@ public class CmpServlet extends HttpServlet {
                     }
                 }
             } else {
-                final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation only supported for Initial Requests. Type is: ",
+                final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using PBE HMAC validation only supported for Initial Requests and Certificate Requests. Type is: ",
                         pkiMessage.getBody().getType());
                 throw new CmpServletValidationError(errmsg);
             }
