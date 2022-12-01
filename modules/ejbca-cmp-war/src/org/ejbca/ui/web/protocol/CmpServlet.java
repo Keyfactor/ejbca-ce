@@ -35,12 +35,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.cert.cmp.CMPException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -62,7 +65,9 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
+import org.ejbca.core.protocol.cmp.CmpMessageProtectionVerifyer;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
+import org.ejbca.core.protocol.cmp.CmpPbmac1Verifyer;
 import org.ejbca.core.protocol.cmp.CrmfRequestMessage;
 import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
@@ -168,7 +173,9 @@ public class CmpServlet extends HttpServlet {
                     sendUnprotectedError(response, pkiMessage, msg);
                     return;
                 }
-                if (config.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_HMAC) && header.getProtectionAlg().getAlgorithm().equals(CMPObjectIdentifiers.passwordBasedMac)) {
+                final ASN1ObjectIdentifier protectionAlg = header.getProtectionAlg().getAlgorithm();
+                if (config.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_HMAC)
+                        && (protectionAlg.equals(CMPObjectIdentifiers.passwordBasedMac) || protectionAlg.equals(PKCSObjectIdentifiers.id_PBMAC1))) {
                     try {
                         validateMAC(pkiMessage, alias, config, messageInformation);
                     } catch (CmpServletValidationError cmpServletValidationError) {
@@ -393,13 +400,21 @@ public class CmpServlet extends HttpServlet {
      * CmpProxyServlet.validateCmpMessage()
      * @throws CmpServletValidationError 
      */
-    private void validateMAC(PKIMessage pkiMessage, String alias, CmpConfiguration cmpConfiguration, String messageInformation) throws CmpServletValidationError{
+    private void validateMAC(PKIMessage pkiMessage, String alias, CmpConfiguration cmpConfiguration, String messageInformation) throws CmpServletValidationError {
         final boolean raMode = cmpConfiguration.getRAMode(alias);
         String passwd = null;
         String requestAuthParam = null;
-        CmpPbeVerifyer verifier;
+        CmpMessageProtectionVerifyer verifier;
         try {
-            verifier = new CmpPbeVerifyer(pkiMessage);
+            final ASN1ObjectIdentifier protectionAlgorithm = pkiMessage.getHeader().getProtectionAlg().getAlgorithm();
+            if (protectionAlgorithm.equals(CMPObjectIdentifiers.passwordBasedMac)) {
+                verifier = new CmpPbeVerifyer(pkiMessage);
+            } else if (protectionAlgorithm.equals(PKCSObjectIdentifiers.id_PBMAC1)) {
+                verifier = new CmpPbmac1Verifyer(pkiMessage);
+            } else {
+                // Should not happen since the message should have been checked for a valid protection header already
+                throw new CmpServletValidationError("PKIMessage is not protected by passwordBasedMac or PBMAC1");
+            }
         } catch (InvalidCmpProtectionException e) {
             //Safe to ignore, because we've already checked this case.
             throw new IllegalStateException(e);
@@ -473,7 +488,7 @@ public class CmpServlet extends HttpServlet {
                 log.info(msg);
                 throw new CmpServletValidationError(msg);
             }
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | CMPException e) {
             String msg = intres.getLocalizedMessage("cmp.errorauthmessage", messageInformation, e.getMessage());
             log.info(msg);
             throw new CmpServletValidationError(msg);
