@@ -20,8 +20,6 @@ import javax.ejb.Local;
 
 /**
  * Local interface for OcspResponseGeneratorSession
- * 
- * @version $Id$
  */
 @Local
 public interface OcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSession {
@@ -39,12 +37,17 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
     void clearOcspRequestSignerRevocationStatusCache();
 
     /**
-     * Pre-produces and OCSP response for the proivded CA and serial number. The response will 
+     * Pre-produces an OCSP response for the provided CA and serial number. The response will
      * be signed according to current OCSP Key Binding settings and OCSP config if applicable.
+     *
+     *  Expired certificates are ignored when creating or updating presigned OCSP responses, unless
+     *  includeExpiredCertificates is selected on the Service level.
+     *
      * @param cacert of the CA which signs the OCSP response
      * @param serialNr of the certificate to produce a response for.
      * @param issueFinalResponse TODO
+     * @param includeExpiredCertificates to include expired certificates in presigned OCSP responses
      * @param certIDHashAlgorithm of the certId
      */
-    void preSignOcspResponse(X509Certificate cacert, BigInteger serialNr, boolean issueFinalResponse, String certIDHashAlgorithm);
+    void preSignOcspResponse(X509Certificate cacert, BigInteger serialNr, boolean issueFinalResponse, boolean includeExpiredCertificates, String certIDHashAlgorithm);
 }

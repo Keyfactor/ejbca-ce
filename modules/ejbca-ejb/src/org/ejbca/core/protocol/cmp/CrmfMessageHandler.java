@@ -406,22 +406,39 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         crmfreq.setUsername(username);
         crmfreq.setPassword(pwd);
         // Set all protection parameters
-        CmpPbeVerifyer verifyer = null;
+        CmpMessageProtectionVerifyer verifyer = null;
         if (StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
             final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
-            verifyer = hmacmodule.getCmpPbeVerifyer();
-            final String pbeDigestAlg = verifyer.getOwfOid();
-            final String pbeMacAlg = verifyer.getMacOid();
-            final int pbeIterationCount = verifyer.getIterationCount();
-            final String raSecret = verifyer.getLastUsedRaSecret();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("responseProt=" + this.responseProt + ", pbeDigestAlg=" + pbeDigestAlg + ", pbeMacAlg=" + pbeMacAlg + ", keyId=" + keyId
-                        + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+            verifyer = hmacmodule.getPasswordBasedProtectionVerifyer();
+            if (verifyer instanceof CmpPbeVerifyer) { 
+                final CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
+                final String pbeDigestAlg = pbeVerifyer.getOwfOid();
+                final String pbeMacAlg = pbeVerifyer.getMacOid();
+                final int pbeIterationCount = pbeVerifyer.getIterationCount();
+                final String raSecret = pbeVerifyer.getLastUsedRaSecret();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("responseProt=" + this.responseProt + ", pbeDigestAlg=" + pbeDigestAlg + ", pbeMacAlg=" + pbeMacAlg + ", keyId=" + keyId
+                            + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+                }
+                if (StringUtils.equals(this.responseProt, "pbe")) {
+                    crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+                }
+            } else if (verifyer instanceof CmpPbmac1Verifyer) {
+                final CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
+                final String pbmac1PrfAlg = pbmac1Verifyer.getPrfOid();
+                final String pbmac1MacAlg = pbmac1Verifyer.getMacOid();
+                final int pbmac1IterationCount = pbmac1Verifyer.getIterationCount();
+                final int pbmac1DkLen = pbmac1Verifyer.getDkLen();
+                final String raSecret = pbmac1Verifyer.getLastUsedRaSecret();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("responseProt=" + this.responseProt + ", pbmac1PrfAlg=" + pbmac1PrfAlg + ", pbmac1MacAlg=" + pbmac1MacAlg
+                            + ", keyId=" + keyId + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+                }
+                if (StringUtils.equals(this.responseProt, "pbe")) {
+                    crmfreq.setPbmac1Parameters(keyId, raSecret, pbmac1PrfAlg, pbmac1MacAlg, pbmac1IterationCount, pbmac1DkLen);
+                }
             }
 
-            if (StringUtils.equals(this.responseProt, "pbe")) {
-                crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
-            }
         }
         try {
             // Do we have a public key in the request? If not we may be trying to do server generated keys
