@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -637,11 +638,12 @@ public class CmpServlet extends HttpServlet {
                     cacertEntry.setCacheValidity(CERTIFICATE_CACHE_VALIDITY);
                     return cacert;
                 }
-            } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+            } catch (CADoesntExistsException | AuthorizationDeniedException | EJBException e) {
                 String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: " + caSubjectDn;
                 if (log.isDebugEnabled()) {
                     log.debug(msg + " - " + e.getLocalizedMessage());
                 }
+                throw new CmpServletValidationError(msg);
             }
 
         } finally {
