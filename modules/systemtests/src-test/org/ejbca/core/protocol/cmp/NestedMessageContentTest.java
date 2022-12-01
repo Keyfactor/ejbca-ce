@@ -71,6 +71,7 @@ import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.cmp.CMPException;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
@@ -346,7 +347,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                             crmfMsg.getHeader().getTransactionID().getOctets(), false, null, 
-                            PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                            PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         final Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, SUBJECT_DN, this.cacert, resp, reqID);
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
@@ -407,7 +408,8 @@ public class NestedMessageContentTest extends CmpTestCase {
             CertificateException, CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, EndEntityProfileValidationException, CouldNotRemoveEndEntityException,
-            WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, javax.ejb.ObjectNotFoundException {
+            WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, javax.ejb.ObjectNotFoundException,
+            InvalidCmpProtectionException, CMPException {
         Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(SUBJECT_DN.toString(), this.issuerDN);
         log.debug("Found " + certs.size() + " certificates for userDN \"" + SUBJECT_DN + "\"");
         Certificate cert = null;
@@ -462,7 +464,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);        
-        checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         int revStatus = checkRevokeStatus(this.issuerDN, CertTools.getSerialNumber(cert));
         assertNotEquals("Revocation request failed to revoke the certificate", Integer.valueOf(RevokedCertInfo.NOT_REVOKED), Integer.valueOf(revStatus));
         
@@ -518,7 +520,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
-                        crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                        crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         final Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, SUBJECT_DN, this.cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
         assertTrue(cert instanceof X509Certificate);
@@ -704,7 +706,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         // do not check signing if we expect a failure (sFailMessage==null)
         
         checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, pkiMessage.getHeader().getSenderNonce().getOctets(), 
-                            pkiMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                            pkiMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
 
@@ -758,7 +760,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         // do not check signing if we expect a failure (sFailMessage==null)
         
         checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, pkiMessage.getHeader().getSenderNonce().getOctets(), 
-                            pkiMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                            pkiMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
 
@@ -829,7 +831,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
-                        crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                        crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         final Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, SUBJECT_DN, this.cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
         assertTrue(cert instanceof X509Certificate);

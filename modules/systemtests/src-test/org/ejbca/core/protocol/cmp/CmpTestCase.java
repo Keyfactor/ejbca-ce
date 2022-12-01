@@ -65,6 +65,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -127,6 +128,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.cmp.CMPException;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -761,6 +763,35 @@ public abstract class CmpTestCase extends CaTestCase {
      return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
  }
     
+    protected static PKIMessage protectPKIMessageWithPbmac1(final PKIMessage msg, final boolean badObjectId, final String password,
+            final int iterations) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return protectPKIMessageWithPbmac1(msg, badObjectId, password, "primekey", iterations);
+    }
+
+    /**
+     * Helper function used in testing for creating a PBMAC1 protected message
+     * @param msg message to protect
+     * @param badObjectId boolean declaring if protection header should have an invalid OID (to facilitate testing error case)
+     * @param password the password used for the password based MAC
+     * @param iterations number of iterations when generating the symmetric key
+     * @return message with PBMAC1 protection
+     */
+    protected static PKIMessage protectPKIMessageWithPbmac1(final PKIMessage msg, final boolean badObjectId, final String password,
+            final String keyId, final int iterations) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+        final String macWithSha256Oid = "1.2.840.113549.2.9";
+        PKIMessage protectedMessage = CmpMessageHelper.protectPKIMessageWithPBMAC1(msg, keyId, password, macWithSha256Oid, iterations, 4096,
+                macWithSha256Oid);
+        if (badObjectId) {
+            ASN1Encodable params = protectedMessage.getHeader().getProtectionAlg().getParameters();
+            final String invalidOid = "1.2.840.113549.1.5.14.7";
+            final AlgorithmIdentifier newProtectionAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(invalidOid), params);
+            PKIHeaderBuilder newHead = CmpMessageHelper.getHeaderBuilder(protectedMessage.getHeader());
+            newHead.setProtectionAlg(newProtectionAlg);
+            protectedMessage = new PKIMessage(newHead.build(), protectedMessage.getBody(), protectedMessage.getProtection());
+        }
+        return protectedMessage;
+    }
+
     protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
     }
@@ -892,12 +923,15 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
-            boolean signed, String pbeSecret, String expectedSignAlg) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
-        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg, false, null);
+            boolean signed, String pbeSecret, String expectedSignAlg, boolean pbmac1) throws IOException, InvalidKeyException,
+            NoSuchAlgorithmException, InvalidCmpProtectionException, CMPException {
+        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg,
+                false, null, pbmac1);
     }
 
-    public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
-            boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm, String requiredKeyId) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+    public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce,
+            byte[] transId, boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm, String requiredKeyId, boolean pbmac1)
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidCmpProtectionException, CMPException {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
         boolean pbe = (pbeSecret != null);
@@ -937,11 +971,18 @@ public abstract class CmpTestCase extends CaTestCase {
             }
             assertEquals(expectedSignAlg, algId.getAlgorithm().getId());
         }
-        if (pbe) {
-            AlgorithmIdentifier algId = header.getProtectionAlg();
-            assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: "+header.getFreeText(), algId);
+        if (pbe && !pbmac1) {
+            final AlgorithmIdentifier algId = header.getProtectionAlg();
+            assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: " +
+                    header.getFreeText(), algId);
             assertEquals("Protection algorithm id: " + algId.getAlgorithm().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId
-                    .getAlgorithm().getId()); // 1.2.840.113549.1.1.5 - SHA-1 with RSA Encryption
+                    .getAlgorithm().getId());
+        } else if (pbe && pbmac1) {
+            final AlgorithmIdentifier algId = header.getProtectionAlg();
+            assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: " +
+                    header.getFreeText(), algId);
+            assertEquals("Protection algorithm id: " + algId.getAlgorithm().getId(), PKCSObjectIdentifiers.id_PBMAC1.getId(), algId
+                    .getAlgorithm().getId());
         }
 
         // Check that the signer is the expected CA    
@@ -985,49 +1026,58 @@ public abstract class CmpTestCase extends CaTestCase {
             } else if (requiredKeyId != null) {
                 assertTrue("RequiredKey should be "+requiredKeyId+" but was null", false);
             }
-            // Verify the PasswordBased protection of the message
-            byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
-            ASN1BitString protection = respObject.getProtection();
-            AlgorithmIdentifier pAlg = header.getProtectionAlg();
-            log.debug("Protection type is: " + pAlg.getAlgorithm().getId());
-            PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
-            int iterationCount = pp.getIterationCount().getPositiveValue().intValue();
-            log.debug("Iteration count is: " + iterationCount);
-            AlgorithmIdentifier owfAlg = pp.getOwf();
-            // Normal OWF alg is 1.3.14.3.2.26 - SHA1
-            log.debug("Owf type is: " + owfAlg.getAlgorithm().getId());
-            AlgorithmIdentifier macAlg = pp.getMac();
-            // Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
-            log.debug("Mac type is: " + macAlg.getAlgorithm().getId());
-            byte[] salt = pp.getSalt().getOctets();
-            // log.info("Salt is: "+new String(salt));
-            byte[] raSecret = pbeSecret!=null ? pbeSecret.getBytes() : new byte[0];
-            byte[] basekey = new byte[raSecret.length + salt.length];
-            System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
-            for (int i = 0; i < salt.length; i++) {
-                basekey[raSecret.length + i] = salt[i];
-            }
-            // Construct the base key according to rfc4210, section 5.1.3.1
-            try {
-                MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
-                for (int i = 0; i < iterationCount; i++) {
-                    basekey = dig.digest(basekey);
-                    dig.reset();
+            if (!pbmac1) { // If pbmac1 is not true we are using standard PasswordBasedMAC format
+                // Verify the PasswordBased protection of the message
+                byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
+                ASN1BitString protection = respObject.getProtection();
+                AlgorithmIdentifier pAlg = header.getProtectionAlg();
+                log.debug("Protection type is: " + pAlg.getAlgorithm().getId());
+                PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
+                int iterationCount = pp.getIterationCount().getPositiveValue().intValue();
+                log.debug("Iteration count is: " + iterationCount);
+                AlgorithmIdentifier owfAlg = pp.getOwf();
+                // Normal OWF alg is 1.3.14.3.2.26 - SHA1
+                log.debug("Owf type is: " + owfAlg.getAlgorithm().getId());
+                AlgorithmIdentifier macAlg = pp.getMac();
+                // Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
+                log.debug("Mac type is: " + macAlg.getAlgorithm().getId());
+                byte[] salt = pp.getSalt().getOctets();
+                // log.info("Salt is: "+new String(salt));
+                byte[] raSecret = pbeSecret!=null ? pbeSecret.getBytes() : new byte[0];
+                byte[] basekey = new byte[raSecret.length + salt.length];
+                System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
+                for (int i = 0; i < salt.length; i++) {
+                    basekey[raSecret.length + i] = salt[i];
                 }
-                // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7
-                String macOid = macAlg.getAlgorithm().getId();
-                Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
-                SecretKey key = new SecretKeySpec(basekey, macOid);
-                mac.init(key);
-                mac.reset();
-                mac.update(protectedBytes, 0, protectedBytes.length);
-                byte[] out = mac.doFinal();
-                // My out should now be the same as the protection bits
-                byte[] pb = protection.getBytes();
-                boolean ret = Arrays.equals(out, pb);
-                assertTrue(ret);
-            } catch (NoSuchProviderException e) {
-                throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+                // Construct the base key according to rfc4210, section 5.1.3.1
+                try {
+                    MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+                    for (int i = 0; i < iterationCount; i++) {
+                        basekey = dig.digest(basekey);
+                        dig.reset();
+                    }
+                    // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7
+                    String macOid = macAlg.getAlgorithm().getId();
+                    Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
+                    SecretKey key = new SecretKeySpec(basekey, macOid);
+                    mac.init(key);
+                    mac.reset();
+                    mac.update(protectedBytes, 0, protectedBytes.length);
+                    byte[] out = mac.doFinal();
+                    // My out should now be the same as the protection bits
+                    byte[] pb = protection.getBytes();
+                    boolean ret = Arrays.equals(out, pb);
+                    assertTrue(ret);
+                } catch (NoSuchProviderException e) {
+                    throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+                }
+            } else {
+                CmpPbmac1Verifyer pbmac1Verifyer = new CmpPbmac1Verifyer(respObject);
+                log.debug("Protection type is: " + pbmac1Verifyer.getProtectionAlg().getId());
+                log.debug("Iteration count is: " + pbmac1Verifyer.getIterationCount());
+                log.debug("Prf type is: " + pbmac1Verifyer.getPrfOid());
+                log.debug("Mac type is: " + pbmac1Verifyer.getMacOid());
+                assertTrue("Mac should be valid", pbmac1Verifyer.verify(pbeSecret));
             }
         }
 

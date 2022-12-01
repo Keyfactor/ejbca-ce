@@ -13,13 +13,17 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertTrue;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
-
-import static org.easymock.EasyMock.*;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.DEROctetString;
@@ -36,6 +40,8 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cert.cmp.GeneralPKIMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.util.CryptoProviderTools;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -44,6 +50,11 @@ import org.junit.Test;
  * @version $Id$
  */
 public class CmpMessageHelperTest {
+
+    @Before
+    public void setUp() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
 
     /**
      * Asserts that the transactionID is present in the CMP response when the helper answers 
@@ -163,5 +174,213 @@ public class CmpMessageHelperTest {
         assertArrayEquals(expected, generalPkiMessage2.getHeader().getRecipNonce().getEncoded());
         assertArrayEquals(expected, generalPkiMessage3.getHeader().getRecipNonce().getEncoded());
         assertArrayEquals(expected, generalPkiMessage4.getHeader().getRecipNonce().getEncoded());
+    }
+
+    @Test
+    public void testPbmac1ProtectionValidPassword() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        byte[] protectedPkiMessageByteArray = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                null, "password1", macAlgId, 1026, 100000, macAlgId));
+        final PKIMessage protectedPKIMessage = CmpMessageHelper.getPkiMessageFromBytes(protectedPkiMessageByteArray, false);
+        CmpPbmac1Verifyer verifyer = new CmpPbmac1Verifyer(protectedPKIMessage);
+        assertTrue("Verificaiton should succeed", verifyer.verify("password1"));
+    }
+
+    @Test
+    public void testPbmac1ProtectionInvalidPassword() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        byte[] protectedPkiMessageByteArray = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                null, "password1", macAlgId, 1026, 100000, macAlgId));
+        final PKIMessage protectedPKIMessage = CmpMessageHelper.getPkiMessageFromBytes(protectedPkiMessageByteArray, false);
+        CmpPbmac1Verifyer verifyer = new CmpPbmac1Verifyer(protectedPKIMessage);
+        assertFalse("Verificaiton should fail because password is different.", verifyer.verify("password2"));
+    }
+
+    @Test
+    public void testPbmac1ProtectionInvalidIterationCount() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        try {
+            CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                    null, "password1", macAlgId, -1, 10000, macAlgId));
+            fail();
+        } catch (IllegalStateException e) {
+            final String msg = e.getMessage();
+            assertEquals("org.bouncycastle.operator.OperatorCreationException: unable to create MAC calculator: invalid iterationCount value", msg);
+        }
+    }
+
+    @Test
+    public void testPbmac1ProtectionInvalidDkLen() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        try {
+            CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                    null, "password1", macAlgId, 1024, -1, macAlgId));
+            fail();
+        } catch (IllegalStateException e) {
+            final String msg = e.getMessage();
+            assertEquals("org.bouncycastle.operator.OperatorCreationException: unable to create MAC calculator: null", msg);
+        }
+    }
+
+    @Test
+    public void testPbmac1ProtectionNullPassword() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        try {
+            CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                    null, null, macAlgId, 1024, -1, macAlgId));
+            fail();
+        } catch (NullPointerException e) {
+            final String msg = e.getMessage();
+            assertEquals("raSecret (password) used for protection cannot be null", msg);
+        }
+    }
+
+    @Test
+    public void testPbmac1ProtectionInvalidMacAlgId() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "foobar"; // Not a valid OID for a MAC algorithm!
+        try {
+            CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                    null, "password", macAlgId, 1024, 10000, macAlgId));
+            fail();
+        } catch (IllegalArgumentException e) {
+            final String msg = e.getMessage();
+            assertEquals("string foobar not an OID", msg);
+        }
+    }
+
+    @Test
+    public void testPbmac1ProtectionNullMacAlgId() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = null; // Should be an OID...
+        try {
+            CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                    null, "password", macAlgId, 1024, 10000, macAlgId));
+            fail();
+        } catch (NullPointerException e) {
+            final String msg = e.getMessage();
+            assertEquals("'identifier' cannot be null", msg);
+        }
+    }
+
+    @Test
+    public void testPbmac1ProtectionInvalidPrfAlgId() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        final String prfAlgId = "foobar"; // Should be an OID
+        try {
+            CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                    null, "password", macAlgId, 1024, 10000, prfAlgId));
+            fail();
+        } catch (IllegalArgumentException e) {
+            final String msg = e.getMessage();
+            assertEquals("string foobar not an OID", msg);
+        }
+    }
+
+    @Test
+    public void testPbmac1ProtectionNullPrfAlgId() throws Exception {
+        final GeneralName sender = new GeneralName(new X500Name("CN=Sender"));
+        final GeneralName receiver = new GeneralName(new X500Name("CN=receiver"));
+        // Header could be anything
+        final PKIHeader header = new PKIHeader(1337, sender, receiver);
+        // Body could be anything, but we use an error here
+        final ErrorMsgContent errorMsgContent = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText("Testing")));
+        final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
+        PKIMessage pkiMessage = new PKIMessage(header, pkiResponseBody);
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        final String prfAlgId = null; // Should be an OID
+        try {
+            CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                    null, "password", macAlgId, 1024, 10000, prfAlgId));
+            fail();
+        } catch (NullPointerException e) {
+            final String msg = e.getMessage();
+            assertEquals("'identifier' cannot be null", msg);
+        }
+    }
+
+    @Test
+    public void testPbmac1ProtectionNullPkiMessage() throws Exception {
+        PKIMessage pkiMessage = null;
+        final String macAlgId = "1.2.840.113549.2.9"; // hmacWtihSHA256
+        try {
+            CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(pkiMessage,
+                    null, "password", macAlgId, 1024, 10000, macAlgId));
+            fail();
+        } catch (NullPointerException e) {
+            final String msg = e.getMessage();
+            assertEquals("PKI message (msg) to protect cannot be null", msg);
+        }
     }
 }
