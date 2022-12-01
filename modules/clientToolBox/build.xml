@@ -45,6 +45,7 @@
 		<path refid="lib.system-rules.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.bouncycastle.classpath" />
 		<path refid="lib.cert-cvc.classpath" />
