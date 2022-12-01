@@ -39,7 +39,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * 
  * @version $Id$
  */
-public class CmpPbeVerifyer {
+public class CmpPbeVerifyer implements CmpMessageProtectionVerifyer {
 	private static final Logger LOG = Logger.getLogger(CmpPbeVerifyer.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
@@ -91,7 +91,7 @@ public class CmpPbeVerifyer {
         }           
 		salt = pp.getSalt().getOctets();
 	}
-	
+
 	/**
 	 * 
 	 * @param raAuthenticationSecret the HMAC PBE password that should be used to verify the CMP message protection
@@ -157,6 +157,10 @@ public class CmpPbeVerifyer {
 	
 	public String getLastUsedRaSecret() {
 		return lastUsedRaSecret;
+	}
+
+	public ASN1ObjectIdentifier getProtectionAlg() {
+		return pAlg.getAlgorithm();
 	}
 	
 }

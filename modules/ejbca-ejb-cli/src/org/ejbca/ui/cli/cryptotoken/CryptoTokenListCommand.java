@@ -67,7 +67,8 @@ public class CryptoTokenListCommand extends EjbcaCliUserCommandBase {
             if (SoftCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType())) {
                 sb.append(", ").append(cryptoTokenInfo.isAllowExportPrivateKey()?"exportable":"non-exportable");
             }
-            if (PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType())) {
+            // Using String reference for p11ng since package isn't available in CE
+            if (PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()) || "Pkcs11NgCryptoToken".equals(cryptoTokenInfo.getType())) {
                 sb.append(", library=").append(cryptoTokenInfo.getP11Library());
                 sb.append(", Slot Label=").append(cryptoTokenInfo.getP11Slot());
                 sb.append(", Slot Label Type=").append(cryptoTokenInfo.getP11SlotLabelTypeDescription());
