@@ -1086,7 +1086,6 @@
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/cesecore/certificates/certificatetransparency/CertificateTransparencyTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/cmp/authentication/CmpVendorModeImpl.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/cmp/VendorAuthenticationTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/cmp/CmpExtendedValidationTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/cmpProxy/**"/>
                 <exclude unless="edition.is.ee" name="modules/ct/**"/>
                 <exclude unless="edition.is.ee" name="lib/ct/**"/>
