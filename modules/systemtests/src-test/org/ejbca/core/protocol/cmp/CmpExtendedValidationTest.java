@@ -256,6 +256,8 @@ public class CmpExtendedValidationTest extends CmpTestCase {
 
     /**
      * Checks that a message can be accepted when multiple authentication modules are enabled.
+     * <p>
+     * This test covers what "testVerifySignedMessageWithHmacEnabled" covered in the old CmpProxyServletTest.
      */
     @Test
     public void testMultipleAuthenticationModules() throws Exception {
@@ -329,28 +331,6 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifySignedMessageClientMode");
-    }
-
-    /**
-     * This test will verify that signed message passes through while bypassing any possible HMAC checks.
-     */
-    @Test
-    public void testVerifySignedMessageWithHmacEnabled() throws Exception {
-        log.trace(">testVerifySignedMessageWithHmacEnabled");
-        final X509Certificate signingCertificate = createSigningCertificate();
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessageWithHmacEnabled");
-
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
-        signCertColl.add(signingCertificate);
-        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
-                BouncyCastleProvider.PROVIDER_NAME);
-        // Send CMP request
-        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        // XXX should the response really be unsigned? (signed=false)
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
-        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
-        shouldBeAccepted();
-        log.trace("<testVerifySignedMessageWithHmacEnabled");
     }
 
     /**
