@@ -25,6 +25,7 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,6 +48,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -204,9 +206,26 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testUnSignedMessageRejected() throws Exception {
         log.trace(">testUnSignedMessageRejected");
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifyUnSignedMessageRejected");
+        
+        // Given
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifyUnSignedMessageRejected");
+        
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(req.getEncoded(), 200, ALIAS);
+        byte[] resp = sendCmpHttp(req.getEncoded(), 200, ALIAS);
+        
+        // Then
+        checkCmpFailMessage(resp, "Authentication failed for message. Signature/HMAC verification was required by CMP RA, but not found in message.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testVerifyUnSignedMessageRejected");
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(req.getEncoded(), 200, ALIAS);
+        
+        // Then
         checkCmpFailMessage(resp, "Authentication failed for message. Signature/HMAC verification was required by CMP RA, but not found in message.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
         log.trace("<testUnSignedMessageRejected");
@@ -218,20 +237,42 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testRejectMissingExtraCert() throws Exception {
         log.trace(">testRejectMissingExtraCert");
+        
+        // Given
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectMissingExtraCert");
 
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectMissingExtraCert");
-
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
+
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
         checkCmpFailMessage(resp, "Authentication failed for message. ExtraCerts field was blank, could not verify signature..", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testRejectMissingExtraCert");
+
+        signCertColl = new ArrayList<>();
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpFailMessage(resp, "Authentication failed for message. ExtraCerts field was blank, could not verify signature..", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+
         log.trace("<testRejectMissingExtraCert");
     }
 
@@ -242,18 +283,41 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     public void testRejectWrongAuthenticationMethod() throws Exception {
         log.trace(">testRejectWrongAuthenticationMethod");
 
+        // Given
         final X509Certificate signingCertificate = createSigningCertificate();
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectMissingExtraCertButExpectingHmac");
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectMissingExtraCertButExpectingHmac");
 
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         // Message is signed but an HMAC'ed message is expected
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
+       
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
         checkCmpFailMessage(resp, "Message is not authenticated with a supported authentication method.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testRejectMissingExtraCertButExpectingHmac");
+
+        signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        // Message is signed but an HMAC'ed message is expected
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
+        checkCmpFailMessage(resp, "Message is not authenticated with a supported authentication method.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+
         log.trace("<testRejectWrongAuthenticationMethod");
     }
 
@@ -265,52 +329,102 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testMultipleAuthenticationModules() throws Exception {
         log.trace(">testMultipleAuthenticationModules");
+        
+        // Given
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, PBEPASSWORD + ";" +testx509ca.getName());
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
         final X509Certificate signingCertificate = createSigningCertificate();
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
 
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
+
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
+
+        signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+
         log.trace("<testMultipleAuthenticationModules");
     }
 
     @Test
     public void testVerifySignedMessage() throws Exception {
         log.trace(">testVerifySignedMessage");
+
+        // Given
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
         final X509Certificate signingCertificate = createSigningCertificate();
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
 
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
+
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
+
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testVerifySignedMessage");
+        signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+
         log.trace("<testVerifySignedMessage");
     }
 
     @Test
     public void testRejectSignedMessageClientMode() throws Exception {
         log.trace(">testRejectSignedMessageClientMode");
+        
+        // Given
         cmpConfiguration.setRAMode(ALIAS, false);
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
@@ -325,23 +439,48 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final PrivateKey ca2PrivateKey = CaTestUtils.getCaPrivateKey(ca2);
         final X509Certificate signingCertificate = createSigningCertificate(ISSUER_2_DN, keys, ca2PrivateKey);
 
-        final PKIMessage req = genCertReq(clientUserDn);
+        PKIMessage req = genCertReq(clientUserDn);
 
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
         CaTestUtils.removeCa(ADMIN, ISSUER_CA_2_NAME, ISSUER_CA_2_NAME);
+
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
         checkCmpFailMessage(resp, "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: CN=CmpExternalValidationTestCA2,OU=FoooUåäö,O=CmpTests", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
+
+
+        // Given
+        req = genCertReqP10Cr(clientUserDn);
+
+        signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        CaTestUtils.removeCa(ADMIN, ISSUER_CA_2_NAME, ISSUER_CA_2_NAME);
+
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
+        checkCmpFailMessage(resp, "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: CN=CmpExternalValidationTestCA2,OU=FoooUåäö,O=CmpTests", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+
         log.trace("<testRejectSignedMessageClientMode");
     }
 
     @Test
     public void testVerifySignedMessageClientMode() throws Exception {
         log.trace(">testVerifySignedMessageClientMode");
+        
+        // Given
         cmpConfiguration.setRAMode(ALIAS, false);
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
@@ -353,17 +492,46 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         createCmpUser(CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
 
         final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, CLIENT_MODE_ENDENTITY, keys, caPrivateKey, CertificateConstants.CERT_ACTIVE, false);
-        final PKIMessage req = genCertReq(clientUserDn);
 
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        PKIMessage req = genCertReq(clientUserDn);
+
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
+        
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
+
+        if (endEntityManagementSession.existsUser(CLIENT_MODE_ENDENTITY)) {
+            endEntityManagementSession.deleteUser(ADMIN, CLIENT_MODE_ENDENTITY);
+        }
+
+        createCmpUser(CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
+
+        // Given
+        req = genCertReqP10Cr(clientUserDn);
+
+        signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+
         log.trace("<testVerifySignedMessageClientMode");
     }
 
@@ -373,6 +541,8 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testVerifyHmacProtectedMessageRaModeCaRaSharedSecret() throws Exception {
         log.trace(">testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
+        
+        // Given
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
         cmpConfiguration.setRAMode(ALIAS, true);
@@ -380,13 +550,32 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
         final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
         final String caRaSharedSecret = "foo123";
-        final PKIMessage req = genCertReq(userDn);
-        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), caRaSharedSecret, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+
+        PKIMessage req = genCertReq(userDn);
+        byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), caRaSharedSecret, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
+
+        // Given
+        req = genCertReqP10Cr(userDn);
+        messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), caRaSharedSecret, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+
         log.trace("<testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
     }
 
@@ -421,16 +610,36 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret() throws Exception {
         log.trace(">testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
+        
+        // Given
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         cmpConfiguration.setAuthenticationParameters(ALIAS, PBEPASSWORD);
         cmpConfiguration.setRAMode(ALIAS, true);
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        
         final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
-        final PKIMessage req = genCertReq(userDn);
-        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        PKIMessage req = genCertReq(userDn);
+        byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+        
+        // Given
+        req = genCertReqP10Cr(userDn);
+        messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
@@ -444,13 +653,30 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testRejectHmacProtectedMessage() throws Exception {
         log.trace(">testRejectHmacProtectedMessage");
+        
+        // Given
         final String incorrectPassword = "bar123";
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectHmacProtectedMessage");
-        final byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, ISSUER_CA_NAME, incorrectPassword, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectHmacProtectedMessage");
+        byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, ISSUER_CA_NAME, incorrectPassword, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
         checkCmpFailMessage(resp, "Authentication failed for message. Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testRejectHmacProtectedMessage");
+        messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, ISSUER_CA_NAME, incorrectPassword, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpFailMessage(resp, "Authentication failed for message. Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+        
         log.trace("<testRejectHmacProtectedMessage");
     }
 
@@ -461,6 +687,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     public void testRejectSignedMessageWithWrongCertificate() throws Exception {
         log.trace(">testRejectSignedMessageWithWrongCertificate");
 
+        // Given
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
@@ -468,17 +695,39 @@ public class CmpExtendedValidationTest extends CmpTestCase {
 
         final KeyPair incorrectCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, keys, incorrectCaKeys.getPrivate());
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectSignedMessageWithWrongCertificate");
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testRejectSignedMessageWithWrongCertificate");
 
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
+        
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: TrustAnchor found but certificate validation failed..", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testRejectSignedMessageWithWrongCertificate");
+
+        signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+       
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+        checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: TrustAnchor found but certificate validation failed..", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+
         log.trace("<testRejectSignedMessageWithWrongCertificate");
     }
     
@@ -488,22 +737,45 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testMessageSignedByExpiredCertRejected() throws Exception {
         log.trace(">testMessageSignedByExpiredCertRejected");
+       
+        // Given
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
         final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_ACTIVE, true);
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testMessageSignedByExpiredCertRejected");
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testMessageSignedByExpiredCertRejected");
 
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
+        
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: Could not validate certificate: certificate expired on 19700101000012GMT+00:00.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testMessageSignedByExpiredCertRejected");
+
+        signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
+
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+        checkCmpFailMessage(resp, "Authentication failed for message. Invalid certificate or certificate not issued by specified CA: Could not validate certificate: certificate expired on 19700101000012GMT+00:00.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+
         log.trace("<testMessageSignedByExpiredCertRejected");
     }
 
@@ -555,23 +827,48 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     @Test
     public void testMessageSignedByRevokedCertRejected() throws Exception {
         log.trace(">testMessageSignedByRevokedCertRejected");
+        
+        // Given
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         cmpConfiguration.setAuthenticationParameters(ALIAS, testx509ca.getName());
         cmpConfiguration.setResponseProtection(ALIAS, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
         final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, caPrivateKey, CertificateConstants.CERT_REVOKED, false);
-        final PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedByRevokedCertMessage");
+        PKIMessage req = genCertReq("C=SE,O=PrimeKey,CN=testVerifySignedByRevokedCertMessage");
 
-        final ArrayList<Certificate> signCertColl = new ArrayList<>();
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        final byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
                 BouncyCastleProvider.PROVIDER_NAME);
+
+        // When
         // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
         checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpFailMessage(resp, "Authentication failed for message. Signing certificate in CMP message was revoked.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
         shouldBeRejected();
+
+
+        // Given
+        req = genCertReqP10Cr("C=SE,O=PrimeKey,CN=testVerifySignedByRevokedCertMessage");
+
+        signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1,
+                BouncyCastleProvider.PROVIDER_NAME);
+
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+        checkCmpFailMessage(resp, "Authentication failed for message. Signing certificate in CMP message was revoked.", PKIBody.TYPE_ERROR, 0, PKIFailureInfo.badRequest);
+        shouldBeRejected();
+
         log.trace("<testMessageSignedByRevokedCertRejected");
     }
 
@@ -660,6 +957,12 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         return genCertReq(userDn, cacert, ISSUER_DN);
     }
 
+    private PKIMessage genCertReqP10Cr(final String userDn) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException, OperatorCreationException, NoSuchProviderException {
+        return genCertReqP10Cr(userDn, cacert, ISSUER_DN);
+    }
+
+
+
     private PKIMessage genCertReq(final String userDn, final X509Certificate issuerCert, final String issuerDn) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -669,6 +972,18 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final PKIMessage req = genCertReq(issuerDn, userDnX500, keys, issuerCert, nonce, transid, false, null, null, null, null, null, null);
         final CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        return req;
+    }
+
+
+    private PKIMessage genCertReqP10Cr(final String userDn, final X509Certificate issuerCert, final String issuerDn) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException, OperatorCreationException, NoSuchProviderException {
+        final byte[] nonce = CmpMessageHelper.createSenderNonce();
+        final byte[] transid = CmpMessageHelper.createSenderNonce();
+        this.nonce = nonce;
+        this.transid = transid;
+        userDnX500 = new X500Name(userDn);
+        final PKIMessage req = genP10CrCertReq(issuerDn, userDnX500, keys, issuerCert, nonce, transid, false, null, null, null, null, null, null, false);
+        reqId = 0;
         return req;
     }
 
