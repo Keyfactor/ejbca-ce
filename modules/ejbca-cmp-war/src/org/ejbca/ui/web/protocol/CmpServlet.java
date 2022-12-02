@@ -425,11 +425,11 @@ public class CmpServlet extends HttpServlet {
         if (raMode) {
             // Is the secret specified in the CMP alias? (Formerly specified in cmpProxy.properties)
             passwd = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);
-            if (passwd == null) {
+            if (StringUtils.isEmpty(passwd) || "-".equals(passwd)) {
                 final boolean isRaCaNameKeyId = StringUtils.equals(cmpConfiguration.getRACAName(alias), CmpConfiguration.PROFILE_USE_KEYID);
                 final boolean isRaEEPKeyId = StringUtils.equals(cmpConfiguration.getRAEEProfile(alias), CmpConfiguration.PROFILE_USE_KEYID);
                 final boolean isRaCPKeyId = StringUtils.equals(cmpConfiguration.getRACertProfile(alias), CmpConfiguration.PROFILE_USE_KEYID);
-                String caName = "-";
+                final String caName;
                 if (isRaCaNameKeyId && (isRaEEPKeyId || isRaCPKeyId)) {
                     // If true, then senderKeyId has caname... get CA CMP RA Shared Secret
                     caName = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
