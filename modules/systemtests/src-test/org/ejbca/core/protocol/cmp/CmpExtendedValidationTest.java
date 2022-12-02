@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
@@ -385,6 +388,31 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
         shouldBeAccepted();
         log.trace("<testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
+    }
+
+    /**
+     * This test will verify that a message protected by PBMAC1 HMAC will pass when ca cmp ra shared secret is used
+     */
+    @Test
+    public void testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret() throws Exception {
+        log.trace(">testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret");
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
+        cmpConfiguration.setRAMode(ALIAS, true);
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
+        final String caRaSharedSecret = "foo123";
+        final PKIMessage req = genCertReq(userDn);
+        final byte[] messageBytes = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(req, testx509ca.getName(),
+                caRaSharedSecret, "1.3.14.3.2.26", 1023, 1024, "1.3.6.1.5.5.8.1.2"));
+        // Send CMP request
+        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+        log.trace("<testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret");
     }
     
     /**
