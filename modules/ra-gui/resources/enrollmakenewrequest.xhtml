@@ -803,7 +803,8 @@
 							</h3>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
 								<h:outputLabel for="keyRecoveryCheckbox" value="#{msg.component_eedetails_field_keyrecoverable}"/>
-								<h:selectBooleanCheckbox id="keyRecoveryCheckbox" value="#{enrollMakeNewRequestBean.keyRecoverableUse}" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
+								<h:selectBooleanCheckbox id="keyRecoveryCheckbox" value="#{enrollMakeNewRequestBean.keyRecoverableUse}" 
+										rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}" disabled="#{enrollMakeNewRequestBean.keyRecoveryRequired}">
                             	    <f:ajax execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                             	</h:selectBooleanCheckbox>
 						    </h:panelGroup>

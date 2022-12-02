@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
@@ -254,7 +255,8 @@ public class CmpMessageHelperTest {
             fail();
         } catch (IllegalStateException e) {
             final String msg = e.getMessage();
-            assertEquals("org.bouncycastle.operator.OperatorCreationException: unable to create MAC calculator: null", msg);
+            // Asserts startsWith since error message differs between Java versions
+            assertTrue(StringUtils.startsWith(msg, "org.bouncycastle.operator.OperatorCreationException: unable to create MAC calculator:"));
         }
     }
 
