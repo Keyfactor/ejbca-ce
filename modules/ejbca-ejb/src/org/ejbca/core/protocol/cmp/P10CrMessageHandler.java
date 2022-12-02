@@ -62,7 +62,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
-import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
