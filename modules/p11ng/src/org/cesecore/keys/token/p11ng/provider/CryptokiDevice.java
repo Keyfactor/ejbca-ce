@@ -1426,7 +1426,7 @@ public class CryptokiDevice {
                         //      - but NOT as DER encoded
                         //      - and NOT curve25519 but edwards25519
                         // disregarding any of these deviations will allow to generate a key just fine, it will be shown as Ed25519, but will fail to Sign...
-                        final String utimacoCurve = "edwards25519";
+                        final String utimacoCurve = oid.equals(EdECObjectIdentifiers.id_Ed448) ? "edwards448" : "edwards25519";
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("cs_pkcs11_R3 / utimaco detected: CKM.EC_EDWARDS_KEY_PAIR_GEN=>CKM.EC_KEY_PAIR_GEN, CKA.EC_PARAMS=" + utimacoCurve);
                         }
