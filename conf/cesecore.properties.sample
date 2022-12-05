@@ -220,6 +220,30 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Default: not set
 #cluster.nodeid=
 
+#### Export events to XML log file 
+
+# The security audit logs shall be periodically extracted to a log file, in XML format.
+# The path of the security audit log file shall be configurable. The name of the security audit log file shall be auditlogfile_N.log, 
+# where N is the sequence number of the first log in the audit log file.
+# The specified time frequency at which the security audit log is extracted to a log file shall be configurable.
+# The security extracted audit logs shall include all the new security audit logs since the last extracted security audit logs.
+# The security audit log extraction event shall be included in the audit log (with the extracted initial and final log sequence 
+# number in the details).
+
+#
+# Enable the extraction of the security audit events to the XML log file
+# Default: true
+securityeventsaudit.xmlexporter.enable=true
+#
+# Path of the security audit log file
+# Default: /tmp/
+securityeventsaudit.xmlexporter.path_log=/tmp/
+#
+# Time frequency (in minutes) at which the security audit log is extracted
+# Default: 10
+securityeventsaudit.xmlexporter.timermin=10 
+
+
 #------------------- ECDSA implicitlyCA settings -------------
 # Sets pre-defined EC curve parameters for the implicitlyCA facility.
 # See the User's Guide for more information about the implicitlyCA facility.

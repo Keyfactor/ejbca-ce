@@ -12,3 +12,4 @@ modules/ra-gui/resources/js/jquery.min.js
 /.DS_Store
 .vscode/
 /.tern-project
+clientToolBox/

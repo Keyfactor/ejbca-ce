@@ -21,6 +21,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
+import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -86,6 +87,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.ejbca.core.ejb.audit.XmlAuditExporter;
 
 /**
  * Singleton used to start services and perform upgrade tasks at startup.
@@ -191,7 +194,7 @@ public class StartupSingletonBean {
             + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ" + "QUOBOvc=").getBytes());
 
     @PostConstruct
-    private void startup() {
+    private void startup() throws AuditRecordStorageException, AuthorizationDeniedException {
         //
         // Run all "safe" initializations first, 
         // i.e. those that does not depend on other running beans, components etc
@@ -379,6 +382,10 @@ public class StartupSingletonBean {
         // Start the clean up job to remove old OCSP responses
         log.debug(">startup start OCSP clean up job");
         ocspResponseCleanupSession.start();
+
+        // Start security audit logs
+        log.debug(">startup configure security audit logs");
+        XmlAuditExporter.startCustomLogging(authenticationToken, logSession);
 
         log.debug(">startup completed");
     }

@@ -119,8 +119,10 @@ public enum EventTypes implements EventType {
     LOG_EXPORT,
     /** Change of protection settings for audit log records. */
     LOG_MANAGEMENT_CHANGE,
-    /** <i>Event type is currently only used by EJBCA development tests.</i> */
+    /** Signature of exported audit log records */
     LOG_SIGN,
+    /** Export audit log records */
+    LOG_XML,
     /** Verification of existing audit log records. */
     LOG_VERIFY,
     /** Creation of an administrative role. */
