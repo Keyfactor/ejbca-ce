@@ -118,7 +118,7 @@ public class CAImportExportTest  {
     @Test
 	public void test02ImportExportSHA1withECDSA() throws Exception {
 	    log.trace("<test02ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test02", "prime256v1",  "2048", false);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test02", "prime256v1",  "2048");
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catoken);
@@ -182,7 +182,7 @@ public class CAImportExportTest  {
     @Test
 	public void test06ImportExportSHA1withDSA() throws Exception {
 	    log.trace("<test06ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test06", "DSA1024", "1024", false);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test06", "DSA1024", "1024");
         try {
             final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catokeninfo);

@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -52,6 +53,9 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -63,6 +67,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -80,12 +85,15 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     private static final String USERNAME = "CertificateStoreSessionTest";
     private static final String SELFCERT_DN = "C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo";
+    private static final String CROSS_CERT_CA_NAME = "CertificateStoreSessionTest-CrossCertCa";
 
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private TestRaMasterApiProxySessionRemote raMasterApiProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateStoreSessionTest"));
 
     @BeforeClass
@@ -829,7 +837,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 	// Commented out code.
 	// Keep it here, because it can be nice to have as a reference how this can be done.
 	// Commented out though, since the issue is fixed and the method not available anymore.
-//	@Test
+//	//@Test
 //    public void testBlindSQLInjection_findExpirationInfo() throws Exception {
 //		/* Vulnerability type : Blind SQL Injection
 //	    First, certificatedata table in the database should not be empty in order to exploit the vulnerability
@@ -866,6 +874,93 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         certificateStoreSession.storeCertificateRemote(admin, EJBTools.wrap(xcert), USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
         		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
         return xcert;
+    }
+    
+    @Test
+    public void testCrossCaCertChainSearch() throws Exception {
+        CaTestUtils.removeCa(alwaysAllowToken, null, CROSS_CERT_CA_NAME);
+        
+        String rootCaDn = "CN=myRootCa001";
+        KeyPair rootCaKeyPair1 = KeyTools.genKeys("4096", AlgorithmConstants.KEYALGORITHM_RSA);
+        long validity = 180l * 86400l * 1000l;
+        X509Certificate rootCert1 = CertTools.genCertForPurpose(rootCaDn, rootCaDn, 
+                new Date(System.currentTimeMillis() - validity),
+                new Date(System.currentTimeMillis() + validity), null, 
+                rootCaKeyPair1.getPrivate(), rootCaKeyPair1.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, 0, null, null, 
+                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        String rootCert1FingerPrint = CertTools.getFingerprintAsString(rootCert1);
+        
+        String intermediateDn = "CN=intermediateDn001";
+        validity = 60l * 86400l * 1000l;
+        KeyPair intermediateCaKeyPair = KeyTools.genKeys("3072", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate intermediateCaCert = CertTools.genCertForPurpose(intermediateDn, rootCaDn, 
+                new Date(System.currentTimeMillis() - validity),
+                new Date(System.currentTimeMillis() + validity), null, 
+                rootCaKeyPair1.getPrivate(), intermediateCaKeyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, 0, null, null, 
+                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        String intermediateCaCertFingerPrint = CertTools.getFingerprintAsString(intermediateCaCert);
+        
+        KeyPair caKeyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        validity = 30l * 86400l * 1000l;
+        X509Certificate subCaCert = CertTools.genCertForPurpose("CN="+CROSS_CERT_CA_NAME, intermediateDn, 
+                new Date(System.currentTimeMillis() - validity),
+                new Date(System.currentTimeMillis() + validity), null, 
+                intermediateCaKeyPair.getPrivate(), caKeyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, 0, null, null, 
+                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        String subCaCertFingerPrint = CertTools.getFingerprintAsString(subCaCert);
+        
+        certificateStoreSession.storeCertificateRemote(alwaysAllowToken, 
+                EJBTools.wrap(rootCert1), "SYSTEMCA", rootCert1FingerPrint,
+                CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_CROSS_CA_CHAIN,
+                CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
+        
+        certificateStoreSession.storeCertificateRemote(alwaysAllowToken, 
+                EJBTools.wrap(intermediateCaCert), "SYSTEMCA", intermediateCaCertFingerPrint,
+                CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_CROSS_CA_CHAIN,
+                CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
+        
+        certificateStoreSession.storeCertificateRemote(alwaysAllowToken, 
+                EJBTools.wrap(subCaCert), "SYSTEMCA", rootCert1FingerPrint,
+                CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_CROSS_CA_CHAIN,
+                CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
+        
+        KeyPair eeKeyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        String userName = "testCrossCertEE";
+        X509Certificate eeLeafCert = CertTools.genCertForPurpose("CN=" + userName, "CN="+CROSS_CERT_CA_NAME, 
+                new Date(System.currentTimeMillis() - (1 * 86400 * 1000)),
+                new Date(System.currentTimeMillis() + (15 * 86400 * 1000)), null, 
+                caKeyPair.getPrivate(), eeKeyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, 0, null, null, 
+                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        String eeLeafCertFingerPrint = CertTools.getFingerprintAsString(eeLeafCert);
+        certificateStoreSession.storeCertificateRemote(alwaysAllowToken, EJBTools.wrap(eeLeafCert), USERNAME, 
+                subCaCertFingerPrint, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
+        
+        X509CA x509Ca = CaTestUtils.createTestX509CA("CN="+CROSS_CERT_CA_NAME, null, false);
+        caSession.addCA(alwaysAllowToken, x509Ca);
+        
+        try {
+            X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, CROSS_CERT_CA_NAME);
+            assertNull(caInfo.getAlternateCertificateChains());
+            
+            List<CertificateWrapper> certificateChain = 
+                    raMasterApiProxySession.searchForCertificateChainWithPreferredRoot(
+                            alwaysAllowToken, eeLeafCertFingerPrint, CertTools.getFingerprintAsString(rootCaDn.getBytes()));
+            assertEquals("certificateChain length is wrong." , certificateChain.size(), 4);
+            assertEquals("leaf certificate is wrong." , eeLeafCertFingerPrint, CertTools.getFingerprintAsString(certificateChain.get(0).getCertificate()));
+            assertEquals("ca(sub) certificate is wrong." , subCaCertFingerPrint, CertTools.getFingerprintAsString(certificateChain.get(1).getCertificate()));
+            assertEquals("ca(intermediate) certificate is wrong." , intermediateCaCertFingerPrint, CertTools.getFingerprintAsString(certificateChain.get(2).getCertificate()));
+            assertEquals("root ca certificate is wrong." , rootCert1FingerPrint, CertTools.getFingerprintAsString(certificateChain.get(3).getCertificate()));
+        } finally {
+            internalCertStoreSession.removeCertificate(eeLeafCertFingerPrint);
+            internalCertStoreSession.removeCertificate(subCaCertFingerPrint);
+            internalCertStoreSession.removeCertificate(intermediateCaCertFingerPrint);
+            internalCertStoreSession.removeCertificate(rootCert1FingerPrint);
+            CaTestUtils.removeCa(alwaysAllowToken, null, CROSS_CERT_CA_NAME);
+        }
     }
 
 }
