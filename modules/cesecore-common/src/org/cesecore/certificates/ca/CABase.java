@@ -80,10 +80,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     // protected fields.
     private static final String FINISHUSER = "finishuser";
 
-    /**
-     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
-     */
-    @Deprecated
     private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS = "doEnforceUniquePublicKeys";
     private static final String DO_ENFORCE_KEY_RENEWAL = "doEnforceKeyRenewal";
     private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";

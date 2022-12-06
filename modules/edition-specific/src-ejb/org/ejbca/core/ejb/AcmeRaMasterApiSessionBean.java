@@ -60,7 +60,7 @@ import org.ejbca.core.protocol.acme.AcmeRaMasterApiSessionLocal;
 // We can't rely on transactions for calls that will do persistence over the RaMasterApi, so avoid the overhead of when methods are invoked
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
-    
+
     @Override
     public void revokeCert(AuthenticationToken authenticationToken, BigInteger certserno, Date revocationdate, String issuerdn, int reason,
             boolean checkDate) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
@@ -247,6 +247,11 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
 
     @Override
     public boolean isPeerAuthorizedAcme() {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 }

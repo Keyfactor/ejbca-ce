@@ -123,6 +123,11 @@
 # Default: 30
 #ocsp.maxAge = 30
 
+# Base 'Expires' cache header on max-age instead of than nextUpdate.
+# Enabling this is not compliant to RFC 5019 
+# Default: false
+#ocsp.expires.useMaxAge=false
+
 # You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
 # You can find the certificateProfileId (999 in the example below) in the CA UI.

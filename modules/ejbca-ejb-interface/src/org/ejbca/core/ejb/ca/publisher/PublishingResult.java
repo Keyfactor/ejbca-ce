@@ -61,7 +61,7 @@ public class PublishingResult implements Serializable {
      * @return true if ten failed attempts have been made without any successes.
      */
     public boolean shouldBreakPublishingOperation() {
-        return (successes.size() == 0) && (failures.size() > 10);
+        return (successes.size() == 0) && (failures.size() >= 10);
     }
     
     public int getSuccesses() {

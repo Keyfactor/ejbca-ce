@@ -16,17 +16,21 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -42,6 +46,7 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -71,11 +76,13 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -96,14 +103,101 @@ public class CaAdminSessionBeanTest {
             EjbRemoteHelper.MODULE_TEST);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
-
+    protected static final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    
     private AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("CaAdminSessionBeanTest");
 
     private static final String TEST_BC_CERT_CA = "TestBCProviderCertCA";
+    private static final String TEST_CROSS_CERT_CA = "CaAdminSessionBeanTest-importCrossCertificateTest";
     
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
+    
+    @Before
+    public void before() throws Exception {
+        CaTestUtils.removeCa(alwaysAllowToken, null, TEST_CROSS_CERT_CA);
+    }
+    
+    @Test
+    public void importCrossCertificateTest() throws Exception {
+
+        X509CA x509Ca = CaTestUtils.createTestX509CA("CN=" +TEST_CROSS_CERT_CA, null, false);
+        caSession.addCA(alwaysAllowToken, x509Ca);
+        
+        X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, TEST_CROSS_CERT_CA);
+        assertNull(caInfo.getAlternateCertificateChains());
+        
+        String rootCaDn = "CN=myRootCa001";
+        KeyPair rootCaKeyPair1 = KeyTools.genKeys("4096", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate rootCert1 = CertTools.genSelfCertForPurpose(rootCaDn, 30 * 365, null, rootCaKeyPair1.getPrivate(),
+                rootCaKeyPair1.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, 0, null, null, 
+                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        String rootCert1FingerPrint = CertTools.getFingerprintAsString(rootCert1);
+        
+        String clientCaSubjectDn = CertTools.getSubjectDN(caInfo.getCertificateChain().get(0));
+        PublicKey caPublicKey = caInfo.getCertificateChain().get(0).getPublicKey();
+        X509Certificate subCaCertByRootCa1 = CertTools.genCertForPurpose(clientCaSubjectDn, rootCaDn, 
+                CertTools.getNotBefore(caInfo.getCertificateChain().get(0)),
+                CertTools.getNotAfter(caInfo.getCertificateChain().get(0)), null, 
+                rootCaKeyPair1.getPrivate(), caPublicKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, 0, null, null, 
+                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        String subCaCertFingerPrint = CertTools.getFingerprintAsString(subCaCertByRootCa1);
+        
+        List<Certificate> crossChain = new ArrayList<>();
+        crossChain.add(subCaCertByRootCa1);
+        crossChain.add(rootCert1);
+        caAdminSession.updateCrossCaCertificateChain(alwaysAllowToken, caInfo, crossChain);
+        
+        caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, TEST_CROSS_CERT_CA);
+        if (caInfo.getAlternateCertificateChains()==null) {
+            fail("cross certificate chain is not populated in CA.");
+        }
+        List<String> fingerPrints = caInfo.getAlternateCertificateChains().get(rootCaDn);
+        if(fingerPrints==null || fingerPrints.size()!=2) {
+            fail("cross certificate chain is null or wrong size.");
+        } 
+        if(!fingerPrints.get(0).equalsIgnoreCase(subCaCertFingerPrint) ||
+                !fingerPrints.get(1).equalsIgnoreCase(rootCert1FingerPrint) ) {
+            fail("cross certificate chain is description wrong.");
+        }
+        if(certificateStoreSession.findCertificateByFingerprintRemote(rootCert1FingerPrint)==null) {
+            fail("cross certificate chain with root ca certificate is not persisted.");
+        }
+        if(certificateStoreSession.findCertificateByFingerprintRemote(subCaCertFingerPrint)==null) {
+            fail("cross certificate chain with sub ca certificate is not persisted.");
+        }
+        
+        KeyPair randomKeypair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        subCaCertByRootCa1 = CertTools.genCertForPurpose(clientCaSubjectDn, rootCaDn, 
+                CertTools.getNotBefore(caInfo.getCertificateChain().get(0)),
+                CertTools.getNotAfter(caInfo.getCertificateChain().get(0)), null, 
+                rootCaKeyPair1.getPrivate(), randomKeypair.getPublic(), 
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, 0, null, null, 
+                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        
+        crossChain.clear();
+        crossChain.add(subCaCertByRootCa1);
+        crossChain.add(rootCert1);
+        try {
+            caAdminSession.updateCrossCaCertificateChain(alwaysAllowToken, caInfo, crossChain);
+            fail("updated cross chain with wrong CA key");
+        } catch (Exception e) { }
+        
+        subCaCertByRootCa1 = CertTools.genCertForPurpose("CN=xxxxxxx", rootCaDn, 
+                CertTools.getNotBefore(caInfo.getCertificateChain().get(0)),
+                CertTools.getNotAfter(caInfo.getCertificateChain().get(0)), null, 
+                rootCaKeyPair1.getPrivate(), caPublicKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, 0, null, null, 
+                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        crossChain.clear();
+        crossChain.add(subCaCertByRootCa1);
+        crossChain.add(rootCert1);
+        try {
+            caAdminSession.updateCrossCaCertificateChain(alwaysAllowToken, caInfo, crossChain);
+            fail("updated cross chain with wrong CA subjectDn");
+        } catch (Exception e) { }
+        
     }
 
     @Test

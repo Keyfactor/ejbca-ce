@@ -77,6 +77,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_ALLOWAUTOMATICKEYUPDATE = "allowautomatickeyupdate";
     public static final String CONFIG_ALLOWUPDATEWITHSAMEKEY  = "allowupdatewithsamekey";
     public static final String CONFIG_ALLOWSERVERGENERATEDKEYS  = "allowservergenkeys";
+    public static final String CONFIG_EXTENDEDVALIDATION  = "extendedvalidation";
     /** @deprecated since 7.4.0, value is instead set per CA. Only remains for upgrades. */
     @Deprecated
     public static final String CONFIG_CERTREQHANDLER_CLASS    = "certreqhandler.class";
@@ -89,7 +90,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> CMP_BOOLEAN_KEYS = Arrays.asList(CONFIG_VENDORCERTIFICATEMODE, CONFIG_ALLOWRAVERIFYPOPO, CONFIG_RA_ALLOWCUSTOMCERTSERNO,
-                                                        CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY, CONFIG_ALLOWSERVERGENERATEDKEYS);
+                                                        CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY, CONFIG_ALLOWSERVERGENERATEDKEYS,
+                                                        CONFIG_EXTENDEDVALIDATION);
        
     private final String ALIAS_LIST = "aliaslist";
     public static final String CMP_CONFIGURATION_ID = "1";
@@ -127,6 +129,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_OMITVERIFICATIONSINEEC = "false";
     private static final String DEFAULT_RACERT_PATH = "";
     private static final String DEFAULT_CERTREQHANDLER = ""; //"org.ejbca.core.protocol.unid.UnidFnrHandler";
+    private static final String DEFAULT_EXTENDEDVALIDATION = "false";
 
     
     /** Creates a new instance of CmpConfiguration */
@@ -188,6 +191,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);       
             data.put(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY, DEFAULT_KUR_ALLOW_SAME_KEY);
             data.put(alias + CONFIG_CERTREQHANDLER_CLASS, DEFAULT_CERTREQHANDLER);
+            data.put(alias + CONFIG_EXTENDEDVALIDATION, DEFAULT_EXTENDEDVALIDATION);
         }
     }
     
@@ -223,6 +227,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY);
         keys.add(alias + CONFIG_CERTREQHANDLER_CLASS);
         keys.add(alias + CONFIG_ALLOWSERVERGENERATEDKEYS);
+        keys.add(alias + CONFIG_EXTENDEDVALIDATION);
         return keys;
     }
 
@@ -652,7 +657,17 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         setValue(key, Boolean.toString(allowSameKey), alias);
     }
-    
+
+    public boolean getUseExtendedValidation(String alias) {
+        String key = alias + "." + CONFIG_EXTENDEDVALIDATION;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+    public void setUseExtendedValidation(String alias, boolean use) {
+        String key = alias + "." + CONFIG_EXTENDEDVALIDATION;
+        setValue(key, Boolean.toString(use), alias);
+    }
+
     /**
      * @deprecated as of 7.4.0 this has setting is set per CA and is universal for all incoming PKCS#10 requests. Only remains for upgrades.
      */

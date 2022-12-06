@@ -737,4 +737,16 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     public void setOmitVerificationsInEec(final boolean omit) {
         cmpConfiguration.setOmitVerificationsInECC(getSelectedCmpAlias(), omit);
     }
+
+    public boolean isUseExtendedValidation() {
+        return cmpConfiguration.getUseExtendedValidation(getSelectedCmpAlias());
+    }
+
+    public void setUseExtendedValidation(boolean use) {
+        cmpConfiguration.setUseExtendedValidation(getSelectedCmpAlias(), use);
+    }
+
+    public boolean isShowExtendedConfiguration(){
+        return getEjbcaWebBean().isRunningEnterprise() ;
+    }
 }

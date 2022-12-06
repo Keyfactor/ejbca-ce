@@ -270,7 +270,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200, this.configAlias);
-            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, subjectDN, caCertificate, resp, reqId);
 
             assertTrue("Failed to create user " + USERNAME, this.endEntityManagementSession.existsUser(USERNAME));
@@ -284,7 +285,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req1);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, this.configAlias);
-            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false,
+                    pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
 
             // Now revoke the bastard using the CMPv1 reason code!
@@ -295,7 +297,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, this.configAlias);
-            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false,
+                    pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
             int reason = this.certificateStoreSession.getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);

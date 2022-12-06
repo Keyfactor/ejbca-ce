@@ -14,6 +14,9 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -21,9 +24,9 @@ import javax.ejb.TransactionAttributeType;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
@@ -44,6 +47,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
     private static final String RESOURCE_STATUS = "OK";
     protected static final String RESOURCE_VERSION = "2.0";
+    private static final Logger log = Logger.getLogger(CertificateRestResourceV2.class);
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
@@ -64,8 +68,16 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException, CertificateParsingException {
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         validateObject(searchCertificatesRestRequest);
-        CertificateRestResourceUtil.authorizeSearchCertificatesRestRequestReferences(authenticationToken, raMasterApi, searchCertificatesRestRequest);
-        final SearchCertificatesRestResponseV2 searchCertificatesRestResponse = searchCertificates(authenticationToken, searchCertificatesRestRequest);
+        Map<Integer, String> availableEndEntityProfiles = 
+                CertificateRestResourceUtil.loadAuthorizedEndEntityProfiles(authenticationToken, raMasterApi);
+        Map<Integer, String> availableCertificateProfiles = 
+                CertificateRestResourceUtil.loadAuthorizedCertificateProfiles(authenticationToken, raMasterApi);
+        Map<Integer, String> availableCAs = 
+                CertificateRestResourceUtil.loadAuthorizedCAs(authenticationToken, raMasterApi);
+        CertificateRestResourceUtil.authorizeSearchCertificatesRestRequestReferences(
+                authenticationToken, raMasterApi, searchCertificatesRestRequest, 
+                availableEndEntityProfiles, availableCertificateProfiles, availableCAs);
+        final SearchCertificatesRestResponseV2 searchCertificatesRestResponse = searchCertificates(authenticationToken, searchCertificatesRestRequest, availableEndEntityProfiles, availableCertificateProfiles);
         return Response.ok(searchCertificatesRestResponse).build();
     }
 
@@ -81,11 +93,13 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      */
     private SearchCertificatesRestResponseV2 searchCertificates(
             final AuthenticationToken authenticationToken,
-            final SearchCertificatesRestRequestV2 restRequest
+            final SearchCertificatesRestRequestV2 restRequest,
+            Map<Integer, String> availableEndEntityProfiles,
+            Map<Integer, String> availableCertificateProfiles
     ) throws RestException, CertificateEncodingException, CertificateParsingException {
         final RaCertificateSearchRequestV2 raRequest = SearchCertificatesRestRequestV2.converter().toEntity(restRequest);
         final RaCertificateSearchResponseV2 raResponse = (RaCertificateSearchResponseV2) raMasterApi.searchForCertificatesV2(authenticationToken, raRequest);
-        return SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, restRequest.getPagination());
+        return SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, restRequest.getPagination(), availableEndEntityProfiles, availableCertificateProfiles);
     }
     
     /**

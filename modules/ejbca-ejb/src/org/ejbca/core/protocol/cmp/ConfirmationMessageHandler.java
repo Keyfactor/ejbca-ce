@@ -20,7 +20,9 @@ import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -123,12 +125,21 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 LOG.error("Exception during CMP response protection: ", e);
             }
         }
-        // We don't need to check the shared secret in client mode (= the EndEntiy password) because PBE protection is only supported in RA mode
-        CmpPbeVerifyer verifyer = new CmpPbeVerifyer(cmpRequestMessage.getMessage());
-        String owfAlg = verifyer.getOwfOid();
-        String macAlg = verifyer.getMacOid();
-        int iterationCount = verifyer.getIterationCount();
-        cmpResponseMessage.setPbeParameters(keyId, sharedSecret, owfAlg, macAlg, iterationCount);
+        final ASN1ObjectIdentifier protectionAlg = cmpRequestMessage.getMessage().getHeader().getProtectionAlg().getAlgorithm();
+        if (protectionAlg.equals(PKCSObjectIdentifiers.id_PBMAC1)) {
+            CmpPbmac1Verifyer verifyer = new CmpPbmac1Verifyer(cmpRequestMessage.getMessage());
+            final String prfAlg = verifyer.getPrfOid();
+            final String macAlg = verifyer.getMacOid();
+            final int iterationCount = verifyer.getIterationCount();
+            final int dkLen = verifyer.getDkLen();
+            cmpResponseMessage.setPbmac1Parameters(keyId, sharedSecret, prfAlg, macAlg, iterationCount, dkLen);
+        } else {
+            CmpPbeVerifyer verifyer = new CmpPbeVerifyer(cmpRequestMessage.getMessage());
+            String owfAlg = verifyer.getOwfOid();
+            String macAlg = verifyer.getMacOid();
+            int iterationCount = verifyer.getIterationCount();
+            cmpResponseMessage.setPbeParameters(keyId, sharedSecret, owfAlg, macAlg, iterationCount);
+        }
 	}
 	
 	private void signResponse(CmpConfirmResponseMessage cresp, BaseCmpMessage cmpRequestMessage) {

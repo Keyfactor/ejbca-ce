@@ -200,7 +200,7 @@ public final class EjbcaWebBeanImplUnitTest {
     private void expectCertAuthWithoutRole() {
         mockedAuthToken = EasyMock.createStrictMock(X509CertificateAuthenticationToken.class);
         allMockObjects.add(mockedAuthToken);
-        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingClientCertificate(same(adminCert))).andReturn(mockedAuthToken);
+        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingClientCertificate(same(adminCert))).andReturn((X509CertificateAuthenticationToken) mockedAuthToken);
         expect(ejbs.getEndEntityManagementSession().checkIfCertificateBelongToUser(adminSerial, ISSUER_DN)).andReturn(true);
         expect(ejbs.getCertificateStoreSession().findCertificateByIssuerAndSerno(ISSUER_DN, adminSerial)).andReturn(adminCert);
         expect(ejbs.getRoleSession().getRolesAuthenticationTokenIsMemberOf(mockedAuthToken)).andReturn(Collections.emptyList());
@@ -338,7 +338,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectRequestGetters();
         mockedAuthToken = EasyMock.createStrictMock(X509CertificateAuthenticationToken.class);
         allMockObjects.add(mockedAuthToken);
-        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingClientCertificate(same(adminCert))).andReturn(mockedAuthToken);
+        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingClientCertificate(same(adminCert))).andReturn((X509CertificateAuthenticationToken) mockedAuthToken);
         expect(ejbs.getEndEntityManagementSession().checkIfCertificateBelongToUser(adminSerial, ISSUER_DN)).andReturn(false);
         expectErrorPageInitiaization(false);
         replayAll();

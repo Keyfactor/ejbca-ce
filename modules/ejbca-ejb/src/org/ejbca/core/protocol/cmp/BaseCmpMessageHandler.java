@@ -34,7 +34,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
  * 
  * This class contains common methods for extracting the RA authentication secret.
  * 
- * @version $Id$
  */
 public class BaseCmpMessageHandler {
 
