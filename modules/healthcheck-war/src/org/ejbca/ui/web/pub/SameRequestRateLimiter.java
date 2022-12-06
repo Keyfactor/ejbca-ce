@@ -49,9 +49,9 @@ public class SameRequestRateLimiter<T> {
     private Result result = null;
     
     public class Result {
-        private boolean isFirst = true;
-        private T value;
-        private Throwable throwable = null;
+        private volatile boolean isFirst = true;
+        private volatile T value;
+        private volatile Throwable throwable = null;
         
         /** @return true if the setValue should be called. */
         public boolean isFirst() {
