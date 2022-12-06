@@ -1145,6 +1145,92 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         );
         return returnval;
     }
+    
+    @Override
+    public void updateCrossCaCertificateChain(AuthenticationToken authenticationToken, CAInfo caInfo, 
+            Collection<?> crossCertificateChain) 
+           throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException {
+        
+        if(caInfo.getCAType()!=CAInfo.CATYPE_X509) {
+            log.info("Alternate cross-certificate chain may only be uploaded for X509 CAs.");
+            return;
+        }
+        
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAEDIT.resource())) {
+            logAuditEvent(
+                    EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
+                    authenticationToken, caInfo.getCAId(),
+                    intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", caInfo.getCAId())
+            );
+            return;
+        }
+        
+        List<Certificate> validatedChain = null;
+        try {
+            validatedChain = CertTools.createCertChain(crossCertificateChain, new Date());
+        } catch (CertPathValidatorException | InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException
+                | CertificateException e) {
+            log.error("Uploaded cross certificate chain validation failed: ", e);
+            throw new CertPathValidatorException(e);
+        }
+        
+        // validate leaf certificate chain matches CA
+        // subjectDn and public key
+        if(!CertTools.getSubjectDN(validatedChain.get(0)).equalsIgnoreCase(caInfo.getSubjectDN())) {
+            String msg = "Uploaded cross certificate chain leaf certificate did not match CA subjectdn.";
+            log.error(msg);
+            throw new CertPathValidatorException(msg);
+        }
+        
+        if(!caInfo.getCertificateChain().get(0).getPublicKey().equals(validatedChain.get(0).getPublicKey())) {
+            String msg = "Uploaded cross certificate chain leaf certificate did not match CA public key.";
+            log.error(msg);
+            throw new CertPathValidatorException(msg);
+        }
+        
+        // for internal CAs, we publish the certificate chain unless future roll over
+        // these cross certificates are not stored in CaCertificateCache
+        // in case of OCSP or other scenarios verification should still work as the CA public key is same
+        for (int i=validatedChain.size()-1; i>=0; i--) {
+            String fingerprint = CertTools.getFingerprintAsString(validatedChain.get(i));
+            int signerIndex = i == validatedChain.size()-1 ? i : i+1; 
+            String cafp =  CertTools.getFingerprintAsString(validatedChain.get(signerIndex));
+            CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);
+            if (certificateDataWrapper == null) {
+                certificateDataWrapper = certificateStoreSession.storeCertificate(authenticationToken, 
+                        validatedChain.get(i), "SYSTEMCA", cafp,
+                        CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_CROSS_CA_CHAIN,
+                        CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                        CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
+            }
+            if (caInfo.getCRLPublishers() != null) {
+                publisherSession.storeCertificate(authenticationToken, caInfo.getCRLPublishers(), certificateDataWrapper, null, caInfo.getSubjectDN(), null);
+            }
+        }
+        
+        String rootCaSubjectDn = CertTools.getSubjectDN(validatedChain.get(validatedChain.size()-1));
+        List<String> fingerprints = new ArrayList<>();
+        for(Certificate c: validatedChain) {
+            fingerprints.add(CertTools.getFingerprintAsString(c));
+        }
+        log.debug("Creating new cross chain with root CA:" + rootCaSubjectDn + "; fingerprints: " + fingerprints);
+        Map<String, List<String>> alternateChains = ((X509CAInfo)caInfo).getAlternateCertificateChains();
+        if(alternateChains==null) {
+            alternateChains = new HashMap<String, List<String>>();
+            ((X509CAInfo)caInfo).setAlternateCertificateChains(alternateChains);
+        }
+        alternateChains.put(rootCaSubjectDn, fingerprints);
+        
+        // save CA
+        editCA(authenticationToken, caInfo);
+        
+        // similar audit log message as externally signed CA
+        logAuditEvent(
+                EventTypes.CA_EDITING, EventStatus.SUCCESS,
+                authenticationToken, caInfo.getCAId(),
+                intres.getLocalizedMessage("caadmin.crosschainimported", caInfo.getCAId())
+        );
+    }
 
     @Override
     public void receiveResponse(AuthenticationToken authenticationToken, int caid, ResponseMessage responsemessage, Collection<?> cachain,

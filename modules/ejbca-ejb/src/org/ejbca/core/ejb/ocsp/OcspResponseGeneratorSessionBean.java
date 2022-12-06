@@ -1331,8 +1331,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     
     @Override
     public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
-            String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger, boolean isPreSigning, 
-            boolean issueFinalResponse)
+            String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger,
+            boolean isPreSigning, boolean issueFinalResponse, boolean includeExpiredCertificates)
             throws MalformedRequestException, OCSPException {
         //Check parameters
         if (auditLogger == null) {
@@ -1714,7 +1714,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(issuerDnOcspRequest, certId.getSerialNumber());
                         status = certificateStatusHolder.getCertificateStatus();
                     }
-                    if(status.getExpirationDate()<System.currentTimeMillis() && isPreSigning) {
+                    if(status.getExpirationDate()<System.currentTimeMillis() && isPreSigning && !includeExpiredCertificates) {
                         return null; // do not store response for expired certificates
                     }
                     if (!isPreSigning && transactionLogger.isEnabled()) {
@@ -2288,7 +2288,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     @Override
-    public void preSignOcspResponse(X509Certificate cacert, final BigInteger serialNr, boolean issueFinalResponse, String certIDHashAlgorithm) {
+    public void preSignOcspResponse(X509Certificate cacert, final BigInteger serialNr, boolean issueFinalResponse, boolean includeExpiredCertificates, String certIDHashAlgorithm) {
         final OCSPReq req;
         final OCSPReqBuilder gen = new OCSPReqBuilder();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -2307,7 +2307,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
             gen.addRequest(certId);
             req = gen.build();
-            getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true, issueFinalResponse);
+            getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true, issueFinalResponse, includeExpiredCertificates);
         } catch (Throwable e) {
             final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
             log.info(errMsg);

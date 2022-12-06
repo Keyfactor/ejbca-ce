@@ -1648,6 +1648,7 @@ public abstract class CertTools {
         }
     }
 
+
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
             List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
@@ -1665,130 +1666,13 @@ public abstract class CertTools {
         return genSelfCertForPurpose(dn, firstDate, lastDate, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, ldapOrder, additionalExtensions);
     }
     
+    
     public static X509Certificate genSelfCertForPurpose(String dn, Date firstDate, Date lastDate, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
             List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
-        // Transform the PublicKey to be sure we have it in a format that the X509 certificate generator handles, it might be
-        // a CVC public key that is passed as parameter
-        PublicKey publicKey = null;
-        if (pubKey instanceof RSAPublicKey) {
-            RSAPublicKey rsapk = (RSAPublicKey) pubKey;
-            RSAPublicKeySpec rSAPublicKeySpec = new RSAPublicKeySpec(rsapk.getModulus(), rsapk.getPublicExponent());
-            try {
-                publicKey = KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
-            } catch (InvalidKeySpecException e) {
-                log.error("Error creating RSAPublicKey from spec: ", e);
-                publicKey = pubKey;
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException("RSA was not a known algorithm", e);
-            }
-        } else if (pubKey instanceof ECPublicKey) {
-            ECPublicKey ecpk = (ECPublicKey) pubKey;
-            try {
-                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
-                final String algo = ecpk.getAlgorithm();
-                if (algo.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-                    try {
-                        publicKey = KeyFactory.getInstance("ECGOST3410").generatePublic(ecspec);
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new IllegalStateException("ECGOST3410 was not a known algorithm", e);
-                    }
-                } else if (algo.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
-                    try {
-                        publicKey = KeyFactory.getInstance("DSTU4145").generatePublic(ecspec);
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new IllegalStateException("DSTU4145 was not a known algorithm", e);
-                    }
-                } else {
-                    try {
-                        publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new IllegalStateException("EC was not a known algorithm", e);
-                    }
-                }
-            } catch (InvalidKeySpecException e) {
-                log.error("Error creating ECPublicKey from spec: ", e);
-                publicKey = pubKey;
-            } catch (NullPointerException e) {
-                log.debug("NullPointerException, probably it is implicitlyCA generated keys: " + e.getMessage());
-                publicKey = pubKey;
-            }
-        } else {
-            log.debug("Not converting key of class. " + pubKey.getClass().getName());
-            publicKey = pubKey;
-        }
-
-        // Serial number is random bits
-        byte[] serno = new byte[16];
-        SecureRandom random;
-        try {
-            random = SecureRandom.getInstance("SHA1PRNG");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA1PRNG was not a known algorithm", e);
-        }
-        random.nextBytes(serno);
-
-        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn, ldapOrder), new BigInteger(serno).abs(),
-                firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);
-
-        // Basic constranits is always critical and MUST be present at-least in CA-certificates.
-        BasicConstraints bc = new BasicConstraints(isCA);
-        certbuilder.addExtension(Extension.basicConstraints, true, bc);
-
-        // Put critical KeyUsage in CA-certificates
-        if (isCA || keyusage != 0) {
-            X509KeyUsage ku = new X509KeyUsage(keyusage);
-            certbuilder.addExtension(Extension.keyUsage, true, ku);
-        }
-
-        if ((privateKeyNotBefore != null) || (privateKeyNotAfter != null)) {
-            final ASN1EncodableVector v = new ASN1EncodableVector();
-            if (privateKeyNotBefore != null) {
-                v.add(new DERTaggedObject(false, 0, new DERGeneralizedTime(privateKeyNotBefore)));
-            }
-            if (privateKeyNotAfter != null) {
-                v.add(new DERTaggedObject(false, 1, new DERGeneralizedTime(privateKeyNotAfter)));
-            }
-            certbuilder.addExtension(Extension.privateKeyUsagePeriod, false, new DERSequence(v));
-        }
-
-        // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
-        try {
-            if (isCA) {
-                JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
-                SubjectKeyIdentifier ski = extensionUtils.createSubjectKeyIdentifier(publicKey);
-                AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(publicKey);
-                certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
-                certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
-            }
-        } catch (IOException e) { // do nothing
-        }
-
-        // CertificatePolicies extension if supplied policy ID, always non-critical
-        if (policyId != null) {
-            PolicyInformation pi = new PolicyInformation(new ASN1ObjectIdentifier(policyId));
-            DERSequence seq = new DERSequence(pi);
-            certbuilder.addExtension(Extension.certificatePolicies, false, seq);
-        }
-        // Add any additional
-        if (additionalExtensions != null) {
-            for (final Extension extension : additionalExtensions) {
-                certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
-            }
-        }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(privKey), 20480);
-        final X509CertificateHolder certHolder = certbuilder.build(signer);
-        X509Certificate selfcert;
-        try {
-            selfcert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
-        } catch (IOException e) {
-            throw new IllegalStateException("Unexpected IOException was caught.", e);
-        }
-
-        return selfcert;
-    } // genselfCertForPurpose
-
+        return genCertForPurpose(dn, dn, firstDate, lastDate, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, ldapOrder, additionalExtensions);
+    }
+    
     /**
      * Get the authority key identifier from a certificate extensions
      * 
@@ -1915,6 +1799,132 @@ public abstract class CertTools {
      */
     public static String getUPNAltName(Certificate cert) throws CertificateParsingException {
         return getUTF8AltNameOtherName(cert, CertTools.UPN_OBJECTID);
+    }
+    
+
+    
+    public static X509Certificate genCertForPurpose(String subjectDn, String issuerDn, Date firstDate, Date lastDate, String policyId, PrivateKey issuerPrivKey, PublicKey entityPubKey,
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
+            List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
+        // Transform the PublicKey to be sure we have it in a format that the X509 certificate generator handles, it might be
+        // a CVC public key that is passed as parameter
+        PublicKey publicKey = null;
+        if (entityPubKey instanceof RSAPublicKey) {
+            RSAPublicKey rsapk = (RSAPublicKey) entityPubKey;
+            RSAPublicKeySpec rSAPublicKeySpec = new RSAPublicKeySpec(rsapk.getModulus(), rsapk.getPublicExponent());
+            try {
+                publicKey = KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
+            } catch (InvalidKeySpecException e) {
+                log.error("Error creating RSAPublicKey from spec: ", e);
+                publicKey = entityPubKey;
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("RSA was not a known algorithm", e);
+            }
+        } else if (entityPubKey instanceof ECPublicKey) {
+            ECPublicKey ecpk = (ECPublicKey) entityPubKey;
+            try {
+                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
+                final String algo = ecpk.getAlgorithm();
+                if (algo.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+                    try {
+                        publicKey = KeyFactory.getInstance("ECGOST3410").generatePublic(ecspec);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException("ECGOST3410 was not a known algorithm", e);
+                    }
+                } else if (algo.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+                    try {
+                        publicKey = KeyFactory.getInstance("DSTU4145").generatePublic(ecspec);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException("DSTU4145 was not a known algorithm", e);
+                    }
+                } else {
+                    try {
+                        publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException("EC was not a known algorithm", e);
+                    }
+                }
+            } catch (InvalidKeySpecException e) {
+                log.error("Error creating ECPublicKey from spec: ", e);
+                publicKey = entityPubKey;
+            } catch (NullPointerException e) {
+                log.debug("NullPointerException, probably it is implicitlyCA generated keys: " + e.getMessage());
+                publicKey = entityPubKey;
+            }
+        } else {
+            log.debug("Not converting key of class. " + entityPubKey.getClass().getName());
+            publicKey = entityPubKey;
+        }
+
+        // Serial number is random bits
+        byte[] serno = new byte[16];
+        SecureRandom random;
+        try {
+            random = SecureRandom.getInstance("SHA1PRNG");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA1PRNG was not a known algorithm", e);
+        }
+        random.nextBytes(serno);
+
+        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(issuerDn, ldapOrder), new BigInteger(serno).abs(),
+                firstDate, lastDate, CertTools.stringToBcX500Name(subjectDn, ldapOrder), pkinfo);
+
+        // Basic constranits is always critical and MUST be present at-least in CA-certificates.
+        BasicConstraints bc = new BasicConstraints(isCA);
+        certbuilder.addExtension(Extension.basicConstraints, true, bc);
+
+        // Put critical KeyUsage in CA-certificates
+        if (isCA || keyusage != 0) {
+            X509KeyUsage ku = new X509KeyUsage(keyusage);
+            certbuilder.addExtension(Extension.keyUsage, true, ku);
+        }
+
+        if ((privateKeyNotBefore != null) || (privateKeyNotAfter != null)) {
+            final ASN1EncodableVector v = new ASN1EncodableVector();
+            if (privateKeyNotBefore != null) {
+                v.add(new DERTaggedObject(false, 0, new DERGeneralizedTime(privateKeyNotBefore)));
+            }
+            if (privateKeyNotAfter != null) {
+                v.add(new DERTaggedObject(false, 1, new DERGeneralizedTime(privateKeyNotAfter)));
+            }
+            certbuilder.addExtension(Extension.privateKeyUsagePeriod, false, new DERSequence(v));
+        }
+
+        // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
+        try {
+            if (isCA) {
+                JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+                SubjectKeyIdentifier ski = extensionUtils.createSubjectKeyIdentifier(publicKey);
+                AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(publicKey);
+                certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
+                certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
+            }
+        } catch (IOException e) { // do nothing
+        }
+
+        // CertificatePolicies extension if supplied policy ID, always non-critical
+        if (policyId != null) {
+            PolicyInformation pi = new PolicyInformation(new ASN1ObjectIdentifier(policyId));
+            DERSequence seq = new DERSequence(pi);
+            certbuilder.addExtension(Extension.certificatePolicies, false, seq);
+        }
+        // Add any additional
+        if (additionalExtensions != null) {
+            for (final Extension extension : additionalExtensions) {
+                certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
+            }
+        }
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(issuerPrivKey), 20480);
+        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        X509Certificate selfcert;
+        try {
+            selfcert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException was caught.", e);
+        }
+
+        return selfcert;
     }
 
     /**

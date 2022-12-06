@@ -80,6 +80,9 @@ import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.pkcs.PBKDF2Params;
+import org.bouncycastle.asn1.pkcs.PBMAC1Params;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -87,6 +90,9 @@ import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.MacCalculator;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.jcajce.JcePBMac1CalculatorBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -107,6 +113,13 @@ public class CmpMessageHelper {
 
     private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
     public static final int MAX_LEVEL_OF_NESTING = 15;
+
+    // Default values for passwordBasedMac message protection
+    public static final int DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT = 1024;
+
+    // Default values for PBMAC1 message protection, from https://github.com/siemens/LightweightCmpRa/tree/main/doc/config
+    public static final int DEFAULT_PBMAC1_ITERATION_COUNT = 10000;
+    public static final int DEFAULT_PBMAC1_DERIVED_KEY_LENGTH = 4096;
 
     /** Array that converts our error codes from FailInfo to CMP BITString error codes. FailInfo use plain integer codes, which are
      * the same as positions in the CMP bit string
@@ -224,9 +237,10 @@ public class CmpMessageHelper {
      * @throws NoSuchAlgorithmException message is signed by an unknown algorithm
      * @throws InvalidKeyException pubKey is not valid for signature verification
      * @throws SignatureException if the passed-in signature is improperly encoded or of the wrong type, if this signature algorithm is unable to process the input data provided, etc.
+     * @throws IllegalStateException something goes wrong during the creating of the MAC protection
      */
     public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws NoSuchAlgorithmException,
-             InvalidKeyException, SignatureException {
+             InvalidKeyException, SignatureException, IllegalStateException {
         if(pKIMessage.getProtection() == null) {
             throw new SignatureException("Message was not signed.");
         }
@@ -251,6 +265,69 @@ public class CmpMessageHelper {
             LOG.debug("Verification result: " + result);
         }
         return result;
+    }
+
+    /**
+     * Adds password based MAC using the protection standard PBMAC1 defined in PKCS#5 RFC 8018.
+     * The usage of PBMAC1 for protecting CMP messages in currently in draft (CMP Lightweight Profile).
+     * @param msg the message to protect
+     * @param keyId key ID String
+     * @param raSecret password used to protect the message
+     * @param macAlgId OID for the mac algorithm to use, e.g. 1.2.840.113549.2.9 hmacWithSHA256
+     * @param iterationCount number of iterations when deriving symmetric key from password
+     * @param dkLen length of the derived symmetric key
+     * @param prf psuedo random function used when deriving symmetric key
+     * @return new PKIMessage with protection
+     */
+    public static PKIMessage protectPKIMessageWithPBMAC1(final PKIMessage msg, final String keyId, final String raSecret, final String macAlgId,
+            final int iterationCount, final int dkLen, final String prf) throws IllegalStateException {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">protectPKIMessageWithPBMAC1()");
+        }
+        if (raSecret == null) {
+            throw new NullPointerException("raSecret (password) used for protection cannot be null");
+        }
+        if (msg == null) {
+            throw new NullPointerException("PKI message (msg) to protect cannot be null");
+        }
+        // Create the password based protection of the message
+        PKIHeaderBuilder head = getHeaderBuilder(msg.getHeader());
+        if (keyId != null) {
+            // Only add senderKeyId of the client used it, it's not needed to create the actual protection
+            byte[] keyIdBytes = keyId.getBytes(StandardCharsets.UTF_8);
+            head.setSenderKID(new DEROctetString(keyIdBytes));
+        }
+        AlgorithmIdentifier macAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(macAlgId));
+        AlgorithmIdentifier prfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(prf));
+        char[] password = raSecret.toCharArray();
+        byte[] saltBytes = createSenderNonce(); // generate random nonce as salt
+        // Create the new protected return message
+        PBMAC1Params pbMac1Params = new PBMAC1Params(
+                new AlgorithmIdentifier(PKCSObjectIdentifiers.id_PBKDF2, new PBKDF2Params(saltBytes, iterationCount, dkLen, prfAlg)), macAlg);
+        AlgorithmIdentifier protectionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_PBMAC1, pbMac1Params);
+        head.setProtectionAlg(protectionAlg);
+        PKIHeader pkiHeader = head.build();
+        // Do the mac
+        final byte[] protectedBytes = getProtectedBytes(pkiHeader, msg.getBody());
+        if (protectedBytes == null) {
+            throw new IllegalStateException("Protected bytes should not be null");
+        }
+        MacCalculator mac;
+        byte[] out = null;
+        try {
+            mac = new JcePBMac1CalculatorBuilder(pbMac1Params).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(password);
+            mac.getOutputStream().write(protectedBytes, 0, protectedBytes.length);
+            out = mac.getMac();
+            DERBitString bs = new DERBitString(out);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("<protectPKIMessageWithPBMAC1()");
+            }
+            // Return response
+            return new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts());
+        } catch (IOException | OperatorCreationException e) {
+            LOG.error(e.getLocalizedMessage(), e);
+            throw new IllegalStateException(e);
+        }
     }
         
     public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId,
@@ -393,7 +470,7 @@ public class CmpMessageHelper {
             resp.setFailInfo(failInfo);
             resp.setFailText(failText);
             resp.create();
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | IllegalStateException e) {
             LOG.error("Exception during CMP processing: ", e);
         } 
         return resp;
@@ -407,7 +484,7 @@ public class CmpMessageHelper {
      * @return IResponseMessage that can be sent to user
      */
     public static CmpErrorResponseMessage createErrorMessage(BaseCmpMessage msg, FailInfo failInfo, String failText, int requestId, int requestType,
-            CmpPbeVerifyer verifyer, String keyId, String responseProt) {
+            CmpMessageProtectionVerifyer verifyer, String keyId, String responseProt) {
         final CmpErrorResponseMessage cresp = new CmpErrorResponseMessage();
         cresp.setRecipientNonce(msg.getSenderNonce());
         cresp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
@@ -424,13 +501,24 @@ public class CmpMessageHelper {
         cresp.setRequestId(requestId);
         cresp.setRequestType(requestType);
         // Set all protection parameters, this is another message than if we generated a cert above
-        if (verifyer != null) {
-            final String pbeDigestAlg = verifyer.getOwfOid();
-            final String pbeMacAlg = verifyer.getMacOid();
-            final int pbeIterationCount = verifyer.getIterationCount();
-            final String raAuthSecret = verifyer.getLastUsedRaSecret();
-            if (StringUtils.equals(responseProt, "pbe") && (pbeDigestAlg != null) && (pbeMacAlg != null) && (raAuthSecret != null)) {
+        if (verifyer != null && StringUtils.equals(responseProt, "pbe") && verifyer instanceof CmpPbeVerifyer) {
+            CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
+            final String pbeDigestAlg = pbeVerifyer.getOwfOid();
+            final String pbeMacAlg = pbeVerifyer.getMacOid();
+            final int pbeIterationCount = pbeVerifyer.getIterationCount();
+            final String raAuthSecret = pbeVerifyer.getLastUsedRaSecret();
+            if ((pbeDigestAlg != null) && (pbeMacAlg != null) && (raAuthSecret != null)) {
                 cresp.setPbeParameters(keyId, raAuthSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+            }
+        } else if (verifyer != null && StringUtils.equals(responseProt, "pbe") && verifyer instanceof CmpPbmac1Verifyer) {
+            CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
+            final String pbmac1PrfAlg = pbmac1Verifyer.getPrfOid();
+            final String pbmac1MacAlg = pbmac1Verifyer.getMacOid();
+            final int pbmac1IterationCount = pbmac1Verifyer.getIterationCount();
+            final int pbmac1DkLen = pbmac1Verifyer.getDkLen();
+            final String raAuthSecret = pbmac1Verifyer.getLastUsedRaSecret();
+            if ((pbmac1PrfAlg != null) && (pbmac1MacAlg != null) && (raAuthSecret != null)) {
+                cresp.setPbmac1Parameters(keyId, raAuthSecret, pbmac1PrfAlg, pbmac1MacAlg, pbmac1IterationCount, pbmac1DkLen);
             }
         }
         try {
@@ -452,7 +540,15 @@ public class CmpMessageHelper {
         }
         CertResponse[] certResponses = { new CertResponse(new ASN1Integer(requestId), pkiStatusInfo) };
         CertRepMessage certRepMessage = new CertRepMessage(null, certResponses);
-        int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+
+        int respType;
+        
+        if (requestType == PKIBody.TYPE_P10_CERT_REQ) {
+            respType = PKIBody.TYPE_CERT_REP; 
+        } else {
+            respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+        }
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating response body of type " + respType);
         }

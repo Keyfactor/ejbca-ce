@@ -55,7 +55,7 @@
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
-	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
+	<target name="clean-optional" depends="cmpproxyclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
@@ -133,13 +133,6 @@
 	<target name="cmpproxyclean" if="${cmpproxy.exists}">
 		<echo message="Cleaning cmpProxy"/>
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="true" inheritrefs="true"/>
-	</target>
-    <condition property="validationtool.exists">
-    	<available file="${mod.validationtool.path}/build.xml" />
-    </condition>
-	<target name="validationtoolclean" if="${validationtool.exists}">
-		<echo message="Cleaning validationtool"/>
-		<ant antfile="${mod.validationtool.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
 
     <target name="ctclean" if="${mod.ct.exists}">
@@ -341,78 +334,6 @@
 	<target name="-build-cesecore-x509ca" if="${mod.cesecore-x509ca.exists}">
         <ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
     </target>
-    
-    <target name="validationtool" description="Build ValidationTool">
-		<echo  message="${mod.validationtool.path}/build.xml" />
-		<fail message="Validation tool is not distributed with this version of EJBCA">
-		    <condition>
-		    	<not>
-		    		<available file="${mod.validationtool.path}/build.xml" />
-		    	</not>
-		    </condition>
-		</fail>	
-
-		<ant antfile="${mod.validationtool.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="basedir" value="${mod.validationtool.path}"/></ant>
-        <mkdir dir="${mod.validationtool.dist}"/>
-        <copy todir="${mod.validationtool.dist}" flatten="true">
-            <fileset dir="${mod.validationtool.path}">
-                <include name="dist/ValidationTool.jar"/>
-            </fileset>
-        </copy>
-    	<copy todir="${mod.validationtool.dist}">
-            <fileset dir="${mod.validationtool.path}">
-                <include name="bin/**/*"/>
-                <include name="conf/**/*"/>
-                <include name="README.txt"/>
-            </fileset>
-            <fileset dir="../tmp/htdocs/">
-                <include name="docs/*.css"/>
-                <include name="docs/images/*/**"/>
-                <include name="docs/validationtool.html"/>
-            </fileset>
-        </copy>
-        <mkdir dir="${mod.validationtool.dist}"/>
-        <copy todir="${mod.validationtool.dist}">
-            <fileset dir="${mod.validationtool.path}/dist">
-                <include name="lib/*"/>
-            </fileset>
-        </copy>
-        <chmod file="${mod.validationtool.dist}/bin/*.sh" perm="a+rx"/>
-	</target>
-    
-    <!-- Source release of just ValidationTool -->
-    <target name="validationtool-src" depends="validationtool">
-		
-        <mkdir dir="${mod.validationtool.srcdist}"/>
-        <copy todir="${mod.validationtool.srcdist}/modules/validationtool">
-            <fileset dir="${mod.validationtool.path}">
-                <exclude name="dist"/>
-                <exclude name="build"/>
-                <exclude name="dist/*/**"/>
-                <exclude name="build/*/**"/>
-            </fileset>
-            <fileset dir="../tmp/htdocs/">
-                <include name="docs/*.css"/>
-                <include name="docs/images/*/**"/>
-                <include name="docs/validationtool.html"/>
-            </fileset>
-        </copy>
-    	<copy todir="${mod.validationtool.srcdist}">
-            <fileset dir="${mod.validationtool.dist}">
-                <include name="lib/**/*"/>
-            </fileset>
-            <fileset dir="..">
-                <include name="lib/ext/junit*"/>
-            </fileset>
-        </copy>
-        <mkdir dir="${mod.validationtool.dist}"/>
-        <copy todir="${mod.validationtool.dist}">
-            <fileset dir="${mod.validationtool.path}/dist">
-                <include name="lib/*"/>
-            </fileset>
-        </copy>
-        <chmod file="${mod.validationtool.srcdist}/modules/validationtool/bin/*.sh" perm="a+rx"/>
-	</target>
 
 	<target name="cmpHttpProxy" description="Build CMP HTTP proxy, set SERVLET_ENGINE_HOME to Tomcat home" depends="ejbca-common, cesecore-ejb-interface, externalra-library">
 		<echo  message="${mod.cmpProxy.path}/build-http.xml" />
@@ -630,7 +551,7 @@
 		<ant antfile="${mod.plugins.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common" if="${mod.plugins-ee.exists}">
+	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common, plugins" if="${mod.plugins-ee.exists}">
 		<ant antfile="${mod.plugins-ee.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
