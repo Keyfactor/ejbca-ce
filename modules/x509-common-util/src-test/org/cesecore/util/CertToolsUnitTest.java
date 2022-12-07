@@ -78,8 +78,6 @@ import org.junit.Test;
 
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
-import com.novell.ldap.LDAPDN;
-
 /**
  * Tests the CertTools class
  */
@@ -1320,7 +1318,7 @@ public class CertToolsUnitTest {
         assertEquals("CN=testDirName|dir|name", name.replace("cn=", "CN="));
         assertEquals(name.substring("CN=".length()), (new X500Name("CN=testDirName|dir|name").getRDNs()[0].getFirst().getValue()).toString());
 
-        String altName = "rfc822name=foo@bar.se, uri=http://foo.bar.se, directoryName=" + LDAPDN.escapeRDN("CN=testDirName, O=Foo, OU=Bar, C=SE")
+        String altName = "rfc822name=foo@bar.se, uri=http://foo.bar.se, directoryName=" + CertTools.escapeFieldValue("CN=testDirName, O=Foo, OU=Bar, C=SE")
                 + ", dnsName=foo.bar.se";
         GeneralNames san = CertTools.getGeneralNamesFromAltName(altName);
         GeneralName[] gns = san.getNames();
@@ -1340,7 +1338,7 @@ public class CertToolsUnitTest {
         assertTrue(found);
 
         altName = "rfc822name=foo@bar.se, rfc822name=foo@bar.com, uri=http://foo.bar.se, directoryName="
-                + LDAPDN.escapeRDN("CN=testDirName, O=Foo, OU=Bar, C=SE") + ", dnsName=foo.bar.se, dnsName=foo.bar.com";
+                + CertTools.escapeFieldValue("CN=testDirName, O=Foo, OU=Bar, C=SE") + ", dnsName=foo.bar.se, dnsName=foo.bar.com";
         san = CertTools.getGeneralNamesFromAltName(altName);
         gns = san.getNames();
         int dnscount = 0;
