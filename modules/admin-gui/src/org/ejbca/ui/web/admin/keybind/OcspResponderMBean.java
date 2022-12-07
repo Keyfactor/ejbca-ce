@@ -594,7 +594,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         if (ocspExtensions == null) {
             final int internalKeyBindingId = Integer.parseInt(getCurrentInternalKeyBindingId());
             if (internalKeyBindingId == 0) {
-                ocspExtensions = new ListDataModel<>(new ArrayList<String>());
+                ocspExtensions = new ListDataModel<>(new ArrayList<>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
@@ -602,6 +602,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                     ocspExtensions = new ListDataModel<>(internalKeyBinding.getOcspExtensions());
                 } catch (AuthorizationDeniedException e) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
+                    ocspExtensions = new ListDataModel<>(new ArrayList<>());
                 }
             }
         }
