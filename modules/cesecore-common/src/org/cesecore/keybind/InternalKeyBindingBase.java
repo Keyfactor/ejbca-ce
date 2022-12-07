@@ -173,13 +173,13 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     }
 
     private static final SimpleDateFormat DATE_FORMAT_MS = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-    private static final Pattern DATE_FORMAT_PATTERN = Pattern.compile("_\\d{8}\\d{6}$");
-    private static final Pattern DATE_FORMAT_PATTERN_MS = Pattern.compile("_\\d{8}\\d{9}$");
+    private static final Pattern DATE_FORMAT_PATTERN = Pattern.compile("[_-]\\d{8}\\d{6}$");
+    private static final Pattern DATE_FORMAT_PATTERN_MS = Pattern.compile("[_-]\\d{8}\\d{9}$");
     
     /** Replace existing postfix or generate add a new one (using current time with millisecond granularity). */
     private String getNewAlias(final String oldAlias) {
         final Matcher matcherMs = DATE_FORMAT_PATTERN_MS.matcher(oldAlias);
-        final String newPostFix = "_" + DATE_FORMAT_MS.format(new Date());
+        final String newPostFix = "-" + DATE_FORMAT_MS.format(new Date());
         // Check if the key alias postfix is in EJBCA 6.2.4+ format
         if (matcherMs.find()) {
             // Replace postfix in millisecond format
