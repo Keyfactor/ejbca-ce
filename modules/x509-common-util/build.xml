@@ -19,7 +19,6 @@
 		<path refid="lib.guava.classpath"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in KeyTools -->
 		<path refid="lib.jee.classpath" />
-		<path refid="lib.ldap.classpath"/> <!-- Used for a single method call in CertTools - eliminate? -->
 		<path refid="lib.jacknji.classpath"/>
 	</path>
 
