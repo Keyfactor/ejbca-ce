@@ -250,7 +250,7 @@ public class OCSPServlet extends HttpServlet {
                 byte[] requestBytes = checkAndGetRequestBytes(request, httpMethod);
                 X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
                 ocspResponseInformation = integratedOcspResponseGeneratorSession.getOcspResponse(
-                        requestBytes, requestCertificates, remoteAddress, xForwardedFor, requestUrl, auditLogger, transactionLogger, false, false);
+                        requestBytes, requestCertificates, remoteAddress, xForwardedFor, requestUrl, auditLogger, transactionLogger, false, false, false);
             } catch (MalformedRequestException e) {
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
@@ -342,13 +342,19 @@ public class OCSPServlet extends HttpServlet {
         
         // RFC 5019 6.2: Last-Modified: date and time at which the OCSP responder last modified the response. == thisUpdate
         response.setDateHeader("Last-Modified", thisUpdate);
-        // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
-        response.setDateHeader("Expires", nextUpdate); // This is overridden by max-age on HTTP/1.1 compatible components
+        // Custom 'Expires' header. Not compliant with RFC 5019.
+        if (OcspConfiguration.getCacheHeaderMaxAge()) {
+            response.setDateHeader("Expires", thisUpdate + ocspResponseInformation.getMaxAge());
+            if (log.isDebugEnabled()) {
+                log.debug("ocsp.expires.useMaxAge enabled. Setting 'Expires' header to thisUpdate + max-age");
+            }
+        } else {
+            // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
+            response.setDateHeader("Expires", nextUpdate); // This is overridden by max-age on HTTP/1.1 compatible components
+        }
         // RFC 5019 6.2: This profile RECOMMENDS that the ETag value be the ASCII HEX representation of the SHA1 hash of the OCSPResponse structure.
         response.setHeader("ETag", "\"" + responseHeader + "\"");
     }
-    
-    
     
     /**
      * RFC 2560 does not specify how cache headers should be used, but RFC 5019 does. Therefore we will only
@@ -384,8 +390,17 @@ public class OCSPServlet extends HttpServlet {
         response.setDateHeader("Date", now);
         // RFC 5019 6.2: Last-Modified: date and time at which the OCSP responder last modified the response. == thisUpdate
         response.setDateHeader("Last-Modified", thisUpdate);
-        // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
-        response.setDateHeader("Expires", nextUpdate); // This is overridden by max-age on HTTP/1.1 compatible components
+
+        // Custom 'Expires' header. Not compliant with RFC 5019.
+        if (OcspConfiguration.getCacheHeaderMaxAge()) {
+            response.setDateHeader("Expires", thisUpdate + ocspResponseInformation.getMaxAge());
+            if (log.isDebugEnabled()) {
+                log.debug("ocsp.expires.useMaxAge enabled. Setting 'Expires' header to thisUpdate + max-age");
+            }
+        } else {
+            // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
+            response.setDateHeader("Expires", nextUpdate); // This is overridden by max-age on HTTP/1.1 compatible components
+        }
         // RFC 5019 6.2: This profile RECOMMENDS that the ETag value be the ASCII HEX representation of the SHA1 hash of the OCSPResponse structure.
         response.setHeader("ETag", "\"" + ocspResponseInformation.getResponseHeader() + "\"");
         if (ocspResponseInformation.isExplicitNoCache()) {

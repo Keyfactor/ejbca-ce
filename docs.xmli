@@ -4,26 +4,18 @@
 
     <description>
         Build documentation - XDocs and Javadoc.
-        For building XDocs, edit xdocs/**/*.xml first.
-
-        XXX for no apparent reason, your CWD must be the main Ant source dir, or this will fail:
-        .../docs.xml:64: org.apache.velocity.exception.ResourceNotFoundException: Unable to find resource './site.vsl'
     </description>
 
-	<property name="velocity.dir" location="lib/ext"/>
     <!-- Initialization properties -->
     <property name="project.name" value="ejbca"/>
     <property name="docs.tools.dest"    location="tmp/docs-tools"/>
-    <property name="docs.src"     location="doc/xdocs/docs"/>
-    <property name="docs.dest"    location="tmp/htdocs/docs"/>
     <property name="docs.dist"    location="doc/dist"/>
+    <property name="docs.dest"    location="tmp/htdocs/docs"/>
     <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
     <property name="docs.dest.rest" location="tmp/htdocs/docs/rest"/>
     <property name="docs.dest.acme" location="tmp/htdocs/docs/acme"/>
     <property name="docs.dest.logtypes" location="tmp/htdocs/docs/logtypes"/>
-    <property name="site.src"     location="doc/xdocs/site"/>
-    <property name="site.dest"    location="tmp/htdocs"/>
     <property name="jdocs.ws.tmp" location="tmp/jdocswstmp"/>
     <property name="ws.client.gen.relative-path" value="org/ejbca/core/protocol/ws/client/gen"/>
     <property name="client.ws.class" value="EjbcaWS"/>
@@ -32,12 +24,6 @@
     <property name="ws.common.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/common"/>
     <property name="ws.client.gen.src" location="modules/ejbca-ws-cli/src-gen"/>
     <property name="ws.master.file" location="${ws.common.dir}/IEjbcaWS.java"/>
-    <property name="project.file" value="stylesheets/project.xml" />
-    <property name="docs.templ.path"   location="${docs.src}/stylesheets" />
-    <property name="site.templ.path"   location="${site.src}/stylesheets" />
-    <property name="docs.velocity.props"   location="${docs.src}/velocity.properties" />
-    <property name="site.velocity.props"   location="${site.src}/velocity.properties" />
-    <property name="include.xml"  value="**/*.xml" />
    	<property file="src/doc.properties"/>
     <property name="confluence.url"  value="none" />
     <property name="confluence.port"  value="-1" />
@@ -77,30 +63,6 @@
     	<mkdir dir="${docs.tools.dest}"/>
     	<javac srcdir="${ejbca.home}/modules/ejbca-common/src/" destdir="${docs.tools.dest}" debug="on" includeantruntime="no" encoding="UTF-8"
 			includes="org/ejbca/util/JAXWSDocAndConvTools.java"/>
-    </target>
-
-    <target name="prepare">
-        <path id="anakia.classpath">
-            <fileset dir="${velocity.dir}">
-                <include name="*.jar"/>
-            </fileset>
-        </path>
-        <available classname="org.apache.velocity.anakia.AnakiaTask"
-                   property="AnakiaTask.present">
-            <classpath refid="anakia.classpath"/>
-        </available>
-        <!-- Mark site as never present as it has moved to an external website, See ECA-9391 for removal of site
-        <available file="${site.velocity.props}"
-                   property="site.present">
-        </available>
-        -->
-    </target>
-
-    <target name="prepare-error" depends="prepare" unless="AnakiaTask.present">
-        <echo>
-            AnakiaTask is not present! Please check to make sure that
-            velocity.jar is in your classpath.
-        </echo>
     </target>
 
     <condition property="mod.rest-api.exists">
@@ -173,29 +135,8 @@
 	<target name="doc-external-deps" unless="docs.external-deps-satfisfied">
 		<antcall target="ejbca-common.jar" inheritall="true" inheritrefs="true"/>
 	</target>
-    
-    <target name="site" if="site.present">
-        <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
-            <classpath refid="anakia.classpath"/>
-        </taskdef>
-
-        <anakia basedir="${site.src}" destdir="${site.dest}"
-             extension=".html" style="./site.vsl"
-             projectFile="${project.file}"
-             excludes="**/stylesheets/**"
-             includes="${include.xml}"
-             lastModifiedCheck="true"
-             templatePath="${site.templ.path}"
-             velocityPropertiesFile="${site.velocity.props}">
-        </anakia>
         
-        <copy todir="${site.dest}">
-        	<fileset dir="${site.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
-        	<fileset dir="${site.src}" includes="sensornet/**/*"/>
-        </copy>
-    </target>
-        
-    <target name="doc" depends="prepare, doc-build-tool, doc-external-deps, site, doc-confluence, doc-rest, doc-acme" description="Build EJBCA inline ear file docs. Set -Ddoc.update=true to update documentation from PrimeKey's Confluence Server.">
+    <target name="doc" depends="doc-build-tool, doc-external-deps, doc-confluence, doc-rest, doc-acme" description="Build EJBCA inline ear file docs. Set -Ddoc.update=true to update documentation from PrimeKey's Confluence Server.">
         <echo message="WS=${ws.objects.dir}"/>
         <mkdir dir="${jdocs.ws.tmp}"/>
         <mkdir dir="${docs.dest.ws}"/>

@@ -795,7 +795,7 @@ function isKeyRecoveryPossible(){
      <% }else{ %>
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=false;
      <%}
-       if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE)){ %>
+       if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE) || profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0)){ %>
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=true;
    <% }else{ %>  
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=false;

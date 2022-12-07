@@ -20,6 +20,7 @@ import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.config.OAuthConfiguration;
 
 /**
@@ -31,7 +32,7 @@ import org.cesecore.config.OAuthConfiguration;
 public interface WebAuthenticationProviderSessionLocal extends AuthenticationProvider {
 
     /** @return an X509CertificateAuthenticationToken based on the provided client TLS certificate. */
-    AuthenticationToken authenticateUsingClientCertificate(X509Certificate x509Certificate);
+    X509CertificateAuthenticationToken authenticateUsingClientCertificate(X509Certificate x509Certificate);
 
     /** @return a PublicAccessAuthenticationToken based on the provided info. */
     AuthenticationToken authenticateUsingNothing(String principal, boolean confidentialTransport);

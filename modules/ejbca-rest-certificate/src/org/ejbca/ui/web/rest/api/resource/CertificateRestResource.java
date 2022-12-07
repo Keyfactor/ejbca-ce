@@ -31,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -52,8 +54,6 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -65,8 +65,6 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.TokenDownloadType;
@@ -115,12 +113,6 @@ public class CertificateRestResource extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
-
-    @EJB
-    private CertificateProfileSessionLocal certificateProfileSession;
-
-    @EJB
-    private EndEntityProfileSessionLocal endEntityProfileSession;
 
     public Response enrollPkcs10Certificate(final HttpServletRequest requestContext,
                                             final EnrollCertificateRestRequest enrollCertificateRestRequest)
@@ -424,9 +416,18 @@ public class CertificateRestResource extends BaseRestResource {
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException {
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         validateObject(searchCertificatesRestRequest);
-
-        authorizeSearchCertificatesRestRequestReferences(authenticationToken, raMasterApi, searchCertificatesRestRequest);
-        final SearchCertificatesRestResponse searchCertificatesRestResponse = searchCertificates(authenticationToken, searchCertificatesRestRequest, certificateProfileSession, endEntityProfileSession);
+        
+        Map<Integer, String> availableEndEntityProfiles = 
+                CertificateRestResourceUtil.loadAuthorizedEndEntityProfiles(authenticationToken, raMasterApi);
+        Map<Integer, String> availableCertificateProfiles = 
+                CertificateRestResourceUtil.loadAuthorizedCertificateProfiles(authenticationToken, raMasterApi);
+        Map<Integer, String> availableCAs = 
+                CertificateRestResourceUtil.loadAuthorizedCAs(authenticationToken, raMasterApi);
+        authorizeSearchCertificatesRestRequestReferences(
+                authenticationToken, raMasterApi, searchCertificatesRestRequest,
+                availableEndEntityProfiles, availableCertificateProfiles, availableCAs);
+        final SearchCertificatesRestResponse searchCertificatesRestResponse = 
+                searchCertificates(authenticationToken, searchCertificatesRestRequest, availableEndEntityProfiles, availableCertificateProfiles);
         return Response.ok(searchCertificatesRestResponse).build();
     }
 
@@ -442,11 +443,11 @@ public class CertificateRestResource extends BaseRestResource {
     private SearchCertificatesRestResponse searchCertificates(
             final AuthenticationToken authenticationToken,
             final SearchCertificatesRestRequest searchCertificatesRestRequest,
-            final CertificateProfileSession certificateProfileSession,
-            final EndEntityProfileSession endEntityProfileSession
+            Map<Integer, String> availableEndEntityProfiles,
+            Map<Integer, String> availableCertificateProfiles
     ) throws RestException, CertificateEncodingException {
         final RaCertificateSearchRequest raCertificateSearchRequest = SearchCertificatesRestRequest.converter().toEntity(searchCertificatesRestRequest);
         final RaCertificateSearchResponse raCertificateSearchResponse = raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest);
-        return SearchCertificatesRestResponse.converter().toRestResponse(raCertificateSearchResponse, certificateProfileSession, endEntityProfileSession);
+        return SearchCertificatesRestResponse.converter().toRestResponse(raCertificateSearchResponse, availableEndEntityProfiles, availableCertificateProfiles);
     }
 }
