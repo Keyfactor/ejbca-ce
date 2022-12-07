@@ -248,7 +248,7 @@ public class CmpRAUnidTest extends CmpTestCase {
                 unid = null;
             } else {
                 checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
-                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
                 final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, SUBJECT_DN, cacert, resp, reqId);
                 final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
                 unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
@@ -270,7 +270,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(encodePKIMessage(req1), 200, configAlias);
         checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
-                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpPKIConfirmMessage(SUBJECT_DN, cacert, resp);
 
     }
@@ -314,7 +314,7 @@ public class CmpRAUnidTest extends CmpTestCase {
                 unid = null;
             } else {
                 checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
-                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
                 final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, SUBJECT_DN, cacert, resp, reqId);
                 final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
                 unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
@@ -337,7 +337,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(encodePKIMessage(req1), 200, configAlias);
         checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
-                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpPKIConfirmMessage(SUBJECT_DN, cacert, resp);
 
     }
