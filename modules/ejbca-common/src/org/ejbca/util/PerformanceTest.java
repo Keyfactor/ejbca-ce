@@ -408,6 +408,11 @@ public class PerformanceTest {
     }
 
     public class Log {
+        public static final String ERROR_LOG_FILENAME = "error.log";
+        public static final String INFO_LOG_FILENAME = "info.log";
+        public static final String ALL_LOG_FILENAME = "all.log";
+        public static final String RESULT_OBJECT_FILENAME = "result.ser";
+
         private final PrintWriter errorPrinter;
         private final PrintWriter infoPrinter;
         private final PrintWriter allPrinter;
@@ -416,10 +421,10 @@ public class PerformanceTest {
 
         public Log() {
             try {
-                this.errorPrinter = new PrintWriter(new FileWriter("error.log"));
-                this.infoPrinter = new PrintWriter(new FileWriter("info.log"));
-                this.allPrinter = new PrintWriter(new FileWriter("all.log"));
-                this.resultObject = new ObjectOutputStream(new FileOutputStream("result.ser", true));
+                this.errorPrinter = new PrintWriter(new FileWriter(ERROR_LOG_FILENAME));
+                this.infoPrinter = new PrintWriter(new FileWriter(INFO_LOG_FILENAME));
+                this.allPrinter = new PrintWriter(new FileWriter(ALL_LOG_FILENAME));
+                this.resultObject = new ObjectOutputStream(new FileOutputStream(RESULT_OBJECT_FILENAME, true));
                 this.thread = new LogThread();
                 final Thread t = new Thread(this.thread); // NOPMD this is a standalone test, not run in jee app
                 t.setPriority(Thread.MIN_PRIORITY);
