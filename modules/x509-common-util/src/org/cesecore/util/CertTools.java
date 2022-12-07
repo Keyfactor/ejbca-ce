@@ -160,7 +160,6 @@ import org.cesecore.certificates.util.DnComponents;
 
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.novell.ldap.LDAPDN;
 
 /**
  * Tools to handle common certificate operations.
@@ -893,11 +892,74 @@ public abstract class CertTools {
      */
     public static String getUnescapedRdnValue(final String value){
         if (StringUtils.isNotEmpty(value)) {
-            return org.ietf.ldap.LDAPDN.unescapeRDN(value);
+            return unescapeRDN(value);
         } else {
             return value;
         }
     }
+    
+    /**
+     * Returns the RDN after unescaping the characters requiring escaping.
+     *
+     * <p>For example, for the rdn "cn=Acme\, Inc", the unescapeRDN method
+     * returns "cn=Acme, Inc".</p>
+     * <p><b>Note:</b>This function doesn't check for the
+     * validity of the RDN string use isValid(String) function to check the 
+     * validity. The results is undefined for invalid RDN's.
+     * </p>
+     * unescapeRDN unescapes the AttributeValue by
+     * removing the '\' when the next character fits the following:<BR>
+     * ',' '+' '"' '\' '<' '>' ';'<BR>
+     * '#' if it comes at the beginning of the Attribute Name
+     * (without the '\').<BR>
+     * ' ' (space) if it comes at the beginning or the end of the Attribute Name
+     * </p>
+     *  @param rdn            The RDN to unescape.
+     *
+     * @return The RDN with the escaping characters removed.
+     */
+    private static String unescapeRDN(String rdn) {
+        StringBuffer unescaped = new StringBuffer();
+        int i = 0;
+
+        while (i < rdn.length() && rdn.charAt(i) != '=') {
+            unescaped.append(rdn.charAt(i));
+            i++; //advance until we find the separator =
+        }
+        //add character '='
+        unescaped.append(rdn.charAt(i));
+        if (i == rdn.length()) {
+            throw new IllegalArgumentException("Could not parse rdn: Attribute " + "type and name must be separated by an equal symbol, '='");
+        }
+        i++;
+        //check if the first two chars are "\ " (slash space) or "\#"
+        if ((rdn.charAt(i) == '\\') && (i + 1 < rdn.length() - 1) //bounds checking
+                && ((rdn.charAt(i + 1) == ' ') || (rdn.charAt(i + 1) == '#'))) {
+            i++;
+        }
+        for (; i < rdn.length(); i++) {
+            //if the current char is a slash, not the end char, and is followed
+            // by a special char then...
+            if ((rdn.charAt(i) == '\\') && (i != rdn.length() - 1)) {
+                if ((rdn.charAt(i + 1) == ',') || (rdn.charAt(i + 1) == '+') || (rdn.charAt(i + 1) == '"') || (rdn.charAt(i + 1) == '\\')
+                        || (rdn.charAt(i + 1) == '<') || (rdn.charAt(i + 1) == '>') || (rdn.charAt(i + 1) == ';')) { //I'm not sure if I have to check for these special chars
+                    unescaped.append(rdn.charAt(i + 1));
+                    i++;
+                    continue;
+                }
+                //check if the last two chars are "\ "
+                else if ((rdn.charAt(i + 1) == ' ') && (i + 2 == rdn.length())) {
+                    //if the last char is a space
+                    continue;
+                }
+            }
+            unescaped.append(rdn.charAt(i));
+        }
+        return unescaped.toString();
+    }
+
+    
+
 
     /**
      * Gets issuer DN in the format we are sure about (BouncyCastle),supporting UTF8.
@@ -2367,9 +2429,59 @@ public abstract class CertTools {
         } else if (value.indexOf('=') == value.length()-1) {
             return value;
         } else {
-            return LDAPDN.escapeRDN(value);
+            return escapeRDN(value);
         }
     }
+    
+    /**
+     * Returns the RDN after escaping the characters requiring escaping.
+     *
+     * <p>For example, for the rdn "cn=Acme, Inc", the escapeRDN method
+     * returns "cn=Acme\, Inc".</p>
+     *
+     * <p>escapeRDN escapes the AttributeValue by inserting '\' before the
+     * following chars: * ',' '+' '"' '\' '<' '>' ';' <BR>
+     * '#' if it comes at the beginning of the string, and <BR>
+     * ' ' (space) if it comes at the beginning or the end of a string.
+     * Note that single-valued attributes can be used because of ambiguity. See
+     * RFC 2253 </p>
+     *
+     *  @param rdn            The RDN to escape.
+     *
+     *@return The RDN with escaping characters.
+     */
+    private static String escapeRDN(String rdn) {
+        StringBuffer escapedS = new StringBuffer(rdn);
+        int i = 0;
+
+        while (i < escapedS.length() && escapedS.charAt(i) != '=') {
+            i++; //advance until we find the separator =
+        }
+        if (i == escapedS.length()) {
+            throw new IllegalArgumentException("Could not parse RDN: Attribute " + "type and name must be separated by an equal symbol, '='");
+        }
+
+        i++;
+        //check for a space or # at the beginning of a string.
+        if ((escapedS.charAt(i) == ' ') || (escapedS.charAt(i) == '#')) {
+            escapedS.insert(i++, '\\');
+        }
+
+        //loop from second char to the second to last
+        for (; i < escapedS.length(); i++) {
+            if ((escapedS.charAt(i) == ',') || (escapedS.charAt(i) == '+') || (escapedS.charAt(i) == '"') || (escapedS.charAt(i) == '\\')
+                    || (escapedS.charAt(i) == '<') || (escapedS.charAt(i) == '>') || (escapedS.charAt(i) == ';')) {
+                escapedS.insert(i++, '\\');
+            }
+        }
+
+        //check last char for a space
+        if (escapedS.charAt(escapedS.length() - 1) == ' ') {
+            escapedS.insert(escapedS.length() - 1, '\\');
+        }
+        return escapedS.toString();
+    }
+
     
     /**
      * Unescapes a value of a field in a DN, SAN or directory attributes.
