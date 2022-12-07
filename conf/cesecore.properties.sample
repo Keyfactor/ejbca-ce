@@ -222,12 +222,12 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 
 #### Export events to XML log file 
 
-# The security audit logs shall be periodically extracted to a log file, in XML format.
-# The path of the security audit log file shall be configurable. The name of the security audit log file shall be auditlogfile_N.log, 
-# where N is the sequence number of the first log in the audit log file.
-# The specified time frequency at which the security audit log is extracted to a log file shall be configurable.
-# The security extracted audit logs shall include all the new security audit logs since the last extracted security audit logs.
-# The security audit log extraction event shall be included in the audit log (with the extracted initial and final log sequence 
+# + The security audit logs shall be periodically extracted to a log file, in XML format.
+# + The path of the security audit log file shall be configurable. The name of the security audit log file shall be auditlogfile_N.log, 
+#   where N is the sequence number of the last log (event with the highest sequential number) in the audit log file.
+# + The specified time frequency at which the security audit log is extracted to a log file shall be configurable.
+# + The security extracted audit logs shall include all the new security audit logs since the last extracted security audit logs.
+# + The security audit log extraction event shall be included in the audit log (with the extracted initial and final log sequence 
 # number in the details).
 
 #
@@ -236,13 +236,42 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 securityeventsaudit.xmlexporter.enable=true
 #
 # Path of the security audit log file
-# Default: /tmp/
+# Default: /tmp/ (don't use this default in production environment, since /tmp will be erased every time the the server is (re)booted)
 securityeventsaudit.xmlexporter.path_log=/tmp/
 #
 # Time frequency (in minutes) at which the security audit log is extracted
-# Default: 10
-securityeventsaudit.xmlexporter.timermin=10 
+# Default: 30
+securityeventsaudit.xmlexporter.timermin=30
 
+
+#### Security audit log signature - sign the XML log file
+
+# + The security audit logs shall be periodically signed by EJBCA and extracted to a log file, in XML format.
+# + The signature uses the CMS (Cryptographic Message Syntax ) format (based on PKCS#7), as available in EJBCA for extracting 
+#   signed security audit logs.
+# + It is necessary to configure the CA that will be used to sign the security audit logs
+# + The path of the signed security audit log file shall be configurable. The name of the signed security audit log file shall be 
+#   ''auditlogfile_N.p7m'', where N is the sequence number of the last log (event with the highest sequential number) in the audit
+#   log file. 
+# + The specified time frequency at which the security audit log is signed and extracted to a log file shall be configurable.
+# + The signed security audit log file shall always be extracted, when the CA that will be used to sign the security audit logs 
+#   is configured.
+
+#
+# Path of the signed security audit log file
+# Default: /tmp/ (don't use this default in production environment, since /tmp will be erased every time the the server is (re)booted)
+securityeventsaudit.xmlexporter.path_cms=/tmp/
+#
+# ID of the CA used to sign (CMS format) the security audit logs. 
+# For activating the CMS service of the CA, go to the admin Web and choose "Certification Authorities". Select the CA that will be 
+# used to sign and "Edit CA". Activate the "CMS Service" and "Save". Return to the page and validate if the "CMS Service" is 
+# activated. The ID of the CA is the "CA ID" on top of the page.  
+# Default: Signing CA is unconfigured
+#securityeventsaudit.xmlexporter.ca=
+#
+# Time frequency (in minutes) at which the security audit log is signed
+# Default: 15
+securityeventsaudit.xmlexporter.signtimermin=15
 
 #------------------- ECDSA implicitlyCA settings -------------
 # Sets pre-defined EC curve parameters for the implicitlyCA facility.

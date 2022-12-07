@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.cert.CertificateException;
 //import java.security.MessageDigest;
 //import java.security.NoSuchAlgorithmException;
 //import java.security.Security;
@@ -31,6 +32,7 @@ import java.util.TimerTask;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.log4j.Logger;
+import org.bouncycastle.operator.OperatorCreationException;
 //import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 //import org.cesecore.audit.AuditDevicesConfig;
@@ -42,11 +44,15 @@ import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.util.XmlSerializer;
-//import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-//import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
-//import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
 //import com.thoughtworks.xstream.io.path.Path;
@@ -75,8 +81,13 @@ public class XmlAuditExporter {
     static int minutes_xml;
     static String path_xml;
     static Timer timer_xml;
-    //static String path_cms;
-    //static String ca;
+    static boolean export_xml;
+
+    static int minutes_cms;
+    static String path_cms;
+    static Timer timer_cms;
+    static boolean sign_cms;
+    static String ca;
     //static Long first_log;
     //static Long last_log;
 
@@ -328,11 +339,19 @@ public class XmlAuditExporter {
             throws AuditRecordStorageException, AuthorizationDeniedException {
         setauth(authenticationToken);
         setLogSession(logSession);
-        if (configExportXml()) { // if the extraction of the security audit events to the XML log file is enabled
+        export_xml = configExportXml();
+        sign_cms = configSignXml();
+        if (export_xml) { // if the extraction of the security audit events to the XML log file is enabled
             log.info("Extraction of the security audit events to the XML log file is enabled.");
             startExportXmlTimer();
         } else {
             log.info("Extraction of the security audit events to the XML log file is NOT enabled.");
+        }
+        if (sign_cms) { // if the signing of the security audit log file is enabled
+            log.info("Signing of the security audit log file is enabled.");
+            startExportCmsTimer();
+        } else {
+            log.info("Signing of the security audit log file is NOT enabled.");
         }
     }
 
@@ -373,7 +392,7 @@ public class XmlAuditExporter {
                 final PropertiesConfiguration pc = ConfigurationHolder.loadProperties(url);
                 enable = pc.getBoolean("securityeventsaudit.xmlexporter.enable", true);
                 log.debug("The extraction of the security audit events to the XML log file is: " + enable);
-                minutes_xml = pc.getInt("securityeventsaudit.xmlexporter.timermin", 10);
+                minutes_xml = pc.getInt("securityeventsaudit.xmlexporter.timermin", 30);
                 log.debug("Configured time frequency (in minutes) at which the security audit log is extracted: " + minutes_xml);
                 path_xml = pc.getString("securityeventsaudit.xmlexporter.path_log", "/tmp/");
                 log.debug("Configured path of the security audit log file: " + path_xml);
@@ -381,6 +400,42 @@ public class XmlAuditExporter {
         } catch (ConfigurationException e) {
             log.error("Error initializing environment for exporting the events to an XML file: ", e);
         }
+        return enable;
+    }
+
+    /**
+     * Initialize the environment for signig the security audit log file. 
+     * The following properties should be configured in the cesecore.properties file:
+     * <ul>
+     *   <li> securityeventsaudit.xmlexporter.path_cms - path of the signed security audit log file
+     *   <li> securityeventsaudit.xmlexporter.ca - ID of the CA used to sign the security audit logs
+     *   <li> securityeventsaudit.xmlexporter.signtimermin - Time frequency (in minutes) at which the security audit log is signed
+     * </ul> 
+     * 
+     * @return true, if the CA ID has been defined (meaning that the signature of the security audit log file is enabled)
+     */
+    private static boolean configSignXml() {
+        boolean enable = false;
+        try {
+            final URL url = ConfigurationHolder.class.getResource("/conf/cesecore.properties");
+            if (url != null) {
+                final PropertiesConfiguration pc = ConfigurationHolder.loadProperties(url);
+                minutes_cms = pc.getInt("securityeventsaudit.xmlexporter.signtimermin", 15);
+                log.debug("Configured time frequency (in minutes) at which the security audit log is signed: " + minutes_cms);
+                path_cms = pc.getString("securityeventsaudit.xmlexporter.path_cms", "/tmp/");
+                log.debug("Configured path of the signed security audit log file: " + path_cms);
+                ca = pc.getString("securityeventsaudit.xmlexporter.ca", null);
+                if (ca != null) {
+                    enable = true;
+                    log.debug("Configured CA ID to sign the security audit log file: " + ca);
+                } else {
+                    log.debug("CA ID to sign the security audit log file is not defined. The security audit log file will not be signed.");
+                }
+            }
+        } catch (ConfigurationException e) {
+            log.error("Error initializing environment for signing the security audit log file: ", e);
+        }
+
         return enable;
     }
 
@@ -398,37 +453,34 @@ public class XmlAuditExporter {
     }
 
     /**
+    * Start the timer (time frequency (in minutes) at which the security audit log is signed and exported to the XML file)
+    * 
+    * @throws AuditRecordStorageException
+    * @throws AuthorizationDeniedException
+    */
+    public static void startExportCmsTimer() throws AuditRecordStorageException, AuthorizationDeniedException {
+        timer_cms = new Timer();
+        timer_cms.schedule(new ScheduledCms(), 0, minutes_cms * 60000);
+        log.debug("Timer for signing of the security audit events to the XML log file has started. The signing will occur every " + minutes_cms
+                + " minutes.");
+    }
+
+    /**
      * Export the security audit log to the XML file - scheduled execution 
      */
     static class ScheduledXml extends TimerTask {
         public void run() {
-            List<? extends AuditLogEntry> last_event_log, results;
             Long last_log = (long) -1;
             Long first_log = (long) -1;
 
             log.info("Exporting security audit log to the XML file - scheduled execution");
             try {
-                //get last successful LOG_XML event (meaning last time that the events were exported to the XML file) 
-                last_event_log = getLastLog(EventTypes.LOG_XML, EventStatus.SUCCESS);
-
-                if (!last_event_log.isEmpty()) {
-                    last_log = Long.valueOf(last_event_log.get(0).getSearchDetail1());
-                }
-
-                results = getResults(last_log);
+                final Object[] l = getData(EventTypes.LOG_XML, EventStatus.SUCCESS);
+                List<? extends AuditLogEntry> results = (List<? extends AuditLogEntry>) l[2];
+                last_log = (long) l[1];
+                first_log = (long) l[0];
 
                 if (!results.isEmpty()) { // if there are events not exported to the XML file
-
-                    if (log.isDebugEnabled()) {
-                        for (final AuditLogEntry auditLogEntry : results) {
-                            log.debug("Audit log entry sequence Number to write to XML file: " + auditLogEntry.getSequenceNumber() + " - "
-                                    + auditLogEntry.toString());
-                        }
-                    }
-
-                    first_log = results.get(0).getSequenceNumber(); // first result has the highest sequence number
-                    last_log = results.get(results.size() - 1).getSequenceNumber();
-
                     exportLog(Paths.get(path_xml + "auditlogfile_" + first_log + ".log"), results);
                     SecurelogWithAdditionalDetails(EventStatus.SUCCESS, EventTypes.LOG_XML, first_log.toString(), last_log.toString(), null, "");
                 }
@@ -440,7 +492,7 @@ public class XmlAuditExporter {
                 } catch (AuditRecordStorageException | AuthorizationDeniedException e1) {
                     log.error(
                             "Error (AuditRecordStorageException | AuthorizationDeniedException) exporting security audit log to the XML file. Unable to store audit event in the Database: ",
-                            e);
+                            e1);
                 }
             }
             //timer.cancel(); //Terminate the timer thread
@@ -448,6 +500,59 @@ public class XmlAuditExporter {
                 log.error(
                         "Error (AuditRecordStorageException | AuthorizationDeniedException) exporting security audit log to the XML file. Unable to store audit event in the Database: ",
                         e);
+            }
+        }
+    }
+
+    /**
+     * Sign and export the security audit log to the XML file - scheduled execution 
+     */
+    static class ScheduledCms extends TimerTask {
+        public void run() {
+            Long last_log = (long) -1;
+            Long first_log = (long) -1;
+
+            log.info("Signing and exporting security audit log to the XML file - scheduled execution");
+            try {
+                final Object[] l = getData(EventTypes.LOG_SIGN, EventStatus.SUCCESS);
+                List<? extends AuditLogEntry> results = (List<? extends AuditLogEntry>) l[2];
+                last_log = (long) l[1];
+                first_log = (long) l[0];
+
+                if (!results.isEmpty()) { // if there are events not signed and exported to the XML file
+                    exportCms(Paths.get(path_cms + "auditlogfile_" + first_log + ".p7m"), results);
+                    SecurelogWithAdditionalDetails(EventStatus.SUCCESS, EventTypes.LOG_SIGN, first_log.toString(), last_log.toString(), null, "");
+                }
+            } catch (IOException e) {
+                log.error("Error (IOException) signing security audit log to the XML file: ", e);
+                try {
+                    SecurelogWithAdditionalDetails(EventStatus.FAILURE, EventTypes.LOG_SIGN, first_log.toString(), last_log.toString(), null,
+                            "Error (IOException) signing security audit log to the XML file: " + e);
+                } catch (AuditRecordStorageException | AuthorizationDeniedException e1) {
+                    log.error(
+                            "Error (AuditRecordStorageException | AuthorizationDeniedException) signing security audit log to the XML file. Unable to store audit event in the Database: ",
+                            e1);
+                }
+            }
+            //timer.cancel(); //Terminate the timer thread
+            catch (AuditRecordStorageException | AuthorizationDeniedException e) {
+                log.error(
+                        "Error (AuditRecordStorageException | AuthorizationDeniedException) signing security audit log to the XML file. Unable to store audit event in the Database: ",
+                        e);
+            } catch (NumberFormatException | CADoesntExistsException | CertificateException | OperatorCreationException
+                    | ExtendedCAServiceRequestException | IllegalExtendedCAServiceRequestException | ExtendedCAServiceNotActiveException e) {
+                log.error(
+                        "Error (NumberFormatException | CADoesntExistsException | CertificateException | OperatorCreationException | ExtendedCAServiceRequestException | IllegalExtendedCAServiceRequestException | ExtendedCAServiceNotActiveException) signing security audit log to the XML file: ",
+                        e);
+                try {
+                    SecurelogWithAdditionalDetails(EventStatus.FAILURE, EventTypes.LOG_SIGN, first_log.toString(), last_log.toString(), null,
+                            "Error (NumberFormatException | CADoesntExistsException | CertificateException | OperatorCreationException | ExtendedCAServiceRequestException | IllegalExtendedCAServiceRequestException | ExtendedCAServiceNotActiveException) signing security audit log to the XML file: "
+                                    + e);
+                } catch (AuditRecordStorageException | AuthorizationDeniedException e1) {
+                    log.error(
+                            "Error (AuditRecordStorageException | AuthorizationDeniedException) signing security audit log to the XML file. Unable to store audit event in the Database: ",
+                            e1);
+                }
             }
         }
     }
@@ -467,6 +572,47 @@ public class XmlAuditExporter {
         parameters.add(status.toString());
         return new EjbLocalHelper().getEjbcaAuditorSession().selectAuditLog(token, device, 0, 1, "a.eventType = ?0 AND a.eventStatus = ?1",
                 "a.timeStamp DESC", parameters);
+    }
+
+    /**
+     * Get list of new audit events (results) since last event of EventTypes type and EventStatus status, starting at first_log (first 
+     * result has the highest sequence number) and ending at last_log (last result has the lowest sequence number)
+     * 
+     * @param type EventTypes 
+     * @param status EventStatus
+     * @return Object[] with { first_log, last_log, results }
+     * @throws AuthorizationDeniedException
+     */
+    public static Object[] getData(EventTypes type, EventStatus status) throws AuthorizationDeniedException {
+        List<? extends AuditLogEntry> last_event_log, results;
+        Long last_log = (long) -1;
+        Long first_log = (long) -1;
+
+        //get last event of EventTypes type and EventStatus status (meaning most recent time that the event of type and status occured) 
+        last_event_log = getLastLog(type, status);
+
+        if (!last_event_log.isEmpty()) {
+            last_log = Long.valueOf(last_event_log.get(0).getSearchDetail1());
+        }
+
+        results = getResults(last_log);
+
+        if (!results.isEmpty()) { // if there are new audit events since last event of EventTypes type and EventStatus status 
+            first_log = results.get(0).getSequenceNumber(); // first result has the highest sequence number
+            last_log = results.get(results.size() - 1).getSequenceNumber();
+
+            if (log.isDebugEnabled()) {
+                log.debug("Found new audit events since last event of EventTypes " + type.toString() + " and EventStatus " + status.toString()
+                        + ". New audit events with sequence numbers " + last_log + " - " + first_log + ".");
+            }
+        } else {
+            log.info("No new audit events found since last event (sequence number " + last_log + ") of EventTypes " + type.toString()
+                    + " and EventStatus " + status.toString() + ".");
+        }
+
+        Object[] ret = { first_log, last_log, results };
+
+        return ret;
     }
 
     /**
@@ -498,6 +644,31 @@ public class XmlAuditExporter {
     }
 
     /**
+     * Export signed security auditlog to file, using the CMS (Cryptographic Message Syntax ) format (based on PKCS#7)
+     * 
+     * @param path Path to the file
+     * @param results list of events (security auditlogs)
+     * @throws IOException
+     * @throws NumberFormatException
+     * @throws CADoesntExistsException
+     * @throws CertificateException
+     * @throws OperatorCreationException
+     * @throws ExtendedCAServiceRequestException
+     * @throws IllegalExtendedCAServiceRequestException
+     * @throws ExtendedCAServiceNotActiveException
+     * @throws AuthorizationDeniedException
+     */
+    private static void exportCms(java.nio.file.Path path, List<? extends AuditLogEntry> results) throws IOException, NumberFormatException,
+            CADoesntExistsException, CertificateException, OperatorCreationException, ExtendedCAServiceRequestException,
+            IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, AuthorizationDeniedException {
+        final CmsCAServiceRequest request = new CmsCAServiceRequest(exportToByteArray(results), CmsCAServiceRequest.MODE_SIGN);
+        final CAAdminSession caAdminSession = new EjbLocalHelper().getCaAdminSession();
+        final CmsCAServiceResponse resp = (CmsCAServiceResponse) caAdminSession.extendedService(token, Integer.valueOf(ca), request);
+        Files.write(path, resp.getCmsDocument());
+        log.info("Security audit log signed to file " + path);
+    }
+
+    /**
      * Returns list of events as a byte array
      * 
      * @param results list of events
@@ -526,7 +697,7 @@ public class XmlAuditExporter {
      * @param status status of event
      * @param event type of event
      * @param searchDetail1 content to put in the searchDetail1 column (should be sequential number of first event - highest sequential number -, if it needs to be recorded)
-     * @param searchDetail2 content to put in the searchDetail1 column (should be sequential number of last event - lowest sequential number -, if it needs to be recorded)
+     * @param searchDetail2 content to put in the searchDetail2 column (should be sequential number of last event - lowest sequential number -, if it needs to be recorded)
      * @param hash hash, if the event needs to record the hash
      * @param error_msg error message, if the event needs to record an error message
      * @throws AuditRecordStorageException
