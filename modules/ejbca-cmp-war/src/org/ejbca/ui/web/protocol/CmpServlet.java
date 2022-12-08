@@ -41,6 +41,9 @@ import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.RevReqContent;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.cmp.CMPException;
@@ -56,6 +59,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ConcurrentCache;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
@@ -69,9 +73,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpMessageProtectionVerifyer;
+import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
 import org.ejbca.core.protocol.cmp.CmpPbmac1Verifyer;
-import org.ejbca.core.protocol.cmp.CrmfRequestMessage;
 import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
@@ -406,7 +410,6 @@ public class CmpServlet extends HttpServlet {
     private void validateMAC(PKIMessage pkiMessage, String alias, CmpConfiguration cmpConfiguration, String messageInformation) throws CmpServletValidationError {
         final boolean raMode = cmpConfiguration.getRAMode(alias);
         String passwd = null;
-        String requestAuthParam = null;
         CmpMessageProtectionVerifyer verifier;
         try {
             final ASN1ObjectIdentifier protectionAlgorithm = pkiMessage.getHeader().getProtectionAlg().getAlgorithm();
@@ -451,8 +454,24 @@ public class CmpServlet extends HttpServlet {
                 }
             } 
         } else {
-            final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Extended validation using Pbe HMAC validation not supported for Client Mode");
-            throw new CmpServletValidationError(errmsg);
+            // CMP Client mode, get secret from end entity clear text password
+            final String requestDN = getSubjectDNFromPkiMessage(pkiMessage, cmpConfiguration, alias);
+            if (requestDN != null) {
+                String extractedUsername = CertTools.getPartFromDN(requestDN, cmpConfiguration.getExtractUsernameComponent(alias));
+                if (log.isDebugEnabled()) {
+                    log.debug("Username ("+extractedUsername+") was extracted from the '" + cmpConfiguration.getExtractUsernameComponent(alias) + "' part of the subjectDN provided in the request.");
+                }
+                final String nameGenPrefix = cmpConfiguration.getRANameGenPrefix(alias);
+                final String nameGenPostfix = cmpConfiguration.getRANameGenPostfix(alias);
+                if (StringUtils.isNotBlank(nameGenPrefix)) {
+                    extractedUsername = nameGenPrefix + extractedUsername;
+                }
+                if (StringUtils.isNotBlank(nameGenPostfix)) {
+                    extractedUsername = extractedUsername + nameGenPostfix;
+                }
+                EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(authenticationToken, extractedUsername);
+                passwd = endEntityInformation.getPassword();
+            }
         }
         if (passwd == null) {
             final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found.";
@@ -672,5 +691,23 @@ public class CmpServlet extends HttpServlet {
         }
         return null;
      }
-
+     
+     private String getSubjectDNFromPkiMessage(final PKIMessage pkiMessage, CmpConfiguration cmpConfiguration, String alias )  {
+         final int tagnr = pkiMessage.getBody().getType();
+         if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST 
+                 || tagnr==CmpPKIBodyConstants.CERTIFICATAIONREQUEST
+                 || tagnr==CmpPKIBodyConstants.KEYUPDATEREQUEST) {
+             CertReqMessages reqmsgs = (CertReqMessages) pkiMessage.getBody().getContent();
+             return reqmsgs.toCertReqMsgArray()[0].getCertReq().getCertTemplate().getSubject().toString();
+         }
+         if(tagnr==CmpPKIBodyConstants.REVOCATIONREQUEST) {
+             RevReqContent rev  =(RevReqContent) pkiMessage.getBody().getContent();
+             return rev.toRevDetailsArray()[0].getCertDetails().getSubject().toString();
+         }
+         if (tagnr==PKIBody.TYPE_P10_CERT_REQ) {
+             CertificationRequest reqmsgs = (CertificationRequest) pkiMessage.getBody().getContent();
+             return reqmsgs.getCertificationRequestInfo().getSubject().toString();
+         }
+         return null;
+     }
 }
