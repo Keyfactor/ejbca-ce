@@ -37,7 +37,6 @@
     	<delete dir="${reports.base.dir}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
-        <delete file="velocity.log" />
         <ant antfile="modules/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 	
