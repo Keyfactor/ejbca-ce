@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 
 /**
  * Base interface for request messages sent to the CA. Implementors of this interface must also
@@ -165,6 +166,16 @@ public interface RequestMessage extends Serializable {
      */
     PublicKey getRequestPublicKey()
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
+
+    /**
+     * Get the key, in SubjectPublicKeyInfo format, from a certification request if the request format supports this
+     * This is separate from the {@link #getRequestPublicKey()}, because the 
+     * SubjectPublicKeyInfo can be empty, contain only and algorithmIdentifier in case when server generated keys are requested.
+     * 
+     * @see #getRequestPublicKey()
+     * @return SubjectPublicKeyInfo, with the same public key as getRequestPublicKey, or null, or only an algorithmIdentifier.
+     */
+    SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo();
 
     /**
      * Verifies signatures, popo etc on the request message. If verification fails the request
