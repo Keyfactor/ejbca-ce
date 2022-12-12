@@ -473,24 +473,27 @@ public class CmpServlet extends HttpServlet {
                 passwd = endEntityInformation.getPassword();
             }
         }
-        if (passwd == null) {
-            final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found.";
-            log.info(logmsg);
-            // Use a shorter error messages that is returned to client, because we don't want to leak any information about configured secrets
-            final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Pbe HMAC field was encountered, but HMAC did not verify",
-                    messageInformation);
-            throw new CmpServletValidationError(errmsg);
-        }
-        try {
-            if (verifier.verify(passwd) == false) {
-                String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret");
+        //Don't validate the CERTCONF messages...
+        if ((pkiMessage.getBody().getType()) != PKIBody.TYPE_CERT_CONFIRM) {
+            if (passwd == null) {
+                final String logmsg = "Pbe HMAC field was encountered, but no configured authentication secret was found.";
+                log.info(logmsg);
+                // Use a shorter error messages that is returned to client, because we don't want to leak any information about configured secrets
+                final String errmsg = intres.getLocalizedMessage("cmp.errorauthmessage", "Pbe HMAC field was encountered, but HMAC did not verify",
+                        messageInformation);
+                throw new CmpServletValidationError(errmsg);
+            }
+            try {
+                if (verifier.verify(passwd) == false) {
+                    String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret");
+                    log.info(msg);
+                    throw new CmpServletValidationError(msg);
+                }
+            } catch (InvalidKeyException | NoSuchAlgorithmException | CMPException e) {
+                String msg = intres.getLocalizedMessage("cmp.errorauthmessage", messageInformation, e.getMessage());
                 log.info(msg);
                 throw new CmpServletValidationError(msg);
             }
-        } catch (InvalidKeyException | NoSuchAlgorithmException | CMPException e) {
-            String msg = intres.getLocalizedMessage("cmp.errorauthmessage", messageInformation, e.getMessage());
-            log.info(msg);
-            throw new CmpServletValidationError(msg);
         }
     }
 
