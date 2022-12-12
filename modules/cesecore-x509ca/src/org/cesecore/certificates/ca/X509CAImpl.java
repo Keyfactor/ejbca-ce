@@ -98,6 +98,7 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -1327,7 +1328,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
         }
 
-        SubjectPublicKeyInfo pkinfo = verifyAndCorrectSubjectPublicKeyInfo(publicKey);
+        SubjectPublicKeyInfo pkinfo = verifyAndCorrectSubjectPublicKeyInfo(publicKey, providedRequestMessage);
         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo);
 
         // Only created and used if Certificate Transparency is enabled
@@ -1830,11 +1831,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * When the parameters are inherited, the parameters field SHALL contain
      * implictlyCA, which is the ASN.1 value NULL.
      * 
-     * @param publicKey to verify that it has the proper aÁlgorithmIdentifier.parameters
+     * EC Point encoding can be either non-compressed, the normal case (MUST in RFC3279) or compressed (MAY in RFC3279)
+     * 
+     * @param publicKey to verify that it has the proper ÁlgorithmIdentifier.parameters
+     * @param providedRequestMessage if the public key comes from a CSR (P10, CRMF, etc) if can give information how to encode the public key in the certificate, i.e. compressed EC points 
      * @return SubjectPublicKeyInfo that can be put in a certificate
      * @throws IllegalKeyException if the publicKey is so invalid that it can not be safely fixed, issuance must be aborted
      */
-    private SubjectPublicKeyInfo verifyAndCorrectSubjectPublicKeyInfo(final PublicKey publicKey) throws IllegalKeyException {
+    private SubjectPublicKeyInfo verifyAndCorrectSubjectPublicKeyInfo(final PublicKey publicKey, final RequestMessage providedRequestMessage) throws IllegalKeyException {
         SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
         final AlgorithmIdentifier keyAlgId = pkinfo.getAlgorithm();
         if (keyAlgId == null) {
@@ -1857,8 +1861,25 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             } catch (IOException e) {
                 throw new IllegalKeyException("RSA public key with invalid AlgorithmIdentifier parameters detected, and we are unable to modify it: ", e);
             }                        
-        } else if (keyAlgId.getAlgorithm().equals(X9ObjectIdentifiers.id_ecPublicKey) && (keyAlgId.getParameters() == null)) {
-            throw new IllegalKeyException("EC public key without AlgorithmIdentifier parameters, invalid public key.");                
+        } else if (keyAlgId.getAlgorithm().equals(X9ObjectIdentifiers.id_ecPublicKey)) {
+            if (keyAlgId.getParameters() == null) {
+                throw new IllegalKeyException("EC public key without AlgorithmIdentifier parameters, invalid public key.");
+            }
+            // See if the public key is encoded with compressed point encoding, in that case we should return with the same encoding
+            if (providedRequestMessage != null && providedRequestMessage.getRequestSubjectPublicKeyInfo() != null) {
+                final byte[] encoding = providedRequestMessage.getRequestSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+                // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
+                // You'll never see 0.
+                if (encoding[0] == 2 || encoding[0] == 3) {
+                    if (!(publicKey instanceof BCECPublicKey)) {
+                        log.warn("CSR had compressed EC point format, but can not set COMPRESSED as encoding because publicKey is not BCECPublicKey: " + publicKey.getClass().getName());                        
+                    } else {
+                        log.debug("CSR had compressed EC point format, setting COMPRESSED as certificate SubjectPublicKeyInfo encoding");
+                        ((BCECPublicKey)publicKey).setPointFormat("COMPRESSED");
+                        pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+                    }
+                }
+            }
         }
         return pkinfo;
     }
