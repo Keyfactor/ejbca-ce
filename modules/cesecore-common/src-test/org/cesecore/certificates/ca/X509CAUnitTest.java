@@ -1254,7 +1254,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         is.close();
         is2 = new ASN1InputStream(oct.getOctets());
         ASN1Sequence seq = ASN1Sequence.getInstance(is2.readObject());
-        //System.out.println(ASN1Dump.dumpAsString(seq));
         is2.close();
         ASN1Encodable enc = seq.getObjectAt(0);
         ASN1Sequence seq2 = ASN1Sequence.getInstance(enc);
