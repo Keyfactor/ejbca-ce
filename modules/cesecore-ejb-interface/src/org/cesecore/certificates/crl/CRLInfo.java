@@ -30,7 +30,7 @@ public final class CRLInfo implements Serializable {
     private final int crlNumber;
     private final Date thisUpdate;
     private final Date nextUpdate;
-    private final transient X509CRL crl;
+    private final CRLData crlData;
 
     /**
      * Create information about a CRL stored in the database. The CRL itself is read lazily.
@@ -45,7 +45,7 @@ public final class CRLInfo implements Serializable {
         this.crlNumber = crlData.getCrlNumber();
         this.thisUpdate = new Date(crlData.getThisUpdate());
         this.nextUpdate = new Date(crlData.getNextUpdate());
-        this.crl = crlData.getCRL();
+        this.crlData = crlData;
     }
     
     /**
@@ -63,7 +63,7 @@ public final class CRLInfo implements Serializable {
         this.crlNumber = crlNumber;
         this.thisUpdate = new Date(thisUpdate);
         this.nextUpdate = new Date(nextUpdate);
-        this.crl = null;
+        this.crlData = null;
     }
 
     /**
@@ -117,6 +117,6 @@ public final class CRLInfo implements Serializable {
      * @return the CRL itself.
      */
     public X509CRL getCrl() {
-        return crl;
+        return crlData.getCRL();
     }
 }
