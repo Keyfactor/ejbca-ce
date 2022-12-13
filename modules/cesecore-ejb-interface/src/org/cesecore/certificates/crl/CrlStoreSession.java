@@ -53,6 +53,15 @@ public interface CrlStoreSession {
 	 * @return CRLInfo of last CRL by CA or null if no CRL exists.
 	 */
 	CRLInfo getLastCRLInfo(String issuerdn, int crlPartitionIndex, boolean deltaCRL);
+	
+	/**
+	 * Retrieves the crl expire data (AKA nextUpdate)
+	 * @param issuerDn
+	 * @param crlPartitionIndex
+	 * @param deltaCRL
+	 * @return
+	 */
+    Date getCrlExpireDate(final String issuerDn, final int crlPartitionIndex, final boolean deltaCRL);
 
 	/**
 	 * Retrieves the information about the specified CRL. Retrieves less

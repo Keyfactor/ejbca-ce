@@ -22,7 +22,6 @@ import java.util.Date;
 /**
  * Holds information about a CRL stored in the database.
  *
- * @version $Id$
  */
 public final class CRLInfo implements Serializable {
     private static final long serialVersionUID = 4942836797714142516L;
@@ -31,7 +30,7 @@ public final class CRLInfo implements Serializable {
     private final int crlNumber;
     private final Date thisUpdate;
     private final Date nextUpdate;
-    private final CRLData crlData;
+    private final transient X509CRL crl;
 
     /**
      * Create information about a CRL stored in the database. The CRL itself is read lazily.
@@ -46,7 +45,25 @@ public final class CRLInfo implements Serializable {
         this.crlNumber = crlData.getCrlNumber();
         this.thisUpdate = new Date(crlData.getThisUpdate());
         this.nextUpdate = new Date(crlData.getNextUpdate());
-        this.crlData = crlData;
+        this.crl = crlData.getCRL();
+    }
+    
+    /**
+     * This constructor is used as a helper to show GUI data, skipping the crl which could be heavy hence speed up GUI load.
+     *  
+     * @param subjectDN
+     * @param crlPartitionIndex
+     * @param crlNumber
+     * @param thisUpdate
+     * @param nextUpdate
+     */
+    public CRLInfo(final String subjectDN, final int crlPartitionIndex, final int crlNumber, final long thisUpdate, final long nextUpdate) {
+        this.subjectDn = subjectDN;
+        this.crlPartitionIndex = crlPartitionIndex == -1 ? CertificateConstants.NO_CRL_PARTITION : crlPartitionIndex;
+        this.crlNumber = crlNumber;
+        this.thisUpdate = new Date(thisUpdate);
+        this.nextUpdate = new Date(nextUpdate);
+        this.crl = null;
     }
 
     /**
@@ -100,6 +117,6 @@ public final class CRLInfo implements Serializable {
      * @return the CRL itself.
      */
     public X509CRL getCrl() {
-        return crlData.getCRL();
+        return crl;
     }
 }
