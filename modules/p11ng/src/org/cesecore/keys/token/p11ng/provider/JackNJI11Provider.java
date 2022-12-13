@@ -45,9 +45,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.sun.jna.Memory;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -71,6 +68,8 @@ import org.pkcs11.jacknji11.CKO;
 import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
+
+import com.sun.jna.Memory;
 
 /**
  * Provider using JackNJI11.
