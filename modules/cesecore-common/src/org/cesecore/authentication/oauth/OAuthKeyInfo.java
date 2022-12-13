@@ -13,23 +13,22 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.security.InvalidKeyException;
-import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
+import org.apache.commons.lang.StringUtils;
+import org.cesecore.util.StringTools;
+
 import com.google.common.base.Preconditions;
 import com.keyfactor.util.string.StringConfigurationCache;
-
-import org.apache.commons.lang.StringUtils;
-import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.util.StringTools;
 
 /**
  * Represents an OAuth Public Key entry
@@ -160,7 +159,7 @@ public final class OAuthKeyInfo implements Serializable {
     }
 
     public void setClientSecretAndEncrypt(String clientSecret) {
-        final char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+        final char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
         this.clientSecret = StringTools.pbeEncryptStringWithSha256Aes192(clientSecret, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
     }
 
