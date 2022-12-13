@@ -204,7 +204,7 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.6.4.jar"/>
-	<classpathentry kind="lib" path="lib/guava-28.0.jar"/>
+	<classpathentry kind="lib" path="lib/guava-31.1-jre.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.11.3.jar"/>
