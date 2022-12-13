@@ -547,7 +547,7 @@
 			<isset property="bundle-hibernate-jpa"/>
 		</condition>
 		<!-- Include Xerces library if it don't exist in the current application server (jboss6 won't start with it). -->
-		<condition property="bundle-xerces-exclude" value="xerces*.jar, xml-apis.jar" else="">
+		<condition property="bundle-xerces-exclude" value="xerces*.jar" else="">
 			<isset property="exclude-xerces"/>
 		</condition>
 		<!-- Special JBoss EAP 6 handling -->
@@ -622,7 +622,6 @@
   				<include name="oauth2-oidc-sdk-*.jar"/>
         	</zipfileset>
         	
-            <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="cesecore-ejb.jar" />
