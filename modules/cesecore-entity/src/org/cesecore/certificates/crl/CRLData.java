@@ -31,6 +31,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.util.Date;
@@ -299,8 +300,8 @@ public class CRLData extends ProtectedData implements Serializable {
      * @return the found entity instance or null if the entity does not exist.
      */
     public static CRLData findByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
-        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                + getCrlPartitionIndexCondition(crlPartitionIndex));
+        final Query query = entityManager.createNativeQuery("SELECT * FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                + getCrlPartitionIndexCondition(crlPartitionIndex), CRLData.class);
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
         query.setMaxResults(1);
@@ -308,6 +309,50 @@ public class CRLData extends ProtectedData implements Serializable {
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
         }
         return (CRLData) QueryResultWrapper.getSingleResult(query);
+    }
+    
+    /**
+     * Find a CRL's thisUpdate value by the given issuer, partition index and number.
+     * 
+     * @param entityManager
+     * @param issuerDN
+     * @param crlPartitionIndex
+     * @param crlNumber
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static BigInteger findThisUpdateByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
+        final Query query = entityManager.createNativeQuery("SELECT thisUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                + getCrlPartitionIndexCondition(crlPartitionIndex));
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlNumber", crlNumber);
+        query.setMaxResults(1);
+        if (crlPartitionIndex > 0) {
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        }
+        return (BigInteger) query.getResultList().stream().findFirst().orElse(null);
+    }
+    
+    /**
+     * Find a CRL's nextUpdate value by the given issuer, partition index and number.
+     * 
+     * @param entityManager
+     * @param issuerDN
+     * @param crlPartitionIndex
+     * @param crlNumber
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static BigInteger findNextUpdateByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
+        final Query query = entityManager.createNativeQuery("SELECT nextUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                + getCrlPartitionIndexCondition(crlPartitionIndex));
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlNumber", crlNumber);
+        query.setMaxResults(1);
+        if (crlPartitionIndex > 0) {
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        }
+        return (BigInteger) query.getResultList().stream().findFirst().orElse(null);
     }
     
     /**
