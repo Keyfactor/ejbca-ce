@@ -55,6 +55,16 @@ public interface CrlStoreSession {
 	CRLInfo getLastCRLInfo(String issuerdn, int crlPartitionIndex, boolean deltaCRL);
 	
 	/**
+	 * Same as the above function {@link #getLastCRLInfo} except that it ignores the crl, making it a lightweight version suitable for GUI use.
+	 * 
+	 * @param issuerdn
+	 * @param crlPartitionIndex
+	 * @param deltaCRL
+	 * @return
+	 */
+	CRLInfo getLastCRLInfoLightWeight(String issuerdn, int crlPartitionIndex, boolean deltaCRL);
+	
+	/**
 	 * Retrieves the crl expire data (AKA nextUpdate)
 	 * @param issuerDn
 	 * @param crlPartitionIndex

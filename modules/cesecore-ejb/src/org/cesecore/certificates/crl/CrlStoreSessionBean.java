@@ -163,6 +163,40 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
                 log.trace(">getLastCRLInfo(" + issuerDn + ", " + deltaCRL + ")");
             }
             final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
+            final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
+            if (data == null) {
+                if (deltaCRL && crlNumber == 0) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No delta CRL exists for CA with subject DN '" + issuerDn + "'.");
+                    }
+                } else if (crlNumber == 0) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No CRL exists for CA with subject DN '" + issuerDn + "'.");
+                    }
+                } else {
+                    log.error(getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerDn, crlNumber));
+                }
+                return null;
+            }
+            return new CRLInfo(data);
+        } catch (final Exception e) {
+            log.info(intres.getLocalizedMessage("store.errorgetcrlinfo", issuerDn));
+            throw new EJBException(e);
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<getLastCRLInfo()");
+            }
+        }
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public CRLInfo getLastCRLInfoLightWeight(final String issuerDn, final int crlPartitionIndex, final boolean deltaCRL) {
+        try {
+            if (log.isTraceEnabled()) {
+                log.trace(">getLastCRLInfoLightWeight(" + issuerDn + ", " + deltaCRL + ")");
+            }
+            final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
 
             final BigInteger thisUpdate = CRLData.findThisUpdateByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
             final BigInteger nextUpdate = CRLData.findNextUpdateByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
@@ -177,7 +211,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             throw new EJBException(e);
         } finally {
             if (log.isTraceEnabled()) {
-                log.trace("<getLastCRLInfo()");
+                log.trace("<getLastCRLInfoLightWeight()");
             }
         }
     }
