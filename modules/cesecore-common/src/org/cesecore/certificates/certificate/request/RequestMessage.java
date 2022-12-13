@@ -170,7 +170,7 @@ public interface RequestMessage extends Serializable {
     /**
      * Get the key, in SubjectPublicKeyInfo format, from a certification request if the request format supports this
      * This is separate from the {@link #getRequestPublicKey()}, because the 
-     * SubjectPublicKeyInfo can be empty, contain only and algorithmIdentifier in case when server generated keys are requested.
+     * SubjectPublicKeyInfo can be empty, or contain only an algorithmIdentifier in case when server generated keys are requested.
      * 
      * @see #getRequestPublicKey()
      * @return SubjectPublicKeyInfo, with the same public key as getRequestPublicKey, or null, or only an algorithmIdentifier.

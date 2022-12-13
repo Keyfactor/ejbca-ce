@@ -1870,11 +1870,12 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 final byte[] encoding = providedRequestMessage.getRequestSubjectPublicKeyInfo().getPublicKeyData().getBytes();
                 // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
                 // You'll never see 0.
-                if (encoding[0] == 2 || encoding[0] == 3) {
+                // In CMP you can request server generated keys by a SubjectPublicKeyInfo with only an AlgorithmIdentifier and empty publicKey BIT STRING
+                if ((encoding != null && encoding.length > 0) && (encoding[0] == 2 || encoding[0] == 3)) {
                     if (!(publicKey instanceof BCECPublicKey)) {
-                        log.warn("CSR had compressed EC point format, but can not set COMPRESSED as encoding because publicKey is not BCECPublicKey: " + publicKey.getClass().getName());                        
+                        log.warn("CSR has compressed EC point format, but can not set COMPRESSED as encoding because publicKey is not BCECPublicKey: " + publicKey.getClass().getName());                        
                     } else {
-                        log.debug("CSR had compressed EC point format, setting COMPRESSED as certificate SubjectPublicKeyInfo encoding");
+                        log.debug("CSR has compressed EC point format, setting COMPRESSED as certificate SubjectPublicKeyInfo encoding");
                         ((BCECPublicKey)publicKey).setPointFormat("COMPRESSED");
                         pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
                     }
