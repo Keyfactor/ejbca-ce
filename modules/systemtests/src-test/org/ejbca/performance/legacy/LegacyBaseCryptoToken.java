@@ -332,7 +332,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             String authcode = pin;
             if (encrypt) {
                 try {
-                    char[] encryptionKey = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+                    char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
                     authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
                 } catch (Exception e) {
                     log.error(intres.getLocalizedMessage("token.nopinencrypt"), e);
