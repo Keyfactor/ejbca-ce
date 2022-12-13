@@ -66,8 +66,6 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-ssh/src"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webdist-war/src"/>
-	<classpathentry kind="src" path="modules/ejbca-webtest/src-test"/>
-	<classpathentry kind="src" path="modules/ejbca-webtest/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src"/>
@@ -153,13 +151,6 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/geronimo-osgi-locator-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-api-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-firefox-driver-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-java-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-remote-driver-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-support-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/report/extentreports-4.1.7.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/report/freemarker-2.3.31.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.7.jar"/>
