@@ -1059,9 +1059,6 @@
                 <exclude name="modules/va/build-va-publisher/**" />
                 <!-- Exclude continuous integration files -->
                 <exclude name="jenkins-files/**" />
-		    	<!-- Exclude Web Tests -->
-		    	<exclude name="modules/ejbca-webtest/**"/>
-                <exclude name="lib/ext/webtest/**"/>
 		    	<!-- Exclude internal Confluence information -->
 		    	<exclude name="src/doc.properties" />
 		    	<!-- Exclude modules that are not present in Community Edition -->
@@ -1529,10 +1526,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     <target name="ejbca-caa-cli" depends="deprecated:check" if="caa.exists" description="Creates a CLI jar for CAA lookups">
     	<ant dir="modules" target="ejbca-caa-cli" />
     </target>
-
-	<target name="ejbca-webtest" depends="deprecated:check" if="webtest.exists" description="Builds EJBCA web test module">
-		<ant dir="modules" target="ejbca-webtest" />
-	</target>
 	
 	<target name="ejbca-ejb-interface">
        	<ant dir="modules" target="ejbca-ejb-interface" />
@@ -1736,17 +1729,5 @@ SHA-256 checksum: ${cesecorebinSHA256}
             </fileset>
         </copy>
     </target>
-
-	<!-- Setup Firefox profiles for Selenium UI Tests -->
-	<target name="ejbca:setup:selenium" description="Sets the general EJBCA settings required by some Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-certificates" />
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-firefox-profiles" />
-	</target>
-	<target name="ejbca:setup:selenium-certificates" description="Sets the certificates settings required by Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-certificates" />
-	</target>
-	<target name="ejbca:setup:selenium-firefox-profiles" description="Sets the firefox profiles settings required by Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-firefox-profiles" />
-	</target>
 
 </project>
