@@ -27,7 +27,6 @@
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
-		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in KeyTools -->
 		<path refid="lib.jacknji.classpath"/>
         <path refid="lib.json-simple.classpath"/>
