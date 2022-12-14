@@ -1771,7 +1771,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertFalse("Public key is encoded as a named curve", ecPub.getParams() instanceof ECNamedCurveSpec);
         holder = new X509CertificateHolder(certFullParams.getEncoded());
         pkBytes = holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-        assertEquals("The magic number is not for an uncomressed key", , pkBytes[0]);
+        assertEquals("The magic number is not for an uncomressed key", 4, pkBytes[0]);
         params = X962Parameters.getInstance(holder.getSubjectPublicKeyInfo().getAlgorithm().getParameters());
         assertFalse("The full parameters key does not use a named curve parameter", params.isNamedCurve());
     }
