@@ -1689,43 +1689,37 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn");
         PKCS10CertificationRequest certificationRequest = genPKCS10CertificationRequest(algName, x509dn, namedNonCompressed, keyPair.getPrivate());
         PKCS10RequestMessage csrNamedNonCompressed = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
-        assertTrue(csrNamedNonCompressed.verify(keyPair.getPublic()));
-        assertTrue(csrNamedNonCompressed.verify(new JcaPKCS10CertificationRequest(csrNamedNonCompressed.getCertificationRequest()).getPublicKey()));
+        assertTrue("Our own generated CSR with uncompressed key does not verify POP, it definitely should", csrNamedNonCompressed.verify(keyPair.getPublic()));
+        assertTrue("Our own generated CSR with uncompressed key (JCA format) does not verify POP, it definitely should", csrNamedNonCompressed.verify(new JcaPKCS10CertificationRequest(csrNamedNonCompressed.getCertificationRequest()).getPublicKey()));
         assertEquals("CN=RequestMessageCn", csrNamedNonCompressed.getRequestDN());
         // 2. With named curve and compressed point
         certificationRequest = genPKCS10CertificationRequest(algName, x509dn, namedCompressed, keyPair.getPrivate());
         PKCS10RequestMessage csrNamedCompressed = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
-        assertTrue(csrNamedCompressed.verify(keyPair.getPublic()));
-        assertTrue(csrNamedCompressed.verify(new JcaPKCS10CertificationRequest(csrNamedCompressed.getCertificationRequest()).getPublicKey()));
+        assertTrue("Our own generated CSR with compressed key does not verify POP, it definitely should", csrNamedCompressed.verify(keyPair.getPublic()));
+        assertTrue("Our own generated CSR with compressed key (JCA format) does not verify POP, it definitely should", csrNamedCompressed.verify(new JcaPKCS10CertificationRequest(csrNamedCompressed.getCertificationRequest()).getPublicKey()));
         assertEquals("CN=RequestMessageCn", csrNamedCompressed.getRequestDN());
         // 3. With full curve parameters
         certificationRequest = genPKCS10CertificationRequest(algName, x509dn, fullParams, keyPair.getPrivate());
         PKCS10RequestMessage csrFullParams = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
-        assertTrue(csrFullParams.verify(keyPair.getPublic()));
-        assertTrue(csrFullParams.verify(new JcaPKCS10CertificationRequest(csrFullParams.getCertificationRequest()).getPublicKey()));
+        assertTrue("Our own generated CSR with full parameters does not verify POP, it definitely should", csrFullParams.verify(keyPair.getPublic()));
+        assertTrue("Our own generated CSR with full parameters (JCA format) does not verify POP, it definitely should", csrFullParams.verify(new JcaPKCS10CertificationRequest(csrFullParams.getCertificationRequest()).getPublicKey()));
         assertEquals("CN=RequestMessageCn", csrFullParams.getRequestDN());
         
         // Verify that the CSRs seem to be generated with the intended encoding
         // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
         // You'll never see 0.
         byte[] encoding = csrNamedNonCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-        assertEquals(4, encoding[0]);
+        assertEquals("The magic number is not for an uncomressed key", 4, encoding[0]);
         X962Parameters params = X962Parameters.getInstance(csrNamedNonCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getAlgorithm().getParameters());
-        assertTrue(params.isNamedCurve());
-        //System.out.println(ASN1Dump.dumpAsString(csrNamedNonCompressed.getCertificationRequest().toASN1Structure()));
-        //System.out.println(Hex.toHexString(encoding));
+        assertTrue("The uncompressed key does not use a named curve parameter", params.isNamedCurve());
         encoding = csrNamedCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-        assertTrue("First byte is not 2 or 3: " + encoding[0], (encoding[0] == 2 || encoding[0] == 3));
+        assertTrue("First byte is not 2 or 3 as it should for a compressed key: " + encoding[0], (encoding[0] == 2 || encoding[0] == 3));
         params = X962Parameters.getInstance(csrNamedCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getAlgorithm().getParameters());
-        assertTrue(params.isNamedCurve());
-        //System.out.println(ASN1Dump.dumpAsString(csrNamedCompressed.getCertificationRequest().toASN1Structure()));
-        //System.out.println(Hex.toHexString(encoding));
+        assertTrue("The compressed key does not use a named curve parameter", params.isNamedCurve());
         encoding = csrFullParams.getCertificationRequest().getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-        assertEquals(4, encoding[0]); // full parameters is also non-compressed
+        assertEquals("The magic number is not for an uncomressed key (full parameters test)", 4, encoding[0]); // full parameters is also non-compressed
         params = X962Parameters.getInstance(csrFullParams.getCertificationRequest().getSubjectPublicKeyInfo().getAlgorithm().getParameters());
-        assertFalse(params.isNamedCurve());
-        //System.out.println(ASN1Dump.dumpAsString(csrFullParams.getCertificationRequest().toASN1Structure()));
-        //System.out.println(Hex.toHexString(encoding));
+        assertFalse("The full parameters key uses a named curve parameter", params.isNamedCurve());
 
         // CP and EE Info
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1736,53 +1730,50 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Generate three certificates, one from each CSR
         // 1. With named curve and non-compressed point
         Certificate certNamedNonCompressed = x509ca.generateCertificate(cryptoToken, endEntityInformation, csrNamedNonCompressed, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
-        assertNotNull(certNamedNonCompressed);
+        assertNotNull("Uncompressed key certificate could not be created", certNamedNonCompressed);
         PublicKey certPub = certNamedNonCompressed.getPublicKey();
-        assertEquals("prime256v1", AlgorithmTools.getKeySpecification(certPub)); // prime256v1 is same as secp256r1
+        assertEquals("Key algorithm is not as expected", "prime256v1", AlgorithmTools.getKeySpecification(certPub)); // prime256v1 is same as secp256r1
         assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(certPub));
-        assertTrue(certPub instanceof BCECPublicKey);
+        assertTrue("Public key is not an in stance of BCECPUblicKey: " + certPub.getClass().getName(), certPub instanceof BCECPublicKey);
         BCECPublicKey ecPub = (BCECPublicKey)certPub;
         assertTrue("Public key is not encoded as a named curve", ecPub.getParams() instanceof ECNamedCurveSpec);
         X509CertificateHolder holder = new X509CertificateHolder(certNamedNonCompressed.getEncoded());
         byte[] pkBytes = holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-        //System.out.println(Hex.toHexString(pkBytes));
         // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
         // You'll never see 0.
-        assertEquals(4, pkBytes[0]);
+        assertEquals("The magic number is not for an uncomressed key", 4, pkBytes[0]);
         params = X962Parameters.getInstance(holder.getSubjectPublicKeyInfo().getAlgorithm().getParameters());
-        assertTrue(params.isNamedCurve());
+        assertTrue("The uncompressed key does not use a named curve parameter", params.isNamedCurve());
 
         // 2. With named curve and compressed point
         Certificate certNamedCompressed = x509ca.generateCertificate(cryptoToken, endEntityInformation, csrNamedCompressed, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
-        assertNotNull(certNamedCompressed);        
+        assertNotNull("Compressed key certificate could not be created", certNamedCompressed);        
         certPub = certNamedCompressed.getPublicKey();
-        assertEquals("prime256v1", AlgorithmTools.getKeySpecification(certPub));
+        assertEquals("Key algorithm is not as expected", "prime256v1", AlgorithmTools.getKeySpecification(certPub));
         assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(certPub));
-        assertTrue(certPub instanceof BCECPublicKey);
+        assertTrue("Public key is not an in stance of BCECPUblicKey: " + certPub.getClass().getName(), certPub instanceof BCECPublicKey);
         ecPub = (BCECPublicKey)certPub;
         assertTrue("Public key is not encoded as a named curve", ecPub.getParams() instanceof ECNamedCurveSpec);
         holder = new X509CertificateHolder(certNamedCompressed.getEncoded());
         pkBytes = holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-        //System.out.println(Hex.toHexString(holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes()));
-        assertTrue("First byte is not 2 or 3: " + pkBytes[0], (pkBytes[0] == 2 || pkBytes[0] == 3));
+        assertTrue("First byte is not 2 or 3 as it should be for a compressed key: " + pkBytes[0], (pkBytes[0] == 2 || pkBytes[0] == 3));
         params = X962Parameters.getInstance(holder.getSubjectPublicKeyInfo().getAlgorithm().getParameters());
-        assertTrue(params.isNamedCurve());
+        assertTrue("The compressed key does not use a named curve parameter", params.isNamedCurve());
 
         // 3. With full curve parameters
         Certificate certFullParams = x509ca.generateCertificate(cryptoToken, endEntityInformation, csrFullParams, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
-        assertNotNull(certFullParams);        
+        assertNotNull("Full parameters key certificate could not be created", certFullParams);        
         certPub = certFullParams.getPublicKey();
-        assertEquals("P-256", AlgorithmTools.getKeySpecification(certPub)); // For full parameters P-256 is returned instead of prime256v1, but it's the same
+        assertEquals("Key algorithm is not as expected", "P-256", AlgorithmTools.getKeySpecification(certPub)); // For full parameters P-256 is returned instead of prime256v1, but it's the same
         assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(certPub));
-        assertTrue(certPub instanceof BCECPublicKey);
+        assertTrue("Public key is not an in stance of BCECPUblicKey: " + certPub.getClass().getName(), certPub instanceof BCECPublicKey);
         ecPub = (BCECPublicKey)certPub;
         assertFalse("Public key is encoded as a named curve", ecPub.getParams() instanceof ECNamedCurveSpec);
         holder = new X509CertificateHolder(certFullParams.getEncoded());
         pkBytes = holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-        //System.out.println(Hex.toHexString(holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes()));
-        assertEquals(4, pkBytes[0]);
+        assertEquals("The magic number is not for an uncomressed key", , pkBytes[0]);
         params = X962Parameters.getInstance(holder.getSubjectPublicKeyInfo().getAlgorithm().getParameters());
-        assertFalse(params.isNamedCurve());
+        assertFalse("The full parameters key does not use a named curve parameter", params.isNamedCurve());
     }
 
     // See CertTools.genPKCS10CertificationRequest, modified to take differently encoded public keys
