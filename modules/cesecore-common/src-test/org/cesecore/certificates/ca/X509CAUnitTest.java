@@ -12,15 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -65,6 +58,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERPrintableString;
@@ -73,8 +67,9 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.Attribute;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
+import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -92,14 +87,21 @@ import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.asn1.x9.X962Parameters;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.Store;
@@ -143,6 +145,14 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /** JUnit test for X.509 CA
@@ -184,7 +194,14 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     }
 
     @Test
+    public void testX509CABasicOperationsECDSA() throws Exception {
+        // X509CAUnitTestBase.getTestKeySpec will use prim256v1 for this sigalg
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+    }
+
+    @Test
     public void testX509CABasicOperationsBrainpoolECC() throws Exception {
+        // X509CAUnitTestBase.getTestKeySpec will use brainpoolp224r1 for this sigalg
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
     }
 
@@ -420,6 +437,11 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     }
 
     @Test
+    public void testStoreAndLoadECDSA() throws Exception {
+        doTestStoreAndLoad(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+    }
+
+    @Test
     public void testStoreAndLoadGOST() throws Exception {
         assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
@@ -473,13 +495,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Check CAinfo and CAtokeninfo
         final CAInfo cainfo1 = ca.getCAInfo();
         final CAToken caToken1 = cainfo1.getCAToken();
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, caToken1.getSignatureAlgorithm());
+        assertEquals(algName, caToken1.getSignatureAlgorithm());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, caToken1.getEncryptionAlgorithm());
         assertEquals(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, caToken1.getKeySequenceFormat());
 
         final CAInfo cainfo2 = ca2.getCAInfo();
         final CAToken caToken2 = cainfo2.getCAToken();
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, caToken2.getSignatureAlgorithm());
+        assertEquals(algName, caToken2.getSignatureAlgorithm());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, caToken2.getEncryptionAlgorithm());
         assertEquals(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, caToken2.getKeySequenceFormat());
     }
@@ -1234,7 +1256,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         is.close();
         is2 = new ASN1InputStream(oct.getOctets());
         ASN1Sequence seq = ASN1Sequence.getInstance(is2.readObject());
-        System.out.println(ASN1Dump.dumpAsString(seq));
         is2.close();
         ASN1Encodable enc = seq.getObjectAt(0);
         ASN1Sequence seq2 = ASN1Sequence.getInstance(enc);
@@ -1639,6 +1660,142 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
         assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
+    }
+
+    /**
+     * Testing generating certificate with public key from providedRequestMessage (providedPublicKey and endEntityInformation.extendedInformation.certificateRequest must be null).
+     * Tests the three different encodings of EC public keys:
+     * - With named curve and non-compressed point (standard RFC5280/3779)
+     * - With named curve and compressed point (MAY in RFC3779, compliant with NIST EC key validation)
+     * - With full curve parameters (ICAO9303)
+     */
+    @Test
+    public void testGeneratingCertificateWithECPublicKeyWithDifferentEncodingsFromProvidedRequestMessage() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+
+        // Generate a key pair and encode the public key in three different ways
+        KeyPair keyPair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
+        // 1. With named curve and non-compressed point
+        BCECPublicKey bcEcPub = (BCECPublicKey)(keyPair.getPublic());
+        byte[] namedNonCompressed = bcEcPub.getEncoded();
+        // 2. With named curve and compressed point
+        bcEcPub.setPointFormat("COMPRESSED");
+        byte[] namedCompressed = bcEcPub.getEncoded();
+        // 3. With full curve parameters
+        byte[] fullParams = ECKeyUtil.publicToExplicitParameters(bcEcPub, BouncyCastleProvider.PROVIDER_NAME).getEncoded();
+
+        // Generate three different PKCS#10 CSRs with the same public key encoded in three different ways
+        // 1. With named curve and non-compressed point
+        X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn");
+        PKCS10CertificationRequest certificationRequest = genPKCS10CertificationRequest(algName, x509dn, namedNonCompressed, keyPair.getPrivate());
+        PKCS10RequestMessage csrNamedNonCompressed = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
+        assertTrue("Our own generated CSR with uncompressed key does not verify POP, it definitely should", csrNamedNonCompressed.verify(keyPair.getPublic()));
+        assertTrue("Our own generated CSR with uncompressed key (JCA format) does not verify POP, it definitely should", csrNamedNonCompressed.verify(new JcaPKCS10CertificationRequest(csrNamedNonCompressed.getCertificationRequest()).getPublicKey()));
+        assertEquals("CN=RequestMessageCn", csrNamedNonCompressed.getRequestDN());
+        // 2. With named curve and compressed point
+        certificationRequest = genPKCS10CertificationRequest(algName, x509dn, namedCompressed, keyPair.getPrivate());
+        PKCS10RequestMessage csrNamedCompressed = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
+        assertTrue("Our own generated CSR with compressed key does not verify POP, it definitely should", csrNamedCompressed.verify(keyPair.getPublic()));
+        assertTrue("Our own generated CSR with compressed key (JCA format) does not verify POP, it definitely should", csrNamedCompressed.verify(new JcaPKCS10CertificationRequest(csrNamedCompressed.getCertificationRequest()).getPublicKey()));
+        assertEquals("CN=RequestMessageCn", csrNamedCompressed.getRequestDN());
+        // 3. With full curve parameters
+        certificationRequest = genPKCS10CertificationRequest(algName, x509dn, fullParams, keyPair.getPrivate());
+        PKCS10RequestMessage csrFullParams = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
+        assertTrue("Our own generated CSR with full parameters does not verify POP, it definitely should", csrFullParams.verify(keyPair.getPublic()));
+        assertTrue("Our own generated CSR with full parameters (JCA format) does not verify POP, it definitely should", csrFullParams.verify(new JcaPKCS10CertificationRequest(csrFullParams.getCertificationRequest()).getPublicKey()));
+        assertEquals("CN=RequestMessageCn", csrFullParams.getRequestDN());
+        
+        // Verify that the CSRs seem to be generated with the intended encoding
+        // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
+        // You'll never see 0.
+        byte[] encoding = csrNamedNonCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+        assertEquals("The magic number is not for an uncomressed key", 4, encoding[0]);
+        X962Parameters params = X962Parameters.getInstance(csrNamedNonCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getAlgorithm().getParameters());
+        assertTrue("The uncompressed key does not use a named curve parameter", params.isNamedCurve());
+        encoding = csrNamedCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+        assertTrue("First byte is not 2 or 3 as it should for a compressed key: " + encoding[0], (encoding[0] == 2 || encoding[0] == 3));
+        params = X962Parameters.getInstance(csrNamedCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getAlgorithm().getParameters());
+        assertTrue("The compressed key does not use a named curve parameter", params.isNamedCurve());
+        encoding = csrFullParams.getCertificationRequest().getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+        assertEquals("The magic number is not for an uncomressed key (full parameters test)", 4, encoding[0]); // full parameters is also non-compressed
+        params = X962Parameters.getInstance(csrFullParams.getCertificationRequest().getSubjectPublicKeyInfo().getAlgorithm().getParameters());
+        assertFalse("The full parameters key uses a named curve parameter", params.isNamedCurve());
+
+        // CP and EE Info
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+        cp.setUseCertificatePolicies(true);
+        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+
+        // Generate three certificates, one from each CSR
+        // 1. With named curve and non-compressed point
+        Certificate certNamedNonCompressed = x509ca.generateCertificate(cryptoToken, endEntityInformation, csrNamedNonCompressed, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull("Uncompressed key certificate could not be created", certNamedNonCompressed);
+        PublicKey certPub = certNamedNonCompressed.getPublicKey();
+        assertEquals("Key algorithm is not as expected", "prime256v1", AlgorithmTools.getKeySpecification(certPub)); // prime256v1 is same as secp256r1
+        assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(certPub));
+        assertTrue("Public key is not an in stance of BCECPUblicKey: " + certPub.getClass().getName(), certPub instanceof BCECPublicKey);
+        BCECPublicKey ecPub = (BCECPublicKey)certPub;
+        assertTrue("Public key is not encoded as a named curve", ecPub.getParams() instanceof ECNamedCurveSpec);
+        X509CertificateHolder holder = new X509CertificateHolder(certNamedNonCompressed.getEncoded());
+        byte[] pkBytes = holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+        // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
+        // You'll never see 0.
+        assertEquals("The magic number is not for an uncomressed key", 4, pkBytes[0]);
+        params = X962Parameters.getInstance(holder.getSubjectPublicKeyInfo().getAlgorithm().getParameters());
+        assertTrue("The uncompressed key does not use a named curve parameter", params.isNamedCurve());
+
+        // 2. With named curve and compressed point
+        Certificate certNamedCompressed = x509ca.generateCertificate(cryptoToken, endEntityInformation, csrNamedCompressed, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull("Compressed key certificate could not be created", certNamedCompressed);        
+        certPub = certNamedCompressed.getPublicKey();
+        assertEquals("Key algorithm is not as expected", "prime256v1", AlgorithmTools.getKeySpecification(certPub));
+        assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(certPub));
+        assertTrue("Public key is not an in stance of BCECPUblicKey: " + certPub.getClass().getName(), certPub instanceof BCECPublicKey);
+        ecPub = (BCECPublicKey)certPub;
+        assertTrue("Public key is not encoded as a named curve", ecPub.getParams() instanceof ECNamedCurveSpec);
+        holder = new X509CertificateHolder(certNamedCompressed.getEncoded());
+        pkBytes = holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+        assertTrue("First byte is not 2 or 3 as it should be for a compressed key: " + pkBytes[0], (pkBytes[0] == 2 || pkBytes[0] == 3));
+        params = X962Parameters.getInstance(holder.getSubjectPublicKeyInfo().getAlgorithm().getParameters());
+        assertTrue("The compressed key does not use a named curve parameter", params.isNamedCurve());
+
+        // 3. With full curve parameters
+        Certificate certFullParams = x509ca.generateCertificate(cryptoToken, endEntityInformation, csrFullParams, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull("Full parameters key certificate could not be created", certFullParams);        
+        certPub = certFullParams.getPublicKey();
+        assertEquals("Key algorithm is not as expected", "P-256", AlgorithmTools.getKeySpecification(certPub)); // For full parameters P-256 is returned instead of prime256v1, but it's the same
+        assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(certPub));
+        assertTrue("Public key is not an in stance of BCECPUblicKey: " + certPub.getClass().getName(), certPub instanceof BCECPublicKey);
+        ecPub = (BCECPublicKey)certPub;
+        assertFalse("Public key is encoded as a named curve", ecPub.getParams() instanceof ECNamedCurveSpec);
+        holder = new X509CertificateHolder(certFullParams.getEncoded());
+        pkBytes = holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+        assertEquals("The magic number is not for an uncomressed key", 4, pkBytes[0]);
+        params = X962Parameters.getInstance(holder.getSubjectPublicKeyInfo().getAlgorithm().getParameters());
+        assertFalse("The full parameters key does not use a named curve parameter", params.isNamedCurve());
+    }
+
+    // See CertTools.genPKCS10CertificationRequest, modified to take differently encoded public keys
+    private static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, byte[] encodedPublickey,
+            PrivateKey privateKey) throws OperatorCreationException {
+        ContentSigner signer;
+        CertificationRequestInfo reqInfo;
+        try {
+            SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(encodedPublickey);
+            reqInfo = new CertificationRequestInfo(subject, pkinfo, null);
+            signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(privateKey), 20480);
+            signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
+            signer.getOutputStream().flush();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException was caught.", e);
+        }
+        byte[] sig = signer.getSignature();
+        DERBitString sigBits = new DERBitString(sig);
+        CertificationRequest req = new CertificationRequest(reqInfo, signer.getAlgorithmIdentifier(), sigBits);
+        return new PKCS10CertificationRequest(req);
     }
 
     /**
