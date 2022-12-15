@@ -163,7 +163,14 @@ public class AddEndEntityRestRequest {
                 }
                 if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
                     addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-                        extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
+                        // There are two different types of ExtendedInformation, Extension Data (custom extensions) and 
+                        // Custom Data (other fields like validity, certificate serial number and other things)
+                        // See ExtendedInformation
+                        if (extendedInformation.getName().startsWith("customdata_")) {
+                            extendedInfo.setCustomData(extendedInformation.getName().substring(11), extendedInformation.getValue());
+                        } else {
+                            extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
+                        }
                     });
                 }
             }
