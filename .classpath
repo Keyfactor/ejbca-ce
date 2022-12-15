@@ -69,8 +69,6 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-ssh/src"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webdist-war/src"/>
-	<classpathentry kind="src" path="modules/ejbca-webtest/src-test"/>
-	<classpathentry kind="src" path="modules/ejbca-webtest/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src"/>
@@ -135,7 +133,7 @@
 	<classpathentry kind="lib" path="lib/httpclient-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jna-5.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/jna-5.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/jacknji11-1.2-pk3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-4.11.jar"/>
@@ -155,13 +153,6 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/geronimo-osgi-locator-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-api-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-firefox-driver-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-java-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-remote-driver-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-support-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/report/extentreports-4.1.7.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/report/freemarker-2.3.31.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.7.jar"/>
@@ -206,7 +197,7 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.6.4.jar"/>
-	<classpathentry kind="lib" path="lib/guava-28.0.jar"/>
+	<classpathentry kind="lib" path="lib/guava-31.1-jre.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.11.3.jar"/>
@@ -258,9 +249,9 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/woodstox-core-5.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/wsdl4j-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/xmlschema-core-2.2.5.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.17.1.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-api-2.17.1.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-core-2.17.1.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.19.0.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.19.0.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-digester-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>

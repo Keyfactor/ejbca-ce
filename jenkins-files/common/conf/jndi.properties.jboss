@@ -1,3 +1,0 @@
-# JBoss 7
-java.naming.factory.url.pkgs=org.jboss.ejb.client.naming
-# To run remote EJB you also need jboss-ejb-client.properties in your classpath

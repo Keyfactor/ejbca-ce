@@ -114,7 +114,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.cert.OID;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
