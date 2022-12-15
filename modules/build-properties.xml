@@ -158,7 +158,6 @@
 	<property name="mod.caa-cli.lib" location="${mod.dist.caa-cli.dir}/caa-cli.jar" />
     <property name="mod.est-war.path" location="${mod.path}/est" />
     <property name="mod.est.war" location="${mod.dist.path}/est.war" />
-    <property name="mod.webtest.path" location="${mod.path}/ejbca-webtest"/>
     <property name="mod.ejbca-rest-api.path" location="${mod.path}/ejbca-rest-api" />
     <property name="mod.ejbca-rest-common.path" location="${mod.path}/ejbca-rest-common" />
     <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
@@ -690,10 +689,6 @@
 	<condition property="mod.ct.exists">
 		<available file="${mod.ct.path}/build.xml" />
     </condition>
-
-	<condition property="mod.webtest.exists">
-		<available file="${mod.webtest.path}/build.xml" />
-	</condition>
 
 	<condition property="mod.proxy-ca.exists">
 		<available file="${mod.proxy-ca.path}/build.xml" />
