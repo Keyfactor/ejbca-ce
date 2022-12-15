@@ -265,19 +265,19 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             if (cainfo instanceof X509CAInfo) {
                 final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null ? 1 : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
                 for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
-                    final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
+                    final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
                     if (currentCrlInfo != null) {
                         crlInfos.add(new CRLGuiInfo(currentCrlInfo));
                     }
                 }
             } else {
-                final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+                final CRLInfo crlinfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
                 if (crlinfo != null) {
                     crlInfos.add(new CRLGuiInfo(crlinfo));
                 }
             }
 
-            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
+            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
             final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), 
                     cainfo.getCAType()!=CAInfo.CATYPE_PROXY ? cainfo.getCertificateChain() : null, 
