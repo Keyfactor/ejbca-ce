@@ -48,7 +48,7 @@ public class CRLData extends ProtectedData implements Serializable {
 
     private static final Logger log = Logger.getLogger(CRLData.class);
 
-    private static final int LATEST_PROTECT_VERSON = 2;
+    private static final int LATEST_PROTECT_VERSION = 2;
 
     private int cRLNumber;
     private int deltaCRLIndicator;
@@ -58,7 +58,7 @@ public class CRLData extends ProtectedData implements Serializable {
     private String cAFingerprint;
     private long thisUpdate;
     private long nextUpdate;
-    private String base64Crl;
+    private String base64Crl; // TODO: Consider changing this to byte[]
     private int rowVersion = 0;
     private String rowProtection;
 
@@ -233,15 +233,12 @@ public class CRLData extends ProtectedData implements Serializable {
     //
     @Transient
     public X509CRL getCRL() {
-        X509CRL crl = null;
         try {
-            String b64Crl = getBase64Crl();
-            crl = CertTools.getCRLfromByteArray(Base64.decode(b64Crl.getBytes()));
+            return CertTools.getCRLfromByteArray(Base64.decode(this.base64Crl.getBytes()));
         } catch (CRLException ce) {
             log.error("Can't decode CRL.", ce);
-            return null;
         }
-        return crl;
+        return null;
     }
 
     public void setCRL(X509CRL incrl) {
@@ -255,10 +252,7 @@ public class CRLData extends ProtectedData implements Serializable {
 
     @Transient
     public byte[] getCRLBytes() {
-        byte[] crl = null;
-        String b64Crl = getBase64Crl();
-        crl = Base64.decode(b64Crl.getBytes());
-        return crl;
+        return Base64.decode(this.base64Crl.getBytes());
     }
 
     public void setIssuer(String dn) {
@@ -299,7 +293,8 @@ public class CRLData extends ProtectedData implements Serializable {
      * @param crlNumber the CRL number.
      * @return the found entity instance or null if the entity does not exist.
      */
-    public static CRLData findByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
+    public static CRLData findByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex,
+            final int crlNumber) {
         final Query query = entityManager.createNativeQuery("SELECT * FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
                 + getCrlPartitionIndexCondition(crlPartitionIndex), CRLData.class);
         query.setParameter("issuerDN", issuerDN);
@@ -308,8 +303,23 @@ public class CRLData extends ProtectedData implements Serializable {
         if (crlPartitionIndex > 0) {
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
         }
-        return (CRLData) QueryResultWrapper.getSingleResult(query);
+        return QueryResultWrapper.getSingleResult(query);
     }
+
+    public static String findBase64CrlByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex,
+            final int crlNumber) {
+        final Query query = entityManager
+                .createNativeQuery("SELECT base64Crl FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                        + getCrlPartitionIndexCondition(crlPartitionIndex));
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlNumber", crlNumber);
+        query.setMaxResults(1);
+        if (crlPartitionIndex > 0) {
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        }
+        return QueryResultWrapper.getSingleResult(query);
+    }
+    
     
     /**
      * Find a CRL's thisUpdate value by the given issuer, partition index and number.
@@ -320,17 +330,18 @@ public class CRLData extends ProtectedData implements Serializable {
      * @param crlNumber
      * @return
      */
-    @SuppressWarnings("unchecked")
-    public static BigInteger findThisUpdateByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
-        final Query query = entityManager.createNativeQuery("SELECT thisUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                + getCrlPartitionIndexCondition(crlPartitionIndex));
+    public static BigInteger findThisUpdateByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN,
+            final int crlPartitionIndex, final int crlNumber) {
+        final Query query = entityManager
+                .createNativeQuery("SELECT thisUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                        + getCrlPartitionIndexCondition(crlPartitionIndex));
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
         query.setMaxResults(1);
         if (crlPartitionIndex > 0) {
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
         }
-        return (BigInteger) query.getResultList().stream().findFirst().orElse(null);
+        return QueryResultWrapper.getSingleResult(query);
     }
     
     /**
@@ -342,17 +353,18 @@ public class CRLData extends ProtectedData implements Serializable {
      * @param crlNumber
      * @return
      */
-    @SuppressWarnings("unchecked")
-    public static BigInteger findNextUpdateByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
-        final Query query = entityManager.createNativeQuery("SELECT nextUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                + getCrlPartitionIndexCondition(crlPartitionIndex));
+    public static BigInteger findNextUpdateByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN,
+            final int crlPartitionIndex, final int crlNumber) {
+        final Query query = entityManager
+                .createNativeQuery("SELECT nextUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                        + getCrlPartitionIndexCondition(crlPartitionIndex));
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
         query.setMaxResults(1);
         if (crlPartitionIndex > 0) {
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
         }
-        return (BigInteger) query.getResultList().stream().findFirst().orElse(null);
+        return QueryResultWrapper.getSingleResult(query);
     }
     
     /**
@@ -396,7 +408,7 @@ public class CRLData extends ProtectedData implements Serializable {
             if (crlPartitionIndex > 0) {
                 query.setParameter("crlPartitionIndex", crlPartitionIndex);
             }
-            return (Integer) QueryResultWrapper.getSingleResult(query);
+            return QueryResultWrapper.getSingleResult(query);
         }
     }
 
@@ -463,7 +475,7 @@ public class CRLData extends ProtectedData implements Serializable {
     @Transient
     @Override
     protected int getProtectVersion() {
-        return LATEST_PROTECT_VERSON;
+        return LATEST_PROTECT_VERSION;
     }
 
     @PrePersist
