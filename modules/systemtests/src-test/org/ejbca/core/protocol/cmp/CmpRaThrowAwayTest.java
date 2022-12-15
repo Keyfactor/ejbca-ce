@@ -80,6 +80,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 /**
  * Verify that CMP functionality works in RA mode, when any combination of - useCertReqHistory (Store copy of UserData at the time of certificate
  * issuance.) - useUserStorage (Store current UserData.) - useCertificateStorage (Store issued certificates and related information.) are used.
@@ -161,6 +163,8 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBE_SECRET);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
         LOG.trace("<test000Setup");
     }
     
