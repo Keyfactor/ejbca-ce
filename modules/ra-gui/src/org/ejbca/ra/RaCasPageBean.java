@@ -167,7 +167,7 @@ public class RaCasPageBean implements Serializable {
                         caAndCrl.x509 = true;
                         final int numberOfPartitions = caInfo.getAllCrlPartitionIndexes() == null ? 1 : caInfo.getAllCrlPartitionIndexes().getMaximumInteger();
                         for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
-                            final CRLInfo currentCrlInfo = crlSession.getLastCRLInfo(subjectDn, currentPartitionIndex, false);
+                            final CRLInfo currentCrlInfo = crlSession.getLastCRLInfoLightWeight(subjectDn, currentPartitionIndex, false);
                             if (currentCrlInfo != null) {
                                 atLeastOneCrlLinkPresent = true;
                                 String crlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64(((X509Certificate)caCertificate)); 
@@ -178,7 +178,7 @@ public class RaCasPageBean implements Serializable {
                             }
                         }
 
-                        final CRLInfo crlInfoDelta = crlSession.getLastCRLInfo(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
+                        final CRLInfo crlInfoDelta = crlSession.getLastCRLInfoLightWeight(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
                         if (crlInfoDelta!=null) {
                             caAndCrl.deltaCrlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate) + "&delta=";
                         }

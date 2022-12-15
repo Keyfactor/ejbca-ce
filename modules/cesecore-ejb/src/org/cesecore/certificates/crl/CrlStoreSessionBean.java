@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -26,6 +27,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
 import javax.ejb.EJB;
@@ -35,6 +37,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,7 +47,6 @@ import java.util.Map;
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs. CRLs are signed using
  * SignSessionBean.
  * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -84,7 +87,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             CRLData data = new CRLData(incrl, number, crlPartitionIndex, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
             this.entityManager.persist(data);
             String msg = intres.getLocalizedMessage("store.storecrl", Integer.valueOf(number), data.getFingerprint(), data.getIssuerDN());
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CRL_STORED, EventStatus.SUCCESS, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         } catch (Exception e) {
@@ -108,9 +111,9 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         try {
             maxnumber = getLastCRLNumber(issuerdn, crlPartitionIndex, deltaCRL);
             byte[] crlbytes = null;
-            final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, crlPartitionIndex, maxnumber);
-            if (data != null) {
-                crlbytes = data.getCRLBytes();
+            final String base64CrlString = CRLData.findBase64CrlByIssuerDNAndCRLNumber(entityManager, issuerdn, crlPartitionIndex, maxnumber);
+            if (StringUtils.isNotBlank(base64CrlString)) {
+                crlbytes = Base64.decode(base64CrlString.getBytes());
                 if (crlbytes != null) {
                     final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.getcrl", issuerdn, Integer.valueOf(maxnumber));
                     log.info(msg);
@@ -137,9 +140,9 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             log.trace(">getCRL(" + issuerdn + ", " + crlNumber + ")");
         }
         byte[] crlbytes = null;
-        final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, crlPartitionIndex, crlNumber);
-        if (data != null) {
-            crlbytes = data.getCRLBytes();
+        final String base64CrlString = CRLData.findBase64CrlByIssuerDNAndCRLNumber(entityManager, issuerdn, crlPartitionIndex, crlNumber);
+        if (StringUtils.isNotBlank(base64CrlString)) {
+            crlbytes = Base64.decode(base64CrlString.getBytes());
             if (crlbytes != null) {
                 final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.getcrl", issuerdn, Integer.valueOf(crlNumber));
                 log.info(msg);
@@ -187,7 +190,55 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             }
         }
     }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public CRLInfo getLastCRLInfoLightWeight(final String issuerDn, final int crlPartitionIndex, final boolean deltaCRL) {
+        try {
+            if (log.isTraceEnabled()) {
+                log.trace(">getLastCRLInfoLightWeight(" + issuerDn + ", " + deltaCRL + ")");
+            }
+            final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
 
+            final BigInteger thisUpdate = CRLData.findThisUpdateByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
+            final BigInteger nextUpdate = CRLData.findNextUpdateByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
+
+            if (thisUpdate == null || nextUpdate == null) {
+                return null;
+            }
+
+            return new CRLInfo(issuerDn, crlPartitionIndex, crlNumber, thisUpdate.longValue(), nextUpdate.longValue());
+        } catch (final Exception e) {
+            log.info(intres.getLocalizedMessage("store.errorgetcrlinfo", issuerDn));
+            throw new EJBException(e);
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<getLastCRLInfoLightWeight()");
+            }
+        }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Date getCrlExpireDate(final String issuerDn, final int crlPartitionIndex, final boolean deltaCRL) {
+
+        if (log.isTraceEnabled()) {
+            log.trace(">getCrlExpireDate(" + issuerDn + ", " + deltaCRL + ")");
+        }
+        
+        final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
+
+        final BigInteger nextUpdate = CRLData.findNextUpdateByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
+
+        if (nextUpdate == null) {
+            return null;
+        }
+        
+        if (log.isTraceEnabled()) {
+            log.trace("<getCrlExpireDate()");
+        }
+        return new Date(nextUpdate.longValue());
+    }
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CRLInfo getCRLInfo(final String fingerprint) {
