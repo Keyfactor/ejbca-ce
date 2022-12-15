@@ -45,9 +45,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.sun.jna.Memory;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -72,6 +69,8 @@ import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
 
+import com.sun.jna.Memory;
+
 /**
  * Provider using JackNJI11.
  */
@@ -83,6 +82,7 @@ public class JackNJI11Provider extends Provider {
     private static final Logger LOG = Logger.getLogger(JackNJI11Provider.class);
 
     public static final String NAME = "JackNJI11";
+    public static final String SIGNATURE_LENGTH_CACHE_ENABLED = "p11ng.signatureLengthCacheEnabled";
 
     public JackNJI11Provider() {
         super(NAME, 1.3, "JackNJI11 Provider");
@@ -208,6 +208,7 @@ public class JackNJI11Provider extends Provider {
         private AlgorithmParameterSpec params;
         private boolean hasActiveSession;
         private Exception debugStacktrace;
+        private final boolean signatureLengthCacheEnabled;
         
         /** A static HashMap that is used to cache how large byte buffer we need to allocate 
          * to hold the signature created by a specific key for a specific signature algorithm
@@ -235,6 +236,9 @@ public class JackNJI11Provider extends Provider {
             if (log.isTraceEnabled()) {
                 log.trace("Creating Signature provider for algorithm: " + algorithm + ", and provider " + provider + ", type=" + type);
             }
+
+            // Possibility to disable the cache until DSSINTER-846 has been figured out
+            signatureLengthCacheEnabled = Boolean.parseBoolean(System.getProperty(SIGNATURE_LENGTH_CACHE_ENABLED, "true"));
         }
 
         @Override
@@ -419,13 +423,17 @@ public class JackNJI11Provider extends Provider {
                             rawSig = myKey.getSlot().getCryptoki().Sign(session.getId(), sigInput);
                             session.markOperationSignFinished();
                             // Add the signature length to the cache
-                            bufLenCache.put(key, rawSig.length);
+                            if (signatureLengthCacheEnabled) {
+                                bufLenCache.put(key, rawSig.length);
+                            }
                         }
                     } else {
                         rawSig = myKey.getSlot().getCryptoki().Sign(session.getId(), sigInput);
                         session.markOperationSignFinished();
                         // Add the signature length to the cache
-                        bufLenCache.put(key, rawSig.length);
+                        if (signatureLengthCacheEnabled) {
+                            bufLenCache.put(key, rawSig.length);
+                        }
                     }
 
                     // RSA signing by the HSM returns the padded signature, ready to use
@@ -457,13 +465,17 @@ public class JackNJI11Provider extends Provider {
                             rawSig = myKey.getSlot().getCryptoki().Sign(session.getId(), buffer.toByteArray());
                             session.markOperationSignFinished();
                             // Add the signature length to the cache
-                            bufLenCache.put(key, rawSig.length);
+                            if (signatureLengthCacheEnabled) {
+                                bufLenCache.put(key, rawSig.length);
+                            }
                         }
                     } else {
                         rawSig = myKey.getSlot().getCryptoki().Sign(session.getId(), buffer.toByteArray());
                         session.markOperationSignFinished();
                         // Add the signature length to the cache
-                        bufLenCache.put(key, rawSig.length);
+                        if (signatureLengthCacheEnabled) {
+                            bufLenCache.put(key, rawSig.length);
+                        }
                     }
 
                     if (MechanismNames.longFromSigAlgoName(this.algorithm).get() == CKM.ECDSA) {

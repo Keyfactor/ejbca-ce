@@ -181,8 +181,6 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.CesecoreException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.DateNotValidException;
-import org.ejbca.core.protocol.ws.client.gen.DateNotValidException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -211,7 +209,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
-import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.

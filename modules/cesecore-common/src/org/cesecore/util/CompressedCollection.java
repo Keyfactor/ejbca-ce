@@ -29,7 +29,6 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.commons.collections4.SetUtils;
 import org.apache.log4j.Logger;
 
 /**

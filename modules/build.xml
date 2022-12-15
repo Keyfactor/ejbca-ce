@@ -57,7 +57,7 @@
 	
 	<target name="clean-optional" depends="cmpproxyclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
-        webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
+        estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
         cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, p11ng-clean, msae-clean, cesecore-p11-clean, cits-clean, proxy-ca-clean"/>
 
@@ -141,9 +141,6 @@
     <target name="caaclean" if="${mod.caa.exists}">
         <ant antfile="${mod.caa.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>	
-	<target name="webtestclean" if="${mod.webtest.exists}">
-        <ant antfile="${mod.webtest.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-	</target>
     <target name="estclean" if="${mod.est.exists}">
 		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>		
@@ -533,10 +530,6 @@
 	
 	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa" description="Creates a CLI jar for CAA lookups">
 		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
-	</target>
-	
-	<target name="ejbca-webtest" if="mod.webtest.exists" description="Builds EJBCA web test module">
-		<ant antfile="${mod.webtest.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="edition-specific-interface" depends="ejbca-ejb-interface">
