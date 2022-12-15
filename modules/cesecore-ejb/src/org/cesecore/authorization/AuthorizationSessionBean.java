@@ -202,14 +202,10 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private AuthorizationCacheCallback authorizationCacheCallback = new AuthorizationCacheCallback() {
         @Override
         public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-             log.info("token details:" + authenticationToken.getClass().getName());
-             log.info("token details:" + authenticationToken);
              // only need to validate status of outermost token
              if(authenticationToken instanceof X509CertificateAuthenticationToken) {
-                log.info("checking token nesting");
                 X509CertificateAuthenticationToken x509Token = (X509CertificateAuthenticationToken) authenticationToken;
                 if(!x509Token.getNestedAuthenticationTokens().isEmpty()) {
-                    log.info("checking cert status");
                     Certificate certificate = x509Token.getCertificate();
                     final int status = 
                             certificateStoreSession.getFirstStatusByIssuerAndSerno(
