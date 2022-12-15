@@ -58,7 +58,7 @@ public class CRLData extends ProtectedData implements Serializable {
     private String cAFingerprint;
     private long thisUpdate;
     private long nextUpdate;
-    private String base64Crl; // TODO: Consider changing this to byte[]
+    private String base64Crl; 
     private int rowVersion = 0;
     private String rowProtection;
 

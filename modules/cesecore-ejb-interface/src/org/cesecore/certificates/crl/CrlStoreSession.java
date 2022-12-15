@@ -19,7 +19,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 
 /** Session bean storing and retrieving CRLs
  * 
- * @version $Id$
  */
 public interface CrlStoreSession {
 

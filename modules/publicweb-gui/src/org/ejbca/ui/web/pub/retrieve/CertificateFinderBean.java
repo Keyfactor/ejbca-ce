@@ -46,7 +46,6 @@ import org.ejbca.ui.web.CertificateView;
  * To make it easy to use from JSTL pages, most methods take no arguments.
  * The arguments are supplied as member variables instead. <br>
  *
- * @version $Id$
  */
 public class CertificateFinderBean {
 
