@@ -23,11 +23,14 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationCache.AuthorizationCacheCallback;
 import org.cesecore.authorization.AuthorizationCache.AuthorizationResult;
 import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -37,6 +40,7 @@ import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
+import org.cesecore.util.CertTools;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -49,6 +53,8 @@ import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,6 +83,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
 
     @Resource
     private SessionContext sessionContext;
@@ -194,6 +202,31 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private AuthorizationCacheCallback authorizationCacheCallback = new AuthorizationCacheCallback() {
         @Override
         public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+             log.info("token details:" + authenticationToken.getClass().getName());
+             log.info("token details:" + authenticationToken);
+             // only need to validate status of outermost token
+             if(authenticationToken instanceof X509CertificateAuthenticationToken) {
+                log.info("checking token nesting");
+                X509CertificateAuthenticationToken x509Token = (X509CertificateAuthenticationToken) authenticationToken;
+                if(!x509Token.getNestedAuthenticationTokens().isEmpty()) {
+                    log.info("checking cert status");
+                    Certificate certificate = x509Token.getCertificate();
+                    final int status = 
+                            certificateStoreSession.getFirstStatusByIssuerAndSerno(
+                                    CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+                    if (status != -1) {
+                        // The certificate is present in the database.
+                        if (!(status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
+                            // The certificate is neither active, nor active (but user is notified of coming revocation)
+                            // authentication token is created in RA/VA with web.reqcertinddb = false 
+                            // but authorization is fetched from CA where the certificate is stored
+                            log.error("Authentication Certificate is revoked or expired: " + CertTools.getSubjectDN(certificate));
+                            return new AuthorizationResult(new HashMap<String, Boolean>(), accessTreeUpdateSession.getAccessTreeUpdateNumber());
+                        }
+                    }
+                }
+           }
+
             HashMap<String, Boolean> accessRules = getAccessAvailableToSingleToken(authenticationToken);
             if (authenticationToken instanceof NestableAuthenticationToken) {
                 final List<NestableAuthenticationToken> nestedAuthenticatonTokens = ((NestableAuthenticationToken)authenticationToken).getNestedAuthenticationTokens();
