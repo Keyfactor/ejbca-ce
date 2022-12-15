@@ -116,6 +116,8 @@ public class CmpRAUnidTest extends CmpTestCase {
         CryptoProviderTools.installBCProvider();
         // We must instantiate this after provider is installed as we set SN handling there 
         SUBJECT_DN = new X500Name("C=SE,SN=" + SUBJECT_SN + ",CN=unid-fnr");
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+
     }
 
     public CmpRAUnidTest() throws Exception {
@@ -167,7 +169,6 @@ public class CmpRAUnidTest extends CmpTestCase {
             }
         }
         
-        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
 
     }
 
