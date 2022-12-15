@@ -110,7 +110,9 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
         createTestCA(TESTCA_NAME); // Create test CA
+        
     }
 
     @AfterClass
@@ -164,7 +166,6 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBE_SECRET);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
-        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
         LOG.trace("<test000Setup");
     }
     
