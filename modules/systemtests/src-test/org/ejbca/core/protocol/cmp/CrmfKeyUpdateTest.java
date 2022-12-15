@@ -105,6 +105,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -199,6 +201,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, "RegTokenPwd;HMAC");
         this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "-;-");
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+              
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
     }
 
     @Override

@@ -100,6 +100,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -204,6 +206,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             log.debug("Removed CA in beforeClass: " + subcaid);            
         }
         adminsubca = CaTestUtils.createTestX509SubCAGenKeys(ADMIN, "CN=" + AUTH_PARAM_SUBCA, "foo123".toCharArray(), adminca.getCAId(), "1024");
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+
     }
 
     @AfterClass
