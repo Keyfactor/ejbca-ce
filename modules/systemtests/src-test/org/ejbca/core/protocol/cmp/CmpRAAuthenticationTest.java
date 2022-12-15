@@ -53,6 +53,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 /**
  * This will test that different PBE shared secrets can be used to authenticate 
  * the RA to different CAs.
@@ -109,6 +111,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(this.configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(this.configAlias, "-;-");
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
     }
     
     /** Remove CAs and restore configuration that was used by the tests. */
