@@ -1981,6 +1981,38 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertEquals(expectedErrMsg, errMsg);
     }
 
+    @Test
+    public void test34CrmfReqClientModeExtractComponent() throws Exception {
+        final String clientPassword = "foo1337client";
+        final String clientUsername = "user1338";
+        this.cmpConfiguration.setRAMode(ALIAS, false);
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
+        this.cmpConfiguration.setRAMode(ALIAS, false);
+        this.cmpConfiguration.setExtractUsernameComponent(ALIAS, "OU");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        final X500Name clientDN = new X500Name("CN=foo,OU=" + clientUsername);
+        final X500Name certDN = new X500Name("CN=bar,OU=" + clientUsername);
+        try {
+            createUser(clientUsername, clientDN.toString(), clientPassword, true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+            PKIMessage msg = genCertReq(null, certDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            PKIMessage req = protectPKIMessage(msg, false, clientPassword, null, 567);
+            assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
+            final HMACAuthenticationModule authModule = new HMACAuthenticationModule(ADMIN, "-", ALIAS, this.cmpConfiguration,
+                    this.caSession.getCAInfo(ADMIN, this.caid), this.eeAccessSession);
+            final boolean verificationResult = authModule.verifyOrExtract(req, null);
+            assertTrue("Verification should succeed", verificationResult);
+        } finally {
+            this.endEntityManagementSession.deleteUser(ADMIN, clientUsername);
+        }
+    }
+
     private static CMPCertificate[] getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
         ASN1Primitive pcert = ins.readObject();

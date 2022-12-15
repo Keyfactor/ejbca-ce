@@ -176,7 +176,6 @@
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-common-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
-					<include name="modules/ejbca-webtest/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-common/src-test/**/${test.runone}.java" />
@@ -262,9 +261,6 @@
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
-        </condition>
-        <condition property="module" value="modules/ejbca-webtest">
-            <matches string="${test-fullname}" pattern="^modules/ejbca-webtest/.*$"/>
         </condition>
     	<condition property="module" value="modules/ejbca-ws-cli">
     	    <matches string="${test-fullname}" pattern="^modules/ejbca-ws-cli/.*$"/>
@@ -412,14 +408,6 @@
     <target name="test:vapub" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/va" target="test" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:webtest:jenkins" description="run all JUnit web tests without JUnit reporting." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/ejbca-webtest" target="test" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:webtest" description="run all JUnit web tests with report." depends="deleteDirectories, test:webtest:jenkins">
-        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:unit:ejbca-rest-api" description="run all JUnit tests for ejbca-rest-api." depends="deleteDirectories">
