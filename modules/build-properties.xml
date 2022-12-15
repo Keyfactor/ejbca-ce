@@ -355,7 +355,7 @@
 	<path id="lib.jsch.classpath"><fileset dir="${ejbca.home}/lib" includes="jsch-*.jar"/></path>
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.owaspcsrfguard.classpath"><fileset dir="${ejbca.home}/lib/" includes="csrfguard-*.jar"/></path>
-	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
+	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="jldap*.jar"/></path>
 	<path id="lib.adsddl.classpath"><fileset dir="${ejbca.home}/lib" includes="adsddl-*.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
 	<path id="lib.kerb4j.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb4j-server-common-*.jar"/></path>
