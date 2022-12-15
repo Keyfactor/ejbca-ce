@@ -48,9 +48,9 @@ public class EjbcaWSHelperMethodsTest {
         metadata.add(new KeyValuePair("certificateprofileid", certProfileId));
         
         CertRevocationDto result = ejbcaWS.parseRevocationMetadata(certRevocationDto, metadata);
-        assertEquals(new Integer(reason), result.getReason());
+        assertEquals(Integer.valueOf(reason), result.getReason());
         assertEquals(DatatypeConverter.parseDateTime(date).getTime(), result.getRevocationDate());
-        assertEquals(new Integer(certProfileId), result.getCertificateProfileId());
+        assertEquals(Integer.valueOf(certProfileId), result.getCertificateProfileId());
     }
 
     @Test
