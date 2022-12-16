@@ -352,6 +352,12 @@
       <redirect include-view-params="true"></redirect>
     </navigation-case>
     <navigation-case>
+      <from-action>#{validatorsBean.actionAdd}</from-action>
+      <from-outcome>add</from-outcome>
+      <to-view-id>/ca/editvalidators/editvalidator.xhtml</to-view-id>
+      <redirect include-view-params="true"></redirect>
+    </navigation-case>
+    <navigation-case>
       <from-outcome>view</from-outcome>
       <to-view-id>/ca/editvalidators/editvalidator.xhtml</to-view-id>
       <redirect include-view-params="true"></redirect>
