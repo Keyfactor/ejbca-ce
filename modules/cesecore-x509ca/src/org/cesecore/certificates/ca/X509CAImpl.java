@@ -1347,7 +1347,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (altName != null && altName.length() > 0) {
                 altNameGNs = CertTools.getGeneralNamesFromAltName(altName);
             }
-            CertTools.checkNameConstraints(cacert, subjectDNName, altNameGNs);
+            CABase.checkNameConstraints(cacert, subjectDNName, altNameGNs);
         }
 
         // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!
