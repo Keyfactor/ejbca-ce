@@ -1,7 +1,0 @@
-# Configuration file for browser options.
-# headless attribute is used to force Selenium run the Firefox in headless mode (if set to true).
-# Some tests are showed to be run more stable in headless mode (EcaQa196_MultiGroupPublisher for example).
-# Default value is false.
-
-browser.downloaddir = /tmp
-browser.headless = false

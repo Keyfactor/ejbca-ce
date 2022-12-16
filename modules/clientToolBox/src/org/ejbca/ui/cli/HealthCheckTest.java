@@ -47,6 +47,7 @@ public class HealthCheckTest extends ClientToolBox {
             GetStatus(URL _url) {
                 this.url = _url;
             }
+            @Override
             public boolean doIt() throws Exception {
                 final HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 if ( con.getResponseCode()!=HttpURLConnection.HTTP_OK ) {
@@ -82,6 +83,7 @@ public class HealthCheckTest extends ClientToolBox {
                     is.close();
                 }
             }
+            @Override
             public String getJobTimeDescription() {
                 return "Get health status";
             }
@@ -92,6 +94,7 @@ public class HealthCheckTest extends ClientToolBox {
                 super();
                 url = new URL(httpPath);
             }
+            @Override
             public Command[] getCommands() {
                 return new Command[]{new GetStatus(url)};
             }
@@ -117,6 +120,7 @@ public class HealthCheckTest extends ClientToolBox {
             throw e; // System.exit() called. Not thrown in normal operation but thrown by the custom SecurityManager when clientToolBoxTest is executed. Must not be caught.
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 

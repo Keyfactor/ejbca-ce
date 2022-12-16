@@ -53,6 +53,8 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaCertificateDataOnRenew;
 import org.ejbca.core.model.era.RaSelfRenewCertificateData;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 
 /**
  * Backing bean for the Renew Certificate page
@@ -344,13 +346,13 @@ public class RaRenewBean implements Serializable {
                             + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                 }
             }
-            for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-                if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+            for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
+                if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
                     for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                         final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                         final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
                         if (availableBitLengths.contains(bitLength)) {
-                            availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
+                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
                                     CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
                         } else {
                             if (log.isTraceEnabled()) {

@@ -1,5 +1,9 @@
 package org.bouncycastletest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -39,16 +43,13 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * This test verifies that GOST3410 and DSTU4145 are working in BouncyCastle.
@@ -67,12 +68,10 @@ public class ExtraAlgorithmsPKCS12Test {
     
     @Test
     public void testP12KeystoreGOST3410() throws Exception {
-        log.debug("GOST3410 configured: "+(AlgorithmTools.isGost3410Enabled() ? "YES" : "NO"));
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
         log.trace(">testP12KeystoreGOST3410()");
         
-        String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-        assertNotNull("curve B is not configued!", keyspec);
+        final String keyspec = "GostR3410-2001-CryptoPro-B";
         
         AlgorithmParameterSpec spec = ECGOST3410NamedCurveTable.getParameterSpec(keyspec);
         assertNotNull(spec);
@@ -87,8 +86,8 @@ public class ExtraAlgorithmsPKCS12Test {
      */
     @Test
     public void testP12KeystoreDSTU4145() throws Exception {
-        log.debug("DSTU4145 configured: "+(AlgorithmTools.isDstu4145Enabled() ? "YES" : "NO"));
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        log.debug("DSTU4145 configured: "+(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() ? "YES" : "NO"));
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         log.trace(">testP12KeystoreDSTU4145()");
         
         String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");

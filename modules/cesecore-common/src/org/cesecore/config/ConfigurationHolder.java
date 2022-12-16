@@ -47,6 +47,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.ReloadingController;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.log4j.Logger;
+import org.cesecore.util.StringTools;
 
 /**
  * This is a singleton. Used to configure common-configuration with our sources.
@@ -680,4 +681,5 @@ public final class ConfigurationHolder {
             return Executors.newScheduledThreadPool(2, factory);
         }
     }
+   
 }

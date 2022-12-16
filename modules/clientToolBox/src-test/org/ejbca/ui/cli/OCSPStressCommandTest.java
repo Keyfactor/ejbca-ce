@@ -94,7 +94,7 @@ public class OCSPStressCommandTest {
     Ocsp command = new Ocsp();
 
     @Rule
-    public Timeout testTimeout = new Timeout(60_000); // per test case
+    public Timeout testTimeout = new Timeout(90_000); // per test case
 
     private static final String END_ENTITY_PROFILE_NAME = "OCSPStressCommandTestEEP";
     private static final String CA_NAME = "OCSPStressCommandTestCA";

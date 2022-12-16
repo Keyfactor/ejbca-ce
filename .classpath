@@ -24,6 +24,9 @@
 	<classpathentry kind="src" path="modules/cesecore-entity/src"/>
 	<classpathentry kind="src" path="modules/cesecore-entity/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-x509ca/src"/>
+	<classpathentry kind="src" path="modules/cits/src"/>
+	<classpathentry kind="src" path="modules/cits/src-test"/>
+	<classpathentry kind="src" path="modules/cits/src-war"/>
 	<classpathentry kind="src" path="modules/clearcache-war/src"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src-test"/>
@@ -66,8 +69,6 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-ssh/src"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webdist-war/src"/>
-	<classpathentry kind="src" path="modules/ejbca-webtest/src-test"/>
-	<classpathentry kind="src" path="modules/ejbca-webtest/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src"/>
@@ -97,6 +98,7 @@
 	<classpathentry kind="src" path="modules/plugins/src-test"/>
 	<classpathentry kind="src" path="modules/plugins-ee/src"/>
 	<classpathentry kind="src" path="modules/plugins-ee/src-test"/>
+	<classpathentry kind="src" path="modules/proxy-ca/src"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
 	<classpathentry kind="src" path="modules/ra-gui/src"/>
 	<classpathentry kind="src" path="modules/ssh/src"/>
@@ -112,11 +114,9 @@
 	<classpathentry kind="src" path="modules/systemtests/src"/>
 	<classpathentry kind="src" path="modules/unidfnr/src-ejb"/>
 	<classpathentry kind="src" path="modules/va/src-war"/>
+	<classpathentry kind="src" path="modules/x509-common-util/src"/>
+	<classpathentry kind="src" path="modules/x509-common-util/src-test"/>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="modules/cits/src"/>
-	<classpathentry kind="src" path="modules/cits/src-test"/>
-	<classpathentry kind="src" path="modules/cits/src-war"/>
-	<classpathentry kind="src" path="modules/proxy-ca/src"/>
 	<classpathentry kind="lib" path="lib/xstream/xmlpull-1.1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xpp3_min-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="lib/adsddl-1.9.jar"/>
@@ -153,13 +153,6 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/geronimo-osgi-locator-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-api-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-firefox-driver-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-java-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-remote-driver-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-support-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/report/extentreports-4.1.7.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/report/freemarker-2.3.31.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.7.jar"/>

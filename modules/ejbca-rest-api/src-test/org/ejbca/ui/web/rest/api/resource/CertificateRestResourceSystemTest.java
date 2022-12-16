@@ -247,6 +247,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertJsonContentType(actualResponse);
     }
 
+
     @Test
     public void shouldRevokeCertificate() throws Exception {
         // Create test user & generate certificate

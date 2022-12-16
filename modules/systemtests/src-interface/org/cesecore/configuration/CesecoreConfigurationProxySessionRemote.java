@@ -32,4 +32,10 @@ public interface CesecoreConfigurationProxySessionRemote {
     void setConfigurationValue(String key, String value);
     
     String getConfigurationValue(String key); 
+    
+    void setForbiddenCharacters(char[] forbiddenCharacters);
+    
+    char[] getForbiddenCharacters();
+    
+    void setGost3410Enabled(boolean value);
 }                           
