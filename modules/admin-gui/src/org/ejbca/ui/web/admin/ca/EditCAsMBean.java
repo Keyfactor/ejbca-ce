@@ -1827,7 +1827,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 caAdminSession.receiveCitsResponse(administrator, caid, fileBuffer); 
             } else {
                 String nextKeyAlias = certSignKeyRequestValue;
-                if (certSignKeyRequestValue.isEmpty()) {
+                if (StringUtils.isEmpty(certSignKeyRequestValue)) {
                     nextKeyAlias = null;
                 }
                 receiveResponse(caid, fileBuffer, nextKeyAlias, checkBoxFutureRollOver);
