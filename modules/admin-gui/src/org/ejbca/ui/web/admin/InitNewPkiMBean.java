@@ -103,6 +103,8 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 @ManagedBean
 @SessionScoped
 public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
@@ -529,7 +531,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             keyType = AlgorithmConstants.KEYALGORITHM_DSA;
         } else if (extendedServiceKeySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             keyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-        } else if (AlgorithmTools.isDstu4145Enabled() && extendedServiceKeySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
+        } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && extendedServiceKeySpec.startsWith(AlgorithmConstants.DSTU4145_OID)) {
             keyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
         } else {
             keyType = AlgorithmConstants.KEYALGORITHM_ECDSA;

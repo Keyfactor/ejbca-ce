@@ -153,6 +153,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 /** JUnit test for X.509 CA
  *
  */
@@ -181,13 +183,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
     @Test
     public void testX509CABasicOperationsGOST() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
     }
 
     @Test
     public void testX509CABasicOperationsDSTU() throws Exception {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
 
@@ -296,7 +298,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertNotNull(usercert);
         assertEquals("CN=User", CertTools.getSubjectDN(usercert));
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
-        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
+        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), CertTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
         assertEquals("user@user.com", CertTools.getEMailAddress(usercert));
         // directoryName is turned around, but it's just for string reasons in cert objects because it is gotten (internally in BC) getRFC2253Name().
@@ -441,13 +443,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
     @Test
     public void testStoreAndLoadGOST() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
     }
 
     @Test
     public void testStoreAndLoadDSTU() throws Exception {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
 
@@ -943,13 +945,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
     @Test
     public void testWrongCAKeyGOST() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
     }
 
     @Test
     public void testWrongCAKeyDSTU() throws Exception {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
 
@@ -1567,7 +1569,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertNotNull(usercert);
         assertEquals("CN=User", CertTools.getSubjectDN(usercert));
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
-        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
+        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), CertTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
         // Allow DN override
         cp.setAllowDNOverride(true);
@@ -1575,7 +1577,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertNotNull(usercert);
         assertEquals("CN=Override,O=PrimeKey,C=SE", CertTools.getSubjectDN(usercert));
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
-        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
+        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), CertTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
     }
 
