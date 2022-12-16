@@ -252,7 +252,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
             if (data.get(CONFIGURATION_CHECKER_ON_FRONT_PAGE) == null) {
                 data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, true);
             }
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, Float.valueOf(LATEST_VERSION));
         }
     }
 }
