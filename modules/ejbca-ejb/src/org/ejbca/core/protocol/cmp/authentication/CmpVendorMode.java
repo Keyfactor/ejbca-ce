@@ -19,8 +19,8 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.ejbca.config.CmpConfiguration;
 
 /**
@@ -41,7 +41,7 @@ public interface CmpVendorMode {
      * @throws CertificateExpiredException If certificate have expired when validating the certificate path
      * @throws CertificateNotYetValidException If certificate is not yet valid when validating the certificate path
      */
-    CAInfo isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final List<X509Certificate> extraCerts) throws CertificateExpiredException, CertificateNotYetValidException;
+    X509CAInfo isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final List<X509Certificate> extraCerts) throws CertificateExpiredException, CertificateNotYetValidException;
     
     /**
      * Checks whether authentication by vendor-issued-certificate should be used. It can be used only in client mode and with initialization/certification requests.
