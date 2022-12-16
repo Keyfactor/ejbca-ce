@@ -12,6 +12,34 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.awt.print.PrinterException;
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.naming.InvalidNameException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -36,6 +64,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CABase;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -124,33 +153,6 @@ import org.ejbca.util.PrinterManager;
 import org.ejbca.util.dn.DistinguishedName;
 import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.naming.InvalidNameException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import java.awt.print.PrinterException;
-import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 /**
  * Manages end entities in the database using UserData Entity Bean.
@@ -420,7 +422,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapOrder);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
-                CertTools.checkNameConstraints(caCert, subjectDNName, subjectAltName);
+                CABase.checkNameConstraints(caCert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
                 e.setErrorCode(ErrorCode.NAMECONSTRAINT_VIOLATION);
                 throw e;
@@ -934,7 +936,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapOrder);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
-                CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName);
+                CABase.checkNameConstraints(cacert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
                 e.setErrorCode(ErrorCode.NAMECONSTRAINT_VIOLATION);
                 throw e;

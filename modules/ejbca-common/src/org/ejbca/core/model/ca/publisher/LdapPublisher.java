@@ -1756,7 +1756,7 @@ public class LdapPublisher extends BasePublisher {
 		log.trace(">upgrade");
 		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			// New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("publisher.upgrade", new Float(getVersion()));
+			String msg = intres.getLocalizedMessage("publisher.upgrade", Float.valueOf(getVersion()));
 			log.info(msg);
 			if(data.get(ADDMULTIPLECERTIFICATES) == null) {
 				setAddMultipleCertificates(false);                
@@ -1795,7 +1795,7 @@ public class LdapPublisher extends BasePublisher {
 				}
 			}
 				
-			data.put(VERSION, new Float(LATEST_VERSION));
+			data.put(VERSION, Float.valueOf(LATEST_VERSION));
 		}
 		log.trace("<upgrade");
 	}

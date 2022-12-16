@@ -158,7 +158,6 @@
 	<property name="mod.caa-cli.lib" location="${mod.dist.caa-cli.dir}/caa-cli.jar" />
     <property name="mod.est-war.path" location="${mod.path}/est" />
     <property name="mod.est.war" location="${mod.dist.path}/est.war" />
-    <property name="mod.webtest.path" location="${mod.path}/ejbca-webtest"/>
     <property name="mod.ejbca-rest-api.path" location="${mod.path}/ejbca-rest-api" />
     <property name="mod.ejbca-rest-common.path" location="${mod.path}/ejbca-rest-common" />
     <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
@@ -191,6 +190,8 @@
 	<property name="mod.proxy-ca.jar" location="${mod.dist.path}/proxy-ca.jar" />
 	<property name="mod.p11ng.path" location="${mod.path}/p11ng" />
 	<property name="mod.p11ng.lib" location="${mod.dist.path}/p11ng.jar" />
+	<property name="mod.x509-common-util.path" location="${mod.path}/x509-common-util" />
+	<property name="mod.x509-common-util.lib" location="${mod.dist.path}/x509-common-util.jar" />
 	
 	
     <!-- Variables of global interest -->
@@ -450,10 +451,13 @@
 	</path>
 	
 	<path id="lib.cesecore-common.classpath"><fileset file="${mod.cesecore-common.lib}"/></path>
+	
+	<path id="lib.x509-common-util.classpath"><fileset file="${mod.x509-common-util.lib}"/></path>
 
 	<path id="lib.ejbca-common.classpath">
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.cesecore-common.classpath"/>
+		<path refid="lib.x509-common-util.classpath"/>
     	<path location="${mod.ejbca-common.lib}"/>
 	</path>
 
@@ -690,10 +694,6 @@
 	<condition property="mod.ct.exists">
 		<available file="${mod.ct.path}/build.xml" />
     </condition>
-
-	<condition property="mod.webtest.exists">
-		<available file="${mod.webtest.path}/build.xml" />
-	</condition>
 
 	<condition property="mod.proxy-ca.exists">
 		<available file="${mod.proxy-ca.path}/build.xml" />
