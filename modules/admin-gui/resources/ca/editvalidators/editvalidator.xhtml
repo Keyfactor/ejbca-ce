@@ -45,9 +45,18 @@
 					<h:outputText value="#{web.text.BACKTOVALIDATORS}" />
 				</h:outputLink>
 				<h:outputLabel for="validatorName" value="#{web.text.NAME}"/>
-				<h:outputText id="validatorName" value="#{validatorBean.validator.profileName}"/>
+				
+				<h:panelGroup id="name">
+					<h:inputText rendered="#{!validatorsBean.viewOnly}" value="#{validatorBean.validatorName}" required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.INTERNALKEYBINDING_FIELD_NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
+					<h:outputText rendered="#{validatorsBean.viewOnly}" value="#{validatorBean.validatorName}"/>
+				</h:panelGroup>
+				<h:message for="name"/>
+				
+			
+				
 				<h:outputLabel for="validatorId" value="#{web.text.ID}"/>
-				<h:outputText id="validatorId" value="#{validatorBean.validator.profileId}"/>
+				<h:outputText id="validatorId" value="#{validatorBean.validatorId}"/>
+				
 				<h:outputLabel for="validatorType" value="#{web.text.VALIDATORTYPE}"/>
 				<h:selectOneMenu id="validatorType" value="#{validatorBean.validatorType}" disabled="#{validatorsBean.viewOnly}">
 					<f:ajax listener="#{validatorBean.validatorTypeChanged}" render="@all"/>

@@ -209,4 +209,9 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
      * @param the id of the validator to update
      */
     void replaceKeyValidator(AuthenticationToken authenticationToken, LinkedHashMap<Object, Object> data, int id) throws AuthorizationDeniedException;
+
+    /**
+     * @return the total number of validators
+     */
+    long getNumberOfValidators();
 }
