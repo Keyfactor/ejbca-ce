@@ -192,4 +192,9 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
             throws AuthorizationDeniedException {
         keyValidatorSession.replaceKeyValidator(authenticationToken, data, id);
     }
+
+    @Override
+    public long getNumberOfValidators() {
+        return keyValidatorSession.getNumberOfValidators();
+    }
 }

@@ -149,6 +149,14 @@ public class ValidatorsBean extends BaseManagedBean {
     }
     
     /**
+     * 
+     * @return true if any validators exist
+     */
+    public boolean getExistsValidators() {
+        return keyValidatorSession.getNumberOfValidators() != 0;
+    }
+    
+    /**
      * Internal class for key validator items rendered as table.
      */
     public class ValidatorItem {
@@ -261,7 +269,8 @@ public class ValidatorsBean extends BaseManagedBean {
     /**
      * Add action. Adds a new key validator.
      */
-    public void actionAdd() {
+    public String actionAdd() {
+        /*
         final String name = getNewValidatorName();
         if (StringUtils.isNotBlank(name)) {
             if (!StringTools.checkFieldForLegalChars(name)) {
@@ -278,6 +287,9 @@ public class ValidatorsBean extends BaseManagedBean {
             }
         }
         validatorItems = null;
+        */
+        viewOnly = false;
+        return "add";
     }
 
     /**

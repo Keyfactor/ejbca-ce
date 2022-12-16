@@ -20,6 +20,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
@@ -133,6 +134,14 @@ public class ProfileSessionBean implements ProfileSessionLocal {
         query.setParameter("profileType", profileType);
         List<ProfileData> ret = query.getResultList();
         return ret;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public long getNumberOfProfileByType(final String profileType) {
+        TypedQuery<Long> query = entityManager.createQuery("SELECT count(a) FROM ProfileData a WHERE a.profileType=:profileType", Long.class);
+        query.setParameter("profileType", profileType);
+        return query.getSingleResult();
     }
     
     private boolean isFreeProfileId(final int id) {
