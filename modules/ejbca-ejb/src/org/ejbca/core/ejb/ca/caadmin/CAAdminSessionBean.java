@@ -1480,6 +1480,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
     }
+    
+    private String getDetailedErrorMessageInvalidKey(String message, String keyAlias) {
+        if (message.equalsIgnoreCase(KeyTools.ERROR_MESSAGE_SIGNING_FAILED)) {
+            return keyAlias + " could not be used to create signature. Suitable algorithm may not be detected or "
+                    + "key(s) may not have signing permission.";
+        } 
+        if (message.equalsIgnoreCase(KeyTools.ERROR_MESSAGE_VERIFICATION_FAILED)) {
+            return "Please select the correct key from the 'Signed CA key' drop down at 'Step 2 - Import Certificate' "
+                    + "which is used to generate the certificate. Verfification failed for keys: " + keyAlias;
+        }
+        return message;
+    }
 
     private void activateNextKeyAndCert(AuthenticationToken authenticationToken, int caid, String nextKeyAlias, final CA ca, final Certificate cacert,
                                         final List<Certificate> chain, PublicKey caCertPublicKey) throws CryptoTokenOfflineException, EjbcaException, InvalidAlgorithmException,
@@ -1498,7 +1510,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 KeyTools.testKey(cryptoToken.getPrivateKey(nextKeyAlias), caCertPublicKey, cryptoToken.getSignProviderName());
             } catch (InvalidKeyException e) {
-                throw new EjbcaException(ErrorCode.INVALID_KEY, e);
+                throw new EjbcaException(ErrorCode.INVALID_KEY, getDetailedErrorMessageInvalidKey(e.getMessage(), nextKeyAlias));
             }
             catoken.setNextCertSignKey(nextKeyAlias);
             catoken.activateNextSignKey();
@@ -1526,7 +1538,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 } catch (Exception e2) {
                     log.debug(
                             "The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
-                    if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
+                    if (e2 instanceof InvalidKeyException) {
+                        String keyAliases = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) + " and " + 
+                                                    catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+                        throw new EjbcaException(ErrorCode.INVALID_KEY, getDetailedErrorMessageInvalidKey(e2.getMessage(), keyAliases));
+                    }
+                    if (e2 instanceof IllegalArgumentException) {
                         log.trace(e2);
                     } else {
                         // If it's not invalid key or missing authentication code, we want to see more of the error
