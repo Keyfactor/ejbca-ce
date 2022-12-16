@@ -48,24 +48,32 @@ public class EccWithKeyEnciphermentTest {
         expect(eccButNoKeyEncipherment.getAvailableKeyAlgorithmsAsList())
                 .andReturn(ImmutableList.of("ECDSA"))
                 .anyTimes();
+        expect(eccButNoKeyEncipherment.isEccCapable())
+            .andReturn(true);
         expect(eccButNoKeyEncipherment.getKeyUsage(eq(CertificateConstants.KEYENCIPHERMENT)))
                 .andReturn(false);
         final CertificateProfile keyEnciphermentButNoEcc = createMock(CertificateProfile.class);
         expect(keyEnciphermentButNoEcc.getAvailableKeyAlgorithmsAsList())
                 .andReturn(ImmutableList.of("RSA"))
                 .anyTimes();
+        expect(keyEnciphermentButNoEcc.isEccCapable())
+            .andReturn(false);
         expect(keyEnciphermentButNoEcc.getKeyUsage(eq(CertificateConstants.KEYENCIPHERMENT)))
                 .andReturn(true);
         final CertificateProfile eccAndKeyEncipherment1 = createMock(CertificateProfile.class);
         expect(eccAndKeyEncipherment1.getAvailableKeyAlgorithmsAsList())
                 .andReturn(ImmutableList.of("ECDSA"))
                 .anyTimes();
+        expect(eccAndKeyEncipherment1.isEccCapable())
+            .andReturn(true);
         expect(eccAndKeyEncipherment1.getKeyUsage(eq(CertificateConstants.KEYENCIPHERMENT)))
                 .andReturn(true);
         final CertificateProfile eccAndKeyEncipherment2 = createMock(CertificateProfile.class);
         expect(eccAndKeyEncipherment2.getAvailableKeyAlgorithmsAsList())
                 .andReturn(ImmutableList.of("ECGOST3410", "RSA", "DSTU4145"))
                 .anyTimes();
+        expect(eccAndKeyEncipherment2.isEccCapable())
+            .andReturn(true);
         expect(eccAndKeyEncipherment2.getKeyUsage(eq(CertificateConstants.KEYENCIPHERMENT)))
                 .andReturn(true);
         final CertificateProfileSessionLocal certificateProfileSession = createMock(CertificateProfileSessionLocal.class);

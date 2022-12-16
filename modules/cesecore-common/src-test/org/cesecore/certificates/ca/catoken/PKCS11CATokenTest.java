@@ -13,12 +13,14 @@
 package org.cesecore.certificates.ca.catoken;
 
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.PKCS11CryptoTokenTest;
+import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
@@ -75,7 +77,7 @@ public class PKCS11CATokenTest extends CATokenTestBase {
 	}
 
 	private CryptoToken createPKCS11Token(boolean useAutoActivationPin) throws NoSuchSlotException {
-		CryptoToken cryptoToken = PKCS11CryptoTokenTest.createPKCS11Token();
+		CryptoToken cryptoToken = createPKCS11Token();
     	Properties cryptoTokenProperties = cryptoToken.getProperties();
     	if (useAutoActivationPin) {
             cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CATokenTestBase.TOKEN_PIN);
@@ -95,5 +97,31 @@ public class PKCS11CATokenTest extends CATokenTestBase {
     @Override
     String getProvider() {
     	return PKCS11TestUtils.getHSMProvider();
+    }
+    
+    private static CryptoToken createPKCS11Token() throws NoSuchSlotException {
+        return createPKCS11TokenWithAttributesFile(null, null, true);
+    }
+
+    private static CryptoToken createPKCS11TokenWithAttributesFile(String file, String tokenName, boolean extractable) throws NoSuchSlotException {
+        Properties prop = new Properties();
+        String hsmlib = PKCS11TestUtils.getHSMLibrary();
+        assertNotNull(hsmlib);
+        prop.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, hsmlib);
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
+        if (file != null) {
+            prop.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, file);
+        }
+        if (tokenName != null) {
+            prop.setProperty(PKCS11CryptoToken.TOKEN_FRIENDLY_NAME, tokenName);
+        }
+        if (extractable){
+            prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "True");
+        } else {
+            prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "False");
+        }
+        CryptoToken catoken = CryptoTokenFactory.createCryptoToken(PKCS11CryptoToken.class.getName(), prop, null, 111, "P11 CryptoToken");
+        return catoken;
     }
 }

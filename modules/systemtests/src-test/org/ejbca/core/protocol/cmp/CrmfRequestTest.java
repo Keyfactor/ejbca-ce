@@ -108,6 +108,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 /**
  * This test runs in CMP client mode.
  *
@@ -170,6 +172,8 @@ public class CrmfRequestTest extends CmpTestCase {
         this.cmpConfiguration.setRACertProfile(cmpAlias, CP_DN_OVERRIDE_NAME);
         this.cmpConfiguration.setRAEEProfile(cmpAlias, String.valueOf(eepDnOverrideId));
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+
     }
 
     @Override

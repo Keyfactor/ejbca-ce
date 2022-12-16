@@ -697,6 +697,7 @@
         		<include name="ejbca-cits.jar" />
         		<include name="proxy-ca.jar" />
         		<include name="p11ng.jar" />
+        		<include name="x509-common-util.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
@@ -1052,6 +1053,7 @@
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />
                 <exclude name="modules/cesecore-common/build/**" />
+		    	<exclude name="modules/x509-common-util/build/**" />
                 <exclude name="modules/cesecore-ejb-interface/build/**" />
                 <exclude name="modules/cesecore-entity/build/**" />
                 <exclude name="modules/ejbca-common/build-common/**" />
