@@ -13,6 +13,14 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.lang.reflect.Field;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -75,6 +83,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -103,13 +112,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Tests CA administration.
@@ -134,12 +139,15 @@ public class CAsTest extends CaTestCase {
             .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     // private AuthenticationToken adminTokenNoAuth;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
         createTestCA();
     }
     
@@ -406,7 +414,8 @@ public class CAsTest extends CaTestCase {
     /** Adds a CA using ECGOST3410 keys to the database. It also checks that the CA is stored correctly. */
     @Test
     public void test04primAddECGOST3410() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
+        cesecoreConfigurationProxySession.setGost3410Enabled(true);
         boolean ret = false;
         try {
             createECGOST3410Ca();
@@ -426,6 +435,7 @@ public class CAsTest extends CaTestCase {
             fail("Creating ECGOST3410 CA failed because CA exists.");
         } finally {
             removeOldCa(TEST_ECGOST3410_CA_NAME);
+            certificateProfileSession.removeCertificateProfile(admin, TEST_ECGOST3410_CA_NAME);
         }
         assertTrue("Creating ECGOST3410 CA failed", ret);
     }
@@ -437,7 +447,7 @@ public class CAsTest extends CaTestCase {
             org.bouncycastle.jce.spec.ECParameterSpec spec = gostpk.getParameters();
             assertNotNull("GOST3410 public key spec can't be null", spec);
         } else {
-            assertTrue("Public key is not GOST3410: "+pk.getClass().getName(), false);
+            fail("Public key is not GOST3410: "+pk.getClass().getName());
         }
     }
     
@@ -445,7 +455,7 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test04bisAddDSTU4510() throws Exception {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         boolean ret = false;
         try {
             createDSTU4145Ca();

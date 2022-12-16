@@ -10,6 +10,12 @@
 
 package org.cesecore.keys.token.p11ng;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,6 +44,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.bsi.BSIObjectIdentifiers;
@@ -76,12 +83,10 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.KeyGenParams.KeyPairTemplate;
 import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.keys.util.KeyTools;
@@ -95,16 +100,24 @@ import org.junit.Test;
 import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 /**
  * Test class for JackNJI11Provider signing with various algorithms.
  */
 public class JackNJI11ProviderTest {
+    
+    private static Logger log = Logger.getLogger(JackNJI11ProviderTest.class);
+ 
+    private static final String JACKNJI_NAME = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
+    
+    private static final String RSA_TEST_KEY_1 = "rsatest00001";
+    private static final String RSA_TEST_KEY_2 = "rsatest00002";
+    private static final String ECC_TEST_KEY_1 = "ecctest00001";
+    private static final String ECC_TEST_KEY_2 = "ecctest00002";
+ 
+    private static final String KEY_SIZE_2048 = "2048";
+    
+
+
 
     private static final Map<ASN1ObjectIdentifier, String> oids = new HashMap<ASN1ObjectIdentifier, String>();
     
@@ -159,13 +172,13 @@ public class JackNJI11ProviderTest {
     }
     
     private static final int MAX_SIGN_BUFFER_SIZE = 20480;
-    public static final String tokenpin = PKCS11TestUtils.getPkcs11SlotPin();
+    public static final String tokenpin = CryptoTokenTestBase.getPkcs11SlotPin();
     private static CryptoToken cryptoToken;
     
     @BeforeClass
     public static void beforeClass() {
-        assumeTrue("No HSM library configured", PKCS11TestUtils.getHSMLibrary() != null);
-        assumeTrue("No PKCS#11 Provider configured", PKCS11TestUtils.getHSMProvider() != null);
+        assumeTrue("No HSM library configured", CryptoTokenTestBase.getHSMLibrary() != null);
+        assumeTrue("No PKCS#11 Provider configured", CryptoTokenTestBase.getHSMProvider() != null);
     }
     
     @Before
@@ -174,50 +187,50 @@ public class JackNJI11ProviderTest {
         Security.addProvider(new JackNJI11Provider());
         cryptoToken = createPkcs11NgTokenWithoutAttributesFile();
         cryptoToken.activate(tokenpin.toCharArray());
-        cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_2048, PKCS11TestUtils.RSA_TEST_KEY_1); // Default params is SIGN only
-        cryptoToken.generateKeyPair(KeyGenParams.builder(PKCS11TestUtils.KEY_SIZE_2048).withKeyPairTemplate(KeyPairTemplate.SIGN_ENCRYPT).build(), 
-                PKCS11TestUtils.RSA_TEST_KEY_2);
-        cryptoToken.generateKeyPair("secp256r1", PKCS11TestUtils.ECC_TEST_KEY_1);
+        cryptoToken.generateKeyPair(KEY_SIZE_2048, RSA_TEST_KEY_1); // Default params is SIGN only
+        cryptoToken.generateKeyPair(KeyGenParams.builder(KEY_SIZE_2048).withKeyPairTemplate(KeyPairTemplate.SIGN_ENCRYPT).build(), 
+                RSA_TEST_KEY_2);
+        cryptoToken.generateKeyPair("secp256r1", ECC_TEST_KEY_1);
     }
     
     @After
     public void tearDown() throws Exception {
         // Delete created HSM keys. CryptoToken is never persisted.
         if (cryptoToken != null) {
-            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
-            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_2);
-            cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
-            cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
+            cryptoToken.deleteEntry(RSA_TEST_KEY_1);
+            cryptoToken.deleteEntry(RSA_TEST_KEY_2);
+            cryptoToken.deleteEntry(ECC_TEST_KEY_1);
+            cryptoToken.deleteEntry(ECC_TEST_KEY_2);
         }
     }
     
     @Test
     public void testSignatureRsa() throws Exception {
-        signWithProvider("SHA256withRSA", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
-        signWithProvider("SHA384withRSA", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
-        signWithProvider("SHA512withRSA", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA256withRSA", RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA384withRSA", RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA512withRSA", RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
     }
     
     @Test
     public void testSignatureRsaWithMfg1() throws Exception {
-        signWithProvider("SHA256withRSAandMGF1", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
-        signWithProvider("SHA384withRSAandMGF1", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
-        signWithProvider("SHA512withRSAandMGF1", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA256withRSAandMGF1", RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA384withRSAandMGF1", RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA512withRSAandMGF1", RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
     }
     
     @Test
     public void testSignatureEcdsa() throws Exception {
-        signWithProvider("SHA224withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
-        signWithProvider("SHA256withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
-        signWithProvider("SHA384withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
-        signWithProvider("SHA512withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
-        signWithProvider("SHA256withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA224withECDSA", ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA256withECDSA", ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA384withECDSA", ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA512withECDSA", ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
+        signWithProvider("SHA256withECDSA", ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
     }
 
     @Ignore
     public void testSignatureEdEDSA() throws Exception {
-        cryptoToken.generateKeyPair("Ed25519", PKCS11TestUtils.ECC_TEST_KEY_2);
-        signWithProvider("Ed25519", PKCS11TestUtils.ECC_TEST_KEY_2, cryptoToken.getSignProviderName());
+        cryptoToken.generateKeyPair("Ed25519", ECC_TEST_KEY_2);
+        signWithProvider("Ed25519", ECC_TEST_KEY_2, cryptoToken.getSignProviderName());
         // No HSM supports Ed448 as of October 2020
         //signWithProvider("Ed448", PKCS11TestUtils.ECC_TEST_KEY_2, cryptoToken.getSignProviderName());
     }
@@ -246,7 +259,7 @@ public class JackNJI11ProviderTest {
                 throw new IllegalArgumentException("Client-side hashing through request metadata not supported for other algorithms than RSASSA-PSS yet");
             }
 
-            final PrivateKey privKey = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            final PrivateKey privKey = cryptoToken.getPrivateKey(RSA_TEST_KEY_1);
             signature.initSign(privKey);
 
             MessageDigest digest = MessageDigest.getInstance(hashMech, BouncyCastleProvider.PROVIDER_NAME);
@@ -257,7 +270,7 @@ public class JackNJI11ProviderTest {
         // Verify
         {
             Signature signature = Signature.getInstance(verifyAlg, BouncyCastleProvider.PROVIDER_NAME);
-            signature.initVerify(cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1));
+            signature.initVerify(cryptoToken.getPublicKey(RSA_TEST_KEY_1));
             signature.update(plainText.getBytes(StandardCharsets.US_ASCII));
             assertTrue("Signature verification failed", signature.verify(sigBytes));
         }
@@ -276,7 +289,7 @@ public class JackNJI11ProviderTest {
         
         {
             // Encrypt key pair, will only use the public key and should therefore always work (BC provider)
-            byte[] encrypted = encryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_1, toEncrypt);
+            byte[] encrypted = encryptKeys(cryptoToken, RSA_TEST_KEY_1, toEncrypt);
             assertNotNull("Encrypting a key pair with the public key must return encrypted data", encrypted);
             // Verify at least something about the encrypted data
             CMSEnvelopedData ed = new CMSEnvelopedData(encrypted);
@@ -286,7 +299,7 @@ public class JackNJI11ProviderTest {
 
             // Try to decrypt it, since this key is generated with Sign only, unwrap is not allowed
             try {
-                decryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_1, encrypted);
+                decryptKeys(cryptoToken, RSA_TEST_KEY_1, encrypted);
             } catch (CKRException e) {
                 // Error should be that function is not permitted, but can be GENERAL_ERROR as well, or KEY_TYPE_INCONSISTENT
                 if (e.getCKR() != CKR.KEY_FUNCTION_NOT_PERMITTED && e.getCKR() != CKR.GENERAL_ERROR && e.getCKR() != CKR.KEY_TYPE_INCONSISTENT) {
@@ -297,7 +310,7 @@ public class JackNJI11ProviderTest {
 
         {
             // Do the same but with a key that has SIGN_ENCRYPT
-            byte[] encrypted = encryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_2, toEncrypt);
+            byte[] encrypted = encryptKeys(cryptoToken, RSA_TEST_KEY_2, toEncrypt);
             assertNotNull("Encrypting a key pair with the public key must return encrypted data", encrypted);
             // Verify at least something about the encrypted data
             CMSEnvelopedData ed = new CMSEnvelopedData(encrypted);
@@ -306,7 +319,7 @@ public class JackNJI11ProviderTest {
             assertEquals("Encryption algorithms should be RSAEncryption", "1.2.840.113549.1.1.1", recipient.getKeyEncryptionAlgOID());
 
             // Decrypt it, this will use the private key and the JACKNJI11Provider 
-            final KeyPair decrypted = decryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_2, encrypted);
+            final KeyPair decrypted = decryptKeys(cryptoToken, RSA_TEST_KEY_2, encrypted);
             assertNotNull("Decrypting a key pair must result in a KeyPair", decrypted);
             assertTrue("Decrypted public key should be equal to input", ArrayUtils.isEquals(toEncrypt.getPublic().getEncoded(), decrypted.getPublic().getEncoded()));
             assertTrue("Decrypted private key should be equal to input", ArrayUtils.isEquals(toEncrypt.getPrivate().getEncoded(), decrypted.getPrivate().getEncoded()));
@@ -362,13 +375,13 @@ public class JackNJI11ProviderTest {
     // Create a P11NgCryptoToken using whichever library is installed
     private static CryptoToken createPkcs11NgTokenWithoutAttributesFile() throws NoSuchSlotException {
         Properties prop = new Properties();
-        String hsmlib = PKCS11TestUtils.getHSMLibrary();
+        String hsmlib = CryptoTokenTestBase.getHSMLibrary();
         assertNotNull("No HSM library installed for testing", hsmlib);
         prop.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, hsmlib);
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, CryptoTokenTestBase.getPkcs11SlotValue());
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, CryptoTokenTestBase.getPkcs11SlotType().getKey());
         prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "False");
-        return CryptoTokenFactory.createCryptoToken(CryptoTokenFactory.JACKNJI_NAME, prop, null, 111, "JackNJI11ProviderTestToken");
+        return createCryptoToken(JACKNJI_NAME, prop, null, 111, "JackNJI11ProviderTestToken");
     }
 
     // Make sure PSS parameter configuration is returned correctly.
@@ -453,6 +466,57 @@ public class JackNJI11ProviderTest {
             return ed.getEncoded();
         } catch (IOException | CMSException e) {
             throw new IllegalStateException("Failed to encrypt keys: " + e.getMessage(), e);
+        }
+    }
+    
+
+    
+    /** Creates a crypto token using reflection to construct the class from classname and initializing the CryptoToken, potentially enabling public key authentication to the token.
+     * 
+     * @param inClassname the full classname of the crypto token implementation class
+     * @param properties properties passed to the init method of the CryptoToken
+     * @param data byte data passed to the init method of the CryptoToken
+     * @param cryptoTokenId id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
+     * @param tokenName user friendly identifier
+     * @param allowNonExistingSlot if the NoSuchSlotException should be used
+     * @param keyAndCertFinder If specified, an object that can take a name from properties and find a key/cert pair.  Currently, only relevant for Azure Key Vault.
+     * throws NoSuchSlotException if no slot as defined in properties could be found.
+     */
+    private static CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int cryptoTokenId,
+            String tokenName) throws NoSuchSlotException {
+        final String classname = inClassname;
+
+        final CryptoToken token = createTokenFromClass(classname);
+        if (token == null) {
+            log.error("No token. Classpath=" + classname);
+            return null;
+        }
+        
+        try {
+            token.init(properties, data, cryptoTokenId);
+        } catch (NoSuchSlotException e) {
+            final String msg = "Unable to access PKCS#11 slot for crypto token '" + tokenName + "' (" + cryptoTokenId
+                    + "). Perhaps the token was removed? " + e.getMessage();
+            if (log.isDebugEnabled()) {
+                log.debug(msg, e);
+            }
+            throw e;
+
+        } catch (Exception e) {
+            log.error("Error initializing Crypto Token '" + tokenName + "' (" + cryptoTokenId + "). Classpath=" + classname, e);
+        }
+        token.setTokenName(tokenName);
+        return token;
+    }
+    
+    private static final CryptoToken createTokenFromClass(final String classpath) {
+        try {
+            Class<?> implClass = Class.forName(classpath);
+            Object obj = implClass.newInstance();
+            return (CryptoToken) obj;
+        } catch (Throwable e) {
+            log.error("Error contructing Crypto Token (setting to null). Classpath="+classpath, e);
+            return null;
         }
     }
 
