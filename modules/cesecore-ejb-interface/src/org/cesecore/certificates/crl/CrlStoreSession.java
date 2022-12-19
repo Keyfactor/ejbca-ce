@@ -13,6 +13,7 @@
 package org.cesecore.certificates.crl;
 
 import java.util.Date;
+import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -21,6 +22,30 @@ import org.cesecore.authorization.AuthorizationDeniedException;
  * 
  */
 public interface CrlStoreSession {
+    
+    /**
+     * Retrieves the unique CRLData based on the finger print provided.
+     * 
+     * @param fingerprint
+     * @return CRLData matching the given fingerprint
+     */
+    CRLData findByFingerprint(String fingerprint);
+    
+    /**
+     * Retrieves list of CRLDatas based on the issuer DN provided.
+     * 
+     * @param issuerDN
+     * @return list of CRLData entities matching the given issuerDN 
+     */
+    List<CRLData> findByIssuerDN(final String issuerDN);
+    
+    /**
+     * Removes list of CRLDatas from DB based on the issuer DN provided.
+     * 
+     * @param issuerDN
+     * @return
+     */
+    void removeByIssuerDN(final String issuerDN);
 
 	/**
 	 * Retrieves the latest CRL issued by this CA.
