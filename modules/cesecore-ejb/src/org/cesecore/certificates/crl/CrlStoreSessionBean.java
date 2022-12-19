@@ -175,6 +175,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
                 return null;
             }
             
+            // Check SQL result set mapping in CRLData class for explanation.
             final Object[] fields = thisNextUpdateList.get(0);
             final BigInteger thisUpdate = (BigInteger) fields[0];
             final BigInteger nextUpdate = (BigInteger) fields[1];
