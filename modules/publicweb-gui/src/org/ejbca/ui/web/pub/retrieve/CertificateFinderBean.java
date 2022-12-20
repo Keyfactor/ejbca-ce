@@ -46,7 +46,6 @@ import org.ejbca.ui.web.CertificateView;
  * To make it easy to use from JSTL pages, most methods take no arguments.
  * The arguments are supplied as member variables instead. <br>
  *
- * @version $Id$
  */
 public class CertificateFinderBean {
 
@@ -87,7 +86,7 @@ public class CertificateFinderBean {
 
 	public boolean existsDeltaCrlForCurrentCA() {
 	    // TODO consider adding Partitioned CRL support (ECA-7961). Not super important since the public web is deprecated.
-	    return ejb.getCrlStoreSession().getLastCRLInfo(getCAInfo().getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true) != null;
+	    return ejb.getCrlStoreSession().getLastCRLInfoLightWeight(getCAInfo().getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true) != null;
 	}
 
 	public void setCurrentCA(Integer currentCA) {

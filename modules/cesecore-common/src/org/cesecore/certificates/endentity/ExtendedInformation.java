@@ -646,6 +646,18 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         data.put(CUSTOMDATA + key, value);
     }
 
+    /**
+     * Special method used to set string fields directly, should be used with care, use the specific methods for fields in first hand.
+     * When retrieving values, the specific methods are used which may convert the string into a BigInteger for example as in 
+     * getCertificateSerialNumber, the string data better match that, or there will be trouble
+     *
+     * @param key key to store the data with
+     * @param value the string representation of the data
+     */
+    public void setStringKeyData(String key, String value) {
+        data.put(key, value);
+    }
+
     /** Function required by XMLEncoder to do a proper serialization. */
     public void setData(Object hmData) {
         loadData(hmData);

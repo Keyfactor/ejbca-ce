@@ -12,25 +12,33 @@
  *************************************************************************/
 package org.ejbca.config;
 
-import java.util.Map;
-
-import org.cesecore.config.ConfigurationHolder;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
+
+import org.cesecore.util.CryptoProviderTools;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * A unit test for static configuration and log value filtering.
  */
 public class CmpConfigurationTest {
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
+    
     @Test
     public void testGetSetAndFiltering() {
 
         // Well known encryption password, default will result in the same string every time, 
         // if a specific value is set it will be more modern encryption with a salt giving different values every time
-        ConfigurationHolder.updateConfiguration("password.encryption.key", null);
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
 
         CmpConfiguration config = new CmpConfiguration();
         config.addAlias("alias1");
