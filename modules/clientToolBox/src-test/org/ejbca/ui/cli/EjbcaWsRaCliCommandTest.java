@@ -47,7 +47,7 @@ public class EjbcaWsRaCliCommandTest {
     private final EjbcaWsRaCli command = new EjbcaWsRaCli();
 
     @Rule
-    public Timeout testTimeout = new Timeout(30_000); // per test case
+    public Timeout testTimeout = new Timeout(90_000); // per test case
 
     private static final String CERTIFICATE_PROFILE_NAME = "EjbcaWsRaCliCommandTestCP";
     private static final String END_ENTITY_PROFILE_NAME = "EjbcaWsRaCliCommandTestEEP";

@@ -93,7 +93,7 @@ import static org.junit.Assert.assertNotNull;
 public class CMPKeyUpdateStressTestCommandTest {
 
     @Rule
-    public Timeout testTimeout = new Timeout(60_000); // per test case
+    public Timeout testTimeout = new Timeout(90_000); // per test case
 
     private static final String END_ENTITY_PROFILE_NAME = "CMPKeyUpdateStressTestCommandTestEEP";
     private static final String CA_NAME = "CMPKeyUpdateStressTestCommandTestCA";
@@ -101,6 +101,7 @@ public class CMPKeyUpdateStressTestCommandTest {
     private static final String PASSWORD = "foo123";
     private static final String USERNAME = "CMPKeyUpdateStressTestCommandTestUser";
     private static final String CMP_ALIAS = "CMPKeyUpdateStressTestCmpAlias";
+    private static final int NUM_ENDENTITIES = 10;
 
     private static X509CA x509ca;
     private static CmpConfiguration cmpConfiguration;
@@ -116,14 +117,36 @@ public class CMPKeyUpdateStressTestCommandTest {
     private static final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private static final KeyStoreCreateSessionRemote keyStoreCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyStoreCreateSessionRemote.class);
     private static final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private static final EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
 
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
+    private static void cleanup() throws Exception {
+        internalCertificateStoreSession.removeCertificatesByIssuer(DEFAULT_CA_DN);
+        for (int i = 0; i < NUM_ENDENTITIES; i++) {
+            try {
+                endEntityManagementSession.deleteUser(authToken, USERNAME + i);
+            } catch (NoSuchEndEntityException e) {
+                // NOPMD the cleanup method is run before the test also
+            }
+        }
+        endEntityProfileSession.removeEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME);
+        if (cmpConfiguration == null) {
+            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        }
+        cmpConfiguration.removeAlias(CMP_ALIAS);
+        globalConfigSession.saveConfiguration(authToken, cmpConfiguration);
+        CaTestUtils.removeCa(authToken, CA_NAME, CA_NAME);
+    }
+
     @BeforeClass
     public static void setUpClass() throws Exception {
+        cleanup();
         ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
@@ -155,25 +178,19 @@ public class CMPKeyUpdateStressTestCommandTest {
 
     @After
     public void tearDown() {
-        final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-                InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         internalCertificateStoreSession.removeCertificatesByIssuer(DEFAULT_CA_DN);
-        EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         endEntityManagementProxySession.deleteUsersByEndEntityProfileId(endEntityProfileId);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        endEntityProfileSession.removeEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME);
-        CaTestUtils.removeCa(authToken, x509ca.getCAInfo());
-        cmpConfiguration.removeAlias(CMP_ALIAS);
-        globalConfigSession.saveConfiguration(authToken, cmpConfiguration);
+        cleanup();
     }
 
     @Test
     public void testCommandCMPKeyUpdateStressTest() throws InvalidAlgorithmException, WaitingForApprovalException, InvalidKeySpecException, AuthStatusException, EndEntityExistsException, CustomCertificateSerialNumberException, AuthLoginException, NoSuchEndEntityException, AuthorizationDeniedException, IllegalNameException, EndEntityProfileValidationException, CADoesntExistsException, IllegalValidityException, CustomFieldException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, CertificateRevokeException, KeyStoreException, IOException, CertificateSerialNumberException, CertificateSignatureException, ApprovalException, CertificateCreateException, CertificateException, IllegalKeyException, CAOfflineException {
         exit.expectSystemExitWithStatus(0);
-        createUsersWithP12(10);
+        createUsersWithP12(NUM_ENDENTITIES);
         // CMPKeyUpdateStressTest ca keys foo123 testClient 10:100 1000 8080
         int numberOfThreads = 10;
         int numberOfTests = 100;
@@ -204,9 +221,9 @@ public class CMPKeyUpdateStressTestCommandTest {
                     true, endEntityProfileId);
 
             String filename = p12CertsPath + "/" + name + ".p12";
-            FileOutputStream fileOutputStream = new FileOutputStream(filename);
-            fileOutputStream.write(ks1);
-            fileOutputStream.close();
+            try (FileOutputStream fileOutputStream = new FileOutputStream(filename)) {
+                fileOutputStream.write(ks1);
+            }
         }
     }
 

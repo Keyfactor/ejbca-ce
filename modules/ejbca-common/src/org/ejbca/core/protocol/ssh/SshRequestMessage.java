@@ -33,6 +33,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
@@ -225,6 +226,10 @@ public class SshRequestMessage implements RequestMessage {
                 }
             }
         }
+    }
+    @Override
+    public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
+        return null;
     }
 
     @Override

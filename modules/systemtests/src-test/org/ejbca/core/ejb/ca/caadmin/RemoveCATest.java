@@ -22,7 +22,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -30,6 +30,8 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Tests and removes the CA entity and its CryptoToken.
@@ -42,6 +44,8 @@ public class RemoveCATest extends CaTestCase {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @Before
     public void setUp() throws Exception {
@@ -75,13 +79,14 @@ public class RemoveCATest extends CaTestCase {
 
     @Test
     public void test03primRemoveECGOST3410CA() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
+        cesecoreConfigurationProxySession.setGost3410Enabled(true);
         removeCa("CN=TESTECGOST3410");
     }
     
     @Test
     public void test03bisRemoveDSTU4145CA() throws Exception {
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         removeCa("CN=TESTDSTU4145");
     }
 

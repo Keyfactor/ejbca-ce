@@ -37,7 +37,6 @@
     	<delete dir="${reports.base.dir}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
-        <delete file="velocity.log" />
         <ant antfile="modules/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 	
@@ -697,6 +696,7 @@
         		<include name="ejbca-cits.jar" />
         		<include name="proxy-ca.jar" />
         		<include name="p11ng.jar" />
+        		<include name="x509-common-util.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
@@ -1052,13 +1052,11 @@
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />
                 <exclude name="modules/cesecore-common/build/**" />
+		    	<exclude name="modules/x509-common-util/build/**" />
                 <exclude name="modules/cesecore-ejb-interface/build/**" />
                 <exclude name="modules/cesecore-entity/build/**" />
                 <exclude name="modules/ejbca-common/build-common/**" />
                 <exclude name="modules/va/build-va-publisher/**" />
-		    	<!-- Exclude Web Tests -->
-		    	<exclude name="modules/ejbca-webtest/**"/>
-                <exclude name="lib/ext/webtest/**"/>
 		    	<!-- Exclude internal Confluence information -->
 		    	<exclude name="src/doc.properties" />
 		    	<!-- Exclude modules that are not present in Community Edition -->
@@ -1525,10 +1523,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     <target name="ejbca-caa-cli" depends="deprecated:check" if="caa.exists" description="Creates a CLI jar for CAA lookups">
     	<ant dir="modules" target="ejbca-caa-cli" />
     </target>
-
-	<target name="ejbca-webtest" depends="deprecated:check" if="webtest.exists" description="Builds EJBCA web test module">
-		<ant dir="modules" target="ejbca-webtest" />
-	</target>
 	
 	<target name="ejbca-ejb-interface">
        	<ant dir="modules" target="ejbca-ejb-interface" />
@@ -1732,17 +1726,5 @@ SHA-256 checksum: ${cesecorebinSHA256}
             </fileset>
         </copy>
     </target>
-
-	<!-- Setup Firefox profiles for Selenium UI Tests -->
-	<target name="ejbca:setup:selenium" description="Sets the general EJBCA settings required by some Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-certificates" />
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-firefox-profiles" />
-	</target>
-	<target name="ejbca:setup:selenium-certificates" description="Sets the certificates settings required by Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-certificates" />
-	</target>
-	<target name="ejbca:setup:selenium-firefox-profiles" description="Sets the firefox profiles settings required by Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-firefox-profiles" />
-	</target>
 
 </project>

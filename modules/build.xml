@@ -57,7 +57,7 @@
 	
 	<target name="clean-optional" depends="cmpproxyclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
-        webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
+        estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
         cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, p11ng-clean, msae-clean, cesecore-p11-clean, cits-clean, proxy-ca-clean"/>
 
@@ -141,9 +141,6 @@
     <target name="caaclean" if="${mod.caa.exists}">
         <ant antfile="${mod.caa.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>	
-	<target name="webtestclean" if="${mod.webtest.exists}">
-        <ant antfile="${mod.webtest.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-	</target>
     <target name="estclean" if="${mod.est.exists}">
 		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>		
@@ -261,6 +258,7 @@
 			<ant antfile="${mod.cesecore-p11.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
+	<target name="x509-common-util" depends="-build-x509-common-util, -copy-x509-common-util"/>
     <target name="cesecore-common" depends="-build-cesecore-common, -copy-cesecore-common"/>
     <target name="cesecore-entity" depends="-build-cesecore-entity, -copy-cesecore-entities, -copy-cesecore-common"/>
     <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
@@ -275,13 +273,19 @@
             <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
-        <target name="-build-cesecore-common" depends="cesecore-p11">
+        <target name="-build-cesecore-common" depends="x509-common-util, cesecore-p11">
             <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
         <target name="-build-cesecore-entity" depends="cesecore-common">
             <ant antfile="${mod.cesecore-entity.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
+	
+	 	<target name="-build-x509-common-util" >
+	    	 <ant antfile="${mod.x509-common-util.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
+	    </target>
+	        
+	
         
         <target name="-copy-cesecore-entities">
             <!-- Filter cesecore-entities.jar -->
@@ -294,6 +298,11 @@
         	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/modules/dist/"/>
         	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/dist/"/>
         </target>
+	
+		<target name="-copy-x509-common-util">
+	    	<copy file="${ejbca.home}/modules/x509-common-util/dist/x509-common-util.jar" todir="${ejbca.home}/modules/dist/"/>
+	        <copy file="${ejbca.home}/modules/x509-common-util/dist/x509-common-util.jar" todir="${ejbca.home}/dist/"/>
+	    </target>
         
         <target name="-copy-cesecore-cvcca" if="${mod.cesecore-cvcca.exists}">
             <copy file="${ejbca.home}/modules/cesecore-cvcca/dist/cesecore-cvcca.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
@@ -521,10 +530,6 @@
 	
 	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa" description="Creates a CLI jar for CAA lookups">
 		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
-	</target>
-	
-	<target name="ejbca-webtest" if="mod.webtest.exists" description="Builds EJBCA web test module">
-		<ant antfile="${mod.webtest.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="edition-specific-interface" depends="ejbca-ejb-interface">
