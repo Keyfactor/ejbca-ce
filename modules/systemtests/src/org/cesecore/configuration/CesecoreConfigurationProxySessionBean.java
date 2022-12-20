@@ -19,6 +19,9 @@ import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.StringTools;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.string.StringConfigurationCache;
+
 /**
  * @version $Id$
  * 
@@ -28,8 +31,7 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
 
     @Override
     public void setConfigurationValue(String key, String value) {
-        ConfigurationHolder.updateConfiguration(key, value);
-        StringTools.CharSet.reset(); // reset reading of forbidden characters of we changed that
+        ConfigurationHolder.updateConfiguration(key, value);      
         OcspConfigurationCache.INSTANCE.reloadConfiguration();
     }
 
@@ -37,5 +39,25 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
     public String getConfigurationValue(String key) {
         return ConfigurationHolder.getExpandedString(key);
     }
+
+    @Override
+    public void setForbiddenCharacters(char[] forbiddenCharacters) {
+        StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters);
+        StringTools.CharSet.reset(); // reset reading of forbidden characters of we changed that
+        
+    }
+
+    @Override
+    public char[] getForbiddenCharacters() {
+        return StringConfigurationCache.INSTANCE.getForbiddenCharacters();
+    }
+
+    @Override
+    public void setGost3410Enabled(boolean value) {
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(value);
+        
+    }
+    
+    
 
 }

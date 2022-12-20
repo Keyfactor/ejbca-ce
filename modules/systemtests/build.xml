@@ -92,6 +92,7 @@
         <path refid="lib.bouncycastle.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 
 	<path id="interfaces.classpath">
