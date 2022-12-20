@@ -63,6 +63,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CABase;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -419,7 +420,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapOrder);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
-                CertTools.checkNameConstraints(caCert, subjectDNName, subjectAltName);
+                CABase.checkNameConstraints(caCert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
                 e.setErrorCode(ErrorCode.NAMECONSTRAINT_VIOLATION);
                 throw e;
@@ -926,7 +927,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapOrder);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
-                CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName);
+                CABase.checkNameConstraints(cacert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
                 e.setErrorCode(ErrorCode.NAMECONSTRAINT_VIOLATION);
                 throw e;
