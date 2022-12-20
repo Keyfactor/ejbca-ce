@@ -42,11 +42,7 @@ import java.util.Date;
 @SqlResultSetMappings(value = {
         @SqlResultSetMapping(name = "ThisUpdateNextUpdateSelectQuery", columns = {
                 @ColumnResult(name = "thisUpdate"),
-                @ColumnResult(name = "nextUpdate")}),
-        @SqlResultSetMapping(name = "ThisUpdateNextUpdateBase64CrlSelectQuery", columns = {
-                @ColumnResult(name = "thisUpdate"),
-                @ColumnResult(name = "nextUpdate"),
-                @ColumnResult(name = "base64Crl")}),})
+                @ColumnResult(name = "nextUpdate")}),})
 public class CRLData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 5542295476157001912L;
