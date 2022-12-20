@@ -716,8 +716,8 @@ public class CAsTest extends CaTestCase {
             try {
                 caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, currentSignKeyAlias);
             } catch(Exception e) {
-                assertEquals("Please select the correct key from the 'Signed CA key' drop down at 'Step 2 - Import Certificate' which is "
-                        + "used to generate the certificate. Verification failed for keys: signKey", e.getMessage());
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                        e.getMessage().contains("keys: signKey"));
             }
             // auto-detect
             caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
@@ -725,8 +725,8 @@ public class CAsTest extends CaTestCase {
             try {
                 caAdminSession.receiveResponse(admin, info.getCAId(), firstCertificate, null, null);
             } catch(Exception e) {
-                assertEquals("Please select the correct key from the 'Signed CA key' drop down at 'Step 2 - Import Certificate' which is used "
-                        + "to generate the certificate. Verification failed for keys: signKey00001", e.getMessage());
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                        e.getMessage().contains("keys: signKey00001"));
             }
             caAdminSession.receiveResponse(admin, info.getCAId(), firstCertificate, null, currentSignKeyAlias);
             
@@ -740,8 +740,8 @@ public class CAsTest extends CaTestCase {
             try {
                 caAdminSession.receiveResponse(admin, info.getCAId(), secondCertificate, null, null);
             } catch(Exception e) {
-                assertEquals("Please select the correct key from the 'Signed CA key' drop down at 'Step 2 - Import Certificate' which is used "
-                        + "to generate the certificate. Verification failed for keys: signKey and signKey00003", e.getMessage());
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                        e.getMessage().contains("keys: signKey and signKey00003"));
             }
             caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
             

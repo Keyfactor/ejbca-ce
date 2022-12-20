@@ -1501,8 +1501,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     + "key(s) may not have signing permission.";
         } 
         if (message.equalsIgnoreCase(KeyTools.ERROR_MESSAGE_VERIFICATION_FAILED)) {
-            return "Please select the correct key from the 'Signed CA key' drop down at 'Step 2 - Import Certificate' "
-                    + "which is used to generate the certificate. Verification failed for keys: " + keyAlias;
+            return "Verification failed for keys: " + keyAlias + ". "
+                    + "Please select the correct key from the 'Signed CA key' "
+                    + "drop down at 'Step 2 - Import Certificate' in Admin UI "
+                    + "which is used to generate the certificate.";
         }
         return message;
     }
