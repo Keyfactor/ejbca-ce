@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -28,7 +29,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -43,7 +43,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
 
@@ -278,9 +277,9 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         try {
             maxnumber = getLastCRLNumber(issuerdn, crlPartitionIndex, deltaCRL);
             byte[] crlbytes = null;
-            final String base64CrlString = findBase64CrlByIssuerDNAndCRLNumber(issuerdn, crlPartitionIndex, maxnumber);
-            if (StringUtils.isNotBlank(base64CrlString)) {
-                crlbytes = Base64.decode(base64CrlString.getBytes());
+            final CRLData crlData = findByIssuerDNAndCRLNumber(issuerdn, crlPartitionIndex, maxnumber);
+            if (Objects.nonNull(crlData)) {
+                crlbytes = crlData.getCRLBytes();
                 if (crlbytes != null) {
                     final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.getcrl", issuerdn, Integer.valueOf(maxnumber));
                     log.info(msg);
@@ -307,9 +306,9 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             log.trace(">getCRL(" + issuerdn + ", " + crlNumber + ")");
         }
         byte[] crlbytes = null;
-        final String base64CrlString = findBase64CrlByIssuerDNAndCRLNumber(issuerdn, crlPartitionIndex, crlNumber);
-        if (StringUtils.isNotBlank(base64CrlString)) {
-            crlbytes = Base64.decode(base64CrlString.getBytes());
+        final CRLData crlData = findByIssuerDNAndCRLNumber(issuerdn, crlPartitionIndex, crlNumber);
+        if (Objects.nonNull(crlData)) {
+            crlbytes = crlData.getCRLBytes();
             if (crlbytes != null) {
                 final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.getcrl", issuerdn, Integer.valueOf(crlNumber));
                 log.info(msg);
@@ -360,7 +359,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             if (crlPartitionIndex > 0) {
                 query.setParameter("crlPartitionIndex", crlPartitionIndex);
             }
-            return QueryResultWrapper.getSingleResult(query);
+            return (Integer) QueryResultWrapper.getSingleResult(query);
         }
     }
     
@@ -404,7 +403,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
      */
     private CRLData findByIssuerDNAndCRLNumber(final String issuerDN, final int crlPartitionIndex,
             final int crlNumber) {
-        final Query query = entityManager.createNativeQuery("SELECT * FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
                 + getCrlPartitionIndexCondition(crlPartitionIndex), CRLData.class);
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
@@ -412,7 +411,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         if (crlPartitionIndex > 0) {
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
         }
-        return QueryResultWrapper.getSingleResult(query);
+        return (CRLData) QueryResultWrapper.getSingleResult(query);
     }
 
     private String getMessageWithPartitionIndex(final int crlPartitionIndex, final String messageKey, final Object... params) {
@@ -423,20 +422,6 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             sb.append(intres.getLocalizedMessage("store.crlpartition", crlPartitionIndex));
         }
         return sb.toString();
-    }
-    
-    private String findBase64CrlByIssuerDNAndCRLNumber(final String issuerDN, final int crlPartitionIndex,
-            final int crlNumber) {
-        final Query query = entityManager
-                .createNativeQuery("SELECT a.base64Crl FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                        + getCrlPartitionIndexCondition(crlPartitionIndex));
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("crlNumber", crlNumber);
-        query.setMaxResults(1);
-        if (crlPartitionIndex > 0) {
-            query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        }
-        return QueryResultWrapper.getSingleResult(query);
     }
     
     /**
@@ -458,7 +443,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         if (crlPartitionIndex > 0) {
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
         }
-        return QueryResultWrapper.getSingleResult(query);
+        return (BigInteger) QueryResultWrapper.getSingleResult(query);
     }
     
     /**
