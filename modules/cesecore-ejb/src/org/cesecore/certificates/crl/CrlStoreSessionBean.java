@@ -255,7 +255,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         
         final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
 
-        final BigInteger nextUpdate = findNextUpdateByIssuerDNAndCRLNumber(issuerDn, crlPartitionIndex, crlNumber);
+        final Long nextUpdate = findNextUpdateByIssuerDNAndCRLNumber(issuerDn, crlPartitionIndex, crlNumber);
 
         if (nextUpdate == null) {
             return null;
@@ -432,10 +432,10 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
      * @param crlNumber
      * @return
      */
-    private BigInteger findNextUpdateByIssuerDNAndCRLNumber(final String issuerDN,
+    private Long findNextUpdateByIssuerDNAndCRLNumber(final String issuerDN,
             final int crlPartitionIndex, final int crlNumber) {
         final Query query = entityManager
-                .createNativeQuery("SELECT a.nextUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                .createQuery("SELECT a.nextUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
                         + getCrlPartitionIndexCondition(crlPartitionIndex));
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
@@ -443,7 +443,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         if (crlPartitionIndex > 0) {
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
         }
-        return (BigInteger) QueryResultWrapper.getSingleResult(query);
+        return (Long) QueryResultWrapper.getSingleResult(query);
     }
     
     /**
