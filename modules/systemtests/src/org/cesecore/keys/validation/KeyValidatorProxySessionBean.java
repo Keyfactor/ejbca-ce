@@ -197,4 +197,9 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     public long getNumberOfValidators() {
         return keyValidatorSession.getNumberOfValidators();
     }
+
+    @Override
+    public Map<String, Integer> getKeyValidatorNameToIdMap() {
+        return keyValidatorSession.getKeyValidatorNameToIdMap();
+    }
 }
