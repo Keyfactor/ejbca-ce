@@ -32,7 +32,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.kfenroll.ProxyCa;
-import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo.ProxyCaInfoBuilder;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;

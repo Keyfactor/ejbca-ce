@@ -13,6 +13,14 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.lang.reflect.Field;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -75,6 +83,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -103,13 +112,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Tests CA administration.
@@ -134,12 +139,15 @@ public class CAsTest extends CaTestCase {
             .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     // private AuthenticationToken adminTokenNoAuth;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
         createTestCA();
     }
     
@@ -406,7 +414,8 @@ public class CAsTest extends CaTestCase {
     /** Adds a CA using ECGOST3410 keys to the database. It also checks that the CA is stored correctly. */
     @Test
     public void test04primAddECGOST3410() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
+        cesecoreConfigurationProxySession.setGost3410Enabled(true);
         boolean ret = false;
         try {
             createECGOST3410Ca();
@@ -426,6 +435,7 @@ public class CAsTest extends CaTestCase {
             fail("Creating ECGOST3410 CA failed because CA exists.");
         } finally {
             removeOldCa(TEST_ECGOST3410_CA_NAME);
+            certificateProfileSession.removeCertificateProfile(admin, TEST_ECGOST3410_CA_NAME);
         }
         assertTrue("Creating ECGOST3410 CA failed", ret);
     }
@@ -437,7 +447,7 @@ public class CAsTest extends CaTestCase {
             org.bouncycastle.jce.spec.ECParameterSpec spec = gostpk.getParameters();
             assertNotNull("GOST3410 public key spec can't be null", spec);
         } else {
-            assertTrue("Public key is not GOST3410: "+pk.getClass().getName(), false);
+            fail("Public key is not GOST3410: "+pk.getClass().getName());
         }
     }
     
@@ -445,7 +455,7 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test04bisAddDSTU4510() throws Exception {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
-        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
         boolean ret = false;
         try {
             createDSTU4145Ca();
@@ -649,6 +659,7 @@ public class CAsTest extends CaTestCase {
             // Receive the certificate request on the TEST CA
             info.setSignedBy("CN=TEST".hashCode());
             ResponseMessage resp = caAdminSession.processRequest(admin, info, msg);
+            ResponseMessage firstCertificate = resp;
 
             // Receive the signed certificate back on our SubCA
             caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
@@ -678,7 +689,8 @@ public class CAsTest extends CaTestCase {
 
             // Make a new certificate request from the CA
             Collection<Certificate> cachain = info.getCertificateChain();
-            request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            String currentSignKeyAlias = info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, currentSignKeyAlias);
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             assertEquals(CAConstants.CA_ACTIVE, info.getStatus()); // No new keys
             // generated, still active
@@ -699,29 +711,68 @@ public class CAsTest extends CaTestCase {
             // Receive the signed certificate back on our SubCA
             caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
             
+            // create a new CSR with new key
+            request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, null);
+            info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            // CA should still active after only making a new request with new key
+            assertEquals("CA should still active after only making a new request for rekey", CAConstants.CA_ACTIVE, info.getStatus());
+            msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
+            // Receive the certificate request on the TEST CA
+            info.setSignedBy("CN=TEST".hashCode());
+            resp = caAdminSession.processRequest(admin, info, msg);
+            ResponseMessage secondCertificate = resp;
+            // Receive the signed certificate back on our SubCA but with wrong keyId
+            try {
+                caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, currentSignKeyAlias);
+            } catch(Exception e) {
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                        e.getMessage().contains("keys: signKey"));
+            }
+            // auto-detect
+            caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
+            // Receive the signed certificate back on our SubCA but without keyId and no nextSignKey in token
+            try {
+                caAdminSession.receiveResponse(admin, info.getCAId(), firstCertificate, null, null);
+            } catch(Exception e) {
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                        e.getMessage().contains("keys: signKey00001"));
+            }
+            caAdminSession.receiveResponse(admin, info.getCAId(), firstCertificate, null, currentSignKeyAlias);
+            
+            // create another rekey request
+            request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, null);
+            info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            msg = new PKCS10RequestMessage(request);
+            info.setSignedBy("CN=TEST".hashCode());
+            resp = caAdminSession.processRequest(admin, info, msg);
+            // now currentSignKey = signKey, nextSignKey = signKey00003
+            try {
+                caAdminSession.receiveResponse(admin, info.getCAId(), secondCertificate, null, null);
+            } catch(Exception e) {
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                        e.getMessage().contains("keys: signKey and signKey00003"));
+            }
+            caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
+            
             // Ensure all issued subCA certificates are cleaned out after test finishes
             certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
             toremove.addAll(certs); 
-            assertEquals("Test CA should have two certificates", 2, certs.size());
-            CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certs.iterator().next()));
-            assertEquals("Certificate should have status ACTIVE", CertificateConstants.CERT_ACTIVE, certinfo.getStatus());
-            certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certs.iterator().next()));
-            assertEquals("Certificate should have status ACTIVE", CertificateConstants.CERT_ACTIVE, certinfo.getStatus());
-
+            assertEquals("Test CA should have two certificates", 4, certs.size());
+            for(Certificate c: certs) {
+                CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(c));
+                assertEquals("Certificate should have status ACTIVE", CertificateConstants.CERT_ACTIVE, certinfo.getStatus());
+            }
+            
             // Revoke the subCA, both subCA certificates should be revoked
             caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
             certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
-            assertEquals("Test CA should have two certificates", 2, certs.size());
-            iter = certs.iterator();
-            final String fp1 = CertTools.getFingerprintAsString(iter.next());
-            certinfo = certificateStoreSession.getCertificateInfo(fp1);
-            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
-            assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
-            final String fp2 = CertTools.getFingerprintAsString(iter.next());
-            assertFalse(fp1.equals(fp2));
-            certinfo = certificateStoreSession.getCertificateInfo(fp2);
-            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());            
-            assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            assertEquals("Test CA should have two certificates", 4, certs.size());
+            for(Certificate c: certs) {
+                CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(c));
+                assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
+                assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            }
             
         } catch (CAExistsException pee) {
             log.info("CA exists: ", pee);

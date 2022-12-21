@@ -47,6 +47,7 @@ import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PSSParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1426,7 +1427,7 @@ public class CryptokiDevice {
                         //      - but NOT as DER encoded
                         //      - and NOT curve25519 but edwards25519
                         // disregarding any of these deviations will allow to generate a key just fine, it will be shown as Ed25519, but will fail to Sign...
-                        final String utimacoCurve = "edwards25519";
+                        final String utimacoCurve = oid.equals(EdECObjectIdentifiers.id_Ed448) ? "edwards448" : "edwards25519";
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("cs_pkcs11_R3 / utimaco detected: CKM.EC_EDWARDS_KEY_PAIR_GEN=>CKM.EC_KEY_PAIR_GEN, CKA.EC_PARAMS=" + utimacoCurve);
                         }
@@ -1527,8 +1528,19 @@ public class CryptokiDevice {
         }
 
         public void generateRsaKeyPair(final String keySpec, final String alias, final boolean publicKeyToken, final Map<Long, Object> overridePublic,
-                final Map<Long, Object> overridePrivate, final CertificateGenerator certGenerator, final boolean storeCertificate)
-                throws CertificateEncodingException, CertificateException, OperatorCreationException {
+                                       final Map<Long, Object> overridePrivate, final CertificateGenerator certGenerator, final boolean storeCertificate)
+                throws CertificateException, OperatorCreationException {
+            final RSAKeyGenParameterSpec rsaKeyGenParameterSpec;
+            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
+            final int keyLength = Integer.parseInt(formatCheckedKeySpec);
+
+            rsaKeyGenParameterSpec = new RSAKeyGenParameterSpec(keyLength, RSAKeyGenParameterSpec.F4);
+            generateRsaKeyPair(rsaKeyGenParameterSpec, alias, publicKeyToken, overridePublic, overridePrivate, certGenerator, storeCertificate);
+        }
+
+        public void generateRsaKeyPair(final RSAKeyGenParameterSpec rsaKeyGenParameterSpec, final String alias, final boolean publicKeyToken, final Map<Long, Object> overridePublic,
+                                       final Map<Long, Object> overridePrivate, final CertificateGenerator certGenerator, final boolean storeCertificate)
+                throws CertificateException, OperatorCreationException {
             NJI11Session session = null;
             try {
                 session = aquireSession();
@@ -1537,8 +1549,6 @@ public class CryptokiDevice {
                 if (isAliasUsed(session, alias)) {
                     throw new IllegalArgumentException("Key with ID or label " + alias + " already exists");
                 }
-                final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
-                final int keyLength = Integer.parseInt(formatCheckedKeySpec);
                 try {
                     long[] mechanisms = c.GetMechanismList(id);
                     if (LOG.isDebugEnabled()) {
@@ -1553,8 +1563,8 @@ public class CryptokiDevice {
                 publicTemplate.put(CKA.ENCRYPT, false);
                 publicTemplate.put(CKA.VERIFY, true);
                 publicTemplate.put(CKA.WRAP, false);
-                publicTemplate.put(CKA.MODULUS_BITS, keyLength);
-                publicTemplate.put(CKA.PUBLIC_EXPONENT, new BigInteger("65537").toByteArray());
+                publicTemplate.put(CKA.MODULUS_BITS, rsaKeyGenParameterSpec.getKeysize());
+                publicTemplate.put(CKA.PUBLIC_EXPONENT, rsaKeyGenParameterSpec.getPublicExponent().toByteArray());
                 publicTemplate.put(CKA.LABEL, ("pub-" + alias).getBytes(StandardCharsets.UTF_8));
                 publicTemplate.put(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
 
