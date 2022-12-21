@@ -71,7 +71,6 @@
 
 	<path id="test.classpath-nojdbc">
 		<path refid="compile-test.classpath"/>
-		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
 		<path location="${ejbca-entity.build-test.dir}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path refid="lib.junit.classpath"/>
@@ -99,7 +98,6 @@
 
 	<path id="generate.classpath">
 		<path refid="compile.classpath"/>
-		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
 		<path location="${ejbca-entity.build-test.dir}"/>
 		<path location="${ejbca-entity.build.dir}"/>
 	</path>

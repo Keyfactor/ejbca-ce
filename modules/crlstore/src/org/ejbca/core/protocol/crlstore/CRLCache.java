@@ -31,7 +31,6 @@ import org.cesecore.util.CertTools;
  * An implementation of this is managing a cache of CRLs. The implementation should be optimized for quick lookups of CRLs that the 
  * VA responder needs to fetch.
  *
- * @version $Id$
  */
 public class CRLCache {
 	private static final Logger log = Logger.getLogger(CRLCache.class);
@@ -39,13 +38,13 @@ public class CRLCache {
     private static CRLCache instance = null;
     private static final Lock lock = new ReentrantLock();
 	
-	private final CrlStoreSessionLocal crlSession;
+	private final CrlStoreSessionLocal crlStoreSession;
 	private final CaCertificateCache certCache;
-	final private Map<Integer, CRLEntity> crls = new HashMap<>();
-	final private Map<Integer, CRLEntity> deltaCrls = new HashMap<>();
+	private final Map<Integer, CRLEntity> crls = new HashMap<>();
+	private final Map<Integer, CRLEntity> deltaCrls = new HashMap<>();
 	private class CRLEntity {
 		final CRLInfo crlInfo;
-		final byte encoded[];
+		final byte[] encoded;
 		/**
 		 * @param crlInfo
 		 * @param encoded
@@ -78,33 +77,33 @@ public class CRLCache {
 	 * can be allowed to read the cache, since the cache will be in an inconsistent state. In the normal case we want to use
 	 * as fast objects as possible (HashMap) for reading fast.
 	 */
-	final private Lock rebuildlock = new ReentrantLock();
+	private final Lock rebuildlock = new ReentrantLock();
 
 	 /**
      * @return  {@link CRLCache} for the CA.
      */
-    public static CRLCache getInstance(CrlStoreSessionLocal crlSession, CaCertificateCache certCache) {
-        if (instance != null) {
-            return instance;
-        }
-        lock.lock();
-        try {
-            if ( instance==null ) {
-                instance = new CRLCache(crlSession, certCache);
-            }
-            return instance;
-        } finally {
-            lock.unlock();
-        }
-    }
+     public static CRLCache getInstance(CrlStoreSessionLocal crlDataSession, CaCertificateCache certCache) {
+         if (instance != null) {
+             return instance;
+         }
+         lock.lock();
+         try {
+             if (instance == null) {
+                 instance = new CRLCache(crlDataSession, certCache);
+             }
+             return instance;
+         } finally {
+             lock.unlock();
+         }
+     }
 	
 	/**
 	 * @param crlSession reference to CRLStoreSession
 	 * @param certStore references to needed CA certificates.
 	 */
-	private CRLCache(CrlStoreSessionLocal crlSession, CaCertificateCache certCache) {
+	private CRLCache(CrlStoreSessionLocal crlStoreSession, CaCertificateCache certCache) {
 		super();
-		this.crlSession = crlSession;
+		this.crlStoreSession = crlStoreSession;
 		this.certCache = certCache;
 	}
 
@@ -133,17 +132,17 @@ public class CRLCache {
 			if (log.isDebugEnabled()) {
 				log.debug("No CA certificate, returning null.");
 			}
-			return null;
+			return new byte[0];
 		}
 		final String issuerDN = CertTools.getSubjectDN(caCert);
 		this.rebuildlock.lock();
 		try {
-			final CRLInfo crlInfo = this.crlSession.getLastCRLInfo(issuerDN, crlPartitionIndex, isDelta);
+			final CRLInfo crlInfo = this.crlStoreSession.getLastCRLInfo(issuerDN, crlPartitionIndex, isDelta);
 			if ( crlInfo==null ) {
 				if (log.isDebugEnabled()) {
 					log.debug("No CRL found with issuerDN '"+issuerDN+"', returning null.");
 				}
-				return null;
+				return new byte[0];
 			}
 			final Integer cacheId = new CRLEntity(crlInfo, null).hashCode();
             final Map<Integer, CRLEntity> usedCrls = isDelta ? this.deltaCrls : this.crls;
@@ -162,9 +161,9 @@ public class CRLCache {
 			    if (log.isDebugEnabled()) {
 			        log.debug("Getting CRL with CRL number "+crlNumber);
 			    }
-			    entry = new CRLEntity( crlInfo, this.crlSession.getCRL(issuerDN, crlPartitionIndex, crlNumber) );
+			    entry = new CRLEntity( crlInfo, this.crlStoreSession.getCRL(issuerDN, crlPartitionIndex, crlNumber) );
 			} else {
-			    entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(issuerDN, crlPartitionIndex, isDelta) );
+			    entry = new CRLEntity( crlInfo, this.crlStoreSession.getLastCRL(issuerDN, crlPartitionIndex, isDelta) );
 			    // Only cache latest CRLs, these should be the ones accessed regularly, and we don't want to fill the cache with old CRLs
 	            usedCrls.put(cacheId, entry);
 			}

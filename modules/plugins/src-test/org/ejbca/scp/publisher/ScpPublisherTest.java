@@ -123,7 +123,8 @@ public class ScpPublisherTest {
         properties.setProperty(ScpPublisher.SCP_KNOWN_HOSTS_PROPERTY_NAME, "/Users/mikek/.ssh/known_hosts");
         properties.setProperty(ScpPublisher.SSH_USERNAME, "mikek");
         String password = "";
-        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password));
+        String encryptionKey = "supersecretpassword";
+        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password, encryptionKey, false));
         scpPublisher.init(properties);
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); 
         final int reason = RevocationReasons.KEYCOMPROMISE.getDatabaseValue();
@@ -152,7 +153,8 @@ public class ScpPublisherTest {
         properties.setProperty(ScpPublisher.SCP_KNOWN_HOSTS_PROPERTY_NAME, "/Users/mikek/.ssh/known_hosts");
         properties.setProperty(ScpPublisher.SSH_USERNAME, "mikek");
         String password = "";
-        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password));
+        final String encryptionKey = "supersecretpassword";
+        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password, encryptionKey, false));
         scpPublisher.init(properties);
         TestAlwaysAllowLocalAuthenticationToken testAlwaysAllowLocalAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken("testPublishCrl");
         scpPublisher.storeCRL(testAlwaysAllowLocalAuthenticationToken, testCrl, null, 0, null);

@@ -13,6 +13,10 @@
 package org.ejbca.core.ejb.authentication.web;
 
 import java.io.IOException;
+
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import java.security.Key;
 import java.security.cert.X509Certificate;
@@ -98,10 +102,12 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoToken;
 
     private boolean allowBlankAudience = false;
-
-    private OauthRequestHelper oauthRequestHelper; 
 
     public WebAuthenticationProviderSessionBean() { }
 
@@ -322,6 +328,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     return null;
                 }
                 String redirectUrl = getBaseUrl();
+                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
+                        internalKeyBindings, certificateStoreSession, cryptoToken));
                 oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
             }
         } catch (ParseException e) {

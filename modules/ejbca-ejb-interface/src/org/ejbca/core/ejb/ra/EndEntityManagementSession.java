@@ -63,6 +63,7 @@ public interface EndEntityManagementSession {
      * @throws EndEntityExistsException if an end entity by the specified username already exists
      * @deprecated use {@link #addUser(AuthenticationToken, EndEntityInformation, boolean)} instead.
      */
+    @Deprecated
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
     		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int caid)
     		throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
