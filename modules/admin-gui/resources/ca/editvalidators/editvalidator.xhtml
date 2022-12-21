@@ -30,36 +30,31 @@
 				<h:outputText value="#{web.text.EDITVALIDATOR_TITLE}" rendered="#{not validatorsBean.viewOnly}" />
 				<h:outputText value="#{web.text.VIEWVALIDATOR_TITLE}" rendered="#{validatorsBean.viewOnly}" />
 			</h2>
-			<h3 id="titleValidator">
-				<h:outputText value="#{web.text.VALIDATOR}: #{validatorBean.validator.profileName}"/>
-			</h3>
 		</div>
-		<!--div class="message">
-			<h:messages layout="table" errorClass="alert" infoClass="infoMessage" />
-		</div-->
-		<h:form id="kvf" enctype="multipart/form-data">
+		<h:form id="validators" enctype="multipart/form-data">
 			<h:inputHidden name="action" value="hiddenkeyvalidatortype" />
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
 				<h:panelGroup>&nbsp;</h:panelGroup>
 				<h:outputLink value="editvalidators.xhtml">
 					<h:outputText value="#{web.text.BACKTOVALIDATORS}" />
 				</h:outputLink>
-				<h:outputLabel for="validatorName" value="#{web.text.NAME}"/>
-				
-				<h:panelGroup id="name">
-					<h:inputText rendered="#{!validatorsBean.viewOnly}" value="#{validatorBean.validatorName}" required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.INTERNALKEYBINDING_FIELD_NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
-					<h:outputText rendered="#{validatorsBean.viewOnly}" value="#{validatorBean.validatorName}"/>
+				<h:panelGroup>
+					<h:outputLabel for="validatorName" value="#{web.text.NAME}"/>
 				</h:panelGroup>
-				<h:message for="name"/>
-				
-			
-				
+				<h:panelGroup id="name">
+					<h:inputText rendered="#{!validatorsBean.viewOnly}" value="#{validatorBean.validatorName}" required="true" 
+						requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.INTERNALKEYBINDING_FIELD_NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}">
+							<f:ajax event="change" render="validators" />
+						</h:inputText>
+					<h:outputText rendered="#{validatorsBean.viewOnly}" value="#{validatorBean.validatorName}"/>
+					<h:message for="name"/>
+					
+				</h:panelGroup>				
 				<h:outputLabel for="validatorId" value="#{web.text.ID}"/>
 				<h:outputText id="validatorId" value="#{validatorBean.validatorId}"/>
-				
 				<h:outputLabel for="validatorType" value="#{web.text.VALIDATORTYPE}"/>
 				<h:selectOneMenu id="validatorType" value="#{validatorBean.validatorType}" disabled="#{validatorsBean.viewOnly}">
-					<f:ajax listener="#{validatorBean.validatorTypeChanged}" render="@all"/>
+					<f:ajax listener="#{validatorBean.validatorTypeChanged}" execute="validatorTypeChanged" render="@form"/>
 					<f:selectItems value="#{validatorBean.availableValidators}" />
 				</h:selectOneMenu>
 			</h:panelGrid>
@@ -72,29 +67,33 @@
 				</h:panelGroup>
 				<h:panelGroup id="general_settings"></h:panelGroup>
 				<h:outputLabel for="description" value="#{web.text.DESCRIPTION}"/>
-				<h:inputTextarea id="description" value="#{validatorBean.validator.description}" validator="#{validatorBean.validateDescription}" cols="45" rows="3" required="false" disabled="#{validatorsBean.viewOnly}" />
+				<h:inputTextarea id="description" value="#{validatorBean.description}" validator="#{validatorBean.validateDescription}" 
+					cols="45" rows="3" required="false" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax event="change" render="validators" />
+				</h:inputTextarea>
 				<h:outputLabel for="applicablePhase" value="#{web.text.VALIDATORAPPLICABLEPHASE}"/>
 				<h:selectOneMenu id="applicablePhase" value="#{validatorBean.issuancePhase}" required="true" disabled="#{validatorsBean.viewOnly}">
 					<f:ajax listener="#{validatorBean.validatorPhaseChanged}" render="selectfailedaction selectnotapplicableaction"/>
 					<f:selectItems value="#{validatorBean.applicablePhases}" />
 				</h:selectOneMenu>
 				<h:outputLabel for="allcertificateprofiles" value="#{web.text.VALIDATORALLCERTIFICATEPROFILES}"/>
-				<h:selectBooleanCheckbox id="allcertificateprofiles" value="#{validatorBean.validator.allCertificateProfileIds}" disabled="#{validatorsBean.viewOnly}">
-					<f:ajax execute="allcertificateprofiles" render="selectapplicablecertificateprofiles" event="change"/>
+				<h:selectBooleanCheckbox id="allcertificateprofiles" value="#{validatorBean.allCertificateProfileIds}" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax render="validators" event="change"/>
 				</h:selectBooleanCheckbox>
 				<h:outputLabel for="selectapplicablecertificateprofiles" value="#{web.text.VALIDATORCERTIFICATEPROFILE}"/>
 				<h:selectManyListbox styleClass="select-list" id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" converter="javax.faces.Integer" 
-					validator="#{validatorBean.validateCertificateProfileIds}" size="10" disabled="#{validatorsBean.viewOnly or validatorBean.validator.allCertificateProfileIds}">
+					validator="#{validatorBean.validateCertificateProfileIds}" size="10" disabled="#{validatorsBean.viewOnly or validatorBean.allCertificateProfileIds}">
+					<f:ajax event="change" render="validators" />
 					<f:selectItems value="#{validatorBean.availableCertificateProfiles}"/>
 				</h:selectManyListbox>
 				<h:outputLabel for="selectfailedaction" value="#{web.text.VALIDATORFAILEDACTION}"/>
-				<h:selectOneMenu id="selectfailedaction" value="#{validatorBean.validator.failedAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
-					<f:ajax/>
+				<h:selectOneMenu id="selectfailedaction" value="#{validatorBean.failedAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax event="change" render="validators" />
 					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
 				</h:selectOneMenu>	
 				<h:outputLabel for="selectnotapplicableaction" value="#{web.text.VALIDATORNOTAPPLICABLEACTION}"/>
-				<h:selectOneMenu id="selectnotapplicableaction" value="#{validatorBean.validator.notApplicableAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
-					<f:ajax/>
+				<h:selectOneMenu id="selectnotapplicableaction" value="#{validatorBean.notApplicableAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax event="change" render="validators" />
 					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
 				</h:selectOneMenu>
 				<h:panelGroup>&nbsp;</h:panelGroup>
