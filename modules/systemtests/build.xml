@@ -121,7 +121,6 @@
 		<path refid="lib.servlet.classpath" />
 		<path refid="lib.ldap.classpath" />
 		<path refid="lib.mail.classpath" />
-		<path refid="lib.batik.classpath" />
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.ejbca-common-web.classpath" />
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
