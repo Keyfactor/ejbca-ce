@@ -18,10 +18,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -50,7 +50,6 @@ import org.cesecore.keys.validation.KeyValidatorDateConditions;
 import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
-import org.cesecore.keys.validation.PhasedValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
@@ -88,21 +87,12 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     // Declarations in faces-config.xml
     // @javax.faces.bean.ManagedProperty(value="#{validatorsBean}")
     private ValidatorsBean validatorsBean;
-
-    public ValidatorBean() {
-        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VALIDATORVIEW.resource());
-    }
     
     /** The validators ID. */
     private int validatorId;
     
-    private String validatorName = "";
-    
-    //As a default type, use the first on the list
-    private String validatorType = getSortedListOfValidators().get(0).getValidatorTypeIdentifier();
-    
     /** Map contains a potential validator of each type, so that we don't lose values when we switch. */
-    private Map<String, Validator> stagedValidators = new HashMap<>();
+    private Validator stagedValidator;
 
     /** Dynamic UI PIM component. */
     private DynamicUiModel uiModel;
@@ -110,6 +100,35 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     /** Dynamic UI PSM component. */
     private HtmlPanelGrid dataGrid;
 
+    public ValidatorBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VALIDATORVIEW.resource());
+    }
+    
+    @PostConstruct
+    public void postConstruct() {    
+        //if ID is something other than -1, then we're editing an existing validator, otherwise creating one. 
+        final int identifier = (validatorsBean.getValidatorId() == null  || validatorsBean.wasCloned() ? -1 : validatorsBean.getValidatorId());
+        Validator validator;
+        
+        if (validatorsBean.wasCloned()) {
+            validator = keyValidatorSession.getValidator(validatorsBean.getValidatorId());
+            validator.setProfileId(-1);
+            validator.setProfileName("Copy of " + validator.getProfileName());
+        } else {
+            if (identifier == -1) {
+                //If new,  create a brand new one with the default type           
+                String validatorType = getSortedListOfValidators().get(0).getValidatorTypeIdentifier();
+                validator = ValidatorFactory.INSTANCE.getArcheType(validatorType);
+            } else {
+                validator = keyValidatorSession.getValidator(identifier);
+            }
+        }
+        setValidatorId(identifier);
+        initializeDynamicUI(validator);
+
+        this.stagedValidator = validator;
+    }
+    
     /**
      * Resets the dynamic UI properties PSM.
      */
@@ -154,8 +173,9 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
     
     public String getValidatorType() {
-        final Validator v = getValidator();
-        return v == null ? null : v.getValidatorTypeIdentifier();
+     //   final Validator v = getValidator();
+      //  return v == null ? null : v.getValidatorTypeIdentifier();
+        return stagedValidator.getValidatorTypeIdentifier();
     }
   
     /**˛
@@ -163,19 +183,19 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @param type the type {@link ValidatorBase#getValidatorTypeIdentifier()}.
      */
     public void setValidatorType(final String type) {
-       
-        if (!this.validatorType.equals(type)) {
-            Validator validator;
-            //If we changed type, check if this one has been used before in the current view. If not, create one. 
-            if(stagedValidators.containsKey(type)) {
-                validator = stagedValidators.get(type);
-            } else {
-                validator = ValidatorFactory.INSTANCE.getArcheType(type);
-                stagedValidators.put(validatorType, validator);
-            }           
+        if (!stagedValidator.getValidatorTypeIdentifier().equals(type)) {
+            //If we changed type, create a new validator with some of the same values
+            Validator validator = ValidatorFactory.INSTANCE.getArcheType(type);
+            validator.setProfileName(stagedValidator.getProfileName());
+            validator.setCertificateProfileIds(stagedValidator.getCertificateProfileIds());
+            validator.setDescription(stagedValidator.getDescription());
+            validator.setFailedAction(stagedValidator.getFailedAction());
+            validator.setNotApplicableAction(stagedValidator.getNotApplicableAction());
+            validator.setAllCertificateProfileIds(stagedValidator.isAllCertificateProfileIds());
             initializeDynamicUI(validator);
+            this.stagedValidator = validator;
         }
-       
+
     }
     /**
      * Processes the issuance phase changed event and renders the concrete validator view. 
@@ -211,28 +231,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the Validator or null if no validator is selected.
      */
     public Validator getValidator() {
-        //if ID is something other than -1, then we're editing an existing validator, otherwise creating one. 
-        final int identifier = (validatorsBean.getValidatorId() != null ? validatorsBean.getValidatorId() : -1);
-        setValidatorId(identifier);
-
-        Validator validator;
-        if (identifier != -1) {
-            validator = keyValidatorSession.getValidator(identifier);
-            this.validatorType = validator.getValidatorTypeIdentifier();
-        } else {
-            //Otherwise, let's create a brand new one with the default type
-            validator = ValidatorFactory.INSTANCE.getArcheType(this.validatorType);
-        }
-        initializeDynamicUI(validator);
-        
-        // Set the staging map with this validator type. The staging map allows us to store several potential 
-        // validators, making sure that we can retain values while flipping through types. Just don't overwrite
-        // if it's already staged
-        if (!stagedValidators.containsKey(validator.getValidatorTypeIdentifier())) {
-            stagedValidators.put(validator.getValidatorTypeIdentifier(), validator);
-        }
-        
-        return validator;
+        return stagedValidator;
      }
     
     private void initializeDynamicUI(final Validator validator) {
@@ -270,11 +269,11 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
     
     public String getValidatorName() {
-        return validatorName;
+        return stagedValidator.getProfileName();
     }  
     
     public void setValidatorName(final String validatorName) {
-        this.validatorName = validatorName;
+        this.stagedValidator.setProfileName(validatorName);
     }
 
     /**
@@ -377,11 +376,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public List<SelectItem> getApplicablePhases() {
         final List<SelectItem> result = new ArrayList<>();
-        final Validator v = getValidator();
-        if (v != null) {
-            for (Integer index : ((PhasedValidator) v).getApplicablePhases()) {
-                result.add(new SelectItem(index, getEjbcaWebBean().getText(IssuancePhase.fromIndex(index).getLabel())));
-            }
+        for (Integer index : stagedValidator.getApplicablePhases()) {
+            result.add(new SelectItem(index, getEjbcaWebBean().getText(IssuancePhase.fromIndex(index).getLabel())));
         }
         return result;
     }
@@ -520,27 +516,31 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the navigation outcome defined in faces-config.xml.
      */
     public String save() {
-        final Validator validator = getValidator();
         if (log.isDebugEnabled()) {
-            log.debug("Try to save validator: " + validator);
+            log.debug("Try to save validator: " + stagedValidator);
         }
         try {
-            if (validator instanceof DynamicUiModelAware) {
-                ((DynamicUiModelAware) validator).getDynamicUiModel().writeProperties(((ValidatorBase) validator).getRawData());
+            if (stagedValidator instanceof DynamicUiModelAware) {
+                ((DynamicUiModelAware) stagedValidator).getDynamicUiModel().writeProperties(((ValidatorBase) stagedValidator).getRawData());
             }
-            keyValidatorSession.changeKeyValidator(getAdmin(), validator);
+            if (validatorId == -1) {
+                keyValidatorSession.addKeyValidator(getAdmin(), stagedValidator);
+            } else {
+                stagedValidator.setProfileId(validatorId);
+                keyValidatorSession.changeKeyValidator(getAdmin(), stagedValidator);
+            }
             addInfoMessage("VALIDATORSAVED");
             reset();
             return "done";
         } catch (AuthorizationDeniedException e) {
-            addNonTranslatedErrorMessage("Not authorized to edit validator " + validator.getProfileName());
+            addNonTranslatedErrorMessage("Not authorized to edit validator " + stagedValidator.getProfileName());
         } catch (KeyValidatorDoesntExistsException e) {
             // NOPMD: ignore do nothing
         } catch (CesecoreException e) {
             if (e.getErrorCode().equals(ErrorCode.DOMAIN_BLACKLIST_FILE_PARSING_FAILED)) {
-            addNonTranslatedErrorMessage("Failed to save domain list validator. " + e.getMessage());
+                addNonTranslatedErrorMessage("Failed to save domain list validator. " + e.getMessage());
             } else {
-            addNonTranslatedErrorMessage("An exception occured: " + e.getMessage());
+                addNonTranslatedErrorMessage("An exception occured: " + e.getMessage());
             }
         }
         return StringUtils.EMPTY;
@@ -620,8 +620,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     private boolean isApprovalRequestPhase() {
-        Validator validator = stagedValidators.get(validatorType);
-        return validator != null && validator.getPhase() == IssuancePhase.APPROVAL_VALIDATION.getIndex();
+        return stagedValidator != null && stagedValidator.getPhase() == IssuancePhase.APPROVAL_VALIDATION.getIndex();
     }
 
     /**
@@ -636,4 +635,37 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         }
         return result;
     }
+
+    public String getDescription() {
+        return stagedValidator.getDescription();
+    }
+
+    public void setDescription(String description) {
+        stagedValidator.setDescription(description);
+    }
+    
+    public boolean isAllCertificateProfileIds() {
+        return stagedValidator.isAllCertificateProfileIds();
+    }
+    
+    public void setAllCertificateProfileIds(boolean allCertificateProfileIds) {
+        stagedValidator.setAllCertificateProfileIds(allCertificateProfileIds);
+    }
+    
+    public int getFailedAction() {
+        return stagedValidator.getFailedAction();
+    }
+    
+    public void setFailedAction(int failedAction) {
+        stagedValidator.setFailedAction(failedAction);
+    }
+    
+    public int getNotApplicableAction() {
+        return stagedValidator.getNotApplicableAction();
+    }
+    
+    public void setNotApplicableAction(int notApplicableAction) {
+        stagedValidator.setNotApplicableAction(notApplicableAction);
+    }
+    
 }
