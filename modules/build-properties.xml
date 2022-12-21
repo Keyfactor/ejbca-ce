@@ -349,7 +349,6 @@
 	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
 	<path id="lib.hc.classpath"><fileset dir="${ejbca.home}/lib" includes="httpcore-*.jar httpclient-*.jar httpmime-*.jar"/></path>
 	<path id="lib.commons-io.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-io-*.jar"/></path>
-	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
 	<path id="lib.mail.classpath">
 		<fileset dir="${ejbca.home}/lib/ext" includes="mailapi.jar"/>
 	</path>
