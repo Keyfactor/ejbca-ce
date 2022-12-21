@@ -573,7 +573,7 @@
                 <include name="cert-cvc-*.jar" />
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-*.jar" unless="jbosseap6-specials"/>
-                <include name="ldap.jar" />
+                <include name="jldap-*.jar" />
             	<include name="adsddl-*.jar"/>
                 <include name="commons-*.jar" />
 				<include name="nimbus-jose-jwt-*.jar"/>
