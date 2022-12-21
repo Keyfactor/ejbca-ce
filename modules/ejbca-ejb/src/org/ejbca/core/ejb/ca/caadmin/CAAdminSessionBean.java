@@ -169,6 +169,7 @@ import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
@@ -1363,7 +1364,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                                     .isDV()) {
                                 log.debug("Enriching DV public key with EC parameters from CVCA");
                                 Certificate cvcacert = reqchain.iterator().next();
-                                caCertPublicKey = KeyTools.getECPublicKeyWithParams(caCertPublicKey, cvcacert.getPublicKey());
+                                caCertPublicKey = CvcKeyTools.getECPublicKeyWithParams(caCertPublicKey, cvcacert.getPublicKey());
                             } else {
                                 final String msg = "Trying to receive CA certificate response for a DVCA, but the received certificate's authRole field is not for a DV";
                                 log.debug(msg);
@@ -1443,7 +1444,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 KeyTools.testKey(cryptoToken.getPrivateKey(nextKeyAlias), caCertPublicKey, cryptoToken.getSignProviderName());
             } catch (InvalidKeyException e) { // java exception
-                throw new IllegalKeyException(e); // cesecore exception
+                throw new IllegalKeyException(getDetailedErrorMessageInvalidKey(e.getMessage(), nextKeyAlias));
             }
         } else {
             // Since we don't specified the nextSignKey, we will just try the current or next CA sign key
@@ -1451,6 +1452,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), caCertPublicKey,
                         cryptoToken.getSignProviderName());
             } catch (Exception e1) {
+                boolean currentSignKeyInvalid = false;
+                if (e1 instanceof InvalidKeyException) {
+                    currentSignKeyInvalid = true;
+                }
                 if (log.isDebugEnabled()) {
                     log.debug(
                             "The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
@@ -1468,17 +1473,41 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     if (log.isDebugEnabled()) {
                         log.debug(
                                 "The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
-                        if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
+                        if (e2 instanceof InvalidKeyException) {
+                            String keyAliases = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) + " and " + 
+                                                        catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+                            throw new IllegalKeyException(getDetailedErrorMessageInvalidKey(e2.getMessage(), keyAliases));
+                        }
+                        if (e2 instanceof IllegalArgumentException) {
                             log.trace(e2);
                         } else {
                             // If it's not invalid key or missing authentication code, we want to see more of the error
                             log.debug("Error: ", e2);
                         }
                     }
-                    throw new IllegalKeyException(e2);
+                    if (currentSignKeyInvalid) {
+                        throw new IllegalKeyException(getDetailedErrorMessageInvalidKey(e1.getMessage(), 
+                                        catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) ));
+                    } else {
+                        throw new IllegalKeyException(e2);
+                    }
                 }
             }
         }
+    }
+    
+    private String getDetailedErrorMessageInvalidKey(String message, String keyAlias) {
+        if (message.equalsIgnoreCase(KeyTools.ERROR_MESSAGE_SIGNING_FAILED)) {
+            return keyAlias + " could not be used to create signature. Suitable algorithm may not be detected or "
+                    + "key(s) may not have signing permission.";
+        } 
+        if (message.equalsIgnoreCase(KeyTools.ERROR_MESSAGE_VERIFICATION_FAILED)) {
+            return "Verification failed for keys: " + keyAlias + ". "
+                    + "Please select the correct key from the 'Signed CA key' "
+                    + "drop down at 'Step 2 - Import Certificate' in Admin UI "
+                    + "which is used to generate the certificate.";
+        }
+        return message;
     }
 
     private void activateNextKeyAndCert(AuthenticationToken authenticationToken, int caid, String nextKeyAlias, final CA ca, final Certificate cacert,
@@ -1498,7 +1527,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 KeyTools.testKey(cryptoToken.getPrivateKey(nextKeyAlias), caCertPublicKey, cryptoToken.getSignProviderName());
             } catch (InvalidKeyException e) {
-                throw new EjbcaException(ErrorCode.INVALID_KEY, e);
+                throw new EjbcaException(ErrorCode.INVALID_KEY, getDetailedErrorMessageInvalidKey(e.getMessage(), nextKeyAlias));
             }
             catoken.setNextCertSignKey(nextKeyAlias);
             catoken.activateNextSignKey();
@@ -1511,8 +1540,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             } catch (Exception e1) {
                 log.debug(
                         "The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
+                boolean currentSignKeyInvalid = false;
                 if (e1 instanceof InvalidKeyException) {
                     log.trace(e1);
+                    currentSignKeyInvalid = true;
                 } else {
                     // If it's not invalid key, we want to see more of the error
                     log.debug("Error: ", e1);
@@ -1526,13 +1557,24 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 } catch (Exception e2) {
                     log.debug(
                             "The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
-                    if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
+                    if (e2 instanceof InvalidKeyException) {
+                        String keyAliases = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) + " and " + 
+                                                    catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+                        throw new EjbcaException(ErrorCode.INVALID_KEY, getDetailedErrorMessageInvalidKey(e2.getMessage(), keyAliases));
+                    }
+                    if (e2 instanceof IllegalArgumentException) {
                         log.trace(e2);
                     } else {
                         // If it's not invalid key or missing authentication code, we want to see more of the error
                         log.debug("Error: ", e2);
                     }
-                    throw new EjbcaException(ErrorCode.INVALID_KEY, e2);
+                    if (currentSignKeyInvalid) {
+                        throw new EjbcaException(ErrorCode.INVALID_KEY, 
+                                getDetailedErrorMessageInvalidKey(e1.getMessage(), 
+                                        catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) ));
+                    } else {
+                        throw new EjbcaException(ErrorCode.INVALID_KEY, e2);
+                    }
                 }
             }
         }
@@ -3685,7 +3727,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             final PublicKey issuerKey = issuer.getPublicKey();
             // Make an algorithm check first so we don't try to verify an RSA signature with an ECDSA key
-            final String certSigAlg = AlgorithmTools.getCertSignatureAlgorithmNameAsString(subject);
+            final String certSigAlg = CertTools.getCertSignatureAlgorithmNameAsString(subject);
             final List<String> keySigAlgs = AlgorithmTools.getSignatureAlgorithms(issuerKey);
             // SHA1WithECDSA returns as ECDSA for certSigAlg (has been always, don't know why), while keySigAlgs will contain SHA1WithECDSA
             // therefore we need to make a more complex match, checking if keySigAlgs contains the part,

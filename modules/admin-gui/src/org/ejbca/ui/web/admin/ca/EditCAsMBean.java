@@ -57,7 +57,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -953,6 +952,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getCertSignKeyRecieveReqList() {
         final List<SelectItem> resultList = new ArrayList<>();
+        resultList.add(new SelectItem(StringUtils.EMPTY, getEjbcaWebBean().getText("REKEYCA_AUTODETECT")));
         for (final String alias : availableCryptoTokenKeyAliases) {
             resultList.add(new SelectItem(alias, alias, ""));
         }
@@ -1218,7 +1218,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setSelectedKeyEncryptKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
         caInfoDto.setTestKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
         // For renewal
-        certSignKeyRequestValue = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        certSignKeyRequestValue = "";
         certExtrSignKeyReNewValue = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         certSignKeyReNewValue = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
     }
@@ -1826,7 +1826,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 }
                 caAdminSession.receiveCitsResponse(administrator, caid, fileBuffer); 
             } else {
-                receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
+                String nextKeyAlias = certSignKeyRequestValue;
+                if (StringUtils.isEmpty(certSignKeyRequestValue)) {
+                    nextKeyAlias = null;
+                }
+                receiveResponse(caid, fileBuffer, nextKeyAlias, checkBoxFutureRollOver);
                 try {
                     rolloverNotBefore = caBean.getRolloverNotBefore(caid);
                     rolloverNotAfter = caBean.getRolloverNotAfter(caid);
