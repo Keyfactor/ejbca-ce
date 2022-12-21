@@ -519,15 +519,28 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         if (log.isDebugEnabled()) {
             log.debug("Try to save validator: " + stagedValidator);
         }
+       
+        Map<String, Integer> existingValidators = keyValidatorSession.getKeyValidatorNameToIdMap();
         try {
             if (stagedValidator instanceof DynamicUiModelAware) {
                 ((DynamicUiModelAware) stagedValidator).getDynamicUiModel().writeProperties(((ValidatorBase) stagedValidator).getRawData());
             }
             if (validatorId == -1) {
-                keyValidatorSession.addKeyValidator(getAdmin(), stagedValidator);
+                //Check that we don't overwrite an existing validator
+                if(existingValidators.keySet().contains(stagedValidator.getProfileName())) {
+                    addNonTranslatedErrorMessage("Validator of name " + stagedValidator.getProfileName() + " already exists.");
+                    return StringUtils.EMPTY;
+                } else {
+                    keyValidatorSession.addKeyValidator(getAdmin(), stagedValidator);
+                }
             } else {
-                stagedValidator.setProfileId(validatorId);
-                keyValidatorSession.changeKeyValidator(getAdmin(), stagedValidator);
+                if(existingValidators.keySet().contains(stagedValidator.getProfileName()) && existingValidators.get(stagedValidator.getProfileName()) != validatorId) {
+                    addNonTranslatedErrorMessage("Validator of name " + stagedValidator.getProfileName() + " already exists.");
+                    return StringUtils.EMPTY;
+                } else {
+                    stagedValidator.setProfileId(validatorId);
+                    keyValidatorSession.changeKeyValidator(getAdmin(), stagedValidator);
+                }
             }
             addInfoMessage("VALIDATORSAVED");
             reset();

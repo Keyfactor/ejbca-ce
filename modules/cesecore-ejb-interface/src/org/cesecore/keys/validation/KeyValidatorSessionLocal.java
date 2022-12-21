@@ -214,4 +214,6 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
      * @return the total number of validators
      */
     long getNumberOfValidators();
+
+    Map<String, Integer> getKeyValidatorNameToIdMap();
 }
