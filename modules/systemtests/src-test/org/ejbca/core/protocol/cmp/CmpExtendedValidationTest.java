@@ -81,6 +81,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 /**
  * Tests that "Extended Validation" works and is performed on the RA side,
  * before the requests reach the CA.
@@ -175,6 +177,8 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         clearCmpCaches();
 
         testRaMasterApiProxyBean.enableFunctionTracingForTest();
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
     }
 
     @Override

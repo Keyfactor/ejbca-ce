@@ -116,7 +116,7 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 
                 if (key.equalsIgnoreCase(REASON_KEY)) {
                     final int reason = getRevokeReason(parts[1]);
-                    keyValuePair.setValue(new Integer(reason).toString());
+                    keyValuePair.setValue(Integer.valueOf(reason).toString());
                 } else {
                     keyValuePair.setValue(parts[1]);
                 }

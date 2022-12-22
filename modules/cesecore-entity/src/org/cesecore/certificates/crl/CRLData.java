@@ -19,29 +19,30 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.QueryResultWrapper;
 
+import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Query;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.TypedQuery;
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Representation of a CRL.
  */
 @Entity
 @Table(name = "CRLData")
+@SqlResultSetMappings(value = {
+        @SqlResultSetMapping(name = "ThisUpdateNextUpdateSelectQuery", columns = {
+                @ColumnResult(name = "thisUpdate"),
+                @ColumnResult(name = "nextUpdate")}),})
 public class CRLData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 5542295476157001912L;
@@ -276,186 +277,8 @@ public class CRLData extends ProtectedData implements Serializable {
     }
 
     //
-    // Search functions.
-    //
-
-    /** @return the found entity instance or null if the entity does not exist */
-    public static CRLData findByFingerprint(EntityManager entityManager, String fingerprint) {
-        return entityManager.find(CRLData.class, fingerprint);
-    }
-
-    /**
-     * Find a CRL issued by the given issuer, with the given CRL partition index and CRL number.
-     *
-     * @param entityManager an entity manager for reading from CRLData.
-     * @param issuerDN the DN of the CRL issuer.
-     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if not using CRL partitioning.
-     * @param crlNumber the CRL number.
-     * @return the found entity instance or null if the entity does not exist.
-     */
-    public static CRLData findByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex,
-            final int crlNumber) {
-        final Query query = entityManager.createNativeQuery("SELECT * FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                + getCrlPartitionIndexCondition(crlPartitionIndex), CRLData.class);
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("crlNumber", crlNumber);
-        query.setMaxResults(1);
-        if (crlPartitionIndex > 0) {
-            query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        }
-        return QueryResultWrapper.getSingleResult(query);
-    }
-
-    public static String findBase64CrlByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex,
-            final int crlNumber) {
-        final Query query = entityManager
-                .createNativeQuery("SELECT base64Crl FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                        + getCrlPartitionIndexCondition(crlPartitionIndex));
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("crlNumber", crlNumber);
-        query.setMaxResults(1);
-        if (crlPartitionIndex > 0) {
-            query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        }
-        return QueryResultWrapper.getSingleResult(query);
-    }
-    
-    
-    /**
-     * Find a CRL's thisUpdate value by the given issuer, partition index and number.
-     * 
-     * @param entityManager
-     * @param issuerDN
-     * @param crlPartitionIndex
-     * @param crlNumber
-     * @return
-     */
-    public static BigInteger findThisUpdateByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN,
-            final int crlPartitionIndex, final int crlNumber) {
-        final Query query = entityManager
-                .createNativeQuery("SELECT thisUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                        + getCrlPartitionIndexCondition(crlPartitionIndex));
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("crlNumber", crlNumber);
-        query.setMaxResults(1);
-        if (crlPartitionIndex > 0) {
-            query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        }
-        return QueryResultWrapper.getSingleResult(query);
-    }
-    
-    /**
-     * Find a CRL's nextUpdate value by the given issuer, partition index and number.
-     * 
-     * @param entityManager
-     * @param issuerDN
-     * @param crlPartitionIndex
-     * @param crlNumber
-     * @return
-     */
-    public static BigInteger findNextUpdateByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN,
-            final int crlPartitionIndex, final int crlNumber) {
-        final Query query = entityManager
-                .createNativeQuery("SELECT nextUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                        + getCrlPartitionIndexCondition(crlPartitionIndex));
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("crlNumber", crlNumber);
-        query.setMaxResults(1);
-        if (crlPartitionIndex > 0) {
-            query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        }
-        return QueryResultWrapper.getSingleResult(query);
-    }
-    
-    /**
-     * Find all CRLs issued by the given issuer.
-     *
-     * @param entityManager an entity manager for reading from CRLData.
-     * @param issuerDN the DN of the CRL issuer.
-     * @return all CRLs for the given issuer.
-     */
-    public static List<CRLData> findByIssuerDN(final EntityManager entityManager, final String issuerDN) {
-        final TypedQuery<CRLData> query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN", CRLData.class);
-        query.setParameter("issuerDN", issuerDN);
-        return query.getResultList();
-    }
-
-    /**
-     * Get the highest CRL number issued by the given issuer.
-     *
-     * @param issuerDN the DN of the CRL issuer.
-     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if not using CRL partitioning.
-     * @param deltaCRL false to fetch the latest base CRL, or true to fetch the latest delta CRL.
-     * @return the highest CRL number or null if no CRL for the specified issuer exists.
-     */
-    public static Integer findHighestCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
-        if (deltaCRL) {
-            final Query query = entityManager.createQuery(
-                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND "
-                            + getCrlPartitionIndexCondition(crlPartitionIndex));
-            query.setParameter("issuerDN", issuerDN);
-            query.setMaxResults(1);
-            if (crlPartitionIndex > 0) {
-                query.setParameter("crlPartitionIndex", crlPartitionIndex);
-            }
-            return (Integer) QueryResultWrapper.getSingleResult(query);
-        } else {
-            final Query query = entityManager.createQuery(
-                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND "
-                            + getCrlPartitionIndexCondition(crlPartitionIndex));
-            query.setParameter("issuerDN", issuerDN);
-            query.setMaxResults(1);
-            if (crlPartitionIndex > 0) {
-                query.setParameter("crlPartitionIndex", crlPartitionIndex);
-            }
-            return QueryResultWrapper.getSingleResult(query);
-        }
-    }
-
-    /**
-     * Get a JPQL query condition for a given CRL partition index.
-     *
-     * <p>If the crlPartitionIndex parameter indicates that partitioned CRLs are used (i.e. crlPartitionIndex > 0)
-     * then simply return:
-     * <pre>
-     *     "a.crlPartitionIndex=:crlPartitionIndex"
-     * </pre>
-     *
-     * <p>If the crlPartitionIndex parameter indicates that partitioned CRLs are <i>not</i> used (i.e. crlPartitionIndex =
-     * {@link CertificateConstants#NO_CRL_PARTITION}),
-     * a more elaborate query condition is needed to keep compatibility with data created by EJBCA <7.4. The CRL partition index
-     * in the database can either be {@link CertificateConstants#NO_CRL_PARTITION}, NULL or -1. Thus, for this case return:
-     * <pre>
-     *     "a.crlPartitionIndex=-1 OR a.crlPartitionIndex=0 OR a.crlPartitionIndex IS NULL"
-     * </pre>
-     *
-     * @param crlPartitionIndex the CRL partition index to use in the query condition.
-     * @return a JPQL query condition to use in the <code>WHERE</code> clause when querying for CRLs.
-     */
-    private static String getCrlPartitionIndexCondition(final int crlPartitionIndex) {
-        if (crlPartitionIndex > 0) {
-            // Get a partitioned CRL with the specified partition index
-            return "a.crlPartitionIndex=:crlPartitionIndex";
-        }
-        // Get a non-partitioned CRL
-        // Old data is represented with 0 or NULL. New data uses -1 instead.
-        return "(a.crlPartitionIndex=-1 OR a.crlPartitionIndex=0 OR a.crlPartitionIndex IS NULL)";
-    }
-
-    /**
-     * @return true if at least one CRL exists for the given CA.
-     */
-    public static boolean crlExistsForCa(final EntityManager entityManager, final String issuerDn) {
-        final Query query = entityManager
-                .createQuery("SELECT a.crlNumber FROM CRLData a WHERE a.issuerDN=:issuerDN");
-        query.setParameter("issuerDN", issuerDn).setMaxResults(1);
-        return !query.getResultList().isEmpty();
-    }
-
-    //
     // Start Database integrity protection methods
     //
-
     @Transient
     @Override
     protected String getProtectString(final int version) {

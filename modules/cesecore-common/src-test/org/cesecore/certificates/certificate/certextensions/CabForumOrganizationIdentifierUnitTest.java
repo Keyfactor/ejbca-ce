@@ -36,8 +36,12 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,7 +51,6 @@ import static org.junit.Assert.fail;
 
 /**
  * Tests of {@link CabForumOrganizationIdentifier}
- * @version $Id$
  */
 public class CabForumOrganizationIdentifierUnitTest extends X509CAUnitTestBase {
 
@@ -64,6 +67,8 @@ public class CabForumOrganizationIdentifierUnitTest extends X509CAUnitTestBase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
         cryptoToken = getNewCryptoToken();
         ca = createTestCA(cryptoToken, CADN);
     }

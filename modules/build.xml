@@ -258,6 +258,7 @@
 			<ant antfile="${mod.cesecore-p11.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
+	<target name="x509-common-util" depends="-build-x509-common-util, -copy-x509-common-util"/>
     <target name="cesecore-common" depends="-build-cesecore-common, -copy-cesecore-common"/>
     <target name="cesecore-entity" depends="-build-cesecore-entity, -copy-cesecore-entities, -copy-cesecore-common"/>
     <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
@@ -272,13 +273,19 @@
             <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
-        <target name="-build-cesecore-common" depends="cesecore-p11">
+        <target name="-build-cesecore-common" depends="x509-common-util, cesecore-p11">
             <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
         <target name="-build-cesecore-entity" depends="cesecore-common">
             <ant antfile="${mod.cesecore-entity.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
+	
+	 	<target name="-build-x509-common-util" >
+	    	 <ant antfile="${mod.x509-common-util.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
+	    </target>
+	        
+	
         
         <target name="-copy-cesecore-entities">
             <!-- Filter cesecore-entities.jar -->
@@ -291,6 +298,11 @@
         	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/modules/dist/"/>
         	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/dist/"/>
         </target>
+	
+		<target name="-copy-x509-common-util">
+	    	<copy file="${ejbca.home}/modules/x509-common-util/dist/x509-common-util.jar" todir="${ejbca.home}/modules/dist/"/>
+	        <copy file="${ejbca.home}/modules/x509-common-util/dist/x509-common-util.jar" todir="${ejbca.home}/dist/"/>
+	    </target>
         
         <target name="-copy-cesecore-cvcca" if="${mod.cesecore-cvcca.exists}">
             <copy file="${ejbca.home}/modules/cesecore-cvcca/dist/cesecore-cvcca.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>

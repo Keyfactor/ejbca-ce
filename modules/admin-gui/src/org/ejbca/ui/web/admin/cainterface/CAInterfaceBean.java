@@ -122,6 +122,8 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * <p>
@@ -395,9 +397,9 @@ public class CAInterfaceBean implements Serializable {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED25519;
                 } else if(AlgorithmConstants.KEYALGORITHM_ED448.equals(caSignKeyAlgo)) {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED448;
-                } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
+                } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-                } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
+                } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
                 }
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), caSignKeySpec);
@@ -918,7 +920,7 @@ public class CAInterfaceBean implements Serializable {
                 keyType = AlgorithmConstants.KEYALGORITHM_DSA;
             } else if (keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
                 keyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-            } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
+            } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keySpec.startsWith(AlgorithmConstants.DSTU4145_OID)) {
                 keyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
             } else {
                 keyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
@@ -1392,7 +1394,7 @@ public class CAInterfaceBean implements Serializable {
             ret.add(new SimpleEntry<>(ecNamedCurve, "ECDSA "+ecNamedCurve));
         }
 
-        for (String alg : CesecoreConfiguration.getExtraAlgs()) {
+        for (String alg : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
             for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
                 final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
                 final String name = CesecoreConfiguration.getExtraAlgSubAlgName(alg, subalg);

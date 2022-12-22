@@ -17,10 +17,7 @@ import javax.ejb.Local;
 /**
  * Local interface for CreateCRLSession
  * 
- * @version $Id$
  */
 @Local
 public interface CrlStoreSessionLocal extends CrlStoreSession {
-
-
 }
