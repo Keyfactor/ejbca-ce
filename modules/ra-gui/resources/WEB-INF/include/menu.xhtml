@@ -178,7 +178,7 @@
                                     <h:outputText value="#{raAuthenticationBean.publicUser eq true? msg.menu_pagetitle_renew_client_certificate : msg.menu_pagetitle_loggedin += ' ' += raAuthenticationBean.userDisplayName}"/>
                                 </h:outputLink>
                                 <ul class="pure-menu-children">
-                                    <ui:fragment rendered="#{raAuthenticationBean.clientCertificateUser}">
+                                    <ui:fragment rendered="#{!raAuthenticationBean.publicUser}">
                                         <li class="pure-menu-item">
                                             <h:outputLink
                                                 value="preferences.xhtml"
