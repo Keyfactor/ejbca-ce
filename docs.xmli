@@ -45,6 +45,7 @@
            <include name="cesecore-common.jar"/>
            <include name="cesecore-entity.jar"/>
            <include name="cesecore-ejb-interface.jar"/>
+           <include name="x509-common-util.jar"/>
         </fileset>
     </path>
     
