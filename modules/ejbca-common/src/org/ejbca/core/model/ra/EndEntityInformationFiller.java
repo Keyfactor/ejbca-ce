@@ -12,6 +12,19 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.Rdn;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -23,19 +36,6 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.Rdn;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /** This class gives facilities to populate user data with default values from profile.
  *
