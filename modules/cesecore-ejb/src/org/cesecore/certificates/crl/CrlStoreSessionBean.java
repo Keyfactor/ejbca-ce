@@ -12,7 +12,23 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import org.apache.commons.lang3.StringUtils;
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -27,21 +43,8 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import java.math.BigInteger;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.cesecore.util.QueryResultWrapper;
 
 /**
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs. CRLs are signed using
@@ -64,6 +67,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
+    
 
     @Override
     public void storeCRL(final AuthenticationToken admin, final byte[] incrl, final String cafp, final int number, final String issuerDN, final int crlPartitionIndex,
@@ -99,62 +103,26 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             log.trace("<storeCRL()");
         }
     }
-
-
+    
+    /** @return the found entity instance or null if the entity does not exist */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public byte[] getLastCRL(final String issuerdn, final int crlPartitionIndex, boolean deltaCRL) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getLastCRL(" + issuerdn + ", " + deltaCRL + ")");
-        }
-        int maxnumber = 0;
-        try {
-            maxnumber = getLastCRLNumber(issuerdn, crlPartitionIndex, deltaCRL);
-            byte[] crlbytes = null;
-            final String base64CrlString = CRLData.findBase64CrlByIssuerDNAndCRLNumber(entityManager, issuerdn, crlPartitionIndex, maxnumber);
-            if (StringUtils.isNotBlank(base64CrlString)) {
-                crlbytes = Base64.decode(base64CrlString.getBytes());
-                if (crlbytes != null) {
-                    final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.getcrl", issuerdn, Integer.valueOf(maxnumber));
-                    log.info(msg);
-                    return crlbytes;
-                }
-            }
-        } catch (Exception e) {
-            final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerdn);
-            log.info(msg);
-            throw new EJBException(e);
-        }
-        final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerdn, Integer.valueOf(maxnumber));
-        log.info(msg);
-        if (log.isTraceEnabled()) {
-            log.trace("<getLastCRL()");
-        }
-        return null;
+    public CRLData findByFingerprint(String fingerprint) {
+        return entityManager.find(CRLData.class, fingerprint);
     }
-
+    
+    /**
+     * Find all CRLs issued by the given issuer.
+     *
+     * @param issuerDN the DN of the CRL issuer.
+     * @return all CRLs for the given issuer.
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public byte[] getCRL(final String issuerdn, final int crlPartitionIndex, final int crlNumber) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getCRL(" + issuerdn + ", " + crlNumber + ")");
-        }
-        byte[] crlbytes = null;
-        final String base64CrlString = CRLData.findBase64CrlByIssuerDNAndCRLNumber(entityManager, issuerdn, crlPartitionIndex, crlNumber);
-        if (StringUtils.isNotBlank(base64CrlString)) {
-            crlbytes = Base64.decode(base64CrlString.getBytes());
-            if (crlbytes != null) {
-                final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.getcrl", issuerdn, Integer.valueOf(crlNumber));
-                log.info(msg);
-                return crlbytes;
-            }
-        }
-        final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerdn, Integer.valueOf(crlNumber));
-        log.info(msg);
-        if (log.isTraceEnabled()) {
-            log.trace("<getCRL()");
-        }
-        return null;
+    public List<CRLData> findByIssuerDN(final String issuerDN) {
+        final TypedQuery<CRLData> query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN", CRLData.class);
+        query.setParameter("issuerDN", issuerDN);
+        return query.getResultList();
     }
 
     @Override
@@ -165,7 +133,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
                 log.trace(">getLastCRLInfo(" + issuerDn + ", " + deltaCRL + ")");
             }
             final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
-            final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
+            final CRLData data = findByIssuerDNAndCRLNumber(issuerDn, crlPartitionIndex, crlNumber);
             if (data == null) {
                 if (deltaCRL && crlNumber == 0) {
                     if (log.isDebugEnabled()) {
@@ -200,12 +168,16 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             }
             final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
 
-            final BigInteger thisUpdate = CRLData.findThisUpdateByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
-            final BigInteger nextUpdate = CRLData.findNextUpdateByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
+            final List<Object[]> thisNextUpdateList = findThisUpdateNextUpdateByIssuerDNAndCRLNumber(issuerDn, crlPartitionIndex, crlNumber);
 
-            if (thisUpdate == null || nextUpdate == null) {
+            if (thisNextUpdateList.isEmpty()) {
                 return null;
             }
+            
+            // Check SQL result set mapping in CRLData class for explanation.
+            final Object[] fields = thisNextUpdateList.get(0);
+            final BigInteger thisUpdate = (BigInteger) fields[0];
+            final BigInteger nextUpdate = (BigInteger) fields[1];
 
             return new CRLInfo(issuerDn, crlPartitionIndex, crlNumber, thisUpdate.longValue(), nextUpdate.longValue());
         } catch (final Exception e) {
@@ -218,25 +190,16 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         }
     }
     
+    /**
+     * @return true if at least one CRL exists for the given CA.
+     */
+    @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Date getCrlExpireDate(final String issuerDn, final int crlPartitionIndex, final boolean deltaCRL) {
-
-        if (log.isTraceEnabled()) {
-            log.trace(">getCrlExpireDate(" + issuerDn + ", " + deltaCRL + ")");
-        }
-        
-        final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
-
-        final BigInteger nextUpdate = CRLData.findNextUpdateByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
-
-        if (nextUpdate == null) {
-            return null;
-        }
-        
-        if (log.isTraceEnabled()) {
-            log.trace("<getCrlExpireDate()");
-        }
-        return new Date(nextUpdate.longValue());
+    public boolean crlExistsForCa(final String issuerDn) {
+        final Query query = entityManager
+                .createQuery("SELECT a.crlNumber FROM CRLData a WHERE a.issuerDN=:issuerDN");
+        query.setParameter("issuerDN", issuerDn).setMaxResults(1);
+        return !query.getResultList().isEmpty();
     }
     
     @Override
@@ -246,7 +209,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             if (log.isTraceEnabled()) {
                 log.trace(">getCRLInfo(" + fingerprint + ")");
             }
-            final CRLData data = CRLData.findByFingerprint(entityManager, fingerprint);
+            final CRLData data = findByFingerprint(fingerprint);
             if (data == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("No CRL exists with fingerprint '" + fingerprint + "'.");
@@ -264,7 +227,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             }
         }
     }
-
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getLastCRLNumber(final String issuerdn, final int crlPartitionIndex, final boolean deltaCRL) {
@@ -272,7 +235,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             log.trace(">getLastCRLNumber(" + issuerdn + ", " + deltaCRL + ")");
         }
         int maxnumber = 0;
-        Integer result = CRLData.findHighestCRLNumber(entityManager, issuerdn, crlPartitionIndex, deltaCRL);
+        Integer result = findHighestCRLNumber(issuerdn, crlPartitionIndex, deltaCRL);
         if (result != null) {
             maxnumber = result.intValue();
         }
@@ -281,18 +244,174 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         }
         return maxnumber;
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Date getCrlExpireDate(final String issuerDn, final int crlPartitionIndex, final boolean deltaCRL) {
 
+        if (log.isTraceEnabled()) {
+            log.trace(">getCrlExpireDate(" + issuerDn + ", " + deltaCRL + ")");
+        }
+        
+        final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
+
+        final Long nextUpdate = findNextUpdateByIssuerDNAndCRLNumber(issuerDn, crlPartitionIndex, crlNumber);
+
+        if (nextUpdate == null) {
+            return null;
+        }
+        
+        if (log.isTraceEnabled()) {
+            log.trace("<getCrlExpireDate()");
+        }
+        return new Date(nextUpdate.longValue());
+    }
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean crlExistsForCa(final String issuerDn) {
-        return CRLData.crlExistsForCa(entityManager, issuerDn);
-    }
-
-    private void authorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
-        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
-            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
-            throw new AuthorizationDeniedException(msg);
+    public byte[] getLastCRL(final String issuerdn, final int crlPartitionIndex, boolean deltaCRL) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getLastCRL(" + issuerdn + ", " + deltaCRL + ")");
         }
+        int maxnumber = 0;
+        try {
+            maxnumber = getLastCRLNumber(issuerdn, crlPartitionIndex, deltaCRL);
+            byte[] crlbytes = null;
+            final CRLData crlData = findByIssuerDNAndCRLNumber(issuerdn, crlPartitionIndex, maxnumber);
+            if (Objects.nonNull(crlData)) {
+                crlbytes = crlData.getCRLBytes();
+                if (crlbytes != null) {
+                    final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.getcrl", issuerdn, Integer.valueOf(maxnumber));
+                    log.info(msg);
+                    return crlbytes;
+                }
+            }
+        } catch (Exception e) {
+            final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerdn);
+            log.info(msg);
+            throw new EJBException(e);
+        }
+        final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerdn, Integer.valueOf(maxnumber));
+        log.info(msg);
+        if (log.isTraceEnabled()) {
+            log.trace("<getLastCRL()");
+        }
+        return null;
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public byte[] getCRL(final String issuerdn, final int crlPartitionIndex, final int crlNumber) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getCRL(" + issuerdn + ", " + crlNumber + ")");
+        }
+        byte[] crlbytes = null;
+        final CRLData crlData = findByIssuerDNAndCRLNumber(issuerdn, crlPartitionIndex, crlNumber);
+        if (Objects.nonNull(crlData)) {
+            crlbytes = crlData.getCRLBytes();
+            if (crlbytes != null) {
+                final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.getcrl", issuerdn, Integer.valueOf(crlNumber));
+                log.info(msg);
+                return crlbytes;
+            }
+        }
+        final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerdn, Integer.valueOf(crlNumber));
+        log.info(msg);
+        if (log.isTraceEnabled()) {
+            log.trace("<getCRL()");
+        }
+        return null;
+    }
+    
+    @Override
+    public void removeByIssuerDN(final String issuerDN) {
+        List<CRLData> crls = findByIssuerDN(issuerDN);
+        for(CRLData crlData : crls) {
+            this.entityManager.remove(crlData);
+        }
+    }
+    
+    /**
+     * Get the highest CRL number issued by the given issuer.
+     *
+     * @param issuerDN the DN of the CRL issuer.
+     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if not using CRL partitioning.
+     * @param deltaCRL false to fetch the latest base CRL, or true to fetch the latest delta CRL.
+     * @return the highest CRL number or null if no CRL for the specified issuer exists.
+     */
+    private Integer findHighestCRLNumber(final String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
+        if (deltaCRL) {
+            final Query query = entityManager.createQuery(
+                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND "
+                            + getCrlPartitionIndexCondition(crlPartitionIndex));
+            query.setParameter("issuerDN", issuerDN);
+            query.setMaxResults(1);
+            if (crlPartitionIndex > 0) {
+                query.setParameter("crlPartitionIndex", crlPartitionIndex);
+            }
+            return (Integer) QueryResultWrapper.getSingleResult(query);
+        } else {
+            final Query query = entityManager.createQuery(
+                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND "
+                            + getCrlPartitionIndexCondition(crlPartitionIndex));
+            query.setParameter("issuerDN", issuerDN);
+            query.setMaxResults(1);
+            if (crlPartitionIndex > 0) {
+                query.setParameter("crlPartitionIndex", crlPartitionIndex);
+            }
+            return (Integer) QueryResultWrapper.getSingleResult(query);
+        }
+    }
+    
+    /**
+     * Get a JPQL query condition for a given CRL partition index.
+     *
+     * <p>If the crlPartitionIndex parameter indicates that partitioned CRLs are used (i.e. crlPartitionIndex > 0)
+     * then simply return:
+     * <pre>
+     *     "a.crlPartitionIndex=:crlPartitionIndex"
+     * </pre>
+     *
+     * <p>If the crlPartitionIndex parameter indicates that partitioned CRLs are <i>not</i> used (i.e. crlPartitionIndex =
+     * {@link CertificateConstants#NO_CRL_PARTITION}),
+     * a more elaborate query condition is needed to keep compatibility with data created by EJBCA <7.4. The CRL partition index
+     * in the database can either be {@link CertificateConstants#NO_CRL_PARTITION}, NULL or -1. Thus, for this case return:
+     * <pre>
+     *     "a.crlPartitionIndex=-1 OR a.crlPartitionIndex=0 OR a.crlPartitionIndex IS NULL"
+     * </pre>
+     *
+     * @param crlPartitionIndex the CRL partition index to use in the query condition.
+     * @return a JPQL query condition to use in the <code>WHERE</code> clause when querying for CRLs.
+     */
+    private static String getCrlPartitionIndexCondition(final int crlPartitionIndex) {
+        if (crlPartitionIndex > 0) {
+            // Get a partitioned CRL with the specified partition index
+            return "a.crlPartitionIndex=:crlPartitionIndex";
+        }
+        // Get a non-partitioned CRL
+        // Old data is represented with 0 or NULL. New data uses -1 instead.
+        return "(a.crlPartitionIndex=-1 OR a.crlPartitionIndex=0 OR a.crlPartitionIndex IS NULL)";
+    }
+    
+    /**
+     * Find a CRL issued by the given issuer, with the given CRL partition index and CRL number.
+     *
+     * @param issuerDN the DN of the CRL issuer.
+     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if not using CRL partitioning.
+     * @param crlNumber the CRL number.
+     * @return the found entity instance or null if the entity does not exist.
+     */
+    private CRLData findByIssuerDNAndCRLNumber(final String issuerDN, final int crlPartitionIndex,
+            final int crlNumber) {
+        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                + getCrlPartitionIndexCondition(crlPartitionIndex), CRLData.class);
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlNumber", crlNumber);
+        query.setMaxResults(1);
+        if (crlPartitionIndex > 0) {
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        }
+        return (CRLData) QueryResultWrapper.getSingleResult(query);
     }
 
     private String getMessageWithPartitionIndex(final int crlPartitionIndex, final String messageKey, final Object... params) {
@@ -303,6 +422,59 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             sb.append(intres.getLocalizedMessage("store.crlpartition", crlPartitionIndex));
         }
         return sb.toString();
+    }
+    
+    /**
+     * Find a CRL's nextUpdate value by the given issuer, partition index and number.
+     * 
+     * @param issuerDN
+     * @param crlPartitionIndex
+     * @param crlNumber
+     * @return
+     */
+    private Long findNextUpdateByIssuerDNAndCRLNumber(final String issuerDN,
+            final int crlPartitionIndex, final int crlNumber) {
+        final Query query = entityManager
+                .createQuery("SELECT a.nextUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                        + getCrlPartitionIndexCondition(crlPartitionIndex));
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlNumber", crlNumber);
+        query.setMaxResults(1);
+        if (crlPartitionIndex > 0) {
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        }
+        return (Long) QueryResultWrapper.getSingleResult(query);
+    }
+    
+    /**
+     * Find a CRL's thisUpdate value by the given issuer, partition index and number.
+     * 
+     * @param issuerDN
+     * @param crlPartitionIndex
+     * @param crlNumber
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private List<Object[]> findThisUpdateNextUpdateByIssuerDNAndCRLNumber(final String issuerDN,
+            final int crlPartitionIndex, final int crlNumber) {
+        final Query query = entityManager
+                .createNativeQuery("SELECT a.thisUpdate, a.nextUpdate FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                        + getCrlPartitionIndexCondition(crlPartitionIndex), "ThisUpdateNextUpdateSelectQuery");
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlNumber", crlNumber);
+        query.setMaxResults(1);
+        if (crlPartitionIndex > 0) {
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        }
+        return query.getResultList();
+    }
+    
+
+    private void authorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+            throw new AuthorizationDeniedException(msg);
+        }
     }
 
 }
