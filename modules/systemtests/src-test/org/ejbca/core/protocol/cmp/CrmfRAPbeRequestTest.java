@@ -94,6 +94,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -146,6 +148,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             userDN = new X500Name(USERDN_COMMUNITY);
             issuerDN = ISSUERDN_COMMUNITY;
         }
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
     }
 
     public CrmfRAPbeRequestTest() throws Exception {

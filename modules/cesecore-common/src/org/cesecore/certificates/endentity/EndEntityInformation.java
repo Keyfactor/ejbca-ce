@@ -286,10 +286,18 @@ public class EndEntityInformation implements Serializable {
         setType(endEntityType);
     }
 
+    /**
+     * @deprecated Printing support was removed in 8.0.0
+     */
+    @Deprecated
     public boolean getPrintUserData(){
         return getType().contains(EndEntityTypes.PRINT);
     }
 
+    /**
+     * @deprecated Printing support was removed in 8.0.0
+     */
+    @Deprecated
     public void setPrintUserData(final boolean printUserData){
         final EndEntityType endEntityType = getType();
         if (printUserData) {

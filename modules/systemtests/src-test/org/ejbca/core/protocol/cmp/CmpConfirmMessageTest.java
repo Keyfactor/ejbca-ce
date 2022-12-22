@@ -38,12 +38,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import static org.junit.Assert.assertNotNull;
 
 /**
  * This test runs in 'normal' CMP mode
  * 
- * @version $Id$
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -182,6 +183,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public void test03ConfRespPbeProtectedByGlobalSharedSecret() throws Exception {
         log.trace(">test03ConfRespPbeProtected");
 
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+        
         this.cmpConfiguration.setRAMode(cmpAlias, true);
         this.cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
         this.cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
@@ -220,6 +223,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public void test04ConfRespPbeProtectedByCACmpSecret() throws Exception {
         log.trace(">test03ConfRespPbeProtected");
 
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+        
         this.cmpConfiguration.setRAMode(cmpAlias, true);
         this.cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
         this.cmpConfiguration.setCMPDefaultCA(cmpAlias, this.testx509ca.getSubjectDN());
