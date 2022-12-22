@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -94,6 +95,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
+    
     /** not injected but created in ejbCreate, since it is ourself */
     private PublisherQueueSessionLocal publisherQueueSession;
 
@@ -397,7 +401,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         log.debug("Publishing CRL");
                     }
 
-                    CRLData crlData = CRLData.findByFingerprint(entityManager, fingerprint);
+                    CRLData crlData = crlStoreSession.findByFingerprint(fingerprint);
 
                     if (crlData == null) {
                         throw new FinderException();
@@ -608,7 +612,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 Object publisherResult;
                 try {
                     final long maxTimeToWait = Math.max(1000L, deadline - System.currentTimeMillis());
-                    publisherResult = new Boolean(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
+                    publisherResult = Boolean.valueOf(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
                 } catch (Exception e) {
                     publisherResult = getAsPublisherException(e);
                 }
