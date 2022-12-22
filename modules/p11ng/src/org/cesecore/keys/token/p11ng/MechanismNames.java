@@ -19,11 +19,12 @@ import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.cesecore.config.CesecoreConfiguration;
 import org.pkcs11.jacknji11.C;
 import org.pkcs11.jacknji11.CKG;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.ULong;
+
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 
 /**
  * Handles mapping between PKCS#11 mechanism constant names and values.
@@ -53,7 +54,7 @@ public class MechanismNames {
 
         SIGALGOS2L = new HashMap<>();
         SIGALGOS2L.put("NONEwithRSA", Pair.of(CKM.RSA_PKCS, T_RAW));
-        if (CesecoreConfiguration.p11disableHashingSignMechanisms()) {
+        if (CryptoProviderConfigurationCache.INSTANCE.isP11disableHashingSignMechanisms()) {
             SIGALGOS2L.put("SHA1withRSA", Pair.of(CKM.RSA_PKCS, T_DIGEST));
             SIGALGOS2L.put("SHA224withRSA", Pair.of(CKM.RSA_PKCS, T_DIGEST));
             SIGALGOS2L.put("SHA256withRSA", Pair.of(CKM.RSA_PKCS, T_DIGEST));

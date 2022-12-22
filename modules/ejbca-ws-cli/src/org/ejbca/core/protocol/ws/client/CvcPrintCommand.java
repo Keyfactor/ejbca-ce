@@ -20,7 +20,7 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
-import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
@@ -85,7 +85,7 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 					getPrintStream().println("Using CVCA certificate "+cvcacert+" for EC parameters.");
 					CVCObject parsedCvcaObject = getCVCObject(cvcacert);
 					CVCertificate cvca = (CVCertificate)parsedCvcaObject;
-					pk = KeyTools.getECPublicKeyWithParams(pk, cvca.getCertificateBody().getPublicKey());
+					pk = CvcKeyTools.getECPublicKeyWithParams(pk, cvca.getCertificateBody().getPublicKey());
 				}
 				try {
 					if (parsedObject instanceof CVCAuthenticatedRequest) {
