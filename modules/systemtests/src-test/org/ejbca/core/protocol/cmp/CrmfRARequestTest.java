@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERIA5String;
@@ -1144,7 +1145,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
         assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
-        DERIA5String str = DERIA5String.getInstance(pqi.getQualifier());
+        ASN1IA5String str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/1", str.getString());
         
         // The second Policy object has a User Notice
@@ -1164,7 +1165,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
         assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
-        str = DERIA5String.getInstance(pqi.getQualifier());
+        str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/3", str.getString());
         
         {
@@ -1223,7 +1224,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
         assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
-        str = DERIA5String.getInstance(pqi.getQualifier());
+        str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/x1", str.getString());
         
         // The secound Policy object has a User Notice
@@ -1243,7 +1244,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
         assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
-        str = DERIA5String.getInstance(pqi.getQualifier());
+        str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/x3", str.getString());        
         //The first Policy object has a CPS URI
         
