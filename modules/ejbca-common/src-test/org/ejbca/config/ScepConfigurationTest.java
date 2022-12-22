@@ -16,7 +16,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.util.CryptoProviderTools;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,13 +28,18 @@ import static org.junit.Assert.assertEquals;
  * A unit test for static configuration and log value filtering.
  */
 public class ScepConfigurationTest {
-
+    
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
+    
     @Test
     public void testGetSetAndFiltering() {
 
         // Well known encryption password, default will result in the same string every time, 
         // if a specific value is set it will be more modern encryption with a salt giving different values every time
-        ConfigurationHolder.updateConfiguration("password.encryption.key", null);
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
 
         ScepConfiguration config = new ScepConfiguration();
         config.addAlias("alias1");
