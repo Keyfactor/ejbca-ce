@@ -546,7 +546,7 @@
 			<isset property="bundle-hibernate-jpa"/>
 		</condition>
 		<!-- Include Xerces library if it don't exist in the current application server (jboss6 won't start with it). -->
-		<condition property="bundle-xerces-exclude" value="xerces*.jar, xml-apis.jar" else="">
+		<condition property="bundle-xerces-exclude" value="xerces*.jar" else="">
 			<isset property="exclude-xerces"/>
 		</condition>
 		<!-- Special JBoss EAP 6 handling -->
@@ -573,7 +573,7 @@
                 <include name="cert-cvc-*.jar" />
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-*.jar" unless="jbosseap6-specials"/>
-                <include name="ldap.jar" />
+                <include name="jldap-*.jar" />
             	<include name="adsddl-*.jar"/>
                 <include name="commons-*.jar" />
 				<include name="nimbus-jose-jwt-*.jar"/>
@@ -621,7 +621,6 @@
   				<include name="oauth2-oidc-sdk-*.jar"/>
         	</zipfileset>
         	
-            <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="cesecore-ejb.jar" />
@@ -697,6 +696,7 @@
         		<include name="ejbca-cits.jar" />
         		<include name="proxy-ca.jar" />
         		<include name="p11ng.jar" />
+        		<include name="x509-common-util.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
@@ -1052,6 +1052,7 @@
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />
                 <exclude name="modules/cesecore-common/build/**" />
+		    	<exclude name="modules/x509-common-util/build/**" />
                 <exclude name="modules/cesecore-ejb-interface/build/**" />
                 <exclude name="modules/cesecore-entity/build/**" />
                 <exclude name="modules/ejbca-common/build-common/**" />
