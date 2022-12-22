@@ -178,6 +178,7 @@
                                     <h:outputText value="#{raAuthenticationBean.publicUser eq true? msg.menu_pagetitle_renew_client_certificate : msg.menu_pagetitle_loggedin += ' ' += raAuthenticationBean.userDisplayName}"/>
                                 </h:outputLink>
                                 <ul class="pure-menu-children">
+                                    <ui:fragment rendered="#{!raAuthenticationBean.publicUser}">
                                         <li class="pure-menu-item">
                                             <h:outputLink
                                                 value="preferences.xhtml"
@@ -185,6 +186,7 @@
                                                 <h:outputText value="#{msg.menu_pagetitle_preferences}" />
                                             </h:outputLink>
                                         </li>
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{raAuthenticationBean.clientCertificateUser or raAuthenticationBean.publicUser}">
                                         <li class="pure-menu-item">
                                             <h:outputLink
@@ -225,13 +227,6 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{raAuthenticationBean.publicUser}">
                             <li class="pure-menu-item"><h:outputLink value="login.xhtml" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_login}"/></h:outputLink></li>
-                            <li class="pure-menu-item">
-                                <h:outputLink
-                                        value="preferences.xhtml"
-                                        styleClass="pure-menu-link user-menu-link">
-                                    <h:outputText value="#{msg.menu_pagetitle_preferences}" />
-                                </h:outputLink>
-                            </li>
                         </ui:fragment>
                     </ul>
                 </h:panelGroup>
