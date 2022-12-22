@@ -53,6 +53,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
@@ -1969,7 +1970,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             GeneralName generalName = gns[j];
             // Look for DNS name
             if (generalName.getTagNo() == 2) {
-                final String value = DERIA5String.getInstance(generalName.getName()).getString();
+                final String value = ASN1IA5String.getInstance(generalName.getName()).getString();
                 final Matcher matcher = parenthesesRegex.matcher(value);
                 if (matcher.find()) {
                     final String newValue = matcher.replaceAll("(PRIVATE)");
