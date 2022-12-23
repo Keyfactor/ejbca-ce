@@ -32,7 +32,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityManagementProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class EndEntityManagementProxySessionBean implements EndEntityManagementProxySessionRemote{
+public class EndEntityManagementProxySessionBean implements EndEntityManagementProxySessionRemote {
 
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;

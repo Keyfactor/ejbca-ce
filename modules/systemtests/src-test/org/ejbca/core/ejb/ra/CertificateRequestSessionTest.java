@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -64,21 +65,27 @@ public class CertificateRequestSessionTest extends CaTestCase {
     private final Random random = new Random();
 
     private static final CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
+    private static final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     
     private static final String EE_PROFILE_NAME = "TEST_AUTOGEN_USERNAME";
     private static final String PASSWORD = "foo123";
     private static final String CN_IGNORED = "CN=Ignored";
     private static final String NAME_SN_O = ",Name=removed,SN=removed,O=removed,C=SE";
     private static final String CERT_TOOLS_SUBJDN = "CertTools.getSubjectDN: ";
+    private static final int NUM_THREADS = 10;
+    private static final int NUM_REQUESTS = 3;
 
-    
+
+    @Override
     @Before
-    public void setup() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
     }
     
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -243,6 +250,78 @@ public class CertificateRequestSessionTest extends CaTestCase {
                     CertTools.getSubjectDN(cert));
         } finally {
             endEntityProfileSession.removeEndEntityProfile(admin, EE_PROFILE_NAME);
+        }
+    }
+
+    /**
+     * Issues certificates in parallel. Earlier versions of EJBCA, would update some attributes
+     * such as timeModified and status in UserData, but in order to support parallel requests,
+     * this is now done only when there is an actual change to the end entity.
+     */
+    @Test
+    public void testConcurrentRequests() throws Exception {
+        final String username = "certificateRequestTest_concurrentRequests";
+        try {
+            // Create test end entity
+            final String suppliedDn = "CN=" + username + ",GIVENNAME=test,SURNAME=test,O=CertificateRequestTest,C=SE";
+            final EndEntityInformation endEntity = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null,
+                    new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+            endEntity.setPassword(PASSWORD);
+            endEntityManagementSession.addUser(admin, endEntity, false);
+            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_GENERATED); // concurrent requests are only supported if the status is GENERATED
+            // Prepare CSRs
+            final String[][] pkcs10s = new String[NUM_THREADS][NUM_REQUESTS];
+            for (int threadIdx = 0; threadIdx < NUM_THREADS; threadIdx++) {
+                for (int reqIdx = 0; reqIdx < NUM_REQUESTS; reqIdx++) {
+                    pkcs10s[threadIdx][reqIdx] = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED, PASSWORD)));
+                }
+            }
+            // Prepare threads
+            final Thread threads[] = new Thread[NUM_THREADS];
+            final Exception exceptions[] = new Exception[NUM_THREADS];
+            for (int i = 0; i < NUM_THREADS; i++) {
+                final int threadIdx = i;
+                threads[i] = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            for (int reqIdx = 0; reqIdx < NUM_REQUESTS; reqIdx++) {
+                                final EndEntityInformation endEntityInRequest = new EndEntityInformation(endEntity);
+                                endEntityInRequest.setStatus(EndEntityConstants.STATUS_NEW);
+                                byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, endEntityInRequest, pkcs10s[threadIdx][reqIdx],
+                                        CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
+                                assertNotNull(encodedCertificate);
+                            }
+                        } catch (Exception e) {
+                            log.error("Thread " + threadIdx + " encountered an exception: " + e.getMessage(), e);
+                            exceptions[threadIdx] = e;
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                });
+            }
+            // Run test
+            for (int i = 0; i < NUM_THREADS; i++) {
+                threads[i].start();
+            }
+            for (int i = 0; i < NUM_THREADS; i++) {
+                threads[i].join();
+                final Exception exc = exceptions[i];
+                if (exc != null) {
+                    throw new IllegalStateException("Thread threw exception: " + exc.getMessage(), exc);
+                }
+            }
+            final EndEntityInformation userAfterIssuance = endEntityAccessSession.findUser(admin, username);
+            assertNotNull("UserData disappeared", userAfterIssuance);
+            assertEquals("End entity status should be GENERATED after issuance.", EndEntityConstants.STATUS_GENERATED, userAfterIssuance.getStatus());
+        } finally {
+            internalCertificateStoreSession.removeCertificate(username);
+            try {
+                endEntityManagementSession.deleteUser(admin, username);
+            } catch (NoSuchEndEntityException e) {
+                // NOMPD ignored
+            }
         }
     }
 
