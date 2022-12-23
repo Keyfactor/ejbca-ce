@@ -1977,7 +1977,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void testTimeFormatConversionFromCustom() throws EjbcaException {
         final String relativeTimeFormat = "0123:12:31";
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Convert from UserDataVOWS with relative date format to endEntityInformation
         userDataVoWs.setStartTime(relativeTimeFormat);
         userDataVoWs.setEndTime(relativeTimeFormat);
@@ -2009,7 +2009,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 .format(nowWithOutSeconds);
         final String newTimeFormatWithZulu = newTimeFormatResponse.replace("+00:00", "Z");
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Test using a time format that ends with Z instead of +00.00
         userDataVoWs.setStartTime(newTimeFormatWithZulu);
         final EndEntityInformation endEntityInformationZ = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, false);
@@ -2023,7 +2023,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void testTimeFormatConversionFromInvalid() throws EjbcaException {
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Try some invalid end time date format
         userDataVoWs.setStartTime("2011-02-28 12:32:00+00:00"); // Valid
         userDataVoWs.setEndTime("12:32 2011-02-28"); // Invalid

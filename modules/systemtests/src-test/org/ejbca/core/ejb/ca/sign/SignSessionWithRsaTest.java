@@ -273,9 +273,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
     @Test
     public void testSignSession() throws Exception {
-        createReverseEndEntity();
-        CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         try {
+            createReverseEndEntity();
+            CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
             // user that we know exists...
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate.", cert);
@@ -513,21 +513,11 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         }
 
-        int rsareversecaid = inforsareverse.getCAId();
-        if (!endEntityManagementSession.existsUser(RSA_REVERSE_USERNAME)) {
-            endEntityManagementSession.addUser(internalAdmin, RSA_REVERSE_USERNAME, "foo123", "C=SE,O=AnaTom,CN=" + RSA_REVERSE_USERNAME, null,
-                    "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, rsareversecaid);
-            log.debug("created user: " + RSA_REVERSE_USERNAME + ", foo123, C=SE, O=AnaTom, CN=" + RSA_REVERSE_USERNAME);
-        } else {
-            log.info("User " + RSA_REVERSE_USERNAME + " already exists, resetting status.");
-            EndEntityInformation userData = new EndEntityInformation("foorev", "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
-                    rsareversecaid, null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
-            userData.setPassword("foo123");
-            endEntityManagementSession.changeUser(internalAdmin, userData, false);
-            log.debug("Reset status to NEW");
-        }
+        final EndEntityInformation userData = new EndEntityInformation(RSA_REVERSE_USERNAME, "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
+                inforsareverse.getCAId(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
+        userData.setPassword("foo123");
+        endEntityManagementSession.addUser(internalAdmin, userData, false);
     }
 
     /**
