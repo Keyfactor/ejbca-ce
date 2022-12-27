@@ -12,21 +12,35 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authorization;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.model.era.RaAuthorizationResult;
+import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.junit.Test;
 
 /**
@@ -41,7 +55,11 @@ public class AuthorizationSystemSessionBeanTest {
     private AuthorizationSystemSessionRemote authorizationSystemSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSystemSessionRemote.class);
     private RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
-
+    private final TestRaMasterApiProxySessionRemote raMasterApiProxyBean = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = 
+            EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     @SuppressWarnings("deprecation")
     @Test
     public void testAccessSets() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException, AuthenticationFailedException {
@@ -72,6 +90,42 @@ public class AuthorizationSystemSessionBeanTest {
         } finally {
             roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
             log.trace("<testAccessSets");
+        }
+    }
+    
+    private TestX509CertificateAuthenticationToken getNestedX509TestToken(String roleName) throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate authCert = WebTestUtils.setUpClientCertificate(roleName, keyPair.getPublic());
+        TestX509CertificateAuthenticationToken authToken = new TestX509CertificateAuthenticationToken(authCert);
+        authToken.appendNestedAuthenticationToken(new TestAlwaysAllowLocalAuthenticationToken(roleName));
+        return authToken;
+    }
+    
+    @Test
+    public void testAccessRevokedCert() throws Exception {
+        final String roleName = "AuthSystemSesBeanTest.testAccessRevokedCert" + new Random().nextInt();
+        // if cert is revoked then no access rule is set
+        try {
+            TestX509CertificateAuthenticationToken authToken = getNestedX509TestToken(roleName);
+            // revoke first and then check access to skip cache population
+            internalCertificateStoreSession.setRevokeStatus(
+                    new TestAlwaysAllowLocalAuthenticationToken(roleName), authToken.getCertificate(), null, 0);
+            RaAuthorizationResult accessRules = raMasterApiProxyBean.getAuthorization(authToken);
+            assertNotNull("accessRules is not fetched.", accessRules);
+            assertTrue("accessRules should be empty for revoked certs.", accessRules.getAccessRules().isEmpty());
+        } finally {
+            WebTestUtils.cleanUpClientCertificate(roleName);
+        }
+        
+        // if cert is not revoked then root access rule is set as per test setup
+        try {
+            TestX509CertificateAuthenticationToken authToken = getNestedX509TestToken(roleName);
+            RaAuthorizationResult accessRules = raMasterApiProxyBean.getAuthorization(authToken);
+            assertNotNull("accessRules is not fetched.", accessRules);
+            assertEquals("accessRules should have root access.", accessRules.getAccessRules().size(), 1);
+        } finally {
+            WebTestUtils.cleanUpClientCertificate(roleName);
         }
     }
 
