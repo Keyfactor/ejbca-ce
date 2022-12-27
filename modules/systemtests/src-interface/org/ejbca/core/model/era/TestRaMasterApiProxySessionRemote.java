@@ -16,6 +16,7 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
@@ -123,5 +124,7 @@ public interface TestRaMasterApiProxySessionRemote {
 
     List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, String fingerprint,
             String rootSubjectDnHash);
+    
+    RaAuthorizationResult getAuthorization(final AuthenticationToken authenticationToken) throws AuthenticationFailedException;
     
 }
