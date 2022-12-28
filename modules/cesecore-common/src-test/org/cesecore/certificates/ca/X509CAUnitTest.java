@@ -12,6 +12,14 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +60,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -144,14 +153,6 @@ import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
@@ -1319,7 +1320,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
         assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
-        DERIA5String str = DERIA5String.getInstance(pqi.getQualifier());
+        ASN1IA5String str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/2", str.getString());
 
         // The second Policy object has a CPS URI
@@ -1328,7 +1329,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
         assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
-        str = DERIA5String.getInstance(pqi.getQualifier());
+        str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/3", str.getString());
 
         // The third Policy object has only an OID
@@ -1357,7 +1358,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // PolicyQualifierId.id_qt_cps = 1.3.6.1.5.5.7.2.1
         assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
-        str = DERIA5String.getInstance(pqi.getQualifier());
+        str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/CPS", str.getString());
 
     }
