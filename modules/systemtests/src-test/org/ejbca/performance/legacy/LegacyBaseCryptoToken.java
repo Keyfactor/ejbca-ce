@@ -47,7 +47,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
