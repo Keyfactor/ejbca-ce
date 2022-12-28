@@ -12,17 +12,16 @@
  *************************************************************************/
 package org.ejbca.config;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.string.StringConfigurationCache;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * A unit test for static configuration and log value filtering.
