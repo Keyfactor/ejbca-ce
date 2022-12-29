@@ -243,7 +243,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/jakarta.xml.bind-api-2.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jaxb-runtime-2.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/stax2-api-3.1.4.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/woodstox-core-5.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/woodstox-core-6.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/wsdl4j-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/xmlschema-core-2.2.5.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.19.0.jar"/>
