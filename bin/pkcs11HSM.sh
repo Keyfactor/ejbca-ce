@@ -7,19 +7,19 @@
 
 if [ -z "$EJBCA_HOME" ] ; then
 	EJBCA_FILE="$0" 
-	EJBCA_HOME=`echo $(dirname $(dirname $EJBCA_FILE))`
+	EJBCA_HOME="$(dirname "$(dirname "$EJBCA_FILE")")"
 fi
 
-JAVACMD=`which java`
+JAVACMD=$(which java)
 # Check that JAVA_HOME is set
-if [ ! -n "$JAVA_HOME" ]; then
-    if [ ! -n "$JAVACMD" ]
+if [ -z "$JAVA_HOME" ]; then
+    if [ -z "$JAVACMD" ]
     then
         echo "You must set JAVA_HOME before running the EJBCA cli."
         exit 1
     fi
 else
-    JAVACMD=$JAVA_HOME/bin/java
+    JAVACMD="$JAVA_HOME/bin/java"
 fi
 
 #CLASSES=$CLASSES:$APPSRV_HOME/server/default/lib/iaik_jce.jar
@@ -29,7 +29,7 @@ fi
 # use this instead if you want build from eclipse
 #CLASSES=$CLASSES:$EJBCA_HOME/out/classes
 
-if [ ! -f $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar ] ; then
+if [ ! -f "$EJBCA_HOME/dist/clientToolBox/clientToolBox.jar" ] ; then
 	echo "You have to build the ClientToolBox before running this command."
 	exit 1
 fi
@@ -37,4 +37,4 @@ fi
 # Finally run java
 #set -x
 # -cp $CLASSES 
-$JAVACMD -Dlog4j1.compatibility=true -jar $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar PKCS11HSMKeyTool "${@}"
+"$JAVACMD" -Dlog4j1.compatibility=true -jar "$EJBCA_HOME/dist/clientToolBox/clientToolBox.jar" PKCS11HSMKeyTool "${@}"
