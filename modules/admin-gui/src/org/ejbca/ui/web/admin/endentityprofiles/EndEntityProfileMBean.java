@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentityprofiles;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +35,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.Part;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -62,8 +59,6 @@ import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
-import org.ejbca.util.HttpTools;
-import org.ejbca.util.PrinterManager;
 import org.ejbca.util.mail.MailSender;
 
 /**
@@ -1224,118 +1219,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setSendNotificationRequired(isRequired);
     }
 
-    public boolean isUsePrintUserData() {
-        return profiledata.getUsePrinting();
-    }
-
-    public void setUsePrintUserData(boolean use) {
-        profiledata.setUsePrinting(use);
-    }
-
-    public boolean isPrintUserDataDefault() {
-        return profiledata.getPrintingDefault();
-    }
-
-    public void setPrintUserDataDefault(boolean printDefault) {
-        profiledata.setPrintingDefault(printDefault);
-    }
-
-    public boolean isPrintUserDataRequired() {
-        return profiledata.getPrintingRequired();
-    }
-
-    public void setPrintUserDataRequired(boolean printRequired) {
-        profiledata.setPrintingRequired(printRequired);
-    }
-
-    public List<SelectItem> getPrinters() {
-        if (printerNames == null) {
-            printerNames = PrinterManager.listPrinters();
-        }
-        final List<SelectItem> printersReturned = new ArrayList<>();
-        if (printerNames.length == 0) {
-            printersReturned.add(new SelectItem(null, ejbcaWebBean.getText("ERRORNOPRINTERFOUND")));
-        } else {
-            for (final String printerName : printerNames) {
-                printersReturned.add(new SelectItem(printerName, printerName));
-            }
-        }
-        return printersReturned;
-    }
-
-    public String getCurrentPrinter() {
-        return profiledata.getPrinterName();
-    }
-
-    public void setCurrentPrinter(final String printerName) {
-        profiledata.setPrinterName(StringUtils.defaultString(printerName));
-    }
-
-    public List<SelectItem> getNumberOfCopies() {
-        final List<SelectItem> numberOfCopiesReturned = new ArrayList<>();
-        for (int copyInt = 0; copyInt < 5; copyInt++) {
-            numberOfCopiesReturned.add(new SelectItem(copyInt, String.valueOf(copyInt)));
-        }
-        return numberOfCopiesReturned;
-    }
-
-    public int getCurrentNumberCopies() {
-        return profiledata.getPrintedCopies();
-    }
-
-    public void setCurrentNumberCopies(int numberOfCopies) {
-        profiledata.setPrintedCopies(numberOfCopies);
-    }
-
-    public String getCurrentTemplate() {
-        final String currentTemplate = profiledata.getPrinterSVGFileName();
-        if (StringUtils.isEmpty(currentTemplate)) {
-            return ejbcaWebBean.getText("NOTEMPLATEUPLOADED");
-        } else {
-            return currentTemplate;
-        }
-    }
-
-    public Part getTemplateFileUpload() {
-        return templateFileUpload;
-    }
-
-    public void setTemplateFileUpload(final Part templateFileUpload) {
-        this.templateFileUpload = templateFileUpload;
-    }
-
-    public void uploadTemplate() {
-        log.trace(">uploadTemplate");
-        if (templateFileUpload == null) {
-            log.debug("Template file was null");
-            addErrorMessage("YOUMUSTSELECT");
-            return;
-        }
-        byte[] contents = null;
-        if (templateFileUpload.getSize() > MAX_TEMPLATE_FILESIZE) {
-            addErrorMessage("TEMPLATEUPLOADFAILED");
-            return;
-        }
-        try {
-            contents = IOUtils.toByteArray(templateFileUpload.getInputStream(), templateFileUpload.getSize());
-        } catch (IOException e) {
-            log.info("Caught exception when trying to get template file upload", e);
-        }
-        final String filename = HttpTools.getUploadFilename(templateFileUpload);
-        if (contents == null || contents.length == 0 || StringUtils.isEmpty(filename)) {
-            log.info("No template file uploaded, or empty file.");
-            addErrorMessage("TEMPLATEUPLOADFAILED");
-            return;
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Uploaded template of " + contents.length + " bytes");
-        }
-        final String contentsString = new String(contents, StandardCharsets.UTF_8);
-        profiledata.setPrinterSVGData(contentsString);
-        profiledata.setPrinterSVGFileName(filename);
-        log.trace("<uploadTemplate");
-    }
-
     /**
      * Performs validation for fields that cannot be validated using JSF validators or required attributes.
      */
@@ -1383,12 +1266,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (!ejbcaWebBean.getGlobalConfiguration().getEnableKeyRecovery()) {
             profiledata.setKeyRecoverableUsed(false);
             profiledata.setKeyRecoverableRequired(false);
-        }
-        // Printing
-        if (profiledata.getUsePrinting()) {
-            if (StringUtils.isEmpty(profiledata.getPrinterName())) {
-                editerrors.add(ejbcaWebBean.getText("MUSTSELECTPRINTER"));
-            }
         }
         // Validity time
         final String startTime = profiledata.getValidityStartTime();
@@ -1544,10 +1421,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (!profiledata.isSendNotificationUsed()) {
             profiledata.setSendNotificationRequired(false);
             profiledata.setSendNotificationDefault(false);
-        }
-        if (!profiledata.getUsePrinting()) {
-            profiledata.setPrintingRequired(false);
-            profiledata.setPrintingDefault(false);
         }
     }
 

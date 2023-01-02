@@ -40,6 +40,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -687,7 +688,7 @@ public class CmpMessageHelper {
         for (int i = 1; i < seqSize; i++) {
             final ASN1Encodable o4 = ASN1Sequence.getInstance(o2).getObjectAt(i);
             if (o4 instanceof DERBitString) {
-                reasonbits = new ReasonFlags(DERBitString.getInstance(o4));
+                reasonbits = new ReasonFlags(DERBitString.convert(ASN1BitString.getInstance(o4)));
             } else if (o4 instanceof DERGeneralizedTime) {
                 DERGeneralizedTime.getInstance(o4); // bad since time, not used in the bouncycastle class
             } else if (o4 instanceof DERSequence) {

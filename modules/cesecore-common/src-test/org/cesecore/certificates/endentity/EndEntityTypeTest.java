@@ -67,7 +67,7 @@ public class EndEntityTypeTest {
     
     @Test 
     public void testRemoveType() {
-        EndEntityType type = new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.PRINT);
+        EndEntityType type = new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.KEYRECOVERABLE);
         if((type.getHexValue() & EndEntityTypes.ENDUSER.hexValue()) != EndEntityTypes.ENDUSER.hexValue()) {
             throw new RuntimeException("Type doesn't contain ENDUSER, can't continue");
         }
@@ -78,6 +78,6 @@ public class EndEntityTypeTest {
         } catch(Exception e) {
             fail("Unexistant type should have been removed safely.");
         }
-        assertTrue((type.getHexValue() & EndEntityTypes.PRINT.hexValue()) == EndEntityTypes.PRINT.hexValue());
+        assertTrue((type.getHexValue() & EndEntityTypes.KEYRECOVERABLE.hexValue()) == EndEntityTypes.KEYRECOVERABLE.hexValue());
     }
 }
