@@ -25,7 +25,6 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.StandardRules;

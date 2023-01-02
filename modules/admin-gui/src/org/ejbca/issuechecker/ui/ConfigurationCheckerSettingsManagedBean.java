@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * Backing bean for the 'Configuration Checker' tab in the System Configuration.
  *
  */
-@ManagedBean(name = "configurationCheckerSettings")
+@Named("configurationCheckerSettings")
 @ViewScoped
 public class ConfigurationCheckerSettingsManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(ConfigurationCheckerSettingsManagedBean.class);
