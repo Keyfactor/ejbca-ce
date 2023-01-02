@@ -71,11 +71,9 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.keys.token.CachingKeyStoreWrapper;
 import org.cesecore.keys.token.KeyGenParams;
-import org.cesecore.keys.token.p11.PKCS11Utils;
 import org.cesecore.util.CertTools;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 
 /**
  * 
@@ -456,9 +454,6 @@ public class KeyStoreTools {
                     log.debug("Creating certificate with entry " + keyAlias + '.');
                 }
                 setKeyEntry(keyAlias, keyPair.getPrivate(), chain);
-                if ( CryptoProviderConfigurationCache.INSTANCE.isKeyUnmodifiableAfterGeneration() ) {
-                    PKCS11Utils.getInstance().makeKeyUnmodifiable(keyPair.getPrivate(), this.providerName);
-                }
                 break; // success no need to try more
             } catch (KeyStoreException e) {
                 if ( bar<3 ) {

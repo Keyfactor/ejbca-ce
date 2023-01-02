@@ -22,7 +22,6 @@ public enum CryptoProviderConfigurationCache {
     private boolean useLegacyPkcs12Keystore;    
     private boolean keystoreCacheEnabled;
     private boolean permitExtractablePrivateKeys;
-    private boolean keyUnmodifiableAfterGeneration;
     
     private CryptoProviderConfigurationCache() {
         //Set defaults
@@ -30,7 +29,6 @@ public enum CryptoProviderConfigurationCache {
         p11disableHashingSignMechanisms = true;
         keystoreCacheEnabled = true;
         permitExtractablePrivateKeys = false;
-        keyUnmodifiableAfterGeneration = false;
     }
     
     public boolean isUseLegacyPkcs12Keystore() {
@@ -73,14 +71,6 @@ public enum CryptoProviderConfigurationCache {
 
     public void setPermitExtractablePrivateKeys(boolean permitExtractablePrivateKeys) {
         this.permitExtractablePrivateKeys = permitExtractablePrivateKeys;
-    }
-
-    public boolean isKeyUnmodifiableAfterGeneration() {
-        return keyUnmodifiableAfterGeneration;
-    }
-
-    public void setKeyUnmodifiableAfterGeneration(boolean keyUnmodifiableAfterGeneration) {
-        this.keyUnmodifiableAfterGeneration = keyUnmodifiableAfterGeneration;
     }
 
 }
