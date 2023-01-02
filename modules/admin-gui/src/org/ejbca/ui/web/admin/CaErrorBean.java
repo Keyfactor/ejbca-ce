@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.application.ViewExpiredException;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -36,7 +36,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 /**
  * Bean used to display a summary of unexpected errors and debug log the cause.
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class CaErrorBean extends BaseManagedBean implements Serializable {
 
