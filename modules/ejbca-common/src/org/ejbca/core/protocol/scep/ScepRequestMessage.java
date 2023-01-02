@@ -25,6 +25,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -321,7 +322,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         requestKeyInfo = bOut.toByteArray();
                         //Create Certificate used for debugging
                         try {
-							signercert = CertTools.getCertfromByteArray(requestKeyInfo, Certificate.class);
+							signercert = CertTools.getCertfromByteArray(requestKeyInfo, X509Certificate.class);
 							if (log.isDebugEnabled()) {
 								log.debug("requestKeyInfo is SubjectDN: " + CertTools.getSubjectDN(signercert) +
 										", Serial=" + CertTools.getSerialNumberAsString(signercert) +
