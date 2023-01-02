@@ -21,8 +21,8 @@ import java.util.Date;
 import java.util.List;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
@@ -39,7 +39,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  *  JSF Managed Bean or the index page in the Admin GUI.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class AdminIndexMBean extends CheckAdmin implements Serializable {
     private static final long serialVersionUID = 1L;

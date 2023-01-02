@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -60,7 +60,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * JSF Managed Bean or the ca functions page in the CA UI.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;

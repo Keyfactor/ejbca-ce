@@ -2,3 +2,4 @@
 "Apache's OpenEJB";             "javaee-api-7.0-1";                             "ALv2";                 "LICENSE-APACHE-2.0";           "https://openejb.apache.org/";                                      "JEE7 API libraries used for building EJBCA.";
 "Apache's MyFaces";             "myfaces-api-2.3.9";                            "ALv2";                 "LICENSE-APACHE-2.0";           "https://myfaces.apache.org/";                                      "JSF 2.2 API libraries used for building EJBCA.";
 "Java EE";                      "jaxb-api-2.3.1";                               "CDDLv1.1,GPL2+CPE";    "LICENSE-CCDL-1.1-GPL2CPE";     "https://github.com/javaee/jaxb-spec";                              "Java Architecture for XML Binding (JAXB) API.";
+"CDI Jakarta"					"jakarta.enterprise.cdi-api-3.0.0"				"EFSL1.0"   			"Eclipse Public License - v1.0" "https://www.cdi-spec.org/" 

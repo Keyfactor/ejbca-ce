@@ -20,13 +20,13 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -53,11 +53,11 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Backing bean for MSAutoEnrollmentConfiguration in System Settings.
  */
-@ManagedBean(name = "msAutoEnrollmentSettings")
+@Named("msAutoEnrollmentSettings")
 @ViewScoped
 public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     
-    @ManagedProperty(value = "#{autoenrollmentConfigMBean}")
+    @Inject
     private AutoenrollmentConfigMBean autoenrollmentConfigMBean;
     
     private static final Logger log = Logger.getLogger(MSAutoEnrollmentSettingsManagedBean.class);

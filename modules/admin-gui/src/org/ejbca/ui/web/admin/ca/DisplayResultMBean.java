@@ -16,9 +16,9 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * JSF MBean backing the displayresult xhtml page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class DisplayResultMBean extends BaseManagedBean implements Serializable {
 

@@ -21,8 +21,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
@@ -43,7 +43,7 @@ import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
  * JSF MBean backing the import ca cert page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
 
