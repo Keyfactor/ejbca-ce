@@ -53,15 +53,11 @@ Troubleshooting database problems:
 
 Configuring EJBCA
 -----------------
-0. Use 'ant clean' to clean up your repository if not already done.
-1. Edit 'conf/database.properties' and follow the instructions to change the default values.
-   Specify the 'datasource.jndi-name' to the one you chose.
-   For example: 'EjbcaDS'
-   There is a database.properties.sample that is heavily commented.
-2. On JBoss: Use 'ant deploy-datasource', it will configure automatically all deployment descriptors according to the
-   database/jndi-name you chose before.
+See the installation instructions how to configure EJBCA and data source. 
+Data sources are configured in the application server, i.e. WildFly/JBoss, that does connection pooling and everything needed
+to make database connection usage efficient and high performance.
 
-   If something is wrong, you should see it in the logs of your application server
+If something is wrong, you should see it in the logs of your application server
 
 The database mapping for EJBCA is defined in modules/ejbca-entity/resources/orm-{mode}-{database}.xml.
 A database table create script can be created for your database by issuing "ant generate-dbscripts".
