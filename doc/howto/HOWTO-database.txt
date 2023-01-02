@@ -1,38 +1,40 @@
 Set up a database for EJBCA in JBoss
 ====================================
 
-The following databases have in some stage been tested with EJBCA:
+NOTE: the specific texts below for different databases are not updated regularly for new versions, it should be considered more of a 
+log book over interesting configuration items.
 
-* Hypersoniq (hsqldb) (default in JBoss)
-* PostegreSQL 8.x and 9.x (http://www.postgresql.org/)
-* MySQL and MariaDB 5.x (http://www.mysql.com/)
-* Oracle 10g and 11g (http://www.oracle.com/)
+
+The following databases have at some stage been tested with EJBCA.
+Some, less popular ones, may have been deprecated and not used for many, many years.
+Too new releases of databases may be untested, but commonly are backwards compatible and work just fine, with rare exceptions.
+
+* H2/Hypersoniq (h2/hsqldb) (default in JBoss)
+* PostgreSQL 9.x and onwards (http://www.postgresql.org/)
+* MySQL and MariaDB 5.x/10.x and onwards (http://www.mysql.com/)
+* Oracle (http://www.oracle.com/)
 * DB2 10.5
-* MS-SQL2000, 2003, 2008
-* Sybase
-* Informix 9.2, 11.50
-* Derby
-* Ingres 10.1 Community Edition
+* MS-SQL 2000, 2003, 2008, ...
+* Sybase (untested for long time)
+* Informix 9.2, 11.50 (untested for long time)
+* Derby (untested for long time)
+* Ingres 10.1 Community Edition (untested for long time)
 
 Unless you are adventurous and know what you're doing, it is recommended to define
-another datasource for ejbca and not reconfigure DefaultDS with another database
+another data source for ejbca and not reconfigure DefaultDS with another database
 as you run the risk to jump into mapping bugs in the JBoss configuration and mess
 up your server default configuration.
 
-If all is well the automatic deployment script of EJBCA will configure all that for
-you and you will be up and running in 30 seconds.
-Configuration is done in conf/database.properties.
-
-In a production environment you should use something else than the default Hypersonic database that comes 
-with JBoss for the following reasons:
-1. Hypersonic database is in-memory, which means that over time it will consume more memory. If a large
+In a production environment you should use something else than the default H2 database that comes 
+with JBoss/WildFly for the following reasons:
+1. H2 database is in-memory, which means that over time it will consume more memory. If a large
    number of certificates is issued, it will become an issue after a while.
-2. Hypersonic does not support full SQL, in particular ALTER statements. When a new version of EJBCA is 
-   released we can not create scripts that updates the database if some tables changed. This will make 
-   upgrades much much harder.
+2. H2 does not support full SQL, in particular ALTER statements. When a new version of EJBCA is
+   released, we can not create scripts that update the database if some tables were changed. This will make
+   upgrades much, much harder.
 
-If you will be running a huuuge system you will probably need to run some analysis tools to perfect indexes
-etc in the database, at least in the long run. Examples of such tools are:
+If you will be running a huuuge system, you will probably need to run some analysis tools to perfect indexes
+etc. in the database, at least in the long run. Examples of such tools are:
 http://sourceforge.net/projects/mysqa/
 
 NOW ON TO THE HOWTO!
@@ -41,11 +43,11 @@ NOW ON TO THE HOWTO!
 Troubleshooting database problems:
 ---------------------------------
 * Have you configured a database correctly in JBoss?
-  Configuration is done in conf/database.properties to set EJBCA to the correct database.
+  Configuration is done in JBoss/WildFly.
 * Do you have the correct username/password configured for your database?
-  Configuration is done in JBoss (taken from conf/database.properties if you have EJBCA do it for you).
-* Is the JDBC driver installed in JBoss?
-* Does you database accept incoming connection from the network, not only localhost or vice versa?
+  Configuration is done in JBoss/WildFly.
+* Is the JDBC driver installed in JBoss/WildFly?
+* Does your database accept incoming connections from the network, not only localhost or vice versa?
 * Do you have a firewall blocking connections to the database?
 * Can you connect to the database from another machine?
 * Use ip-address instead of hostname in data source configuration in JBoss (DNS problems?)
@@ -53,31 +55,27 @@ Troubleshooting database problems:
 
 Configuring EJBCA
 -----------------
-0. Use 'ant clean' to clean up your repository if not already done.
-1. Edit 'conf/database.properties' and follow the instructions to change the default values.
-   Specify the 'datasource.jndi-name' to the one you chose.
-   For example: 'EjbcaDS'
-   There is a database.properties.sample that is heavily commented.
-2. On JBoss: Use 'ant deploy-datasource', it will configure automatically all deployment descriptors according to the
-   database/jndi-name you chose before.
+See the installation instructions how to configure EJBCA and data source. 
 
-   If something is wrong, you should see it in the logs of your application server
+If something is wrong, you should see it in the logs of your application server
 
 The database mapping for EJBCA is defined in modules/ejbca-entity/resources/orm-{mode}-{database}.xml.
 A database table create script can be created for your database by issuing "ant generate-dbscripts".
 
 
-Configuring JBoss
------------------
+Configuring JBoss/WildFly
+-------------------------
 
-Instructions how to configure JBoss are in the Installation guide. Start there.
+Instructions how to configure the application server are in the Installation guide. Start there.
+Data sources are configured in the application server, i.e. WildFly/JBoss. The application server 
+does connection pooling and everything needed to make database connection usage efficient and high performance.
 
 1. Install and setup the database your database.
 
 2. Create a database for EJBCA (that is obviously the one you defined in conf/database.properties)
 Check your database documentation for more info (I know it is boring).
 
-3. Configure JBoss with the correct JDBC driver.
+3. Configure JBoss/WildFly with the correct JDBC driver.
 
 4. Install EJBCA (see Installation Guide)
    Use your favorite database graphic editor to look at the beautiful database tables.
@@ -89,13 +87,13 @@ table rights on AuditRecordData.
 
 MySQL and MariaDB specifics
 ---------------
-EJBCA have been tested with MySQL 5.x and MariaDB 5.x.
+EJBCA has been tested with many versions of MySQL/MariaDB.
 
 It is NOT recommended to use the MyISAM storage engine, since it only supports
 table locks and not row-locking.
 
 For InnoDB in some configurations the "binlog_format" defaults to "statement". 
-Running EJBCA requires is to be set to "row". binlog_format=row
+Running EJBCA requires it to be set to "row". binlog_format=row
 
 It is recommended to configure my.cnf with at least the following:
  [mysqld]
@@ -117,7 +115,7 @@ Sometimes there can be problems with MySQL related to case sensitivity of databa
 To use UTF-8 encoding use the following option to the MySQL connect string:
   jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
 
-Additionally you might want to specify a socket timeout for fail-over setups:
+Additionally, you might want to specify a socket timeout for fail-over setups:
   jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8&socketTimeout=300000
 
 Basic database, user, table and index creation:
@@ -148,7 +146,7 @@ Restart you application server after this.
 
 PostgreSQL specifics
 --------------------
-EJBCA have been tested with PostgreSQL 8.x and 9.x.
+EJBCA has been tested with many versions of PostgreSQL
 
 JDBC driver: 
 For v8.x and later the 42.2.1 driver works fine (tested feb 2018).
@@ -161,7 +159,7 @@ Sample setup:
   <enter password twice>
  postgres@host:~$ createdb -E UTF8 ejbca
 
-Typically usage: 'createdb ejbca "database for ejbca"' will create
+Typical usage: 'createdb ejbca "database for ejbca"' will create
 a database named 'ejbca' with description "database for ejbca" and with user
 postgres (add '-E UTF8' for utf8 encoding if not default).
 To create a new user for the ejbca database 'createuser -P ejbca'
@@ -197,13 +195,13 @@ Oracle specifics
 ----------------
 JDBC driver for Java 6: ojdbc6.zip
 
-Use latest driver from at least Oracle 11 that can be downloaded from http://www.oracle.com/.
+Use the latest driver from at least Oracle 11 that can be downloaded from http://www.oracle.com/.
 
 From EJBCA 4.0 hibernate is used as the JPA (Java Persistence) provider. If startup is slow, when
 hibernate is loading/updating the schema you should add the following to 
-modules/ejbca-entity/resources/persistense-ds-template.xml, and then do a "ant clean bootstrap" 
+modules/ejbca-entity/resources/persistense-ds-template.xml, and then do an "ant clean bootstrap"
 -----	
-<property name="hibernate.default_schema">YOUR_SCHEMANAME_IN_UPPERCASE</property> 
+<property name="hibernate.default_schema">YOUR_SCHEMA_NAME_IN_UPPERCASE</property>
 -----
 
 The SQL command to show tables in Oracle is:
@@ -231,7 +229,7 @@ center of DB2.
 9. Configure EJBCA_HOME/conf/database.properties and install EJBCA.
 
 
-DB2 through installation creates the instance db2inst1  (user) with the group  db2iadm1.  Let's give him the password foo123. 
+DB2 through installation creates the instance db2inst1 (user) with the group db2iadm1. Let's give him the password foo123.
 His home directory is /home/db2inst1 and when we create new database (ex. custom) then it is located in:
 */home/db2inst1/
                NODE0000/
@@ -313,7 +311,7 @@ enabled and that everything else is disabled. When configuring the TCP/IP protoc
 
 Under SQL Native Client Configuration, make sure that TCP/IP is enabled and
 that everything else is disabled. When configuring the TCP/IP (the properties
-view), make sure that 'Default Port' is set to 1433
+view), make sure that 'Default Port' is set to 1433.
 
 SQL server (some versions/some configurations? at least Windows Server 2017) do not like Hibernate/EJBCA/WildFly passing strings through as unicode and ends 
 up doing a full table scan after every insert/update to turn the strings into a more native encoding. This can cause deadlocks. 
@@ -323,14 +321,14 @@ sendStringParametersAsUnicode=false
 
 Informix specifics
 ------------------
-EJBCA have been tested Informix Dynamic Server 11.50.UC6DE.
+EJBCA has been tested Informix Dynamic Server 11.50.UC6DE.
 JDBC Driver: IBM Informix JDBC Driver 3.50.JC6
 
 Old doc (might no longer be true):
 Some Informix database modifications need to be done to be able to insert
 BLOB and TEXT data (which is required by EJBCA):
 You must generate a dbspace of the SmartBlobSpace kind for storing the
-TEXT data type attributes. This require the generation of a Unix RAW
+TEXT data type attributes. This requires the generation of a Unix RAW
 filesystem and then create the sbspace. After that, change the database
 configuration to recognize the new data space.
 
@@ -342,7 +340,7 @@ and may be used with any compliant JDBC driver), and you may use
 general open source tools like SQuirreL SQL
 (http://squirrel-sql.sourceforge.net/).
 
-When creating tables in Derby, they get case sensitiva if you quote them, CREATE TABLE "UserData".
+When creating tables in Derby, they get case sensitivity if you quote them, CREATE TABLE "UserData".
 
 Ij started like this:
     java -jar db-derby-10.2.1.3-bin/lib/derbyrun.jar ij
@@ -392,7 +390,7 @@ Ingres specifics
 EJBCA has been tested with JBoss 5.1.0.GA together with Ingres Community Edition 10.1 x64.
 
 Since earlier versions of Ingres did not support booleans, we will map these fields as INT4
-in the database, so you have a good chanse of making EJBCA work with earlier versions.
+in the database, so you have a good chance of making EJBCA work with earlier versions.
 
 Look in http://community.ingres.com/wiki/Using_JBoss_with_Ingres for a good guide on how to
 configure Ingres with JBoss.
@@ -422,7 +420,7 @@ Indexes for higher performance
 Database indexes will improve your performance when the database grows large (at least 100.000 certificates).
 (you can start messing with this when you notice some slowdown, for normal installations it's rarely needed)
 
-Indexes are listed as a script in create-index-ejbca3.sql.
+Indexes are listed as a script in create-index-ejbca.sql.
 You can run this script to boost your database performance, if you have many record.
 
 Indexes are in MySQL syntax, it should be general enough though.
@@ -433,7 +431,7 @@ create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
 Indexes for extra security
 ==========================
 
-In a X.509 PKI every issuerDN, serialNumber pair must be unique. That means that a CA can not issue two certificates
+In an X.509 PKI every issuerDN, serialNumber pair must be unique. That means that a CA can not issue two certificates
 with the same serialNumber. The default installation has a very, very, very small chance that that can occur.
 SerialNumber are 64 bit random numbers, so the chance of a collision should be virtually nil, unless you issue
 billions of certificates. In any case, a unique index over (issuerDN, serialNumber) on CertificateData assures that 
