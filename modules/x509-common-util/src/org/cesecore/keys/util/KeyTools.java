@@ -140,6 +140,9 @@ public final class KeyTools {
     private static final byte[] BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----".getBytes();
     private static final byte[] END_PRIVATE_KEY = "-----END PRIVATE KEY-----".getBytes();
     private static final byte[] NL = "\n".getBytes();
+    
+    public static final String ERROR_MESSAGE_SIGNING_FAILED = "Result from signing is null.";
+    public static final String ERROR_MESSAGE_VERIFICATION_FAILED = "Signature was not correctly verified.";
 
     /**
      * Prevent from creating new KeyTools object
@@ -1215,7 +1218,7 @@ public final class KeyTools {
                 signBV = operation.getSignature();
                 testSigAlg = operation.getSignatureAlgorithm();
                 if (signBV == null) {
-                    throw new InvalidKeyException("Result from signing is null.");
+                    throw new InvalidKeyException(ERROR_MESSAGE_SIGNING_FAILED);
                 }
                 if (log.isDebugEnabled()) {
                     log.debug("Created signature of size: " + signBV.length);
@@ -1232,7 +1235,7 @@ public final class KeyTools {
                 signature.initVerify(pub);
                 signature.update(input);
                 if (!signature.verify(signBV)) {
-                    throw new InvalidKeyException("Signature was not correctly verified.");
+                    throw new InvalidKeyException(ERROR_MESSAGE_VERIFICATION_FAILED);
                 }
             }
         } catch (InvalidKeyException e) {

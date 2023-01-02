@@ -20,8 +20,6 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import com.keyfactor.util.string.StringConfigurationCache;
-
 /**
  * This file handles configuration from cesecore.properties
  */
