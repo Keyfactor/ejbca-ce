@@ -1,33 +1,35 @@
 Set up a database for EJBCA in JBoss
 ====================================
 
-The following databases have in some stage been tested with EJBCA:
+NOTE: the specific texts below for different databases are not updated regularly for new versions, it should be considered more of a 
+log book over interesting configuration items.
 
-* Hypersoniq (hsqldb) (default in JBoss)
-* PostegreSQL 8.x and 9.x (http://www.postgresql.org/)
-* MySQL and MariaDB 5.x (http://www.mysql.com/)
-* Oracle 10g and 11g (http://www.oracle.com/)
+
+The following databases have in some stage been tested with EJBCA. 
+Some, less popular ones, may have been deprecated and not used for many many years. 
+Too new releases of databases may be untested, but commonly are backwards compatible and works just fine, with rare exceptions. 
+
+* H2/Hypersoniq (h2/hsqldb) (default in JBoss)
+* PostegreSQL 9.x and onwards (http://www.postgresql.org/)
+* MySQL and MariaDB 5.x/10.x and onwards (http://www.mysql.com/)
+* Oracle (http://www.oracle.com/)
 * DB2 10.5
-* MS-SQL2000, 2003, 2008
-* Sybase
-* Informix 9.2, 11.50
-* Derby
-* Ingres 10.1 Community Edition
+* MS-SQL2000, 2003, 2008, ...
+* Sybase (untested for long time)
+* Informix 9.2, 11.50 (untested for long time)
+* Derby (untested for long time)
+* Ingres 10.1 Community Edition (untested for long time)
 
 Unless you are adventurous and know what you're doing, it is recommended to define
-another datasource for ejbca and not reconfigure DefaultDS with another database
+another data source for ejbca and not reconfigure DefaultDS with another database
 as you run the risk to jump into mapping bugs in the JBoss configuration and mess
 up your server default configuration.
 
-If all is well the automatic deployment script of EJBCA will configure all that for
-you and you will be up and running in 30 seconds.
-Configuration is done in conf/database.properties.
-
-In a production environment you should use something else than the default Hypersonic database that comes 
-with JBoss for the following reasons:
-1. Hypersonic database is in-memory, which means that over time it will consume more memory. If a large
+In a production environment you should use something else than the default H2 database that comes 
+with JBoss/WildFly for the following reasons:
+1. H2 database is in-memory, which means that over time it will consume more memory. If a large
    number of certificates is issued, it will become an issue after a while.
-2. Hypersonic does not support full SQL, in particular ALTER statements. When a new version of EJBCA is 
+2. H2  does not support full SQL, in particular ALTER statements. When a new version of EJBCA is 
    released we can not create scripts that updates the database if some tables changed. This will make 
    upgrades much much harder.
 
@@ -41,10 +43,10 @@ NOW ON TO THE HOWTO!
 Troubleshooting database problems:
 ---------------------------------
 * Have you configured a database correctly in JBoss?
-  Configuration is done in conf/database.properties to set EJBCA to the correct database.
+  Configuration is done in JBoss/WildFly.
 * Do you have the correct username/password configured for your database?
-  Configuration is done in JBoss (taken from conf/database.properties if you have EJBCA do it for you).
-* Is the JDBC driver installed in JBoss?
+  Configuration is done in JBoss/WildFly.
+* Is the JDBC driver installed in JBoss/WildFly?
 * Does you database accept incoming connection from the network, not only localhost or vice versa?
 * Do you have a firewall blocking connections to the database?
 * Can you connect to the database from another machine?
@@ -54,8 +56,6 @@ Troubleshooting database problems:
 Configuring EJBCA
 -----------------
 See the installation instructions how to configure EJBCA and data source. 
-Data sources are configured in the application server, i.e. WildFly/JBoss, that does connection pooling and everything needed
-to make database connection usage efficient and high performance.
 
 If something is wrong, you should see it in the logs of your application server
 
@@ -63,17 +63,19 @@ The database mapping for EJBCA is defined in modules/ejbca-entity/resources/orm-
 A database table create script can be created for your database by issuing "ant generate-dbscripts".
 
 
-Configuring JBoss
------------------
+Configuring JBoss/WildFly
+-------------------------
 
-Instructions how to configure JBoss are in the Installation guide. Start there.
+Instructions how to configure the application server are in the Installation guide. Start there.
+Data sources are configured in the application server, i.e. WildFly/JBoss. The application server 
+does connection pooling and everything needed to make database connection usage efficient and high performance.
 
 1. Install and setup the database your database.
 
 2. Create a database for EJBCA (that is obviously the one you defined in conf/database.properties)
 Check your database documentation for more info (I know it is boring).
 
-3. Configure JBoss with the correct JDBC driver.
+3. Configure JBoss/WildFly with the correct JDBC driver.
 
 4. Install EJBCA (see Installation Guide)
    Use your favorite database graphic editor to look at the beautiful database tables.
@@ -85,7 +87,7 @@ table rights on AuditRecordData.
 
 MySQL and MariaDB specifics
 ---------------
-EJBCA have been tested with MySQL 5.x and MariaDB 5.x.
+EJBCA have been tested with many versions of MySQL/MariaDB.
 
 It is NOT recommended to use the MyISAM storage engine, since it only supports
 table locks and not row-locking.
@@ -144,7 +146,7 @@ Restart you application server after this.
 
 PostgreSQL specifics
 --------------------
-EJBCA have been tested with PostgreSQL 8.x and 9.x.
+EJBCA have been tested with many versions of PostgreSQL
 
 JDBC driver: 
 For v8.x and later the 42.2.1 driver works fine (tested feb 2018).
