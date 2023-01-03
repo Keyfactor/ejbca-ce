@@ -32,13 +32,9 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
-import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
-import org.cesecore.keys.validation.KeyValidatorExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
-import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.util.ExternalScriptsAllowlist;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -59,21 +55,14 @@ public class ValidatorsBean extends BaseManagedBean {
     
     /** Selected validator name. */
     private String validatorName = StringUtils.EMPTY;
-
-    /** New validator name for add, rename and clone action. */
-    private String newValidatorName = StringUtils.EMPTY;
-
-    /** Indicates a rename action in progress to render its view. */
-    private boolean renameInProgress = false;
     
     /** Indicates a delete action in progress to render its view. */
     private boolean deleteInProgress = false;
-    
-    /** Indicates a clone action in progress to render its view. */
-    private boolean addFromTemplateInProgress = false;
 
     /** View only flag for view action. */
     private boolean viewOnly = true;
+    
+    private boolean cloned = false;
 
     /** Validators list to render. */
     private ListDataModel<ValidatorItem> validatorItems = null;
@@ -124,28 +113,20 @@ public class ValidatorsBean extends BaseManagedBean {
     }
 
     /**
-     * Gets the new validator name.
-     * @return the name.
-     */
-    public String getNewValidatorName() {
-        return newValidatorName;
-    }
-
-    /**
-     * Sets the new validator name.
-     * @param name the name.
-     */
-    public void setNewValidatorName(final String name) {
-        newValidatorName = name.trim();
-    }
-
-    /**
      * Force a shorter scope (than session scoped) for the ListDataModel by always resetting it before it is rendered
      * @return Always empty string
      */
     public String getResetValidatorsTrigger() {
         validatorItems = null;
         return StringUtils.EMPTY;
+    }
+    
+    /**
+     * 
+     * @return true if any validators exist
+     */
+    public boolean getExistsValidators() {
+        return keyValidatorSession.getNumberOfValidators() != 0;
     }
     
     /**
@@ -261,23 +242,9 @@ public class ValidatorsBean extends BaseManagedBean {
     /**
      * Add action. Adds a new key validator.
      */
-    public void actionAdd() {
-        final String name = getNewValidatorName();
-        if (StringUtils.isNotBlank(name)) {
-            if (!StringTools.checkFieldForLegalChars(name)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else {
-                try {
-                    keyValidatorSession.addKeyValidator(getAdmin(), new RsaKeyValidator(name));
-                    actionCancel();
-                } catch (KeyValidatorExistsException e) {
-                    addErrorMessage("VALIDATORALREADY", name);
-                } catch (AuthorizationDeniedException e) {
-                    addNonTranslatedErrorMessage(e.getMessage());
-                }
-            }
-        }
-        validatorItems = null;
+    public String actionAdd() {
+        viewOnly = false;
+        return "add";
     }
 
     /**
@@ -294,48 +261,17 @@ public class ValidatorsBean extends BaseManagedBean {
      * @return true if action is in progress.
      */
     public boolean isOperationInProgress() {
-        return isRenameInProgress() || isDeleteInProgress() || isAddFromTemplateInProgress();
-    }
-
-    /**
-     * Checks if a addFromTemplate action is in Progress.
-     * @return true if action is in progress.
-     */
-    public boolean isAddFromTemplateInProgress() {
-        return addFromTemplateInProgress;
+        return isDeleteInProgress();
     }
 
     /**
      * AddFromTemplate action.
      */
-    public void actionAddFromTemplate() {
+    public String actionAddFromTemplate() {
         selectCurrentRowData();
-        addFromTemplateInProgress = true;
-    }
-
-    /**
-     * AddFromTemplate confirm action.
-     */
-    public void actionAddFromTemplateConfirm() {
-        final String name = getNewValidatorName();
-        if (name.length() > 0) {
-            if (!StringTools.checkFieldForLegalChars(name)) {
-                addErrorMessage("ONLYCHARACTERS");
-                return;
-            } else {
-                try {
-                    keyValidatorSession.cloneKeyValidator(getAdmin(), getValidatorId(), name);
-                    setValidatorName(StringUtils.EMPTY);
-                } catch (AuthorizationDeniedException e) {
-                    addNonTranslatedErrorMessage(e.getMessage());
-                } catch (KeyValidatorExistsException e) {
-                    addErrorMessage("VALIDATORALREADY", name);
-                } catch (KeyValidatorDoesntExistsException e) {
-                    // NOPMD: ignore do nothing
-                }
-            }
-        }
-        actionCancel();
+        cloned = true;
+        viewOnly = false;
+        return "clone";
     }
 
     /**
@@ -370,57 +306,14 @@ public class ValidatorsBean extends BaseManagedBean {
     }
 
     /**
-     * Checks if a rename action is in Progress.
-     * @return true if action is in progress.
-     */
-    public boolean isRenameInProgress() {
-        return renameInProgress;
-    }
-
-    /**
-     * Rename action.
-     */
-    public void actionRename() {
-        selectCurrentRowData();
-        renameInProgress = true;
-    }
-
-    /**
-     * Rename confirm action.
-     */
-    public void actionRenameConfirm() {
-        final String name = getNewValidatorName();
-        if (name.length() > 0) {
-            if (!StringTools.checkFieldForLegalChars(name)) {
-                renameInProgress = true;
-                addErrorMessage("ONLYCHARACTERS");
-                return;
-            } else {
-                try {
-                    keyValidatorSession.renameKeyValidator(getAdmin(), getValidatorId(), name);
-                    setValidatorName(StringUtils.EMPTY);
-                } catch (KeyValidatorDoesntExistsException e) {
-                    addErrorMessage("VALIDATORDOESNOTEXIST", name);
-                } catch (KeyValidatorExistsException e) {
-                    addErrorMessage("VALIDATORALREADY", name);
-                } catch (AuthorizationDeniedException e) {
-                    addNonTranslatedErrorMessage("Not authorized to rename key validator.");
-                }
-            }
-        }
-        actionCancel();
-    }
-
-    /**
      * Cancel action.
      */
     public void actionCancel() {
-        addFromTemplateInProgress = false;
         deleteInProgress = false;
-        renameInProgress = false;
         validatorItems = null;
         validatorId = null;
         validatorName = null;
+        cloned = false;
     }
 
     public void validateExternalCommand(final FacesContext facesContext, final UIComponent uiComponent, Object object) {
@@ -439,5 +332,9 @@ public class ValidatorsBean extends BaseManagedBean {
             addErrorMessage("COMMAND_IS_NOT_PERMITTED");
             return;
         }
+    }
+    
+    public boolean wasCloned() {
+        return cloned;
     }
 }

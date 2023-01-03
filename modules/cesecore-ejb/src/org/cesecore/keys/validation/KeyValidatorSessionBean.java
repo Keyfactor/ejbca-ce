@@ -384,6 +384,15 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
+    
+    @Override
+    public Map<String, Integer> getKeyValidatorNameToIdMap() {
+        final HashMap<String, Integer> result = new HashMap<>();
+        for (ProfileData data : findAllProfiles(Validator.TYPE_NAME)) {
+            result.put(data.getProfileName(), data.getId());
+        }
+        return result;
+    }
 
     @Override
     public List<ValidationResult> validateDnsNames(final AuthenticationToken authenticationToken, final IssuancePhase phase,
@@ -671,6 +680,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             }
         }
         return result;
+    }
+    
+    @Override
+    public long getNumberOfValidators() {
+        return profileSession.getNumberOfProfileByType(Validator.TYPE_NAME);
     }
 
     @Override
