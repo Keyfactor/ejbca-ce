@@ -59,11 +59,7 @@
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
         estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
-        cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, p11ng-clean, msae-clean, cesecore-p11-clean, cits-clean, proxy-ca-clean"/>
-
-  <target name="cesecore-p11-clean" if="build.cesecore.p11.jar">
-       <ant antfile="${mod.cesecore-p11.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-   </target>
+        cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, p11ng-clean, msae-clean, cits-clean, proxy-ca-clean"/>
 
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
@@ -250,12 +246,8 @@
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-properties, ejbca-common-web, cesecore-p11">
+	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-properties, ejbca-common-web">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-
-	<target name="cesecore-p11" description="Build the Sun P11 extension" if="build.cesecore.p11.jar">
-			<ant antfile="${mod.cesecore-p11.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="x509-common-util" depends="-build-x509-common-util, -copy-x509-common-util"/>
@@ -273,7 +265,7 @@
             <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
-        <target name="-build-cesecore-common" depends="x509-common-util, cesecore-p11">
+        <target name="-build-cesecore-common" depends="x509-common-util">
             <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
