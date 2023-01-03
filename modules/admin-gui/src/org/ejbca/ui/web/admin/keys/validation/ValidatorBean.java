@@ -173,8 +173,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
     
     public String getValidatorType() {
-     //   final Validator v = getValidator();
-      //  return v == null ? null : v.getValidatorTypeIdentifier();
         return stagedValidator.getValidatorTypeIdentifier();
     }
   
