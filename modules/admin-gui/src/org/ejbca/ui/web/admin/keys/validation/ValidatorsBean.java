@@ -270,6 +270,7 @@ public class ValidatorsBean extends BaseManagedBean {
     public String actionAddFromTemplate() {
         selectCurrentRowData();
         cloned = true;
+        viewOnly = false;
         return "clone";
     }
 
