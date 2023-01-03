@@ -682,7 +682,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         return result;
     }
     
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public long getNumberOfValidators() {
         return profileSession.getNumberOfProfileByType(Validator.TYPE_NAME);
