@@ -262,11 +262,7 @@ public class StartupSingletonBean {
         final String doPermitExtractablePrivateKeys = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
         CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(
                 doPermitExtractablePrivateKeys != null && doPermitExtractablePrivateKeys.trim().equalsIgnoreCase(Boolean.TRUE.toString()));
-        
-        final String keyUnmodifiableAfterGeneration = ConfigurationHolder.getString("pkcs11.makeKeyUnmodifiableAfterGeneration");
-        CryptoProviderConfigurationCache.INSTANCE.setKeyUnmodifiableAfterGeneration(
-                keyUnmodifiableAfterGeneration != null && Boolean.parseBoolean(keyUnmodifiableAfterGeneration.trim()));
-        
+                
         // Run java seed collector, that can take a little time the first time it is run
         log.debug(">startup initializing random seed, can take a little time...");
         SecureRandom rand = new SecureRandom();
