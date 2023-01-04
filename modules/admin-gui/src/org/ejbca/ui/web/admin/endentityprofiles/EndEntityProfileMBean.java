@@ -29,11 +29,10 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.Part;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -66,15 +65,14 @@ import org.ejbca.util.mail.MailSender;
  * JSF MBean backing end entity profile page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EndEntityProfileMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EndEntityProfileMBean.class);
 
     public static final String PARAMETER_PROFILE_ID = "id";
-    private static final int MAX_TEMPLATE_FILESIZE = 2*1024*1024;
-
+    
     /** Minimum and maximum options to show for password length restriction */
     private static final int PASSWORD_LIMIT_MIN = 4;
     private static final int PASSWORD_LIMIT_MAX = 16;
@@ -91,7 +89,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private final EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
     private EndEntityProfile profiledata;
     private List<UserNotification> userNotifications;
-    private String[] printerNames = null;
     private Integer profileId;
     private String profileName;
     private boolean viewOnly;
@@ -104,8 +101,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private List<NameComponentGuiWrapper> subjectDnComponentList = null;
     private List<NameComponentGuiWrapper> subjectAltNameComponentList;
     private List<NameComponentGuiWrapper> sshFieldList = null;
-
-    private Part templateFileUpload;
 
     public EndEntityProfileMBean() {
         super(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);

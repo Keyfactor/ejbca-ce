@@ -24,8 +24,8 @@ import java.util.Enumeration;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -43,7 +43,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  *
  * 
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class ImportCaMBean extends BaseManagedBean implements Serializable {
 
