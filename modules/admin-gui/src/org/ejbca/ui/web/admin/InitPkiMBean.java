@@ -16,15 +16,15 @@ package org.ejbca.ui.web.admin;
 import java.io.Serializable;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 
-@ManagedBean
+@Named
 @SessionScoped
 public class InitPkiMBean extends BaseManagedBean implements Serializable {
 

@@ -13,6 +13,25 @@
 
 package org.ejbca.ui.web.admin.ca;
 
+import static java.util.stream.Collectors.toSet;
+
+import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -34,28 +53,10 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toSet;
-
 /**
  * Backing bean for the "Inspect Publisher Queue" page.
  */
-@ManagedBean(name = "inspectPublisherQueue")
+@Named("inspectPublisherQueue")
 @ViewScoped
 public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(InspectPublisherQueueManagedBean.class);

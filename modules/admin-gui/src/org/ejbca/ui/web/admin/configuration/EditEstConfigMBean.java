@@ -21,10 +21,10 @@ import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -43,7 +43,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * Backing bean for edit EST alias view.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EditEstConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -62,7 +62,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     private TreeMap<Integer, String> caIdToNameMap;
     private TreeMap<String, Integer> caNameToIdMap;
 
-    @ManagedProperty(value = "#{estConfigMBean}")
+    @Inject
     private EstConfigMBean estConfigMBean;
     EstAliasGui estAliasGui = null;
 

@@ -19,9 +19,9 @@ import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
@@ -37,7 +37,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * 
  */
 @ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
-@ManagedBean
+@Named
 public class UpgradeBean extends BaseManagedBean implements Serializable {
 
 	/** Wrapper of Log4J LoggingEvents for use in the GUI */

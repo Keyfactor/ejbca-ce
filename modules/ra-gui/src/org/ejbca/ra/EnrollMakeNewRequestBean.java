@@ -43,9 +43,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.component.html.HtmlSelectOneMenu;
@@ -55,6 +52,9 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -131,7 +131,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
  * all permutations that could potentially be affected down the line.)
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EnrollMakeNewRequestBean implements Serializable {
 
@@ -153,14 +153,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value = "#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
 
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
 
-    @ManagedProperty(value = "#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
 
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {

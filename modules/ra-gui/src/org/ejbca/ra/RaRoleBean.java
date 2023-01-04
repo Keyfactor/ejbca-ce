@@ -23,10 +23,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
@@ -52,7 +52,7 @@ import org.ejbca.ra.jsfext.AddRemoveListState;
  *
  * @version $Id$
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaRoleBean implements Serializable {
 
@@ -62,21 +62,18 @@ public class RaRoleBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value="#{raAccessBean}")
+    @Inject
     private RaAccessBean raAccessBean;
     public void setRaAccessBean(final RaAccessBean raAccessBean) { this.raAccessBean = raAccessBean; }
 
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
-    @ManagedProperty(value="#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
-    @ManagedProperty(value="#{raRolesBean}")
-    private RaRolesBean raRolesBean;
-    public void setRaRolesBean(final RaRolesBean raRolesBean) { this.raRolesBean = raRolesBean; }
 
     private static final Object NEW_NAMESPACE_ITEM = "#NEW#";
     /** Matches e.g. /endentityprofilesrules/12345/create_end_entity, but not /endentityprofilesrules/12345 */

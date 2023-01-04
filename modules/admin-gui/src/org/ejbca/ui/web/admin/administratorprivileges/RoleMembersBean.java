@@ -25,11 +25,11 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -67,7 +67,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * 
  */
 @ViewScoped
-@ManagedBean
+@Named
 public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;

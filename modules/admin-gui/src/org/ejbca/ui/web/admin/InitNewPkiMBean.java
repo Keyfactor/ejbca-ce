@@ -34,11 +34,11 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -105,7 +105,7 @@ import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
-@ManagedBean
+@Named
 @SessionScoped
 public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
