@@ -24,12 +24,12 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.renderkit.html.util.AddResource;
@@ -82,7 +82,7 @@ import org.ejbca.util.query.Query;
  *
  */
 @ViewScoped
-@ManagedBean(name="approvalActionManagedBean")
+@Named("approvalActionManagedBean")
 public class ApproveActionManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1940920496104779323L;
     private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);

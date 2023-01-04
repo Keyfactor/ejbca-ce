@@ -22,10 +22,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -51,7 +51,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  *
  */
 @ViewScoped
-@ManagedBean(name="viewCertificateMBean")
+@Named("viewCertificateMBean")
 public class ViewCertificateManagedBean extends BaseManagedBean implements Serializable {
     private static final Logger log = Logger.getLogger(ViewCertificateManagedBean.class);
 
