@@ -1138,6 +1138,11 @@
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
 		    	<exclude unless="edition.is.ee" name="modules/msae/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/cits/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/ejbca-common-web/src/org/ejbca/core/model/services/workers/PreCertificateRevocationWorker.java"/>
+		    	<exclude unless="edition.is.ee" name="modules/ejbca-common/src/org/ejbca/core/protocol/msae/EnrollmentException.java"/>
+		    	<exclude unless="edition.is.ee" name="modules/ejbca-common/src/org/ejbca/core/protocol/msae/LDAPAttributeHelper.java"/>
+		    	<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
+		    	<exclude unless="edition.is.ee" name="modules/systemtests/src/org/ejbca/core/ejb/crl/CrlDataTestSessionBean.java"/>
                 <!-- List of modules to exclude from non-eIDAS editions -->
 		    	<!-- Exclude standard values if eIDAS edition for which we will include the updated version below -->
                 <exclude if="build.contains.eidas" name="src/java/defaultvalues.properties"/> 
