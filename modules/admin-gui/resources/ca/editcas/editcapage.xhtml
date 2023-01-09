@@ -1229,7 +1229,7 @@
 					</h:panelGroup>
 					
 					<h:panelGroup
-						rendered="#{(not editCAsMBean.waitingResponse) 
+						rendered="#{editCAsMBean.caInfoDto.caTypeX509 and (not editCAsMBean.waitingResponse) 
 									and (not editCAsMBean.caUninitialized)}">
 						<h:outputLabel 
 							value="#{web.text.CACERTIFICATEALTERNATECHAIN}" style="font-weight: bold;" />
@@ -1242,7 +1242,7 @@
 							escape="false" styleClass="helpReference" />
 					</h:panelGroup>
 					<h:panelGroup 
-						rendered="#{(not editCAsMBean.waitingForResponse) 
+						rendered="#{editCAsMBean.caInfoDto.caTypeX509 and (not editCAsMBean.waitingForResponse) 
 									and (not editCAsMBean.caUninitialized)}">
 							<h:panelGroup id="alternatecertchainssection">
 								<ui:repeat value="#{editCAsMBean.alternateCertChains}" var="altchain">
