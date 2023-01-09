@@ -10,13 +10,13 @@
 
 if [ -z "$EJBCA_HOME" ] ; then
 	EJBCA_FILE="$0" 
-	EJBCA_HOME=`echo $(dirname $(dirname $EJBCA_FILE))`
+    EJBCA_HOME="$(dirname "$(dirname "$EJBCA_FILE")")"
 fi
 
-JAVACMD=`which java`
+JAVACMD=$(which java)
 # Check that JAVA_HOME is set
-if [ ! -n "$JAVA_HOME" ]; then
-    if [ ! -n "$JAVACMD" ]
+if [ -z "$JAVA_HOME" ]; then
+    if [ -z "$JAVACMD" ]
     then
         echo "You must set JAVA_HOME before running the nCipherHSM cli."
         exit 1
@@ -25,9 +25,9 @@ else
     JAVACMD=$JAVA_HOME/bin/java
 fi
 
-if [ -z $NFAST_HOME ]; then
-        echo "Warning: NFAST_HOME not set, using default to /opt/nfast"
-        NFAST_HOME=/opt/nfast
+if [ -z "$NFAST_HOME" ]; then
+    echo "Warning: NFAST_HOME not set, using default to /opt/nfast"
+    NFAST_HOME=/opt/nfast
 fi
 
 NFAST_JARS=$NFAST_HOME/java/classes
@@ -35,15 +35,15 @@ NFAST_JARS=$NFAST_HOME/java/classes
 # Add nfast's JARs to classpath
 for jar in rsaprivenc.jar nfjava.jar kmjava.jar kmcsp.jar jutils.jar
 do
-        CLASSES="$CLASSES:$NFAST_JARS/$jar"
+    CLASSES="$CLASSES:$NFAST_JARS/$jar"
 done
 
-if [ ! -f $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar ] ; then
+if [ ! -f "$EJBCA_HOME/dist/clientToolBox/clientToolBox.jar" ] ; then
 	echo "You have to build the ClientToolBox before running this command."
 	exit 1
 fi
 
 # Finally run java
 #set -x
-$JAVACMD -cp $CLASSES -Dlog4j1.compatibility=true -jar $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar NCipherHSMKeyTool "${@}"
+"$JAVACMD" -cp "$CLASSES" -Dlog4j1.compatibility=true -jar "$EJBCA_HOME/dist/clientToolBox/clientToolBox.jar" NCipherHSMKeyTool "${@}"
 
