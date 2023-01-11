@@ -20,10 +20,12 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -43,6 +45,8 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * Managed bean for edit validators page (editvalidators.xhtml).
  *
  */
+@Named("validatorsBean")
+@SessionScoped
 public class ValidatorsBean extends BaseManagedBean {
 
     private static final long serialVersionUID = 1969611638716145216L;

@@ -22,11 +22,15 @@ import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -39,15 +43,21 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  */
+@Named("editUserDatasoucesMBean")
+@ViewScoped
 public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EditUserDatasoucesMBean.class);
-
-    private DatasourceGui datasourceGui = null;
+    
+    @Inject
     private UserDatasoucesMBean userDatasoucesMBean;
+  
+    private DatasourceGui datasourceGui = null;
     private TreeMap<String, Integer> modifyableFieldTexts = null;
 
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private UserDataSourceSessionLocal userdatasourcesession;
 
@@ -171,7 +181,7 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
     }
 
     public List<SelectItem> getApplicableCAsSeletItemList() {
-        TreeMap<String, Integer> caNames = getEjbcaWebBean().getCANames();
+        TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
         final List<SelectItem> ret = new ArrayList<>();
         if (getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.ROLE_ROOT.resource())) {
             ret.add(new SelectItem(BaseUserDataSource.ANYCA, EjbcaJSFHelper.getBean().getText().get("ANYCA")));
