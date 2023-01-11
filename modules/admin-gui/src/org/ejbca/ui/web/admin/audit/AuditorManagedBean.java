@@ -26,9 +26,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -73,6 +75,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  * getConditions() will handle special cases when HTTP GET parameters are passed (e.g. show history for a username).
  * 
  */
+@Named("auditor")
+@SessionScoped
 public class AuditorManagedBean extends BaseManagedBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -657,7 +661,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
             }
             
             try {
-                auditExporter = exporterClass.newInstance();
+                auditExporter = exporterClass.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 log.warn("AuditExporter for " + getDevice() + " is not configured correctly.", e);
             }
