@@ -166,7 +166,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
 
     @Override
     public boolean isFinalizeEnrollmentRendered() {
-        return isStatusAllowsEnrollment();
+        return isStatusAllowsEnrollment() && getEndEntityInformation()!=null;
     }
 
     public boolean isParamEnrollmentCodeEmpty() {
