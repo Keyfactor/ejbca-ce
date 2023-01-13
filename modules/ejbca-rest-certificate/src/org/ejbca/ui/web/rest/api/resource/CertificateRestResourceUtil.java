@@ -112,7 +112,7 @@ public class CertificateRestResourceUtil {
         return availableCAs;
     }
 
-    private static Integer getKeyFromMapByValue(final Map<Integer, String> map, final String value) {
+    public static Integer getKeyFromMapByValue(final Map<Integer, String> map, final String value) {
         for(Integer key : map.keySet()) {
             if(map.get(key).equals(value)) {
                 return key;
