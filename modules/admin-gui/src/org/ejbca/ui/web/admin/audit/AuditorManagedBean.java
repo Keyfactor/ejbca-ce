@@ -56,10 +56,7 @@ import org.cesecore.util.XmlSerializer;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
@@ -108,8 +105,6 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
     private final List<SelectItem> conditionsOptionsExact = new ArrayList<>();
     private final List<SelectItem> conditionsOptionsContains = new ArrayList<>();
     private final List<SelectItem> conditionsOptionsNumber = new ArrayList<>();
-    private final List<SelectItem> cmsSigningCaOptions = new ArrayList<>();
-    private Integer cmsSigningCa = null;
 	private String conditionColumn = AuditLogEntry.FIELD_SEARCHABLE_DETAIL2;
 	private AuditSearchCondition conditionToAdd;
 	private List<AuditSearchCondition> conditions = new ArrayList<>();
@@ -194,7 +189,6 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 		}
 		// By default, don't show the authorized to resource events
 		conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_EVENTTYPE, conditionsOptionsExact, eventTypeOptions, Condition.NOT_EQUALS, EventTypes.ACCESS_CONTROL.name()));
-		updateCmsSigningCas();
 	}
 
 	public List<SelectItem> getDevices() {
@@ -594,48 +588,6 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 		};
 	}
 
-    private void updateCmsSigningCas() {
-        final Map<Integer, String> map = caSession.getCAIdToNameMap();
-        cmsSigningCaOptions.clear();
-        for (int caid :  caSession.getAuthorizedCaIds(EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject())) {
-            // TODO: Would be nice to check if the CMS signer service is activated here before we add it
-            cmsSigningCaOptions.add(new SelectItem(caid, map.get(caid)));
-        }
-        if (cmsSigningCa == null && !cmsSigningCaOptions.isEmpty()) {
-            cmsSigningCa = (Integer) cmsSigningCaOptions.get(0).getValue();
-        }
-    }
-	public List<SelectItem> getCmsSigningCas() {
-	    return cmsSigningCaOptions;
-	}
-	public Integer getCmsSigningCa() {
-	    return cmsSigningCa;
-	}
-	public void setCmsSigningCa(Integer cmsSigningCa) {
-	    this.cmsSigningCa = cmsSigningCa;
-	}
-	public void downloadResultsCms() {
-        try {
-            if (cmsSigningCa == null) {
-                addErrorMessage("AUDIT_INVALIDCMS");
-            } else {
-                final CmsCAServiceRequest request = new CmsCAServiceRequest(exportToByteArray(), CmsCAServiceRequest.MODE_SIGN);
-                final CAAdminSession caAdminSession = new EjbLocalHelper().getCaAdminSession();
-                final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getAdmin();
-                final CmsCAServiceResponse resp = (CmsCAServiceResponse) caAdminSession.extendedService(authenticationToken, cmsSigningCa, request);
-                try {
-                    downloadResults(resp.getCmsDocument(), "application/octet-stream", "export-"+results.get(0).getTimeStamp()+".p7m");
-                } catch (IOException e) {
-                    log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-                    addNonTranslatedErrorMessage(e);
-                }
-            }
-        } catch (Exception e) {
-            log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            addNonTranslatedErrorMessage(e);
-        }
-	}
-
     public void downloadResults() {
         try {
             // text/xml doesn't work since it gets filtered and all non-ASCII bytes get encoded as entities as if they were Latin-1 (ECA-5831)
@@ -657,7 +609,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
             }
             
             try {
-                auditExporter = exporterClass.newInstance();
+                auditExporter = exporterClass.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 log.warn("AuditExporter for " + getDevice() + " is not configured correctly.", e);
             }
