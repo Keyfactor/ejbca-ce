@@ -5,12 +5,13 @@ import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.certificates.certificate.ssh.SshPublicKey;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
+import org.ejbca.ui.web.rest.api.validator.ValidSshCertificateRestRequest;
 
 import java.io.IOException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Map;
-
+@ValidSshCertificateRestRequest
 public class SshCertificateRequestRestRequest {
     private static final long serialVersionUID = 1L;
 
