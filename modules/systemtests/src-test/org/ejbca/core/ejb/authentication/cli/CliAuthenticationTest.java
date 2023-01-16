@@ -95,7 +95,7 @@ public class CliAuthenticationTest {
         }
         final Role role = roleSession.persistRole(internalToken, new Role(null, CLI_TEST_ROLENAME, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null));
         roleMemberSession.persist(internalToken, new RoleMember(CliAuthenticationTokenMetaData.TOKEN_TYPE,
-                RoleMember.NO_ISSUER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 CliAuthenticationTestHelperSessionRemote.USERNAME, role.getRoleId(), null));
         roleId = role.getRoleId();
     }

@@ -122,7 +122,7 @@ public class RaRoleMemberBean implements Serializable {
                 roleMember = null;
             }
         } else {
-            roleMember = new RoleMember("", RoleMember.NO_ISSUER, 0, 0, "", 0, "");
+            roleMember = new RoleMember("", RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, 0, 0, "", 0, "");
             // Default values
             if (StringUtils.isEmpty(tokenType)) {
                 tokenType = "CertificateAuthenticationToken";
