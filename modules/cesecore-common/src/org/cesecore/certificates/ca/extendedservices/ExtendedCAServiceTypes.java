@@ -23,6 +23,10 @@ public class ExtendedCAServiceTypes {
     @Deprecated //Removed in EJBCA 6.0.0, and retained to support migration. Remove once support for upgrading from 4.0.x is dropped. 
 	public static final int TYPE_OCSPEXTENDEDSERVICE   = 1; 	
     // Number 2 was XKMS, do not re-use this as it might cause interoperability/upgrade issues from older installations that had it
+    /**
+     * @deprecated Since EJBCA 8.0.0, where the CMS extended service was removed. 
+     */
+    @Deprecated
 	public static final int TYPE_CMSEXTENDEDSERVICE = 3;
 	
 	@Deprecated //Removed in EJBCA 7.1.0, and retained to support migration. Remove once support for upgrading from 7.0.x is dropped.
