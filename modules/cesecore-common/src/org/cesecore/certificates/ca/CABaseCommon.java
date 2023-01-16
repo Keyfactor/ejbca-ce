@@ -812,6 +812,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         data.put(APPROVALPROFILE, approvalProfileID);
     }
     
+    @SuppressWarnings("deprecation")
     protected ExtendedCAService getExtendedCAService(int type) {
         ExtendedCAService returnval = null;
         try {
@@ -831,7 +832,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                             log.info("Found an XKMS CA service type. Will not create the deprecated service.");
                             break;
                         case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
-                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService";
+                            // CMS service is deprecated, so no action required. 
                             break;
                         case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
                             implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService";
