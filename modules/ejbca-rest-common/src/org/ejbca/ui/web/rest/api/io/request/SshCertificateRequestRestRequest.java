@@ -1,6 +1,7 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.certificates.certificate.ssh.SshPublicKey;
@@ -9,8 +10,13 @@ import org.ejbca.ui.web.rest.api.validator.ValidSshCertificateRestRequest;
 
 import java.io.IOException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+/**
+ * A class representing the input for SSH certificate request REST method.
+ */
 @ValidSshCertificateRestRequest
 public class SshCertificateRequestRestRequest {
     private static final long serialVersionUID = 1L;
@@ -29,9 +35,9 @@ public class SshCertificateRequestRestRequest {
     private String publicKey;
     @ApiModelProperty(value = "Valid principals", example = "Wishman Bradman")
     private List<String> principals;
-    @ApiModelProperty(value = "Critical options", example = "\"force-command\": \".\\init.sh\", \"source-address\": \"1.2.3.0/24,1.10.10.1/32\"")
-    private Map<String, String> criticalOptions;
-    @ApiModelProperty(value = "Extensions", example = "\"permit-x11-forwarding\": \"\"")
+    @ApiModelProperty(value = "Critical options")
+    private SshCriticalOptions criticalOptions;
+    @ApiModelProperty(value = "Extensions", example = "“permit-x11-forwarding“: ““")
     private Map<String, byte[]> additionalExtensions;
     @ApiModelProperty(value = "Username", example = "JohnDoe")
     private String username;
@@ -43,7 +49,7 @@ public class SshCertificateRequestRestRequest {
     public SshCertificateRequestRestRequest() {
     }
 
-    public SshCertificateRequestRestRequest(String endEntityProfile, String certificateProfile, String certificateAuthority, String keyId, String comment, String publicKey, List<String> principals, Map<String, String> criticalOptions, Map<String, byte[]> additionalExtensions, String username, String serialNumber, String password) {
+    public SshCertificateRequestRestRequest(String endEntityProfile, String certificateProfile, String certificateAuthority, String keyId, String comment, String publicKey, List<String> principals, SshCriticalOptions criticalOptions, Map<String, byte[]> additionalExtensions, String username, String serialNumber, String password) {
         this.endEntityProfile = endEntityProfile;
         this.certificateProfile = certificateProfile;
         this.certificateAuthority = certificateAuthority;
@@ -114,11 +120,11 @@ public class SshCertificateRequestRestRequest {
         this.principals = principals;
     }
 
-    public Map<String, String> getCriticalOptions() {
+    public SshCriticalOptions getCriticalOptions() {
         return criticalOptions;
     }
 
-    public void setCriticalOptions(Map<String, String> criticalOptions) {
+    public void setCriticalOptions(SshCriticalOptions criticalOptions) {
         this.criticalOptions = criticalOptions;
     }
 
@@ -177,13 +183,25 @@ public class SshCertificateRequestRestRequest {
          */
         public SshRequestMessage toSshRequestMessage(final SshCertificateRequestRestRequest sshCertificateRequestRestRequest) throws IOException, SshKeyException, InvalidKeySpecException {
             SshPublicKey pubKey = SshKeyFactory.INSTANCE.extractSshPublicKeyFromFile(sshCertificateRequestRestRequest.getPublicKey().getBytes());
+            Map<String, String> criticalOptionsMsg = new HashMap<>();
+            SshCriticalOptions criticalOptionsRequest = sshCertificateRequestRestRequest.getCriticalOptions();
+            if (criticalOptionsRequest!=null) {
+                String forceCommand = criticalOptionsRequest.getForceCommand();
+                if (StringUtils.isNotBlank(forceCommand)) {
+                    criticalOptionsMsg.put("force-command", forceCommand);
+                }
+                String sourceAddress = criticalOptionsRequest.getSourceAddress();
+                if (StringUtils.isNotBlank(forceCommand)) {
+                    criticalOptionsMsg.put("source-address", sourceAddress);
+                }
+            }
             final byte[] sshPublicKey = pubKey.encode();
             return new SshRequestMessage.Builder()
                 .keyId(sshCertificateRequestRestRequest.getKeyId())
                 .comment(sshCertificateRequestRestRequest.getComment())
                 .publicKey(sshPublicKey)
                 .principals(sshCertificateRequestRestRequest.getPrincipals())
-                .criticalOptions(sshCertificateRequestRestRequest.getCriticalOptions())
+                .criticalOptions(criticalOptionsMsg)
                 .additionalExtensions(sshCertificateRequestRestRequest.getAdditionalExtensions())
                 .username(sshCertificateRequestRestRequest.getUsername())
                 .serialNumber(sshCertificateRequestRestRequest.getSerialNumber())
