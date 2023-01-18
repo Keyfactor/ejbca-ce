@@ -70,6 +70,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -127,8 +128,6 @@ import org.junit.Test;
 
 /**
  * System tests for the upgrade session bean. 
- * 
- * @version $Id$
  */
 @SuppressWarnings("deprecation")
 public class UpgradeSessionBeanTest {
@@ -159,6 +158,7 @@ public class UpgradeSessionBeanTest {
     private static AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
+    private AvailableExtendedKeyUsagesConfiguration ekuConfigBackup; 
     private GlobalUpgradeConfiguration gucBackup;
     private GlobalConfiguration gcBackup;
     /** Dummy CA to use where a CA reference is required */
@@ -187,6 +187,8 @@ public class UpgradeSessionBeanTest {
     public void setUp() {
         cceConfigBackup = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession.
                 getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+        ekuConfigBackup = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.
+                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
         gucBackup = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         gcBackup = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
@@ -194,6 +196,7 @@ public class UpgradeSessionBeanTest {
     @After
     public void tearDown() throws Exception {
         globalConfigSession.saveConfiguration(alwaysAllowtoken, cceConfigBackup);
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, ekuConfigBackup);
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gucBackup);
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gcBackup);
     }
@@ -1420,7 +1423,27 @@ public class UpgradeSessionBeanTest {
             globalConfigSession.saveConfiguration(alwaysAllowtoken, estConfiguration);
         }
     }
-        
+
+    @Test
+    public void testUpgradeDocSigningEKU800() throws AuthorizationDeniedException {
+        // Set previous upgraded to 7.11 (config is backed up and restored in After method)
+        final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.11.0");
+        guc.setPostUpgradedToVersion("7.11.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        // Make sure the EKU OID is removed so we can see that it shows up after upgrade
+        AvailableExtendedKeyUsagesConfiguration config =
+                (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
+        if (config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36")) {
+            config.removeExtKeyUsage("1.3.6.1.5.5.7.3.36");
+        }
+        assertFalse("Doc signing EKU should not be present after removal", config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36"));
+        // Upgrade to 8.0.0, doc signing eku should now appear
+        upgradeSession.upgrade(null, "7.11.0", false);
+        config = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
+        assertTrue("Doc signing EKU should be present after upgrade", config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36"));
+    }
+
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
         final ExtendedInformation extInfo = new ExtendedInformation();
         if (startTime != null) {

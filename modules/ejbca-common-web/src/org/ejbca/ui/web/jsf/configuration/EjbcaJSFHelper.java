@@ -15,6 +15,8 @@ package org.ejbca.ui.web.jsf.configuration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 
+import java.io.Serializable;
+
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 
@@ -23,9 +25,8 @@ import javax.faces.context.FacesContext;
  *
  * Contains methods for such things as language, themes ext
  *
- * @version $Id$
  */
-public interface EjbcaJSFHelper {
+public interface EjbcaJSFHelper extends Serializable {
 
     void setEjbcaWebBean(EjbcaWebBean ejbcawebbean);
 

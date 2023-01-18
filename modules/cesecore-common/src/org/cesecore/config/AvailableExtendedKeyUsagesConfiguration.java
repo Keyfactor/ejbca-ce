@@ -27,8 +27,6 @@ import org.cesecore.configuration.ConfigurationBase;
 
 /**
  * This file handles configuration of Available Extended Key Usages
- *
- * @version $Id$
  */
 public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase implements Serializable{
 
@@ -43,7 +41,8 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         super();
     }
 
-    /** Creates a new instance of AvailableExtendedKeyUsagesConfiguration */
+    /** Creates a new instance of AvailableExtendedKeyUsagesConfiguration with default built-in values
+     * the first time configuration is created. */
     public AvailableExtendedKeyUsagesConfiguration()  {
        super();
        // Before EJBCA 6.4.0 this was configured in a property file
@@ -112,6 +111,8 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
        // The id-PIV-cardAuth keyPurposeID specifies that the public key is used to authenticate the PIV-I card rather than the PIV-I card holder.
        // http://www.idmanagement.gov/sites/default/files/documents/pivi_certificate_crl_profile.pdf
        addExtKeyUsage("2.16.840.1.101.3.6.8", "EKU_NIST_PIVCARDAUTH");
+       // RFC9336. https://www.rfc-editor.org/rfc/rfc9336.html
+       addExtKeyUsage("1.3.6.1.5.5.7.3.36", "EKU_DOCUMENT_SIGNING_RFC9336");
     }
 
     @SuppressWarnings("unchecked")
