@@ -19,8 +19,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -41,6 +43,8 @@ import org.cesecore.util.ui.DynamicUiProperty;
 /**
  *
  */
+@Named("remoteAuthenticationMBean")
+@SessionScoped
 public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
 
     private static final long serialVersionUID = 1L;
