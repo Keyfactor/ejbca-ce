@@ -137,5 +137,16 @@ public class AvailableExtendedKeyUsagesConfigTest {
 
     }
 
-    
+    /** A random selection test that default EKUs are added when creating the configuration the first time */
+    @Test
+    public void testDefaults() throws Exception {
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration();
+        List<String> oids = ekuConfig.getAllOIDs();
+        assertTrue("Any extended key usage should be available", oids.contains("2.5.29.37.0"));
+        assertEquals("Incorrect language string for oid 2.5.29.37.0", "EKU_PKIX_ANYEXTENDEDKEYUSAGE", ekuConfig.getExtKeyUsageName("2.5.29.37.0"));
+        assertTrue("MS smart card logon key usage should be available", oids.contains("1.3.6.1.4.1.311.20.2.2"));
+        assertEquals("Incorrect language string for oid 1.3.6.1.4.1.311.20.2.2", "EKU_MS_SMARTCARDLOGON", ekuConfig.getExtKeyUsageName("1.3.6.1.4.1.311.20.2.2"));
+        assertTrue("RFC9336 document signing key usage should be available", oids.contains("1.3.6.1.5.5.7.3.36"));
+        assertEquals("Incorrect language string for oid 1.3.6.1.5.5.7.3.36", "EKU_DOCUMENT_SIGNING_RFC9336", ekuConfig.getExtKeyUsageName("1.3.6.1.5.5.7.3.36"));
+    }
 }
