@@ -53,6 +53,9 @@ import javax.annotation.PostConstruct;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -75,9 +78,8 @@ import java.util.TreeSet;
  * JSF MBean backing the certificate profile pages.
  *
  */
-// Declarations in faces-config.xml
-//@javax.faces.bean.ViewScoped
-//@javax.faces.bean.ManagedBean(name="certProfileBean")
+@Named("certProfileBean")
+@ViewScoped
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
