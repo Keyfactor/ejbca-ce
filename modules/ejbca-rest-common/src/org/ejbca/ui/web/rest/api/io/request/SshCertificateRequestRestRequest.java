@@ -29,21 +29,21 @@ public class SshCertificateRequestRestRequest {
     private String certificateAuthority;
     @ApiModelProperty(value = "SSH Key Identifier", example = "ski-02")
     private String keyId;
-    @ApiModelProperty(value = "Comment", example = "Yellow fish")
+    @ApiModelProperty(value = "Comment", example = "Yellow fish under blue water")
     private String comment;
     @ApiModelProperty(value = "Public Key", example = "ssh-rsa AAA...EWj")
     private String publicKey;
-    @ApiModelProperty(value = "Valid principals", example = "Wishman Bradman")
+    @ApiModelProperty(value = "Valid principals", example = "[“Wishman“, “Bradman“]")
     private List<String> principals;
     @ApiModelProperty(value = "Critical options")
     private SshCriticalOptions criticalOptions;
-    @ApiModelProperty(value = "Extensions", example = "“permit-x11-forwarding“: ““")
+    @ApiModelProperty(hidden = true) // Support in future
     private Map<String, byte[]> additionalExtensions;
     @ApiModelProperty(value = "Username", example = "JohnDoe")
     private String username;
     @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Serial", example = "1")
+    @ApiModelProperty(hidden = true)  // Support in future
     private String serialNumber;
 
     public SshCertificateRequestRestRequest() {
@@ -183,6 +183,8 @@ public class SshCertificateRequestRestRequest {
          */
         public SshRequestMessage toSshRequestMessage(final SshCertificateRequestRestRequest sshCertificateRequestRestRequest) throws IOException, SshKeyException, InvalidKeySpecException {
             SshPublicKey pubKey = SshKeyFactory.INSTANCE.extractSshPublicKeyFromFile(sshCertificateRequestRestRequest.getPublicKey().getBytes());
+            final byte[] sshPublicKey = pubKey.encode();
+
             Map<String, String> criticalOptionsMsg = new HashMap<>();
             SshCriticalOptions criticalOptionsRequest = sshCertificateRequestRestRequest.getCriticalOptions();
             if (criticalOptionsRequest!=null) {
@@ -195,7 +197,6 @@ public class SshCertificateRequestRestRequest {
                     criticalOptionsMsg.put("source-address", sourceAddress);
                 }
             }
-            final byte[] sshPublicKey = pubKey.encode();
             return new SshRequestMessage.Builder()
                 .keyId(sshCertificateRequestRestRequest.getKeyId())
                 .comment(sshCertificateRequestRestRequest.getComment())
