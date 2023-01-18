@@ -44,7 +44,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
 	private static final Logger log = Logger.getLogger(RevocationApprovalRequest.class);
-	private static final int LATEST_VERSION = 1;
+	private static final int LATEST_VERSION = 2;
 
 	private int approvalType = -1;
 	private String username = null;
@@ -122,9 +122,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 			}
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
-		} catch (ApprovalException e) {
-			throw new EJBException("This should never happen",e);
-		} catch (WaitingForApprovalException e) {
+		} catch (ApprovalException | WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (AlreadyRevokedException e) {
 			throw new ApprovalRequestExecutionException("End entity " + username + " was already revoked at execution time.");
@@ -231,17 +229,24 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 
 	@Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		super.readExternal(in);
+        super.readExternal(in);
         int version = in.readInt();
-        if(version == 1){
-    		username = (String) in.readObject();
-    		reason = in.readInt();
-    		approvalType = in.readInt();
-    		certificateSerialNumber = (BigInteger) in.readObject();
-    		issuerDN = (String) in.readObject();
-    		revocationDate = (Date) in.readObject();
+        if (version == 1) {
+            readVersionOneData(in);
         }
-	}
+        if (version == 2) {
+            readVersionOneData(in);
+            revocationDate = (Date) in.readObject();
+        }
+    }
+
+    private void readVersionOneData(final ObjectInput in) throws ClassNotFoundException, IOException {
+        username = (String) in.readObject();
+        reason = in.readInt();
+        approvalType = in.readInt();
+        certificateSerialNumber = (BigInteger) in.readObject();
+        issuerDN = (String) in.readObject();
+    }
 
 	public String getUsername() {
 	    return username;
