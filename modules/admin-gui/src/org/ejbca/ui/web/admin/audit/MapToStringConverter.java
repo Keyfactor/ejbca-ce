@@ -17,11 +17,12 @@ import java.util.Map;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 
 /**
  * One way converter from Map<Object,Object> to String.
- * @version $Id$
  */
+@FacesConverter("mapToStringConverter")
 public class MapToStringConverter implements Converter<Object> {
 
 	@Override

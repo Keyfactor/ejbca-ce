@@ -20,6 +20,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 import java.net.URI;
@@ -28,6 +29,7 @@ import java.net.URISyntaxException;
 /**
  * JSF validator to check that input fields are valid urls
  */
+@FacesValidator("urlValidator")
 public class UrlValidator implements Validator<Object> {
     private static final Logger log = Logger.getLogger(UrlValidator.class);
     
