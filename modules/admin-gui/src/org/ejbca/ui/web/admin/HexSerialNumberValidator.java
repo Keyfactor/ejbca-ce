@@ -19,6 +19,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
@@ -30,8 +31,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 /**
  * Validates hexadecimal serial numbers entered in the Admin GUI by constructing a BigInteger.
  * 
- * @version $Id$
  */
+@FacesValidator("hexSerialNumberValidator")
 public class HexSerialNumberValidator implements Validator<Object> {
 	private static final Logger log = Logger.getLogger(HexSerialNumberValidator.class);
 
