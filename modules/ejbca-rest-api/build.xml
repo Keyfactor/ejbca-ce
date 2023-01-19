@@ -37,6 +37,7 @@
         <path location="${mod.cesecore-ejb-interface.lib}"/>
         <path location="${mod.ejbca-rest-common.lib}"/>
         <path location="${mod.ejbca-rest-certificate.lib}"/>
+		<path location="${mod.ejbca-rest-coap.lib}"/>
         <path location="${mod.ejbca-rest-configdump.lib}"/>
         <path location="${mod.ejbca-rest-ca.lib}"/>
         <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
@@ -78,6 +79,7 @@
             <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
 			<lib file="${mod.ejbca-rest-common.lib}"/>
 			<lib file="${mod.ejbca-rest-certificate.lib}"/>
+			<lib file="${mod.ejbca-rest-coap.lib}"/>
 			<lib file="${mod.ejbca-rest-configdump.lib}"/>
 			<lib file="${mod.ejbca-rest-ca.lib}"/>
 			<lib file="${mod.ejbca-rest-cryptotoken.lib}"/>
