@@ -20,6 +20,7 @@
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in KeyTools -->
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.jacknji.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/> <!-- Needed for Webfault in exceptions -->
 	</path>
 
 	<path id="test.classpath">
