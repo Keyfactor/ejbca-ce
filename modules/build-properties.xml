@@ -415,6 +415,7 @@
 	<path id="lib.javax.activaton.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="activation-*.jar"/></path>
 	<path id="lib.javax.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.jws-api-*.jar"/></path>
 	<path id="lib.javax.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.xml.soap-api-*.jar"/></path>
+	<path id="lib.javax.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.mail-*.jar"/></path>
 
 
     <!-- Client jars needed din order to run a WS client on Java 9 and later where the WS stack is not part of the SDK -->
