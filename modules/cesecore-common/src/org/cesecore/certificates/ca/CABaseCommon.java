@@ -19,13 +19,16 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -61,6 +64,8 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     private static Logger log = Logger.getLogger(CABaseCommon.class);
     
     private static final InternalResources intres = InternalResources.getInstance();
+    
+    private static final Set<String> deprecatedServiceImplementations = new HashSet<>(Arrays.asList("org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService"));
     
     public static final String CATYPE = "catype";
     @Deprecated
@@ -812,7 +817,6 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         data.put(APPROVALPROFILE, approvalProfileID);
     }
     
-    @SuppressWarnings("deprecation")
     protected ExtendedCAService getExtendedCAService(int type) {
         ExtendedCAService returnval = null;
         try {
@@ -828,12 +832,6 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                         // See ECA-6341 and UpgradeSessionBean.migrateDatabase500()
                         log.info("implementation classname is null for extended service type: "+type+". Will try our known ones.");
                         switch (type) {
-                        case 2: // Old XKMSCAService that should not be used anymore
-                            log.info("Found an XKMS CA service type. Will not create the deprecated service.");
-                            break;
-                        case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
-                            // CMS service is deprecated, so no action required. 
-                            break;
                         case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
                             implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService";
                             break;
@@ -842,7 +840,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                             break;
                         }
                     }
-                    if (implClassname != null) {
+                    if (implClassname != null && !deprecatedServiceImplementations.contains(implClassname)) {
                         if (log.isDebugEnabled()) {
                             log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
                         }
