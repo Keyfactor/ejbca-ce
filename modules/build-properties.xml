@@ -417,6 +417,8 @@
 	<path id="lib.javax.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.xml.soap-api-*.jar"/></path>
 	<path id="lib.javax.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.mail-*.jar"/></path>
 
+	<path id="lib.javax.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="javax.servlet-api-*.jar"/></path>
+	
 
     <!-- Client jars needed din order to run a WS client on Java 9 and later where the WS stack is not part of the SDK -->
     <path id="soapclient.classpath">
