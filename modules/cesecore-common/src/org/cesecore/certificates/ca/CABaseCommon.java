@@ -919,6 +919,14 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
             retval = true;
         }
         
+        // Service type '3' was the CMS Service, which was removed in 8.0.0
+        if (externalServiceTypes.contains(3)) {
+            //This type has been removed, so remove it from any CAs it's been added to as well.
+            externalServiceTypes.remove(3);
+            data.put(EXTENDEDCASERVICES, externalServiceTypes);
+            retval = true;
+        }
+        
         for (Integer type : externalServiceTypes) {
             ExtendedCAService service = getExtendedCAService(type);
             if (service != null) {
