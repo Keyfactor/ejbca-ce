@@ -1,5 +1,5 @@
 "Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           			"Comment";
-"JavaBean Activation";			"activation-1.1.1.jar"							"CDDL 1.0"				"LICENSE-CCDL-1.0-GPL2CPE"		"https://mvnrepository.com/artifact/javax.activation/activation/1.1.1"	  		"Dependency of JavaMail";
+"Javax Activation";				"activation-1.1.1.jar"							"CDDL 1.0"				"LICENSE-CCDL-1.0-GPL2CPE"		"https://mvnrepository.com/artifact/javax.activation/activation/1.1.1"	  		"Dependency of JavaMail";
 "CDI Jakarta";					"jakarta.enterprise.cdi-api-3.0.0";				"EFSL1.0";   			"Eclipse Public License - v1.0";"https://www.cdi-spec.org/"; 													"Dependency injection for Managed Beans";
 "JavaEE";			            "javaee-api-8.0-1";                             "CDDL 1.0";             "LICENSE-CCDL-1.0-GPL2CPE";		"https://mvnrepository.com/artifact/javax/javaee-api/8.0.1";            		"JEE8 API libraries used for building EJBCA.";
 "Project GlassFish EJB API";	"javax.ejb-api-3.2.2.jar";						"CDDLv1.1,GPL2+CPE";    "LICENSE-CCDL-1.1-GPL2CPE";		"https://mvnrepository.com/artifact/javax.ejb/javax.ejb-api/3.2.2";				"EJB API Library";
