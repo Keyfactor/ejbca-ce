@@ -68,7 +68,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -189,10 +188,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 ParameterMode.ARGUMENT,
                 "catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal."));
         registerParameter(new Parameter(KEY_SPEC_KEY, "Key Specification", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key specification for CA signing key (soft crypto token) and OCSP/CMS service keys. Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192). " + "Keyspec for DSA keys is size of DSA keys (1024). "
+                "Key specification for CA signing key (soft crypto token) and OCSP service keys. Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192). " + "Keyspec for DSA keys is size of DSA keys (1024). "
                         + "Keyspec for ECDSA keys is name of curve or 'implicitlyCA'' (see docs)."));
         registerParameter(new Parameter(KEY_TYPE_KEY, "Key Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key type for CA signing key (soft crypto token) and OCSP/CMS service keys. Keytype is RSA, DSA, ECDSA, Ed25519 or Ed448"));
+                "Key type for CA signing key (soft crypto token) and OCSP service keys. Keytype is RSA, DSA, ECDSA, Ed25519 or Ed448"));
         registerParameter(new Parameter(VALIDITY_KEY, "Validity", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Validity of the CA in days."));
         //Policy ID keyt as mandatory parameter for legacy reasons.
@@ -602,8 +601,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         extendedServiceKeySpec = "2048";
                     }
                 }
-                extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CmsCertificate, " + dn, "",
-                        extendedServiceKeySpec, keytype));
                 extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                 cainfo = createX509CaInfo(dn, subjectAltName, caname, certificateProfileId, encodedValidity, signedByCAId, caToken, policies, extendedcaservices);
                 break;

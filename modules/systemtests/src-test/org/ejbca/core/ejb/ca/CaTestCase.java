@@ -90,7 +90,6 @@ import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalReques
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
@@ -352,9 +351,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-        // Set the CMS service non-active by default
-        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + dn, "", "" + keyStrength,
-                AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, caName, CAConstants.CA_ACTIVE,
