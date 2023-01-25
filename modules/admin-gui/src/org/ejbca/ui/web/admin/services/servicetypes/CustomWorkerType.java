@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +47,8 @@ public class CustomWorkerType extends WorkerType {
 	private static final long serialVersionUID = 1790314768357040269L;
     public static final String NAME = "CUSTOMWORKER";
 	
+    private static final String CUSTOMWORKER_SUB_PAGE = "customworker.xhtml";
+    
     private String autoClassPath;
     private String manualClassPath;
     private String propertyText;
@@ -54,7 +57,7 @@ public class CustomWorkerType extends WorkerType {
     private ListDataModel<CustomServiceWorkerProperty> customUiPropertyListDataModel = null;
 
 	public CustomWorkerType() {
-		super(ServiceTypeUtil.CUSTOMWORKER_SUB_PAGE, NAME, true);
+		super(CUSTOMWORKER_SUB_PAGE, NAME, true);
 		
 		compatibleActionTypeNames.add(CustomActionType.NAME);
 		compatibleActionTypeNames.add(NoActionType.NAME);
@@ -172,11 +175,12 @@ public class CustomWorkerType extends WorkerType {
 	        if (customUiPropertyListDataModel==null) {
 	            final List<CustomServiceWorkerProperty> customUiPropertyList = new ArrayList<>();
 	            try {
-	                final CustomServiceWorkerUiSupport customPublisherUiSupport = (CustomServiceWorkerUiSupport) Class.forName(getClassPath()).newInstance();
+	                final CustomServiceWorkerUiSupport customPublisherUiSupport = (CustomServiceWorkerUiSupport) Class.forName(getClassPath()).getDeclaredConstructor().newInstance();
 	                final Properties currentProperties = new Properties();
 	                currentProperties.load(new ByteArrayInputStream(getPropertyText().getBytes()));
 	                customUiPropertyList.addAll(customPublisherUiSupport.getCustomUiPropertyList(EjbcaJSFHelper.getBean().getAdmin(), currentProperties, EjbcaJSFHelper.getBean().getText()));
-	            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IOException e) {
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IOException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 	                log.error("Error while getting the custom publisher ui support!", e);
 	            } 
 	            this.customUiPropertyListDataModel = new ListDataModel<>(customUiPropertyList);

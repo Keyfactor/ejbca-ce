@@ -65,6 +65,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
+import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
@@ -79,6 +80,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     private static final AtomicInteger beanInstanceCount = new AtomicInteger(0);
     private static volatile ExecutorService executorService = null;
     private static final String TIMEOUT_MESSAGE_INDICATOR = "timed out";
+    
+    private static final long MAX_JOBS_PER_QUEUE_WORKER = 200000L;
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -306,7 +309,12 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(final AuthenticationToken admin, final BasePublisher publisher) {
+    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(final AuthenticationToken admin, final BasePublisher publisher,
+            final long maxNumberOfJobs) {   
+        if (maxNumberOfJobs > MAX_JOBS_PER_QUEUE_WORKER || maxNumberOfJobs <= 0) {
+            log.warn("Number of maxmimum jobs for the queue worker must be between 1 and " + MAX_JOBS_PER_QUEUE_WORKER + ". Using the default of "
+                    + PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS + " instead.");
+        }
         final PublishingResult result = new PublishingResult();
         PublishingResult intermediateResult;
         // Repeat this process as long as we actually manage to publish something
@@ -317,7 +325,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             intermediateResult = publisherQueueSession.doChunk(admin, publisher);
             result.append(intermediateResult);
             totalCount += intermediateResult.getSuccesses();
-        } while ((intermediateResult.getSuccesses() > 0) && (totalCount < 20000));
+        } while ((intermediateResult.getSuccesses() > 0) && (totalCount < maxNumberOfJobs));
         return result;
     }
 

@@ -28,10 +28,12 @@ public class NoActionType extends ActionType {
 
     public static final String NAME = "NOACTION";
 	
+    private static final String NOACTION_SUB_PAGE = "noaction.xhtml";
+    
 	private transient Properties properties = new Properties();
 	
 	public NoActionType() {
-		super(ServiceTypeUtil.NOACTION_SUB_PAGE, NAME, true);
+		super(NOACTION_SUB_PAGE, NAME, true);
 	}
 
     String unit;

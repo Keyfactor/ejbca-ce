@@ -32,8 +32,10 @@ public class CRLDownloadWorkerType extends BaseWorkerType {
     private boolean ignoreNextUpdate = false;
     private String maxDownloadSize = String.valueOf(CRLDownloadWorker.DEFAULT_MAX_DOWNLOAD_SIZE);
 
+    private static final String CRLDOWNLOADWORKER_SUB_PAGE = "crldownloadworker.xhtml";
+    
     public CRLDownloadWorkerType() {
-        super(ServiceTypeUtil.CRLDOWNLOADWORKER_SUB_PAGE, NAME, true, CRLDownloadWorker.class.getName());
+        super(CRLDOWNLOADWORKER_SUB_PAGE, NAME, true, CRLDownloadWorker.class.getName());
         // No action available for this worker
         addCompatibleActionTypeName(NoActionType.NAME);     
         // Only periodical interval available for this worker
