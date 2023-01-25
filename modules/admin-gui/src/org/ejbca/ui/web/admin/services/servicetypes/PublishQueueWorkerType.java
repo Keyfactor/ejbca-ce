@@ -31,10 +31,14 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 
     public static final String NAME = "PUBLISHQUEUEWORKER";
 
+    private static final String PUBLISHQUEUEPROCESSWORKER_SUB_PAGE = "publishqueueprocessworker.xhtml";
+    
 	private List<String> selectedPublisherIdsToCheck = new ArrayList<>();
+	
+	private long maxNumberOfEntriesToPublish = PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS;
 
 	public PublishQueueWorkerType(){
-		super(NAME, ServiceTypeUtil.PUBLISHQUEUEPROCESSWORKER_SUB_PAGE, PublishQueueProcessWorker.class.getName());
+		super(NAME, PUBLISHQUEUEPROCESSWORKER_SUB_PAGE, PublishQueueProcessWorker.class.getName());
 		// No action available for this worker
 		deleteAllCompatibleActionTypes();
 		addCompatibleActionTypeName(NoActionType.NAME);				
@@ -58,6 +62,7 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 			}
 		}
 		ret.setProperty(PublishQueueProcessWorker.PROP_PUBLISHER_IDS, publisherIdString);
+		ret.setProperty(PublishQueueProcessWorker.PROP_MAX_WORKER_JOBS, Long.toString(maxNumberOfEntriesToPublish));
 		return ret;
 	}
 	
@@ -72,6 +77,10 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 		for(int i=0;i<publisherIdsToCheck.length;i++){
 			selectedPublisherIdsToCheck.add(publisherIdsToCheck[i]);
 		}
+		//Soft upgrade for this value introduced in 7.12.0. The default prior to this version was 20000, so the value will be set to the default. 
+        if (properties.containsKey(PublishQueueProcessWorker.PROP_MAX_WORKER_JOBS)) {
+            maxNumberOfEntriesToPublish = Integer.valueOf(properties.getProperty(PublishQueueProcessWorker.PROP_MAX_WORKER_JOBS));
+        }
 	}
 
     public List<String> getSelectedPublisherIdsToCheck() {
@@ -80,6 +89,16 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 
     public void setSelectedPublisherIdsToCheck(List<String> selectedPublisherIdsToCheck) {
         this.selectedPublisherIdsToCheck = selectedPublisherIdsToCheck;
+    }
+
+
+    public long getMaxNumberOfEntriesToPublish() {
+        return maxNumberOfEntriesToPublish;
+    }
+
+
+    public void setMaxNumberOfEntriesToPublish(long maxNumberOfEntriesToPublish) {
+        this.maxNumberOfEntriesToPublish = maxNumberOfEntriesToPublish;
     }
 
 }
