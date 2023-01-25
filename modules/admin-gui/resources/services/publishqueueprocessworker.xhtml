@@ -45,7 +45,7 @@
 	</h:panelGroup>
 	
 	<h:panelGroup>
-		<h:outputText value="#{web.text.PUBLISHERQUEUEMAX}" />
+		<h:outputText value="#{web.text.PUBLISHERQUEUEMAX}" />		
 	</h:panelGroup>
 	<h:panelGroup>
 	<ui:remove>
@@ -59,6 +59,12 @@
 				value="#{editService.publishWorkerType.maxNumberOfEntriesToPublish}">
 				 <f:validator validatorId="noNegativeNumbersValidator"/>
 			</h:inputText>
+			<ui:remove>
+				<!-- Solve spacing with CSS  -->
+			</ui:remove>
+			<f:verbatim>&#xA0;&#xA0;</f:verbatim>
+			<h:outputText value="#{web.text.PUBLISHERQUEUEMAX_HELP}"
+			styleClass="help" />
 		</h:panelGroup>
 
 </ui:composition>
