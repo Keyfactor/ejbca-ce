@@ -419,7 +419,7 @@ public final class StringTools {
     public static String ipOctetsToString(final byte[] octets) {
         String ret = null;
         if (octets.length == 4) {
-            String ip = "";
+            StringBuilder ip = new StringBuilder(StringUtils.EMPTY);
             // IPv4 address
             for (int i = 0; i < 4; i++) {
                 // What is going on there is that we are promoting a (signed) byte to int,
@@ -431,15 +431,41 @@ public final class StringTools {
                 // AND with 0x000000FF clears out all of those bits.
                 final int intByte = 0x000000FF & octets[i];
                 final short t = (short) intByte; // NOPMD, we need short
-                if (StringUtils.isNotEmpty(ip)) {
-                    ip += ".";
+                if (StringUtils.isNotEmpty(ip.toString())) {
+                    ip.append(".");
                 }
-                ip += t;
+                ip.append(t);
             }
-            ret = ip;
+            ret = ip.toString();
         }
-        // TODO: IPv6
         return ret;
+    }
+    
+    /**
+     * Parses the IPv6 addresses extracted from CSR and converts them to proper format.
+     *  
+     * @param address IPv6 Address extracted from CSR
+     * @return the string containing the IPv6 address formatted (e.g. 2001:db8:3333:4444:CCCC:DDDD:EEEE:FFFF)
+     */
+    public static String convertToIpv6(final String address) {
+
+        String ret = StringUtils.EMPTY;
+
+        if (address.startsWith("#")) {
+            ret = address.replaceFirst("#", StringUtils.EMPTY);
+        }
+
+        StringBuilder ipV6 = new StringBuilder(StringUtils.EMPTY);
+
+        for (int i = 0; i < ret.length(); i++) {
+
+            ipV6.append(ret.charAt(i));
+
+            if (((i + 1) % 4) == 0 && (i + 1 != ret.length())) {
+                ipV6.append(":");
+            }
+        }
+        return ipV6.toString();
     }
 
     /**
