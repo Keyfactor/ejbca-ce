@@ -114,8 +114,8 @@ public class StringToolsTest {
     
     
     @Test
-    public void testIpV6OctetsToString() throws Exception {
-        log.trace(">testIpV6OctetsToString");
+    public void testIpV6FromString() throws Exception {
+        log.trace(">testIpV6FromString");
 
         final String ipV6Example1 = "#20010db8333344445555666677778888";        
         final String ipV6Example2 = "#20010db8000000000000000000000000";
@@ -125,7 +125,7 @@ public class StringToolsTest {
         assertEquals("2001:0db8:0000:0000:0000:0000:0000:0000", StringTools.convertToIpv6(ipV6Example2));  
         assertEquals("2001:0db8:0000:0000:0000:0000:1234:5678", StringTools.convertToIpv6(ipV6Example3));     
 
-        log.trace("<testIpV6OctetsToString");
+        log.trace("<testIpV6FromString");
     }
 
     @Test
