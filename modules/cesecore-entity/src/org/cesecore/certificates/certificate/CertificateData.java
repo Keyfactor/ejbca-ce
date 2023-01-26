@@ -54,6 +54,7 @@ import org.cesecore.util.StringTools;
                 @ColumnResult(name = "fingerprint"),
                 @ColumnResult(name = "serialNumber"),
                 @ColumnResult(name = "expireDate"),
+                @ColumnResult(name = "invalidityDate"),
                 @ColumnResult(name = "revocationDate"),
                 @ColumnResult(name = "revocationReason") }),
         @SqlResultSetMapping(name = "CertificateInfoSubset", columns = {
@@ -65,6 +66,7 @@ import org.cesecore.util.StringTools;
                 @ColumnResult(name = "serialNumber"),
                 @ColumnResult(name = "notBefore"),
                 @ColumnResult(name = "expireDate"),
+                @ColumnResult(name = "invalidityDate"),
                 @ColumnResult(name = "revocationDate"),
                 @ColumnResult(name = "revocationReason"),
                 @ColumnResult(name = "username"),
@@ -83,6 +85,7 @@ import org.cesecore.util.StringTools;
                 @ColumnResult(name = "type"),
                 @ColumnResult(name = "notBefore"),
                 @ColumnResult(name = "expireDate"),
+                @ColumnResult(name = "invalidityDate"),
                 @ColumnResult(name = "revocationDate"),
                 @ColumnResult(name = "revocationReason"),
                 @ColumnResult(name = "username"),
@@ -114,6 +117,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     private String serialNumber;
     private Long notBefore = null;  // @since EJBCA 6.6.0
     private long expireDate = 0;
+    private long invalidityDate = 0;
     private long revocationDate = 0;
     private int revocationReason = 0;
     private String base64Cert;
@@ -131,8 +135,8 @@ public class CertificateData extends BaseCertificateData implements Serializable
     
     /**
      * Entity holding info about a certificate. Create by sending in the certificate, which extracts (from the cert) fingerprint (primary key),
-     * subjectDN, issuerDN, serial number, expiration date. Status, Type, CAFingerprint, revocationDate and revocationReason are set to default values
-     * (CERT_UNASSIGNED, USER_INVALID, null, null and REVOCATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
+     * subjectDN, issuerDN, serial number, expiration date. Status, Type, CAFingerprint, invalidityDate, revocationDate and revocationReason are set to default values
+     * (CERT_UNASSIGNED, USER_INVALID, null, null, null and REVOCATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
      *
      * NOTE! Never use this constructor without considering the useBase64CertTable below!
      *
@@ -189,6 +193,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
                 setNotBefore(notBefore.getTime());
             }
             setExpireDate(CertTools.getNotAfter(certificate));
+            setInvalidityDate(-1L);
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(updatetime); // (new Date().getTime());
@@ -243,6 +248,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         setCaFingerprint(copy.getCaFingerprint());
         setNotBefore(copy.getNotBefore());
         setExpireDate(copy.getExpireDate());
+        setInvalidityDate(copy.getInvalidityDate());
         setRevocationDate(copy.getRevocationDate());
         setRevocationReason(copy.getRevocationReason());
         setUpdateTime(copy.getUpdateTime());
@@ -371,6 +377,17 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.expireDate = expireDate;
     }
 
+    @Override
+    public long getInvalidityDate() {
+        return invalidityDate;
+    }
+
+    @Override
+    public void setInvalidityDate(long invalidityDate) {
+        this.invalidityDate = invalidityDate;
+    }
+
+    
     @Override
     public long getRevocationDate() {
         return revocationDate;
@@ -660,6 +677,9 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (expireDate != certificateData.expireDate) {
             return false;
         }
+        if (invalidityDate != certificateData.invalidityDate) {
+            return false;
+        }
         if (revocationDate != certificateData.revocationDate) {
             return false;
         }
@@ -783,7 +803,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
             protectionStringBuilder.append(getSubjectDN());
         }
         protectionStringBuilder.append(getCaFingerprint()).append(getStatus()).append(getType())
-                .append(getSerialNumber()).append(getExpireDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
+                .append(getSerialNumber()).append(getExpireDate()).append(getInvalidityDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
                 .append(getUsername()).append(getTag()).append(getCertificateProfileId()).append(getUpdateTime()).append(getSubjectKeyId());
         if (version>=2) {
             // In version 2 for EJBCA 6.6 the following columns where added
