@@ -111,7 +111,48 @@ public class StringToolsTest {
         assertNull(StringTools.ipOctetsToString(notValid));
         log.trace("<testIpOctetsToString");
     }
+    
+    
+    @Test
+    public void testIpV6OctetsToString() throws Exception {
+        log.trace(">testIpV6OctetsToString");
 
+        final String ipV6Example1 = "#20010db8333344445555666677778888";        
+        final String ipV6Example2 = "#20010db8000000000000000000000000";
+        final String ipV6Example3 = "#20010db8000000000000000012345678";
+        
+        assertEquals("2001:0db8:3333:4444:5555:6666:7777:8888", StringTools.convertToIpv6(ipV6Example1));
+        assertEquals("2001:0db8:0000:0000:0000:0000:0000:0000", StringTools.convertToIpv6(ipV6Example2));  
+        assertEquals("2001:0db8:0000:0000:0000:0000:1234:5678", StringTools.convertToIpv6(ipV6Example3));     
+
+        log.trace("<testIpV6OctetsToString");
+    }
+
+    @Test
+    public void testIsIpV6Address() throws Exception {
+        log.trace(">testIsIpV6Address");
+        
+        final String ipV6Example1 = "2001:0db8:3333:4444:5555:6666:7777:8888";        
+        final String ipV6Example2 = "#20010db8000000000000000000000000";
+        final String ipV6Example3 = "2001:db8::";
+        final String ipV6Example4 = "2001:db8::1234:5678";
+        final String ipV6Example5 = "::1234:5678";
+        final String ipV6Example6 = "2001:0db8:0001:0000:0000:0ab9:C0A8:0102";
+        final String ipV6Example7 = "blabla";
+        final String ipV6Example8 = "";
+        
+        assertTrue("Valid ipv6 address parsed as invalid!", StringTools.isIpV6Address(ipV6Example1));
+        assertFalse("Invalid ipv6 address parsed as valid!", StringTools.isIpV6Address(ipV6Example2));  
+        assertTrue("Valid ipv6 address parsed as invalid!", StringTools.isIpV6Address(ipV6Example3));  
+        assertTrue("Valid ipv6 address parsed as invalid!", StringTools.isIpV6Address(ipV6Example4));  
+        assertTrue("Valid ipv6 address parsed as invalid!", StringTools.isIpV6Address(ipV6Example5));  
+        assertTrue("Valid ipv6 address parsed as invalid!", StringTools.isIpV6Address(ipV6Example6));  
+        assertFalse("Invalid ipv6 address parsed as valid!", StringTools.isIpV6Address(ipV6Example7));  
+        assertFalse("Invalid ipv6 address parsed as valid!", StringTools.isIpV6Address(ipV6Example8));  
+        
+        log.trace("<testIsIpV6Address");
+    }
+    
     /**
      * tests stripping whitespace
      *
