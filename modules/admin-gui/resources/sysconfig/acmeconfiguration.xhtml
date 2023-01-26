@@ -73,12 +73,10 @@
 
                 </h:dataTable>
                 <br/>
-                <h:commandLink action="#{acmeConfigMBean.addAlias}" styleClass="commandLink" title="#{web.text.SCEP_ADD_ALIAS}"
-                			   onclick="return inputIntoFieldIncludingEmptyString('aliases:currentAliasStr','aliases:newAlias','','#{web.text.ACME_ENTERNEWALIAS}');"
-                               rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
-                    <h:outputText value="#{web.text.ADD}"/>
-                </h:commandLink>
-
+                
+                <h:panelGrid columns="1">
+					<h:commandButton value="#{web.text.ADD}" action="#{acmeConfigMBean.addAlias}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				</h:panelGrid>
             </h:form>
             <h:panelGroup/>
 
