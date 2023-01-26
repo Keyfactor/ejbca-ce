@@ -116,6 +116,7 @@
             <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="notBefore"><column name="notBefore" column-definition="NUMBER(19)" nullable="true"/></basic>
             <basic fetch="EAGER" name="expireDate"><column name="expireDate" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="invalidityDate"><column name="invalidityDate" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="NUMBER(10)" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
@@ -151,6 +152,7 @@
             <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="notBefore"><column name="notBefore" column-definition="NUMBER(19)" nullable="true"/></basic>
             <basic fetch="EAGER" name="expireDate"><column name="expireDate" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="invalidityDate"><column name="invalidityDate" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="NUMBER(10)" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
