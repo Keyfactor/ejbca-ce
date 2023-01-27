@@ -56,7 +56,7 @@ CREATE INDEX certificatedata_idx18 ON CertificateData (issuerDN, status, crlPart
 -- Optimized index for CRL generation on Microsoft SQL Server (should be used instead of certificatedata_idx17 and certificatedata_idx18).
 -- CREATE NONCLUSTERED INDEX certificatedata_idx19 ON CertificateData (issuerDN, status, revocationDate, fingerprint, crlPartitionIndex) INCLUDE (expireDate, revocationReason, serialNumber);
 -- Index useful when searching for certificates with an invalidity date.
--- CREATE INDEX certificatedata_idx20 ON CertificateData (iivalidityDate);  
+-- CREATE INDEX certificatedata_idx20 ON CertificateData (invalidityDate);  
 
 CREATE INDEX historydata_idx1 ON CertReqHistoryData (username);
 CREATE INDEX historydata_idx3 ON CertReqHistoryData (serialNumber);
