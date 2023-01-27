@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,30 +10,30 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ocsp.extension.unid;
+package org.ejbca.core.ejb.ra;
+
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
- * 
- * @version $Id$
+ * Wraps an existing end entity. Used for change detection.
  *
+ * @see EndEntityManagementSessionBean#classifyUserDataChanges
  */
-public enum UnidFnrOCSPExtensionCode {
-    
-    ERROR_NO_ERROR(0),
-    ERROR_UNKNOWN(1),
-    ERROR_UNAUTHORIZED(2),
-    ERROR_NO_FNR_MAPPING(3),
-    ERROR_NO_SERIAL_IN_DN(4),
-    ERROR_SERVICE_UNAVAILABLE(5),
-    ERROR_CERT_REVOKED(6);
-    
-    private final int errorCode;
-    private UnidFnrOCSPExtensionCode(final int errorCode) {
-        this.errorCode = errorCode;
+public final class OriginalEndEntity {
+
+    private final EndEntityInformation endEntity;
+
+    /** Pass null if (and only if) the end entity does not exist */
+    public OriginalEndEntity(final EndEntityInformation endEntity) {
+        this.endEntity = endEntity;
     }
 
-    public int getValue() {
-        return errorCode;
+    public EndEntityInformation getEndEntity() {
+        return endEntity;
+    }
+
+    public boolean isExisting() {
+        return endEntity != null;
     }
 
 }

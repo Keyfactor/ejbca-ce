@@ -594,6 +594,10 @@ public interface EndEntityManagementSession {
      * remote. User data may contain a counter with nr of requests before used
      * should be set to generated. In this case this counter will be decreased,
      * and if it reaches 0 status will be generated.
+     * <p>
+     * Note that the database update is suppressed in case there were no modifications
+     * beside the modification time and the password hash. Also, transaction conflicts
+     * in UserData are resolved.
      *
      * @throws NoSuchEndEntityException if the user does not exist.
      */

@@ -107,13 +107,7 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
                 for (final ICustomPublisher customPublisher : serviceLoaderForCustomPublishers) {
                     final String languageFile = String.format("languages/languagefile.%s.properties", availablelanguages[i]);
                     if (customPublisher.getClass().getClassLoader().getResource(languageFile) == null) {
-                        log.info("The custom publisher '" + customPublisher.getClass().getName() +
-                            "' does not bundle a language file for the language '" + availablelanguages[i] + "'.");
-                        if (log.isDebugEnabled()) {
-                            log.debug("I looked for a language file in the the following location: " + languageFile);
-                            log.debug("If this is unexpected, you may contact the maintainer of the plugin and ask them to " +
-                                "bundle the missing language file with the plugin jar.");
-                        }
+                        // It is expected that custom publishers typically do not contain language files so don't log anything
                         continue;
                     }
                     try (final InputStream inputStream = customPublisher.getClass().getClassLoader().getResourceAsStream(languageFile)) {

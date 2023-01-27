@@ -62,6 +62,18 @@ public class CeSecoreNameStyle extends BCStyle {
     public static final ASN1ObjectIdentifier ROLE = new ASN1ObjectIdentifier("2.5.4.72");
 
     /**
+     * Matter VID, Matter Core specification 1.0, section 6.1.1, table 54. https://csa-iot.org/developer-resource/specifications-download-request/
+     * See also ECA-11258
+     */
+    public static final ASN1ObjectIdentifier VID = new ASN1ObjectIdentifier("1.3.6.1.4.1.37244.2.1");
+
+    /**
+     * Matter PID, Matter Core specification 1.0, section 6.1.1, table 54. https://csa-iot.org/developer-resource/specifications-download-request/
+     * See also ECA-11258
+     */
+    public static final ASN1ObjectIdentifier PID = new ASN1ObjectIdentifier("1.3.6.1.4.1.37244.2.2");
+
+    /**
      * default look up table translating OID values into their common symbols following
      * the convention in RFC 2253 with a few extras
      */
@@ -116,6 +128,8 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultSymbols.put(JURISDICTION_COUNTRY, "JurisdictionCountry");
         DefaultSymbols.put(ORGANIZATION_IDENTIFIER, "organizationIdentifier");
         DefaultSymbols.put(DESCRIPTION, "description");
+        DefaultSymbols.put(VID, "VID");
+        DefaultSymbols.put(PID, "PID");
 
         DefaultLookUp.put("c", C);
         DefaultLookUp.put("o", O);
@@ -157,6 +171,8 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultLookUp.put("jurisdictioncountry", JURISDICTION_COUNTRY);
         DefaultLookUp.put("organizationidentifier", ORGANIZATION_IDENTIFIER);
         DefaultLookUp.put("description", DESCRIPTION);
+        DefaultLookUp.put("vid", VID);
+        DefaultLookUp.put("pid", PID);
 
         DefaultStringStringLookUp.put("C", C.getId());
         DefaultStringStringLookUp.put("O", O.getId());
@@ -198,6 +214,8 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("JURISDICTIONCOUNTRY", JURISDICTION_COUNTRY.getId());
         DefaultStringStringLookUp.put("ORGANIZATIONIDENTIFIER", ORGANIZATION_IDENTIFIER.getId());
         DefaultStringStringLookUp.put("DESCRIPTION", DESCRIPTION.getId());
+        DefaultStringStringLookUp.put("VID", VID.getId());
+        DefaultStringStringLookUp.put("PID", PID.getId());
     }
 
     /**
