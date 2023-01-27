@@ -32,7 +32,6 @@
 		<path refid="lib.ctlog.classpath"/>
 		<path refid="lib.guava.classpath"/>
 		<path refid="lib.servlet.classpath"/>
-		<path refid="lib.mail.classpath"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.utils.classpath"/>
@@ -72,6 +71,10 @@
 	<path id="systemtests.classpath">
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
+		<path refid="lib.javax.activaton.classpath"/>
+		<path refid="lib.javax.mail.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/>
+		<path refid="lib.javax.xml.soap-api.classpath"/>
         <path refid="systemtests.classpath.nojee"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
@@ -120,7 +123,6 @@
 		<path refid="lib.commons-logging.classpath" />
 		<path refid="lib.servlet.classpath" />
 		<path refid="lib.ldap.classpath" />
-		<path refid="lib.mail.classpath" />
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.ejbca-common-web.classpath" />
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
