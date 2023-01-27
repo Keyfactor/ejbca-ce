@@ -251,7 +251,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (cainfo != null) {
             return cainfo.getCertificateChain();
         } else {
-            return new ArrayList<Certificate>();
+            return new ArrayList<>();
         }
     }
 
@@ -422,7 +422,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throws AuthorizationDeniedException, NoSuchEndEntityException, CertificateCreateException, CertificateRevokeException,
             InvalidAlgorithmException, ApprovalException, WaitingForApprovalException {
         final String username = req.getUsername();
-        EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
+        final EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
+        endEntityManagementSession.initializeEndEntityTransaction(username);
         if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
         }
@@ -521,7 +522,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         postCreateCertificate(admin, endEntityInformation, ca,
                                 new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false, certGenParams);
                         // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
-                        if (ca.isUseUserStorage() && endEntityInformation != null) {
+                        if (ca.isUseUserStorage()) {
                             finishUser(ca, endEntityInformation);
                         }
                     }
@@ -1248,6 +1249,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         
         if (!ca.getCAInfo().getFinishUser()) {
             cleanSerialnumberAndCsrFromUserData(data);
+            endEntityManagementSession.suppressUnwantedUserDataChanges(data.getUsername());
             return;
         }
         

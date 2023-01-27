@@ -273,9 +273,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
     @Test
     public void testSignSession() throws Exception {
-        createReverseEndEntity();
-        CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         try {
+            createReverseEndEntity();
+            CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
             // user that we know exists...
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate.", cert);
@@ -513,21 +513,11 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         }
 
-        int rsareversecaid = inforsareverse.getCAId();
-        if (!endEntityManagementSession.existsUser(RSA_REVERSE_USERNAME)) {
-            endEntityManagementSession.addUser(internalAdmin, RSA_REVERSE_USERNAME, "foo123", "C=SE,O=AnaTom,CN=" + RSA_REVERSE_USERNAME, null,
-                    "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, rsareversecaid);
-            log.debug("created user: " + RSA_REVERSE_USERNAME + ", foo123, C=SE, O=AnaTom, CN=" + RSA_REVERSE_USERNAME);
-        } else {
-            log.info("User " + RSA_REVERSE_USERNAME + " already exists, resetting status.");
-            EndEntityInformation userData = new EndEntityInformation("foorev", "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
-                    rsareversecaid, null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
-            userData.setPassword("foo123");
-            endEntityManagementSession.changeUser(internalAdmin, userData, false);
-            log.debug("Reset status to NEW");
-        }
+        final EndEntityInformation userData = new EndEntityInformation(RSA_REVERSE_USERNAME, "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
+                inforsareverse.getCAId(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
+        userData.setPassword("foo123");
+        endEntityManagementSession.addUser(internalAdmin, userData, false);
     }
 
     /**
@@ -1110,17 +1100,16 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
    @Test
     public void testDnOrder() throws Exception {
-        log.trace(">test22DnOrder()");
+        log.trace(">testDnOrder()");
         final String profileName = "TESTDNORDER";
         final String endEntityName = "TESTDNORDER";
-        // Create a good certificate profile (good enough), using QC statement
+        // Create a standard certificate profile (good enough)
         certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfileSession.addCertificateProfile(internalAdmin, profileName, certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId(profileName);
 
-        // Create a good end entity profile (good enough), allowing multiple UPN
-        // names
+        // Create a good end entity profile (good enough)
         endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
@@ -1161,8 +1150,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
             endEntityManagementSession.deleteUser(internalAdmin, endEntityName);
+            internalCertStoreSession.removeCertificatesByUsername(endEntityName);
         }
-        log.trace("<test22DnOrder()");
+        log.trace("<testDnOrder()");
     }
 
     @Test
