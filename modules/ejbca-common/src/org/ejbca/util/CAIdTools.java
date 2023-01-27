@@ -35,7 +35,6 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.services.IWorker;
@@ -338,12 +337,7 @@ public final class CAIdTools {
      */
     public static void rebuildExtendedServices(final CAInfo cainfo) {
         final List<ExtendedCAServiceInfo> extsvcs = new ArrayList<>();
-        final String casubjdn = cainfo.getSubjectDN();
         for (ExtendedCAServiceInfo extsvc : cainfo.getExtendedCAServiceInfos()) {
-            if (extsvc instanceof CmsCAServiceInfo) {
-                final CmsCAServiceInfo cmssvc = (CmsCAServiceInfo) extsvc;
-                extsvc = new CmsCAServiceInfo(extsvc.getStatus(), "CN=CMSCertificate, " + casubjdn, cmssvc.getSubjectAltName(), cmssvc.getKeySpec(), cmssvc.getKeyAlgorithm());
-            }
             extsvcs.add(extsvc);
         }
         cainfo.setExtendedCAServiceInfos(extsvcs);
