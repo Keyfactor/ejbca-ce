@@ -35,7 +35,19 @@ import org.cesecore.util.CeSecoreNameStyle;
  * This is a very complex class with lots of maps and stuff. It is because it is a first step of refactoring the DN/AltName/DirAttr handling. 
  * This previously consisted of lots of different arrays spread out all over the place, now it's gathered here in order to be able to get a view of it.
  * The underlying implementations have not changed much though, in order to still have things working, therefore there are lots of different maps and arrays, with
- * seemingly similar contents. 
+ * seemingly similar contents.
+ * 
+ * Adding new DN attributes:
+ * - dncomponents.properties.sample
+ * - profilemappings.properties
+ * - DnComponents.java (this file)
+ * - CeSecoreNameStyle.java
+ * - DNFieldExtractor.java
+ * - DNFIeldExtractorTest
+ * - DnComponentsTest
+ * - CertToolsUnitTest
+ * - UserFulFillEndEntityProfileTest
+ * - (other tests)
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -84,6 +96,8 @@ public class DnComponents {
         oids.put("jurisdictionstate", CeSecoreNameStyle.JURISDICTION_STATE);
         oids.put("jurisdictioncountry", CeSecoreNameStyle.JURISDICTION_COUNTRY);
         oids.put("organizationidentifier", CeSecoreNameStyle.ORGANIZATION_IDENTIFIER);
+        oids.put("vid", CeSecoreNameStyle.VID);
+        oids.put("pid", CeSecoreNameStyle.PID);
 
     }
     /** Default values used when constructing DN strings that are put in the database
@@ -91,7 +105,7 @@ public class DnComponents {
      */
     private static String[] dNObjectsForward = { "description", "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality", "role", "street", "pseudonym",
             "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e",
-            "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname", "initials", "surname", "t", "ou", "organizationidentifier", "o", "l", "st", "dc", "c" };
+            "email", "dn", "uid", "pid", "vid", "cn", "name", "sn", "serialnumber", "gn", "givenname", "initials", "surname", "t", "ou", "organizationidentifier", "o", "l", "st", "dc", "c" };
     // Default values    
     private static String[] dNObjectsReverse = null;
 
@@ -129,10 +143,12 @@ public class DnComponents {
     public static final String NAME = "NAME";
     public static final String ROLE = "ROLE";
     public static final String DESCRIPTION = "DESCRIPTION";
-    public static final String JURISDICTIONLOCALITY = "JURISDICTIONLOCALITY";
-    public static final String JURISDICTIONSTATE = "JURISDICTIONSTATE";
-    public static final String JURISDICTIONCOUNTRY = "JURISDICTIONCOUNTRY";
-    public static final String ORGANIZATIONIDENTIFIER = "ORGANIZATIONIDENTIFIER";
+    public static final String JURISDICTIONLOCALITY = "JURISDICTIONLOCALITY"; // CAB Forum
+    public static final String JURISDICTIONSTATE = "JURISDICTIONSTATE"; // CAB Forum
+    public static final String JURISDICTIONCOUNTRY = "JURISDICTIONCOUNTRY"; // CAB Forum
+    public static final String ORGANIZATIONIDENTIFIER = "ORGANIZATIONIDENTIFIER"; // CAB Forum
+    public static final String VID = "VID"; // Matter IoT core spec
+    public static final String PID = "PID"; // Matter IoT core spec
     
     // AltNames
     public static final String RFC822NAME = "RFC822NAME";

@@ -135,4 +135,39 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     void setUserStatus(AuthenticationToken authenticationToken, UserData data1, int status, int approvalRequestID,
             AuthenticationToken lastApprovingAdmin) throws ApprovalException, WaitingForApprovalException;
 
+    /**
+     * Saves a per-transaction shadow copy of the end entity (in memory, not in database).
+     * This way, unnecessary modifications can be suppressed, and harmless transaction conflicts can be ignored.
+     * <p>
+     * This is only meaningful for add/edit operations of end entities (including setUserStatus, finishUser, etc.)
+     *
+     * @param username End entity username
+     * @return A copy of the existing end entity, or null.
+     */
+    EndEntityInformation initializeEndEntityTransaction(String username);
+
+    /**
+     * Suppresses "unwanted" changes to the UserData from the current transaction, and. <strong>The UserData object
+     * will be detached from the EntityManager in that case.</strong>
+     * <p>
+     * This requires that {@link #initializeEndEntityTransaction(String)} has been called before.
+     * <p>
+     * A change is considered unwanted in the following cases:
+     * <ol>
+     * <li>"Update UserData on issuance" is disabled in the certificate profile.
+     * <li>In case the new status is GENERATED, there are no changes besides the modification time and password.
+     * <li>For other statuses, there are no changes besides the modification time.
+     * </ol>
+     *
+     * @param username  Username of user
+     * @see #initializeEndEntityTransaction
+     */
+    void suppressUnwantedUserDataChanges(String username);
+
+    /**
+     * Used internally to migrate certain updates of UserData during certificate to a separate transaction.
+     * @see #initializeEndEntityTransaction
+     */
+    void changeUserInNewTransaction(UserData newUserData, boolean isNew);
+
 }
