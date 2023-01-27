@@ -761,7 +761,7 @@
     		<fileset dir="${ant.home}/lib/" includes="ant.jar"/>
     	</path>
     	<!-- extdirs="${lib}" -->
-        <javadoc packagenames="org.ejbca.*,org.cesecore.*" maxmemory="256m" destdir="${apidoc}" classpathref="javadoc-dependencies.classpath" 
+        <javadoc packagenames="org.ejbca.*,org.cesecore.*,com.keyfactor.*" maxmemory="256m" destdir="${apidoc}" classpathref="javadoc-dependencies.classpath" 
         	author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB." >
             <sourcepath location="${ejbca.home}/modules/cesecore-common/src"/>
         	<sourcepath location="${ejbca.home}/modules/cesecore-cvcca/src"/>
@@ -791,6 +791,9 @@
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-publ"/>
         	<sourcepath location="${ejbca.home}/modules/peerconnector/src-rar"/>
         	<sourcepath location="${ejbca.home}/modules/p11ng/src"/>
+        	<sourcepath location="${ejbca.home}/modules/x509-common-util/src"/>
+        	<sourcepath location="${ejbca.home}/modules/acme/src-common"/>
+        	<sourcepath location="${ejbca.home}/modules/cits/src"/>
 		<sourcepath location="${ejbca.home}/modules/peerconnector/src-war"/>
 		<sourcepath location="${ejbca.home}/modules/peerconnector/src-ra"/>
         	<sourcepath location="${ejbca.home}/modules/va/src-war"/>
