@@ -43,8 +43,9 @@ import org.cesecore.util.CeSecoreNameStyle;
  * - DnComponents.java (this file)
  * - CeSecoreNameStyle.java
  * - DNFieldExtractor.java
- * - CertToolsUnitTest
  * - DNFIeldExtractorTest
+ * - DnComponentsTest
+ * - CertToolsUnitTest
  * - UserFulFillEndEntityProfileTest
  * - (other tests)
  */
