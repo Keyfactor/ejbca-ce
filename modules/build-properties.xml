@@ -161,6 +161,8 @@
     <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
     <property name="mod.ejbca-rest-certificate.path" location="${mod.path}/ejbca-rest-certificate" />
     <property name="mod.ejbca-rest-certificate.lib" location="${mod.dist.path}/ejbca-rest-certificate.jar" />
+	<property name="mod.ejbca-rest-coap.path" location="${mod.path}/ejbca-rest-coap" />
+    <property name="mod.ejbca-rest-coap.lib" location="${mod.dist.path}/ejbca-rest-coap.jar" />
     <property name="mod.ejbca-rest-configdump.path" location="${mod.path}/ejbca-rest-configdump" />
     <property name="mod.ejbca-rest-configdump.lib" location="${mod.dist.path}/ejbca-rest-configdump.jar" />
     <property name="mod.ejbca-rest-ca.path" location="${mod.path}/ejbca-rest-ca" />
@@ -590,6 +592,10 @@
 
     <condition property="mod.ejbca-rest-certificate.exists">
         <available file="${mod.ejbca-rest-certificate.path}/build.xml"/>
+    </condition>
+
+	<condition property="mod.ejbca-rest-coap.exists">
+        <available file="${mod.ejbca-rest-coap.path}/build.xml"/>
     </condition>
 
     <condition property="mod.ejbca-rest-configdump.exists">
