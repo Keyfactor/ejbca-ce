@@ -125,7 +125,6 @@
 	<classpathentry kind="lib" path="lib/csrfguard-extension-session-4.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-jsp-tags-4.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.9.4.jar"/>
-	<classpathentry kind="lib" path="lib/ext/mailapi.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
@@ -163,6 +162,12 @@
 	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.activation-api-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.enterprise.cdi-api-3.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/activation-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javax.mail-1.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javax.jws-api-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/jaxws-api-2.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javax.xml.soap-api-1.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javax.ejb-api-3.2.2.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
@@ -251,6 +256,6 @@
 	<classpathentry kind="lib" path="lib/log4j-core-2.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
-	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javaee-api-8.0.1.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
