@@ -62,7 +62,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
 
     private static final Logger log = Logger.getLogger(NoConflictCertificateData.class);
 
-    private static final int LATEST_PROTECT_VERSON = 5;
+    private static final int LATEST_PROTECT_VERSON = 7;
 
     private String id;
     private String issuerDN;
@@ -75,7 +75,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     private String serialNumber;
     private Long notBefore = null;  // @since EJBCA 6.6.0
     private long expireDate = 0;
-    private Long invalidityDate = null;
+    private Long invalidityDate = null; // @since EJBCA 7.12.0
     private long revocationDate = 0;
     private int revocationReason = 0;
     private String base64Cert;
@@ -618,6 +618,10 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getFingerprint()).append(getIssuerDN());
+        if (version > 7 ) {
+            // In version 7 (EJBCA 7.12.0) the invalidityDate column is added
+               build.append(getInvalidityDate());
+           }
         if (version > 6) {
             // In version 6 (EJBCA 7.5.0) the accountBindingId column is added
             build.append(getAccountBindingId());
