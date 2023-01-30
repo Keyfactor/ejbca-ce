@@ -105,7 +105,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     private static final Logger log = Logger.getLogger(CertificateData.class);
 
-    private static final int LATEST_PROTECT_VERSON = 6;
+    private static final int LATEST_PROTECT_VERSON = 7;
 
     private String issuerDN;
     private String subjectDN;
@@ -117,7 +117,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     private String serialNumber;
     private Long notBefore = null;  // @since EJBCA 6.6.0
     private long expireDate = 0;
-    private Long invalidityDate = null;
+    private Long invalidityDate = null; // @since EJBCA 7.12.0
     private long revocationDate = 0;
     private int revocationReason = 0;
     private String base64Cert;
@@ -784,6 +784,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         protectionStringBuilder.append(getFingerprint()).append(getIssuerDN());
+        if (version > 7 ) {
+         // In version 7 (EJBCA 7.12.0) the invalidityDate column is added
+            protectionStringBuilder.append(getInvalidityDate());
+        }
         if (version > 6) {
         	// In version 6 (EJBCA 7.5.0) the accountBindingId column is added
             protectionStringBuilder.append(getAccountBindingId());
@@ -803,7 +807,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
             protectionStringBuilder.append(getSubjectDN());
         }
         protectionStringBuilder.append(getCaFingerprint()).append(getStatus()).append(getType())
-                .append(getSerialNumber()).append(getExpireDate()).append(getInvalidityDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
+                .append(getSerialNumber()).append(getExpireDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
                 .append(getUsername()).append(getTag()).append(getCertificateProfileId()).append(getUpdateTime()).append(getSubjectKeyId());
         if (version>=2) {
             // In version 2 for EJBCA 6.6 the following columns where added
