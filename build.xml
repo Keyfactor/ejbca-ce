@@ -1118,10 +1118,12 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-configdump/**"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-cryptotoken/**"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-endentity/**"/>
+				<exclude unless="edition.is.ee" name="modules/ejbca-rest-coap/**"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-ssh/**"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CaRestResourceSwagger.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CaManagementRestResourceSwagger.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/ConfigdumpRestResourceSwagger.java"/>
+				<exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CoapRestResourceSwagger.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CryptoTokenRestResourceSwagger.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/EndEntityRestResourceSwagger.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/EndEntityRestResourceV2Swagger.java"/>
