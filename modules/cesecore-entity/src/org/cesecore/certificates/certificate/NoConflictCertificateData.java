@@ -75,7 +75,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     private String serialNumber;
     private Long notBefore = null;  // @since EJBCA 6.6.0
     private long expireDate = 0;
-    private long invalidityDate = 0;
+    private Long invalidityDate = null;
     private long revocationDate = 0;
     private int revocationReason = 0;
     private String base64Cert;
