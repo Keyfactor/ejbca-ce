@@ -643,7 +643,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
             build.append(getSubjectDN());
         }
         build.append(getCaFingerprint()).append(getStatus()).append(getType())
-                .append(getSerialNumber()).append(getExpireDate()).append(getInvalidityDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
+                .append(getSerialNumber()).append(getExpireDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
                 .append(getUsername()).append(getTag()).append(getCertificateProfileId()).append(getUpdateTime()).append(getSubjectKeyId());
         if (version>=2) {
             // In version 2 for EJBCA 6.6 the following columns where added
