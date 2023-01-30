@@ -38,6 +38,19 @@
                     	
                     <h:panelGroup id="placeholder1" />
                     <h:panelGroup id="placeholder2" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.allowedToEdit}"/>
+					
+					<h:panelGroup>
+						<h:outputLabel for="aliasName" value="#{web.text.NAME}"/>
+					</h:panelGroup>
+					<h:panelGroup id="name">
+						<h:inputText  
+							value="#{acmeAliasConfigMBean.currentAliasStr}" required="true" 
+							requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}">
+						</h:inputText>
+						<h:outputText rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.allowedToEdit}" value="#{acmeAliasConfigMBean.currentAlias.alias}"/>
+						<h:message for="name"/>					
+					</h:panelGroup>		
+
 
 					<h:panelGroup>
 						<h:outputText value="#{web.text.ACME_RANAMEGENERATIONSCHEME}"
@@ -420,9 +433,10 @@
 				
                 <h:panelGrid columns="1">
                 <h:panelGroup>
-                        <h:commandButton action="#{acmeAliasConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" style="margin-right:3px;" immediate="true"/>
                         <h:commandButton action="#{acmeAliasConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}"
                         	disabled="#{acmeAliasConfigMBean.saveCurrentAliasDisabled}"/>
+                         <h:commandButton action="#{acmeAliasConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}" 
+                         	style="margin-right:3px;" immediate="true"/>                        	
                     </h:panelGroup>
                 </h:panelGrid>
             </h:form>

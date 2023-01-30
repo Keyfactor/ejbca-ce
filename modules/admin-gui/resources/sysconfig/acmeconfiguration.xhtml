@@ -53,29 +53,23 @@
                         <f:facet name="header">
                             <h:outputText value="#{web.text.ACME_ALIAS}"/>
                         </f:facet>
-
-                        <h:outputLink value="acmealiasconfiguration.xhtml?alias=#{alias.alias}">
-                            <h:outputText value="#{alias.alias}" title="#{alias.alias}"/>
-                        </h:outputLink>
+                    	<h:outputText value="#{alias.alias}" title="#{alias.alias}"/>
                     </h:column>
                     <h:column>
                         <f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
-                        <h:commandLink action="#{acmeConfigMBean.renameAlias}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
-                         			   onclick="return inputIntoField('aliases:currentAliasStr','aliases:newAlias', '#{alias.alias}','#{web.text.ACME_ENTERNEWALIAS}');"
-                                       styleClass="commandLink" title="#{web.text.SCEP_RENAME_ALIAS}">
-                            <h:outputText value="#{web.text.RENAME}"/>
-                        </h:commandLink>
-                        <h:commandLink action="#{acmeConfigMBean.deleteAlias}" onclick="return inputIntoFieldConfirm('#{web.text.AREYOUSURE}','aliases:currentAliasStr','#{alias.alias}');"
-                                       styleClass="commandLink" title="#{web.text.SCEP_DELETE_ALIAS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
-                            <h:outputText value="#{web.text.DELETE}"/>
-                        </h:commandLink>
+                        <h:commandButton value="#{web.text.EDIT}" action="acmealiasconfiguration.xhtml" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
+                        	<f:param name="faces-redirect" value="true" />
+                        	<f:param name="alias" value="#{alias.alias}" />
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.DELETE}" onclick="return inputIntoFieldConfirm('#{web.text.AREYOUSURE}','aliases:currentAliasStr','#{alias.alias}');" 
+                        	action="#{acmeConfigMBean.deleteAlias}"  disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>                       
                     </h:column>
 
                 </h:dataTable>
                 <br/>
                 
                 <h:panelGrid columns="1">
-					<h:commandButton value="#{web.text.ADD}" action="#{acmeConfigMBean.addAlias}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+					<h:commandButton value="#{web.text.ADD}" action="acmealiasconfiguration.xhtml?faces-redirect=true" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
 				</h:panelGrid>
             </h:form>
             <h:panelGroup/>
