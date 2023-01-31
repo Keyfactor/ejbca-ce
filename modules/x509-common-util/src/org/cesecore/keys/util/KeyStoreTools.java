@@ -399,7 +399,7 @@ public class KeyStoreTools {
     }
 
     private void generateKeyPair(final AlgorithmParameterSpec keyParams, final String keyAlias, final String keyAlgorithm,
-            final List<String> certSignAlgorithms) {
+            final List<String> certSignAlgorithms) throws InvalidAlgorithmParameterException {
         final KeyPairGenerator kpg;
         try {
             kpg = KeyPairGenerator.getInstance(keyAlgorithm, this.providerName);
@@ -409,7 +409,17 @@ public class KeyStoreTools {
             throw new IllegalStateException(this.providerName+ " was not found as a provider.", e);
         }
 
-        kpg.initialize(((SizeAlgorithmParameterSpec) keyParams).keySize);
+        try {
+            if (keyParams instanceof SizeAlgorithmParameterSpec) {
+                kpg.initialize(((SizeAlgorithmParameterSpec) keyParams).keySize);
+            } else if (keyParams != null || keyAlgorithm.startsWith("EC")) {
+                // Null here means "implicitlyCA", which is allowed only for EC keys
+                kpg.initialize(keyParams);
+            }
+        } catch (InvalidAlgorithmParameterException e) {
+            log.debug("Algorithm parameters not supported: " + e.getMessage());
+            throw e;
+        }
     
         // We will make a loop to retry key generation here. Using the IAIK provider it seems to give
         // CKR_OBJECT_HANDLE_INVALID about every second time we try to store keys
