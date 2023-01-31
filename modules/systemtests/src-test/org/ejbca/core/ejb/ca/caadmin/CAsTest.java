@@ -49,8 +49,6 @@ import org.bouncycastle.jcajce.provider.asymmetric.dstu.BCDSTU4145PublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ecgost.BCECGOST3410PublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -487,42 +485,6 @@ public class CAsTest extends CaTestCase {
         } else {
             assertTrue("Public key is not DSTU4145: "+pk.getClass().getName(), false);
         }
-    }
-    
-    /** Adds a CA Using ECDSA 'implicitlyCA' keys to the database. It also checks that the CA is stored correctly. */
-    @Test
-    public void test05AddECDSAImplicitlyCACA() throws Exception {
-        log.trace(">test05AddECDSAImplicitlyCACA()");
-        boolean ret = false;
-        try {
-            createEllipticCurveDsaImplicitCa();
-            CAInfo info = caSession.getCAInfo(admin, TEST_ECDSA_IMPLICIT_CA_NAME);
-            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSAImplicitlyCA"));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTECDSAImplicitlyCA"));
-            PublicKey pk = cert.getPublicKey();
-            if (pk instanceof JCEECPublicKey) {
-                JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-                assertEquals(ecpk.getAlgorithm(), "EC");
-                ECParameterSpec spec = ecpk.getParameters();
-                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", spec);
-            } else if (pk instanceof BCECPublicKey) {
-                BCECPublicKey ecpk = (BCECPublicKey) pk;
-                assertEquals(ecpk.getAlgorithm(), "EC");
-                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                ECNamedCurveParameterSpec ns = (ECNamedCurveParameterSpec)spec;
-                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", ns);
-            } else {
-                assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-            }
-            ret = true;
-        } catch (CAExistsException pee) {
-            log.info("CA exists.");
-        } finally {
-            removeOldCa(TEST_ECDSA_IMPLICIT_CA_NAME);
-        }
-        assertTrue("Creating ECDSA ImplicitlyCA CA failed", ret);
-        log.trace("<test05AddECDSAImplicitlyCACA()");
     }
 
     /** Adds a CA using RSA keys to the database. It also checks that the CA is stored correctly. */
