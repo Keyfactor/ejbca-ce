@@ -247,7 +247,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             if (body.getContent() instanceof ErrorMsgContent) {
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
                 log.error(errMsg);
                 fail("CMP ErrorMsg received: " + errMsg);
                 unid = null;
