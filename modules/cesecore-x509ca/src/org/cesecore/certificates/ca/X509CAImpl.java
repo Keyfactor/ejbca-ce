@@ -2041,7 +2041,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 log.debug("Adding "+certs.size()+" revoked certificates to CRL. Free memory="+Runtime.getRuntime().freeMemory());
             }
             for (final RevokedCertInfo certinfo : certs) {
-                crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason());
+                if (certinfo.getInvalidityDate() != null) {
+                    crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason(), certinfo.getInvalidityDate());
+                } else {
+                    crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason());
+                }
             }
             if (log.isDebugEnabled()) {
                 log.debug("Finished adding "+certs.size()+" revoked certificates to CRL. Free memory="+Runtime.getRuntime().freeMemory());
