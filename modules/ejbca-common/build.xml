@@ -23,11 +23,11 @@
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.jee.classpath"/>
-		<path refid="lib.mail.classpath"/>
 		<path refid="lib.swagger.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
 		<path refid="lib.hc.classpath"/>
 		<path refid="lib.adsddl.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/>
 		<path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>

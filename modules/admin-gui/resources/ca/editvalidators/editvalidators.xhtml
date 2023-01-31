@@ -40,8 +40,13 @@
 					<h:dataTable id="listValidatorsDataTable" value="#{validatorsBean.availableValidators}" var="validatoritem" styleClass="grid" columnClasses="gridColumn1,gridColumn2" rendered="#{validatorsBean.existsValidators}">
 						<h:column headerClass="gridColumn1" >
 							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORNAME}" title="#{validatoritem.id}"/></f:facet>
-							<h:outputText value="#{''.concat(validatoritem.name).concat(' (').concat(validatoritem.label).concat(')')} "/>
+							<h:outputText value="#{validatoritem.name}"/>
 						</h:column>
+						<h:column headerClass="gridColumn2">
+							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORTYPE}"/></f:facet>	
+							<h:outputText value="#{validatoritem.label} "/>
+						</h:column>
+						
 						<h:column headerClass="gridColumn2">
 							<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>	
 							<h:commandButton value="#{web.text.VIEW}" action="#{validatorsBean.actionView}" disabled="#{!validatorsBean.authorizedToView}" />

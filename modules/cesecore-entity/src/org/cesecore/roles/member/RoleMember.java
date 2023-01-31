@@ -57,15 +57,6 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
     }
 
     /**
-     * @deprecated Since EJBCA 7.5.0. Please use the constructor with tokenProviderId instead, and set the parameter to {@link #NO_PROVIDER}.
-     */
-    @Deprecated
-    public RoleMember(final String tokenType, final int tokenIssuerId, final int tokenMatchKey, final int tokenMatchOperator,
-            final String tokenMatchValue, final int roleId, final String description) {
-        this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, NO_PROVIDER, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
-    }
-
-    /**
      * Constructor for a RoleMember object that has already been assigned an ID (the RoleMember already exists).
      *
      * @param tokenIssuerId the issuer identifier of this token or {@link #NO_ISSUER} if not relevant

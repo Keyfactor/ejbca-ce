@@ -401,7 +401,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         if (!adminExists) {
             log.info("Adding member to role: " + wsadminRoleName);
             roleMemberSession.persist(intAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caInfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                    caInfo.getCAId(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     TEST_ADMIN_USERNAME, role.getRoleId(), null));
         }
         return fileHandles;
