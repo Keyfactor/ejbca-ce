@@ -117,7 +117,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private int selectedCaId;
     private String createCaName;
     private Map<Integer, String> caidtonamemap;
-    private Part certificateBundle;
+    private transient Part certificateBundle;
 
     public void setCertificateBundle(final Part certificateBundle) {
         this.certificateBundle = certificateBundle;
@@ -395,7 +395,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                     endEntityProfileSession.getEndEntityProfileId(entry.getValue()));
             if (casInProfile.entrySet().stream().anyMatch(e -> (e.getValue() == selectedCaId))) {
                 endEntityProfileList.add(endEntityProfileSession.getEndEntityProfileName(entry.getKey()));
-                continue;
             }
         }
         return endEntityProfileList;
@@ -520,8 +519,18 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String createAuthCertSignRequest() {
         if (selectedCaId != 0) {
+            
+            int selectedCaType;
+            try {
+                selectedCaType = caSession.getCAInfo(getAdmin(), selectedCaId).getCAType();
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Admin is not authorized to get ca type!", e);
+            }
+            
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaType", selectedCaType);
+
             return EditCaUtil.SIGN_CERT_REQ_NAV;
         } else {
             addErrorMessage("SELECTCAFIRST");

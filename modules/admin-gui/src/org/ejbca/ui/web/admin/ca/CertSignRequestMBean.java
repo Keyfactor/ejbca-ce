@@ -44,6 +44,7 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     private CAInterfaceBean caBean;
     private String selectedCaName;
     private int selectedCaId;
+    private int selectedCaType;
     private UploadedFile uploadedFile;
     
     public CertSignRequestMBean() {
@@ -64,6 +65,7 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         selectedCaName = (String) requestMap.get("selectedCaName");
         selectedCaId = (Integer) requestMap.get("selectedCaId");
+        selectedCaType = (Integer) requestMap.get("selectedCaType");
 
     }
     
@@ -87,6 +89,7 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
                 facesContextRequestMap.put("filemode", EditCaUtil.CERTREQGENMODE);
                 facesContextRequestMap.put(SESSION.CA_INTERFACE_BEAN, caBean);
                 facesContextRequestMap.put("caname", selectedCaName);
+                facesContextRequestMap.put("caType", selectedCaType);
                 return EditCaUtil.DISPLAY_RESULT_NAV;
             }
             return "";
