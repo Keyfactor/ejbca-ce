@@ -254,12 +254,12 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     }
 
     @Override
-    public long getInvalidityDate() {
+    public Long getInvalidityDate() {
         return invalidityDate;
     }
 
     @Override
-    public void setInvalidityDate(long invalidityDate) {
+    public void setInvalidityDate(Long invalidityDate) {
         this.invalidityDate = invalidityDate;
     }
 
