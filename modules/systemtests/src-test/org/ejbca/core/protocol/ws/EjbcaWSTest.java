@@ -1436,7 +1436,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                                     StandardRules.CAACCESSBASE.resource()),
                             null));
             roleMemberSession.persist(intAdmin,
-                    new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(),
+                    new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(), RoleMember.NO_PROVIDER,
                             X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                             adminUsername, role.getRoleId(), null));
             roleId = role.getRoleId();
