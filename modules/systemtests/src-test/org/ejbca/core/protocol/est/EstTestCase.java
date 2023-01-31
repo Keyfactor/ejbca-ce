@@ -509,7 +509,7 @@ public abstract class EstTestCase extends CaTestCase {
         RoleMember member = roleMemberSession.persist(ADMIN,
                 new RoleMember(
                         X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                        clientCertCaID,
+                        clientCertCaID, RoleMember.NO_PROVIDER,
                         X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                         AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                         certCN,
