@@ -68,7 +68,7 @@ public class RemoveAdminCommandTest {
         try {
             final String matchValue = "foo";
             roleMemberSession.persist(internalAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     matchValue, roleId, null));
             String[] args = { ROLENAME, "TestCA", "WITH_COMMONNAME", "TYPE_EQUALCASE", "foo" };
             command.execute(args);
