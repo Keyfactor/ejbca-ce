@@ -378,12 +378,12 @@ public class CertificateData extends BaseCertificateData implements Serializable
     }
 
     @Override
-    public long getInvalidityDate() {
+    public Long getInvalidityDate() {
         return invalidityDate;
     }
 
     @Override
-    public void setInvalidityDate(long invalidityDate) {
+    public void setInvalidityDate(Long invalidityDate) {
         this.invalidityDate = invalidityDate;
     }
 
@@ -785,7 +785,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         protectionStringBuilder.append(getFingerprint()).append(getIssuerDN());
         if (version > 7 ) {
-         // In version 7 (EJBCA 7.12.0) the invalidityDate column is added
+            // In version 7 (EJBCA 7.12.0) the invalidityDate column is added
             protectionStringBuilder.append(getInvalidityDate());
         }
         if (version > 6) {
