@@ -16,6 +16,7 @@ package org.ejbca.util;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
+import javax.ejb.EJB;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -59,10 +60,11 @@ public class ServiceControlFilter implements Filter {
     private String serviceName;
     private boolean isRestService;
 
+    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    
+    @EJB
     private AuthorizationSessionLocal authorizationSession;
-    
+    @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
 
     @Override
@@ -74,12 +76,6 @@ public class ServiceControlFilter implements Filter {
         serviceName = filterConfig.getInitParameter("serviceName");
         isRestService = serviceName.startsWith(REST_PROTOCOL_INDICATOR);
         
-        // Since this filter is referenced in ejbca-common-web module and that module is referenced by 
-        // cmpHttpProxy module, to make cmpHttpProxy module deploy-able in JEE servers we initialize 
-        // the globalConfigurationSession bean here instead of using the EJB annotation.
-        globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
-        authorizationSession = new EjbLocalHelper().getAuthorizationSession();
-        ejbcaRestHelperSession = new EjbLocalHelper().getEjbcaRestHelperSession();
         if (log.isDebugEnabled()) {
             log.debug("Initialized service control filter for '" + serviceName + "'");
         }
