@@ -85,7 +85,7 @@ public class AuthorizationSessionBeanTest {
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
             final int roleMemberId = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId).getTokenIssuerId());
             final AuthenticationToken authenticationToken = createAuthenticationToken("CN="+commonName);
@@ -151,11 +151,11 @@ public class AuthorizationSessionBeanTest {
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
             final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role1.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
             final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role2.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
             assertFalse(roleMemberId1==roleMemberId2);
@@ -224,11 +224,11 @@ public class AuthorizationSessionBeanTest {
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
             final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role1.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
             final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role2.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
             assertFalse(roleMemberId1==roleMemberId2);
@@ -298,11 +298,11 @@ public class AuthorizationSessionBeanTest {
             final String subjectAndIssuerDn = "CN="+commonName + ",O="+organisation;
             final int caId = subjectAndIssuerDn.hashCode();
             final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role1.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
             final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_ORGANIZATION.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_ORGANIZATION.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), organisation, role2.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
             assertFalse(roleMemberId1==roleMemberId2);
@@ -371,13 +371,13 @@ public class AuthorizationSessionBeanTest {
             final String subjectAndIssuerDn = "CN="+commonName1;
             final int caId = subjectAndIssuerDn.hashCode();
             final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName1, role1.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
             final String subjectAndIssuerDn2 = "CN="+commonName2;
             final int caId2 = subjectAndIssuerDn2.hashCode();
             final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId2, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    caId2, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName2, role2.getRoleId(), null));
             assertEquals(caId2, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
             assertFalse(roleMemberId1==roleMemberId2);

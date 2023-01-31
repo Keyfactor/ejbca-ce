@@ -144,7 +144,7 @@ public class RoleMemberDataSessionTest {
         if (role.getRoleId() == Role.ROLE_ID_UNASSIGNED) {
             throw new IllegalStateException("Missing Role ID");
         }
-        return roleMemberProxySession.createOrEdit(new RoleMember(tokenType, tokenIssuerId, matchKey, AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+        return roleMemberProxySession.createOrEdit(new RoleMember(tokenType, tokenIssuerId, RoleMember.NO_PROVIDER, matchKey, AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 matchValue, role.getRoleId(), null));
     }
 }

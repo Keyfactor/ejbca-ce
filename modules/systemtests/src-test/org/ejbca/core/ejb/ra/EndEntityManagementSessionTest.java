@@ -946,7 +946,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             }
             final Role role = roleSession.persistRole(admin, new Role(null, testRole, Collections.singletonList(StandardRules.CAACCESSBASE.resource()), null));
             roleMemberSession.persist(admin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    CertTools.getIssuerDN(adminCert).hashCode(),
+                    CertTools.getIssuerDN(adminCert).hashCode(), RoleMember.NO_PROVIDER,
                     X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     CertTools.getPartFromDN(CertTools.getSubjectDN(adminCert), "CN"),
