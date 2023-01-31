@@ -237,11 +237,11 @@ public class CAInterfaceBean implements Serializable {
 		return this.request;
 	}
 
-	public String getRequestDataAsString() throws Exception{
+	public String getRequestDataAsString(final int caType) throws Exception{
 		String returnval = null;
 		if(request != null ){
 		    returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
-		    if(cainfo.getCAType()==CAInfo.CATYPE_CITS) {
+		    if(caType == CAInfo.CATYPE_CITS) {
 		        returnval += Hex.toHexString(request);
 		    } else {
 		        returnval += new String(Base64.encode(request, true));
