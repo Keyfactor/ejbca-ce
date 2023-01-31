@@ -216,44 +216,29 @@ public class KeyStoreTools {
             throw new InvalidAlgorithmParameterException("IAIK ECC key generation not implemented.");
         }
         final AlgorithmParameterSpec keyParams;
-        if (StringUtils.equals(ecNamedCurveBc,"implicitlyCA")) {
+
+        // Convert it to the OID if possible since the human friendly name might differ in the provider
+        if (ECUtil.getNamedCurveOid(ecNamedCurveBc) != null) {
+            final String oidOrName = AlgorithmTools.getEcKeySpecOidFromBcName(ecNamedCurveBc);
             if (log.isDebugEnabled()) {
-                log.debug("Generating implicitlyCA encoded ECDSA key pair");
+                log.debug("keySpecification '" + ecNamedCurveBc + "' transformed into OID " + oidOrName);
             }
-            // If the keySpec is null, we have "implicitlyCA" defined EC parameters
-            // The parameters were already installed when we installed the provider
-            // We just make sure that ecSpec == null here
-            keyParams = null;
+            keyParams = new ECGenParameterSpec(oidOrName);
         } else {
-            // Convert it to the OID if possible since the human friendly name might differ in the provider
-            if (ECUtil.getNamedCurveOid(ecNamedCurveBc) != null) {
-                final String oidOrName = AlgorithmTools.getEcKeySpecOidFromBcName(ecNamedCurveBc);
-                if (log.isDebugEnabled()) {
-                    log.debug("keySpecification '"+ecNamedCurveBc+"' transformed into OID " + oidOrName);
-                }
-                keyParams = new ECGenParameterSpec(oidOrName);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + ecNamedCurveBc);
-                }
-                // This may be a new curve without OID, like curve25519 and we have to do something a bit different
-                X9ECParameters ecP = CustomNamedCurves.getByName(ecNamedCurveBc);
-                if (ecP == null) {
-                    throw new InvalidAlgorithmParameterException("Can not generate EC curve, no OID and no ECParameters found: "+ecNamedCurveBc);
-                }
-                keyParams = new org.bouncycastle.jce.spec.ECParameterSpec(
-                        ecP.getCurve(), ecP.getG(), ecP.getN(), ecP.getH(), ecP.getSeed());
+            if (log.isDebugEnabled()) {
+                log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + ecNamedCurveBc);
             }
+            // This may be a new curve without OID, like curve25519 and we have to do something a bit different
+            X9ECParameters ecP = CustomNamedCurves.getByName(ecNamedCurveBc);
+            if (ecP == null) {
+                throw new InvalidAlgorithmParameterException("Can not generate EC curve, no OID and no ECParameters found: " + ecNamedCurveBc);
+            }
+            keyParams = new org.bouncycastle.jce.spec.ECParameterSpec(ecP.getCurve(), ecP.getG(), ecP.getN(), ecP.getH(), ecP.getSeed());
         }
-        try {
-            generateKeyPair(
-                    keyParams, keyAlias,
-                    AlgorithmConstants.KEYALGORITHM_EC,
-                    AlgorithmTools.SIG_ALGS_ECDSA);
-        } catch( InvalidAlgorithmParameterException e ) {
-            log.debug("EC name "+ecNamedCurveBc+" not supported.");
-            throw e;
-        }
+        
+     
+        generateKeyPair(keyParams, keyAlias, AlgorithmConstants.KEYALGORITHM_EC, AlgorithmTools.SIG_ALGS_ECDSA);
+        
         if (log.isTraceEnabled()) {
             log.trace("<generate: curve name "+ecNamedCurveBc+", keyEntryName "+keyAlias);
         }
@@ -267,12 +252,8 @@ public class KeyStoreTools {
         }
         // Generate the EC Keypair
         final ECGenParameterSpec keyParams = new ECGenParameterSpec(name);
-        try {
-            generateKeyPair(keyParams, keyAlias, keyAlgorithm, sigAlgNames);
-        } catch( InvalidAlgorithmParameterException e ) {
-            log.debug("EC "+keyAlgorithm+" name "+name+" not supported.");
-            throw e;
-        }
+        generateKeyPair(keyParams, keyAlias, keyAlgorithm, sigAlgNames);
+        
         if (log.isTraceEnabled()) {
             log.trace("<generate: curve name "+name+", keyEntryName "+keyAlias);
         }
@@ -417,10 +398,8 @@ public class KeyStoreTools {
         }
     }
 
-    private void generateKeyPair(
-            final AlgorithmParameterSpec keyParams, final String keyAlias,
-            final String keyAlgorithm,
-            final List<String> certSignAlgorithms) throws InvalidAlgorithmParameterException {
+    private void generateKeyPair(final AlgorithmParameterSpec keyParams, final String keyAlias, final String keyAlgorithm,
+            final List<String> certSignAlgorithms) {
         final KeyPairGenerator kpg;
         try {
             kpg = KeyPairGenerator.getInstance(keyAlgorithm, this.providerName);
@@ -429,17 +408,9 @@ public class KeyStoreTools {
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException(this.providerName+ " was not found as a provider.", e);
         }
-        try {
-            if ( keyParams instanceof SizeAlgorithmParameterSpec ) {
-                kpg.initialize(((SizeAlgorithmParameterSpec)keyParams).keySize);
-            } else if (keyParams != null || keyAlgorithm.startsWith("EC")) {
-                // Null here means "implicitlyCA", which is allowed only for EC keys
-                kpg.initialize(keyParams);
-            }
-        } catch( InvalidAlgorithmParameterException e ) {
-            log.debug("Algorithm parameters not supported: "+e.getMessage());
-            throw e;
-        }
+
+        kpg.initialize(((SizeAlgorithmParameterSpec) keyParams).keySize);
+    
         // We will make a loop to retry key generation here. Using the IAIK provider it seems to give
         // CKR_OBJECT_HANDLE_INVALID about every second time we try to store keys
         // But if we try again it succeeds
