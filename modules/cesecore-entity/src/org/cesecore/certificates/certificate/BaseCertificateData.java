@@ -110,7 +110,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     
     /** @returns invalidity date, the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate was considered invalid. */
      
-    public abstract long getInvalidityDate();
+    public abstract Long getInvalidityDate();
     
     /**
      * Set to revocation reason if status == CERT_REVOKED
@@ -209,7 +209,7 @@ public abstract class BaseCertificateData extends ProtectedData {
      *
      * @param invalidityDate revocation date
      */
-    public abstract void setInvalidityDate(long invalidityDate);
+    public abstract void setInvalidityDate(Long invalidityDate);
     
     /**
      * Set to date when revocation occurred if status == CERT_REVOKED. Format == Date.getTime()
