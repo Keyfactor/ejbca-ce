@@ -43,9 +43,9 @@ public class NoNegativeNumbersValidator implements Validator<Object> {
         if (null != object){
             final BigInteger integerValue;
             if (object instanceof  Integer ){
-                integerValue = BigInteger.valueOf(((Integer) object).intValue());
+                integerValue = BigInteger.valueOf((int) object);
             } else if(object instanceof Long) {
-                integerValue = BigInteger.valueOf(((Long) object).longValue());
+                integerValue = BigInteger.valueOf((long) object);
             } else {
                 integerValue = (BigInteger) object; 
             }
