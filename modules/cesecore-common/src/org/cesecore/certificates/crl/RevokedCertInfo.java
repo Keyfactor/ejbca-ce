@@ -60,6 +60,7 @@ public class RevokedCertInfo implements Serializable {
 
     /** BigInteger (serialNumber) in byte format, BigInteger.toByteArray() */
     private byte[]      userCertificate;
+    private Long        invalidityDate;
     private long        revocationDate;
     private long        expireDate;
     private int         reason;
@@ -73,13 +74,14 @@ public class RevokedCertInfo implements Serializable {
     public RevokedCertInfo() {
     	fingerprint = null;
     	userCertificate = null;
+    	invalidityDate = null;
     	revocationDate = 0;
     	expireDate = 0;
     	reason = REVOCATION_REASON_UNSPECIFIED;
     }
 
     /**
-     * Constructor filling in the whole object.
+     * Constructor which doesn't fill in invalidityDate.
      * 
      * @param reason {@link RevokedCertInfo#REVOCATION_REASON_UNSPECIFIED}
      *
@@ -87,6 +89,22 @@ public class RevokedCertInfo implements Serializable {
     public RevokedCertInfo(final byte[] fingerprint, final byte[] sernoBigIntegerArray, final long revdate, final int reason, final long expdate) {
         this.fingerprint = fingerprint;
         this.userCertificate = sernoBigIntegerArray;
+        this.invalidityDate = null;
+        this.revocationDate = revdate;
+        this.reason = reason;
+        this.expireDate = expdate;
+    }
+    
+    /**
+     * Constructor filling in the whole object.
+     * 
+     * @param reason {@link RevokedCertInfo#REVOCATION_REASON_UNSPECIFIED}
+     *
+     **/
+    public RevokedCertInfo(final byte[] fingerprint, final byte[] sernoBigIntegerArray, final Long invalidityDate, final long revdate, final int reason, final long expdate) {
+        this.fingerprint = fingerprint;
+        this.userCertificate = sernoBigIntegerArray;
+        this.invalidityDate = invalidityDate;
         this.revocationDate = revdate;
         this.reason = reason;
         this.expireDate = expdate;
@@ -120,6 +138,27 @@ public class RevokedCertInfo implements Serializable {
         this.userCertificate = serno==null ? null : serno.toByteArray();
     }
 
+    /** 
+     * @return true is there is a invalidityDate set (getInvalidityDate() != null), false otherwise
+     */
+    public boolean isInvalidityDateSet() {
+        return invalidityDate != null;
+    }
+
+    /**
+     * Date on which the private key of the certificate became compromised or the certificate became invalid.
+     **/
+    public Date getInvalidityDate() {
+        return invalidityDate == null ? null : new Date(invalidityDate);
+    }
+
+    /**
+     * Date on which the private key of the certificate became compromised or the certificate became invalid.
+     **/
+    public void setInvalidityDate(final Date date) {
+        this.invalidityDate = date.getTime();
+    }
+    
     /** 
      * @return true is there is a revocationDate set (getRevocationDate() != null), false otherwise
      */
