@@ -33,9 +33,12 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 
     private static final String PUBLISHQUEUEPROCESSWORKER_SUB_PAGE = "publishqueueprocessworker.xhtml";
     
+    private static final long MAX_JOBS_PER_QUEUE_WORKER = 200000L;
+    
 	private List<String> selectedPublisherIdsToCheck = new ArrayList<>();
 	
 	private long maxNumberOfEntriesToPublish = PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS;
+	
 
 	public PublishQueueWorkerType(){
 		super(NAME, PUBLISHQUEUEPROCESSWORKER_SUB_PAGE, PublishQueueProcessWorker.class.getName());
@@ -61,6 +64,10 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 			  }
 			}
 		}
+		if(maxNumberOfEntriesToPublish > MAX_JOBS_PER_QUEUE_WORKER) {
+		    errorMessages.add("Number of entries to publish per interval may not exceed " + MAX_JOBS_PER_QUEUE_WORKER);
+		}
+		
 		ret.setProperty(PublishQueueProcessWorker.PROP_PUBLISHER_IDS, publisherIdString);
 		ret.setProperty(PublishQueueProcessWorker.PROP_MAX_WORKER_JOBS, Long.toString(maxNumberOfEntriesToPublish));
 		return ret;
