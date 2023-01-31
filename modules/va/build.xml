@@ -18,7 +18,6 @@
 		<path refid="lib.commons-logging.classpath"/><!-- Dependency of commons-config -->
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
-		<path refid="lib.mail.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 	</path>
 
