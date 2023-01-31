@@ -60,7 +60,6 @@
         <antcall target="optionaltestconfigdump-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestct" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestcmpproxy" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestcits-unit" inheritall="true" inheritrefs="true"/>
@@ -120,11 +119,6 @@
     <condition property="est.exists"><available file="modules/est"/></condition>
     <target name="optionaltestest" if="${est.exists}">
         <ant antfile="build.xml" dir="modules/est" target="test" inheritall="true" inheritrefs="true"/>
-    </target>
-    <condition property="cmpproxy.exists"><available file="modules/cmpProxy" /></condition>
-    <target name="optionaltestcmpproxy" if="${cmpproxy.exists}">
-        <antcall target="externalra-library" inheritall="true" inheritrefs="true"/>
-        <ant antfile="build-http.xml" dir="modules/cmpProxy" target="test" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
     <target name="optionaltestcaa" if="${caa.exists}">
