@@ -101,7 +101,7 @@ public class RevokedCertInfo implements Serializable {
      * @param reason {@link RevokedCertInfo#REVOCATION_REASON_UNSPECIFIED}
      *
      **/
-    public RevokedCertInfo(final byte[] fingerprint, final byte[] sernoBigIntegerArray, final Long invalidityDate, final long revdate, final int reason, final long expdate) {
+    public RevokedCertInfo(final byte[] fingerprint, final byte[] sernoBigIntegerArray, final long revdate, final int reason, final long expdate, final Long invalidityDate) {
         this.fingerprint = fingerprint;
         this.userCertificate = sernoBigIntegerArray;
         this.invalidityDate = invalidityDate;
@@ -139,7 +139,7 @@ public class RevokedCertInfo implements Serializable {
     }
 
     /** 
-     * @return true is there is a invalidityDate set (getInvalidityDate() != null), false otherwise
+     * @return true if there is an invalidityDate set (getInvalidityDate() != null), false otherwise
      */
     public boolean isInvalidityDateSet() {
         return invalidityDate != null;
