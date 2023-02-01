@@ -445,7 +445,7 @@ public class SshRequestMessage implements RequestMessage {
         }
 
         String sourceAddress = null;
-        if(getCriticalOptions()!=null) {
+        if(criticalOptions!=null) {
             sourceAddress = criticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP);
         }
         String placeHolderSanString =  SshCertificateUtils.createSanForStorage(getPrincipals(), getComment(), sourceAddress);
