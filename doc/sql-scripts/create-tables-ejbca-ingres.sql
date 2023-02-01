@@ -145,7 +145,7 @@ CREATE TABLE CertificateData (
     expireDate INT8 NOT NULL,
     issuerDN VARCHAR(256) NOT NULL,
     notBefore INT8 with null,
-    invalidityDate with null,
+    invalidityDate INT8 with null,
     revocationDate INT8 NOT NULL,
     revocationReason INT4 NOT NULL,
     rowProtection LONG VARCHAR with null,
