@@ -677,7 +677,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (expireDate != certificateData.expireDate) {
             return false;
         }
-        if (invalidityDate != certificateData.invalidityDate) {
+        if (!ObjectUtils.equals(invalidityDate, certificateData.invalidityDate)) {
             return false;
         }
         if (revocationDate != certificateData.revocationDate) {

@@ -548,7 +548,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         if (expireDate != certificateData.expireDate) {
             return false;
         }
-        if (invalidityDate != certificateData.invalidityDate) {
+        if (!ObjectUtils.equals(invalidityDate, certificateData.invalidityDate)) {    
             return false;
         }
         if (revocationDate != certificateData.revocationDate) {
