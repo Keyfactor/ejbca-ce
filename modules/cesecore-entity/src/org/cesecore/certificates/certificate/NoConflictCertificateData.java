@@ -618,7 +618,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getFingerprint()).append(getIssuerDN());
-        if (version > 7 ) {
+        if (version >= 7 ) {
             // In version 7 (EJBCA 7.12.0) the invalidityDate column is added
                build.append(getInvalidityDate());
            }
