@@ -907,7 +907,7 @@
 	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->
     <!-- ======================================================================= -->
 	<condition property="edition" value="ee" else="ce">
-		<available file="${ejbca.home}/modules/configdump/build.xml" />
+		<available file="${ejbca.home}/modules/plugins-ee/build.xml" />
 	</condition>
 	<property name="variant" value=""/> <!-- If we are running on a full EJBCA instance! -->
 
