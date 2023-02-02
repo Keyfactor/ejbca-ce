@@ -343,28 +343,6 @@
 					</h:selectOneMenu>
 				</h:panelGroup>
 
-
-				<h:panelGroup
-                    rendered="#{(not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent) and not editCAsMBean.renderCvcAvailable
-									and not editCAsMBean.caTypeCits and not editCAsMBean.caTypeCits}">
-					<h:outputLabel for="selectsize"
-						value="#{web.text.EXTSERVICESKEYSPEC}" />
-					<h:outputText
-						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Extended_Services_Key_Specification')}"
-						escape="false" styleClass="helpReference" />
-				</h:panelGroup>
-
-				<h:panelGroup
-                    rendered="#{(not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent) and not editCAsMBean.renderCvcAvailable
-									and not editCAsMBean.caTypeCits}">
-					<h:selectOneMenu id="selectsize"
-						value="#{editCAsMBean.caInfoDto.signKeySpec}"
-                        disabled="#{not editCAsMBean.hasEditRight}">
-						<f:selectItems value="#{editCAsMBean.exTServicesKeySpecList}" />
-					</h:selectOneMenu>
-				</h:panelGroup>
-
-
 				<h:panelGroup
 					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="keysequenceformat"
@@ -1851,35 +1829,6 @@
 						value="#{editCAsMBean.usedValidators}">
 						<f:selectItems value="#{editCAsMBean.availableValidators}" />
 					</h:selectManyListbox>
-				</h:panelGroup>
-
-				<h:panelGroup rendered="#{editCAsMBean.renderCmsInfo}">
-					<h:outputLabel for="checkboxactivatecmsservice"
-						value="#{web.text.CMSSERVICE}" />
-					<h:outputText
-						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Extended_Services_Key_Specification')}"
-						escape="false" styleClass="helpReference" />
-				</h:panelGroup>
-
-				<h:panelGroup rendered="#{editCAsMBean.renderCmsInfo}">
-					<h:selectBooleanCheckbox name="checkboxactivatecmsservice"
-						id="checkboxactivatecmsservice"
-						value="#{editCAsMBean.caInfoDto.serviceCmsActive}"
-						rendered="#{editCAsMBean.renderCmsInfo}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.cmsButtonDisabled or editCAsMBean.signedByExternal}" />
-					<h:outputLabel for="checkboxactivatecmsservice"
-						value="#{web.text.ACTIVATE}" />
-			    &nbsp;&nbsp;&nbsp;
-				<h:commandButton 
-						value="#{web.text.REVOKERENEWCMSCERT}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.waitingForResponse}"
-						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"
-						action="#{editCAsMBean.renewAndRevokeCmsCertificate}" />
-				<h:commandButton type="button"
-						title="#{web.text.VIEW_CMSCERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}"
-						value="#{web.text.VIEW_CMSCERTIFICATE}"
-						onclick="viewcacert('#{editCAsMBean.cmsCertLink}')"
-						rendered="#{editCAsMBean.renderViewCmsCert}" />
 				</h:panelGroup>
 
 				<h:panelGroup>
