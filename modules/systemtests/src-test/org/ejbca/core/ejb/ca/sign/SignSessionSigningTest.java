@@ -42,14 +42,13 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 /**
- * @version $Id$
  *
  */
 @RunWith(CryptoTokenTestRunner.class)
 public class SignSessionSigningTest {
 
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    @Rule
+    public CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
     
     private final SignProxySessionRemote signProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
