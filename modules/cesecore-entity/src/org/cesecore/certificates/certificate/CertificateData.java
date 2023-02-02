@@ -54,9 +54,9 @@ import org.cesecore.util.StringTools;
                 @ColumnResult(name = "fingerprint"),
                 @ColumnResult(name = "serialNumber"),
                 @ColumnResult(name = "expireDate"),
-                @ColumnResult(name = "invalidityDate"),
                 @ColumnResult(name = "revocationDate"),
-                @ColumnResult(name = "revocationReason") }),
+                @ColumnResult(name = "revocationReason"),
+                @ColumnResult(name = "invalidityDate")}),
         @SqlResultSetMapping(name = "CertificateInfoSubset", columns = {
                 @ColumnResult(name = "issuerDN"),
                 @ColumnResult(name = "subjectDN"),

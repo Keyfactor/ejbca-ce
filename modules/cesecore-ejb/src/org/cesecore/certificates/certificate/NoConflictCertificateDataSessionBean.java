@@ -117,7 +117,7 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         if (deltaCrl) {
             // Delta CRL
             query = getEntityManager().createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.invalidityDate as invalidityDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM NoConflictCertificateData a WHERE "
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, a.invalidityDate as invalidityDate FROM NoConflictCertificateData a WHERE "
                             + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
                             + crlPartitionExpression + ordering,
                     "RevokedCertInfoSubset");
@@ -125,7 +125,7 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         } else {
             // Base CRL
             query = getEntityManager().createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.invalidityDate as invalidityDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM NoConflictCertificateData a WHERE "
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, a.invalidityDate as invalidityDate FROM NoConflictCertificateData a WHERE "
                             + "a.issuerDN=:issuerDN AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
                             + crlPartitionExpression + excludeExpiredExpression + ordering,
                     "RevokedCertInfoSubset");
