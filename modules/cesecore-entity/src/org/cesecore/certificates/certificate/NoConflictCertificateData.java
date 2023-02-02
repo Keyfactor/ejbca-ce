@@ -41,7 +41,7 @@ import org.cesecore.util.StringTools;
 @Table(name = "NoConflictCertificateData")
 @SqlResultSetMappings(value = {
         @SqlResultSetMapping(name = "RevokedNoConflictCertInfoSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "serialNumber"),
-                @ColumnResult(name = "expireDate"), @ColumnResult(name = "invalidityDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason") }),
+                @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason"), @ColumnResult(name = "invalidityDate") }),
         @SqlResultSetMapping(name = "NoConflictCertificateInfoSubset", columns = { @ColumnResult(name = "issuerDN"), @ColumnResult(name = "subjectDN"),
                 @ColumnResult(name = "cAFingerprint"), @ColumnResult(name = "status"), @ColumnResult(name = "type"),
                 @ColumnResult(name = "serialNumber"),
