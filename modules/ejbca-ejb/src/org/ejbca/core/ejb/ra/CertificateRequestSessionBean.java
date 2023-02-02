@@ -148,6 +148,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if (cainfo.isUseUserStorage() && username != null) {
+            endEntityManagementSession.initializeEndEntityTransaction(username);
+        }
         if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
@@ -200,6 +203,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if (cainfo.isUseUserStorage() && userdata.getUsername() != null) {
+            endEntityManagementSession.initializeEndEntityTransaction(userdata.getUsername());
+        }
         if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {

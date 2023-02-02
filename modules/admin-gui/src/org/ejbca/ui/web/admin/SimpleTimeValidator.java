@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
@@ -27,8 +28,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /** JSF validator to check that the input does not contain any invalid characters and is a valid time unit format (i.e. '3y 6mo -10d 6h +30m 30s'). 
  * 
- * @version $Id$
  */
+@FacesValidator("simpleTimeValidator")
 public class SimpleTimeValidator implements Validator<Object> {
 
     private static final Logger log = Logger.getLogger(SimpleTimeValidator.class);

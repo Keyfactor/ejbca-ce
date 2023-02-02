@@ -620,6 +620,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+        if (isLesserThan(oldVersion, "8.0.0")) {
+            try {
+                upgradeSession.migrateDatabase800();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -2531,6 +2538,23 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
+    @Override
+    public void migrateDatabase800() throws UpgradeFailedException {
+        log.debug(">migrateDatabase800");
+        // New extended key usage ECA-11201
+        final AvailableExtendedKeyUsagesConfiguration config =
+                (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
+        if (!config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36")) {
+            config.addExtKeyUsage("1.3.6.1.5.5.7.3.36", "EKU_DOCUMENT_SIGNING_RFC9336");
+        }
+        log.debug("Added RFC9336 Extended Key USage to availabe key usages list");
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, config);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+    }
+    
     /**
      * Checks if the column cAId column exists in AdminGroupData
      *

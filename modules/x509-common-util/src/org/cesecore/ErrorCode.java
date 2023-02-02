@@ -23,8 +23,6 @@ import java.io.Serializable;
  *     System.out.println("Error verifying signature (popp) of request");
  * }
  * </pre>
- * 
- * @version $Id$
  */
 public class ErrorCode implements Serializable {
 

@@ -19,8 +19,8 @@
   <nodes xsi:type="pageflow:PFPage" name="sysconfig/editestalias.xhtml" x="338" y="2509" id="pf1671635245822136" referenceLink="//@navigationRule.17/@fromViewId|" outlinks="pf1671635245822135" inlinks="pf1671635245822133 pf1671635245822134" path="/sysconfig/editestalias.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="ca/editcertificateprofiles/editcertificateprofiles.xhtml" x="122" y="2906" id="pf1671635245822137" referenceLink="//@navigationRule.19/@navigationCase.0/@toViewId|" outlinks="pf1671635245822138 pf1671635245822139" inlinks="pf1671635245822140" path="/ca/editcertificateprofiles/editcertificateprofiles.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="ca/editcertificateprofiles/editcertificateprofile.xhtml" x="338" y="2906" id="pf1671635245822141" referenceLink="//@navigationRule.19/@fromViewId|" outlinks="pf1671635245822140" inlinks="pf1671635245822138 pf1671635245822139" path="/ca/editcertificateprofiles/editcertificateprofile.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="ca/editvalidators/editvalidators.xhtml" x="122" y="4058" id="pf1671635245822142" referenceLink="//@navigationRule.20/@fromViewId|" outlinks="pf1671635245822143 pf1671635245822144 pf1671635245822145 pf1671635245822146 pf1671635245822147 pf1671635245822148 pf1671635245822149" inlinks="pf1671635245822146 pf1671635245822147 pf1671635245822148 pf1671635245822150" path="/ca/editvalidators/editvalidators.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="ca/editvalidators/editvalidator.xhtml" x="338" y="4058" id="pf1671635245822151" referenceLink="//@navigationRule.20/@navigationCase.1/@toViewId|" outlinks="pf1671635245822150" inlinks="pf1671635245822143 pf1671635245822144 pf1671635245822145 pf1671635245822149" path="/ca/editvalidators/editvalidator.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ca/editvalidators/editvalidators.xhtml" x="122" y="4058" id="pf1671635245822142" referenceLink="//@navigationRule.21/@navigationCase.0/@toViewId|" outlinks="pf1671635245822143 pf1671635245822144 pf1671635245822145 pf1671635245822146 pf1671635245822147 pf1671635245822148 pf1671635245822149" inlinks="pf1671635245822146 pf1671635245822147 pf1671635245822148 pf1671635245822150" path="/ca/editvalidators/editvalidators.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="ca/editvalidators/editvalidator.xhtml" x="338" y="4058" id="pf1671635245822151" referenceLink="//@navigationRule.21/@fromViewId|" outlinks="pf1671635245822150" inlinks="pf1671635245822143 pf1671635245822144 pf1671635245822145 pf1671635245822149" path="/ca/editvalidators/editvalidator.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="approval/editapprovalprofiles.xhtml" x="122" y="4442" id="pf1671635245822152" referenceLink="//@navigationRule.23/@navigationCase.0/@toViewId|" outlinks="pf1671635245822153 pf1671635245822154" inlinks="pf1671635245822155" path="/approval/editapprovalprofiles.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="approval/editapprovalprofile.xhtml" x="338" y="4442" id="pf1671635245822156" referenceLink="//@navigationRule.23/@fromViewId|" outlinks="pf1671635245822155" inlinks="pf1671635245822153 pf1671635245822154" path="/approval/editapprovalprofile.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="ra/edituserdatasources/userdatasourcespage.xhtml" x="338" y="5594" id="pf1671635245822157" referenceLink="//@navigationRule.25/@navigationCase.0/@toViewId|" outlinks="pf1671635245822158" inlinks="pf1671635245822159" path="/ra/edituserdatasources/userdatasourcespage.xhtml"/>
@@ -63,8 +63,8 @@
   <links id="pf1671635245822139" target="pf1671635245822141" source="pf1671635245822137" outcome="view"/>
   <links id="pf1671635245822140" target="pf1671635245822137" source="pf1671635245822141" outcome="done"/>
   <links id="pf1671635245822143" target="pf1671635245822151" source="pf1671635245822142" outcome="edit" redirect="true" fromaction="#{validatorsBean.actionEdit}"/>
-  <links id="pf1671635245822144" target="pf1671635245822151" source="pf1671635245822142" outcome="add" redirect="true" fromaction="#{validatorsBean.actionAdd}"/>
-  <links id="pf1671635245822145" target="pf1671635245822151" source="pf1671635245822142" outcome="view" redirect="true"/>
+  <links id="pf1671635245822144" target="pf1671635245822151" source="pf1671635245822142" outcome="clone" redirect="true" fromaction="#{validatorsBean.actionAddFromTemplate}"/>
+  <links id="pf1671635245822145" target="pf1671635245822151" source="pf1671635245822142" outcome="add" redirect="true" fromaction="#{validatorsBean.actionAdd}"/>
   <links id="pf1671635245822150" target="pf1671635245822142" source="pf1671635245822151" outcome="done"/>
   <links id="pf1671635245822153" target="pf1671635245822156" source="pf1671635245822152" outcome="edit"/>
   <links id="pf1671635245822154" target="pf1671635245822156" source="pf1671635245822152" outcome="view"/>
@@ -125,5 +125,5 @@
     <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
     <bendPoints d1Width="-64" d2Width="-64"/>
   </links>
-  <links id="pf1671635245822149" target="pf1671635245822151" source="pf1671635245822142" outcome="clone" redirect="true" fromaction="#{validatorsBean.actionAddFromTemplate}"/>
+  <links id="pf1671635245822149" target="pf1671635245822151" source="pf1671635245822142" outcome="view" redirect="true"/>
 </pageflow:Pageflow>

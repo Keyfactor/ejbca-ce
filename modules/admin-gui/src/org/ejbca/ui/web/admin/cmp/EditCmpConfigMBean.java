@@ -53,7 +53,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
-            "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF");
+            "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF", "VID", "PID");
     
     @EJB
     private CaSessionLocal caSession;

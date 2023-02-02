@@ -897,14 +897,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
-    
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    @Override
-    public void createKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias,
-            final String keySpecificationParam) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
-            InvalidAlgorithmParameterException {
-        createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecificationParam).build());
-    }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
@@ -942,7 +934,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
-        createKeyPair(authenticationToken, cryptoTokenId, alias, keySpecification);
+        createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecification).build());       
         removeKeyPairPlaceholder(authenticationToken, cryptoTokenId, alias);
     }
 

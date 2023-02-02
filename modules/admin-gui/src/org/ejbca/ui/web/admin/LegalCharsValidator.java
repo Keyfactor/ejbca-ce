@@ -18,6 +18,7 @@ import java.util.Set;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
@@ -28,8 +29,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 /** JSF validator to check that input fields do not contain characters that might be dangerous for SQL queries 
  * (non parameterized queries that is).
  * 
- * @version $Id$
  */
+@FacesValidator("legalCharsValidator")
 public class LegalCharsValidator implements Validator<Object> {
 	private static final Logger log = Logger.getLogger(LegalCharsValidator.class);
 
