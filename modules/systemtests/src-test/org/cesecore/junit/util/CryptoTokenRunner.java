@@ -61,7 +61,7 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CryptoTokenRunner.class.getSimpleName()));
 
-    public CryptoTokenRunner(Class<?> klass) throws InitializationError, NoSuchMethodException, SecurityException {
+    public CryptoTokenRunner(Class<?> klass) throws InitializationError {
         super(klass);
         CryptoProviderTools.installBCProviderIfNotAvailable();
         CryptoTokenRule.setCallback(this);
@@ -163,5 +163,11 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
      */
     public abstract Integer createCryptoToken() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException, NoSuchSlotException;
+    
+    /**
+     * 
+     * @return true if this runner can be run in the current environment. 
+     */
+    public abstract boolean canRun();
 
 }

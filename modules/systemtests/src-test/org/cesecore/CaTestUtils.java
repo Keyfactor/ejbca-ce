@@ -66,6 +66,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyGenParams;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
@@ -247,16 +248,29 @@ public abstract class CaTestUtils {
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
     public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11, final String keyspec,
             int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
-        return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, CAInfo.SELFSIGNED, keyspec, keyusage);
-    }
+        final String cryptoTokenImplementation;
+        if (pkcs11) {
+            cryptoTokenImplementation = PKCS11CryptoToken.class.getName();
+        } else {
 
+            cryptoTokenImplementation = SoftCryptoToken.class.getName();
+        }
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, cryptoTokenImplementation, CAInfo.SELFSIGNED, keyspec, keyusage);
+    }
+    
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
-    public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11, int signedBy, final String keyspec,
+    public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, final String cryptoTokenImplementation, final String keyspec,
+            int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, cryptoTokenImplementation, CAInfo.SELFSIGNED, keyspec, keyusage);
+    }
+    
+    /** Creates a CA object, but does not actually add the CA to EJBCA. */
+    public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
             int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         // Create catoken
         CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, tokenpin, genKeys, pkcs11, cadn, keyspec);
+        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, tokenpin, genKeys, cryptoTokenImplementation, cadn, keyspec, keyspec);
         final CAToken catoken = createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -410,9 +424,9 @@ public abstract class CaTestUtils {
     }
 
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
-    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int signedBy, int keyusage) throws CertificateParsingException,
+    public static X509CA createTestX509CA(String cadn, char[] tokenpin, final String cryptoTokenImplementation, int signedBy, int keyusage) throws CertificateParsingException,
             CryptoTokenOfflineException, OperatorCreationException {
-        return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, signedBy, "1024", keyusage);
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, cryptoTokenImplementation, signedBy, "1024", keyusage);
     }
 
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
