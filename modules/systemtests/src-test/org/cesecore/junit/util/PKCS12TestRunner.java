@@ -41,7 +41,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.junit.runners.model.InitializationError;
 
 /**
- * @version $Id$
  *
  */
 public class PKCS12TestRunner extends CryptoTokenRunner {
@@ -59,7 +58,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
             PKCS12TestRunner.class.getSimpleName()));
 
  
-    public PKCS12TestRunner(Class<?> klass) throws InitializationError, NoSuchMethodException, SecurityException {
+    public PKCS12TestRunner(Class<?> klass) throws InitializationError {
         super(klass);
     }
     
@@ -118,6 +117,12 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
             throw new IllegalStateException("Always Allow token was denied access.", e);
         }
         return cryptoTokenId;
+    }
+
+    @Override
+    public boolean canRun() {
+        //Can always run
+        return true;
     }
 
 }

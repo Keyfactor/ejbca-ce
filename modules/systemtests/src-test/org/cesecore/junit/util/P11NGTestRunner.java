@@ -54,11 +54,13 @@ import org.junit.runners.model.InitializationError;
 /**
  *
  */
-public class PKCS11TestRunner extends CryptoTokenRunner {
+public class P11NGTestRunner extends CryptoTokenRunner {
 
+    private static final String P11NG_TOKEN_CLASSNAME = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
+    
 
     private static final String DEFAULT_TOKEN_PIN = "userpin1";
-    private static final String ALIAS = "signKeyAlias";
+    private static final String ALIAS = "signKeyAlias åäöÅÄÖnâćŋA©Ba";
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
@@ -70,9 +72,9 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-            PKCS11TestRunner.class.getSimpleName()));
+            P11NGTestRunner.class.getSimpleName()));
 
-    public PKCS11TestRunner(Class<?> klass) throws InitializationError {
+    public P11NGTestRunner(Class<?> klass) throws InitializationError {
         super(klass);
     }
     
@@ -84,8 +86,10 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
     @Override
     public X509CA createX509Ca(String subjectDn, String username) throws Exception {
         caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        
         X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
-                true, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+                P11NG_TOKEN_CLASSNAME, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+           
         CAToken caToken = x509ca.getCAToken();
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, ALIAS);
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, ALIAS);
@@ -142,7 +146,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
 
     @Override
     public String getSubtype() {
-        return "pkcs11";
+        return "p11ng";
     }
 
     @Override
@@ -158,8 +162,17 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
 
     @Override
     public boolean canRun() {
-        // true if there is a PKCS#11 library configured
-        return SystemTestsConfiguration.getPkcs11Library() != null;
+        
+        boolean p11ngPresent;
+        try {
+            Class.forName(P11NG_TOKEN_CLASSNAME, false, this.getClass().getClassLoader());
+            p11ngPresent = true;
+        } catch (ClassNotFoundException e) {
+            p11ngPresent = false;
+        }
+        
+        // true if there is a PKCS#11 library configured and the P11NG crypto token exists on the classpath
+        return SystemTestsConfiguration.getPkcs11Library() != null && p11ngPresent;
     }
-
+    
 }

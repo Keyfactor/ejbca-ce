@@ -15,7 +15,6 @@ package org.cesecore.junit.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cesecore.SystemTestsConfiguration;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.Runner;
@@ -28,7 +27,6 @@ import org.junit.runners.model.Statement;
 /**
  * This test runner will make sure that any system test marked to use it will run twice: once with a soft crypto token and once with a PKCS11-token if available. 
  * 
- * @version $Id$
  *
  */
 public class CryptoTokenTestRunner extends Suite {
@@ -39,21 +37,24 @@ public class CryptoTokenTestRunner extends Suite {
 
     /**
      * 
-     * @return a list of test runners. By default will only return a runner that returns soft tokens, but will include a runner for PKCS#11 tokens as well, if available. 
+     * @return a list of test runners. By default will only return a runner that returns soft tokens, but will include a runner for PKCS#11 and P11NG tokens as well, if available. 
      */
     private static List<Runner> getRunners(Class<?> klass) {
         List<Runner> runners = new ArrayList<Runner>();
+
         try {
-            if (SystemTestsConfiguration.getPkcs11Library() != null) {
-                runners.add(new PKCS11TestRunner(klass));
-            }
             
-        } catch (Exception e) {
-            //NOPMD: This is in all likelihood benign. 
-        }
-        try {
+            //This guy will always be added
             runners.add(new PKCS12TestRunner(klass));
-        } catch (NoSuchMethodException | SecurityException | InitializationError e) {
+           
+            //Will be added if there is a PKCS#11 library present
+            runners.add(new PKCS11TestRunner(klass));
+            //Will be added if there is a PKCS#11 library present and P11NG is on the classpath
+         //   runners.add(new P11NGTestRunner(klass));
+
+        
+            
+        } catch ( InitializationError e) {
             throw new IllegalStateException(e);
         }
         return runners;
