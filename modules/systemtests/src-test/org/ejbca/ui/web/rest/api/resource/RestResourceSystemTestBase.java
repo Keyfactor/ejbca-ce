@@ -194,7 +194,7 @@ public class RestResourceSystemTestBase {
             ROLE_MEMBER = roleMemberSession.persist(INTERNAL_ADMIN_TOKEN,
                     new RoleMember(
                             X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                            clientCertCaInfo.getCAId(),
+                            clientCertCaInfo.getCAId(), RoleMember.NO_PROVIDER,
                             X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                             AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                             CERTIFICATE_USER_NAME,
