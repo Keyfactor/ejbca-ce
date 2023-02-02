@@ -113,17 +113,17 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
     @Override
     @Before
     public void setUp() throws Exception {
-        
-        if(!caSession.existsCa(CADN.hashCode())) {
-            testx509ca = CaTestUtils.createTestX509CA(CADN, null, false);
-            caSession.addCA(alwaysAllowToken, testx509ca);
+        if (caSession.existsCa(CADN.hashCode())) {
+            caSession.removeCA(alwaysAllowToken, CADN.hashCode());
         }
+        testx509ca = CaTestUtils.createTestX509CA(CADN, null, false);
+        caSession.addCA(alwaysAllowToken, testx509ca);
         final int caid = testx509ca.getCAId();
         
         certprofileName = "CertRevocationStatusCheckerTestCertProfile";
         if (certProfileSession.getCertificateProfile(certprofileName) == null) {
             final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            List<Integer> availablecas = new ArrayList<Integer>();
+            List<Integer> availablecas = new ArrayList<>();
             availablecas.add(caid);
             cp.setAvailableCAs(availablecas);
             try {
