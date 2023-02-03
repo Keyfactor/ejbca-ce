@@ -35,7 +35,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
-import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * <p>This filter is responsible for disabling access to parts of EJBCA based
