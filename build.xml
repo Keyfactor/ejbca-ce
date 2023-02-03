@@ -1628,10 +1628,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		<ant dir="modules" target="p11ng-cli" />
     </target>	
 	
-    <target name="cmpHttpProxy" depends="deprecated:check" description="Builds a CMP HTTP proxy. (Enterprise only)">
-    	<ant dir="modules" target="cmpHttpProxy" />
-    </target>
-	
 	<target name="showtime" >
 		<tstamp>
 			<format property="completiontime" pattern="yyyy-MM-dd HH:mm:ss Z"/>
