@@ -45,6 +45,7 @@
         <path location="${mod.plugins.lib}"/>
         <path location="${mod.plugins-ee.lib}"/>
 		<path refid="lib.xstream.classpath"/>
+        <path location="${mod.p11ng.lib}" />
 	</path>
 
     <path id="compile-test.classpath">
