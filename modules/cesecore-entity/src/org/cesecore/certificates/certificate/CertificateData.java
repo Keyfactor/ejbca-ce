@@ -191,7 +191,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
                 setNotBefore(notBefore.getTime());
             }
             setExpireDate(CertTools.getNotAfter(certificate));
-            setInvalidityDate(-1L);
+            setInvalidityDate(null);
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(updatetime); // (new Date().getTime());

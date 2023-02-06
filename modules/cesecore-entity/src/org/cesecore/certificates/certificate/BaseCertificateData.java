@@ -321,19 +321,6 @@ public abstract class BaseCertificateData extends ProtectedData {
     }
 
     /**
-     * The date the certificate was considered invalid
-     *
-     * @param invalidityDate invalidity date
-     */
-    public void setInvalidityDate(Date invalidityDate) {
-        if (invalidityDate == null) {
-            setInvalidityDate(-1L);
-        } else {
-            setInvalidityDate(invalidityDate.getTime());
-        }
-    }
-
-    /**
      * date the certificate was revoked
      *
      * @param revocationDate revocation date
