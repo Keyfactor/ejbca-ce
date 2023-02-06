@@ -334,6 +334,15 @@ public abstract class BaseCertificateData extends ProtectedData {
     }
 
     /**
+     * date from when the certificate was considered invalid
+     *
+     * @param invalidityDate invalidity date
+     */
+    public void setInvalidityDate(Date invalidityDate) {
+            setInvalidityDate(invalidityDate.getTime());
+    }
+    
+    /**
      * return the current class name
      *  
      * @return name (without package info) of the current class
