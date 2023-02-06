@@ -382,7 +382,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     @Override
     public void setInvalidityDate(Long invalidityDate) {
-        //this.invalidityDate = invalidityDate;
         this.invalidityDate = (Long) ObjectUtils.defaultIfNull(invalidityDate, -1L);
     }
 
@@ -675,7 +674,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (expireDate != certificateData.expireDate) {
             return false;
         }
-        if (!ObjectUtils.equals(invalidityDate, certificateData.invalidityDate)) {
+        if (!ObjectUtils.defaultIfNull(invalidityDate, -1L).equals(ObjectUtils.defaultIfNull(certificateData.invalidityDate, -1L))) {
             return false;
         }
         if (revocationDate != certificateData.revocationDate) {
