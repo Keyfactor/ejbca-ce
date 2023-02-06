@@ -115,7 +115,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     private String serialNumber;
     private Long notBefore = null;  // @since EJBCA 6.6.0
     private long expireDate = 0;
-    private Long invalidityDate = null; // @since EJBCA 7.12.0
+    private Long invalidityDate = -1L; // @since EJBCA 7.12.0
     private long revocationDate = 0;
     private int revocationReason = 0;
     private String base64Cert;
@@ -382,10 +382,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     @Override
     public void setInvalidityDate(Long invalidityDate) {
-        this.invalidityDate = (invalidityDate.equals(-1L))? null : invalidityDate;
+        //this.invalidityDate = invalidityDate;
+        this.invalidityDate = (Long) ObjectUtils.defaultIfNull(invalidityDate, -1L);
     }
 
-    
     @Override
     public long getRevocationDate() {
         return revocationDate;
