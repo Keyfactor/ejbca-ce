@@ -191,7 +191,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
                 setNotBefore(notBefore.getTime());
             }
             setExpireDate(CertTools.getNotAfter(certificate));
-            setInvalidityDate(null);
+            setInvalidityDate(-1L);
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(updatetime); // (new Date().getTime());
@@ -377,12 +377,12 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     @Override
     public Long getInvalidityDate() {
-        return invalidityDate;
+        return (invalidityDate.equals(-1L))? null : null;
     }
 
     @Override
     public void setInvalidityDate(Long invalidityDate) {
-        this.invalidityDate = invalidityDate;
+        this.invalidityDate = (invalidityDate.equals(-1L))? null : invalidityDate;
     }
 
     
