@@ -377,7 +377,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     @Override
     public Long getInvalidityDate() {
-        return (invalidityDate.equals(-1L))? null : null;
+        return invalidityDate;
     }
 
     @Override
