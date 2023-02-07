@@ -170,10 +170,13 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
                     " Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.")
             @QueryParam("reason") String reason,
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
-            @QueryParam("date") String date)
+            @QueryParam("date") String date,
+            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
+            @QueryParam("invalidity_date") String invalidityDate)
+
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
             CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException {
-        return super.revokeCertificate(requestContext, issuerDN, serialNumber, reason, date);
+        return super.revokeCertificate(requestContext, issuerDN, serialNumber, reason, date, invalidityDate);
     }
 
     @GET

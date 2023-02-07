@@ -3013,7 +3013,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
+    public void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, Date invalidityDate, String issuerDn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)

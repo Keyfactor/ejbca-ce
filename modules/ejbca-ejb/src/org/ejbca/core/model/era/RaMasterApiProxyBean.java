@@ -1965,7 +1965,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public void revokeCert(AuthenticationToken admin, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
+    public void revokeCert(AuthenticationToken admin, BigInteger certSerNo, Date revocationDate, Date invalidityDate, String issuerDn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
         // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
@@ -1973,7 +1973,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
                 try {
-                    raMasterApi.revokeCert(admin, certSerNo, revocationDate, issuerDn, reason, checkDate);
+                    raMasterApi.revokeCert(admin, certSerNo, revocationDate, invalidityDate, issuerDn, reason, checkDate);
                     // if it completed successfully, break
                     break;
                 } catch (CADoesntExistsException e) {
