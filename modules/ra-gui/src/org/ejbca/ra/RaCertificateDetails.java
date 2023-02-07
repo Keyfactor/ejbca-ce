@@ -130,6 +130,7 @@ public class RaCertificateDetails {
     private int revocationReason;
     private String updated;
     private String revocationDate = "";
+    private String invalidityDate = "";
     private String publicKeyAlgorithm = "";
     private String publicKeySpecification = "";
     private String publicKeyParameter = "";
@@ -353,6 +354,7 @@ public class RaCertificateDetails {
         if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
             this.revocationDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
+            this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
         } else {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getUpdateTime(), TimeZone.getDefault());
         }
@@ -474,6 +476,7 @@ public class RaCertificateDetails {
     }
     public String getUpdated() { return updated; }
     public String getRevocationDate() { return revocationDate; }
+    public String getInvalidityDate() { return invalidityDate; }
     public String getPublicKeyAlgorithm() { return publicKeyAlgorithm; }
     public String getPublicKeySpecification() { return publicKeySpecification; }
     public String getPublicKeyParameter() { return publicKeyParameter; }

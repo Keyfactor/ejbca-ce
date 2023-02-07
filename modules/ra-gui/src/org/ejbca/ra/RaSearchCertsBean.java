@@ -145,7 +145,7 @@ public class RaSearchCertsBean implements Serializable {
                 CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException {
             raMasterApiProxyBean.revokeCert(
                     raAuthenticationBean.getAuthenticationToken(), new BigInteger(raCertificateDetails.getSerialnumberRaw()), newDate,
-                    issuerDn, newRevocationReason, newDate == null ? false : true);
+                    raCertificateDetails.getInvalidityDate(), issuerDn, newRevocationReason, newDate == null ? false : true);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
             raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,

@@ -103,7 +103,7 @@ public class RaViewCertBean implements Serializable {
                 CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException {
             raMasterApiProxyBean.revokeCert(
                     raAuthenticationBean.getAuthenticationToken(), new BigInteger(raCertificateDetails.getSerialnumberRaw()), newDate,
-                    issuerDn, newRevocationReason, true);
+                    raCertificateDetails.getInvalidityDate(), issuerDn, newRevocationReason, true);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
             raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
