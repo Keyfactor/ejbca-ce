@@ -14,6 +14,7 @@ package org.ejbca.core.protocol.acme;
 
 import javax.ws.rs.core.Response.Status;
 
+import org.cesecore.NonSensitiveException;
 import org.ejbca.core.protocol.acme.response.AcmeProblem;
 import org.ejbca.core.protocol.acme.response.AcmeProblemResponse;
 
@@ -21,8 +22,8 @@ import org.ejbca.core.protocol.acme.response.AcmeProblemResponse;
  * Custom Exception for reporting problems from the ACME protocol.
  * 
  * @see AcmeProblemResponse
- * @version $Id$
  */
+@NonSensitiveException
 public class AcmeProblemException extends Exception {
 
     private static final long serialVersionUID = 1L;
