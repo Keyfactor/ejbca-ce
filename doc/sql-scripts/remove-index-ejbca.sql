@@ -23,6 +23,7 @@ DROP INDEX certificatedata_idx16 ON CertificateData;
 DROP INDEX certificatedata_idx17 ON CertificateData;
 DROP INDEX certificatedata_idx18 ON CertificateData;
 DROP INDEX certificatedata_idx19 ON CertificateData;
+DROP INDEX certificatedata_idx20 ON CertificateData;
 
 DROP INDEX historydata_idx1 ON CertReqHistoryData;
 DROP INDEX historydata_idx3 ON CertReqHistoryData;
