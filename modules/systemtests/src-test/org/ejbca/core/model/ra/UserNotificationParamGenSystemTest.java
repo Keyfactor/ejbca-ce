@@ -95,7 +95,7 @@ public class UserNotificationParamGenSystemTest {
         final UserNotificationParamGen paramGen = new UserNotificationParamGen(userdata, X_509_CERTIFICATE);
         assertNotNull("paramGen is null", paramGen);
         //when
-        final String msg = paramGen.interpolate("${USERNAME} ${user.USERNAME} ${user.EE.EMAIL} ${user.SAN.EMAIL} ${expiringCert.CERTSUBJECTDN} ${expiringCert.CERTSERIAL} ${expiringCert.CERTSERIALDECIMAL} ");
+        final String msg = paramGen.interpolate("${USERNAME} ${user.USERNAME} ${user.EE.EMAIL} ${user.SAN.EMAIL} ${expiringCert.CERTSUBJECTDN} ${expiringCert.CERTSERIAL} ${expiringCert.CERTSERIALDECIMAL}");
         //then
         assertFalse("Interpolate message failed", (msg==null || msg.length()==0));
         assertEquals("UserNotificationCertExpirationEmailTestUser UserNotificationCertExpirationEmailTestUser fooee@foo.se fooalt@foo.se CN=cnfoo,O=orgfoo,C=SE " 
