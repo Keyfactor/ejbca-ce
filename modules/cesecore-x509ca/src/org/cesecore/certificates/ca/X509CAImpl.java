@@ -300,6 +300,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setDeltaCrlPeriod(getDeltaCRLPeriod())
                 .setGenerateCrlUponRevocation(getGenerateCrlUponRevocation())
                 .setAllowChangingRevocationReason(getAllowChangingRevocationReason())
+                .setAllowInvalidityDate(getAllowInvalidityDate())
                 .setCrlPublishers(getCRLPublishers())
                 .setValidators(getValidators())
                 .setUseAuthorityKeyIdentifier(getUseAuthorityKeyIdentifier())
