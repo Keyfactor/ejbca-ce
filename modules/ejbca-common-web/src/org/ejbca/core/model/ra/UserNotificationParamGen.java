@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.ra;
 
+import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Date;
 
@@ -43,8 +44,9 @@ import org.ejbca.util.NotificationParamGen;
  * ${requestAdmin.EE.EMAIL}        = The email address of the administrator adding the end entity according to the administrator's End Entity data.
  * ${requestAdmin.SAN.EMAIL}       = The email address of the administrator adding the end entity according to the administrator's Subject Alternative Name, RFC822Name field.
  *
- * Variables used with  expiring certificates. 
- * ${expiringCert.CERTSERIAL}      = The serial number of the certificate about to expire 
+ * Variables used with expiring or expired certificates. 
+ * ${expiringCert.CERTSERIAL}      = The serial number of the certificate about to expire as HEX
+ * ${expiringCert.CERTSERIALDECIMAL} = The serial number of the certificate about to expire as decimal
  * ${expiringCert.EXPIREDATE}      = The date the certificate will expire
  * ${expiringCert.CERTSUBJECTDN}   = The certificate subject dn
  * ${expiringCert.CERTISSUERDN}    = The certificate issuer dn
@@ -111,6 +113,7 @@ public class UserNotificationParamGen extends NotificationParamGen {
 	        final CertificateData certificateData = revokedCertificate.getCertificateData();
 	        if (certificateData != null) {
 	            paramPut("revokedCertificate.CERTSERIAL", certificateData.getSerialNumberHex());
+	            paramPut("revokedCertificate.CERTSERIALDECIMAL",certificateData.getSerialNumber());
 	            paramPut("revokedCertificate.EXPIREDATE", fastDateFormat(new Date(certificateData.getExpireDate())));
 	            paramPut("revokedCertificate.CERTSUBJECTDN", certificateData.getSubjectDnNeverNull());
 	            paramPut("revokedCertificate.CERTISSUERDN", certificateData.getIssuerDN());
@@ -148,7 +151,13 @@ public class UserNotificationParamGen extends NotificationParamGen {
 
     protected void populateWithExpiringCert(Certificate expiringCert) {
 		if(expiringCert != null){
-			paramPut("expiringCert.CERTSERIAL",CertTools.getSerialNumberAsString(expiringCert));
+		    final BigInteger serial = CertTools.getSerialNumber(expiringCert);
+		    String serialDecimalString = "N/A";
+		    if (serial != null) {
+		        serialDecimalString = serial.toString(10);
+		    }
+		    paramPut("expiringCert.CERTSERIAL",CertTools.getSerialNumberAsString(expiringCert));
+            paramPut("expiringCert.CERTSERIALDECIMAL",serialDecimalString);
 			paramPut("expiringCert.EXPIREDATE", fastDateFormat(CertTools.getNotAfter(expiringCert)));
 			paramPut("expiringCert.CERTSUBJECTDN",CertTools.getSubjectDN(expiringCert));
 			paramPut("expiringCert.CERTISSUERDN",CertTools.getIssuerDN(expiringCert));          
