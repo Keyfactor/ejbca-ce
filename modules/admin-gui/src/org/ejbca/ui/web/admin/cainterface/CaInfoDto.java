@@ -95,6 +95,7 @@ public class CaInfoDto {
     private String crlCaDeltaCrlPeriod;
     private boolean generateCrlUponRevocation = false;
     private boolean allowChangingRevocationReason = false;
+    private boolean allowInvalidityDate = false;
     private String requestPreProcessor;
     private Map<String, List<String>> alternateCertificateChains;
     
@@ -673,6 +674,14 @@ public class CaInfoDto {
 
     public void setAllowChangingRevocationReason(boolean allowChangingRevocationReason) {
         this.allowChangingRevocationReason = allowChangingRevocationReason;
+    }
+
+    public boolean isAllowInvalidityDate() {
+        return allowInvalidityDate;
+    }
+
+    public void setAllowInvalidityDate(boolean allowInvalidityDate) {
+        this.allowInvalidityDate = allowInvalidityDate;
     }
 
     public String getRequestPreProcessor() {
