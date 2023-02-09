@@ -52,6 +52,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	private String issuerDN = null;
 	private int reason = -2;
 	private Date revocationDate = null;
+	private Date invalidityDate = null;
 
 	/** Constructor used in externalization only */
 	public RevocationApprovalRequest() {}
@@ -114,7 +115,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
 					endEntityManagementSession.revokeCertAfterApproval(getRequestAdmin(), certificateSerialNumber, issuerDN, reason, approvalRequestID,
-					        lastApprovalAdmin, revocationDate);
+					        lastApprovalAdmin, revocationDate, invalidityDate);
 					break;
 				default:
 					log.error("Unknown approval type " + approvalType);

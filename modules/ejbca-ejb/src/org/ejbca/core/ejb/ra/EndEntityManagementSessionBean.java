@@ -1708,7 +1708,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     serialNumber = CertTools.getSerialNumber(certificate);
                 }
                 try {
-                    revokeCert(authenticationToken, serialNumber, null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin, null);
+                    revokeCert(authenticationToken, serialNumber, null, /*invalidityDate*/null,cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin, null);
                 } catch (RevokeBackDateNotAllowedForProfileException e) {
                     throw new IllegalStateException("This should not happen since there is no back dating.",e);
                 } catch (CertificateProfileDoesNotExistException e) {
@@ -1760,7 +1760,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, null, issuerDn, reason, false);
+            revokeCert(authenticationToken, certSerNo, null, /*invalidityDate*/null,issuerDn, reason, false);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("This should not happen since there is no back dating.",e);
         }
@@ -1770,11 +1770,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void revokeCertAfterApproval(
             final AuthenticationToken authenticationToken, final BigInteger certSerNo, final String issuerDn,
             final int reason, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin, 
-            final Date revocationDate
+            final Date revocationDate, final Date invalidityDate
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
+            revokeCert(authenticationToken, certSerNo, revocationDate, invalidityDate, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("Back dating is not allowed in Certificate Profile",e);
         } catch (CertificateProfileDoesNotExistException e) {
@@ -1784,12 +1784,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void revokeCert(
-            AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn,
+            AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, Date invalidityDate, String issuerDn,
             int reason, boolean checkDate
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, checkDate, null, 0, null, null);
+            revokeCert(authenticationToken, certSerNo, revocationDate, invalidityDate, issuerDn, reason, checkDate, null, 0, null, null);
         } catch (CertificateProfileDoesNotExistException e) {
             throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
         }
@@ -1801,12 +1801,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException {
         BigInteger certificateSn = new BigInteger(certRevocationDto.getCertificateSN(), 16);
-        revokeCert(authenticationToken, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(),
+        revokeCert(authenticationToken, certificateSn, certRevocationDto.getRevocationDate(), /*invalidityDate*/null, certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(),
                 null, 0, null, certRevocationDto.getCertificateProfileId());
     }
 
     private void revokeCert(
-            AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn,
+            AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, Date invalidityDate, String issuerDn,
             int reason, boolean checkDate, final EndEntityInformation endEntityInformationParam, final int approvalRequestID,
             final AuthenticationToken lastApprovingAdmin, final Integer certificateProfileIdParam
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
@@ -1974,7 +1974,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
         // Revoke certificate in database and all publishers
         try {
-            revocationSession.revokeCertificate(authenticationToken, cdw, publishers, revocationDate!=null ? revocationDate : new Date(), reason, certificateSubjectDN);
+            revocationSession.revokeCertificate(authenticationToken, cdw, publishers, revocationDate!=null ? revocationDate : new Date(), invalidityDate, reason, certificateSubjectDN);
         } catch (CertificateRevokeException e) {
             final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerDn, certSerNo.toString(16));
             log.info(msg);

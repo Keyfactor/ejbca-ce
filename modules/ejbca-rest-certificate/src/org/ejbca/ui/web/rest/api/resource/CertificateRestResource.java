@@ -232,6 +232,7 @@ public class CertificateRestResource extends BaseRestResource {
      *                       CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,
      *                       CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE
      * @param date           revocation date (optional). Must be valid ISO8601 date string
+     * @param invalidityDate invalidity date (optional). Must be valid ISO8601 date string
      * @return JSON representation of serialNr, issuerDn, revocation status, date and optional message.
      */
     public Response revokeCertificate(
@@ -268,6 +269,7 @@ public class CertificateRestResource extends BaseRestResource {
                 revocationDate(revocationDate).
                 revoked(certificateStatus.isRevoked()).
                 revocationReason(reason).
+                invalidityDate(validatedInvalidityDate).
                 message("Successfully revoked").
                 build();
         return Response.ok(result).build();
