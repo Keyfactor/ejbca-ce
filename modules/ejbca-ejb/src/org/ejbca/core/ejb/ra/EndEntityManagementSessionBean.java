@@ -1913,6 +1913,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         revocationDate = new Date(certificateData.getRevocationDate());
                     }
                 }
+                else if (invalidityDate != null /*&&* Allow use invalidityDate*/ ) {
+                    revocationDate = new Date(certificateData.getRevocationDate());
+                    reason = certificateData.getRevocationReason();
+                }
                 else {
                     // Revocation reason cannot be changed, find out why and throw appropriate exception
                     if (!RevokedCertInfo.isDateOk(revocationDate, certificateData.getRevocationDate())) {

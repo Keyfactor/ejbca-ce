@@ -1207,11 +1207,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
         } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
-
             certificateData.setUpdateTime(now.getTime());
             certificateData.setStatus(CertificateConstants.CERT_REVOKED);
             certificateData.setRevocationReason(reason);
-            if (invalidityDate != null) {
+            if (invalidityDate != null /*&& Allow use invalidityDate*/) {
                 certificateData.setInvalidityDate(invalidityDate);
             }
             if (revokeDate != null) {
@@ -1222,7 +1221,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
-
+            returnVal = true;
+        } else if (invalidityDate != null /*&& Allow use invalidityDate*/) {
+            certificateData.setUpdateTime(now.getTime());
+                certificateData.setInvalidityDate(invalidityDate);
             returnVal = true;
         } else if (((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL))
                 && (certificateData.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
