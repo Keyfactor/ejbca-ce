@@ -1913,7 +1913,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         revocationDate = new Date(certificateData.getRevocationDate());
                     }
                 }
-                else if (invalidityDate != null /*&&* Allow use invalidityDate*/ ) {
+                else if (invalidityDate != null /*&& cadata.getCA().getCAInfo().isAllowInvalidityDate()*/ ) {
                     revocationDate = new Date(certificateData.getRevocationDate());
                     reason = certificateData.getRevocationReason();
                 }
@@ -1945,7 +1945,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     certProfile);
             if (approvalProfile != null) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certSerNo, issuerDn, username, reason, authenticationToken, caId,
-                        endEntityProfileId, approvalProfile, revocationDate);
+                        endEntityProfileId, approvalProfile, revocationDate, invalidityDate);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     final int requestId = approvalSession.addApprovalRequest(authenticationToken, ar);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);

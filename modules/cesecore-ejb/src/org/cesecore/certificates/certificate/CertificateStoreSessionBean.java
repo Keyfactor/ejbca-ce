@@ -1210,7 +1210,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateData.setUpdateTime(now.getTime());
             certificateData.setStatus(CertificateConstants.CERT_REVOKED);
             certificateData.setRevocationReason(reason);
-            if (invalidityDate != null /*&& Allow use invalidityDate*/) {
+            if (invalidityDate != null /*&& caInfo.isAllowInvalidityDate()*/) {
                 certificateData.setInvalidityDate(invalidityDate);
             }
             if (revokeDate != null) {
