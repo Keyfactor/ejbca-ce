@@ -284,14 +284,14 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     // Only invoked for testing.
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final int reason)
+    public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final Date invalidityDate, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
         if (cdw.getBaseCertificateData() instanceof NoConflictCertificateData) {
             if (entityManager.contains(cdw.getBaseCertificateData())) {
                 throw new IllegalStateException("Cannot update existing row in NoConflictCertificateData. It is append-only.");
             }
         }
-        return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
+        return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, invalidityDate, reason);
     }
     
     @Override
