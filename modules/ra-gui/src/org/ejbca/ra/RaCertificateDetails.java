@@ -23,7 +23,9 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -102,6 +104,8 @@ public class RaCertificateDetails {
 
     private static final Logger log = Logger.getLogger(RaCertificateDetails.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    private static final DateFormat DATE_FORMAT_ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+
     public static String PARAM_REQUESTID = "requestId";
 
     private final Callbacks callbacks;
@@ -354,7 +358,8 @@ public class RaCertificateDetails {
         if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
             this.revocationDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
-            this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
+            //this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
+            //this.dateInvalidityDate = ValidityDate.parseAsIso8601(invalidityDate.trim());    
         } else {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getUpdateTime(), TimeZone.getDefault());
         }
