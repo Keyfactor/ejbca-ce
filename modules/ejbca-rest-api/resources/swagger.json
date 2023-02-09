@@ -416,6 +416,13 @@
             "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "invalidity_date",
+            "in": "query",
+            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
+            "required": false,
+            "type": "string"
           }
         ],
         "responses": {

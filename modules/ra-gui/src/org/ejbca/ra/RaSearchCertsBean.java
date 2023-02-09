@@ -142,10 +142,13 @@ public class RaSearchCertsBean implements Serializable {
         public void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason,
                 final Date newDate, final String issuerDn)
                 throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
-                CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException {
+                CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException/*, ParseException*/ {
+        
+            //Date vd = ValidityDate.parseAsIso8601(raCertificateDetails.getInvalidityDate().trim());
+            //We can implement invalidityDate in RA GUI in the future, for now send null..
             raMasterApiProxyBean.revokeCert(
                     raAuthenticationBean.getAuthenticationToken(), new BigInteger(raCertificateDetails.getSerialnumberRaw()), newDate,
-                    raCertificateDetails.getInvalidityDate(), issuerDn, newRevocationReason, newDate == null ? false : true);
+                    /*invalidityDate,*/null, issuerDn, newRevocationReason, newDate == null ? false : true);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
             raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
