@@ -95,6 +95,7 @@ public abstract class CAInfo implements Serializable {
     protected long deltacrlperiod = 0;
     protected boolean generateCrlUponRevocation = false;
     protected boolean allowChangingRevocationReason = false;
+    protected boolean allowInvalidityDate = false;
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
     protected boolean keepExpiredCertsOnCRL = false;
@@ -377,6 +378,14 @@ public abstract class CAInfo implements Serializable {
 
     public void setAllowChangingRevocationReason(boolean allow) {
         this.allowChangingRevocationReason = allow;
+    }
+
+    public boolean isAllowInvalidityDate() {
+        return allowInvalidityDate;
+    }
+
+    public void setAllowInvalidityDate(boolean allowInvalidityDate) {
+        this.allowInvalidityDate = allowInvalidityDate;
     }
 
     public long getCRLIssueInterval() {

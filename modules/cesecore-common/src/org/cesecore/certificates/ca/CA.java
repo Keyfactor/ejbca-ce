@@ -67,6 +67,10 @@ public interface CA extends CACommon {
 
     void setAllowChangingRevocationReason(boolean allow);
 
+    boolean getAllowInvalidityDate();
+
+    void setAllowInvalidityDate(boolean allow);
+
     long getCRLIssueInterval();
 
     void setCRLIssueInterval(long crlIssueInterval);
