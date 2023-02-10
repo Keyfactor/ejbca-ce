@@ -1913,7 +1913,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         revocationDate = new Date(certificateData.getRevocationDate());
                     }
                 }
-                else if (invalidityDate != null /*&& cadata.getCA().getCAInfo().isAllowInvalidityDate()*/ ) {
+                else if (invalidityDate != null && cadata.getCA().getCAInfo().isAllowInvalidityDate() ) {
                     revocationDate = new Date(certificateData.getRevocationDate());
                     reason = certificateData.getRevocationReason();
                 }
