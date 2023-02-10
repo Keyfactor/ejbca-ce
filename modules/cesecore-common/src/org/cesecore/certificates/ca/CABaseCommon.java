@@ -75,6 +75,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String DELTACRLPERIOD = "deltacrlperiod";
     protected static final String GENERATECRLUPONREVOCATION = "generatecrluponrevocation";
     protected static final String ALLOWCHANGINGREVOCATIONREASON = "allowchangingrevocationreason";
+    protected static final String ALLOWINVALIDITYDATE = "allowinvaliditydate";
     protected static final String NAMECHANGED = "namechanged";
     
     // protected fields.
