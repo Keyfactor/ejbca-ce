@@ -127,7 +127,7 @@ public class CertificateRestResourceUnitTest {
         final RevocationReasons revocationReason = RevocationReasons.KEYCOMPROMISE;
         final CertificateStatus response = new CertificateStatus("REVOKED", new Date().getTime(), revocationReason.getDatabaseValue(), 123456);
         // when
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
+        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
         expect(raMasterApiProxy.getCertificateStatus(anyObject(AuthenticationToken.class), anyString(), anyObject(BigInteger.class))).andReturn(response);
         replay(raMasterApiProxy);
         final Invocation.Builder request = server
