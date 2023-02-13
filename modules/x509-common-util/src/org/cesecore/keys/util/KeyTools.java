@@ -196,7 +196,7 @@ public final class KeyTools {
             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
         }
         if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA) || StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_EC)) {
-            if ((keySpec != null) && !StringUtils.equals(keySpec, "implicitlyCA")) {
+            if ((keySpec != null)) {
                 log.debug("Generating named curve ECDSA key pair: " + keySpec);
                 // Check if we have an OID for this named curve
                 if (ECUtil.getNamedCurveOid(keySpec) != null) {
@@ -225,14 +225,8 @@ public final class KeyTools {
             } else if (algSpec != null) {
                 log.debug("Generating ECDSA key pair from AlgorithmParameterSpec: " + algSpec);
                 keygen.initialize(algSpec, new SecureRandom());
-            } else if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                log.debug("Generating implicitlyCA encoded ECDSA key pair");
-                // If the keySpec is null, we have "implicitlyCA" defined EC parameters
-                // The parameters were already installed when we installed the provider
-                // We just make sure that ecSpec == null here
-                keygen.initialize(null, new SecureRandom());
             } else {
-                throw new InvalidAlgorithmParameterException("No keySpec no algSpec and no implicitlyCA specified");
+                throw new InvalidAlgorithmParameterException("No keySpec or algSpec specified");
             }
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
             final AlgorithmParameterSpec ecSpec;
@@ -398,8 +392,7 @@ public final class KeyTools {
      * 
      * @param pk
      *            PublicKey used to derive the keysize
-     * @return -1 if key is unsupported, otherwise a number >= 0. 0 usually means the length can not be calculated, for example if the key is an EC
-     *         key and the "implicitlyCA" encoding is used.
+     * @return -1 if key is unsupported, otherwise a number >= 0. 0 usually means the length can not be calculated
      */
     public static int getKeyLength(final PublicKey pk) {
         if (pk instanceof RSAPublicKey) {
@@ -1357,10 +1350,7 @@ public final class KeyTools {
         final boolean isGost3410 = AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(keyAlg);
         final boolean isDstu4145 = AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keyAlg.startsWith(AlgorithmConstants.DSTU4145_OID + ".");
         if (isEcdsa || isGost3410 || isDstu4145) {
-            // We allow key lengths of 0, because that means that implicitlyCA is used. 
-            // for ImplicitlyCA we have no idea what the key length is, on the other hand only real professionals
-            // will ever use that to we will allow it.
-            if ((len > 0) && (len < 224)) {
+            if ((len >= 0) && (len < 224)) {
                 final String msg = "ECDSA keys of smaller size than 224 is not allowed for a CA. Requested length was " + len;             
                 throw new InvalidKeyException(msg);
             }                            
