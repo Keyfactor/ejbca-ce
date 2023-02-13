@@ -12,9 +12,15 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -25,7 +31,7 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -37,8 +43,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
+import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.KeyGenParams;
@@ -49,26 +54,26 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * @see InternalKeyBindingMgmtSession
- * @version $Id$
  */
-@RunWith(CryptoTokenTestRunner.class)
+@RunWith(Parameterized.class)
 public class InternalKeyBindingMgmtTest {
 
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return CryptoTokenRunner.defaultRunners;
+    }
+    
     private static final Logger log = Logger.getLogger(InternalKeyBindingMgmtTest.class);
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(InternalKeyBindingMgmtTest.class.getSimpleName()));
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -85,21 +90,25 @@ public class InternalKeyBindingMgmtTest {
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
     
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    private X509CAInfo x509ca;
+    private int cryptoTokenId;
     
-    private static X509CA x509ca;
-    private static int cryptoTokenId;
+    private CryptoTokenRunner cryptoTokenRunner;
+
+    public InternalKeyBindingMgmtTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+        this.cryptoTokenRunner = cryptoTokenRunner;
+       
+    }
     
-    @BeforeClass
-    public static void beforeClass() throws Throwable {
-        x509ca = cryptoTokenRule.createX509Ca();
+    @Before
+    public void before() throws Throwable {
+        x509ca = cryptoTokenRunner.createX509Ca();
         cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
     }
     
-    @AfterClass
-    public static void afterClass() {
-        cryptoTokenRule.cleanUp();
+    @After
+    public void afterClass() {
+        cryptoTokenRunner.cleanUp();
     }
    
         
