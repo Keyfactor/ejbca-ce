@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,12 +40,16 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -68,6 +74,8 @@ public abstract class CryptoTokenRunner {
 
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    
+    private final CryptoTokenSessionRemote cryptoTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenSessionRemote.class);
 
     private Map<Integer, X509CAInfo> casToRemove = new HashMap<>();
     private Set<Integer> cryptoTokenstoRemove = new HashSet<>();
@@ -98,6 +106,17 @@ public abstract class CryptoTokenRunner {
     public void teardownCryptoToken() {
         try {
             for (int cryptoTokenId : cryptoTokenstoRemove) {
+                CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+                if (cryptoToken != null) {
+                    try {
+                        for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(alwaysAllowToken, cryptoTokenId)) {
+                            cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, keyPairInfo.getAlias());
+                        }
+                    } catch (InvalidKeyException | CryptoTokenOfflineException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+                
                 cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
             }
         } catch (AuthorizationDeniedException e) {
@@ -112,7 +131,9 @@ public abstract class CryptoTokenRunner {
 
     public abstract String getSimpleName();
 
-    public abstract X509CAInfo createX509Ca() throws Exception;
+    public X509CAInfo createX509Ca() throws Exception {
+        return createX509Ca(getSubjectDn(), getSimpleName());
+    }
     
     public abstract X509CAInfo createX509Ca(String subjectDn, String username) throws Exception;
 
@@ -123,10 +144,20 @@ public abstract class CryptoTokenRunner {
         int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
 
         try {
+            CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+            if (cryptoToken != null) {
+                try {
+                    for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(alwaysAllowToken, cryptoTokenId)) {
+                        cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, keyPairInfo.getAlias());
+                    }
+                } catch (InvalidKeyException | CryptoTokenOfflineException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+            
+            
             cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
             if (ca != null) {
-                final int caCryptoTokenId = ca.getCAToken().getCryptoTokenId();
-                cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, caCryptoTokenId);
                 caSession.removeCA(alwaysAllowToken, ca.getCAId());
             }
             internalCertificateStoreSession.removeCertificatesBySubject(getSubjectDn());
@@ -244,5 +275,7 @@ public abstract class CryptoTokenRunner {
         catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         return catoken;
     }
+    
+    protected abstract String getTokenImplementation();
 
 }

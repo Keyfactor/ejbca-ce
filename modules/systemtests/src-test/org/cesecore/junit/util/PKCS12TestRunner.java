@@ -15,9 +15,12 @@ package org.cesecore.junit.util;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
+import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -31,6 +34,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyGenParams;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -43,6 +47,8 @@ import org.cesecore.util.EjbRemoteHelper;
 public class PKCS12TestRunner extends CryptoTokenRunner {
     
     private static final String ALIAS = "signKeyAlias";
+  
+    protected static final String DEFAULT_TOKEN_PIN = "userpin1";
     
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -56,13 +62,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     public PKCS12TestRunner() {
     
     }
-
-    
-    @Override
-    public X509CAInfo createX509Ca() throws Exception {
-        return createX509Ca(getSubjectDn(), getSimpleName());
-    }
-
+/*
     @Override
     public X509CAInfo createX509Ca(String subjectDn, String username) throws Exception {
         caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
@@ -77,6 +77,17 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
         X509CAInfo x509caInfo = (X509CAInfo) x509ca.getCAInfo();
         setCaForRemoval(x509ca.getCAId(), x509caInfo);
         return x509caInfo;
+    }*/
+    
+    @Override
+    public X509CAInfo createX509Ca(String subjectDn, String username) throws Exception {
+        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        X509CAInfo x509ca = createTestX509Ca(subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
+                getTokenImplementation(), CAInfo.SELFSIGNED, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+
+        setCaForRemoval(x509ca.getCAId(), x509ca);
+        
+        return x509ca;
     }
     
 
@@ -113,6 +124,11 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     @Override
     public String toString() {
         return getSimpleName();
+    }
+
+    @Override
+    protected String getTokenImplementation() {
+        return SoftCryptoToken.class.getName();
     }
 
 }
