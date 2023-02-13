@@ -12,152 +12,26 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
-import java.security.InvalidKeyException;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.util.List;
+import java.security.Security;
 
-import org.bouncycastle.jce.X509KeyUsage;
-import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
-import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
-import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
-import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenNameInUseException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.token.KeyGenParams;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.junit.runners.model.InitializationError;
+import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 
 /**
  *
  */
-public class P11NGTestRunner extends CryptoTokenRunner {
+public class P11NGTestRunner extends HardtokenTestRunnerBase {
 
     private static final String P11NG_TOKEN_CLASSNAME = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
     
-
-    private static final String DEFAULT_TOKEN_PIN = "userpin1";
-    private static final String ALIAS = "signKeyAlias åäöÅÄÖnâćŋA©Ba";
-
-    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CertificateCreateSessionRemote.class);
-    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-
-    private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-            P11NGTestRunner.class.getSimpleName()));
-
-    public P11NGTestRunner(Class<?> klass) throws InitializationError {
-        super(klass);
+    public P11NGTestRunner() {
+        Security.addProvider(new JackNJI11Provider());
     }
     
-    @Override
-    public X509CA createX509Ca() throws Exception {
-        return createX509Ca(getSubjectDn(), getName());
-    }
 
     @Override
-    public X509CA createX509Ca(String subjectDn, String username) throws Exception {
-        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
-        
-        X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
-                P11NG_TOKEN_CLASSNAME, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
-           
-        CAToken caToken = x509ca.getCAToken();
-        caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, ALIAS);
-        caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, ALIAS);
-        x509ca.setCAToken(caToken);
-        caSession.addCA(alwaysAllowToken, x509ca);
-        int cryptoTokenId = caToken.getCryptoTokenId();
-        cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, KeyGenParams.builder("RSA1024").build());
-        CAInfo info = caSession.getCAInfo(alwaysAllowToken, x509ca.getCAId());
-        // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
-        PublicKey pk = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, ALIAS).getPublicKey();
-        EndEntityInformation user = new EndEntityInformation(username, info.getSubjectDN(), x509ca.getCAId(), null, null, new EndEntityType(
-                EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, null);
-        user.setStatus(EndEntityConstants.STATUS_NEW);
-        user.setPassword("foo123");
-        SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());
-        CertificateResponseMessage response = certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
-                org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
-        List<Certificate> certs = info.getCertificateChain();
-        certs.add(response.getCertificate());
-        info.setCertificateChain(certs);
-        caSession.editCA(alwaysAllowToken, info);
-        casToRemove.put(x509ca.getCAId(), x509ca);
-        return x509ca;
-    }
-
-    @Override
-    public void tearDownCa(CA ca) {
-        int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-
-        try {
-            try {
-                final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-                if (cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, signKeyAlias)) {
-                    cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
-                }
-            } catch (InvalidKeyException e) {
-                throw new IllegalStateException(e);
-            } catch (CryptoTokenOfflineException e) {
-                throw new IllegalStateException(e);
-            }
-            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
-            if (ca != null) {
-                CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, ca.getCAId());
-                final int caCryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
-                cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, caCryptoTokenId);
-                caSession.removeCA(alwaysAllowToken, ca.getCAId());
-            }
-            internalCertificateStoreSession.removeCertificatesBySubject(getSubjectDn());
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException(e);
-        }
-        casToRemove.remove(ca.getCAId());
-    }
-
-    @Override
-    public String getSubtype() {
+    public String getNamingSuffix() {
         return "p11ng";
-    }
-
-    @Override
-    public Integer createCryptoToken() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
-            NoSuchSlotException {
-        try {
-            cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Always Allow token was denied access.", e);
-        }
-        return cryptoTokenId;
     }
 
     @Override
@@ -174,5 +48,21 @@ public class P11NGTestRunner extends CryptoTokenRunner {
         // true if there is a PKCS#11 library configured and the P11NG crypto token exists on the classpath
         return SystemTestsConfiguration.getPkcs11Library() != null && p11ngPresent;
     }
+
+    @Override
+    public String getSimpleName() {
+        return "P11NGTestRunner";
+    }
     
+    @Override
+    public String toString() {
+        return getSimpleName();
+    }
+
+
+    @Override
+    protected String getTokenImplementation() {
+        return P11NG_TOKEN_CLASSNAME;
+    }
+
 }
