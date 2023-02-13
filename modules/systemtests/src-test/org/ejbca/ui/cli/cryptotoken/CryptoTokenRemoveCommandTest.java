@@ -19,6 +19,7 @@ import java.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -57,7 +58,7 @@ public class CryptoTokenRemoveCommandTest {
         cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, TOKEN_NAME, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, "foo123".toCharArray());
-        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, KEYPAIR_ALIAS, "1024");
+        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, KEYPAIR_ALIAS, KeyGenParams.builder("RSA1024").build());
         if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, KEYPAIR_ALIAS)) {
             throw new RuntimeException("No alias was created, cannot continue.");
         }
