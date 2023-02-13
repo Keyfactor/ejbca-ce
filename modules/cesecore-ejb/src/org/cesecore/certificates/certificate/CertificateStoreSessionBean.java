@@ -1222,7 +1222,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true;
-        } else if (invalidityDate != null /*&& Allow use invalidityDate*/) {
+        } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
             certificateData.setUpdateTime(now.getTime());
                 certificateData.setInvalidityDate(invalidityDate);
             returnVal = true;
