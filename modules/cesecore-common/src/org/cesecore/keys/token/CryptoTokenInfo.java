@@ -21,7 +21,6 @@ import org.cesecore.util.Named;
 /**
  * Non-sensitive information about a CryptoToken.
  * 
- * @version $Id$
  */
 public class CryptoTokenInfo implements Named, Serializable {
 
