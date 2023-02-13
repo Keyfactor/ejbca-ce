@@ -13,15 +13,16 @@ package org.ejbca.ui.web.rest.api.io.response;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * A class representing the response for EST with CoAP REST method.
+ * A class representing the response for EST simpleenroll and simplereenroll requests with CoAP REST method.
  * Used for communicating with CoAP Proxy
+ *
  */
-public class CoapEstRestResponse {
+public class CoapEstEnrollRestResponse {
 
     @ApiModelProperty(value = "Certificate", example = "MIIDXzCCA...eW1Zro0=")
     private String cert;
 
-    public CoapEstRestResponse(String cert) {
+    public CoapEstEnrollRestResponse(String cert) {
         this.cert = cert;
     }
 
