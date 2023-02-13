@@ -797,6 +797,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(DO_STORE_OCSP_ON_DEMAND, doStoreOcspResponsesOnDemand);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public Map<String, List<String>> getAlternateCertificateChains() {
         if (data.containsKey(ALTERNATECHAINS)) {

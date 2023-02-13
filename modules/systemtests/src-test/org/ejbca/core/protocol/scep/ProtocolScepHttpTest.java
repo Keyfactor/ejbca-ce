@@ -98,7 +98,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -107,7 +106,6 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
@@ -122,8 +120,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
+import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -148,25 +145,29 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests http pages of scep
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@RunWith(CryptoTokenTestRunner.class)
+@RunWith(Parameterized.class)
 public class ProtocolScepHttpTest {
 
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return CryptoTokenRunner.defaultRunners;
+    }
+    
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
     private static final String scepAlias = "ProtocolHttpTestScepAlias";
@@ -193,8 +194,6 @@ public class ProtocolScepHttpTest {
             + "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
 
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolScepHttpTest"));
-    private static X509CA x509ca;
-    private static X509Certificate cacert;
     private static KeyPair key1;
     private static KeyPair key2;
     private static KeyPair keyTestRollover;
@@ -213,6 +212,8 @@ public class ProtocolScepHttpTest {
     private Random rand = new Random();
     private String httpReqPath;
     private ScepConfiguration scepConfiguration;
+    private X509CAInfo x509ca;
+    private X509Certificate cacert;
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -222,19 +223,25 @@ public class ProtocolScepHttpTest {
     private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final EndEntityAccessSessionRemote endEntityAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
    
-
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
     
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
     
-    @BeforeClass
-    public static void beforeClass() throws Exception {
+
+    private CryptoTokenRunner cryptoTokenRunner;
+
+    public ProtocolScepHttpTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+        this.cryptoTokenRunner = cryptoTokenRunner;
+       
+    }
+
+    @Before
+    public void setUp() throws Exception {
         // Pre-generate key for all requests to speed things up a bit
         try {
             key1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -244,12 +251,9 @@ public class ProtocolScepHttpTest {
             throw new RuntimeException(e);
         }
         
-        x509ca = cryptoTokenRule.createX509Ca();
-        cacert = (X509Certificate) x509ca.getCACertificate();
-    }
-
-    @Before
-    public void setUp() throws Exception {
+        x509ca = cryptoTokenRunner.createX509Ca();
+        cacert = (X509Certificate) x509ca.getCertificateChain().get(0);
+        
         final String httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
         httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
@@ -284,11 +288,8 @@ public class ProtocolScepHttpTest {
         
         scepConfiguration.removeAlias(scepAlias);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        cryptoTokenRule.cleanUp();
+        
+        cryptoTokenRunner.cleanUp();
     }
     
     public String getRoleName() {
@@ -765,13 +766,8 @@ public class ProtocolScepHttpTest {
      */
     @Test
     public void test13ScepGetNextCACertSubCA() throws Exception {
-        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
-                globalConfigSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        final boolean wasEnforceUniqueDn = x509ca.isDoEnforceUniqueDistinguishedName();
-        final CAInfo rootcainfo = x509ca.getCAInfo();
-        rootcainfo.setDoEnforceUniqueDistinguishedName(false);
-        x509ca.updateCA(null, rootcainfo, cceConfig);
-        caAdminSession.editCA(admin, rootcainfo);
+        x509ca.setDoEnforceUniqueDistinguishedName(false);
+        caAdminSession.editCA(admin, x509ca);
         try {
             rolloverStartTime = System.currentTimeMillis()+7L*24L*3600L*1000L;
             
@@ -858,12 +854,7 @@ public class ProtocolScepHttpTest {
             if (endEntityManagementSession.existsUser("TestScepCARollover")) {
                 endEntityManagementSession.deleteUser(admin, "TestScepCARollover");
             }
-            
-            rootcainfo.setDoEnforceUniqueDistinguishedName(wasEnforceUniqueDn);
-            x509ca.updateCA(null, rootcainfo, cceConfig);
-            caAdminSession.editCA(admin, rootcainfo);
-            
-            // We will use the new sub CA in the next test, so we don't remove it yet
+                        
         }
     }
     
@@ -934,7 +925,7 @@ public class ProtocolScepHttpTest {
         final String differentCaName = "testInvalidRequestDoesNotChangeStatus_ca";
         final String differentCaSubjectDn = "CN=" + differentCaName;
 
-        X509CA differentCa = cryptoTokenRule.createX509Ca(differentCaSubjectDn, differentCaName);
+        X509CAInfo differentCa = cryptoTokenRunner.createX509Ca(differentCaSubjectDn, differentCaName);
 
         // Create a user from a different CA than the one called from genScepRequest below
         createScepUser(username, subjectDn, differentCa.getCAId());
