@@ -163,17 +163,21 @@ public class CryptoTokenTestUtils {
         int cryptoTokenId = createCryptoToken(pin, cryptoTokenImplementation, tokenName);
         try {
             if (generateKeys) {
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
-                        KeyGenParams.builder(signKeySpec).build());
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS,
-                        KeyGenParams.builder(encKeySpec).build());
+                if (cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS) == null) {
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
+                            KeyGenParams.builder(signKeySpec).build());
+                }
+                if (cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS) == null) {
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS,
+                            KeyGenParams.builder(encKeySpec).build());
+                }
             }
         } catch (AuthorizationDeniedException | InvalidKeyException | CryptoTokenOfflineException | InvalidAlgorithmParameterException e) {
             // Cleanup token if we failed during the key creation stage
             try {
                 removeCryptoToken(null, cryptoTokenId);
-            } catch (Exception e2) {
-                log.error("", e2);
+            } catch (Exception e1) {
+                log.error("", e1);
             }
             throw new IllegalStateException(e);
         }
