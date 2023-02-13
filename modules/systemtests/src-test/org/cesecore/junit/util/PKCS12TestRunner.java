@@ -18,13 +18,11 @@ import java.util.Date;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -38,7 +36,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.junit.runners.model.InitializationError;
 
 /**
  *
@@ -51,24 +48,23 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
     
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             PKCS12TestRunner.class.getSimpleName()));
 
- 
-    public PKCS12TestRunner(Class<?> klass) throws InitializationError {
-        super(klass);
+    public PKCS12TestRunner() {
+    
     }
+
     
     @Override
-    public X509CA createX509Ca() throws Exception {
-        return createX509Ca(getSubjectDn(), getName());
+    public X509CAInfo createX509Ca() throws Exception {
+        return createX509Ca(getSubjectDn(), getSimpleName());
     }
 
     @Override
-    public X509CA createX509Ca(String subjectDn, String username) throws Exception {
+    public X509CAInfo createX509Ca(String subjectDn, String username) throws Exception {
         caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
         X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, subjectDn);
         int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
@@ -78,51 +74,45 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
         certificateStoreSession.storeCertificateRemote(alwaysAllowToken, EJBTools.wrap(caCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
                 CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
-        casToRemove.put(x509ca.getCAId(), x509ca);
-        return x509ca;
-    }
-    
-    @Override
-    public void tearDownCa(CA ca) {
-        if (ca != null) {
-            int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-            try {
-                cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
-                CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, ca.getCAId());
-                if (caInfo != null) {
-                    final int caCryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
-                    cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, caCryptoTokenId);
-                    caSession.removeCA(alwaysAllowToken, ca.getCAId());
-                }
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException(e);
-            } 
-        }
-        internalCertificateStoreSession.removeCertificatesBySubject(getSubjectDn());
-        casToRemove.remove(ca.getCAId());
+        X509CAInfo x509caInfo = (X509CAInfo) x509ca.getCAInfo();
+        setCaForRemoval(x509ca.getCAId(), x509caInfo);
+        return x509caInfo;
     }
     
 
+
     @Override
-    public String getSubtype() {       
+    public String getNamingSuffix() {       
         return "pkcs12";
     }
 
     @Override
-    public Integer createCryptoToken() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
+    public Integer createCryptoToken(final String tokenName) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
              NoSuchSlotException {
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowToken, super.getName());
+            int cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowToken, tokenName);
+            setCryptoTokenForRemoval(cryptoTokenId);
+            return cryptoTokenId;
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("Always Allow token was denied access.", e);
         }
-        return cryptoTokenId;
+       
     }
 
     @Override
     public boolean canRun() {
         //Can always run
         return true;
+    }
+
+    @Override
+    public String getSimpleName() {
+        return "PKCS12TestRunner";
+    }
+    
+    @Override
+    public String toString() {
+        return getSimpleName();
     }
 
 }
