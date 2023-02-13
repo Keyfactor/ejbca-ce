@@ -1601,6 +1601,19 @@
 					<h:outputLabel for="checkboxallowchangingrevocationreason" value="#{web.text.USE}" />
 				</h:panelGroup>
 
+				<!-- Allow invalidity date -->
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:outputText value="#{web.text.ALLOW_INVALIDITY_DATE}" rendered="#{not editCAsMBean.caExternal}" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:selectBooleanCheckbox id="checkboxallowinvaliditydate"
+											 value="#{editCAsMBean.caInfoDto.allowInvalidityDate}"
+											 disabled="#{not editCAsMBean.hasEditRight}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxallowinvaliditydate" value="#{web.text.USE}" />
+				</h:panelGroup>
+
 				<!-- Publishers -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.PUBLISHERS}"
