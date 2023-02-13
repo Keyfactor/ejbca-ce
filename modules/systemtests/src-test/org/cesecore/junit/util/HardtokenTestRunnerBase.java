@@ -48,16 +48,11 @@ public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
         return cryptoTokenId;
 
     }
-    
-    @Override
-    public X509CAInfo createX509Ca() throws Exception {
-        return createX509Ca(getSubjectDn(), getSimpleName());
-    }
 
     @Override
     public X509CAInfo createX509Ca(String subjectDn, String username) throws Exception {
         caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
-        X509CAInfo x509ca = createTestX509Ca(subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
+        X509CAInfo x509ca = createTestX509Ca(subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), true,
                 getTokenImplementation(), CAInfo.SELFSIGNED, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
 
         setCaForRemoval(x509ca.getCAId(), x509ca);
@@ -65,5 +60,5 @@ public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
         return x509ca;
     }
     
-    protected abstract String getTokenImplementation();
+
 }
