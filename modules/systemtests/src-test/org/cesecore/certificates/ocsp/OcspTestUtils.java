@@ -331,7 +331,7 @@ public final class OcspTestUtils {
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, certificate, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, certificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
     }
 
     public static void removeInternalKeyBinding(AuthenticationToken alwaysAllowtoken, String keyBindingName) throws AuthorizationDeniedException {
