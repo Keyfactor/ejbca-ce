@@ -55,6 +55,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -214,7 +215,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             assertEquals("EST simpleenroll should return a single certificate", 1, certs.size());
             final X509Certificate testcacert = (X509Certificate)getTestCACert(TESTCA_NAME);
             final X509CertificateHolder certHolder = certs.iterator().next();
-            final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+            X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
             assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
             try {
                 cert.verify(testcacert.getPublicKey());
@@ -222,7 +223,9 @@ public class EstClientModeBasicTest extends EstTestCase {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
             assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",requestDN, CertTools.getSubjectDN(cert));
-            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));  
+            
+            testServerKeyGen(alias, reqmsg, testcacert, endEntityInfo);
         } finally {
             // Remove the certificates
             internalCertStoreSession.removeCertificatesByUsername(CN);
@@ -302,7 +305,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             assertEquals("EST simpleenroll should return a single certificate", 1, certs.size());
             final X509Certificate testcacert = (X509Certificate)getTestCACert(TESTCA_NAME);
             final X509CertificateHolder certHolder = certs.iterator().next();
-            final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+            X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
             assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
             try {
                 cert.verify(testcacert.getPublicKey());
@@ -310,7 +313,9 @@ public class EstClientModeBasicTest extends EstTestCase {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
             assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",endEntityInfo.getDN(), CertTools.getSubjectDN(cert));
-            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));   
+            
+            testServerKeyGen(alias, reqmsg, testcacert, endEntityInfo);
         } finally {
             // Remove the certificates
             internalCertStoreSession.removeCertificatesByUsername(CN);
@@ -381,6 +386,8 @@ public class EstClientModeBasicTest extends EstTestCase {
             }
             assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",dn, CertTools.getSubjectDN(cert));
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
+            
+            testServerKeyGen(alias, reqmsg, testcacert, endEntityInfo);
         } finally {
             // Remove the certificates
             internalCertStoreSession.removeCertificatesByUsername(username);
@@ -393,6 +400,25 @@ public class EstClientModeBasicTest extends EstTestCase {
             } catch (NoSuchEndEntityException e) {} // NOPMD
         }
         log.trace("<testSimpleEnrollWithChallengePwdAndUsernameInDn()");
+    }
+    
+    private void testServerKeyGen(String alias, byte[] reqmsg,  X509Certificate testcacert, EndEntityInformation endEntityInfo) throws Exception {
+        endEntityInfo.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.changeUser(ADMIN, endEntityInfo, false);
+        
+        byte[] resp = sendEstRequest(alias, "serverkeygen", reqmsg, 200, null); 
+        // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
+        assertNotNull("There must be response data to serverkeygen request", resp);
+        X509Certificate cert = getCertFromKeygenResponse(resp);
+        assertEquals("serverkeygen response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
+        try {
+            cert.verify(testcacert.getPublicKey());
+        } catch (SignatureException e) {
+            fail("serverkeygen response certifciate must verify with CA certificate");                
+        }
+        assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", endEntityInfo.getDN(), CertTools.getSubjectDN(cert));
+        assertNotEquals("serverkeygen response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+        
     }
 
     /**
