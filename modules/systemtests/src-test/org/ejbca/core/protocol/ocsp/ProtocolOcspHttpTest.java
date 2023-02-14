@@ -59,7 +59,6 @@ import javax.ejb.ObjectNotFoundException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -523,30 +522,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
         }
     } // test08OcspEcdsaGood
-
-    /**
-     * Tests ocsp message
-     *
-     * @throws Exception
-     *           error
-     */
-    @Test
-    public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-        int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
-        final CAInfo caInfo = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
-        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-        helper.reloadKeys();
-        try {
-            // Make user and ocspTestCert that we know...
-            createUserCert(ecdsacaid);
-            this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
-        } finally {
-            endEntityManagementSession.deleteUser(admin, "ocsptest");
-            CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
-        }
-    } // test09OcspEcdsaImplicitlyCAGood
 
     @Override
     @Test
@@ -1901,20 +1876,12 @@ Content-Type: text/html; charset=iso-8859-1
                 JCEECPublicKey ecpk = (JCEECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                    assertNull("ImplicitlyCA must have null spec", spec);
-                } else {
-                    assertNotNull("secp256r1 must not have null spec", spec);
-                }
+                assertNotNull("secp256r1 must not have null spec", spec);                
             } else if (pk instanceof BCECPublicKey) {
                 BCECPublicKey ecpk = (BCECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                    assertNull("ImplicitlyCA must have null spec", spec);
-                } else {
-                    assertNotNull("secp256r1 must not have null spec", spec);
-                }               
+                assertNotNull("secp256r1 must not have null spec", spec);          
             } else {
                 assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
             }

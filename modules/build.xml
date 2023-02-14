@@ -55,7 +55,7 @@
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
-	<target name="clean-optional" depends="cmpproxyclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
+	<target name="clean-optional" depends="statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
         estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
@@ -122,14 +122,6 @@
 		<echo message="Cleaning p11ng-cli"/>
 		<ant antfile="${mod.p11ng-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>	
-	
-    <condition property="cmpproxy.exists">
-    	<available file="${mod.cmpProxy.path}/build-http.xml" />
-    </condition>
-	<target name="cmpproxyclean" if="${cmpproxy.exists}">
-		<echo message="Cleaning cmpProxy"/>
-		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="true" inheritrefs="true"/>
-	</target>
 
     <target name="ctclean" if="${mod.ct.exists}">
         <ant antfile="${mod.ct.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -323,18 +315,6 @@
 	<target name="-build-cesecore-x509ca" if="${mod.cesecore-x509ca.exists}">
         <ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
     </target>
-
-	<target name="cmpHttpProxy" description="Build CMP HTTP proxy, set SERVLET_ENGINE_HOME to Tomcat home" depends="ejbca-common, cesecore-ejb-interface, externalra-library">
-		<echo  message="${mod.cmpProxy.path}/build-http.xml" />
-		<fail message="CMP HTTP Proxy tool is not distributed with this version of EJBCA">
-		    <condition>
-		    	<not>
-		    		<available file="${mod.cmpProxy.path}/build-http.xml" />
-		    	</not>
-		    </condition>
-		</fail>	
-		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="dist" inheritall="true" inheritrefs="true"/>
-	</target>
 
 	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-ejb-interface, p11ng">
 		<ant antfile="${mod.ejbca-common.path}/build.xml" target="build-common" inheritall="true" inheritrefs="true"/>
