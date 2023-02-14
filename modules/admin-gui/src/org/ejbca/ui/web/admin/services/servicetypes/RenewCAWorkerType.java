@@ -30,10 +30,12 @@ public class RenewCAWorkerType extends BaseEmailNotifyingWorkerType {
 	
 	public static final String NAME = "RENEWCAWORKER";
 
+	private static final String RENEWCAWORKER_SUB_PAGE = "renewcaworker.xhtml";
+	
 	private boolean renewkeys = false;	
 
 	public RenewCAWorkerType(){
-		super(NAME, ServiceTypeUtil.RENEWCAWORKER_SUB_PAGE, RenewCAWorker.class.getName());
+		super(NAME, RENEWCAWORKER_SUB_PAGE, RenewCAWorker.class.getName());
 	}
 	
 	public boolean isRenewKeys() {
