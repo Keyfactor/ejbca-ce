@@ -239,11 +239,11 @@ public class CAInterfaceBean implements Serializable {
 		return this.request;
 	}
 
-	public String getRequestDataAsString() throws Exception{
+	public String getRequestDataAsString(final int caType) throws Exception{
 		String returnval = null;
 		if(request != null ){
 		    returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
-		    if(cainfo.getCAType()==CAInfo.CATYPE_CITS) {
+		    if(caType == CAInfo.CATYPE_CITS) {
 		        returnval += Hex.toHexString(request);
 		    } else {
 		        returnval += new String(Base64.encode(request, true));
@@ -601,6 +601,7 @@ public class CAInterfaceBean implements Serializable {
                             .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
                             .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
                             .setAllowChangingRevocationReason(caInfoDto.isAllowChangingRevocationReason())
+                            .setAllowInvalidityDate(caInfoDto.isAllowInvalidityDate())
                             .setCrlPublishers(crlPublishers)
                             .setValidators(keyValidators)
                             .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -1045,6 +1046,7 @@ public class CAInterfaceBean implements Serializable {
                        .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
                        .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
                        .setAllowChangingRevocationReason(caInfoDto.isAllowChangingRevocationReason())
+                       .setAllowInvalidityDate(caInfoDto.isAllowInvalidityDate())
                        .setCrlPublishers(crlpublishers)
                        .setValidators(keyValidators)
                        .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
