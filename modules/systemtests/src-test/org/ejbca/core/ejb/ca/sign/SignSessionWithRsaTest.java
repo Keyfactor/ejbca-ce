@@ -1100,17 +1100,16 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
    @Test
     public void testDnOrder() throws Exception {
-        log.trace(">test22DnOrder()");
+        log.trace(">testDnOrder()");
         final String profileName = "TESTDNORDER";
         final String endEntityName = "TESTDNORDER";
-        // Create a good certificate profile (good enough), using QC statement
+        // Create a standard certificate profile (good enough)
         certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfileSession.addCertificateProfile(internalAdmin, profileName, certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId(profileName);
 
-        // Create a good end entity profile (good enough), allowing multiple UPN
-        // names
+        // Create a good end entity profile (good enough)
         endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
@@ -1151,8 +1150,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
             endEntityManagementSession.deleteUser(internalAdmin, endEntityName);
+            internalCertStoreSession.removeCertificatesByUsername(endEntityName);
         }
-        log.trace("<test22DnOrder()");
+        log.trace("<testDnOrder()");
     }
 
     @Test

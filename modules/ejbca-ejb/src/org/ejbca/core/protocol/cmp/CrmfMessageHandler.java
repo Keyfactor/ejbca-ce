@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -334,9 +335,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         //Only run if value hasn't been set in CAInfo, which should be done during the 7.4.0 upgrade
         if (!StringUtils.isEmpty(preProcessorClass) && StringUtils.isEmpty(cainfo.getRequestPreProcessor())) {
             try {
-                ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                 req = extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName);
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
                 throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
             }
         } else {
@@ -565,9 +567,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                     } else {
                         try {
                             X962Parameters params = X962Parameters.getInstance(pkInfo.getAlgorithm().getParameters());
-                            if (params.isImplicitlyCA()) {
-                                LOG.debug("ECDSA key generation parameters is implicitlyCA, will try to use certificate profile parameters.");
-                            } else if (params.isNamedCurve()) {
+                            if (params.isNamedCurve()) {
                                 ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(params.getParameters());
                                 final String curveName = ECNamedCurveTable.getName(oid);
                                 if (curveName == null) {
@@ -595,7 +595,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                                 curves.clear();
                                 curves.add(curveName);
                             } else {
-                                final String msg = "ECDSA key generation requested, but X962Parameters is none of the supported options implicitlyCA or namedCurve";
+                                final String msg = "ECDSA key generation requested, but X962Parameters is not a namedCurve";
                                 throw new InvalidKeyException(msg);                                                                                                            
                             }
                         } catch (IllegalArgumentException e) {

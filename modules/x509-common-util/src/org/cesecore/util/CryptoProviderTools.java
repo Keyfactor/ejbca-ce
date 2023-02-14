@@ -13,20 +13,15 @@
  
 package org.cesecore.util;
 
-import java.math.BigInteger;
 import java.security.Provider;
 import java.security.Security;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.jcajce.provider.config.ConfigurableProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.util.KeyTools;
 
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.provider.CryptoProvider;
 import com.keyfactor.util.crypto.provider.CryptoProviderRegistry;
 
@@ -41,17 +36,8 @@ public final class CryptoProviderTools {
 			
     private CryptoProviderTools() {} // Not for instantiation
 
-    /** Parameters used when generating or verifying ECDSA keys/certs using the "implicitlyCA" key encoding.
-     * The curve parameters is then defined outside of the key and configured in the BC provider.
-     */
-    private static final String IMPLICITLYCA_Q = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaQ();
-    private static final String IMPLICITLYCA_A = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaA();
-    private static final String IMPLICITLYCA_B = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaB();
-    private static final String IMPLICITLYCA_G = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaG();
-    private static final String IMPLICITLYCA_N = AlgorithmConfigurationCache.INSTANCE.getEcDsaImplicitlyCaN();
-
     /** System provider used to circumvent a bug in Glassfish. Should only be used by 
-     * X509CAInfo, OCSPCAService, CMSCAService. 
+     * X509CAInfo, OCSPCAService. 
      * Defaults to SUN but can be changed to IBM by the installBCProvider method.
      */
     public static String SYSTEM_SECURITY_PROVIDER = "SUN";
@@ -82,12 +68,7 @@ public final class CryptoProviderTools {
     @SuppressWarnings({ "deprecation", "unchecked" })
     public static synchronized void installBCProvider() {
     	
-        // A flag that ensures that we install the parameters for implcitlyCA only when we have installed a new provider
-        boolean installImplicitlyCA = false;
-        if (Security.addProvider(new BouncyCastleProvider()) < 0) {
-        } else {
-            installImplicitlyCA = true;
-        }
+        Security.addProvider(new BouncyCastleProvider());
         
     	// Also install non-BC providers, such as the CVC provider
         for(CryptoProvider provider : CryptoProviderRegistry.INSTANCE.getCryptoProviders()) {
@@ -97,27 +78,7 @@ public final class CryptoProviderTools {
                 log.info(provider.getErrorMessage(), e);
             }
         }
- 
-    	
-        if (installImplicitlyCA) {
-            // Install EC parameters for implicitlyCA encoding of EC keys, we have default curve parameters if no new ones have been given.
-            // The parameters are only used if implicitlyCA is used for generating keys, or verifying certs
-            final ECCurve curve = new ECCurve.Fp(
-                    new BigInteger(IMPLICITLYCA_Q), // q
-                    new BigInteger(IMPLICITLYCA_A, 16), // a
-                    new BigInteger(IMPLICITLYCA_B, 16)); // b
-            final org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
-                    curve,
-                    curve.decodePoint(Hex.decode(IMPLICITLYCA_G)), // G
-                    new BigInteger(IMPLICITLYCA_N)); // n
-            final ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
-            if (config != null) {
-                config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);                                               
-            } else {
-                log.error("Can not get ConfigurableProvider, implicitlyCA EC parameters NOT set!");
-            }                
-        }
-        
+
         // 2007-05-25
         // Finally we must configure SERIALNUMBER behavior in BC >=1.36 to be the same
         // as the behavior in BC 1.35, it changed from SN to SERIALNUMBER in BC 1.36

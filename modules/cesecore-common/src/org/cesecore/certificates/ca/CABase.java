@@ -126,6 +126,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
         setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
         setAllowChangingRevocationReason(cainfo.isAllowChangingRevocationReason());
+        setAllowInvalidityDate(cainfo.isAllowInvalidityDate());
 
         List<Integer> extendedservicetypes = new ArrayList<>();
         if (cainfo.getExtendedCAServiceInfos() != null) {
@@ -154,6 +155,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         data.put(DELTACRLPERIOD, cainfo.getDeltaCRLPeriod());
         data.put(GENERATECRLUPONREVOCATION, cainfo.isGenerateCrlUponRevocation());
         data.put(ALLOWCHANGINGREVOCATIONREASON, cainfo.isAllowChangingRevocationReason());
+        data.put(ALLOWINVALIDITYDATE, cainfo.isAllowInvalidityDate());
         data.put(CRLISSUEINTERVAL, cainfo.getCRLIssueInterval());
         data.put(CRLOVERLAPTIME, cainfo.getCRLOverlapTime());
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
@@ -247,6 +249,16 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     @Override
     public void setAllowChangingRevocationReason(boolean allow) {
         data.put(ALLOWCHANGINGREVOCATIONREASON, allow);
+    }
+
+    @Override
+    public boolean getAllowInvalidityDate() {
+        return getBoolean(ALLOWINVALIDITYDATE, false);
+    }
+
+    @Override
+    public void setAllowInvalidityDate(boolean allow) {
+        data.put(ALLOWINVALIDITYDATE, allow);
     }
 
     @Override

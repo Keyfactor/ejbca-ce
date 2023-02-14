@@ -316,7 +316,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
         CertResponse certResponse = certRepMessage.getResponse()[0];
         PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
-        assertEquals("Wrong error", "Subject DN has multi value RDNs, which is not allowed.", pkiStatusInfo.getStatusString().getStringAt(0).toString());
+        assertEquals("Wrong error", "Subject DN has multi value RDNs, which is not allowed.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
         
         // Enable multi-value RDNs in the EE profile and try again, should still fail due to no UID allowed in profile
         eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);
@@ -333,7 +333,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         certRepMessage = (CertRepMessage) pkiBody.getContent();
         certResponse = certRepMessage.getResponse()[0];
         pkiStatusInfo = certResponse.getStatus();
-        assertEquals("Wrong error", "Wrong number of UID fields in Subject DN.", pkiStatusInfo.getStatusString().getStringAt(0).toString());
+        assertEquals("Wrong error", "Wrong number of UID fields in Subject DN.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
         
         // Add UID to profile, so the request will succeed
         eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);

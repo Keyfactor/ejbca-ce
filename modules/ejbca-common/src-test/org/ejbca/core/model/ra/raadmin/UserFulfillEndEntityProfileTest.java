@@ -196,6 +196,24 @@ public class UserFulfillEndEntityProfileTest {
         }catch(EndEntityProfileValidationException e){        	        	
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " " + e.getMessage() + " = OK");
         }
+        
+        // Test Matter IoT VID and PID
+        try{ 
+          profile.doesUserFulfillEndEntityProfile("username","password","CN=Matter DAC,VID=FFF1,PID=8000","null","","",
+                                                   CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
+                                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          fail("Inproper check of VID and PID value.");
+        }catch(EndEntityProfileValidationException e){                      
+            log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " " + e.getMessage() + " = OK");
+        }
+        
+        profile.addField(DnComponents.VID);
+        profile.addField(DnComponents.PID);
+        // Should pass now
+        profile.doesUserFulfillEndEntityProfile("username","password","OU=DEP1_1,OU=DEP2_2,CN=Matter DAC,VID=FFF1,PID=8000","null","","",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
+                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+        
         log.trace("<fulfillSubjectDn");
     }
 

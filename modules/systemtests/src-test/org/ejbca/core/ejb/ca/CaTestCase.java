@@ -90,7 +90,6 @@ import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalReques
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
@@ -110,7 +109,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_EDDSA_CA_NAME = "TESTEDDSA";
     public static final String TEST_ECGOST3410_CA_NAME = "TESTECGOST3410";
     public static final String TEST_DSTU4145_CA_NAME = "TESTDSTU4145";
-    public static final String TEST_ECDSA_IMPLICIT_CA_NAME = "TESTECDSAImplicitlyCA";
     public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
     public static final String TEST_SHA256_WITH_MFG1_CA_DN = "CN="+TEST_SHA256_WITH_MFG1_CA_NAME;
     public static final String TEST_RSA_REVSERSE_CA_DN = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE"); 
@@ -352,9 +350,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-        // Set the CMS service non-active by default
-        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + dn, "", "" + keyStrength,
-                AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, caName, CAConstants.CA_ACTIVE,
@@ -639,26 +634,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(TEST_SHA256_WITH_MFG1_CA_DN, TEST_SHA256_WITH_MFG1_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit RSA CA");
-        cainfo.setExtendedCAServiceInfos(extendedcaservices);
-        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-        caAdminSession.createCA(internalAdmin, cainfo);
-    }
-
-    protected static void createEllipticCurveDsaImplicitCa() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
-            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        removeOldCa(TEST_ECDSA_IMPLICIT_CA_NAME);
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECDSA_IMPLICIT_CA_NAME, "implicitlyCA");
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        final List<CertificatePolicy> policies = new ArrayList<>(1);
-        policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECDSA_IMPLICIT_CA_NAME, TEST_ECDSA_IMPLICIT_CA_NAME, CAConstants.CA_ACTIVE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d",
-                CAInfo.SELFSIGNED, null, catoken);
-        cainfo.setDescription("JUnit ECDSA ImplicitlyCA CA");
-        cainfo.setPolicies(policies);
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);

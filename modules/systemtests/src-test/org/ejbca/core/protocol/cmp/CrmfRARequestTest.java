@@ -246,6 +246,12 @@ public class CrmfRARequestTest extends CmpTestCase {
         return cert;
     }
 
+    /** Does some basic testing of CMP, using CRMF requests, with multiple users.
+     * Enforcement of unique DN, mapping of serialNumber and surName DN attributes (which can both be abbreviated to SN), and Matter VID/PID
+     * And some other basic tests
+     * 
+     * @throws Exception on unhandled errors
+     */
     @Test
     public void test01CrmfHttpOkUser() throws Exception {
         final CAInfo caInfo = caSession.getCAInfo(ADMIN, CA_NAME);
@@ -265,8 +271,8 @@ public class CrmfRARequestTest extends CmpTestCase {
         final String serial2 = "cmptest2serial";
         final String surName1 = "cmptest1surname";
         final String surName2 = "cmptest2surname";
-        final X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=" + userName1+",SN="+serial1+",SURNAME="+surName1);
-        final X500Name userDN2 = new X500Name("C=SE,O=PrimeKey,CN=" + userName2+",SN="+serial2+",SURNAME="+surName2);
+        final X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=" + userName1+",SN="+serial1+",SURNAME="+surName1+",VID=FFF1");
+        final X500Name userDN2 = new X500Name("C=SE,O=PrimeKey,CN=" + userName2+",SN="+serial2+",SURNAME="+surName2+",PID=8000");
         X509Certificate cert1 = null;
         X509Certificate cert2 = null;
         Certificate user1Cert = null;
@@ -288,9 +294,17 @@ public class CrmfRARequestTest extends CmpTestCase {
             cert1 = crmfHttpUserTest(userDN1, key1, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert1);
             assertTrue("A user with "+userName1+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName1));
+            String dn = cert1.getSubjectDN().getName();
+            // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
+            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,1.3.6.1.4.1.37244.2.1=FFF1", dn);
+            assertEquals("Not the expected DN in issued cert", "VID=FFF1,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert1));
             cert2 = crmfHttpUserTest(userDN2, key2, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert2);
             assertTrue("A user with "+userName2+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName2));
+            dn = cert2.getSubjectDN().getName();
+            // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
+            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,1.3.6.1.4.1.37244.2.2=8000", dn);
+            assertEquals("Not the expected DN in issued cert", "PID=8000,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert2));
             // check that the request fails when asking for certificate for another user with same key.
             crmfHttpUserTest(
                     userDN2,

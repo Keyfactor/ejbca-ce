@@ -24,7 +24,6 @@ import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -72,7 +71,6 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CitsCaInfo;
@@ -86,7 +84,6 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.ca.ssh.SshCa;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -115,8 +112,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.REQUEST;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
@@ -190,10 +185,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean revokable = true;
     private boolean waitingresponse = false;
     private boolean isCaUninitialized = false;
-    private CmsCAServiceInfo cmscainfo = null;
-    private X509Certificate cmscert = null;
     private List<ApprovalRequestItem> approvalRequestItems = null;
-    private String extendedServicesKeySpecParam = null;
 
     private boolean suitableCryptoTokenExists;
     private List<SelectItem> availableCryptoTokenSelectItems;
@@ -904,20 +896,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.usedValidators = validators;
     }
 
-    public boolean isRenderCmsInfo() {
-        return caInfoDto.isCaTypeX509() && !isEditCA || (isEditCA && cmscainfo != null);
-    }
-
-    public boolean isCmsButtonDisabled() {
-        return waitingresponse || (isEditCA && !isCaUninitialized && cmscainfo == null);
-    }
-
     public boolean isWaitingForResponse() {
         return this.waitingresponse;
-    }
-
-    public boolean isRenderViewCmsCert() {
-        return isEditCA && !isCaUninitialized && cmscert != null;
     }
 
     public boolean isRenderCaLifeCycle() {
@@ -1254,14 +1234,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return resultList;
     }
 
-    public List<SelectItem> getExTServicesKeySpecList() {
-        return caBean.getAvailableKeySpecs()
-                .stream()
-                .sorted(Entry.comparingByValue())
-                .map(e -> new SelectItem(e.getKey(), e.getValue()))
-                .collect(Collectors.toList());
-    }
-
     public String getSelectedCryptoTokenDefaultKey() {
         return caInfoDto.getCryptoTokenDefaultKey();
     }
@@ -1308,14 +1280,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public boolean isRenderSaveExternalCa() {
         return (caInfoDto.isCaTypeX509() || caInfoDto.isCaTypeProxy()) && isHasEditRight();
-    }
-
-    public String getCmsCertLink() throws UnsupportedEncodingException {
-        if (cmscert != null) {
-            return viewCertLink + "?certsernoparameter="
-                    + java.net.URLEncoder.encode(cmscert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(cmscert), "UTF-8");
-        }
-        return StringUtils.EMPTY;
     }
 
     public boolean isRenderRenewCA() {
@@ -1590,23 +1554,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     // ===================================================== Create CA Actions ============================================= //
     // ===================================================== Edit CA Actions =============================================== //
-
-
-    /**
-     * Renew and revoke a CMS certificate
-     *
-     * @return Navigates back to manage ca page if successful
-     */
-    public String renewAndRevokeCmsCertificate() {
-        try {
-            caAdminSession.renewAndRevokeCmsCertificate(getAdmin(), caid);
-            addInfoMessage(getEjbcaWebBean().getText("CMSCERTIFICATERENEWED"));
-            return EditCaUtil.MANAGE_CA_NAV;
-        } catch (CADoesntExistsException | CAOfflineException | CertificateRevokeException | AuthorizationDeniedException e) {
-            addNonTranslatedErrorMessage(e);
-            return "";
-        }
-    }
 
     /**
      * Renews a ca
@@ -2123,8 +2070,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             List<ExtendedCAServiceInfo> extendedCaServices;
             if (cainfo instanceof X509CAInfo) {
                 final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-                final String signkeyspec = caInfoDto.getSignKeySpec() != null ? caInfoDto.getSignKeySpec() : EditCaUtil.DEFAULT_KEY_SIZE;
-                extendedCaServices = caBean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), caInfoDto.isServiceCmsActive());
+                extendedCaServices = caBean.makeExtendedServicesInfos();
                 x509cainfo.setExtendedCAServiceInfos(extendedCaServices);
                 x509cainfo.setSubjectAltName(caInfoDto.getCaSubjectAltName());
                 x509cainfo.setPolicies(policies);
@@ -2273,22 +2219,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         isCaUninitialized = cainfo.getStatus() == CAConstants.CA_UNINITIALIZED;
         caInfoDto.setCaType(cainfo.getCAType());
         caInfoDto.setKeySequenceFormat(cainfo.getCAToken().getKeySequenceFormat());
-
-        if (!isCaexternal) {
-            for (final ExtendedCAServiceInfo extendedCAServiceInfo : cainfo.getExtendedCAServiceInfos()) {
-                if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
-                    cmscainfo = (CmsCAServiceInfo) extendedCAServiceInfo;
-                    if (cmscainfo.getCertificatePath() != null) {
-                        cmscert = (java.security.cert.X509Certificate) cmscainfo.getCertificatePath().get(0);
-                    }
-                }
-
-                if (extendedServicesKeySpecParam == null && extendedCAServiceInfo instanceof BaseSigningCAServiceInfo) {
-                    extendedServicesKeySpecParam = ((BaseSigningCAServiceInfo) extendedCAServiceInfo).getKeySpec();
-                }
-            }
-        }
-        caInfoDto.setSignKeySpec(extendedServicesKeySpecParam != null ? extendedServicesKeySpecParam : EditCaUtil.DEFAULT_KEY_SIZE);
         caInfoDto.setDescription(cainfo.getDescription());
         caInfoDto.setDoEnforceUniquePublickeys(cainfo.isDoEnforceUniquePublicKeys());
         caInfoDto.setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal());
@@ -2406,10 +2336,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
             caInfoDto.setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
             caInfoDto.setAllowChangingRevocationReason(cainfo.isAllowChangingRevocationReason());
-        }
-
-        if (caInfoDto.isCaTypeX509() && cmscainfo != null) {
-            caInfoDto.setServiceCmsActive(cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
+            caInfoDto.setAllowInvalidityDate(cainfo.isAllowInvalidityDate());
         }
 
         caInfoDto.setFinishUser(cainfo.getFinishUser());

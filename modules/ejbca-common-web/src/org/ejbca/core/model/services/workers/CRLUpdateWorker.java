@@ -76,8 +76,12 @@ public class CRLUpdateWorker extends BaseWorker {
                 cryptoTokenSession.testKeyPair(getAdmin(),
                         caInfo.getCAToken().getCryptoTokenId(),
                         caInfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
-            } catch (CryptoTokenOfflineException | AuthorizationDeniedException | InvalidKeyException e) {
+            } catch (AuthorizationDeniedException | InvalidKeyException e) {
                 throw new ServiceExecutionFailedException(e);
+            } catch (CryptoTokenOfflineException e) {
+                // handled gracefully in publishCrlSessionBean
+                log.warn("Crytotoken is offline for CA with CA id " + caId + ".");
+                continue;
             }
         }
     }

@@ -1885,7 +1885,7 @@ public abstract class CertTools {
         } else if (entityPubKey instanceof ECPublicKey) {
             ECPublicKey ecpk = (ECPublicKey) entityPubKey;
             try {
-                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
+                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams());
                 final String algo = ecpk.getAlgorithm();
                 if (algo.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
                     try {
@@ -1909,10 +1909,7 @@ public abstract class CertTools {
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating ECPublicKey from spec: ", e);
                 publicKey = entityPubKey;
-            } catch (NullPointerException e) {
-                log.debug("NullPointerException, probably it is implicitlyCA generated keys: " + e.getMessage());
-                publicKey = entityPubKey;
-            }
+            } 
         } else {
             log.debug("Not converting key of class. " + entityPubKey.getClass().getName());
             publicKey = entityPubKey;
@@ -2895,8 +2892,19 @@ public abstract class CertTools {
             ret = CertTools.URI + "=" + ASN1IA5String.getInstance(value).getString();
             break;
         case 7:
+            
             ASN1OctetString oct = ASN1OctetString.getInstance(value);
-            ret = CertTools.IPADDR + "=" + StringTools.ipOctetsToString(oct.getOctets());
+
+            // First try for IPv4
+            String parsedIP = StringTools.ipOctetsToString(oct.getOctets());
+
+            if (parsedIP == null) {
+                // Also try handling IPv6 case
+                parsedIP = StringTools.isIpV6Address(StringTools.convertToIpv6(value.toString())) ? StringTools.convertToIpv6(value.toString()) : null;
+            }
+
+            ret = CertTools.IPADDR + "=" + parsedIP;
+
             break;
         case 8:
             // BC GeneralName stores the actual object value, which is an OID
