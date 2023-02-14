@@ -62,7 +62,7 @@
 	
 	<path id="compile-cli.classpath">
 		<path refid="cli.classpath"/>
-		<path refid="lib.javaxejb.classpath"/>
+		<path refid="lib.jee.classpath"/>
 	</path>
 	
 	<path id="jdbc-jars.classpath">
@@ -92,7 +92,7 @@
         <path refid="lib.ejbca-common-web.classpath"/>
         <path refid="lib.jacknji.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
-        <path refid="lib.javaxejb.classpath"/>
+        <path refid="lib.jee.classpath"/>
 	    <path refid="lib.resteasy-jaxrs.classpath"/>
 	</path>
 
