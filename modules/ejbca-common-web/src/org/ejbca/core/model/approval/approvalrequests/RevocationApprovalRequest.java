@@ -188,10 +188,6 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		if (revocationDate != null) {
             retval.add(new ApprovalDataText("REVOCATIONDATE", ValidityDate.formatAsISO8601ServerTZ(revocationDate.getTime(), TimeZone.getDefault()), true, false));
 		}
-        if (invalidityDate != null) {
-	        retval.add(new ApprovalDataText("INVALIDITYDATE", ValidityDate.formatAsISO8601ServerTZ(invalidityDate.getTime(), TimeZone.getDefault()), true, false));
-	    }
-
 		return retval;
 	}
 
