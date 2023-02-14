@@ -1760,7 +1760,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, null, /*invalidityDate*/null,issuerDn, reason, false);
+            revokeCert(authenticationToken, certSerNo, null, /*invalidityDate*/null, issuerDn, reason, false);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("This should not happen since there is no back dating.",e);
         }
