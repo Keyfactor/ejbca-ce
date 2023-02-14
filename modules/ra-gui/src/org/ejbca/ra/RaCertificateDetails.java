@@ -358,8 +358,6 @@ public class RaCertificateDetails {
         if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
             this.revocationDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
-            //this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
-            //this.dateInvalidityDate = ValidityDate.parseAsIso8601(invalidityDate.trim());    
         } else {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getUpdateTime(), TimeZone.getDefault());
         }
