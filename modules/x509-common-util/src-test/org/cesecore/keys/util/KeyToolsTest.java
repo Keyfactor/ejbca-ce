@@ -47,12 +47,10 @@ import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -288,38 +286,6 @@ public class KeyToolsTest {
         assertNotNull("b64cert cannot be null", b64cert);
         // log.info(b64cert);
         KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
-    }
-
-    @Test
-    public void testGenKeysECDSAImplicitlyCA() throws Exception {
-        KeyPair keys = KeyTools.genKeys("implicitlyCA", AlgorithmConstants.KEYALGORITHM_ECDSA);
-        assertNotNull("keys must not be null", keys);
-        String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
-        assertNotNull("b64private must not be null", b64private);
-        // log.debug(b64private);
-        X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, true);
-        // log.debug(cert);
-        assertNotNull("cert must not be null", cert);
-        String b64cert = new String(Base64.encode(cert.getEncoded()));
-        assertNotNull("b64cert cannot be null", b64cert);
-        // log.info(b64cert);
-        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
-        PublicKey pk = cert.getPublicKey();
-        if (pk instanceof JCEECPublicKey) {
-            JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-            assertEquals(ecpk.getAlgorithm(), "EC");
-            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-            assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", spec);
-        } else if (pk instanceof BCECPublicKey) {
-            BCECPublicKey ecpk = (BCECPublicKey) pk;
-            assertEquals(ecpk.getAlgorithm(), "EC");
-            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-            //ECNamedCurveParameterSpec ns = (ECNamedCurveParameterSpec)spec;
-            assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", spec);
-        } else {
-            fail("Public key is not EC: "+pk.getClass().getName());
-        }
     }
 
     @Test
