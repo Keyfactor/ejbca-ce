@@ -70,6 +70,7 @@ public class CACertReqServlet extends BaseAdminServlet {
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_PROPERTY_CAID = "caid";
+    private static final String COMMAND_PROPERTY_CATYPE = "caType";
     private static final String COMMAND_CERTREQ = "certreq";
 	private static final String COMMAND_CERT           = "cert";    
 	private static final String COMMAND_CERTPKCS7 = "certpkcs7";
@@ -114,7 +115,8 @@ public class CACertReqServlet extends BaseAdminServlet {
             	String filename = null;
                 CVCertificate cvccert = null;
                 boolean isx509cert = false;
-                if(caBean.getRequestInfo().getCAType()!=CAInfo.CATYPE_CITS) {
+                final int caType = Integer.parseInt(req.getParameter(COMMAND_PROPERTY_CATYPE));
+                if(caType != CAInfo.CATYPE_CITS) {
                     try {
                         CVCObject parsedObject = CertificateParser.parseCVCObject(request);
                         // We will handle both the case if the request is an
