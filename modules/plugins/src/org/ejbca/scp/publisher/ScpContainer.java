@@ -38,7 +38,7 @@ public class ScpContainer extends UpgradeableDataHashMap implements Serializable
     private static final String ISSUER = "issuer";
     private static final String SERIAL_NUMBER = "serial.number";
     private static final String REVOCATION_DATE = "revocation.date";
-    private static final String INVALIDITY_DATE = "invalidity.date";
+    //private static final String INVALIDITY_DATE = "invalidity.date";
     private static final String REVOCATION_REASON = "revocation.reason";
     private static final String CERTIFICATE_STATUS = "certificate.status";
     private static final String CERTIFICATE_TYPE = "certificate.type";
@@ -97,14 +97,14 @@ public class ScpContainer extends UpgradeableDataHashMap implements Serializable
         return (long) data.get(REVOCATION_DATE);
     }
 
-    public ScpContainer setInvalidityDate(final Long invalidityDate) {
+    /*public ScpContainer setInvalidityDate(final Long invalidityDate) {
         data.put(INVALIDITY_DATE, invalidityDate);
         return this;
     }
     
-    public long getInvalidityDate() {
+    public Long getInvalidityDate() {
         return (Long) data.get(INVALIDITY_DATE);
-    }
+    }*/
 
     
     public ScpContainer setRevocationReason(final int revocationReason) {
