@@ -28,11 +28,13 @@ public class PreCertificateRevocationWorkerType extends BaseWorkerType {
 
     private static final long serialVersionUID = 1;
 
+    private static final String PRECERTIFICATEREVOCATIONWORKER_SUB_PAGE = "precertificaterevocationworker.xhtml";
+    
     private int maxCertAge = 60;
     private String maxIssuanceTimeUnit = IWorker.UNIT_MINUTES;
 
     public PreCertificateRevocationWorkerType() {
-        super(ServiceTypeUtil.PRECERTIFICATEREVOCATIONWORKER_SUB_PAGE, NAME, true, PreCertificateRevocationWorkerConstants.WORKER_CLASS);
+        super(PRECERTIFICATEREVOCATIONWORKER_SUB_PAGE, NAME, true, PreCertificateRevocationWorkerConstants.WORKER_CLASS);
         // No action available for this worker
         deleteAllCompatibleActionTypes();
         addCompatibleActionTypeName(NoActionType.NAME);
