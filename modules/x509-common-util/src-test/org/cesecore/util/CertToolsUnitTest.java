@@ -801,6 +801,12 @@ public class CertToolsUnitTest {
 
         String dn36 = "CN=Name2,EMAIL=foo@bar.com,OU=MyOrgU,OU=Unit2,C=SE,O=Org1";
         assertEquals("E=foo@bar.com,CN=Name2,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", CertTools.stringToBCDNString(dn36));
+
+        String dn37 = "CN=matter,vid=FFF1,pid=8000";
+        assertEquals("PID=8000,VID=FFF1,CN=matter", CertTools.stringToBCDNString(dn37));
+
+        String dn38 = "CN=matter,ou=ou,c=SE,sn=123456,vid=FFF1,pid=8000";
+        assertEquals("PID=8000,VID=FFF1,CN=matter,SN=123456,OU=ou,C=SE", CertTools.stringToBCDNString(dn38));
     }
 
     @Test

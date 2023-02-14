@@ -30,8 +30,6 @@
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src-test"/>
 	<classpathentry kind="src" path="modules/cmpclient/src"/>
-	<classpathentry kind="src" path="modules/cmpProxy/src"/>
-	<classpathentry kind="src" path="modules/cmpProxy/src-test"/>
 	<classpathentry kind="src" path="modules/configdump/src-cli"/>
 	<classpathentry kind="src" path="modules/configdump/src-common"/>
 	<classpathentry kind="src" path="modules/configdump/src-ejb"/>
@@ -125,7 +123,6 @@
 	<classpathentry kind="lib" path="lib/csrfguard-extension-session-4.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-jsp-tags-4.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.9.4.jar"/>
-	<classpathentry kind="lib" path="lib/ext/mailapi.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
@@ -163,6 +160,12 @@
 	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.activation-api-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.enterprise.cdi-api-3.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/activation-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javax.mail-1.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javax.jws-api-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/jaxws-api-2.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javax.xml.soap-api-1.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javax.ejb-api-3.2.2.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
@@ -171,11 +174,6 @@
 	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.jboss.ide.eclipse.as.core.server.runtime.runtimeTarget/WildFly 10.x Runtime">
 		<attributes>
 			<attribute name="owner.project.facets" value="jst.jsf;jst.web"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.4.jar"/>
@@ -251,6 +249,7 @@
 	<classpathentry kind="lib" path="lib/log4j-core-2.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
-	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javaee-api-8.0.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>

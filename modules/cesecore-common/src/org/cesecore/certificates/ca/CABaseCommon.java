@@ -19,13 +19,16 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -62,6 +65,8 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     
     private static final InternalResources intres = InternalResources.getInstance();
     
+    private static final Set<String> deprecatedServiceImplementations = new HashSet<>(Arrays.asList("org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService"));
+    
     public static final String CATYPE = "catype";
     @Deprecated
     protected static final String VALIDITY = "validity";
@@ -75,6 +80,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String DELTACRLPERIOD = "deltacrlperiod";
     protected static final String GENERATECRLUPONREVOCATION = "generatecrluponrevocation";
     protected static final String ALLOWCHANGINGREVOCATIONREASON = "allowchangingrevocationreason";
+    protected static final String ALLOWINVALIDITYDATE = "allowinvaliditydate";
     protected static final String NAMECHANGED = "namechanged";
     
     // protected fields.
@@ -827,12 +833,6 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                         // See ECA-6341 and UpgradeSessionBean.migrateDatabase500()
                         log.info("implementation classname is null for extended service type: "+type+". Will try our known ones.");
                         switch (type) {
-                        case 2: // Old XKMSCAService that should not be used anymore
-                            log.info("Found an XKMS CA service type. Will not create the deprecated service.");
-                            break;
-                        case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
-                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService";
-                            break;
                         case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
                             implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService";
                             break;
@@ -841,7 +841,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                             break;
                         }
                     }
-                    if (implClassname != null) {
+                    if (implClassname != null && !deprecatedServiceImplementations.contains(implClassname)) {
                         if (log.isDebugEnabled()) {
                             log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
                         }
@@ -916,6 +916,14 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         if (externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE)) {
             //This type has been removed, so remove it from any CAs it's been added to as well.
             externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE);
+            data.put(EXTENDEDCASERVICES, externalServiceTypes);
+            retval = true;
+        }
+        
+        // Service type '3' was the CMS Service, which was removed in 8.0.0
+        if (externalServiceTypes.contains(3)) {
+            //This type has been removed, so remove it from any CAs it's been added to as well.
+            externalServiceTypes.remove(3);
             data.put(EXTENDEDCASERVICES, externalServiceTypes);
             retval = true;
         }
