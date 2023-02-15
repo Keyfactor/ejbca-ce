@@ -58,6 +58,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -94,6 +95,9 @@ public class InternalKeyBindingMgmtTest {
     private int cryptoTokenId;
     
     private CryptoTokenRunner cryptoTokenRunner;
+    
+    @Rule
+    public TestName testName = new TestName();
 
     public InternalKeyBindingMgmtTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
         this.cryptoTokenRunner = cryptoTokenRunner;
@@ -102,7 +106,7 @@ public class InternalKeyBindingMgmtTest {
     
     @Before
     public void before() throws Throwable {
-        x509ca = cryptoTokenRunner.createX509Ca();
+        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
         cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
     }
     

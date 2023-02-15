@@ -149,6 +149,7 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -232,6 +233,8 @@ public class ProtocolScepHttpTest {
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
     
+    @Rule
+    public TestName testName = new TestName();
 
     private CryptoTokenRunner cryptoTokenRunner;
 
@@ -251,7 +254,7 @@ public class ProtocolScepHttpTest {
             throw new RuntimeException(e);
         }
         
-        x509ca = cryptoTokenRunner.createX509Ca();
+        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
         cacert = (X509Certificate) x509ca.getCertificateChain().get(0);
         
         final String httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));

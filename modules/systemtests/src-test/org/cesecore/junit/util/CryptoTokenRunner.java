@@ -13,7 +13,7 @@
 package org.cesecore.junit.util;
 
 import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +42,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
@@ -124,16 +123,8 @@ public abstract class CryptoTokenRunner {
         }
     }
 
-    
-    protected String getSubjectDn() {
-        return "SN=1234, CN=" + getSimpleName() + getNamingSuffix();
-    }
-
     public abstract String getSimpleName();
 
-    public X509CAInfo createX509Ca() throws Exception {
-        return createX509Ca(getSubjectDn(), getSimpleName());
-    }
     
     public abstract X509CAInfo createX509Ca(String subjectDn, String username) throws Exception;
 
@@ -160,7 +151,10 @@ public abstract class CryptoTokenRunner {
             if (ca != null) {
                 caSession.removeCA(alwaysAllowToken, ca.getCAId());
             }
-            internalCertificateStoreSession.removeCertificatesBySubject(getSubjectDn());
+            Certificate caCertificate = ca.getCertificateChain().get(0);
+            if (caCertificate != null) {
+                internalCertificateStoreSession.removeCertificate(caCertificate);
+            }
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
@@ -206,7 +200,10 @@ public abstract class CryptoTokenRunner {
         CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         
-        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, tokenpin, genKeys, cryptoTokenImplementation, cadn, keyspec, keyspec);
+        cryptoTokenManagementProxySession.flushCache();
+        String signingKeyName = cadn + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
+        String encryptionKeyName = cadn + "_" + CAToken.SOFTPRIVATEDECKEYALIAS;
+        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, tokenpin, genKeys, cryptoTokenImplementation, cadn, keyspec, keyspec, signingKeyName, encryptionKeyName);
         cryptoTokenstoRemove.add(cryptoTokenId);
         try {
             cryptoTokenManagementSession.activate(alwaysAllowToken, cryptoTokenId, tokenpin);
@@ -214,8 +211,10 @@ public abstract class CryptoTokenRunner {
             throw new IllegalStateException("Could not activate crypto token", e);
         }
         final CAToken catoken = createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signingKeyName);
+        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signingKeyName);
+        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, encryptionKeyName);
+        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, signingKeyName);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         String caname = CertTools.getPartFromDN(cadn, "CN");

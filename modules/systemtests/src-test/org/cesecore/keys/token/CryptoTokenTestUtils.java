@@ -91,8 +91,10 @@ public class CryptoTokenTestUtils {
         } else {
 
             cryptoTokenImplementation = SoftCryptoToken.class.getName();
-        }       
-        return createCryptoTokenForCA(authenticationToken, pin, generateKeys, cryptoTokenImplementation, tokenName, signKeySpec, encKeySpec);
+        }     
+        String signingKeyName = tokenName + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
+        String encryptionKeyName = tokenName + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
+        return createCryptoTokenForCA(authenticationToken, pin, generateKeys, cryptoTokenImplementation, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
 
     }
 
@@ -156,21 +158,17 @@ public class CryptoTokenTestUtils {
     }
     
     public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys,
-            String cryptoTokenImplementation, String tokenName, String signKeySpec, String encKeySpec) {
+            String cryptoTokenImplementation, String tokenName, String signKeySpec, String encKeySpec, String signKeyName, String encKeyName) {
         if (authenticationToken == null) {
             authenticationToken = alwaysAllowToken;
         }
         int cryptoTokenId = createCryptoToken(pin, cryptoTokenImplementation, tokenName);
         try {
             if (generateKeys) {
-                if (cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS) == null) {
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
-                            KeyGenParams.builder(signKeySpec).build());
-                }
-                if (cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS) == null) {
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS,
-                            KeyGenParams.builder(encKeySpec).build());
-                }
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, signKeyName,
+                        KeyGenParams.builder(signKeySpec).build());
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, encKeyName,
+                        KeyGenParams.builder(encKeySpec).build());
             }
         } catch (AuthorizationDeniedException | InvalidKeyException | CryptoTokenOfflineException | InvalidAlgorithmParameterException e) {
             // Cleanup token if we failed during the key creation stage

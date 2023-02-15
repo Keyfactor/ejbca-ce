@@ -131,6 +131,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -195,6 +196,9 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
+    @Rule
+    public TestName testName = new TestName();
 
     private CryptoTokenRunner cryptoTokenRunner;
 
@@ -205,7 +209,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
    
     @Before
     public void setUp() throws Exception {
-        x509ca = cryptoTokenRunner.createX509Ca(); 
+        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
         originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
         //Make sure timers don't run while we debug
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));

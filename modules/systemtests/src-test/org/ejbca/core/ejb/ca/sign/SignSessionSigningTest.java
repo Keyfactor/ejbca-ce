@@ -38,6 +38,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -58,6 +59,9 @@ public class SignSessionSigningTest {
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
+    @Rule
+    public TestName testName = new TestName();
 
     private X509CAInfo x509ca;
     
@@ -70,7 +74,7 @@ public class SignSessionSigningTest {
     @Before
     public void setUp() throws Exception {
         assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
-        x509ca = cryptoTokenRunner.createX509Ca(); 
+        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
     }
     
     @After
