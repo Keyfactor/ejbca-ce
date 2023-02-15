@@ -1199,8 +1199,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             }
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(reason);
-            certificateData.setInvalidityDate(invalidityDate);
-
+            if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+                certificateData.setInvalidityDate(invalidityDate);
+            } else {
+                certificateData.setInvalidityDate(-1L);
+            }
             final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
@@ -1216,7 +1219,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (revokeDate != null) {
                 certificateData.setRevocationDate(revokeDate);
             }
-
             final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
@@ -1224,7 +1226,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             returnVal = true;
         } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
             certificateData.setUpdateTime(now.getTime());
-                certificateData.setInvalidityDate(invalidityDate);
+            certificateData.setInvalidityDate(invalidityDate);
             returnVal = true;
         } else if (((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL))
                 && (certificateData.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
