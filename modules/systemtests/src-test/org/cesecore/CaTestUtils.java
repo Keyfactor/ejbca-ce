@@ -270,7 +270,9 @@ public abstract class CaTestUtils {
         // Create catoken
         CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, tokenpin, genKeys, cryptoTokenImplementation, cadn, keyspec, keyspec);
+        String signingKeyName = cadn + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
+        String encryptionKeyName = cadn + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
+        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, tokenpin, genKeys, cryptoTokenImplementation, cadn, keyspec, keyspec, signingKeyName, encryptionKeyName);
         final CAToken catoken = createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));

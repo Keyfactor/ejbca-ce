@@ -121,6 +121,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -165,6 +166,9 @@ public class IntegratedOcspResponseTest {
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
+    @Rule
+    public TestName testName = new TestName();
 
     private CryptoTokenRunner cryptoTokenRunner;
 
@@ -175,7 +179,7 @@ public class IntegratedOcspResponseTest {
     
     @Before
     public void setUp() throws Exception {
-        testx509ca = cryptoTokenRunner.createX509Ca();
+        testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
         caCertificate = (X509Certificate) testx509ca.getCertificateChain().get(0);
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com",
                 EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
@@ -321,7 +325,7 @@ public class IntegratedOcspResponseTest {
     /** After renewing a CA with a new key pair, the new CA certificate should be used to sign requests */
     @Test
     public void testOcspSignerIssuerRenewal() throws Exception {
-        final X509CAInfo testx509caRenew = cryptoTokenRunner.createX509Ca();
+        final X509CAInfo testx509caRenew = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
         final X509Certificate caCertificateRenew = (X509Certificate) testx509caRenew.getCertificateChain().get(0);
         final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal",
                 testx509ca.getCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);

@@ -44,6 +44,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -69,9 +70,9 @@ public class CmpResponseMessageTest extends CmpTestCase {
     private static final String user = "CmpTestUser";
     private static final String userPwd = "foo123";
     
-    private final X509Certificate caCertificate;
-    private final X509CAInfo ca;
-    private final CmpConfiguration cmpConfiguration;
+    private X509Certificate caCertificate;
+    private X509CAInfo ca;
+    private CmpConfiguration cmpConfiguration;
     private static final String cmpAlias = "CmpResponseMessageTestConfAlias";
     
     private final byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -94,13 +95,12 @@ public class CmpResponseMessageTest extends CmpTestCase {
     
     private CryptoTokenRunner cryptoTokenRunner;
     
-    
+    @Rule
+    public TestName testName = new TestName();
     
     public CmpResponseMessageTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
         this.cryptoTokenRunner = cryptoTokenRunner;
-        ca = cryptoTokenRunner.createX509Ca();
-        caCertificate = (X509Certificate) ca.getCertificateChain().get(0);
-        cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        
     }
 
      
@@ -127,8 +127,13 @@ public class CmpResponseMessageTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
 
+        ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
+        caCertificate = (X509Certificate) ca.getCertificateChain().get(0);
+        cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        
         log.debug("Test CA subject DN: " + ca.getSubjectDN());
         log.debug("Test CA ID: " + ca.getCAId());
+        
         
         this.cmpConfiguration.addAlias(cmpAlias);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
