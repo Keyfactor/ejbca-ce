@@ -15,7 +15,9 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -31,20 +33,23 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.util.CertTools;
 
 /**
- * 
- * Class for standard X509 certificate extension. See rfc3280 or later for spec of this extension.
- * 
- * @version $Id$
+ * Class for standard X509 certificate extension. See rfc5280 or later for spec of this extension.
  */
-public class AuthorityKeyIdentifier extends StandardCertificateExtension {
+public class AuthorityKeyIdentifier extends StandardCertificateExtension implements CustomCertificateExtension {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AuthorityKeyIdentifier.class);
+
+    public AuthorityKeyIdentifier() {
+        super.setDisplayName("AuthorityKeyIdentifier");
+        
+    }
 
     @Override
     public void init(final CertificateProfile certProf) {
@@ -93,5 +98,16 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
         } else {
             return (X509Certificate) ca.getCACertificate();
         }
+    }
+
+    @Override
+    public Map<String, String[]> getAvailableProperties() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
+            PublicKey caPublicKey, CertificateValidity val, String oid) throws CertificateExtensionException {
+        return super.getValueEncoded(userData, ca, certProfile, userPublicKey, caPublicKey, val);
     }
 }
