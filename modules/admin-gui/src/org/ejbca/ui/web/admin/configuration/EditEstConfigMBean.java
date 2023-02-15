@@ -92,6 +92,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         private String extDnPartPwdComponent;
         
         private boolean usesProxyCa;
+        private boolean serverKeyGenEnabled;
         
         
         public String getName() {
@@ -273,6 +274,14 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             this.usesProxyCa = usesProxyCa;
         }
         
+        public boolean isServerKeyGenEnabled() {
+            return serverKeyGenEnabled;
+        }
+
+        public void setServerKeyGenEnabled(boolean serverKeyGenEnabled) {
+            this.serverKeyGenEnabled = serverKeyGenEnabled;
+        }
+        
     }
 
     public EstAliasGui getEstAlias() throws NumberFormatException, AuthorizationDeniedException {
@@ -296,6 +305,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setUserName(estConfiguration.getUsername(aliasName));
             estAliasGui.setPassword(EditEstConfigMBean.HIDDEN_PWD);
             estAliasGui.setAllowSameKey(estConfiguration.getKurAllowSameKey(aliasName));
+            estAliasGui.setServerKeyGenEnabled(estConfiguration.getServerKeyGenerationEnabled(aliasName));
             estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
             estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
             estAliasGui.setVendorMode(estConfiguration.getVendorMode(aliasName));
@@ -400,6 +410,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estConfiguration.setPassword(alias, estAliasGui.getPassword());
         }
         estConfiguration.setKurAllowSameKey(alias, estAliasGui.getAllowSameKey());
+        estConfiguration.setServerKeyGenerationEnabled(alias, estAliasGui.isServerKeyGenEnabled());
         estConfiguration.setExtractUsernameComponent(alias, estAliasGui.getExtUsernameComponent());
         estConfiguration.setExtractDnPwdComponent(alias, estAliasGui.getExtDnPartPwdComponent());
         estConfiguration.setOperationMode(alias, estAliasGui.getOperationMode());

@@ -133,6 +133,7 @@ public class EstRAModeBasicTest extends EstTestCase {
         config.setRANameGenParams(estAlias, "CN");
         // Don't allow renewal with same user public key
         config.setKurAllowSameKey(estAlias, false); 
+        config.setServerKeyGenerationEnabled(estAlias, true); 
         globalConfigurationSession.saveConfiguration(ADMIN, config);
     }
 
@@ -248,12 +249,13 @@ public class EstRAModeBasicTest extends EstTestCase {
                 fail("serverkeygen response certifciate must verify with CA certificate");                
             }
             assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
-            assertNotEquals("serverkeygen response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertNotEquals("serverkeygen response public key must be the differant than the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
             
             // subsequent key generation
             final KeyPair ec256New = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
             final PKCS10CertificationRequest p10New = generateCertReq(requestDN, null, null, null, null, ec256New);
             final byte[] reqmsgNew = Base64.encode(p10New.getEncoded());
+            X509Certificate oldCert = cert;
             
             setupClientKeyStore(serverCertCaInfo, ec256, tlsReenrollCert);
             resp = sendEstRequest(true, estAlias, "serverkeygen", reqmsgNew, 200, null, null, null);
@@ -266,8 +268,9 @@ public class EstRAModeBasicTest extends EstTestCase {
                 fail("serverkeygen response certifciate must verify with CA certificate");                
             }
             assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
-            assertNotEquals("serverkeygen response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256New.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
-        
+            assertNotEquals("serverkeygen response public key must be the differant than the PKCS#10 request", Base64.toBase64String(ec256New.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertNotEquals("serverkeygen response public key must be the differant than the old key", Base64.toBase64String(oldCert.getPublicKey().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+
         } finally {
             // Remove the generated end entity and all the certificates
             internalCertStoreSession.removeCertificatesByUsername(username);
