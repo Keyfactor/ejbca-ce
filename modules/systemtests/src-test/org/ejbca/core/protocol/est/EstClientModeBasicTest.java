@@ -178,6 +178,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
             config.setExtractUsernameComponent(alias, "CN");
+            config.setServerKeyGenerationEnabled(alias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             
             // First make request without any EE created
@@ -256,6 +257,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD);
             config.setExtractDnPwdComponent(alias, "SN"); // SN == SERIALNUMBER 
             config.setExtractUsernameComponent(alias, "CN");
+            config.setServerKeyGenerationEnabled(alias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             
             // First make request without any EE created
@@ -348,6 +350,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
             config.setExtractUsernameComponent(alias, "UID");
+            config.setServerKeyGenerationEnabled(alias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
 
             // Create EE
