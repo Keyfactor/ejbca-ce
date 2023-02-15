@@ -247,10 +247,6 @@ public class CertificateRestResource extends BaseRestResource {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         RevocationReasons reasons = RevocationReasons.getFromCliValue(reason);
         // TODO Replace with @ValidRevocationReason
-        if (reasons == null) {
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid revocation reason.");
-        }
-        final int revocationReason = reasons.getDatabaseValue();
         final BigInteger serialNr;
         try {
             serialNr = StringTools.getBigIntegerFromHexString(serialNumber);
@@ -258,9 +254,25 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid serial number format. Should be "
                     + "HEX encoded (optionally with '0x' prefix) e.g. '0x10782a83eef170d4'");
         }
+        final CertificateStatus certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
+        final int revocationReason;
+        if (!certificateStatus.isRevoked()) {
+            if (reasons == null) {
+                throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid revocation reason.");
+            } else {
+                revocationReason = reasons.getDatabaseValue();
+            }
+        } else {
+            if (reasons != null) {
+                revocationReason = reasons.getDatabaseValue();
+            } else if (invalidityDate != null) {
+                revocationReason = certificateStatus.revocationReason;
+            } else {
+                throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalidity date or revocation reason missing.");  
+            }
+        }
         final Date validatedInvalidityDate = getValidatedDate(invalidityDate);
         raMasterApi.revokeCert(admin, serialNr, getValidatedDate(date), validatedInvalidityDate, issuerDN, revocationReason, true);
-        final CertificateStatus certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
         final Date revocationDate = certificateStatus.isRevoked() ? certificateStatus.revocationDate : null;
 
         final RevokeStatusRestResponse result = RevokeStatusRestResponse.builder().
