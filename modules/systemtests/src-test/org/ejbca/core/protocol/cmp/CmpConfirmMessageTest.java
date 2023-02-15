@@ -35,7 +35,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
@@ -65,6 +67,9 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
+    @Rule
+    public TestName testName = new TestName();
+    
     @Parameters(name = "{0}")
     public static Collection<CryptoTokenRunner> runners() {
        return CryptoTokenRunner.defaultRunners;
@@ -77,7 +82,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
     public CmpConfirmMessageTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
         this.cryptoTokenRunner = cryptoTokenRunner;
-        this.testx509ca = cryptoTokenRunner.createX509Ca();
+        this.testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
         this.cacert = (X509Certificate) this.testx509ca.getCertificateChain().get(0);
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
