@@ -1907,17 +1907,26 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 final boolean allowedOnCa = cadata != null ? cadata.getCA().getCAInfo().isAllowChangingRevocationReason() : false;
 
                 final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
-                if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
+                
+                final boolean canChangeRevocationReason = RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509);
+                if (canChangeRevocationReason) {
                     // use the previous revocation date if a new one was not provided
                     if (revocationDate == null){
                         revocationDate = new Date(certificateData.getRevocationDate());
                     }
+                    if (invalidityDate != null && !(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
+                        invalidityDate = new Date(certificateData.getInvalidityDate());
+                        log.info("Invalidity date given, but not allowed by CA");
+                    }
                 }
-                else if (invalidityDate != null && cadata.getCA().getCAInfo().isAllowInvalidityDate() ) {
+                else if (invalidityDate != null) {
                     revocationDate = new Date(certificateData.getRevocationDate());
                     reason = certificateData.getRevocationReason();
+                    if (!(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
+                        throw new AlreadyRevokedException("Invalidity date given, but not allowed by CA");
+                    }
                 }
-                else {
+                else if (!canChangeRevocationReason){
                     // Revocation reason cannot be changed, find out why and throw appropriate exception
                     if (!RevokedCertInfo.isDateOk(revocationDate, certificateData.getRevocationDate())) {
                         final String msg = intres.getLocalizedMessage("ra.invalidrevocationdate");
@@ -1977,6 +1986,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
 
         // Revoke certificate in database and all publishers
+        CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
+        if (invalidityDate != null && !(cainfo.isAllowInvalidityDate())) {
+            invalidityDate = null;
+        }
         try {
             revocationSession.revokeCertificate(authenticationToken, cdw, publishers, revocationDate!=null ? revocationDate : new Date(), invalidityDate, reason, certificateSubjectDN);
         } catch (CertificateRevokeException e) {
