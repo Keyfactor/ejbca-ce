@@ -1930,7 +1930,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
                 else if ((invalidityDate != null) && (reason == certificateData.getRevocationReason())) {
                     revocationDate = new Date(certificateData.getRevocationDate());
-                    if (cainfo.isAllowInvalidityDate()) {
+                    if (!cainfo.isAllowInvalidityDate()) {
                         final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
                         log.info(msg);;
                         throw new AlreadyRevokedException(msg);
