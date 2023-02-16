@@ -102,8 +102,8 @@ public class RenewCATest extends CaTestCase {
     public void testRenewSubCAWithRenewCAWorker() throws Exception {
         log.trace(">testRenewSubCAWithRenewCAWorker()");
         X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
-        final int cryptoTokenIdSubCa = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, "TestSubCaRenew", "1024");
-        final CAToken subCaToken = CaTestUtils.createCaToken(cryptoTokenIdSubCa, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        final int cryptoTokenIdSubCa = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, "TestSubCaRenew", "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        final CAToken subCaToken = CaTestUtils.createCaToken(cryptoTokenIdSubCa, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
             // Create sub CA to test renewal using Renew CA Worker
             X509CAInfo subCaInfo =  new X509CAInfo.X509CAInfoBuilder()

@@ -125,6 +125,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String REPLACABLE_TAG = "$TAG$";
     
     private static final String RSA_1024 = "RSA1024";
+    private static final String SECP256R1 = "secp256r1";
 
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
@@ -646,7 +647,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     protected static void createEllipticCurveDsaCa() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
-        createCa("secp256r1", TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        createCa(SECP256R1, TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
     }
     protected static void createEllipticCurveDsaCa(String keySpec) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
@@ -660,8 +661,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private static void createCa(final String keySpec, final String name, final String sigAlg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, name, keySpec);
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, name, keySpec, keySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -680,8 +681,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     protected static void createECGOST3410Ca() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             InvalidAlgorithmException, AuthorizationDeniedException {
         final String keyspec = "GostR3410-2001-CryptoPro-B";
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECGOST3410_CA_NAME, keyspec);
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECGOST3410_CA_NAME, keyspec, keyspec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -711,8 +712,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     protected static void createDSTU4145Ca() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             InvalidAlgorithmException, AuthorizationDeniedException {
         final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSTU4145_CA_NAME, keyspec);
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSTU4145_CA_NAME, keyspec, RSA_1024,
+                CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145,
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -740,9 +743,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             createDefaultCvcEccCa(rootProfileId);
         }
         removeOldCa(TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN);        
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, "secp256r1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, SECP256R1, SECP256R1, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         // TODO: Using ECDSA for decryption seems fishy..!
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);      
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);      
         CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, CAConstants.CA_ACTIVE,
                 subcaProfileId, "3650d", TEST_CVC_ECC_CA_DN.hashCode(), null, catoken);
         cvccainfo.setDescription("JUnit CVC CA");
@@ -752,8 +755,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     
     protected static void createDefaultDsaCa(final String sigAlg) throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         removeOldCa(TEST_DSA_CA_NAME, "CN="+TEST_DSA_CA_NAME);        
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSA_CA_NAME, "DSA1024");
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSA_CA_NAME, "DSA1024", RSA_1024, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTDSA", TEST_DSA_CA_NAME, CAConstants.CA_ACTIVE,
@@ -770,8 +773,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     
     protected static void createDefaultCvcEccCa(int certProfileId) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException {
         removeOldCa(TEST_CVC_ECC_CA_NAME, TEST_CVC_ECC_CA_DN);
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_CVC_ECC_CA_NAME, "secp256r1");
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_CVC_ECC_CA_NAME, SECP256R1, SECP256R1, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_CA_DN, TEST_CVC_ECC_CA_NAME, CAConstants.CA_ACTIVE,
                 certProfileId, "3650d", CAInfo.SELFSIGNED, null, catoken);
         cvccainfo.setDescription("JUnit CVC CA");

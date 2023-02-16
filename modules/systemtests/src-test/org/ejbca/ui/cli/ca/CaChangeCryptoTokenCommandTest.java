@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -72,7 +73,7 @@ public class CaChangeCryptoTokenCommandTest {
         cryptoTokenId1 = caSession.getCAInfo(authenticationToken, CA_NAME).getCAToken().getCryptoTokenId();
         cryptoTokenName1 = tokenSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId1).getName();
         log.info("First crypto token: "+cryptoTokenId1+", "+cryptoTokenName1);
-        cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, CRYPTOTOKEN_BASENAME, String.valueOf(1024));
+        cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, CRYPTOTOKEN_BASENAME, "RSA1024", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         cryptoTokenName2 = tokenSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId2).getName();
         log.info("Second crypto token: "+cryptoTokenId2+", "+cryptoTokenName2);
     }

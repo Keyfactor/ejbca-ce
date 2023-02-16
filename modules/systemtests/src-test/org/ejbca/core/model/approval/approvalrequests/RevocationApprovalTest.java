@@ -211,9 +211,9 @@ public class RevocationApprovalTest extends CaTestCase {
         String caname = RevocationApprovalTest.class.getSimpleName();
         
         // Create new CA
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, caname, "1024");
+        cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         approvalCAID = createApprovalCA(internalAdmin, caname, ApprovalRequestType.REVOCATION, approvalProfileId, caAdminSession, caSession, catoken);
     }
 
