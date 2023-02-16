@@ -16,19 +16,20 @@ package org.cesecore.util;
 import java.security.Provider;
 import java.security.Security;
 
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cesecore.keys.util.KeyTools;
-
 import com.keyfactor.util.crypto.provider.CryptoProvider;
 import com.keyfactor.util.crypto.provider.CryptoProviderRegistry;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.bc.BCObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.cesecore.keys.util.KeyTools;
+
 /**
  * Basic crypto provider helper methods.
- * 
- * @version $Id$
  */
 public final class CryptoProviderTools {
 	
@@ -59,6 +60,7 @@ public final class CryptoProviderTools {
 
     public static synchronized void removeBCProvider() {
         Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);  
+        Security.removeProvider(BouncyCastlePQCProvider.PROVIDER_NAME);  
         // Also remove other providers, such as the CVC provider
         for(CryptoProvider provider : CryptoProviderRegistry.INSTANCE.getCryptoProviders()) {
             Security.removeProvider(provider.getName());
@@ -68,6 +70,10 @@ public final class CryptoProviderTools {
     @SuppressWarnings({ "deprecation", "unchecked" })
     public static synchronized void installBCProvider() {
     	
+        // Install the post quantum provider
+        if (Security.addProvider(new BouncyCastlePQCProvider()) < 0) {
+            log.debug("Cannot install BC PQC provider again!");
+        }
         Security.addProvider(new BouncyCastleProvider());
         
     	// Also install non-BC providers, such as the CVC provider
@@ -78,7 +84,6 @@ public final class CryptoProviderTools {
                 log.info(provider.getErrorMessage(), e);
             }
         }
-
         // 2007-05-25
         // Finally we must configure SERIALNUMBER behavior in BC >=1.36 to be the same
         // as the behavior in BC 1.35, it changed from SN to SERIALNUMBER in BC 1.36
@@ -95,4 +100,20 @@ public final class CryptoProviderTools {
         
     }
 
+    public static String getProviderNameFromAlg(final String alg) {
+        if (isPQC(alg)) {
+            return BouncyCastlePQCProvider.PROVIDER_NAME;
+        }
+        return BouncyCastleProvider.PROVIDER_NAME;
+    }
+    private static final boolean isPQC(String name) {
+        if (name == null) {
+            return false;
+        }
+        return StringUtils.startsWithIgnoreCase(name, "FALCON") || name.startsWith("1.3.9999.3")
+                || name.equalsIgnoreCase("SPHINCSPLUS") || name.equalsIgnoreCase("SPHINCS+") || name.startsWith(BCObjectIdentifiers.sphincsPlus.getId())
+                || StringUtils.startsWithIgnoreCase(name, "DILITHIUM") || name.startsWith("1.3.6.1.4.1.2.267.7")
+                || StringUtils.startsWithIgnoreCase(name, "NTRU") || name.startsWith(BCObjectIdentifiers.pqc_kem_ntru.getId())
+                || StringUtils.startsWithIgnoreCase(name, "KYBER") || name.startsWith(BCObjectIdentifiers.pqc_kem_kyber.getId());
+    }
 }
