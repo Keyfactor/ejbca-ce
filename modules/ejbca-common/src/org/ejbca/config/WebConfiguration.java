@@ -356,6 +356,11 @@ public class WebConfiguration {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("p11ng.utimacocp5.enabled"));
     }
 
+    /** @return true if we enabled usage of PQC algorithms (for testing) in the Admin GUI. */
+    public static boolean isPQCEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("cryptotoken.pqc.enabled"));
+    }
+
     public static String getStatedumpTemplatesBasedir() {
         return EjbcaConfigurationHolder.getString("statedump.templatebasedir");
     }
