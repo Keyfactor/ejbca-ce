@@ -955,8 +955,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     final List<AcmeExternalAccountBinding> eabs = acmeAlias.getExternalAccountBinding();
                     if (eabs != null) {
                         for (AcmeExternalAccountBinding eab :eabs) {
-                            if (eab.getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
-                                    && (Boolean) eab.getDataMap().get("encryptKey")
+                            final Object encryptKey = eab.getDataMap().get("encryptKey");
+                            if ("ACME_EAB_RFC_COMPLIANT".equals(eab.getAccountBindingTypeIdentifier())
+                                    && encryptKey != null && (Boolean)encryptKey
                                     && Integer.toString(cryptoTokenId).equals(eab.getDataMap().get("encryptionKeyId"))) {
                                 result.add(acmeAlias.getConfigurationId());
                             }
