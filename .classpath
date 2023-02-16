@@ -58,6 +58,7 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-certificate/src"/>
+	<classpathentry kind="src" path="modules/ejbca-rest-coap/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-configdump/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-ca/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-cryptotoken/src"/>

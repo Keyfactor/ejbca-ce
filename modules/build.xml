@@ -57,7 +57,7 @@
 	
 	<target name="clean-optional" depends="statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
-        estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-configdump-clean, 
+        estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-coap-clean, ejbca-rest-configdump-clean,
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
         cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, p11ng-clean, msae-clean, cits-clean, proxy-ca-clean"/>
 
@@ -186,6 +186,10 @@
 
     <target name="ejbca-rest-certificate-clean" if="${mod.ejbca-rest-certificate.exists}">
         <ant antfile="${mod.ejbca-rest-certificate.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>
+
+	<target name="ejbca-rest-coap-clean" if="${mod.ejbca-rest-coap.exists}">
+        <ant antfile="${mod.ejbca-rest-coap.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="ejbca-rest-configdump-clean" if="${mod.ejbca-rest-configdump.exists}">
@@ -391,6 +395,10 @@
         <ant antfile="${mod.ejbca-rest-certificate.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
 
+	<target name="ejbca-rest-coap" if="${mod.ejbca-rest-coap.exists}" depends="ejbca-rest-common" description="Build EJBCA REST Coap module">
+        <ant antfile="${mod.ejbca-rest-coap.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="ejbca-rest-configdump" if="${mod.ejbca-rest-configdump.exists}" depends="ejbca-rest-common" description="Build EJBCA REST Configdump module">
         <ant antfile="${mod.ejbca-rest-configdump.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
@@ -415,7 +423,7 @@
 	        <ant antfile="${mod.ejbca-rest-ssh.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	 </target>
 	
-	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" depends="ejbca-rest-common,ejbca-rest-certificate,ejbca-rest-configdump,ejbca-rest-ca,ejbca-rest-cryptotoken,ejbca-rest-camanagement,ejbca-rest-endentity, ejbca-rest-ssh" description="Build EJBCA REST API">
+	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" depends="ejbca-rest-common,ejbca-rest-certificate,ejbca-rest-coap, ejbca-rest-configdump,ejbca-rest-ca,ejbca-rest-cryptotoken,ejbca-rest-camanagement,ejbca-rest-endentity, ejbca-rest-ssh" description="Build EJBCA REST API">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
         	
@@ -484,7 +492,7 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca.clients,
-					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-certificate, ejbca-rest-configdump,
+					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-certificate, ejbca-rest-coap, ejbca-rest-configdump,
 					ejbca-rest-ca,ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh, ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, msae, cits">
 	</target>
 
@@ -574,7 +582,7 @@
 		<ant antfile="${mod.est-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-    <target name="ejbca-rest-api-war" if="${mod.ejbca-rest-api.exists}" depends="ejbca-common-web, ejbca-rest-common, ejbca-rest-certificate, ejbca-rest-configdump, ejbca-rest-ca, ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh" description="Build the Ejbca REST API WAR">
+    <target name="ejbca-rest-api-war" if="${mod.ejbca-rest-api.exists}" depends="ejbca-common-web, ejbca-rest-common, ejbca-rest-certificate, ejbca-rest-coap, ejbca-rest-configdump, ejbca-rest-ca, ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh" description="Build the Ejbca REST API WAR">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
