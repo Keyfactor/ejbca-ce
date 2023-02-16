@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,23 +10,29 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.services.servicetypes;
-
-import org.ejbca.core.model.services.workers.RolloverWorker;
+package org.ejbca.config;
 
 /**
- * Class managing the view of the Rollover Worker
- *
- * @version $Id$
+ * Thrown if invalid challenge types were encountered when constructing an ACME alias.
  */
-public class RolloverWorkerType extends BaseEmailNotifyingWorkerType {
-	private static final long serialVersionUID = 1L;
+public class AcmeChallengeTypeException extends Exception {
 
-	public static final String NAME = "ROLLOVERWORKER";
+    private static final long serialVersionUID = 1L;
 
-	private static final String ROLLOVERWORKER_SUB_PAGE = "rolloverworker.xhtml";
-	
-	public RolloverWorkerType(){
-		super(NAME, ROLLOVERWORKER_SUB_PAGE, RolloverWorker.class.getName());
-	}
+    public AcmeChallengeTypeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    public AcmeChallengeTypeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public AcmeChallengeTypeException(String message) {
+        super(message);
+    }
+
+    public AcmeChallengeTypeException(Throwable cause) {
+        super(cause);
+    }
+
 }

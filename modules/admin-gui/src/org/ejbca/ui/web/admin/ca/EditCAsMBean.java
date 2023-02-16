@@ -2336,6 +2336,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
             caInfoDto.setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
             caInfoDto.setAllowChangingRevocationReason(cainfo.isAllowChangingRevocationReason());
+            caInfoDto.setAllowInvalidityDate(cainfo.isAllowInvalidityDate());
         }
 
         caInfoDto.setFinishUser(cainfo.getFinishUser());
