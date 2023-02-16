@@ -30,8 +30,6 @@ import org.junit.Test;
 
 /**
  * Stand alone test of CachingKeyStoreWrapper.
- * 
- * @version $Id$
  */
 public class CachingKeyStoreWrapperTest {
 
@@ -56,7 +54,13 @@ public class CachingKeyStoreWrapperTest {
         final KeyStore keyStore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
         keyStore.load(null, null);
         final CachingKeyStoreWrapper cachingKeyStoreWrapper = new CachingKeyStoreWrapper(keyStore, cache);
-        testGenerate(cachingKeyStoreWrapper, ALIAS);
+        testGenerateEC(cachingKeyStoreWrapper, ALIAS);
+        testUse(cachingKeyStoreWrapper, ALIAS);
+        testRemove(cachingKeyStoreWrapper, ALIAS);
+        testGenerateFalcon(cachingKeyStoreWrapper, ALIAS);
+        testUse(cachingKeyStoreWrapper, ALIAS);
+        testRemove(cachingKeyStoreWrapper, ALIAS);
+        testGenerateDilithium(cachingKeyStoreWrapper, ALIAS);
         testUse(cachingKeyStoreWrapper, ALIAS);
         testRemove(cachingKeyStoreWrapper, ALIAS);
     }
@@ -76,7 +80,7 @@ public class CachingKeyStoreWrapperTest {
         final KeyStore keyStore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
         keyStore.load(null, null);
         final CachingKeyStoreWrapper cachingKeyStoreWrapper = new CachingKeyStoreWrapper(keyStore, cache);
-        testGenerate(cachingKeyStoreWrapper, ALIAS);
+        testGenerateEC(cachingKeyStoreWrapper, ALIAS);
         // "Persist" and load it back from storage
         final ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
         cachingKeyStoreWrapper.store(baos2, PASSWORD);
@@ -95,7 +99,7 @@ public class CachingKeyStoreWrapperTest {
         testRemove(cachingKeyStoreWrapper3, ALIAS);
     }
 
-    private void testGenerate(final CachingKeyStoreWrapper cachingKeyStoreWrapper, final String alias) throws Exception {
+    private void testGenerateEC(final CachingKeyStoreWrapper cachingKeyStoreWrapper, final String alias) throws Exception {
         final int aliasCountBefore = getAliasCount(cachingKeyStoreWrapper);
         // Generate a key pair
         final KeyStoreTools keyStoreTools = new KeyStoreTools(cachingKeyStoreWrapper, cachingKeyStoreWrapper.getProvider().getName());
@@ -109,7 +113,37 @@ public class CachingKeyStoreWrapperTest {
         final Certificate certificate = cachingKeyStoreWrapper.getCertificate(alias);
         Assert.assertNotNull("No certificate for generated key pair could be found.", certificate);
     }
-    
+
+    private void testGenerateFalcon(final CachingKeyStoreWrapper cachingKeyStoreWrapper, final String alias) throws Exception {
+        final int aliasCountBefore = getAliasCount(cachingKeyStoreWrapper);
+        // Generate a key pair
+        final KeyStoreTools keyStoreTools = new KeyStoreTools(cachingKeyStoreWrapper, cachingKeyStoreWrapper.getProvider().getName());
+        keyStoreTools.generateKeyPair("FALCON-512", alias);
+        // Verify that key store contains the key pair
+        Assert.assertEquals("Number of aliases should have increased by 1 after generation.", aliasCountBefore+1, getAliasCount(cachingKeyStoreWrapper));
+        Assert.assertTrue("Generated key pair alias was not found.", isContainsAlias(cachingKeyStoreWrapper, alias));
+        final Key key = cachingKeyStoreWrapper.getKey(alias, null);
+        Assert.assertNotNull("No private key for generated key pair could be found.", key);
+        Assert.assertTrue(key instanceof PrivateKey);
+        final Certificate certificate = cachingKeyStoreWrapper.getCertificate(alias);
+        Assert.assertNotNull("No certificate for generated key pair could be found.", certificate);
+    }
+
+    private void testGenerateDilithium(final CachingKeyStoreWrapper cachingKeyStoreWrapper, final String alias) throws Exception {
+        final int aliasCountBefore = getAliasCount(cachingKeyStoreWrapper);
+        // Generate a key pair
+        final KeyStoreTools keyStoreTools = new KeyStoreTools(cachingKeyStoreWrapper, cachingKeyStoreWrapper.getProvider().getName());
+        keyStoreTools.generateKeyPair("DILITHIUM2", alias);
+        // Verify that key store contains the key pair
+        Assert.assertEquals("Number of aliases should have increased by 1 after generation.", aliasCountBefore+1, getAliasCount(cachingKeyStoreWrapper));
+        Assert.assertTrue("Generated key pair alias was not found.", isContainsAlias(cachingKeyStoreWrapper, alias));
+        final Key key = cachingKeyStoreWrapper.getKey(alias, null);
+        Assert.assertNotNull("No private key for generated key pair could be found.", key);
+        Assert.assertTrue(key instanceof PrivateKey);
+        final Certificate certificate = cachingKeyStoreWrapper.getCertificate(alias);
+        Assert.assertNotNull("No certificate for generated key pair could be found.", certificate);
+    }
+
     private void testUse(final CachingKeyStoreWrapper cachingKeyStoreWrapper, final String alias) throws Exception {
         final Key key = cachingKeyStoreWrapper.getKey(alias, null);
         final Certificate certificate = cachingKeyStoreWrapper.getCertificate(alias);
