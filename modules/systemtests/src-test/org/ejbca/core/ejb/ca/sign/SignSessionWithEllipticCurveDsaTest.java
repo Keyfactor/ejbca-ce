@@ -62,8 +62,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
- * Tests SignSessionBean with ECDSA keys
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+/** Test signing certificates with ECDSA public keys, from CAs with RSA and ECDSA keys
  */
 public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
 
@@ -105,9 +109,8 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
 
     @AfterClass
     public static void afterClass() throws Exception {
-        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         cleanUpEndEntity(RSA_USERNAME);
-        endEntityManagementSession.deleteUser(internalAdmin, ECDSA_USERNAME);
+        cleanUpEndEntity(ECDSA_USERNAME);
         removeTestCA();
         removeTestCA(TEST_ECDSA_CA_NAME);
     }
@@ -131,7 +134,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
             cert.verify(rsacacert.getPublicKey());
         } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
+            fail("Failed to verify the returned certificate with CAs public key: " + e.getMessage());
         }
         log.trace("<test12SignSessionECDSAWithRSACA()");
     }
@@ -148,7 +151,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
             assertNotNull("Only ImplicitlyCA curves can have null spec", spec);
         } else {
-            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
+            fail("Public key is not EC: "+pk.getClass().getName());
         }        
     }
 
@@ -174,7 +177,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(ecdsakeys.getPublic());
         boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
-        assertTrue(verify);
+        assertTrue("Can't verify the newly created POP on PKCS#10 CSR", verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -190,7 +193,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
             cert.verify(rsacacert.getPublicKey());
         } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
+            fail("Failed to verify the returned certificate with CAs public key: " + e.getMessage());
         }
         log.trace("<test13TestBCPKCS10ECDSAWithRSACA()");
     }
@@ -214,7 +217,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         try {
             cert.verify(ecdsacacert.getPublicKey());
         } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
+            fail("Failed to verify the returned certificate with CAs public key: " + e.getMessage());
         }
         log.trace("<test14SignSessionECDSAWithECDSACA()");
     }
@@ -251,7 +254,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(keys.getPublic());
         boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
-        assertTrue(verify);
+        assertTrue("Can't verify the newly created POP on PKCS#10 CSR", verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -267,7 +270,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             X509Certificate ecdsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_CA_NAME).getCertificateChain().toArray()[0];
             cert.verify(ecdsacacert.getPublicKey());
         } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
+            fail("Failed to verify the returned certificate with CAs public key: " + e.getMessage());
         }
         log.trace("<test15TestBCPKCS10ECDSAWithECDSACA()");
     }
