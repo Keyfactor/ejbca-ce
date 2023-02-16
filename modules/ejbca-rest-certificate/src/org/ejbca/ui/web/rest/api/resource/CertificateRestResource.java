@@ -254,7 +254,7 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid serial number format. Should be "
                     + "HEX encoded (optionally with '0x' prefix) e.g. '0x10782a83eef170d4'");
         }
-        final CertificateStatus certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
+        CertificateStatus certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
         final int revocationReason;
         if (!certificateStatus.isRevoked()) {
             if (reasons == null) {
@@ -273,7 +273,9 @@ public class CertificateRestResource extends BaseRestResource {
         }
         final Date validatedInvalidityDate = getValidatedDate(invalidityDate);
         raMasterApi.revokeCert(admin, serialNr, getValidatedDate(date), validatedInvalidityDate, issuerDN, revocationReason, true);
+        certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
         final Date revocationDate = certificateStatus.isRevoked() ? certificateStatus.revocationDate : null;
+        final Date invalDate = certificateStatus.isRevoked() ? certificateStatus.invalidityDate : null;
 
         final RevokeStatusRestResponse result = RevokeStatusRestResponse.builder().
                 serialNumber(serialNumber).
@@ -281,7 +283,7 @@ public class CertificateRestResource extends BaseRestResource {
                 revocationDate(revocationDate).
                 revoked(certificateStatus.isRevoked()).
                 revocationReason(reason).
-                invalidityDate(validatedInvalidityDate).
+                invalidityDate(invalDate).
                 message("Successfully revoked").
                 build();
         return Response.ok(result).build();
