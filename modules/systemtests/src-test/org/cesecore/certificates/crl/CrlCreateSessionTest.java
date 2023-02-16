@@ -351,8 +351,8 @@ public class CrlCreateSessionTest {
             final X509Certificate rootcacert = CertTools.genSelfCert(rootcadn, 3650, null, rootcakp.getPrivate(), rootcakp.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, "BC", false);
             
             // Create sub ca
-            final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             X509CAInfo subcainfo = X509CAInfo.getDefaultX509CAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "365d", CAInfo.SIGNEDBYEXTERNALCA, null, catoken);
             X509CA subca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(subcainfo);
             subca.setCAToken(catoken);
