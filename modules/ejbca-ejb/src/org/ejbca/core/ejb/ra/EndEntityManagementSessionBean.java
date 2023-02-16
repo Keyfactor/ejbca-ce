@@ -1889,6 +1889,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final String msg = intres.getLocalizedMessage("ra.norevokebackdate", profileName, certSerNo.toString(16), issuerDn);
             throw new RevokeBackDateNotAllowedForProfileException(msg);
         }
+        //Check if revocation includes invalidityDate and is allowed
+        final CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
+        if (invalidityDate != null && !(cainfo.isAllowInvalidityDate())) {
+            final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed", issuerDn, certSerNo.toString(16));
+            log.info(msg);
+            throw new AlreadyRevokedException(msg);
+        }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (!RevokedCertInfo.isRevoked(reason)) {
             if (revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
@@ -1921,10 +1928,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         throw new AlreadyRevokedException(msg);
                     }
                 }
-                else if (invalidityDate != null) {
+                else if ((invalidityDate != null) && (reason == certificateData.getRevocationReason())) {
                     revocationDate = new Date(certificateData.getRevocationDate());
-                    reason = certificateData.getRevocationReason();
-                    if (!(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
+                    if (cainfo.isAllowInvalidityDate()) {
                         final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
                         log.info(msg);;
                         throw new AlreadyRevokedException(msg);
@@ -1946,7 +1952,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             // We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
-            CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
             if(cainfo == null) {
                 // If CA does not exist, the certificate is a bit "weird", but things can happen in reality and CAs can disappear
                 // So the CA not existing should not prevent us from revoking the certificate.
@@ -1990,10 +1995,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
 
         // Revoke certificate in database and all publishers
-        CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
-        if (invalidityDate != null && !(cainfo.isAllowInvalidityDate())) {
-            invalidityDate = null;
-        }
         try {
             revocationSession.revokeCertificate(authenticationToken, cdw, publishers, revocationDate!=null ? revocationDate : new Date(), invalidityDate, reason, certificateSubjectDN);
         } catch (CertificateRevokeException e) {
