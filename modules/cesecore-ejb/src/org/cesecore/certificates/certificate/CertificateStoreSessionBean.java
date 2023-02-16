@@ -1227,6 +1227,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
             certificateData.setUpdateTime(now.getTime());
             certificateData.setInvalidityDate(invalidityDate);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), Integer.valueOf(certificateData.getRevocationReason()), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true;
         } else if (((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL))
                 && (certificateData.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
