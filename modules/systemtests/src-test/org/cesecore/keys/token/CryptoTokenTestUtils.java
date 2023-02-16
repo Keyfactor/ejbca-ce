@@ -26,7 +26,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -69,21 +68,18 @@ public class CryptoTokenTestUtils {
     }
 
     /** Create CryptoToken and generate CA's keys */
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, null, true, false, tokenName, signKeySpec);
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, String tokenName, String signKeySpec, String encKeySpec,
+            final String signingKeyName, final String encryptionKeyName) {
+        return createCryptoTokenForCA(authenticationToken, null, true, false, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
     }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec);
-    }
-
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
-            String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, pin, generateKeys, pkcs11, tokenName, signKeySpec, signKeySpec);
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, String tokenName, String signKeySpec,
+            String encKeySpec, final String signingKeyName, final String encryptionKeyName) {
+        return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
     }
     
     public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
-            String tokenName, String signKeySpec, String encKeySpec) {
+            String tokenName, String signKeySpec, String encKeySpec, final String signingKeyName, final String encryptionKeyName) {
        
         final String cryptoTokenImplementation;
         if (pkcs11) {         
@@ -92,8 +88,6 @@ public class CryptoTokenTestUtils {
 
             cryptoTokenImplementation = SoftCryptoToken.class.getName();
         }     
-        String signingKeyName = tokenName + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
-        String encryptionKeyName = tokenName + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
         return createCryptoTokenForCA(authenticationToken, pin, generateKeys, cryptoTokenImplementation, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
 
     }
@@ -157,17 +151,18 @@ public class CryptoTokenTestUtils {
         return cryptoTokenId;
     }
     
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys,
-            String cryptoTokenImplementation, String tokenName, String signKeySpec, String encKeySpec, String signKeyName, String encKeyName) {
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, final char[] pin, final boolean generateKeys,
+            final String cryptoTokenImplementation, final String tokenName, final String signKeySpec, final String encKeySpec,
+            final String signingKeyName, final String encryptionKeyName) {
         if (authenticationToken == null) {
             authenticationToken = alwaysAllowToken;
         }
         int cryptoTokenId = createCryptoToken(pin, cryptoTokenImplementation, tokenName);
         try {
             if (generateKeys) {
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, signKeyName,
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, signingKeyName,
                         KeyGenParams.builder(signKeySpec).build());
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, encKeyName,
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, encryptionKeyName,
                         KeyGenParams.builder(encKeySpec).build());
             }
         } catch (AuthorizationDeniedException | InvalidKeyException | CryptoTokenOfflineException | InvalidAlgorithmParameterException e) {
