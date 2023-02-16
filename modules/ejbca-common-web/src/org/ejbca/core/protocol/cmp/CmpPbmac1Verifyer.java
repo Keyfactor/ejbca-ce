@@ -70,7 +70,7 @@ public class CmpPbmac1Verifyer implements CmpMessageProtectionVerifyer {
         }
         final PBMAC1Params pbmac1Params = PBMAC1Params.getInstance(pAlg.getParameters());
         if (!StringUtils.equals(pbmac1Params.getKeyDerivationFunc().getAlgorithm().getId(), PKCSObjectIdentifiers.id_PBKDF2.getId())) {
-            final String errMsg = "Key derivation function id exmpected '" + PKCSObjectIdentifiers.id_PBKDF2 +
+            final String errMsg = "Key derivation function id expected '" + PKCSObjectIdentifiers.id_PBKDF2 +
                     "' (PBKDF2) but was '" + pbmac1Params.getKeyDerivationFunc().getAlgorithm().getId() + "'.";
             throw new InvalidCmpProtectionException(errMsg);
         }

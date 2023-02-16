@@ -47,6 +47,8 @@ import java.util.List;
 
 import javax.crypto.KeyGenerator;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
@@ -59,6 +61,7 @@ import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
 import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
 import org.bouncycastle.jce.ECKeyUtil;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
@@ -66,14 +69,15 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
+import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.keys.token.CachingKeyStoreWrapper;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.util.CertTools;
-
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import org.cesecore.util.CryptoProviderTools;
 
 /**
  * 
@@ -192,7 +196,11 @@ public class KeyStoreTools {
         try {
             final X509v3CertificateBuilder cb = new JcaX509v3CertificateBuilder(issuer, serno, firstDate, lastDate, issuer, publicKey);
             final CertificateSignOperation cso = new CertificateSignOperation(keyPair.getPrivate(), cb);
-            SignWithWorkingAlgorithm.doSignTask(sigAlgs, this.providerName, cso);
+            String provider = this.providerName;
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(this.providerName)) {
+                provider = CryptoProviderTools.getProviderNameFromAlg(sigAlgs.get(0));
+            }
+            SignWithWorkingAlgorithm.doSignTask(sigAlgs, provider, cso);
             final X509CertificateHolder cert = cso.getResult();
             if ( cert==null ) {
                 throw new CertificateException("Self signing of certificate failed.");
@@ -299,35 +307,52 @@ public class KeyStoreTools {
         }
     }
 
-    private void generateEdDSA(final String keySpec, final String keyAlias) throws InvalidAlgorithmParameterException {
+    private void generateEdDSAOrPQC(final String keySpec, final String keyAlias) throws InvalidAlgorithmParameterException {
         if (log.isTraceEnabled()) {
             log.trace(">generate: keySpec " + keySpec+ ", keyEntryName " + keyAlias);
         }
-        // Generate the EdDSA Keypair
+        // Generate the Keypair
+        final List<String> sigAlgs;
         switch (keySpec) {
         case AlgorithmConstants.KEYALGORITHM_ED25519:
-            generateKeyPair(null, keyAlias, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmTools.SIG_ALGS_ED25519);
+            sigAlgs = AlgorithmTools.SIG_ALGS_ED25519;
             break;
         case AlgorithmConstants.KEYALGORITHM_ED448:
-            generateKeyPair(null, keyAlias, AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmTools.SIG_ALGS_ED448);
+            sigAlgs = AlgorithmTools.SIG_ALGS_ED448;
+            break;
+        case AlgorithmConstants.KEYALGORITHM_FALCON512:
+            sigAlgs = AlgorithmTools.SIG_ALGS_FALCON512;
+            break;
+        case AlgorithmConstants.KEYALGORITHM_FALCON1024:
+            sigAlgs = AlgorithmTools.SIG_ALGS_FALCON1024;
+            break;
+        case AlgorithmConstants.KEYALGORITHM_DILITHIUM2:
+            sigAlgs = AlgorithmTools.SIG_ALGS_DILITHIUM2;
+            break;
+        case AlgorithmConstants.KEYALGORITHM_DILITHIUM3:
+            sigAlgs = AlgorithmTools.SIG_ALGS_DILITHIUM3;
+            break;
+        case AlgorithmConstants.KEYALGORITHM_DILITHIUM5:
+            sigAlgs = AlgorithmTools.SIG_ALGS_DILITHIUM5;
             break;
         default:
-            throw new InvalidAlgorithmParameterException("Only Ed25519 and Ed448 is allowed for EdDSA key generation");
+            throw new InvalidAlgorithmParameterException("Only Ed25519, Ed448, FALCON-512, FALCON-1024, DILITHIUM2, DILITHIUM3, DILITHIUM5 is allowed for EdDSA/PQC key generation: " + keySpec);
         }
+        generateKeyPair(null, keyAlias, keySpec, sigAlgs);
         if (log.isTraceEnabled()) {
             log.trace("<generate: keySpec " + keySpec + ", keyEntryName " + keyAlias);
         }
     }
 
-    /** Generates asymmteric keys in the Keystore token.
+    /** Generates asymmetric keys in the Keystore token.
      *
      * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
      * @param keyEntryName key entry name.
      */
     public void generateKeyPair(final String keySpec, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
-        if (keySpec.toUpperCase().startsWith("ED")) {
-            generateEdDSA(keySpec, keyEntryName);
+        if (keySpec.toUpperCase().startsWith("ED") || keySpec.toUpperCase().startsWith("FALCON") || keySpec.toUpperCase().startsWith("DILITHIUM")) {
+            generateEdDSAOrPQC(keySpec, keyEntryName);
         } else if (keySpec.toUpperCase().startsWith("DSA")) {
             generateDSA(Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
         } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
@@ -335,7 +360,7 @@ public class KeyStoreTools {
         } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keySpec.startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
             generateDSTU4145(keySpec, keyEntryName);
         } else {
-            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
+            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumeric(keySpec);
             try {
                 generateRSA(Integer.parseInt(formatCheckedKeySpec.trim()), keyEntryName);
             } catch (NumberFormatException e) {
@@ -384,6 +409,29 @@ public class KeyStoreTools {
         } else if (specName.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_RSA;
             certSignAlgorithms = AlgorithmTools.SIG_ALGS_RSA_NOSHA1;
+        } else if (specName.equals(FalconParameterSpec.class.getName())) {
+            if (FalconParameterSpec.falcon_512.equals(keyParams)) {
+                keyAlgorithm = AlgorithmConstants.KEYALGORITHM_FALCON512;
+                certSignAlgorithms = AlgorithmTools.SIG_ALGS_FALCON512;
+            } else if (FalconParameterSpec.falcon_1024.equals(keyParams)) {
+                keyAlgorithm = AlgorithmConstants.KEYALGORITHM_FALCON1024;
+                certSignAlgorithms = AlgorithmTools.SIG_ALGS_FALCON1024;
+            } else {
+                throw new InvalidAlgorithmParameterException("Invalid Falcon keyspec: " + keyParams.toString());
+            }
+        } else if (specName.equals(DilithiumParameterSpec.class.getName())) {
+            if (DilithiumParameterSpec.dilithium2.equals(keyParams)) {
+                keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DILITHIUM2;
+                certSignAlgorithms = AlgorithmTools.SIG_ALGS_DILITHIUM2;
+            } else if (DilithiumParameterSpec.dilithium3.equals(keyParams)) {
+                keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DILITHIUM3;
+                certSignAlgorithms = AlgorithmTools.SIG_ALGS_DILITHIUM3;
+            } else if (DilithiumParameterSpec.dilithium5.equals(keyParams)) {
+                keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DILITHIUM5;
+                certSignAlgorithms = AlgorithmTools.SIG_ALGS_DILITHIUM5;
+            } else {
+                throw new InvalidAlgorithmParameterException("Invalid Dilithium keyspec: " + keyParams.toString());
+            }
         } else {
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_EC;
             certSignAlgorithms = AlgorithmTools.SIG_ALGS_ECDSA;
@@ -393,8 +441,8 @@ public class KeyStoreTools {
 
     private static class SizeAlgorithmParameterSpec implements AlgorithmParameterSpec {
         final int keySize;
-        public SizeAlgorithmParameterSpec(final int _keySize) {
-            this.keySize = _keySize;
+        public SizeAlgorithmParameterSpec(final int keySize) {
+            this.keySize = keySize;
         }
     }
 
@@ -402,7 +450,11 @@ public class KeyStoreTools {
             final List<String> certSignAlgorithms) throws InvalidAlgorithmParameterException {
         final KeyPairGenerator kpg;
         try {
-            kpg = KeyPairGenerator.getInstance(keyAlgorithm, this.providerName);
+            String provider = this.providerName;
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(this.providerName)) {
+                provider = CryptoProviderTools.getProviderNameFromAlg(keyAlgorithm);
+            }
+            kpg = KeyPairGenerator.getInstance(keyAlgorithm, provider);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algorithm " + keyAlgorithm + " was not recognized.", e);
         } catch (NoSuchProviderException e) {
