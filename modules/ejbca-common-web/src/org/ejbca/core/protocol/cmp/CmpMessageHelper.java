@@ -99,6 +99,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
@@ -204,7 +205,14 @@ public class CmpMessageHelper {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Signing CMP message with signature alg: " + signatureAlgorithmName);
         }
-        Signature sig = Signature.getInstance(signatureAlgorithmName, provider);
+        final String prov;
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+            // Ability to use the PQC provider
+            prov = CryptoProviderTools.getProviderNameFromAlg(signatureAlgorithmName);
+        } else {
+            prov = provider;
+        }
+        Signature sig = Signature.getInstance(signatureAlgorithmName, prov);
         sig.initSign(key);
         sig.update(getProtectedBytes(head, pkiMessage.getBody()));
         final PKIMessage protectedPkiMessage;
