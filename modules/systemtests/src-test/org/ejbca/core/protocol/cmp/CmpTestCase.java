@@ -249,6 +249,10 @@ public abstract class CmpTestCase extends CaTestCase {
         assertTrue("Certificate profile with name " + name + " already exists. Clear test data first.", this.certProfileSession.getCertificateProfile(name) == null);
         final CertificateProfile result = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         result.setAllowDNOverride(true);
+        // Add NTRU, just to demonstrate that it is possible in testCrmfHttpOkUserWithPQC
+        List<String> algos = result.getAvailableKeyAlgorithmsAsList();
+        algos.add("NTRU");
+        result.setAvailableKeyAlgorithmsAsList(algos);
         int id = -1;
         try {
             this.certProfileSession.addCertificateProfile(ADMIN, name, result);

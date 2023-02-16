@@ -24,6 +24,7 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -34,6 +35,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -49,8 +51,6 @@ import java.util.Map;
 
 /**
  * Holder of "external" (e.g. non-CA signing key) OCSP InternalKeyBinding properties.
- * 
- * @version $Id$
  */
 public class OcspKeyBinding extends InternalKeyBindingBase {
   
@@ -351,7 +351,14 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
 
         final PKCS10CertificationRequestBuilder pkcs10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(subjectDn,
                 keyPair.getPublic()).addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extensionsGenerator.generate());
-        final ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithm).setProvider(providerName).build(keyPair.getPrivate());
+        final String prov;
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(providerName)) {
+            // Ability to use the PQC provider
+            prov = CryptoProviderTools.getProviderNameFromAlg(signatureAlgorithm);
+        } else {
+            prov = providerName;
+        }
+        final ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithm).setProvider(prov).build(keyPair.getPrivate());
         final PKCS10CertificationRequest csr = pkcs10CertificationRequestBuilder.build(contentSigner);
         return csr.getEncoded();
     }

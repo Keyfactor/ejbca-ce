@@ -16,8 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 
 /** Constants for digital signature algorithms.
- *
- * @version $Id$
  */
 public final class AlgorithmConstants {
 
@@ -47,6 +45,11 @@ public final class AlgorithmConstants {
     public static final String SIGALG_GOST3411_WITH_DSTU4145   = "GOST3411withDSTU4145";
     public static final String SIGALG_ED25519                  = "Ed25519";
     public static final String SIGALG_ED448                    = "Ed448";
+    public static final String SIGALG_FALCON512                = "FALCON-512";
+    public static final String SIGALG_FALCON1024               = "FALCON-1024";
+    public static final String SIGALG_DILITHIUM2               = "DILITHIUM2";
+    public static final String SIGALG_DILITHIUM3               = "DILITHIUM3";
+    public static final String SIGALG_DILITHIUM5               = "DILITHIUM5";
 
     /**
      * Signature algorithms available to choose from.
@@ -76,7 +79,12 @@ public final class AlgorithmConstants {
         SIGALG_GOST3411_WITH_ECGOST3410,
         SIGALG_GOST3411_WITH_DSTU4145,
         SIGALG_ED25519,
-        SIGALG_ED448
+        SIGALG_ED448,
+        SIGALG_FALCON512,
+        SIGALG_FALCON1024,
+        SIGALG_DILITHIUM2,
+        SIGALG_DILITHIUM3,
+        SIGALG_DILITHIUM5
     };
 
     public static final String KEYALGORITHM_RSA         = "RSA";
@@ -85,6 +93,11 @@ public final class AlgorithmConstants {
     public static final String KEYALGORITHM_DSA         = "DSA";
     public static final String KEYALGORITHM_ED25519     = "Ed25519";
     public static final String KEYALGORITHM_ED448       = "Ed448";
+    public static final String KEYALGORITHM_FALCON512   = "FALCON-512";
+    public static final String KEYALGORITHM_FALCON1024  = "FALCON-1024";
+    public static final String KEYALGORITHM_DILITHIUM2  = "DILITHIUM2";
+    public static final String KEYALGORITHM_DILITHIUM3  = "DILITHIUM3";
+    public static final String KEYALGORITHM_DILITHIUM5  = "DILITHIUM5";
     public static final String KEYALGORITHM_ECGOST3410  = "ECGOST3410";
     public static final String KEYALGORITHM_DSTU4145    = "DSTU4145";
     

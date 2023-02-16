@@ -3141,7 +3141,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // Verify that the key algorithm is compliant with the certificate profile
         if (!getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
             if(log.isDebugEnabled()) {
-                log.debug("List of available algorithms " + getAvailableKeyAlgorithmsAsList() + " does not contain the on of the public key: " + keyAlgorithm);
+                log.debug("Algorithm " + keyAlgorithm + " is not among the list of available algorithms: " + getAvailableKeyAlgorithmsAsList());
             }
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
         }

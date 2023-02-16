@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -41,6 +42,8 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.bouncycastle.pqc.jcajce.spec.NTRUParameterSpec;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -239,6 +242,35 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         final CMPCertificate[] expectedExtraCerts = getCMPCert(this.testx509ca.getCACertificate());
         assertEquals("Should be one cert in expectedExtraCerts", 1, expectedExtraCerts.length);
         runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false, expectedExtraCerts);
+    }
+
+    @Test
+    public void testCrmfHttpOkUserWithPQC() throws Exception {
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        // We need custom notBefore and after for the verifications of the test
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_WEEK, -1);
+        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+        // in validity
+        Date notBefore = cal.getTime();
+        cal.add(Calendar.DAY_OF_WEEK, 3);
+        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+        // in validity
+        Date notAfter = cal.getTime();
+
+        KeyPair falconKeyPair = KeyTools.genKeys("falcon-512", "falcon-512");
+        final PKIMessage certRequestFalcon = genCertReq(issuerDN, userDN, falconKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
+        runCrmfHttpOkUser(certRequestFalcon, nonce, transid, notAfter, false, null);
+
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("NTRU", BouncyCastlePQCProvider.PROVIDER_NAME);
+        keygen.initialize(NTRUParameterSpec.ntruhrss701);
+        KeyPair ntruKeyPair = keygen.generateKeyPair();
+
+        final PKIMessage certRequestNTRU = genCertReq(issuerDN, userDN, ntruKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
+        runCrmfHttpOkUser(certRequestNTRU, nonce, transid, notAfter, false, null);
     }
 
     @Test
