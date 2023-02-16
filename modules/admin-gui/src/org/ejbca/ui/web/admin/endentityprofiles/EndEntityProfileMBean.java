@@ -688,6 +688,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         sshFieldList = null; // reload state from profile
     }
 
+    public List<SelectItem> getSshVerifyRequiredOptions() {
+        final List<SelectItem> options = new ArrayList<>();
+        options.add(new SelectItem(true, ejbcaWebBean.getText("BOOL_TRUE")));
+        options.add(new SelectItem(false, ejbcaWebBean.getText("BOOL_FALSE")));
+        return options;
+    }
+
     // OTHER SUBJECT ATTRIBUTES
 
     public List<SelectItem> getSubjectAltNameTypes() {
