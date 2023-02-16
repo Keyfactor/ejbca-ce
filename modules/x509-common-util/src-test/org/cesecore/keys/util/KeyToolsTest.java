@@ -13,15 +13,6 @@
 
 package org.cesecore.keys.util;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -44,13 +35,19 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Enumeration;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -60,12 +57,17 @@ import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
- * Tests the CertTools class .
- * 
- * @version $Id$
+ * Tests the KeyTools class.
  */
 public class KeyToolsTest {
 
@@ -374,18 +376,195 @@ public class KeyToolsTest {
     @Test
     public void testGenKeysEdDSA() throws Exception {
         // EdDSA keys does not need any parameters to generate, but parameters can be provided
-        EdDSAParameterSpec spec = new EdDSAParameterSpec(EdDSAParameterSpec.Ed25519);
-        KeyPair kp = KeyTools.genKeys(null, spec, AlgorithmConstants.KEYALGORITHM_ED25519);
-        assertNotNull("Shold be able to generate Ed25519 key", kp);
-        assertEquals("Ed25519", kp.getPublic().getAlgorithm());
-        assertEquals("Length of Ed25519 should be 255", 255, KeyTools.getKeyLength(kp.getPublic()));
-        kp = KeyTools.genKeys(null, null, AlgorithmConstants.KEYALGORITHM_ED448);
-        assertNotNull("Shold be able to generate Ed448 key", kp);
-        assertEquals("Ed448", kp.getPublic().getAlgorithm());
-        assertEquals("Length of Ed448 should be 448", 448, KeyTools.getKeyLength(kp.getPublic()));
+        {
+            EdDSAParameterSpec spec = new EdDSAParameterSpec(EdDSAParameterSpec.Ed25519);
+            KeyPair kp = KeyTools.genKeys(null, spec, AlgorithmConstants.KEYALGORITHM_ED25519);
+            assertNotNull("Shold be able to generate Ed25519 key", kp);
+            assertEquals("Ed25519", kp.getPublic().getAlgorithm());
+            assertEquals("Length of Ed25519 should be 255", 255, KeyTools.getKeyLength(kp.getPublic()));
+            KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_ED25519, 
+                    CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_ED25519));
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(kp.getPublic().getEncoded());
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
+            assertEquals("Ed25519", publicKey.getAlgorithm());
+            assertEquals("Length of Ed25519 should be 255", 255, KeyTools.getKeyLength(publicKey));
+            KeyTools.testKey(kp.getPrivate(), kp.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_ED25519));
+        }
+        {
+            KeyPair kp = KeyTools.genKeys(null, null, AlgorithmConstants.KEYALGORITHM_ED448);
+            assertNotNull("Shold be able to generate Ed448 key", kp);
+            assertEquals("Ed448", kp.getPublic().getAlgorithm());
+            assertEquals("Length of Ed448 should be 448", 448, KeyTools.getKeyLength(kp.getPublic()));
+            KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_ED448, 
+                    CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_ED448));
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(kp.getPublic().getEncoded());
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
+            assertEquals("Ed448", publicKey.getAlgorithm());
+            assertEquals("Length of Ed448 should be 448", 448, KeyTools.getKeyLength(publicKey));
+            KeyTools.testKey(kp.getPrivate(), kp.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_ED448));
+        }
     }
     
-	
+    @Test
+    public void testGenKeysFalcon() throws Exception {
+        {
+            KeyPair keys = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_FALCON512);
+            assertNotNull("keys must not be null", keys);
+            String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+            assertNotNull("b64private must not be null", b64private);
+            String spec = AlgorithmTools.getKeySpecification(keys.getPublic());
+            assertEquals("FALCON-512", spec);
+            X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
+                    AlgorithmConstants.SIGALG_FALCON512, true);
+            assertNotNull("cert must not be null", cert);
+            String b64cert = new String(Base64.encode(cert.getEncoded()));
+            assertNotNull("b64cert cannot be null", b64cert);
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_FALCON512));
+            KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_FALCON512, 
+                    CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_FALCON512));
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keys.getPublic().getEncoded());
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
+            assertEquals("FALCON-512", publicKey.getAlgorithm());
+            assertEquals("Strength of FALCON-512 should be 128", 128, KeyTools.getKeyLength(publicKey));
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_FALCON512));
+        }
+        {
+            FalconParameterSpec spec = FalconParameterSpec.falcon_512;
+            KeyPair kp = KeyTools.genKeys(null, spec, AlgorithmConstants.KEYALGORITHM_FALCON512);
+            assertNotNull("Should be able to generate Falcon key", kp);
+            assertEquals("FALCON-512", kp.getPublic().getAlgorithm());
+            assertEquals("Strength of falcon-512 should be 128", 128, KeyTools.getKeyLength(kp.getPublic()));
+            String s = AlgorithmTools.getKeySpecification(kp.getPublic());
+            assertEquals("FALCON-512", s);
+        }
+        {
+            KeyPair keys = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_FALCON1024);
+            assertNotNull("keys must not be null", keys);
+            String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+            assertNotNull("b64private must not be null", b64private);
+            String spec = AlgorithmTools.getKeySpecification(keys.getPublic());
+            assertEquals("FALCON-1024", spec);
+            X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
+                    AlgorithmConstants.SIGALG_FALCON1024, true);
+            assertNotNull("cert must not be null", cert);
+            String b64cert = new String(Base64.encode(cert.getEncoded()));
+            assertNotNull("b64cert cannot be null", b64cert);
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_FALCON1024));
+            KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_FALCON1024, 
+                    CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_FALCON1024));
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keys.getPublic().getEncoded());
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
+            assertEquals("FALCON-1024", publicKey.getAlgorithm());
+            assertEquals("Strength of FALCON-1024 should be 256", 256, KeyTools.getKeyLength(publicKey));
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_FALCON1024));
+        }
+        {
+            FalconParameterSpec spec = FalconParameterSpec.falcon_1024;
+            KeyPair kp = KeyTools.genKeys(null, spec, AlgorithmConstants.KEYALGORITHM_FALCON1024);
+            assertNotNull("Should be able to generate Falcon key", kp);
+            assertEquals("FALCON-1024", kp.getPublic().getAlgorithm());
+            assertEquals("Strength of falcon-1024 should be 256", 256, KeyTools.getKeyLength(kp.getPublic()));
+            String s = AlgorithmTools.getKeySpecification(kp.getPublic());
+            assertEquals("FALCON-1024", s);
+        }
+    }
+
+    @Test
+    public void testGenKeysDilithium() throws Exception {
+        {
+            KeyPair keys = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_DILITHIUM2);
+            assertNotNull("keys must not be null", keys);
+            String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+            assertNotNull("b64private must not be null", b64private);
+            String spec = AlgorithmTools.getKeySpecification(keys.getPublic());
+            assertEquals("DILITHIUM2", spec);
+            X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
+                    AlgorithmConstants.SIGALG_DILITHIUM2, true);
+            assertNotNull("cert must not be null", cert);
+            String b64cert = new String(Base64.encode(cert.getEncoded()));
+            assertNotNull("b64cert cannot be null", b64cert);
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+            KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, 
+                    CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keys.getPublic().getEncoded());
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
+            assertEquals("DILITHIUM2", publicKey.getAlgorithm());
+            assertEquals("Strength of DILITHIUM2 should be 128", 128, KeyTools.getKeyLength(publicKey));
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        }
+        {
+            DilithiumParameterSpec spec = DilithiumParameterSpec.dilithium2;
+            KeyPair kp = KeyTools.genKeys(null, spec, AlgorithmConstants.KEYALGORITHM_DILITHIUM2);
+            assertNotNull("Should be able to generate Dilithium key", kp);
+            assertEquals("DILITHIUM2", kp.getPublic().getAlgorithm());
+            assertEquals("Strength of DILITHIUM2 should be 128", 128, KeyTools.getKeyLength(kp.getPublic()));
+            String s = AlgorithmTools.getKeySpecification(kp.getPublic());
+            assertEquals("DILITHIUM2", s);
+        }
+
+        {
+            KeyPair keys = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_DILITHIUM3);
+            assertNotNull("keys must not be null", keys);
+            String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+            assertNotNull("b64private must not be null", b64private);
+            String spec = AlgorithmTools.getKeySpecification(keys.getPublic());
+            assertEquals("DILITHIUM3", spec);
+            X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
+                    AlgorithmConstants.SIGALG_DILITHIUM3, true);
+            assertNotNull("cert must not be null", cert);
+            String b64cert = new String(Base64.encode(cert.getEncoded()));
+            assertNotNull("b64cert cannot be null", b64cert);
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
+            KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_DILITHIUM3, 
+                    CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keys.getPublic().getEncoded());
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
+            assertEquals("DILITHIUM3", publicKey.getAlgorithm());
+            assertEquals("Strength of DILITHIUM3 should be 192", 192, KeyTools.getKeyLength(publicKey));
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
+        }
+        {
+            DilithiumParameterSpec spec = DilithiumParameterSpec.dilithium3;
+            KeyPair kp = KeyTools.genKeys(null, spec, AlgorithmConstants.KEYALGORITHM_DILITHIUM3);
+            assertNotNull("Should be able to generate Dilithium key", kp);
+            assertEquals("DILITHIUM3", kp.getPublic().getAlgorithm());
+            assertEquals("Strength of DILITHIUM3 should be 192", 192, KeyTools.getKeyLength(kp.getPublic()));
+            String s = AlgorithmTools.getKeySpecification(kp.getPublic());
+            assertEquals("DILITHIUM3", s);
+        }
+
+        {
+            KeyPair keys = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_DILITHIUM5);
+            assertNotNull("keys must not be null", keys);
+            String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+            assertNotNull("b64private must not be null", b64private);
+            String spec = AlgorithmTools.getKeySpecification(keys.getPublic());
+            assertEquals("DILITHIUM5", spec);
+            X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
+                    AlgorithmConstants.SIGALG_DILITHIUM5, true);
+            assertNotNull("cert must not be null", cert);
+            String b64cert = new String(Base64.encode(cert.getEncoded()));
+            assertNotNull("b64cert cannot be null", b64cert);
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+            KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_DILITHIUM5, 
+                    CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keys.getPublic().getEncoded());
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
+            assertEquals("DILITHIUM5", publicKey.getAlgorithm());
+            assertEquals("Strength of DILITHIUM5 should be 256", 256, KeyTools.getKeyLength(publicKey));
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), CryptoProviderTools.getProviderNameFromAlg(AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+        }
+        {
+            DilithiumParameterSpec spec = DilithiumParameterSpec.dilithium5;
+            KeyPair kp = KeyTools.genKeys(null, spec, AlgorithmConstants.KEYALGORITHM_DILITHIUM5);
+            assertNotNull("Should be able to generate Dilithium key", kp);
+            assertEquals("DILITHIUM5", kp.getPublic().getAlgorithm());
+            assertEquals("Strength of DILITHIUM5 should be 256", 256, KeyTools.getKeyLength(kp.getPublic()));
+            String s = AlgorithmTools.getKeySpecification(kp.getPublic());
+            assertEquals("DILITHIUM5", s);
+        }
+    }
+
 	@Test
 	public void testGenKeysGOSTAlgorithmSpec() throws Exception {
 	    AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
@@ -693,4 +872,20 @@ public class KeyToolsTest {
         assertArrayEquals("PEM public key was not parsed correctly", ecPublicKey, KeyTools.getBytesFromCtLogKey(pemKey));
     }
 
+    @Test
+    public void testKeyspecToKeyalg() {
+        assertEquals("RSA", KeyTools.keyspecToKeyalg("1024"));
+        assertEquals("RSA", KeyTools.keyspecToKeyalg("RSA1024"));
+        assertEquals("DSA", KeyTools.keyspecToKeyalg("DSA1024"));
+        assertEquals("FALCON-512", KeyTools.keyspecToKeyalg("FALCON-512"));
+        assertEquals("FALCON-1024", KeyTools.keyspecToKeyalg("FALCON-1024"));
+        assertEquals("DILITHIUM2", KeyTools.keyspecToKeyalg("DILITHIUM2"));
+        assertEquals("DILITHIUM3", KeyTools.keyspecToKeyalg("DILITHIUM3"));
+        assertEquals("DILITHIUM5", KeyTools.keyspecToKeyalg("DILITHIUM5"));
+        assertEquals("Ed25519", KeyTools.keyspecToKeyalg("Ed25519"));
+        assertEquals("Ed448", KeyTools.keyspecToKeyalg("Ed448"));
+        assertEquals("ECDSA", KeyTools.keyspecToKeyalg("prime156v1"));
+        assertEquals("ECDSA", KeyTools.keyspecToKeyalg("foo"));
+
+    }
 }
