@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -188,6 +189,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     List<EndEntityProfile.FieldInstance> sshPrincipals;
     private String criticalOptionsForceCommand;
     private String criticalOptionsSourceAddress;
+    private Optional<Boolean> criticalOptionsVerifyRequired = Optional.empty();
     private String sshAdditionalExtensions;
     private String sshPubKeyDescription;
 
@@ -3062,6 +3064,37 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setCriticalOptionsSourceAddress(String criticalOptionsSourceAddress) {
         this.criticalOptionsSourceAddress = criticalOptionsSourceAddress;
     }
+
+    public List<SelectItem> getSshVerifyRequiredOptions() {
+        final List<SelectItem> options = new ArrayList<>();
+        options.add(new SelectItem(true, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_enabled")));
+        options.add(new SelectItem(true, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_disabled")));
+        return options;
+    }
+
+    public boolean isModifiableCriticalOptionsVerifyRequired() {
+        EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
+        return eeProfile!=null ? eeProfile.isSshVerifyRequiredModifiable() : false;
+    }
+    
+    public boolean isRequiredCriticalOptionsVerifyRequired() {
+        EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
+        return eeProfile!=null ? eeProfile.isSshVerifyRequiredRequired() : false;
+    }
+
+    public boolean getCriticalOptionsVerifyRequired() {
+        if (criticalOptionsVerifyRequired.isEmpty() && StringUtils.isNotEmpty(getSelectedEndEntityProfile())) {
+            criticalOptionsVerifyRequired = Optional.of(getSelectedEndEntityProfileContent().getSshVerifyRequired());
+        }
+        if (criticalOptionsVerifyRequired.isPresent()) {
+            return criticalOptionsVerifyRequired.get();
+        }
+        return false;
+    }
+
+    public void setCriticalOptionsVerifyRequired(final boolean criticalOptionsVerifyRequired) {
+        this.criticalOptionsVerifyRequired = Optional.of(criticalOptionsVerifyRequired);
+    }
     
     public boolean isRenderedSshAdditionalExtensions() {
         return true; // will change soon
@@ -3214,6 +3247,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if(StringUtils.isNotEmpty(getCriticalOptionsSourceAddress())) {
             criticalOptionsToAdd.put(
                     SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, getCriticalOptionsSourceAddress());
+        }
+
+        if (criticalOptionsVerifyRequired.isPresent() && criticalOptionsVerifyRequired.get()) {
+            criticalOptionsToAdd.put(
+                SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
         }
 
         if (getSshAdditionalExtensions() != null) {
