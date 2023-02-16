@@ -1916,14 +1916,18 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     }
                     if (invalidityDate != null && !(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
                         invalidityDate = new Date(certificateData.getInvalidityDate());
-                        log.info("Invalidity date given, but not allowed by CA");
+                        final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
+                        log.info(msg);;
+                        throw new AlreadyRevokedException(msg);
                     }
                 }
                 else if (invalidityDate != null) {
                     revocationDate = new Date(certificateData.getRevocationDate());
                     reason = certificateData.getRevocationReason();
                     if (!(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
-                        throw new AlreadyRevokedException("Invalidity date given, but not allowed by CA");
+                        final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
+                        log.info(msg);;
+                        throw new AlreadyRevokedException(msg);
                     }
                 }
                 else if (!canChangeRevocationReason){
