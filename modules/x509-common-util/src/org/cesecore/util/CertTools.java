@@ -69,6 +69,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -157,9 +160,6 @@ import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
-
-import com.keyfactor.util.certificate.CertificateImplementationRegistry;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Tools to handle common certificate operations.
@@ -1647,7 +1647,7 @@ public abstract class CertTools {
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
             boolean isCA) throws OperatorCreationException, CertificateException  {
-        return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, BouncyCastleProvider.PROVIDER_NAME);
+        return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, CryptoProviderTools.getProviderNameFromAlg(sigAlg));
     }
 
     /** Generates a self signed certificate with keyUsage X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, i.e. a CA certificate
@@ -1885,7 +1885,7 @@ public abstract class CertTools {
         } else if (entityPubKey instanceof ECPublicKey) {
             ECPublicKey ecpk = (ECPublicKey) entityPubKey;
             try {
-                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
+                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams());
                 final String algo = ecpk.getAlgorithm();
                 if (algo.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
                     try {
@@ -1909,10 +1909,7 @@ public abstract class CertTools {
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating ECPublicKey from spec: ", e);
                 publicKey = entityPubKey;
-            } catch (NullPointerException e) {
-                log.debug("NullPointerException, probably it is implicitlyCA generated keys: " + e.getMessage());
-                publicKey = entityPubKey;
-            }
+            } 
         } else {
             log.debug("Not converting key of class. " + entityPubKey.getClass().getName());
             publicKey = entityPubKey;
@@ -1976,6 +1973,9 @@ public abstract class CertTools {
             for (final Extension extension : additionalExtensions) {
                 certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
             }
+        }
+        if (provider == null || BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+            provider = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
         }
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(issuerPrivKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
@@ -4236,8 +4236,8 @@ public abstract class CertTools {
             SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publickey.getEncoded());
             reqInfo = new CertificationRequestInfo(subject, pkinfo, attributes);
 
-            if (provider == null) {
-                provider = BouncyCastleProvider.PROVIDER_NAME;
+            if (provider == null || BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+                provider = CryptoProviderTools.getProviderNameFromAlg(signatureAlgorithm);
             }
             signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(privateKey), 20480);
             signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
@@ -4284,7 +4284,7 @@ public abstract class CertTools {
      * @throws OperatorCreationException
      */
     public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws OperatorCreationException {
-        return new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(pubkey);
+        return new JcaContentVerifierProviderBuilder().setProvider(CryptoProviderTools.getProviderNameFromAlg(pubkey.getAlgorithm())).build(pubkey);
     }
 
     /**

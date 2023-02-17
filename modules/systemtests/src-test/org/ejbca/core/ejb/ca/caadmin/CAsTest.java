@@ -49,8 +49,6 @@ import org.bouncycastle.jcajce.provider.asymmetric.dstu.BCDSTU4145PublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ecgost.BCECGOST3410PublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -117,8 +115,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Tests CA administration.
- * 
- * @version $Id$
  */
 public class CAsTest extends CaTestCase {
 
@@ -410,6 +406,113 @@ public class CAsTest extends CaTestCase {
         }
     }
 
+    /** Adds a CA Using Falcon keys (Falcon-512 and Falcon-1024) to the database. It also checks that the CA is stored correctly. */
+    @Test
+    public void testAddFalconCA() throws Exception {
+        try {
+            createPQCCa(TEST_FALCON512_CA_NAME, AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.SIGALG_FALCON512);
+            CAInfo info = caSession.getCAInfo(admin, TEST_FALCON512_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_FALCON512, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_FALCON512_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_FALCON512_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be FALCON-512", "FALCON-512", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating FALCON-512 CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_FALCON512_CA_NAME);
+        }
+        
+        try {
+            createPQCCa(TEST_FALCON1024_CA_NAME, AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.SIGALG_FALCON1024);
+            CAInfo info = caSession.getCAInfo(admin, TEST_FALCON1024_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_FALCON1024, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_FALCON1024_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_FALCON1024_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be FALCON-1024", "FALCON-1024", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating FALCON-1024 CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_FALCON1024_CA_NAME);
+        }
+    }
+
+    /** Adds a CA Using Dilithium keys (Dilithium-2, 3 and 5) to the database. It also checks that the CA is stored correctly. */
+    @Test
+    public void testAddDilithiumCA() throws Exception {
+        try {
+            createPQCCa(TEST_DILITHIUM2_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.SIGALG_DILITHIUM2);
+            CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM2_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM2, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM2_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM2_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be DILITHIUM2", "DILITHIUM2", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating DILITHIUM2 CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_DILITHIUM2_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_DILITHIUM3_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.SIGALG_DILITHIUM3);
+            CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM3_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM3, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM3_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM3_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be DILITHIUM3", "DILITHIUM3", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating DILITHIUM3 CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_DILITHIUM3_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_DILITHIUM5_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.SIGALG_DILITHIUM5);
+            CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM5_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM5, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM5_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM5_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be DILITHIUM5", "DILITHIUM5", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating DILITHIUM5 CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_DILITHIUM5_CA_NAME);
+        }
+        
+    }
+
     /** Adds a CA using ECGOST3410 keys to the database. It also checks that the CA is stored correctly. */
     @Test
     public void test04primAddECGOST3410() throws Exception {
@@ -487,42 +590,6 @@ public class CAsTest extends CaTestCase {
         } else {
             assertTrue("Public key is not DSTU4145: "+pk.getClass().getName(), false);
         }
-    }
-    
-    /** Adds a CA Using ECDSA 'implicitlyCA' keys to the database. It also checks that the CA is stored correctly. */
-    @Test
-    public void test05AddECDSAImplicitlyCACA() throws Exception {
-        log.trace(">test05AddECDSAImplicitlyCACA()");
-        boolean ret = false;
-        try {
-            createEllipticCurveDsaImplicitCa();
-            CAInfo info = caSession.getCAInfo(admin, TEST_ECDSA_IMPLICIT_CA_NAME);
-            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSAImplicitlyCA"));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTECDSAImplicitlyCA"));
-            PublicKey pk = cert.getPublicKey();
-            if (pk instanceof JCEECPublicKey) {
-                JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-                assertEquals(ecpk.getAlgorithm(), "EC");
-                ECParameterSpec spec = ecpk.getParameters();
-                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", spec);
-            } else if (pk instanceof BCECPublicKey) {
-                BCECPublicKey ecpk = (BCECPublicKey) pk;
-                assertEquals(ecpk.getAlgorithm(), "EC");
-                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                ECNamedCurveParameterSpec ns = (ECNamedCurveParameterSpec)spec;
-                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", ns);
-            } else {
-                assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-            }
-            ret = true;
-        } catch (CAExistsException pee) {
-            log.info("CA exists.");
-        } finally {
-            removeOldCa(TEST_ECDSA_IMPLICIT_CA_NAME);
-        }
-        assertTrue("Creating ECDSA ImplicitlyCA CA failed", ret);
-        log.trace("<test05AddECDSAImplicitlyCACA()");
     }
 
     /** Adds a CA using RSA keys to the database. It also checks that the CA is stored correctly. */

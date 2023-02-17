@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -63,8 +67,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-/**
- * Tests SignSessionBean with ECDSA keys
+/** Test signing certificates with ECDSA public keys, from CAs with RSA and ECDSA keys
  */
 public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
 
@@ -97,7 +100,6 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         createTestCA();
         createEllipticCurveDsaCa();
-        createEllipticCurveDsaImplicitCa();
 
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
@@ -107,12 +109,10 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
 
     @AfterClass
     public static void afterClass() throws Exception {
-        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         cleanUpEndEntity(RSA_USERNAME);
-        endEntityManagementSession.deleteUser(internalAdmin, ECDSA_USERNAME);
+        cleanUpEndEntity(ECDSA_USERNAME);
         removeTestCA();
         removeTestCA(TEST_ECDSA_CA_NAME);
-        removeTestCA(TEST_ECDSA_IMPLICIT_CA_NAME);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
             cert.verify(rsacacert.getPublicKey());
         } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
+            fail("Failed to verify the returned certificate with CAs public key: " + e.getMessage());
         }
         log.trace("<test12SignSessionECDSAWithRSACA()");
     }
@@ -151,7 +151,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
             assertNotNull("Only ImplicitlyCA curves can have null spec", spec);
         } else {
-            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
+            fail("Public key is not EC: "+pk.getClass().getName());
         }        
     }
 
@@ -177,7 +177,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(ecdsakeys.getPublic());
         boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
-        assertTrue(verify);
+        assertTrue("Can't verify the newly created POP on PKCS#10 CSR", verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -193,7 +193,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
             cert.verify(rsacacert.getPublicKey());
         } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
+            fail("Failed to verify the returned certificate with CAs public key: " + e.getMessage());
         }
         log.trace("<test13TestBCPKCS10ECDSAWithRSACA()");
     }
@@ -217,7 +217,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         try {
             cert.verify(ecdsacacert.getPublicKey());
         } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
+            fail("Failed to verify the returned certificate with CAs public key: " + e.getMessage());
         }
         log.trace("<test14SignSessionECDSAWithECDSACA()");
     }
@@ -254,7 +254,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(keys.getPublic());
         boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
-        assertTrue(verify);
+        assertTrue("Can't verify the newly created POP on PKCS#10 CSR", verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -270,90 +270,9 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             X509Certificate ecdsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_CA_NAME).getCertificateChain().toArray()[0];
             cert.verify(ecdsacacert.getPublicKey());
         } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
+            fail("Failed to verify the returned certificate with CAs public key: " + e.getMessage());
         }
         log.trace("<test15TestBCPKCS10ECDSAWithECDSACA()");
-    }
-
-    @Test
-    public void testSignSessionECDSAWithECDSAImplicitlyCACA() throws Exception {
-        log.trace(">test16SignSessionECDSAWithECDSAImplicitlyCACA()");
-        final String ecDsaImplicitCaUserName = "fooecdsaimpca";
-        CAInfo infoecdsaimplicitlyca = caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME);
-        int ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
-        createEndEntity(ecDsaImplicitCaUserName, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                ecdsaimplicitlycacaid);
-        try {
-            endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
-            log.debug("Reset status of 'fooecdsaimpca' to NEW");
-            // user that we know exists...
-            X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
-                    AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, ecDsaImplicitCaUserName, "foo123", selfcert);
-            assertNotNull("Misslyckades skapa cert", cert);
-            log.debug("Cert=" + cert.toString());
-            // We need to convert to BC to avoid differences between JDK7 and JDK8, and supported curves
-            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
-            PublicKey pk = bccert.getPublicKey();
-            checkECKey(pk);
-            X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)
-                    .getCertificateChain().toArray()[0];
-            // We need to convert to BC to avoid differences between JDK7 and JDK8, and supported curves
-            X509Certificate bcecdsaimplicitlycacacert = CertTools.getCertfromByteArray(ecdsaimplicitlycacacert.getEncoded(), X509Certificate.class);
-            try {
-                bccert.verify(bcecdsaimplicitlycacacert.getPublicKey());
-            } catch (Exception e) {
-                fail("Verify failed: " + e.getMessage());
-            }
-        } finally {
-            endEntityManagementSession.deleteUser(internalAdmin, ecDsaImplicitCaUserName);
-        }
-        log.trace("<test16SignSessionECDSAWithECDSAImplicitlyCACA()");
-    }
-
-    @Test
-    public void testBCPKCS10ECDSAWithECDSAImplicitlyCACA() throws Exception {
-        log.trace(">test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
-        final String ecDsaImplicitCaUserName = "fooecdsaimpca";
-        CAInfo infoecdsaimplicitlyca = caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME);
-        int ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
-        createEndEntity(ecDsaImplicitCaUserName, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                ecdsaimplicitlycacaid);
-        try {
-            endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
-            log.debug("Reset status of 'foo' to NEW");
-            // Create certificate request
-            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="
-                    + ecDsaImplicitCaUserName), ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate(), null);
-            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
-            dOut.writeObject(req.toASN1Structure());
-            dOut.close();
-            PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-            ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(ecdsakeys.getPublic());
-            boolean verify = req2.isSignatureValid(verifier);
-            log.debug("Verify returned " + verify);
-            assertTrue(verify);
-            log.debug("CertificationRequest generated successfully.");
-            byte[] bcp10 = bOut.toByteArray();
-            PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
-            p10.setUsername(ecDsaImplicitCaUserName);
-            p10.setPassword("foo123");
-            ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
-            assertNotNull("Failed to create certificate", cert);
-            log.debug("Cert=" + cert.toString());
-            X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)
-                    .getCertificateChain().toArray()[0];
-            try {
-                cert.verify(ecdsaimplicitlycacacert.getPublicKey());
-            } catch (Exception e) {
-                assertTrue("Verify failed: " + e.getMessage(), false);
-            }
-        } finally {
-            endEntityManagementSession.deleteUser(internalAdmin, ecDsaImplicitCaUserName);
-        }
-        log.trace("<test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
     }
 
     @Test
