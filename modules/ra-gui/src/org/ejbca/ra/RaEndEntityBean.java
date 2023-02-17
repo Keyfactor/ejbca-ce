@@ -98,7 +98,6 @@ public class RaEndEntityBean implements Serializable {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
-    @Inject
     @ManagedProperty(value="#{msg}")
     private ResourceBundle msg;
     public void setMsg(ResourceBundle msg) {

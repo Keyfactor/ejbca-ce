@@ -1238,11 +1238,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // Corrections for SAN rfc822name and UPN (which might be a valid e-mail)
         for (EndEntityProfile.FieldInstance field : getSubjectAlternativeName().getOptionalFieldInstances()) {
             // An optional and modifiable SAN rfc822name or UPN field with a domain or list of domains can be left blank.
-            if(field.isUpnRfc() && field.isSelectableValuesUpnRfcDomainOnly() && field.getSelectableValuesUpnRfc().contains(field.getValue())) {
+            if (field.isUpnRfc() && field.isSelectableValuesUpnRfcDomainOnly() && field.getSelectableValuesUpnRfc().contains(field.getValue())
+                    && !field.getValue().contains("@")) {
                 field.setValue("");
             }
             // An optional (or modifiable) SAN rfc822name and UPN using the EE e-mail can be disabled.  
-            if(field.isUpnRfc() && field.isUsed() && !field.getRfcEmailUsed()) {
+            if (field.isUpnRfc() && field.isUsed() && !field.getRfcEmailUsed() && !field.getValue().contains("@")) {
                 field.setValue("");
             }
         }

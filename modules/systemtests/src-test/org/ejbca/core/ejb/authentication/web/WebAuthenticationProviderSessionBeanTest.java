@@ -267,7 +267,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         } else if (pubKey instanceof ECPublicKey) {
             ECPublicKey ecpk = (ECPublicKey) pubKey;
             try {
-                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
+                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); 
                 publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
             } catch (InvalidKeySpecException e) {
                 publicKey = pubKey;
