@@ -104,9 +104,8 @@ public abstract class CryptoTokenRunner {
 
     public void teardownCryptoToken() {
         try {
-            for (int cryptoTokenId : cryptoTokenstoRemove) {
-                CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-                if (cryptoToken != null) {
+            for (int cryptoTokenId : cryptoTokenstoRemove) {                
+                if (cryptoTokenManagementSession.isCryptoTokenPresent(alwaysAllowToken, cryptoTokenId)) {
                     try {
                         for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(alwaysAllowToken, cryptoTokenId)) {
                             cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, keyPairInfo.getAlias());
