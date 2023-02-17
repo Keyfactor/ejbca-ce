@@ -477,10 +477,30 @@ function resetTimer(validity) {
         }
     };
 
+    var pruneUnchangedInheritRules = function() {
+        // Remove useless access rules from the form submission.
+        // This is necessary because large form submissions may exceed limits in the appserver
+        var initiallyInheritSelects = document.getElementsByClassName("selectStateRadio_UNDEFINED");
+        for (var i = 0; i < initiallyInheritSelects.length; i++) {
+            // An access rules that was in Inherit/UNDEFINED at page load time
+            var selectContainer = initiallyInheritSelects[i];
+            var options = selectContainer.getElementsByTagName("input");
+            for (var j = 0; j < options.length; j++) {
+                var option = options[j];
+                if (option.checked && option.value === "UNDEFINED") {
+                    // It is still Inherit/UNDEFINED. Skip submitting it
+                    option.setAttribute("form", "dummyForm");
+                }
+            }
+        }
+        return true;
+    };
+
     // Setup name space...
     window.ejbca = window.ejbca || {};
     ejbca.adminweb = ejbca.adminweb || {};
     // ...and expose API functions under this name space.
     ejbca.adminweb.onAjaxSuccessScrollTo = onAjaxSuccessScrollTo;
     ejbca.adminweb.hideShowCellsByClass = hideShowCellsByClass;
+    ejbca.adminweb.pruneUnchangedInheritRules = pruneUnchangedInheritRules;
 }());
