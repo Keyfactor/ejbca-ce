@@ -77,6 +77,8 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
+import org.ejbca.core.model.ca.publisher.CustomPublisherUiBase;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
@@ -305,7 +307,59 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 final String name = getPublisherName(id);
                 // If it should be published directly
                 if (!publ.getOnlyUseQueue()) {
-                    try {
+                    boolean publishCrl = false;
+                    if (publ.getType() == PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
+                        /*public static */final String PROPERTYKEY_STORECRL = "storeCRL";
+                        List<CustomPublisherProperty> customProperties = ((CustomPublisherUiBase) publ).getCustomUiPropertyList(admin);
+                        /*CustomPublisherProperty storeCrlProperty = customProperties.stream()
+                            .filter(customProperty -> customProperty.getName().equals(PROPERTYKEY_STORECRL))
+                            .findFirst().orElse(null);*/
+
+                        for (CustomPublisherProperty customProperty: customProperties) {
+                            if (customProperty.getName().equals(PROPERTYKEY_STORECRL)) {
+                                publishCrl = Boolean.valueOf(customProperty.getValue());
+                            }
+                        }
+                    }
+
+                    if (publishCrl) {
+                        try {
+                            try {
+                                if (publisherQueueSession.publishCRLNonTransactional(publ, admin, incrl, cafp, number, issuerDn)) {
+                                    publishStatus = PublisherConst.STATUS_SUCCESS;
+                                }
+                            } catch (EJBException e) {
+                                final Throwable t = e.getCause();
+                                if (t instanceof PublisherException) {
+                                    throw (PublisherException) t;
+                                } else {
+                                    throw e;
+                                }
+                            }
+                            final String msg;
+                            final Map<String, Object> details = new LinkedHashMap<>();
+                            EventStatus status;
+                            if (publishStatus == PublisherConst.STATUS_SUCCESS) {
+                                msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
+                                status = EventStatus.SUCCESS;
+                            } else {
+                                msg = intres.getLocalizedMessage("publisher.store.fail", "CRL", name, publishStatus);
+                                status = EventStatus.FAILURE;
+                            }
+                            details.put("msg", msg);
+                            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, status, EjbcaModuleTypes.PUBLISHER,
+                                EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+                        } catch (PublisherException pe) {
+                            final String msg = intres.getLocalizedMessage("publisher.errorstore", name, "CRL");
+                            final Map<String, Object> details = new LinkedHashMap<>();
+                            details.put("msg", msg);
+                            details.put("error", pe.getMessage());
+                            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
+                                EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+                        }
+                    }
+
+                    /*try {
                         try {
                             if (publisherQueueSession.publishCRLNonTransactional(publ, admin, incrl, cafp, number, issuerDn)) {
                                 publishStatus = PublisherConst.STATUS_SUCCESS;
@@ -338,7 +392,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                         details.put("error", pe.getMessage());
                         auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-                    }
+                    }*/
                 }
                 if (publishStatus != PublisherConst.STATUS_SUCCESS) {
                     returnval = false;
