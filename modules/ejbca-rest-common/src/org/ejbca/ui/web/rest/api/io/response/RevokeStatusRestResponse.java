@@ -43,7 +43,6 @@ public class RevokeStatusRestResponse {
     private Date invalidityDate;
     @ApiModelProperty(value = "Message", example = "Successfully revoked")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-
     private String message;
 
     public RevokeStatusRestResponse() {}
