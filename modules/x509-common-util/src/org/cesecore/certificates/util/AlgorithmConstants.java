@@ -98,6 +98,7 @@ public final class AlgorithmConstants {
     public static final String KEYALGORITHM_DILITHIUM2  = "DILITHIUM2";
     public static final String KEYALGORITHM_DILITHIUM3  = "DILITHIUM3";
     public static final String KEYALGORITHM_DILITHIUM5  = "DILITHIUM5";
+    public static final String KEYALGORITHM_NTRU        = "NTRU";
     public static final String KEYALGORITHM_ECGOST3410  = "ECGOST3410";
     public static final String KEYALGORITHM_DSTU4145    = "DSTU4145";
     
