@@ -203,13 +203,6 @@ public class LegacyKeyStoreTools {
 				*/
         	} else {
         		ECGenParameterSpec ecSpec = new ECGenParameterSpec(name);
-        		if (StringUtils.equals(name,"implicitlyCA")) {
-        			log.debug("Generating implicitlyCA encoded ECDSA key pair");
-        			// If the keySpec is null, we have "implicitlyCA" defined EC parameters
-        			// The parameters were already installed when we installed the provider
-        			// We just make sure that ecSpec == null here
-        			ecSpec = null;
-        		}
         		kpg.initialize(ecSpec);        		
         	}
         } catch( InvalidAlgorithmParameterException e ) {
