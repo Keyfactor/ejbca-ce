@@ -1973,6 +1973,12 @@
           "example": "1970-01-01T00:00:00Z",
           "description": "Revokation date"
         },
+        "invalidity_date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "1970-01-01T00:00:00Z",
+          "description": "Invalidity date"
+        },
         "message": {
           "type": "string",
           "example": "Successfully revoked",

@@ -275,7 +275,6 @@ public class CertificateRestResource extends BaseRestResource {
         raMasterApi.revokeCert(admin, serialNr, getValidatedDate(date), validatedInvalidityDate, issuerDN, revocationReason, true);
         certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
         final Date revocationDate = certificateStatus.isRevoked() ? certificateStatus.revocationDate : null;
-        final Date invalDate = certificateStatus.isRevoked() ? certificateStatus.invalidityDate : null;
 
         final RevokeStatusRestResponse result = RevokeStatusRestResponse.builder().
                 serialNumber(serialNumber).
@@ -283,7 +282,7 @@ public class CertificateRestResource extends BaseRestResource {
                 revocationDate(revocationDate).
                 revoked(certificateStatus.isRevoked()).
                 revocationReason(reason).
-                invalidityDate(invalDate).
+                invalidityDate(validatedInvalidityDate).
                 message("Successfully revoked").
                 build();
         return Response.ok(result).build();
