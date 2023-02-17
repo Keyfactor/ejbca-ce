@@ -33,8 +33,10 @@ public class CustomActionType extends ActionType {
 
     public static final String NAME = "CUSTOMACTION";
 	
+    private static final String CUSTOMACTION_SUB_PAGE = "customaction.xhtml";
+    
 	public CustomActionType() {
-		super(ServiceTypeUtil.CUSTOMACTION_SUB_PAGE, NAME, true);
+		super(CUSTOMACTION_SUB_PAGE, NAME, true);
 	}
 
 	private String autoClassPath;

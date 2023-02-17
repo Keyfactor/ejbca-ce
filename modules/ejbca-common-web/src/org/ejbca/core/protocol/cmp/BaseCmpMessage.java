@@ -36,7 +36,9 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 
 /**
  * Base class for CMP request messages.
@@ -268,7 +270,14 @@ public abstract class BaseCmpMessage implements Serializable {
         try {
             final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
             final AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithm();
-            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
+            final String prov;
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+                // Ability to use the PQC provider
+                prov = CryptoProviderTools.getProviderNameFromAlg(keyAlg.getAlgorithm().getId());
+            } else {
+                prov = provider;
+            }
+            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), prov).generatePublic(xspec);
         } catch (InvalidKeySpecException | IOException e) {
             final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
             newe.initCause(e);
