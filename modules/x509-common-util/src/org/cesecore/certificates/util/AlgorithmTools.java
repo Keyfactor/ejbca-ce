@@ -143,6 +143,7 @@ public abstract class AlgorithmTools {
     public static final List<Integer> DEFAULTBITLENGTHS_RSA = Arrays.asList( 1024, 1536, 2048, 3072, 4096, 6144, 8192 );
     public static final List<Integer> DEFAULTBITLENGTHS_DSA = Arrays.asList( 1024 );
     public static final List<Integer> DEFAULTBITLENGTHS_EC = getAllNamedEcCurveBitLengths();    
+    public static final List<Integer> DEFAULTBITLENGTHS_NTRU = Arrays.asList( 128, 192, 256 );
     public static final List<Integer> DEFAULTBITLENGTHS_DSTU = Arrays.asList( 167, 173, 179, 191, 233, 237, 307, 367, 431 );
     
     public static List<Integer> getAllBitLengths() {
@@ -151,6 +152,7 @@ public abstract class AlgorithmTools {
         allBitLengths.addAll(DEFAULTBITLENGTHS_DSTU);
         allBitLengths.addAll(DEFAULTBITLENGTHS_EC);
         allBitLengths.addAll(DEFAULTBITLENGTHS_DSA);
+        allBitLengths.addAll(DEFAULTBITLENGTHS_NTRU);
         return new ArrayList<>(allBitLengths);
     }
 
@@ -245,7 +247,7 @@ public abstract class AlgorithmTools {
         final List<String> ret = new ArrayList<>(Arrays.asList(AlgorithmConstants.KEYALGORITHM_DSA, AlgorithmConstants.KEYALGORITHM_ECDSA,
                 AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED448, 
                 AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON1024,
-                AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+                AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.KEYALGORITHM_NTRU));
         for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
             ret.add(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName));
         }
@@ -1389,4 +1391,16 @@ public abstract class AlgorithmTools {
         }
         throw new NoSuchAlgorithmException("The signature algorithm " + signatureAlgorithm + " uses an unsupported digest algorithm.");
     }
+    
+    public static final boolean isPQC(String name) {
+        if (name == null) {
+            return false;
+        }
+        return StringUtils.startsWithIgnoreCase(name, "FALCON") || name.startsWith("1.3.9999.3")
+                || name.equalsIgnoreCase("SPHINCSPLUS") || name.equalsIgnoreCase("SPHINCS+") || name.startsWith(BCObjectIdentifiers.sphincsPlus.getId())
+                || StringUtils.startsWithIgnoreCase(name, "DILITHIUM") || name.startsWith("1.3.6.1.4.1.2.267.7")
+                || StringUtils.startsWithIgnoreCase(name, "NTRU") || name.startsWith(BCObjectIdentifiers.pqc_kem_ntru.getId())
+                || StringUtils.startsWithIgnoreCase(name, "KYBER") || name.startsWith(BCObjectIdentifiers.pqc_kem_kyber.getId());
+    }
+
 }

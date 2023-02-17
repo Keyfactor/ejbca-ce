@@ -19,13 +19,12 @@ import java.security.Security;
 import com.keyfactor.util.crypto.provider.CryptoProvider;
 import com.keyfactor.util.crypto.provider.CryptoProviderRegistry;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.bc.BCObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 
 /**
@@ -101,19 +100,9 @@ public final class CryptoProviderTools {
     }
 
     public static String getProviderNameFromAlg(final String alg) {
-        if (isPQC(alg)) {
+        if (AlgorithmTools.isPQC(alg)) {
             return BouncyCastlePQCProvider.PROVIDER_NAME;
         }
         return BouncyCastleProvider.PROVIDER_NAME;
-    }
-    private static final boolean isPQC(String name) {
-        if (name == null) {
-            return false;
-        }
-        return StringUtils.startsWithIgnoreCase(name, "FALCON") || name.startsWith("1.3.9999.3")
-                || name.equalsIgnoreCase("SPHINCSPLUS") || name.equalsIgnoreCase("SPHINCS+") || name.startsWith(BCObjectIdentifiers.sphincsPlus.getId())
-                || StringUtils.startsWithIgnoreCase(name, "DILITHIUM") || name.startsWith("1.3.6.1.4.1.2.267.7")
-                || StringUtils.startsWithIgnoreCase(name, "NTRU") || name.startsWith(BCObjectIdentifiers.pqc_kem_ntru.getId())
-                || StringUtils.startsWithIgnoreCase(name, "KYBER") || name.startsWith(BCObjectIdentifiers.pqc_kem_kyber.getId());
     }
 }
