@@ -135,6 +135,11 @@
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableBitLengths')}"
                         escape="false" />
+                    <br/>
+                    <h:panelGroup styleClass="help">
+                        <h:outputText
+                            value="For NTRU 'bit length' means the security strength" />
+                    </h:panelGroup>
                 </h:panelGroup>
                 <h:selectManyListbox id="selectavailablebitlengths" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
                     value="#{certProfileBean.certificateProfile.availableBitLengths}"
