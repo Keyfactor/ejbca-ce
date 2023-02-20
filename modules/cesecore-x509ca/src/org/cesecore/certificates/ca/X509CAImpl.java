@@ -155,6 +155,7 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
@@ -798,6 +799,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(DO_STORE_OCSP_ON_DEMAND, doStoreOcspResponsesOnDemand);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public Map<String, List<String>> getAlternateCertificateChains() {
         if (data.containsKey(ALTERNATECHAINS)) {
@@ -1585,7 +1587,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     if (presignKey == null) {
                         throw new CertificateCreateException("No pre-sign key exist usable with algorithm " + sigAlg + ", PRESIGN_CERTIFICATE_VALIDATION is not possible with this CA.");
                     }
-                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(presignKey), X509CAImpl.SIGN_BUFFER_SIZE);
+                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(CryptoProviderTools.getProviderNameFromAlg(sigAlg)).build(presignKey), X509CAImpl.SIGN_BUFFER_SIZE);
                     // Since this certificate may be written to file through the validator we want to ensure it's not a real certificate
                     // We do that by signing with a hard coded fake key, and set authorityKeyIdentifier accordingly, so the cert can
                     // not be verified even accidentally by someone
@@ -1639,8 +1641,15 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                  *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID
                  *  and should not have any other key usages (see RFC 6962, section 3.1)
                  */
+                final String prov;
+                if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+                    // Ability to use the PQC provider
+                    prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+                } else {
+                    prov = provider;
+                }
                 final ContentSigner signer = new BufferingContentSigner(
-                        new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
+                        new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
                 // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
@@ -1716,7 +1725,13 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (log.isTraceEnabled()) {
             log.trace(">certgen.generate");
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
+        final String prov;
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+            prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+        } else {
+            prov = provider;
+        }
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate cert;
         try {
@@ -2195,7 +2210,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         
         try {
-            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias)), X509CAImpl.SIGN_BUFFER_SIZE);
+            String prov = cryptoToken.getSignProviderName();
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(prov)) {
+                prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+            }
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(cryptoToken.getPrivateKey(alias)), X509CAImpl.SIGN_BUFFER_SIZE);
             crl = crlgen.build(signer);
         } catch (OperatorCreationException e) {
             // Very fatal error
