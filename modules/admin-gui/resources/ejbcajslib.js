@@ -456,6 +456,9 @@ function resetTimer(validity) {
     /** Scroll the element with elementId into view on AJAX requests success. */
     var onAjaxSuccessScrollTo = function(data, elementId) {
         if (data.status == "success") {
+            if (document.documentElement.classList) {
+                document.documentElement.classList.remove("waiting");
+            }
         	var y = 0;
         	if (elementId) {
             	var element = document.getElementById(elementId);
@@ -478,6 +481,10 @@ function resetTimer(validity) {
     };
 
     var pruneUnchangedInheritRules = function() {
+        // This (and the following form submission can be slow)
+        if (document.documentElement.classList) {
+            document.documentElement.classList.add("waiting");
+        }
         // Remove useless access rules from the form submission.
         // This is necessary because large form submissions may exceed limits in the appserver
         var initiallyInheritSelects = document.getElementsByClassName("selectStateRadio_UNDEFINED");
