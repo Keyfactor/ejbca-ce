@@ -33,8 +33,10 @@ public class CustomIntervalType extends IntervalType {
 
     public static final String NAME = "CUSTOMINTERVAL";
 	
+    private static final String CUSTOMINTERVAL_SUB_PAGE = "custominterval.xhtml";
+    
 	public CustomIntervalType() {
-		super(ServiceTypeUtil.CUSTOMINTERVAL_SUB_PAGE, NAME, true);
+		super(CUSTOMINTERVAL_SUB_PAGE, NAME, true);
 	}
 
 	private String autoClassPath;

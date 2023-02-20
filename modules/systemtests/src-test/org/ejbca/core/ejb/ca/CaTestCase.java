@@ -107,6 +107,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_RSA_REVERSE_CA_NAME = "TESTRSAREVERSE";
     public static final String TEST_ECDSA_CA_NAME = "TESTECDSA";
     public static final String TEST_EDDSA_CA_NAME = "TESTEDDSA";
+    public static final String TEST_FALCON512_CA_NAME = "TESTFALCON512";
+    public static final String TEST_FALCON1024_CA_NAME = "TESTFALCON1024";
+    public static final String TEST_DILITHIUM2_CA_NAME = "TESTDILITHIUM2";
+    public static final String TEST_DILITHIUM3_CA_NAME = "TESTDILITHIUM3";
+    public static final String TEST_DILITHIUM5_CA_NAME = "TESTDILITHIUM5";
     public static final String TEST_ECGOST3410_CA_NAME = "TESTECGOST3410";
     public static final String TEST_DSTU4145_CA_NAME = "TESTDSTU4145";
     public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
@@ -651,6 +656,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     InvalidAlgorithmException, AuthorizationDeniedException {
         // EdDSA is special, the key agorithm and signature algo is named the same, i.e. Ed25519 and Ed448
         createCa(keyAlg, TEST_EDDSA_CA_NAME, keyAlg);
+    }
+    protected static void createPQCCa(final String caname, final String keySpec, final String sigalg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    InvalidAlgorithmException, AuthorizationDeniedException {
+        createCa(keySpec, caname, sigalg);
     }
 
     private static void createCa(final String keySpec, final String name, final String sigAlg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
