@@ -369,6 +369,8 @@ public abstract class CaTestUtils {
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, signingKeyAlias);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT , signingKeyAlias);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, encryptionKeyAlias);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, signingKeyAlias);
+        
         final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
         catoken.setSignatureAlgorithm(sigAlg);
         catoken.setEncryptionAlgorithm(encAlg);

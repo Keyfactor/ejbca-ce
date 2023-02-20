@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -191,7 +192,7 @@ public abstract class CryptoTokenRunner {
     }
     
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
-    protected X509CAInfo createTestX509Ca(String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
+    protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
             int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("createTestX509CAOptionalGenKeys"));
 
@@ -199,9 +200,10 @@ public abstract class CryptoTokenRunner {
         CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         
+        final String signingKeyName = caName + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
+        final String encryptionKeyName = caName + "_" + CAToken.SOFTPRIVATEDECKEYALIAS;
+        
         cryptoTokenManagementProxySession.flushCache();
-        String signingKeyName = cadn + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
-        String encryptionKeyName = cadn + "_" + CAToken.SOFTPRIVATEDECKEYALIAS;
         int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, tokenpin, genKeys, cryptoTokenImplementation, cadn, keyspec, keyspec, signingKeyName, encryptionKeyName);
         cryptoTokenstoRemove.add(cryptoTokenId);
         try {
@@ -209,11 +211,7 @@ public abstract class CryptoTokenRunner {
         } catch (CryptoTokenOfflineException | CryptoTokenAuthenticationFailedException | AuthorizationDeniedException e) {
             throw new IllegalStateException("Could not activate crypto token", e);
         }
-        final CAToken catoken = createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signingKeyName);
-        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signingKeyName);
-        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, encryptionKeyName);
-        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, signingKeyName);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, signingKeyName, encryptionKeyName);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         String caname = CertTools.getPartFromDN(cadn, "CN");
@@ -221,11 +219,13 @@ public abstract class CryptoTokenRunner {
         int certificateProfileId = (signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, certificateProfileId, "3650d",
                 signedBy, null, catoken);
-        cainfo.setDescription("JUnit RSA CA");
+        cainfo.setDescription(caName);
         cainfo.setExtendedCAServiceInfos(extendedCaServices);
         cainfo.setUseLdapDnOrder(ldapOrder);
         cainfo.setCmpRaAuthSecret("foo123");
         cainfo.setDeltaCRLPeriod(10 * SimpleTime.MILLISECONDS_PER_HOUR); // In order to be able to create deltaCRLs
+        cainfo.setDoEnforceUniqueDistinguishedName(true);
+        cainfo.setDoEnforceUniquePublicKeys(true);
         cryptoTokenManagementProxySession.flushCache();
         
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -258,21 +258,6 @@ public abstract class CryptoTokenRunner {
         return cryptoTokenId;
     }
     
-    /** @return a CAToken for referencing the specified CryptoToken. */
-    protected CAToken createCaToken(final int cryptoTokenId, String sigAlg, String encAlg) {
-        // Create CAToken (what key in the CryptoToken should be used for what)
-        final Properties caTokenProperties = new Properties();
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT , CAToken.SOFTPRIVATEDECKEYALIAS);
-        final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
-        catoken.setSignatureAlgorithm(sigAlg);
-        catoken.setEncryptionAlgorithm(encAlg);
-        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        return catoken;
-    }
     
     protected abstract String getTokenImplementation();
 
