@@ -157,6 +157,10 @@ public class X509CAUnitTestBase {
             return "DSA1024";
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_DSA)) {
             return "DSA1024";
+        } else if (algName.equals(AlgorithmConstants.SIGALG_DILITHIUM3)) {
+            return AlgorithmConstants.KEYALGORITHM_DILITHIUM3;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_FALCON512)) {
+            return AlgorithmConstants.KEYALGORITHM_FALCON512;
         } else {
             return "1024"; // Assume RSA
         }
