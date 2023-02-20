@@ -1371,6 +1371,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (newUserData.getStatus() != originalCopy.getStatus()) {
             return UserDataChangeMode.MANDATORY_CHANGE;
         }
+        // Force update on request counter change
+        final ExtendedInformation newExtendedInfo = newUserData.getExtendedInformation();
+        final ExtendedInformation oldExtendedInfo = originalCopy.getExtendedInformation();
+        if ((newExtendedInfo != null) != (oldExtendedInfo != null)) {
+            return UserDataChangeMode.MANDATORY_CHANGE;
+        }
+        if (newExtendedInfo != null) {
+            if (!StringUtils.equals(
+                    newExtendedInfo.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER),
+                    oldExtendedInfo.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER))) {
+                return UserDataChangeMode.MANDATORY_CHANGE;
+            }
+        }
         // Modification time is ignored
         newCopy.setTimeModified(originalCopy.getTimeModified());
         if (newUserData.getStatus() == EndEntityConstants.STATUS_GENERATED) {
