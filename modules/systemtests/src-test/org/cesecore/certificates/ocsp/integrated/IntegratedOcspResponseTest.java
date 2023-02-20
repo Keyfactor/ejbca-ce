@@ -325,8 +325,7 @@ public class IntegratedOcspResponseTest {
     /** After renewing a CA with a new key pair, the new CA certificate should be used to sign requests */
     @Test
     public void testOcspSignerIssuerRenewal() throws Exception {
-        final X509CAInfo testx509caRenew = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
-        final X509Certificate caCertificateRenew = (X509Certificate) testx509caRenew.getCertificateChain().get(0);
+        final X509Certificate caCertificateRenew = (X509Certificate) testx509ca.getCertificateChain().get(0);
         final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal",
                 testx509ca.getCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
@@ -339,8 +338,8 @@ public class IntegratedOcspResponseTest {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenew, OCSPResp.SUCCESSFUL);
             // Try the same thing after CA has been renewed
-            caAdminSession.renewCA(internalAdmin, testx509caRenew.getCAId(), true, null, false);
-            final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(internalAdmin, testx509caRenew.getCAId())
+            caAdminSession.renewCA(internalAdmin, testx509ca.getCAId(), true, null, false);
+            final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(internalAdmin, testx509ca.getCAId())
                     .getCertificateChain().iterator().next();
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             assertEquals("Status is not null (good)", null,
