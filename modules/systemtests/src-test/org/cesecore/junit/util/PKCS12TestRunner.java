@@ -47,9 +47,9 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     }
     
     @Override
-    public X509CAInfo createX509Ca(String subjectDn, String username) throws Exception {
+    public X509CAInfo createX509Ca(String subjectDn, String caName) throws Exception {
         caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
-        X509CAInfo x509ca = createTestX509Ca(subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
+        X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
                 getTokenImplementation(), CAInfo.SELFSIGNED, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
 
         setCaForRemoval(x509ca.getCAId(), x509ca);
