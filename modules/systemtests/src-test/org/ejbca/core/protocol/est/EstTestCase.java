@@ -34,6 +34,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -59,8 +60,11 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -118,6 +122,7 @@ public abstract class EstTestCase extends CaTestCase {
     protected int eepId;
     protected int cpId;
     private static final String SUPER_ADMINISTRATOR_ROLE_NAME = "Super Administrator Role";
+    private static final String MULTIPART_MIXED_CONTENT_BOUNDARY = "CONTENTBOUNDARY";
 
     protected final String httpsPubReqPath; // = "https://127.0.0.1:8442/.well-known/est/";
     protected final String httpsPrivReqPath; // = "https://127.0.0.1:8443/.well-known/est/";
@@ -331,7 +336,11 @@ public abstract class EstTestCase extends CaTestCase {
         }
         // Check returned headers as specified in RFC7030 section 3.2.4
         assertNotNull("No content type in response.", con.getContentType());
-        assertTrue("Unexpected response Content-type: " + con.getContentType(), con.getContentType().startsWith("application/pkcs7-mime"));
+        if(!operation.equalsIgnoreCase("serverkeygen")) {
+            assertTrue("Unexpected response Content-type: " + con.getContentType(), con.getContentType().startsWith("application/pkcs7-mime"));
+        } else {
+            assertTrue("Unexpected response for serverkeygen Content-type: " + con.getContentType(), con.getContentType().startsWith("multipart/mixed ; boundary=" + MULTIPART_MIXED_CONTENT_BOUNDARY));
+        }
         // For EST we don't care about cache-control headers, nothing specified in RFC7030
         //final String cacheControl = con.getHeaderField("Cache-Control");
         //assertNotNull("'Cache-Control' header is not present.", cacheControl);
@@ -557,6 +566,28 @@ public abstract class EstTestCase extends CaTestCase {
         final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilePath);
         keyStore.store(fileOutputStream, KEY_STORE_PASSWORD.toCharArray());
         fileOutputStream.close();
+    }
+    
+    protected static X509Certificate getCertFromResponse(byte[] resp) throws Exception {
+        final CMSSignedData respmsg = new CMSSignedData(Base64.decode(resp));
+        final Store<X509CertificateHolder> certstore = respmsg.getCertificates();
+        final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
+        assertEquals("EST simpleenroll should return a single certificate", 1, certs.size());
+        final X509CertificateHolder certHolder = certs.iterator().next();
+        return CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+    }
+    
+    protected static X509Certificate getCertFromKeygenResponse(byte[] resp) throws Exception {
+        String response = new String(resp);
+        int startBoundary = response.indexOf(MULTIPART_MIXED_CONTENT_BOUNDARY);
+        int middleBoundary = response.indexOf(MULTIPART_MIXED_CONTENT_BOUNDARY, startBoundary + MULTIPART_MIXED_CONTENT_BOUNDARY.length() + 2);
+        int endBoundary = response.indexOf(MULTIPART_MIXED_CONTENT_BOUNDARY, middleBoundary + MULTIPART_MIXED_CONTENT_BOUNDARY.length() + 2);
+        // extra CRLF + double hyphens on both ends
+        String encodedCertPart = response.substring(middleBoundary + MULTIPART_MIXED_CONTENT_BOUNDARY.length() + 4, endBoundary - 4).strip();
+        int firstHeaderEnd = encodedCertPart.indexOf("\n");
+        int secondHeaderEnd = encodedCertPart.indexOf("\n", firstHeaderEnd+4);
+        String encodedCert = encodedCertPart.substring(secondHeaderEnd+2).strip();
+        return getCertFromResponse(encodedCert.getBytes());
     }
 
 }
