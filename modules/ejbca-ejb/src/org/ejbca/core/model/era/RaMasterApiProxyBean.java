@@ -1971,9 +1971,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
         CADoesntExistsException caDoesntExistException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 16) {
                 try {
                     raMasterApi.revokeCert(admin, certSerNo, revocationDate, invalidityDate, issuerDn, reason, checkDate);
+                    // if it completed successfully, break
+                    break;
+                } catch (CADoesntExistsException e) {
+                    caDoesntExistException = e;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            } else if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
+                try {
+                    raMasterApi.revokeCert(admin, certSerNo, revocationDate, issuerDn, reason, checkDate);
                     // if it completed successfully, break
                     break;
                 } catch (CADoesntExistsException e) {
@@ -1987,6 +1997,31 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw caDoesntExistException;
         }
     }
+    
+    @Override
+    public void revokeCert(AuthenticationToken admin, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
+        // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
+        CADoesntExistsException caDoesntExistException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
+                try {
+                    raMasterApi.revokeCert(admin, certSerNo, revocationDate, issuerDn, reason, checkDate);
+                    // if it completed successfully, break
+                    break;
+                } catch (CADoesntExistsException e) {
+                    caDoesntExistException = e;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (caDoesntExistException != null) {
+            throw caDoesntExistException;
+        }
+    }
+
 
     @Override
     public void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
