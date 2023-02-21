@@ -1707,9 +1707,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 } else {
                     serialNumber = CertTools.getSerialNumber(certificate);
                 }
-                final Date invalidityDate = new Date(cdw.getCertificateData().getInvalidityDate());
                 try {
-                    revokeCert(authenticationToken, serialNumber, null, invalidityDate, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin, null);
+                    revokeCert(authenticationToken, serialNumber, null, /*invalidityDate*/null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin, null);
                 } catch (RevokeBackDateNotAllowedForProfileException e) {
                     throw new IllegalStateException("This should not happen since there is no back dating.",e);
                 } catch (CertificateProfileDoesNotExistException e) {
