@@ -54,6 +54,7 @@ import org.junit.Test;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -132,6 +133,7 @@ public class EstRAModeBasicTest extends EstTestCase {
         config.setRANameGenParams(estAlias, "CN");
         // Don't allow renewal with same user public key
         config.setKurAllowSameKey(estAlias, false); 
+        config.setServerKeyGenerationEnabled(estAlias, true); 
         globalConfigurationSession.saveConfiguration(ADMIN, config);
     }
 
@@ -176,7 +178,7 @@ public class EstRAModeBasicTest extends EstTestCase {
         final String pwd = genRandomPwd();
         final String username = "testRAPasswordAuth" + genRandomUserName();
         try {
-            final EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
             // Authentication using username
             config.setCert(estAlias, false);
             config.setUsername(estAlias, username);
@@ -188,7 +190,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             //
             // 1. Make EST simpleenroll request, message is a simple PKCS#10 request, RFC7030 section 4.2.1
             //
-            final String requestDN = "CN=" + username + ",O=EJBCA,C=SE";
+            String requestDN = "CN=" + username + ",O=EJBCA,C=SE";
             PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, null, ec256);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             // Send request first without username, should give unauthorized
@@ -214,13 +216,8 @@ public class EstRAModeBasicTest extends EstTestCase {
             byte[] resp = sendEstRequest(estAlias, "simpleenroll", reqmsg, 200, null, username, pwd); 
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
             assertNotNull("There must be response data to simpleenroll request", resp);
-            final CMSSignedData respmsg = new CMSSignedData(Base64.decode(resp));
-            final Store<X509CertificateHolder> certstore = respmsg.getCertificates();
-            final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
-            assertEquals("EST simpleenroll should return a single certificate", 1, certs.size());
             final X509Certificate testcacert = (X509Certificate)getTestCACert(TESTCA_NAME);
-            final X509CertificateHolder certHolder = certs.iterator().next();
-            final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+            X509Certificate cert = getCertFromResponse(resp);
             assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
             try {
                 cert.verify(testcacert.getPublicKey());
@@ -228,7 +225,52 @@ public class EstRAModeBasicTest extends EstTestCase {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
             assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
-            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));   
+            
+            final CAInfo serverCertCaInfo = CaTestUtils.getServerCertCaInfo(ADMIN);
+            config.setDefaultCAID(estAlias, serverCertCaInfo.getCAId()); 
+            globalConfigurationSession.saveConfiguration(ADMIN, config);
+            // use simpleenroll to create a cert with same keypair from csr
+            requestDN = "CN=" + username + "_second,O=EJBCA,C=SE";
+            p10 = generateCertReq(requestDN, null, null, null, null, ec256);
+            reqmsg = Base64.encode(p10.getEncoded());
+            
+            resp = sendEstRequest(estAlias, "simpleenroll", reqmsg, 200, null, username, pwd); 
+            X509Certificate tlsReenrollCert = getCertFromResponse(resp);
+            
+            resp = sendEstRequest(estAlias, "serverkeygen", reqmsg, 200, null, username, pwd); 
+            // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
+            assertNotNull("There must be response data to simpleenroll request", resp);
+            cert = getCertFromKeygenResponse(resp);
+            assertEquals("serverkeygen response issuerDN must be our EST test CAs subjectDN", serverCertCaInfo.getSubjectDN(), CertTools.getIssuerDN(cert));
+            try {
+                cert.verify(serverCertCaInfo.getCertificateChain().get(0).getPublicKey());
+            } catch (SignatureException e) {
+                fail("serverkeygen response certifciate must verify with CA certificate");                
+            }
+            assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
+            assertNotEquals("serverkeygen response public key must be the differant than the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            
+            // subsequent key generation
+            final KeyPair ec256New = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
+            final PKCS10CertificationRequest p10New = generateCertReq(requestDN, null, null, null, null, ec256New);
+            final byte[] reqmsgNew = Base64.encode(p10New.getEncoded());
+            X509Certificate oldCert = cert;
+            
+            setupClientKeyStore(serverCertCaInfo, ec256, tlsReenrollCert);
+            resp = sendEstRequest(true, estAlias, "serverkeygen", reqmsgNew, 200, null, null, null);
+            assertNotNull("There must be response data to simpleenroll request", resp);
+            cert = getCertFromKeygenResponse(resp);
+            assertEquals("serverkeygen response issuerDN must be our EST test CAs subjectDN", serverCertCaInfo.getSubjectDN(), CertTools.getIssuerDN(cert));
+            try {
+                cert.verify(serverCertCaInfo.getCertificateChain().get(0).getPublicKey());
+            } catch (SignatureException e) {
+                fail("serverkeygen response certifciate must verify with CA certificate");                
+            }
+            assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
+            assertNotEquals("serverkeygen response public key must be the differant than the PKCS#10 request", Base64.toBase64String(ec256New.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertNotEquals("serverkeygen response public key must be the differant than the old key", Base64.toBase64String(oldCert.getPublicKey().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+
         } finally {
             // Remove the generated end entity and all the certificates
             internalCertStoreSession.removeCertificatesByUsername(username);
@@ -238,7 +280,7 @@ public class EstRAModeBasicTest extends EstTestCase {
         }        
         log.trace("<testRASimpleenrollPasswordAuth()");
     }
-
+    
     /**
      * Tests RA enrollment using certificate authentication including testing wrong password and using password when certificate is required.
      */
@@ -316,7 +358,21 @@ public class EstRAModeBasicTest extends EstTestCase {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
             assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
-            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));   
+            
+            resp = sendEstRequest(true, estAlias, "serverkeygen", reqmsg, 200, null, null, null); 
+            // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
+            assertNotNull("There must be response data to serverkeygen request", resp);
+            cert = getCertFromKeygenResponse(resp);
+            assertEquals("serverkeygen response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
+            try {
+                cert.verify(testcacert.getPublicKey());
+            } catch (SignatureException e) {
+                fail("serverkeygen response certifciate must verify with CA certificate");                
+            }
+            assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
+            assertNotEquals("serverkeygen response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+                    
         } finally {
             // Remove from super admin role
             if (member != null) {
