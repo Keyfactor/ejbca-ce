@@ -359,9 +359,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>13<td>=<td>7.9.0
      * <tr><th>14<td>=<td>7.10.0
      * <tr><th>15<td>=<td>7.11.0
+     * <tr><th>16<td>=<td>7.12.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 15;
+    private static final int RA_MASTER_API_VERSION = 16;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -3022,6 +3023,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         endEntityManagementSession.revokeCert(authenticationToken, certSerNo, revocationDate, invalidityDate, issuerDn, reason, checkDate);
     }
 
+    @Override
+    public void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
+        // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
+        final int caId = CertTools.stringToBCDNString(issuerDn).hashCode();
+        caSession.verifyExistenceOfCA(caId);
+        endEntityManagementSession.revokeCert(authenticationToken, certSerNo, revocationDate, /*invalidityDate*/null, issuerDn, reason, checkDate);
+    }
+
+    
     @Override
     public void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
         throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
