@@ -436,6 +436,33 @@
 						</h:selectBooleanCheckbox>
 						<h:outputText value="#{web.text.ALLOW}" />
 					</h:panelGroup>
+				</h:panelGrid>
+			</h:panelGroup>
+			
+			<h:panelGroup id="general2">
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+					cellpadding="3" border="0" width="100%"
+					columnClasses="editColumnSystem1,editColumn2"
+					rowClasses="Row0,Row1">
+					<h:panelGroup>
+						<h:outputLabel value="#{web.text.ESTSERVERSIDEKEYGENERATION}"
+							style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup>&nbsp;</h:panelGroup>
+					<h:panelGroup>
+						<h:outputLabel for="checkboxserverkeygen"
+							value="#{web.text.ESTENABLESERVERSIDEKEYGENERATION}" styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTENABLESERVERSIDEKEYGENERATION_HELP}"
+							escape="false" styleClass="help" />
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:selectBooleanCheckbox id="checkboxserverkeygen"
+							value="#{editEstConfigMBean.estAlias.serverKeyGenEnabled}"
+							disabled="#{editEstConfigMBean.viewOnly}">
+						</h:selectBooleanCheckbox>
+						<h:outputText value="#{web.text.ALLOW}" />
+					</h:panelGroup>
 					<h:panelGroup>&nbsp;</h:panelGroup>
 					<h:panelGroup>
 						<h:commandButton value="#{web.text.SAVE}"
