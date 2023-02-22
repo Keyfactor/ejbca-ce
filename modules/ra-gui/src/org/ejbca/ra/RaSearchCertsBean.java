@@ -47,6 +47,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -143,12 +144,13 @@ public class RaSearchCertsBean implements Serializable {
                 final Date newDate, final String issuerDn)
                 throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
                 CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException/*, ParseException*/ {
-        
-            //Date vd = ValidityDate.parseAsIso8601(raCertificateDetails.getInvalidityDate().trim());
             //We can implement invalidityDate in RA GUI in the future, for now send null..
-            raMasterApiProxyBean.revokeCert(
-                    raAuthenticationBean.getAuthenticationToken(), new BigInteger(raCertificateDetails.getSerialnumberRaw()), newDate,
-                    /*invalidityDate,*/null, issuerDn, newRevocationReason, newDate == null ? false : true);
+            CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDn, raCertificateDetails.getSerialnumberRaw()); 
+            certRevocationParameters.setInvalidityDate(null);
+            certRevocationParameters.setRevocationDate(newDate);
+            certRevocationParameters.setReason(newRevocationReason);
+            raMasterApiProxyBean.revokeCertWithParameters(
+                    raAuthenticationBean.getAuthenticationToken(), certRevocationParameters, newDate == null ? false : true);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
             raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,

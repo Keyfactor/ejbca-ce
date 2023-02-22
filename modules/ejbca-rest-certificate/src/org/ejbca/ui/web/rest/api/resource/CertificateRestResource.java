@@ -64,6 +64,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -272,7 +273,11 @@ public class CertificateRestResource extends BaseRestResource {
             }
         }
         final Date validatedInvalidityDate = getValidatedDate(invalidityDate);
-        raMasterApi.revokeCert(admin, serialNr, getValidatedDate(date), validatedInvalidityDate, issuerDN, revocationReason, true);
+        CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDN, serialNumber); 
+        certRevocationParameters.setInvalidityDate(validatedInvalidityDate);
+        certRevocationParameters.setRevocationDate(getValidatedDate(date));
+        certRevocationParameters.setReason(revocationReason);
+        raMasterApi.revokeCertWithParameters(admin, certRevocationParameters, true);
         certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
         final Date revocationDate = certificateStatus.isRevoked() ? certificateStatus.revocationDate : null;
 

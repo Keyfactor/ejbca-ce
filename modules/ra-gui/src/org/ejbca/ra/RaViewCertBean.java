@@ -35,6 +35,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.util.EJBTools;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -101,9 +102,12 @@ public class RaViewCertBean implements Serializable {
                 final Date newDate, final String issuerDn)
                 throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
                 CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException {
-            raMasterApiProxyBean.revokeCert(
-                    raAuthenticationBean.getAuthenticationToken(), new BigInteger(raCertificateDetails.getSerialnumberRaw()), newDate,
-                    /*raCertificateDetails.getInvalidityDate()*/null, issuerDn, newRevocationReason, true);
+            CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDn, raCertificateDetails.getSerialnumberRaw()); 
+            certRevocationParameters.setInvalidityDate(null);
+            certRevocationParameters.setRevocationDate(newDate);
+            certRevocationParameters.setReason(newRevocationReason);
+            raMasterApiProxyBean.revokeCertWithParameters(
+                    raAuthenticationBean.getAuthenticationToken(),certRevocationParameters, true);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
             raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
