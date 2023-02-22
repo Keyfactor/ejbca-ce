@@ -2697,13 +2697,25 @@ public abstract class CertTools {
                     vec.add(gn);
                 }
                 break;
+                
+            case DnComponents.URI:
+                for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI)) {
+                    vec.add(new GeneralName(6, new DERIA5String(uri)));
+                }
+                break;
+                
+            case DnComponents.URI1:
+                for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI1)) {
+                    vec.add(new GeneralName(6, new DERIA5String(uri)));
+                }
+                break;
 
             case DnComponents.UNIFORMRESOURCEID:
                 for (final String uri : CertTools.getPartsFromDN(str, CertTools.URI2)) {
                     vec.add(new GeneralName(6, new DERIA5String(uri)));
                 }
                 break;
-
+                
             case DnComponents.REGISTEREDID:
                 for (final String oid : CertTools.getPartsFromDN(str, CertTools.REGISTEREDID)) {
                     vec.add(new GeneralName(GeneralName.registeredID, oid));
@@ -2871,13 +2883,7 @@ public abstract class CertTools {
             }
         }
 
-        for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI)) {
-            vec.add(new GeneralName(6, new DERIA5String(uri)));
-        }
-        
-        for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI1)) {
-            vec.add(new GeneralName(6, new DERIA5String(uri)));
-        }
+
         
         // To support custom OIDs in altNames, they must be added as an OtherName of plain type UTF8String
         for (final String oid : CertTools.getCustomOids(altName)) {
