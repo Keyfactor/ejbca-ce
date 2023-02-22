@@ -156,6 +156,8 @@ public class DnComponents {
     public static final String RFC822NAME = "RFC822NAME";
     public static final String DNSNAME = "DNSNAME";
     public static final String IPADDRESS = "IPADDRESS";
+    public static final String URI = "UNIFORMRESOURCEIDENTIFIER";
+    public static final String URI1 = "URI";
     public static final String UNIFORMRESOURCEID = "UNIFORMRESOURCEID";
     public static final String DIRECTORYNAME = "DIRECTORYNAME";
     public static final String UPN = "UPN";
