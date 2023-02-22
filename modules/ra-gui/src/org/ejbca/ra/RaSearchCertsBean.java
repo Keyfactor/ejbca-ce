@@ -88,6 +88,7 @@ public class RaSearchCertsBean implements Serializable {
     private Map<Integer,String> cpIdToNameMap = null;
     private Map<String,String> caSubjectToNameMap = new HashMap<>();
     private Map<String, Boolean> caNameToAllowsChangeOfRevocationReason = new HashMap<>();
+    private Map<String, Boolean> caNameToAllowsInvalidityDate = new HashMap<>();
     private Map<String, Boolean> cpNameToAllowsRevocationBackdating = new HashMap<>();
     private List<SelectItem> availableEeps = new ArrayList<>();
     private List<SelectItem> availableCps = new ArrayList<>();
@@ -134,8 +135,8 @@ public class RaSearchCertsBean implements Serializable {
                 // Re-initialize object if status has changed
                 final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(
                         raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
-                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
-                        cpNameToAllowsRevocationBackdating);
+                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,
+                        caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
             }
             return ret;
         }
@@ -154,8 +155,8 @@ public class RaSearchCertsBean implements Serializable {
                     raAuthenticationBean.getAuthenticationToken(), certRevocationParameters, newDate == null ? false : true);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
-            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
-                    cpNameToAllowsRevocationBackdating);
+            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,
+                    caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
         }
         @Override
         public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException,
@@ -260,7 +261,7 @@ public class RaSearchCertsBean implements Serializable {
                 if (!stagedRequest.matchRevokedInterval(cdw.getCertificateData().getRevocationDate())) { continue; }
                 if (!stagedRequest.matchStatusAndReason(cdw.getCertificateData().getStatus(), cdw.getCertificateData().getRevocationReason())) { continue; }
                 resultsFiltered.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap,
-                        caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating));
+                        caSubjectToNameMap, caNameToAllowsInvalidityDate, caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating));
             }
             if (log.isDebugEnabled()) {
                 log.debug("Filtered " + lastExecutedResponse.getCdws().size() + " responses down to " + resultsFiltered.size() + " results.");
@@ -483,6 +484,7 @@ public class RaSearchCertsBean implements Serializable {
             for (final CAInfo caInfo : caInfos) {
                 caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
                 caNameToAllowsChangeOfRevocationReason.put(caInfo.getName(), caInfo.isAllowChangingRevocationReason());
+                caNameToAllowsInvalidityDate.put(caInfo.getName(), caInfo.isAllowInvalidityDate());
             }
             availableCas.add(new SelectItem(0, raLocaleBean.getMessage("search_certs_page_criteria_ca_optionany")));
             for (final CAInfo caInfo : caInfos) {
