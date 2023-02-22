@@ -606,7 +606,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
         GeneralNames gns = CertTools.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,iPAddress=192.0.2.123,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE");
-        gns = swapGeneralNames(gns, 0, 5); // Swap iPAddress and rfc822Name to test that the order is preserved
+        gns = swapGeneralNames(gns, 0, 5); // Swap rfc822Name and directoryName to test that the order is preserved
         Extension ext = new Extension(Extension.subjectAlternativeName, false, gns.toASN1Primitive().getEncoded(ASN1Encoding.DER));
         ExtensionsGenerator gen = ca.getSubjectAltNameExtensionForCTCert(ext);
         Extensions exts = gen.generate();
@@ -615,7 +615,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertNotNull("A subjectAltName extension should be present", genext);
         assertNull("No CT redated extension should be present", ctext);
         String altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=(PRIVATE).secret.se, dNSName=(PRIVATE).ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
+        assertEquals("altName is not what it should be", "directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=(PRIVATE).secret.se, dNSName=(PRIVATE).ultrasecret.no, rfc822name=foo@bar.com", altName);
     }
 
     class TestValidator implements CertificateValidationDomainService {
