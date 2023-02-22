@@ -617,6 +617,8 @@ public class EjbcaWS implements IEjbcaWS {
             // Have this first, if processReq throws an EjbcaException we want to reset status
             ejbcaWSHelperSession.resetUserPasswordAndStatus(admin, username, oldUserStatus);
             throw e;
+        } catch (CesecoreException e) {
+            throw getEjbcaException(e, logger, e.getErrorCode(), Level.ERROR);
         }
         finally {
             logger.writeln();
