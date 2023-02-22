@@ -2632,7 +2632,7 @@ public abstract class CertTools {
     /**
      * From an altName string as defined in getSubjectAlternativeName
      * There is no specific order now in the final alts produced in the cert, 
-     * whatever order is specified in profilemappings.properties will be applied. 
+     * whatever order is specified in profilemappings.properties or from CSR will be applied. 
      * 
      * @param altName
      * @return ASN.1 GeneralNames
