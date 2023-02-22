@@ -565,7 +565,7 @@ public abstract class CertTools {
      * 
      * @return ArrayList containing email or empty list if email is not present
      */
-    public static ArrayList<String> getEmailFromDN(String dn) {
+    public static List<String> getEmailFromDN(String dn) {
         if (log.isTraceEnabled()) {
             log.trace(">getEmailFromDN(" + dn + ")");
         }
@@ -610,7 +610,7 @@ public abstract class CertTools {
                 log.error("Error parsing certificate: ", e);
             }
             log.debug("Searching for EMail Address in Subject DN");
-            ArrayList<String> emails = CertTools.getEmailFromDN(x509cert.getSubjectDN().getName());
+            List<String> emails = CertTools.getEmailFromDN(x509cert.getSubjectDN().getName());
             if (!emails.isEmpty()) {
                 return emails.get(0);
             }
@@ -2654,19 +2654,24 @@ public abstract class CertTools {
 
         final ASN1EncodableVector vec = new ASN1EncodableVector();
 
-        for (final String email : CertTools.getEmailFromDN(altName)) {
-            vec.add(new GeneralName(1, /*new DERIA5String(iter.next())*/email));
-        }
 
-        String[] result = altName.split(",");
+
+        String[] result = altName.split("(?<!\\\\),");
 
         for (final String str : result) {
 
-            String[] subResult = str.split("=");
+            String[] subResult = str.trim().split("=");
 
-            switch (subResult[0].trim()) {
+            switch (subResult[0].trim().toUpperCase()) {
+
+            case DnComponents.DNEMAILADDRESS:
+            case DnComponents.RFC822NAME:
+                for (final String email : CertTools.getEmailFromDN(str)) {
+                    vec.add(new GeneralName(1, /*new DERIA5String(iter.next())*/email));
+                }
+                break;
+
             case DnComponents.IPADDRESS:
-
                 for (final String addr : CertTools.getPartsFromDN(str, CertTools.IPADDR)) {
                     final byte[] ipoctets = StringTools.ipStringToOctets(addr);
                     if (ipoctets.length > 0) {
@@ -2676,38 +2681,34 @@ public abstract class CertTools {
                         log.error("Cannot parse/encode ip address, ignoring: " + addr);
                     }
                 }
-
                 break;
-            case DnComponents.DNSNAME:
 
+            case DnComponents.DNSNAME:
                 for (final String dns : CertTools.getPartsFromDN(str, CertTools.DNS)) {
                     vec.add(new GeneralName(2, new DERIA5String(dns)));
                 }
                 break;
 
             case DnComponents.DIRECTORYNAME:
-
                 final String directoryName = getDirectoryStringFromAltName(str);
                 if (directoryName != null) {
                     final X500Name x500DirectoryName = new X500Name(CeSecoreNameStyle.INSTANCE, directoryName);
                     final GeneralName gn = new GeneralName(4, x500DirectoryName);
                     vec.add(gn);
                 }
-                continue;
+                break;
 
             case DnComponents.UNIFORMRESOURCEID:
-
                 for (final String uri : CertTools.getPartsFromDN(str, CertTools.URI2)) {
                     vec.add(new GeneralName(6, new DERIA5String(uri)));
                 }
-                continue;
+                break;
 
             case DnComponents.REGISTEREDID:
-
                 for (final String oid : CertTools.getPartsFromDN(str, CertTools.REGISTEREDID)) {
                     vec.add(new GeneralName(GeneralName.registeredID, oid));
                 }
-                continue;
+                break;
 
             case DnComponents.UPN:
                 // UPN is an OtherName see method getUpn... for asn.1 definition
@@ -2717,10 +2718,9 @@ public abstract class CertTools {
                     v.add(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
                     vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
                 }
-                continue;
+                break;
 
             case DnComponents.XMPPADDR:
-
                 // XmpAddr is an OtherName see method getUTF8String...... for asn.1 definition
                 for (final String xmppAddr : CertTools.getPartsFromDN(str, CertTools.XMPPADDR)) {
                     final ASN1EncodableVector v = new ASN1EncodableVector();
@@ -2728,10 +2728,9 @@ public abstract class CertTools {
                     v.add(new DERTaggedObject(true, 0, new DERUTF8String(xmppAddr)));
                     vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
                 }
-                continue;
+                break;
 
             case DnComponents.SRVNAME:
-
                 // srvName is an OtherName see method getIA5String...... for asn.1 definition
                 for (final String srvName : CertTools.getPartsFromDN(str, CertTools.SRVNAME)) {
                     final ASN1EncodableVector v = new ASN1EncodableVector();
@@ -2739,11 +2738,9 @@ public abstract class CertTools {
                     v.add(new DERTaggedObject(true, 0, new DERIA5String(srvName)));
                     vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
                 }
-
-                continue;
-
+                break;
+                
             case DnComponents.FASCN:
-
                 // FASC-N is an OtherName see method getOctetString...... for asn.1 definition (PIV FIPS 201-2)
                 // We take the input as being a hex encoded octet string
                 for (final String fascN : CertTools.getPartsFromDN(str, CertTools.FASCN)) {
@@ -2752,11 +2749,9 @@ public abstract class CertTools {
                     v.add(new DERTaggedObject(true, 0, new DEROctetString(Hex.decode(fascN))));
                     vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
                 }
-
-                continue;
-
+                break;
+                
             case DnComponents.PERMANENTIDENTIFIER:
-
                 // PermanentIdentifier is an OtherName see method getPermananentIdentifier... for asn.1 definition
                 for (final String permanentIdentifier : CertTools.getPartsFromDN(str, CertTools.PERMANENTIDENTIFIER)) {
                     final String[] values = getPermanentIdentifierValues(permanentIdentifier);
@@ -2775,11 +2770,9 @@ public abstract class CertTools {
                     final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
                     vec.add(gn);
                 }
-
-                continue;
+                break;
 
             case DnComponents.GUID:
-
                 for (final String guid : CertTools.getPartsFromDN(str, CertTools.GUID)) {
                     final ASN1EncodableVector v = new ASN1EncodableVector();
                     final String dashRemovedGuid = guid.replace("-", "");
@@ -2793,11 +2786,9 @@ public abstract class CertTools {
                         log.error("Cannot decode hexadecimal guid, ignoring: " + guid);
                     }
                 }
-
-                continue;
+                break;
 
             case DnComponents.KRB5PRINCIPAL:
-
                 // Krb5PrincipalName is an OtherName, see method getKrb5Principal...for ASN.1 definition
                 for (final String principalString : CertTools.getPartsFromDN(str, CertTools.KRB5PRINCIPAL)) {
                     // Start by parsing the input string to separate it in different parts
@@ -2855,11 +2846,10 @@ public abstract class CertTools {
                     final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
                     vec.add(gn);
                 }
-
-                continue;
+                break;
 
             case DnComponents.SUBJECTIDENTIFICATIONMETHOD:
-
+            case RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD:
                 // SIM is an OtherName. See RFC-4683
                 for (final String internalSimString : CertTools.getPartsFromDN(str, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD)) {
                     if (StringUtils.isNotBlank(internalSimString)) {
@@ -2873,12 +2863,11 @@ public abstract class CertTools {
                         }
                     }
                 }
-
-                continue;
+                break;
 
             default:
                 log.info("Unknown SAN tag encountered!" + subResult[0]);
-                continue;
+                break;
             }
         }
 
