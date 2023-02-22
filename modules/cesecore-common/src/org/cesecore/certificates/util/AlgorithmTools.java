@@ -175,6 +175,7 @@ public abstract class AlgorithmTools {
     private static Map<String, List<String>> allEcCurveNamesKnownByProvider = preProcessCurveNames(true);
     private static Map<String, List<String>> allGostCurveNames = preProcessGostCurveNames(false);
     private static Map<String, List<String>> allGostCurveNamesKnownByProvider = preProcessGostCurveNames(true);
+    private static Map<String, List<String>> ecKeySpecAliases;
 
     /**
      * Gets the name of matching key algorithm from a public key as defined by
@@ -631,6 +632,14 @@ public abstract class AlgorithmTools {
 
     /** @return a list of aliases for the provided curve name (including the provided name) */
     public static List<String> getEcKeySpecAliases(final String namedEllipticCurve) {
+        // Turns out this method slows down issuance significantly, cache results. See ECA-XXXX
+        if (ecKeySpecAliases != null) {
+            if (ecKeySpecAliases.containsKey(namedEllipticCurve)) {
+                return ecKeySpecAliases.get(namedEllipticCurve);
+            }
+        } else {
+            ecKeySpecAliases = new HashMap<>();
+        }
         final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(namedEllipticCurve);
         final List<String> ret = new ArrayList<>();
         ret.add(namedEllipticCurve);
@@ -647,6 +656,7 @@ public abstract class AlgorithmTools {
                 }
             }
         }
+        ecKeySpecAliases.put(namedEllipticCurve, ret);
         return ret;
     }
 
