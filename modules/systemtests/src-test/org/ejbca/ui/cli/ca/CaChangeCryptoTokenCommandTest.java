@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -116,9 +115,9 @@ public class CaChangeCryptoTokenCommandTest {
             // Default properties from creating the Test CA
             assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING));
             assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING));
-            assertNull(info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
-            assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
-            assertEquals(null, info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING));
+            assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
+            assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
+            assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING));
             
             // Second change the crypto token
             assertEquals(CommandResult.SUCCESS, caChangeCryptoTokenCommand.execute(EXECUTE_HAPPY_PATH_ARGS));
@@ -129,7 +128,7 @@ public class CaChangeCryptoTokenCommandTest {
             assertEquals("Crypto token id should have changed", cryptoTokenId2, cryptoTokenId);
             assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING));
             assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING));
-            assertNull(info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
+            assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
             assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
             assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING));
 
