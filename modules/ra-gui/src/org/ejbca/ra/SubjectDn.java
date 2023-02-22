@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
@@ -23,7 +23,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * Represents two "interfaces": list (needed for JSF) and map interface
  * for the subject DN fields of the specified end entity profile.
  * 
- * @version $Id$
  *
  */
 public class SubjectDn extends RaAbstractDn{
@@ -41,12 +40,12 @@ public class SubjectDn extends RaAbstractDn{
     }
 
     @Override
-    protected ArrayList<String> getAbstractDnFields() {
+    protected List<String> getAbstractDnFields() {
         return DnComponents.getDnProfileFields();
     }
 
     @Override
     protected String reorder(String dnBeforeReordering) {
-        return CertTools.stringToBcX500Name(dnBeforeReordering.toString(), nameStyle, ldapOrder).toString();
+        return CertTools.stringToBcX500Name(dnBeforeReordering, nameStyle, ldapOrder).toString();
     }
 }
