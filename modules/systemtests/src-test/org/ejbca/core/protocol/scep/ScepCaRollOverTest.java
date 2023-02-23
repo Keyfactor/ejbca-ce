@@ -170,6 +170,7 @@ public class ScepCaRollOverTest extends ScepTestBase {
     @Before
     public void setUp() throws Exception {
         // Pre-generate key for all requests to speed things up a bit
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
         try {
             keyTestRollover = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (Exception e) {

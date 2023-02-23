@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.security.cert.X509Certificate;
@@ -58,8 +59,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
     private static final String user = "TestUser";
     private static final X500Name userDN = new X500Name("CN=" + user + ", O=PrimeKey Solutions AB, C=SE");
-    private final X509Certificate cacert;
-    private final X509CAInfo testx509ca;
+    private X509Certificate cacert;
+    private X509CAInfo testx509ca;
     private final CmpConfiguration cmpConfiguration;
     private static final String cmpAlias = "CmpConfirmMessageTestConfAlias";
     private CryptoTokenRunner cryptoTokenRunner;
@@ -73,6 +74,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     @Parameters(name = "{0}")
     public static Collection<CryptoTokenRunner> runners() {
        return CryptoTokenRunner.defaultRunners;
+       
     }
      
     @BeforeClass
@@ -82,16 +84,16 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
     public CmpConfirmMessageTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
         this.cryptoTokenRunner = cryptoTokenRunner;
-        this.testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
-        this.cacert = (X509Certificate) this.testx509ca.getCertificateChain().get(0);
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
+    
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        //this.caSession.addCA(ADMIN, this.testx509ca);
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
+        testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
+        this.cacert = (X509Certificate) this.testx509ca.getCertificateChain().get(0);
         log.debug("this.testx509ca.getSubjectDN(): " + this.testx509ca.getSubjectDN());
         log.debug("caid: " + this.testx509ca.getCAId());
         
