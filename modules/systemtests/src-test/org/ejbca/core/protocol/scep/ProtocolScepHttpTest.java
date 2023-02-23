@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -172,6 +173,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
 
     @Before
     public void setUp() throws Exception {
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
         // Pre-generate key for all requests to speed things up a bit
         try {
             key1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
