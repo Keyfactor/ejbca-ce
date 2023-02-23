@@ -145,8 +145,9 @@ public class RaSearchCertsBean implements Serializable {
                 throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
                 CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException/*, ParseException*/ {
             //We can implement invalidityDate in RA GUI in the future, for now send null..
-            CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDn, raCertificateDetails.getSerialnumberRaw()); 
-            certRevocationParameters.setInvalidityDate(null);
+            BigInteger bintSN = new BigInteger(raCertificateDetails.getSerialnumberRaw());
+            String serialNumberHexString = bintSN.toString(16);
+            CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDn, serialNumberHexString); 
             certRevocationParameters.setRevocationDate(newDate);
             certRevocationParameters.setReason(newRevocationReason);
             raMasterApiProxyBean.revokeCertWithParameters(
