@@ -29,6 +29,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -102,8 +103,9 @@ public class RaViewCertBean implements Serializable {
                 final Date newDate, final String issuerDn)
                 throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
                 CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException {
-            CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDn, raCertificateDetails.getSerialnumberRaw()); 
-            certRevocationParameters.setInvalidityDate(null);
+            BigInteger bintSN = new BigInteger(raCertificateDetails.getSerialnumberRaw());
+            String serialNumberHexString = bintSN.toString(16);
+            CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDn,  serialNumberHexString); 
             certRevocationParameters.setRevocationDate(newDate);
             certRevocationParameters.setReason(newRevocationReason);
             raMasterApiProxyBean.revokeCertWithParameters(
