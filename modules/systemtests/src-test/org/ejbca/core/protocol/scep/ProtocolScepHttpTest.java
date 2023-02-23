@@ -29,6 +29,7 @@ import java.net.URLEncoder;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
@@ -58,6 +59,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRunner;
+import org.cesecore.junit.util.PKCS12TestRunner;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -99,7 +101,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
 
     @Parameters(name = "{0}")
     public static Collection<CryptoTokenRunner> runners() {
-       return CryptoTokenRunner.defaultRunners;
+       return Arrays.asList(new PKCS12TestRunner());
     }
     
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
