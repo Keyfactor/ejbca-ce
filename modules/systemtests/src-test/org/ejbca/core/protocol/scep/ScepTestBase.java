@@ -172,7 +172,7 @@ public abstract class ScepTestBase {
         }
     }
     
-    private void changeScepUser(String userName, String userDN, int caId)
+    protected void changeScepUser(String userName, String userDN, int caId)
             throws CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             EjbcaException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException {
         endEntityManagementSession.changeUser(admin, createEndEntityInformation(userName, userDN, caId), false);
