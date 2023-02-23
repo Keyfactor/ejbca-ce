@@ -667,27 +667,52 @@ public class ProtocolScepHttpTest extends ScepTestBase {
      }
 
     @Test
-    public void test12EnforcementOfUniqueDN() throws Exception {
+    public void testEnforcementOfUniqueDN() throws Exception {
         
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         
-        createScepUser(userName1, userDN1);
-        genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, key1, BouncyCastleProvider.PROVIDER_NAME, SMIMECapability.dES_CBC);
-        createScepUser(userName2, userDN1);
-
-        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, key2, BouncyCastleProvider.PROVIDER_NAME, SMIMECapability.dES_CBC);
-        // Send message with GET
-        final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
-        String returnMessageString = new String(retMsg);      
-        String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage(
-                "createcert.subjectdn_exists_for_another_user", userName1, "'" + userName2 + "'");
+        final String first = "testEnforcementOfUniqueDN_user1";
+        final String second = "testEnforcementOfUniqueDN_user2";
+        final String firstUserDn = "CN="+first;
+        final String secondUserDn = "CN="+second;
         
-        if("createcert.subjectdn_exists_for_another_user".equals(localizedMessage)) {
-            String currentDirectory = System.getProperty("user.dir");
-            throw new IllegalStateException("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
+        try {
+            createScepUser(first, firstUserDn);
+            final byte[] firstMessage = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, firstUserDn, key1, BouncyCastleProvider.PROVIDER_NAME,
+                    SMIMECapability.dES_CBC);
+            sendScep(true, firstMessage, HttpServletResponse.SC_OK);
+            createScepUser(second, secondUserDn);
+            changeScepUser(second, firstUserDn, x509ca.getCAId());
+
+            final byte[] secondMessage = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, secondUserDn, key2, BouncyCastleProvider.PROVIDER_NAME,
+                    SMIMECapability.dES_CBC);
+            // Send message with GET
+            final byte[] retMsg = sendScep(true, secondMessage, HttpServletResponse.SC_BAD_REQUEST);
+            String returnMessageString = new String(retMsg);
+            String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", second,
+                    "'" + first + "'");
+
+            if ("createcert.subjectdn_exists_for_another_user".equals(localizedMessage)) {
+                String currentDirectory = System.getProperty("user.dir");
+                throw new IllegalStateException("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
+            }
+            assertTrue(returnMessageString + ": should contain: " + localizedMessage, returnMessageString.indexOf(localizedMessage) >= 0);
+        } finally {
+            // remove user
+            try {
+                endEntityManagementSession.deleteUser(admin, first);
+            } catch (Exception e) {
+                // NOPMD: ignore
+            }
+            try {
+                endEntityManagementSession.deleteUser(admin, second);
+            } catch (Exception e) {
+                // NOPMD: ignore
+            }
+            internalCertificateStoreSession.removeCertificatesBySubject(firstUserDn);
+            internalCertificateStoreSession.removeCertificatesBySubject(secondUserDn);
         }
-        assertTrue(returnMessageString+": should contain: "+localizedMessage, returnMessageString.indexOf(localizedMessage) >= 0);
     }
     
    
