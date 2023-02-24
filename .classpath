@@ -182,7 +182,6 @@
 			<attribute name="owner.project.facets" value="jst.jsf;jst.web"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-fileupload-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.35.jar"/>
@@ -236,6 +235,7 @@
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.21.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-4.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-4.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-4.0.0.jar"/>
