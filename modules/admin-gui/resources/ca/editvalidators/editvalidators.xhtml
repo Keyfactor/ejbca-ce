@@ -70,7 +70,7 @@
 				</h:panelGroup>				
 	        	<h:panelGrid columns="1">
 	        		<h:outputText value="#{web.text.NOVALIDATORSEXIST}" rendered="#{!validatorsBean.existsValidators}" />
-					<h:commandButton value="#{web.text.ADD}" action="#{validatorsBean.actionAdd}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}">
+					<h:commandButton value="#{web.text.ADD}" action="#{validatorsBean.actionAdd}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
 				</h:panelGrid>
         	</h:form>
         	
