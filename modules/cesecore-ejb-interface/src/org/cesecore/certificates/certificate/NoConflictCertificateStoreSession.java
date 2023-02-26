@@ -17,6 +17,7 @@ import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
@@ -28,8 +29,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
  * <p>For NoConflictCertificateData the methods perform additional logic to check that it gets the most recent
  * entry if there's more than one (taking permanent revocations into account), and for updates it
  * appends new entries instead of updating existing ones. 
- * 
- * @version $Id$
  */
 public interface NoConflictCertificateStoreSession  {
 
@@ -53,7 +52,8 @@ public interface NoConflictCertificateStoreSession  {
     String generateDummyFingerprint(String issuerdn, BigInteger certserno);
 
     /** @see CertificateStoreSession#listRevokedCertInfo */
-    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl);
+    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, CRLInfo lastBaseCrlInfo, 
+            boolean keepExpiredCertsOnCrl, boolean allowInvalidityDate);
     
     /** @see CertificateStoreSession#setStatus */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;

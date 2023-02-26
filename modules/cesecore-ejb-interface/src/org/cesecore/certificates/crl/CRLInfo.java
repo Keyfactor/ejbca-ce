@@ -21,7 +21,6 @@ import java.util.Date;
 
 /**
  * Holds information about a CRL stored in the database.
- *
  */
 public final class CRLInfo implements Serializable {
     private static final long serialVersionUID = 4942836797714142516L;
@@ -47,10 +46,10 @@ public final class CRLInfo implements Serializable {
         this.nextUpdate = new Date(crlData.getNextUpdate());
         this.crlData = crlData;
     }
-    
+
     /**
      * This constructor is used as a helper to show GUI data, skipping the crl which could be heavy hence speed up GUI load.
-     *  
+     *
      * @param subjectDN
      * @param crlPartitionIndex
      * @param crlNumber

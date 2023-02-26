@@ -21,8 +21,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 
 /**
  * Local interface for {@link NoConflictCertificateStoreSession}.
- * 
- * @version $Id$
  */
 @Local
 public interface NoConflictCertificateStoreSessionLocal extends NoConflictCertificateStoreSession {
