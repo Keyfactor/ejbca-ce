@@ -32,8 +32,6 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * Low level CRUD functions to access NoConflictCertificateData 
- *  
- * @version $Id$
  */
 @Stateless // Local only bean, no remote interface
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -88,7 +86,8 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
     }
     
     @Override
-    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate, final boolean keepExpiredCertsOnCrl) {
+    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate, 
+            final boolean keepExpiredCertsOnCrl, final boolean allowInvalidityDate) {
         if (log.isDebugEnabled()) {
             log.debug("Querying for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "'" +
                     ", Delta CRL: " + deltaCrl +
@@ -114,6 +113,17 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         } else {
             ordering = "";
         }
+        /*if (allowInvalidityDate && deltaCrl) {
+            // Delta CRL with invalidity date
+            query = getEntityManager().createNativeQuery(
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, a.invalidityDate as invalidityDate FROM NoConflictCertificateData a WHERE "
+                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND a.updateTime>:lastBaseCrlDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
+                            + crlPartitionExpression + ordering,
+                    "RevokedCertInfoSubset");
+            query.setParameter("lastBaseCrlDate", lastBaseCrlDate);   
+            query.setParameter("revocationDate", -1L);
+        }
+        else if (deltaCrl) {*/
         if (deltaCrl) {
             // Delta CRL
             query = getEntityManager().createNativeQuery(
@@ -138,7 +148,7 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         query.setParameter("status1", CertificateConstants.CERT_REVOKED);
         query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
         query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
-        return getRevokedCertInfosInternal(query);
+        return getRevokedCertInfosInternal(query, allowInvalidityDate);
     }
     
 }
