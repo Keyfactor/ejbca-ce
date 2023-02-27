@@ -274,7 +274,6 @@
     	<copy todir="${mod.ejbca-db-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${cli.classpath.property}"/>
     		<fileset dir="${ejbca.home}/lib/hibernate" includes="jboss-logging-*.jar"/>
-    		<fileset dir="${ejbca.home}/lib/ext" includes="geronimo-osgi-locator-*.jar"/>
     	</copy>
     	<pathconvert property="ejbca-db-cli.dependencies" pathsep=" ">
     	    <path>

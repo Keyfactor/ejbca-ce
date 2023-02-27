@@ -102,14 +102,6 @@
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
-    <property name="mod.externalra.path" location="${mod.path}/externalra" />
-    <property name="mod.externalra.lib" location="${mod.dist.path}/externalra.jar" />
-    <property name="mod.externalra-cli.path" location="${ejbca.dist.path}/externalra-cli" />
-    <property name="mod.externalra-cli.lib" location="${mod.externalra-cli.path}/externalra-cli.jar" />
-    <property name="mod.externalra-service.lib" location="${mod.dist.path}/externalra-service.jar" />
-    <property name="mod.externalra-datasources.dist" location="${ejbca.dist.path}/datasources" />
-    <property name="mod.externalra-scep.path" location="${mod.path}/externalra-scep" />
-    <property name="mod.externalra-scep.war" location="${ejbca.dist.path}/scepraserver.war" />
     <property name="mod.logsigning.lib" location="${ejbca.dist.path}/ejbcalogsigning.jar" />
     <property name="mod.jbosslog4jsafer.lib" location="${mod.dist.path}/jbosslog4jsafer.jar" />
 	<property name="mod.scep-ra.path" location="${mod.path}/scep-ra" />
@@ -194,15 +186,8 @@
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
-	<property name="externalra.enabled" value="false"/>
 	<property name="ejbcaws.enabled" value="true" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
-	<condition property="externalra.enabled.true">
-		<and>
-			<istrue value="${externalra.enabled}"/>
-			<available file="${mod.externalra.path}/build.xml" />
-		</and>
-	</condition>
 
 	<!-- Files of global interest -->
 	<!-- Depends on load of propertyDefaults.xml...therefore put in the end
@@ -428,13 +413,10 @@
         <fileset dir="${ejbca.home}/lib/jee/soapclient">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${ejbca.home}/lib/ext">
-            <include name="geronimo-osgi-locator*.jar"/>
-        </fileset>
         <fileset dir="${ejbca.home}/lib/hibernate">
         	<include name="stax-ex-*.jar"/>
        	</fileset>
-    	
+
     	<fileset dir="${ejbca.home}/lib/jee">
     		<include name="jaxws-api-*.jar"/>
     		<include name="javax.jws-api-*.jar"/>
@@ -576,14 +558,6 @@
     
     <condition property="mod.va.exists">
         <available file="${mod.va.path}/build.xml" />
-    </condition>
-        
-	<condition property="mod.externalra.exists">
-		<available file="${mod.externalra.path}/build.xml" />
-    </condition>
-	
-	<condition property="mod.externalra-scep.exists">
-		<available file="${mod.externalra-scep.path}/build.xml" />
     </condition>
 
 	<condition property="ejbca-db-cli.available">
