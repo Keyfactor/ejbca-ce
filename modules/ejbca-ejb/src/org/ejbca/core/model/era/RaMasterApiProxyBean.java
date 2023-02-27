@@ -16,6 +16,7 @@ package org.ejbca.core.model.era;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigInteger;
@@ -227,19 +228,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         try {
             // Load downstream peer implementation if available in this version of EJBCA
             final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerDownstreamImpl");
-            implementations.add((RaMasterApi) c.newInstance());
+            implementations.add((RaMasterApi) c.getDeclaredConstructor().newInstance());
         } catch (ClassNotFoundException e) {
             log.debug("RaMasterApi over Peers is not available on this system.");
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             log.warn("Failed to instantiate RaMasterApi over Peers: " + e.getMessage());
-        }
+        } 
         try {
             // Load upstream peer implementation if available in this version of EJBCA
             final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerUpstreamImpl");
-            implementations.add((RaMasterApi) c.newInstance());
+            implementations.add((RaMasterApi) c.getDeclaredConstructor().newInstance());
         } catch (ClassNotFoundException e) {
             log.debug("RaMasterApi over Peers is not available on this system.");
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             log.warn("Failed to instantiate RaMasterApi over Peers: " + e.getMessage());
         }
         implementations.add(raMasterApiSession);
