@@ -240,7 +240,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
             return false;
         }
         MSAutoEnrollmentSettingsTemplate other = (MSAutoEnrollmentSettingsTemplate) obj;
-        return !oid.equals(other.oid);
+        return oid.equals(other.oid);
     }
 
     @Override
