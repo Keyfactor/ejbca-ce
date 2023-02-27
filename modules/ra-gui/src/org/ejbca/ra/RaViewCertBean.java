@@ -35,6 +35,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -61,19 +62,25 @@ public class RaViewCertBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @ManagedProperty(value = "#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
-    public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
-    @ManagedProperty(value="#{raLocaleBean}")
+    public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
+        this.raAuthenticationBean = raAuthenticationBean;
+    }
+
+    @ManagedProperty(value = "#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
+
+    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
+        this.raLocaleBean = raLocaleBean;
+    }
 
     private String fingerprint = null;
     private RaCertificateDetails raCertificateDetails = null;
     private Map<Integer, String> eepIdToNameMap = null;
     private Map<Integer, String> cpIdToNameMap = null;
-    private Map<String,String> caSubjectToNameMap = new HashMap<>();
+    private Map<String, String> caSubjectToNameMap = new HashMap<>();
     private Map<String, Boolean> caNameToAllowsChangeOfRevocationReason = new HashMap<>();
     private Map<String, Boolean> cpNameToAllowsRevocationBackdating = new HashMap<>();
 
@@ -82,49 +89,58 @@ public class RaViewCertBean implements Serializable {
         public RaLocaleBean getRaLocaleBean() {
             return raLocaleBean;
         }
+
         @Override
         public UIComponent getConfirmPasswordComponent() {
             return null;
         }
+
         @Override
-        public boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException {
-            final boolean ret = raMasterApiProxyBean.changeCertificateStatus(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint(),
-                    newStatus, newRevocationReason);
+        public boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason)
+                throws ApprovalException, WaitingForApprovalException {
+            final boolean ret = raMasterApiProxyBean.changeCertificateStatus(raAuthenticationBean.getAuthenticationToken(),
+                    raCertificateDetails.getFingerprint(), newStatus, newRevocationReason);
             if (ret) {
                 // Re-initialize object if status has changed
-                final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
-                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
-                        caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
+                final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
+                        raCertificateDetails.getFingerprint());
+                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
+                        cpNameToAllowsRevocationBackdating);
             }
             return ret;
         }
+
         @Override
-        public void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason,
-                final Date newDate, final String issuerDn)
-                throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
-                CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException {
+        public void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason, final Date newDate,
+                final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
+                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException,
+                CertificateProfileDoesNotExistException {
             BigInteger bintSN = new BigInteger(raCertificateDetails.getSerialnumberRaw());
             String serialNumberHexString = bintSN.toString(16);
-            CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDn,  serialNumberHexString); 
-            certRevocationParameters.setRevocationDate(newDate);
-            certRevocationParameters.setReason(newRevocationReason);
-            raMasterApiProxyBean.revokeCertWithParameters(
-                    raAuthenticationBean.getAuthenticationToken(),certRevocationParameters, true);
+            CertRevocationDto certRevocationMetadata = new CertRevocationDto(issuerDn, serialNumberHexString);
+            certRevocationMetadata.setRevocationDate(newDate);
+            certRevocationMetadata.setReason(newRevocationReason);
+            certRevocationMetadata.setCheckDate(newDate == null? false : true);
+            raMasterApiProxyBean.revokeCertWithMetadata(raAuthenticationBean.getAuthenticationToken(), certRevocationMetadata);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
-            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
-                    caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
+            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
+                    cpNameToAllowsRevocationBackdating);
         }
+
         @Override
-        public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, 
-                                    NoSuchEndEntityException, EndEntityProfileValidationException {
-            final boolean ret = raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getUsername(), raCertificateDetails.getPassword(), 
-                                    EJBTools.wrap(raCertificateDetails.getCertificate()), false);
+        public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException,
+                AuthorizationDeniedException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
+            final boolean ret = raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(),
+                    raCertificateDetails.getUsername(), raCertificateDetails.getPassword(), EJBTools.wrap(raCertificateDetails.getCertificate()),
+                    false);
             return ret;
         }
+
         @Override
         public boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) {
-            final boolean ret = raMasterApiProxyBean.keyRecoveryPossible(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getCertificate(), raCertificateDetails.getUsername());
+            final boolean ret = raMasterApiProxyBean.keyRecoveryPossible(raAuthenticationBean.getAuthenticationToken(),
+                    raCertificateDetails.getCertificate(), raCertificateDetails.getUsername());
             return ret;
         }
     };
@@ -132,14 +148,14 @@ public class RaViewCertBean implements Serializable {
     @PostConstruct
     public void postConstruct() {
         fingerprint = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("fp");
-        if (fingerprint!=null) {
+        if (fingerprint != null) {
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(), fingerprint);
-            if (cdw!=null) {
+            if (cdw != null) {
                 cpIdToNameMap = raMasterApiProxyBean.getAuthorizedCertificateProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
                 eepIdToNameMap = raMasterApiProxyBean.getAuthorizedEndEntityProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
                 final List<CAInfo> caInfos = new ArrayList<>(raMasterApiProxyBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
-                final IdNameHashMap<CertificateProfile> cpMap = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(
-                        raAuthenticationBean.getAuthenticationToken()); 
+                final IdNameHashMap<CertificateProfile> cpMap = raMasterApiProxyBean
+                        .getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
                 for (Integer cpId : cpMap.idKeySet()) {
                     final CertificateProfile currentCp = cpMap.getValue(cpId);
                     cpNameToAllowsRevocationBackdating.put(cpIdToNameMap.get(cpId), currentCp.getAllowBackdatedRevocation());
@@ -148,13 +164,17 @@ public class RaViewCertBean implements Serializable {
                     caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
                     caNameToAllowsChangeOfRevocationReason.put(caInfo.getName(), caInfo.isAllowChangingRevocationReason());
                 }
-                raCertificateDetails = new RaCertificateDetails(cdw, raCertificateDetailsCallbacks,
-                        cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
-                        cpNameToAllowsRevocationBackdating);
+                raCertificateDetails = new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
+                        caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
             }
         }
     }
 
-    public String getFingerprint() { return fingerprint; }
-    public RaCertificateDetails getCertificate() { return raCertificateDetails; }
+    public String getFingerprint() {
+        return fingerprint;
+    }
+
+    public RaCertificateDetails getCertificate() {
+        return raCertificateDetails;
+    }
 }

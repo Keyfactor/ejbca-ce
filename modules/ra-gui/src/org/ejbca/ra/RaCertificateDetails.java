@@ -53,6 +53,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -90,10 +91,12 @@ public class RaCertificateDetails {
          * @param newDate New revocation date (can be null if backdate is not desired)
          * @param issuerDn Distinguished name of certificate issuer
          * @throws RevokeBackDateNotAllowedForProfileException Backdating fails if not allowed in certificate profile
+         * @throws CertificateProfileDoesNotExistException 
+         * @throws IllegalArgumentException 
          */
         void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason, final Date newDate,
                 final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException;
+                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, IllegalArgumentException, CertificateProfileDoesNotExistException;
         boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
                                                                                 WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
         boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
@@ -639,7 +642,7 @@ public class RaCertificateDetails {
                 callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             }
             log.error(e);
-        } catch (NoSuchEndEntityException | CADoesntExistsException | AuthorizationDeniedException e) {
+        } catch (NoSuchEndEntityException | CertificateProfileDoesNotExistException | CADoesntExistsException | AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             log.error(e);
         }
