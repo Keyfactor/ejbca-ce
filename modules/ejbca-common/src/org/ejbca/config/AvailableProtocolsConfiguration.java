@@ -52,6 +52,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         RA_WEB("RA Web", "/ejbca/ra"),
         REST_CA_MANAGEMENT("REST CA Management", "/ejbca/ejbca-rest-api/v1/ca_management"),
         REST_CERTIFICATE_MANAGEMENT("REST Certificate Management", "/ejbca/ejbca-rest-api/v1/certificate"),
+        REST_COAP_MANAGEMENT("REST Coap Management", "/ejbca/ejbca-rest-api/v1/coap"),
         REST_CRYPTOTOKEN_MANAGEMENT("REST Crypto Token Management", "/ejbca/ejbca-rest-api/v1/cryptotoken"),
         REST_ENDENTITY_MANAGEMENT("REST End Entity Management", "/ejbca/ejbca-rest-api/v1/endentity"),
         REST_ENDENTITY_MANAGEMENT_V2("REST End Entity Management V2", "/ejbca/ejbca-rest-api/v2/endentity"),
@@ -131,6 +132,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
+                protocol.equals(AvailableProtocols.REST_COAP_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) || 
                 protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName()) || 

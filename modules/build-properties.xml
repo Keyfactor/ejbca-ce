@@ -188,7 +188,7 @@
     <property name="java.target.version" value="${java.specification.version}"/>
 	<property name="ejbcaws.enabled" value="true" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
-	
+
 	<!-- Files of global interest -->
 	<!-- Depends on load of propertyDefaults.xml...therefore put in the end
     <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
@@ -413,6 +413,16 @@
         <fileset dir="${ejbca.home}/lib/jee/soapclient">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${ejbca.home}/lib/hibernate">
+        	<include name="stax-ex-*.jar"/>
+       	</fileset>
+
+    	<fileset dir="${ejbca.home}/lib/jee">
+    		<include name="jaxws-api-*.jar"/>
+    		<include name="javax.jws-api-*.jar"/>
+    		<include name="activation-*.jar"/>
+    		<include name="javax.xml.soap-api-*.jar"/>
+    	</fileset>
     </path>
 
 	<path id="lib.servicemanifestbuilder.classpath">
