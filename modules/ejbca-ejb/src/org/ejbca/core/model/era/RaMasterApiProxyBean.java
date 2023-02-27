@@ -58,7 +58,6 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -110,7 +109,6 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
@@ -1967,43 +1965,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public void revokeCertWithParameters(AuthenticationToken admin, CertRevocationDto certificateRevocationParameters, boolean checkDate)
-            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
-        // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
-        CADoesntExistsException caDoesntExistException = null;
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 16) {
-                try {
-                    raMasterApi.revokeCertWithParameters(admin, certificateRevocationParameters, checkDate);
-                    // if it completed successfully, break
-                    break;
-                } catch (CADoesntExistsException e) {
-                    caDoesntExistException = e;
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            } else if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
-                try {
-                    final BigInteger serialNr = StringTools.getBigIntegerFromHexString(certificateRevocationParameters.getCertificateSN());
-                    raMasterApi.revokeCert(admin, serialNr, certificateRevocationParameters.getRevocationDate(),
-                            certificateRevocationParameters.getIssuerDN(), certificateRevocationParameters.getReason(), checkDate);
-
-                    // if it completed successfully, break
-                    break;
-                } catch (CADoesntExistsException e) {
-                    caDoesntExistException = e;
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        if (caDoesntExistException != null) {
-            throw caDoesntExistException;
-        }
-    }
-    
-    @Override
     public void revokeCert(AuthenticationToken admin, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
@@ -2031,7 +1992,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, CertificateProfileDoesNotExistException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, CertificateProfileDoesNotExistException {
         // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
         CADoesntExistsException caDoesntExistException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
