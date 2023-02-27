@@ -24,7 +24,6 @@
 		<path refid="lib.jsf.classpath"/>
 		<path refid="lib.tomahawk.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.commons-fileupload.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
