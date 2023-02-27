@@ -96,7 +96,7 @@ public class RaCertificateDetails {
          */
         void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason, final Date newDate,
                 final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, IllegalArgumentException, CertificateProfileDoesNotExistException;
+                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, CertificateProfileDoesNotExistException;
         boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
                                                                                 WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
         boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
