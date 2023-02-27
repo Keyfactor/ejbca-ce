@@ -97,7 +97,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
         try {
             final File exportFile = AuditDevicesConfig.getExportFile(properties, timestamp);
             try (final SigningFileOutputStream signingFileOutputStream = new SigningFileOutputStream(exportFile, cryptoToken, signatureDetails)) {
-                final AuditExporter auditExporter = c.newInstance();
+                final AuditExporter auditExporter = c.getDeclaredConstructor().newInstance();
                 auditExporter.setOutputStream(signingFileOutputStream);
                 verifyAndOptionalExport(auditExporter, report, timestamp, AuditDevicesConfig.getAuditLogExportFetchSize(properties));
                 report.setExportedFile(exportFile.getCanonicalPath());
