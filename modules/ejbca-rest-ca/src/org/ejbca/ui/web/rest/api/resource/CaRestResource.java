@@ -198,6 +198,8 @@ public class CaRestResource extends BaseRestResource {
             final DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
             final ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
             upload.setSizeMax(MAX_CRL_FILE_SIZE);
+            // Upload consists of at least 6 DiskFileItems, at least 5 (or 6 with crlPartitionIndex) form fields and 1 data stream.
+            upload.setFileCountMax(10);
             final List<FileItem> requestItems = upload.parseRequest(httpServletRequest);
             FileItem uploadedFile = null;
             for (final FileItem item : requestItems) {

@@ -20,7 +20,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -154,6 +156,8 @@ public class DnComponents {
     public static final String RFC822NAME = "RFC822NAME";
     public static final String DNSNAME = "DNSNAME";
     public static final String IPADDRESS = "IPADDRESS";
+    public static final String URI = "UNIFORMRESOURCEIDENTIFIER";
+    public static final String URI1 = "URI";
     public static final String UNIFORMRESOURCEID = "UNIFORMRESOURCEID";
     public static final String DIRECTORYNAME = "DIRECTORYNAME";
     public static final String UPN = "UPN";
@@ -229,7 +233,7 @@ public class DnComponents {
         return oids.get(o.toLowerCase(Locale.ROOT));
     }
 
-    public static ArrayList<String> getDnProfileFields() {
+    public static List<String> getDnProfileFields() {
         return dnProfileFields;
     }
 
@@ -237,11 +241,11 @@ public class DnComponents {
         return dnProfileFieldsHashSet.contains(field);
     }
 
-    public static ArrayList<String> getDnLanguageTexts() {
+    public static List<String> getDnLanguageTexts() {
         return dnLanguageTexts;
     }
 
-    public static ArrayList<String> getAltNameFields() {
+    public static List<String> getAltNameFields() {
         return altNameFields;
     }
 
@@ -249,11 +253,11 @@ public class DnComponents {
         return altNameFieldsHashSet.contains(field);
     }
 
-    public static ArrayList<String> getAltNameLanguageTexts() {
+    public static List<String> getAltNameLanguageTexts() {
         return altNameLanguageTexts;
     }
 
-    public static ArrayList<String> getDirAttrFields() {
+    public static List<String> getDirAttrFields() {
         return dirAttrFields;
     }
 
@@ -262,22 +266,22 @@ public class DnComponents {
     }
 
     // Used by DNFieldExtractor and EntityProfile, don't USE
-    public static ArrayList<Integer> getDirAttrDnIds() {
+    public static List<Integer> getDirAttrDnIds() {
         return dirAttrDnIds;
     }
 
     // Used by DNFieldExtractor and EntityProfile, don't USE
-    public static ArrayList<Integer> getAltNameDnIds() {
+    public static List<Integer> getAltNameDnIds() {
         return altNameDnIds;
     }
 
     // Used by DNFieldExtractor and EntityProfile, don't USE
-    public static ArrayList<Integer> getDnDnIds() {
+    public static List<Integer> getDnDnIds() {
         return dnDnIds;
     }
 
     // Used only by DNFieldExtractor, don't USE
-    protected static ArrayList<String> getDnExtractorFields() {
+    protected static List<String> getDnExtractorFields() {
         return dnExtractorFields;
     }
 
@@ -286,7 +290,7 @@ public class DnComponents {
     }
 
     // Used only by DNFieldExtractor, don't USE
-    protected static ArrayList<String> getAltNameExtractorFields() {
+    protected static List<String> getAltNameExtractorFields() {
         return altNameExtractorFields;
     }
 
@@ -295,7 +299,7 @@ public class DnComponents {
     }
 
     // Used only by DNFieldExtractor, don't USE
-    protected static ArrayList<String> getDirAttrExtractorFields() {
+    protected static List<String> getDirAttrExtractorFields() {
         return dirAttrExtractorFields;
     }
 
@@ -335,7 +339,7 @@ public class DnComponents {
     /** This method is only used to initialize EndEntityProfile, because of legacy baggage.
      * Should be refactored sometime! Please don't use this whatever you do!
      */
-    public static HashMap<String, Integer> getProfilenameIdMap() {
+    public static Map<String, Integer> getProfilenameIdMap() {
         return profileNameIdMap;
 
     }
