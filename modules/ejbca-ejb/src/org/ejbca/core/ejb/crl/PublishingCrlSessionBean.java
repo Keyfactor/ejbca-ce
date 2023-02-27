@@ -81,8 +81,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 /**
  * This session bean provides a bridge between EJBCA and CESecore by incorporating CRL creation (CESeCore) with publishing (EJBCA)
  * into a single atomic action.
- *
- *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublishingCrlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
@@ -491,7 +489,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     log.debug("Listing revoked certificates. Free memory=" + freeMemory);
                 }
                 revokedCertificates = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, false,
-                        crlPartitionIndex, lastBaseCrlCreationDate.getTime(), lastBaseCrlInfo, keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
+                        crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
 
                 //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
@@ -507,7 +505,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 log.info("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN,
-                                        false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), lastBaseCrlInfo, keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
+                                        false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
@@ -645,7 +643,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE ) {
                 // Find all revoked certificates
                 revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, crlPartitionIndex, lastBaseCrlInfo.getCreateDate().getTime(), 
-                        lastBaseCrlInfo, true, getAllowInvalidityDate(cainfo));
+                        true, getAllowInvalidityDate(cainfo));
 
                 // If invalidity date is considered when generating delta crl then additional filtering must be applied to the collection of RevokedCertiInfos
                 if (getAllowInvalidityDate(cainfo)) {
@@ -700,7 +698,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 }
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, false, 
-                                        crlPartitionIndex, -1, lastBaseCrlInfo, true, getAllowInvalidityDate(cainfo));
+                                        crlPartitionIndex, -1, true, getAllowInvalidityDate(cainfo));
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
