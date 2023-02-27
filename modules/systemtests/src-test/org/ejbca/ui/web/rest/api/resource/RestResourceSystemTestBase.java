@@ -57,6 +57,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
@@ -144,6 +145,7 @@ public class RestResourceSystemTestBase {
     private static final String HTTPS_HOST = SystemTestsConfiguration.getRemoteHost(CONFIGURATION_SESSION.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
     private static final String HTTPS_PORT = SystemTestsConfiguration.getRemotePortHttps(CONFIGURATION_SESSION.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS));
     //
+    private static KeyStore CLIENT_KEYSTORE;
     private static final String KEY_STORE_PASSWORD = "changeit";
     private static final String TRUSTED_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "truststore_" + new Date().getTime() + ".jks";
     private static final String CERTIFICATE_USER_NAME = "RestApiTestUser";
@@ -243,6 +245,7 @@ public class RestResourceSystemTestBase {
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
                 globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_COAP_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName(), true);
@@ -257,6 +260,7 @@ public class RestResourceSystemTestBase {
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
                 globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), false);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_COAP_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName(), false);
@@ -370,6 +374,15 @@ public class RestResourceSystemTestBase {
         final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilePath);
         keyStore.store(fileOutputStream, KEY_STORE_PASSWORD.toCharArray());
         fileOutputStream.close();
+    }
+
+        protected void setupClientKeyStore(final CAInfo serverCertCaInfo, final KeyPair clientKeys, final X509Certificate clientCert)
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
+        CLIENT_KEYSTORE = initJksKeyStore(LOGIN_STORE_PATH);
+        importDataIntoJksKeystore(LOGIN_STORE_PATH, CLIENT_KEYSTORE, CertTools.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"),
+                trustedCaCertificateChain.get(0).getEncoded(), clientKeys, clientCert.getEncoded());
+
     }
 
     private static Certificate getCertificateFromBytes(final byte[] certificateBytes) throws CertificateException {
