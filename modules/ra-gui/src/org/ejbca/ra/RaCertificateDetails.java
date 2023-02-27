@@ -365,7 +365,7 @@ public class RaCertificateDetails {
         } else {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getUpdateTime(), TimeZone.getDefault());
         }
-        if (certificateData.getInvalidityDate() != null && certificateData.getInvalidityDate() != -1) {
+        if (certificateData.getInvalidityDate() != null && certificateData.getInvalidityDate() != -1 && isCaAllowsInvalidityDate()) {
             this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
         }
         final String subjectKeyIdB64 = certificateData.getSubjectKeyId();
