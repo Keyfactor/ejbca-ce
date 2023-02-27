@@ -67,8 +67,6 @@ import org.junit.Test;
 
 /**
  * Tests Delta CRLs.
- * 
- * @version $Id$
  */
 public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
 
@@ -174,7 +172,8 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         // Get number of last CRL
-        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), false, CertificateConstants.NO_CRL_PARTITION, x509crl.getThisUpdate().getTime());
+        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), false, CertificateConstants.NO_CRL_PARTITION, 
+                x509crl.getThisUpdate().getTime(), false);
         log.debug("Number of revoked certificates=" + revfp.size());
         crl = getLastCrl(testx509ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);

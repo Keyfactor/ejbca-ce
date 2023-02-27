@@ -113,17 +113,6 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         } else {
             ordering = "";
         }
-        /*if (allowInvalidityDate && deltaCrl) {
-            // Delta CRL with invalidity date
-            query = getEntityManager().createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, a.invalidityDate as invalidityDate FROM NoConflictCertificateData a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND a.updateTime>:lastBaseCrlDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
-                            + crlPartitionExpression + ordering,
-                    "RevokedCertInfoSubset");
-            query.setParameter("lastBaseCrlDate", lastBaseCrlDate);   
-            query.setParameter("revocationDate", -1L);
-        }
-        else if (deltaCrl) {*/
         if (deltaCrl) {
             // Delta CRL
             query = getEntityManager().createNativeQuery(
