@@ -73,10 +73,6 @@
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-test"/>
 	<classpathentry kind="src" path="modules/est/src-war"/>
-	<classpathentry kind="src" path="modules/externalra-scep/src"/>
-	<classpathentry kind="src" path="modules/externalra-scep/src-test"/>
-	<classpathentry kind="src" path="modules/externalra/src"/>
-	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
 	<classpathentry kind="src" path="modules/msae/src"/>
@@ -145,7 +141,6 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.4.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/geronimo-osgi-locator-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
