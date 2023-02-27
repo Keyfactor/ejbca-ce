@@ -25,6 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileCountLimitExceededException;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -555,6 +556,11 @@ public class RequestInstance {
 		            debug.printDebugInfo();
 		        }
 		    }
+		} catch (FileCountLimitExceededException e) {
+		    iErrorMessage = "File count upload limit exceeded.";
+		    if (log.isDebugEnabled()) {
+                log.debug(iErrorMessage, e);
+            }
 		} catch (Exception e) {
 			Throwable e1 = e.getCause();
 			if (e1 instanceof CryptoTokenOfflineException) {
@@ -646,6 +652,8 @@ public class RequestInstance {
             diskFileItemFactory.setSizeThreshold(9999);
             ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
 			upload.setSizeMax(REQUEST_MAX_SIZE);
+			// Upload consists of 7 DiskFileItems, 1 is the data stream. 
+			upload.setFileCountMax(10);
             List<FileItem> items = upload.parseRequest(request);
 			Iterator<FileItem> iter = items.iterator();
 			while (iter.hasNext()) {
