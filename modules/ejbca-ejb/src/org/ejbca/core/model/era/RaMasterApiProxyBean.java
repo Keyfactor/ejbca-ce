@@ -3384,7 +3384,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     }
                     // Just try next implementation
                 } catch (CADoesntExistsException e) {
-                    log.info("CA for for poxied request cold not be found:" + e.getMessage());
+                    log.info("CA for for proxied request cold not be found:" + e.getMessage());
                     if (caDoesntExistsException == null) {
                         caDoesntExistsException = e;
                     }
