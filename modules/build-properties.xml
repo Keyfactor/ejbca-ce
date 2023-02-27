@@ -431,6 +431,16 @@
         <fileset dir="${ejbca.home}/lib/ext">
             <include name="geronimo-osgi-locator*.jar"/>
         </fileset>
+        <fileset dir="${ejbca.home}/lib/hibernate">
+        	<include name="stax-ex-*.jar"/>
+       	</fileset>
+    	
+    	<fileset dir="${ejbca.home}/lib/jee">
+    		<include name="jaxws-api-*.jar"/>
+    		<include name="javax.jws-api-*.jar"/>
+    		<include name="activation-*.jar"/>
+    		<include name="javax.xml.soap-api-*.jar"/>
+    	</fileset>
     </path>
 
 	<path id="lib.servicemanifestbuilder.classpath">
