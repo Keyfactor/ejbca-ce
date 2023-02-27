@@ -12,20 +12,33 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
+import java.lang.reflect.InvocationTargetException;
+import java.security.Provider;
 import java.security.Security;
 
+import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 
 /**
  *
  */
 public class P11NGTestRunner extends HardtokenTestRunnerBase {
 
+    private static final Logger log = Logger.getLogger(P11NGTestRunner.class);
+    
     private static final String P11NG_TOKEN_CLASSNAME = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
     
+    private static final String JACKNJI11_PROVIDER = "org.cesecore.keys.token.p11ng.provider.JackNJI11Provider";
+    
     public P11NGTestRunner() {
-        Security.addProvider(new JackNJI11Provider());
+        try {
+            Provider provider = (Provider) Class.forName(JACKNJI11_PROVIDER).getDeclaredConstructor().newInstance();
+            Security.addProvider(provider);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+                | SecurityException | ClassNotFoundException e) {
+            //This is fine, likely just indicated that we're in CE. 
+            log.info("Skipping initialization of P11NG test, P11NG does not seem to be present. " + e.getMessage());
+        }
     }
     
 
