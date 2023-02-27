@@ -17,7 +17,6 @@ import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
@@ -52,8 +51,8 @@ public interface NoConflictCertificateStoreSession  {
     String generateDummyFingerprint(String issuerdn, BigInteger certserno);
 
     /** @see CertificateStoreSession#listRevokedCertInfo */
-    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, CRLInfo lastBaseCrlInfo, 
-            boolean keepExpiredCertsOnCrl, boolean allowInvalidityDate);
+    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, 
+            boolean allowInvalidityDate);
     
     /** @see CertificateStoreSession#setStatus */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
