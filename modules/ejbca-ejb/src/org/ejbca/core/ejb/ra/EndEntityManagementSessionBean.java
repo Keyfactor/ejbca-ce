@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -2264,8 +2265,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                                     ICustomNotificationRecipient plugin;
                                     try {
                                         plugin = (ICustomNotificationRecipient) Thread.currentThread()
-                                                .getContextClassLoader().loadClass(customClassName).newInstance();
-                                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                                                .getContextClassLoader().loadClass(customClassName).getDeclaredConstructor().newInstance();
+                                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                                            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                                         throw new MailException("Custom notification class " + customClassName + " could not be instansiated.", e);
                                     }
                                     recipientEmail = plugin.getRecipientEmails(endEntityInformation);
