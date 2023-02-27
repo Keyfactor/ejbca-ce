@@ -21,6 +21,7 @@ import io.swagger.annotations.SwaggerDefinition.Scheme;
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -175,7 +176,8 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             @QueryParam("invalidity_date") String invalidityDate)
 
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException {
+            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, CertificateProfileDoesNotExistException, 
+            WaitingForApprovalException {
         return super.revokeCertificate(requestContext, issuerDN, serialNumber, reason, date, invalidityDate);
     }
 
