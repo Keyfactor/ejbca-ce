@@ -1061,7 +1061,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private CryptoToken getCryptoTokenAndAssertExistence(int cryptoTokenId) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         if (cryptoToken == null) {
-            throw new RuntimeException("No such CryptoToken for id " + cryptoTokenId);
+            throw new IllegalStateException("No such CryptoToken for id " + cryptoTokenId);
         }
         return cryptoToken;
     }
