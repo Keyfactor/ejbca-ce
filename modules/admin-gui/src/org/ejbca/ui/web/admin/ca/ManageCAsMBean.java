@@ -12,6 +12,32 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.ZipInputStream;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -57,38 +83,13 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.ZipInputStream;
-
 /**
  * 
  * JSF MBean backing the manage ca page.
  *
  * 
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     protected static final Logger log = Logger.getLogger(ManageCAsMBean.class);
@@ -116,7 +117,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private int selectedCaId;
     private String createCaName;
     private Map<Integer, String> caidtonamemap;
-    private Part certificateBundle;
+    private transient Part certificateBundle;
 
     public void setCertificateBundle(final Part certificateBundle) {
         this.certificateBundle = certificateBundle;
@@ -394,7 +395,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                     endEntityProfileSession.getEndEntityProfileId(entry.getValue()));
             if (casInProfile.entrySet().stream().anyMatch(e -> (e.getValue() == selectedCaId))) {
                 endEntityProfileList.add(endEntityProfileSession.getEndEntityProfileName(entry.getKey()));
-                continue;
             }
         }
         return endEntityProfileList;
@@ -519,8 +519,18 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String createAuthCertSignRequest() {
         if (selectedCaId != 0) {
+            
+            int selectedCaType;
+            try {
+                selectedCaType = caSession.getCAInfo(getAdmin(), selectedCaId).getCAType();
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Admin is not authorized to get ca type!", e);
+            }
+            
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaType", selectedCaType);
+
             return EditCaUtil.SIGN_CERT_REQ_NAV;
         } else {
             addErrorMessage("SELECTCAFIRST");

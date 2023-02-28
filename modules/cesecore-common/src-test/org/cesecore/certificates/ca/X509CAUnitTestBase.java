@@ -121,6 +121,7 @@ public class X509CAUnitTestBase {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
             algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
+            algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA) ||
             algName.equals(AlgorithmConstants.SIGALG_ED25519) ||
             algName.equals(AlgorithmConstants.SIGALG_ED448) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA) ||
@@ -156,6 +157,10 @@ public class X509CAUnitTestBase {
             return "DSA1024";
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_DSA)) {
             return "DSA1024";
+        } else if (algName.equals(AlgorithmConstants.SIGALG_DILITHIUM3)) {
+            return AlgorithmConstants.KEYALGORITHM_DILITHIUM3;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_FALCON512)) {
+            return AlgorithmConstants.KEYALGORITHM_FALCON512;
         } else {
             return "1024"; // Assume RSA
         }
