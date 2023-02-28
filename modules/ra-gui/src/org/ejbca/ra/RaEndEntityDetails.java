@@ -90,6 +90,7 @@ public class RaEndEntityDetails {
     private final String sshComment;
     private final String sshForceCommand;
     private final String sshSourceAddress;
+    private final boolean sshVerifyRequired;
 
     private EndEntityProfile endEntityProfile = null;
     private SubjectDn subjectDistinguishedName = null;
@@ -137,6 +138,8 @@ public class RaEndEntityDetails {
             this.sshSourceAddress = sshCriticalOptions.containsKey(
                     SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) ?
                     sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) : null;
+            this.sshVerifyRequired = sshCriticalOptions.containsKey(
+                SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
         } else {
             this.sshTypeEndEntity = false;
             this.sshKeyId = null;
@@ -144,6 +147,7 @@ public class RaEndEntityDetails {
             this.sshComment = null;
             this.sshForceCommand = null;
             this.sshSourceAddress = null;
+            this.sshVerifyRequired = false;
         }
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
@@ -215,6 +219,11 @@ public class RaEndEntityDetails {
     public String getSshComment() { return sshComment; }
     public String getSshForceCommand() { return sshForceCommand; }
     public String getSshSourceAddress() { return sshSourceAddress; }
+    public boolean getSshVerifyRequired() { return sshVerifyRequired; }
+    public String getSshVerifyRequiredString() {
+        return getSshVerifyRequired() ? callbacks.getRaLocaleBean().getMessage("enroll_ssh_critical_verify_required_enabled") :
+                callbacks.getRaLocaleBean().getMessage("enroll_ssh_critical_verify_required_disabled");
+    }
 
     public boolean isSshForceCommandRequired() {
         return this.endEntityProfile.isSshForceCommandRequired();
@@ -230,6 +239,14 @@ public class RaEndEntityDetails {
 
     public boolean isSshSourceAddressModifiable() {
         return this.endEntityProfile.isSshSourceAddressModifiable();
+    }
+
+    public boolean isSshVerifyRequiredModifiable() {
+        return this.endEntityProfile.isSshVerifyRequiredModifiable();
+    }
+
+    public boolean isSshVerifyRequiredRequired() {
+        return this.endEntityProfile.isSshVerifyRequiredRequired();
     }
 
     public String getCreated() { return created; }
