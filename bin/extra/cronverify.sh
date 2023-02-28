@@ -20,16 +20,14 @@ REMOVE_SIGNED_FILE=true
 
 ##### End configuration #####
 
-$CMD_HOME/sign-verify.sh verify $PUBKEY $SIGNED_FILE $SIGNATURE > /dev/null
+"$CMD_HOME/sign-verify.sh verify" "$PUBKEY" "$SIGNED_FILE" "$SIGNATURE" > /dev/null
 
 
 if [ $? != 0 ]; then
   if [ "$CALLSYSLOG" = "true" ]; then
-  echo foo
-    logger -p $LOGPRI "Verification of signed file $SIGNED_FILE failed!"
+    logger -p $LOGPRI "Verification of signed file ${SIGNED_FILE} failed!"
   fi
   if [ "$REMOVE_SIGNED_FILE" = "true" ]; then
-  echo bar
-    rm $SIGNED_FILE
+    rm "$SIGNED_FILE"
   fi
 fi

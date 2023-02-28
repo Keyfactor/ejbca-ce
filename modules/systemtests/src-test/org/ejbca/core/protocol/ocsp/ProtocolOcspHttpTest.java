@@ -13,6 +13,15 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,12 +59,10 @@ import javax.ejb.ObjectNotFoundException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -158,7 +165,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceIn
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
 import org.junit.Before;
@@ -167,15 +173,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 
 /**
@@ -525,30 +522,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
         }
     } // test08OcspEcdsaGood
-
-    /**
-     * Tests ocsp message
-     *
-     * @throws Exception
-     *           error
-     */
-    @Test
-    public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-        int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
-        final CAInfo caInfo = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
-        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-        helper.reloadKeys();
-        try {
-            // Make user and ocspTestCert that we know...
-            createUserCert(ecdsacaid);
-            this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
-        } finally {
-            endEntityManagementSession.deleteUser(admin, "ocsptest");
-            CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
-        }
-    } // test09OcspEcdsaImplicitlyCAGood
 
     @Override
     @Test
@@ -1903,20 +1876,12 @@ Content-Type: text/html; charset=iso-8859-1
                 JCEECPublicKey ecpk = (JCEECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                    assertNull("ImplicitlyCA must have null spec", spec);
-                } else {
-                    assertNotNull("secp256r1 must not have null spec", spec);
-                }
+                assertNotNull("secp256r1 must not have null spec", spec);                
             } else if (pk instanceof BCECPublicKey) {
                 BCECPublicKey ecpk = (BCECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                    assertNull("ImplicitlyCA must have null spec", spec);
-                } else {
-                    assertNotNull("secp256r1 must not have null spec", spec);
-                }               
+                assertNotNull("secp256r1 must not have null spec", spec);          
             } else {
                 assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
             }

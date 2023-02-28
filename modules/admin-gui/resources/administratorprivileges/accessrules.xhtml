@@ -161,7 +161,7 @@
                                         <h:outputText value="#{accessRuleItem.resourceSub}" styleClass="monospace"/>
                                     </h:column>
                                     <h:column>
-                                        <h:selectOneRadio styleClass="selectStateRadio" layout="lineDirection" value="#{accessRuleItem.state}"
+                                        <h:selectOneRadio styleClass="selectStateRadio selectStateRadio_#{accessRuleItem.state}" layout="lineDirection" value="#{accessRuleItem.state}"
                                             disabled="#{!accessRulesBean.authorizedToEditRole}" rendered="#{!accessRuleItem.rootResource}">
                                             <f:selectItems value="#{accessRulesBean.availableAccessRuleStates}"/>
                                         </h:selectOneRadio>
@@ -175,7 +175,8 @@
                             <f:facet name="footer">
                                 <h:panelGrid id="advancedModeFooter" styleClass="edit-bottom fullwidth" columns="1" style="text-align: center;">
                                     <h:commandButton id="advancedModeSave" action="#{accessRulesBean.actionSaveAccessRulesAdvanced}" value="#{web.text.SAVE}"
-                                        rendered="#{accessRulesBean.authorizedToEditRole}">
+                                        rendered="#{accessRulesBean.authorizedToEditRole}"
+                                        onclick="ejbca.adminweb.pruneUnchangedInheritRules()">
                                         <f:ajax execute="@form" render="@all"
                                             onevent="function(data){ejbca.adminweb.onAjaxSuccessScrollTo(data,'messagesBlock');}"/>
                                     </h:commandButton>
@@ -186,6 +187,12 @@
 
                 </h:panelGroup>
 
+            </h:form>
+            <h:form id="dummyForm" styleClass="dummyForm">
+                <ui:remove>
+                    <!-- Unchanged Inherit rules are assigned to this form by ejbcajslib.js, so they don't get submitted.
+                         This is necessary in order to keep the form submission size reasonable. -->
+                 </ui:remove>
             </h:form>
         </ui:define>
 

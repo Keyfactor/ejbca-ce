@@ -81,6 +81,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 /**
  * Tests that "Extended Validation" works and is performed on the RA side,
  * before the requests reach the CA.
@@ -99,6 +101,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
     private static final String ALIAS = "CmpExtendedValidationTest";
     private static final String TEST_ROLE = "CmpExtendedValidationTest";
     private static final String PBEPASSWORD = "pbe123";
+    private static final String RA_NAME_GEN_PREFIX = "name_gen_prefix_";
     private static final String SIGNINGCERT_EE = "CmpExtendedValidationTest_signingcertuser";
     private static final String SIGNINGCERT_DN = "O=CmpExtendedValidationTest,CN=signingcert";
     private static final String CLIENT_MODE_ENDENTITY = "cmp_externalvalidation_test";
@@ -174,6 +177,8 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         clearCmpCaches();
 
         testRaMasterApiProxyBean.enableFunctionTracingForTest();
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
     }
 
     @Override
@@ -193,6 +198,10 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         if (endEntityManagementSession.existsUser(CLIENT_MODE_ENDENTITY)) {
             endEntityManagementSession.deleteUser(ADMIN, CLIENT_MODE_ENDENTITY);
         }
+        if (endEntityManagementSession.existsUser(RA_NAME_GEN_PREFIX+CLIENT_MODE_ENDENTITY)) {
+            endEntityManagementSession.deleteUser(ADMIN, RA_NAME_GEN_PREFIX+CLIENT_MODE_ENDENTITY);
+        }
+
     }
 
     @Override
@@ -645,6 +654,8 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         shouldBeAccepted();
         log.trace("<testVerifyHmacProtectedMessageRaModeAliasSpecifiedSecret");
     }
+    
+
 
     
     /**
@@ -871,6 +882,110 @@ public class CmpExtendedValidationTest extends CmpTestCase {
 
         log.trace("<testMessageSignedByRevokedCertRejected");
     }
+    
+    
+    /**
+     * This test will verify that a message protected by HMAC will pass client mode with existing end entity and user clear text password
+     */
+    @Test
+    public void testVerifyHmacProtectedMessageClientModeUserCleartextPassword() throws Exception {
+        log.trace(">testVerifyHmacProtectedMessageClientModeUserCleartextPassword");
+        
+        // Given
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setRAMode(ALIAS, false);
+        cmpConfiguration.setExtractUsernameComponent(ALIAS, "UID");
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        final String clientUserDn = "C=SE,O=PrimeKey,CN=testVerifySignedMessageClientMode,UID="+CLIENT_MODE_ENDENTITY;
+        if (endEntityManagementSession.existsUser(CLIENT_MODE_ENDENTITY)) {
+            endEntityManagementSession.deleteUser(ADMIN, CLIENT_MODE_ENDENTITY);
+        }
+        createCmpUser(CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
+        PKIMessage req = genCertReq(clientUserDn);
+        byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        
+        // When
+        // Send CMP request
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+
+        // Given
+        if (endEntityManagementSession.existsUser(CLIENT_MODE_ENDENTITY)) {
+            endEntityManagementSession.deleteUser(ADMIN, CLIENT_MODE_ENDENTITY);
+            createCmpUser(CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
+        }
+        
+        req = genCertReqP10Cr(clientUserDn);
+        messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+        log.trace("<testVerifyHmacProtectedMessageClientModeUserCleartextPassword");
+    }
+
+    /**
+     * This test will verify that a message protected by HMAC will pass client mode with existing end entity and user clear text password
+     * when a RA Name Generation Prefix is configured
+     */
+    @Test
+    public void testVerifyHmacProtectedMessageClientModeUserCleartextPasswordAndNameGenPrefix() throws Exception {
+        log.trace(">testVerifyHmacProtectedMessageClientModeUserCleartextPasswordAndNameGenPrefix");
+        
+        // Given
+        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setRAMode(ALIAS, false);
+        cmpConfiguration.setExtractUsernameComponent(ALIAS, "UID");
+        cmpConfiguration.setRANameGenPrefix(ALIAS, RA_NAME_GEN_PREFIX);
+        cmpConfiguration.setResponseProtection(ALIAS, "signature");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+        final String clientUserDn = "C=SE,O=PrimeKey,CN=testVerifySignedMessageClientMode,UID="+CLIENT_MODE_ENDENTITY;
+        if (endEntityManagementSession.existsUser(RA_NAME_GEN_PREFIX+CLIENT_MODE_ENDENTITY)) {
+            endEntityManagementSession.deleteUser(ADMIN, RA_NAME_GEN_PREFIX+CLIENT_MODE_ENDENTITY);
+        }
+        createCmpUser(RA_NAME_GEN_PREFIX+CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
+        PKIMessage req = genCertReq(clientUserDn);
+        byte[] messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        
+        // When
+        // Send CMP request
+        byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+
+        // Given
+        if (endEntityManagementSession.existsUser(RA_NAME_GEN_PREFIX+CLIENT_MODE_ENDENTITY)) {
+            endEntityManagementSession.deleteUser(ADMIN, RA_NAME_GEN_PREFIX+CLIENT_MODE_ENDENTITY);
+            createCmpUser(RA_NAME_GEN_PREFIX+CLIENT_MODE_ENDENTITY, PBEPASSWORD, clientUserDn, true, testx509ca.getCAId(), -1, -1);
+        }
+        
+        req = genCertReqP10Cr(clientUserDn);
+        messageBytes = CmpMessageHelper.protectPKIMessageWithPBE(req, testx509ca.getName(), PBEPASSWORD, "1.3.14.3.2.26", "1.3.6.1.5.5.8.1.2", 1024);
+        
+        // When
+        // Send CMP request
+        resp = sendCmpHttp(messageBytes, 200, ALIAS);
+        
+        // Then
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
+        shouldBeAccepted();
+        log.trace("<testVerifyHmacProtectedMessageClientModeUserCleartextPasswordAndNameGenPrefix");
+    }
+    
 
 
     /** Checks that the request was accepted (and would have been passed to the CA in a RA-CA setup) */

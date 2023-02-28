@@ -22,10 +22,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -51,7 +51,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  *
  */
 @ViewScoped
-@ManagedBean(name="viewCertificateMBean")
+@Named("viewCertificateMBean")
 public class ViewCertificateManagedBean extends BaseManagedBean implements Serializable {
     private static final Logger log = Logger.getLogger(ViewCertificateManagedBean.class);
 
@@ -218,10 +218,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
                 break;
             case RETURN_TO_OCSPKB: // 2 = send user to the IKB OCSP page
-                returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=OcspKeyBinding";
+                returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/ocspresponders.xhtml";
                 break;
             case RETURN_TO_AUTHKB: // 3 = send user to the IKB AKB page
-                returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=AuthenticationKeyBinding";
+                returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml";
                 break;
             case RETURN_TO_EDITIKB: // 4 = send user back to Edit IKB page (default to IKB page)
                 if (keyBindingId != 0) {

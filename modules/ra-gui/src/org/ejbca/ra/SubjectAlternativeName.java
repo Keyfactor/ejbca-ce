@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
@@ -20,7 +20,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Contains Subject Alternative Name attributes
- * @version $Id$
  *
  */
 public class SubjectAlternativeName extends RaAbstractDn {
@@ -39,7 +38,7 @@ public class SubjectAlternativeName extends RaAbstractDn {
     }
 
     @Override
-    protected ArrayList<String> getAbstractDnFields() {
+    protected List<String> getAbstractDnFields() {
         return DnComponents.getAltNameFields();
     }
 

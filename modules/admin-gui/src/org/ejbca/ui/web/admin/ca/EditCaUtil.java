@@ -45,7 +45,6 @@ public final class EditCaUtil {
     public static final String DISPLAY_RESULT_NAV = "displayresult";
     public static final int CERTREQGENMODE = 0;
     public static final int CERTGENMODE = 1;
-    public static final String DEFAULT_KEY_SIZE = "2048";
     public static final String LINK_CERT_BASE_URI = "cacertreq?cmd=linkcert&";
     public static final String CA_EXPORT_PATH = "/ca/exportca";
     public static final String TEXTFIELD_EXPORTCA_PASSWORD = org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD;

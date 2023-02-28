@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.ca.ssh.SshCaInfo;
 
 

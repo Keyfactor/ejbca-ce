@@ -15,8 +15,8 @@ package org.ejbca.ui.web.admin;
 import java.io.Serializable;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -35,7 +35,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * @version $Id$
  */
 @RequestScoped
-@ManagedBean
+@Named
 public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     private static final long serialVersionUID = 1L;

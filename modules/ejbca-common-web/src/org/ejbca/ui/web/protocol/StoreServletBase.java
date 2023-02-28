@@ -18,6 +18,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.security.cert.X509Certificate;
 
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -31,7 +32,6 @@ import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
 import org.ejbca.config.VAConfiguration;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.HTMLTools;
 
 /**
@@ -47,6 +47,7 @@ public abstract class StoreServletBase extends HttpServlet {
 
 	protected CaCertificateCache certCache;
 	
+	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
 
 	/**
@@ -58,10 +59,6 @@ public abstract class StoreServletBase extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		this.certCache = CaCertificateCache.INSTANCE;
-        // Since this servlet is referenced in ejbca-common-web module and that module is referenced 
-        // by cmpHttpProxy module, to make cmpHttpProxy module deploy-able in JEE servers we initialize 
-        // the certificateStoreSession bean here instead of using the EJB annotation.
-        certificateStoreSession = new EjbLocalHelper().getCertificateStoreSession();
 	}
 
 	/**

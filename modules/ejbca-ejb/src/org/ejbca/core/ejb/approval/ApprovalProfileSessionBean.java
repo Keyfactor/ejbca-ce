@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -41,16 +40,10 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileDoesNotExistException;
 import org.cesecore.profiles.ProfileSessionLocal;
-import org.cesecore.roles.RoleInformation;
-import org.cesecore.roles.member.RoleMember;
-import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalStep;
-import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 
 /**
  * Keeps track of the approval profiles

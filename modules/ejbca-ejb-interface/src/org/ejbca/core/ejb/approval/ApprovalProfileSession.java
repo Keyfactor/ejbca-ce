@@ -17,7 +17,6 @@ import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /** Session bean to manage approval profiles, i.e. add, remove, find

@@ -325,7 +325,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         }
         // We don't care if the caller has done this before. If the caller is authorized we comply.
         roleMemberSession.persist(authenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 superAdminCN, role.getRoleId(), null));
 
         //add managementCA access to Public Role

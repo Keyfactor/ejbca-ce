@@ -22,6 +22,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -161,7 +162,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 						// Test to verify it yourself first
 						if (authCert != null) {
 							getPrintStream().println("Verifying the request before sending it...");
-							PublicKey pk = KeyTools.getECPublicKeyWithParams(authCert.getCertificateBody().getPublicKey(), keySpec);
+							PublicKey pk = CvcKeyTools.getECPublicKeyWithParams(authCert.getCertificateBody().getPublicKey(), keySpec);
 							authRequest.verify(pk);							
 						}
 						der = authRequest.getDEREncoded();						

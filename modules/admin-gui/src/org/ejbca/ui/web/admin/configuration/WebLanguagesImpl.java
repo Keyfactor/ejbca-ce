@@ -19,12 +19,14 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 
 import javax.servlet.ServletContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.jsf.configuration.WebLanguages;
@@ -32,8 +34,6 @@ import org.ejbca.ui.web.jsf.configuration.WebLanguages;
 /**
  * An class interpreting the language properties files. I contains one method getText that returns
  * the presented text in the users preferred language.
- *
- * @version $Id$
  */
 public class WebLanguagesImpl implements Serializable, WebLanguages {
     private static final long serialVersionUID = -2381623760140383128L;
@@ -50,10 +50,10 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
     private LanguageProperties[] languages = null;
     private List<WebLanguage> webLanguages;
 
-    /** 
+    /**
      * Constructor used to load static content. An instance must be declared with this constructor
      * before any WebLanguage object can be used.
-     * 
+     *
      * <p>Special constructor used by {@link EjbcaWebBean}.
      */
     private void init(final ServletContext servletContext, final GlobalConfiguration globalconfiguration) {
@@ -102,6 +102,23 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
                     throw new IllegalStateException("Properties file " + propsfile + " could not be read.", e);
                 }
 
+                // Look if we have any custom publishers that include language files, and load those if there are any
+                final ServiceLoader<ICustomPublisher> serviceLoaderForCustomPublishers = ServiceLoader.load(ICustomPublisher.class);
+                for (final ICustomPublisher customPublisher : serviceLoaderForCustomPublishers) {
+                    final String languageFile = String.format("languages/languagefile.%s.properties", availablelanguages[i]);
+                    if (customPublisher.getClass().getClassLoader().getResource(languageFile) == null) {
+                        // It is expected that custom publishers typically do not contain language files so don't log anything
+                        continue;
+                    }
+                    try (final InputStream inputStream = customPublisher.getClass().getClassLoader().getResourceAsStream(languageFile)) {
+                        log.info("Loading language file " + languageFile + " for the custom publisher '" +
+                            customPublisher.getClass().getName() + "'.");
+                        languages[i].load(inputStream);
+                    } catch (final IOException e) {
+                        throw new IllegalStateException("The language file " + languageFile + " for the custom publisher '" +
+                            customPublisher.getClass().getName() + "' could not be read.", e);
+                    }
+                }
             }
 
             webLanguages = new ArrayList<WebLanguage>();
@@ -149,7 +166,7 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
       return availablelanguages;
     }
 
-    /** 
+    /**
      * @return a list of available languages for EJBCA.
      */
     @Override

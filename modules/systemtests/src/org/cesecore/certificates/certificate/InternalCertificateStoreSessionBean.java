@@ -39,6 +39,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -75,6 +76,8 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     private SecurityEventsLoggerSessionLocal logSession;
     @EJB
     private IncompleteIssuanceJournalDataSessionLocal incompleteIssuanceJournalDataSession;
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
 
     @Override
     public void removeCertificate(BigInteger serno) {
@@ -196,7 +199,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 	@Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeCRL(final AuthenticationToken admin, final String fingerprint) throws AuthorizationDeniedException {
-        final CRLData crld = CRLData.findByFingerprint(entityManager, fingerprint);
+        final CRLData crld = crlStoreSession.findByFingerprint(fingerprint);
         if (crld == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Trying to remove a CRL that does not exist: " + fingerprint);
@@ -209,7 +212,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 	@Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeCRLs(final AuthenticationToken admin, final String issuerDN) throws AuthorizationDeniedException {
-        List<CRLData> crls = CRLData.findByIssuerDN(entityManager, issuerDN);
+        List<CRLData> crls = crlStoreSession.findByIssuerDN(issuerDN);
         for(CRLData crl : crls){
             entityManager.remove(crl);
         }

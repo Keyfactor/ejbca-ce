@@ -20,11 +20,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -48,7 +48,7 @@ import org.ejbca.util.SelectItemComparator;
  * JavaServer Faces Managed Bean for managing SCEP configuration.
  * 
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
@@ -726,6 +726,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem("role", "role"));
         ret.add(new SelectItem("CIF", "CIF"));
         ret.add(new SelectItem("NIF", "NIF"));
+        ret.add(new SelectItem("VID", "VID"));
+        ret.add(new SelectItem("PID", "PID"));
         return ret;
     }
 

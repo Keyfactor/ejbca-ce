@@ -24,6 +24,7 @@
         <path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/>
 	</path>
 	
 	<target name="build" depends="">

@@ -102,10 +102,6 @@ public class UploadFileCommand extends BaseScepConfigCommand {
         }
         sb.append("\n");
         
-        sb.append("Note that if you have an old SCEP properties file containing the key 'scep.ra.createOrEditUser', " +
-        		"this key will automatically be read and stored as 'scep.operationmode'. A 'true' value will be intepreted as 'ra' " +
-        		"and a 'false' value will be interpreted as 'ca'.");
-        
         return sb.toString();
     }
     

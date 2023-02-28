@@ -258,7 +258,7 @@ public class MultiGroupPublisher extends BasePublisher {
         log.trace(">upgrade");
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // Does nothing currently
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, Float.valueOf(LATEST_VERSION));
         }
         log.trace("<upgrade");
     }

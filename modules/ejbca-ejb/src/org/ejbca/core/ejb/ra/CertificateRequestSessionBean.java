@@ -13,6 +13,28 @@
 
 package org.ejbca.core.ejb.ra;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
@@ -36,12 +58,10 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
-import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -64,27 +84,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
-
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
@@ -149,6 +148,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if (cainfo.isUseUserStorage() && username != null) {
+            endEntityManagementSession.initializeEndEntityTransaction(username);
+        }
         if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
@@ -201,6 +203,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if (cainfo.isUseUserStorage() && userdata.getUsername() != null) {
+            endEntityManagementSession.initializeEndEntityTransaction(userdata.getUsername());
+        }
         if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {

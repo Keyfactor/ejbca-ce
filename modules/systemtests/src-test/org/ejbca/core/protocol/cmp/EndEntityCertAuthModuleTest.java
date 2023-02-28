@@ -100,6 +100,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -204,6 +206,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             log.debug("Removed CA in beforeClass: " + subcaid);            
         }
         adminsubca = CaTestUtils.createTestX509SubCAGenKeys(ADMIN, "CN=" + AUTH_PARAM_SUBCA, "foo123".toCharArray(), adminca.getCAId(), "1024");
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+
     }
 
     @AfterClass
@@ -777,7 +782,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
 
@@ -822,7 +827,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         err = (ErrorMsgContent) body.getContent();
-        errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         expectedErrMsg = "'CN=" + RA1_ADMIN + "' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
         log.trace("<test01RA1FailedCRMF");
@@ -882,7 +887,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
             assertEquals(expectedErrMsg, errMsg);
 
@@ -988,7 +993,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
             assertEquals(expectedErrMsg, errMsg);
 

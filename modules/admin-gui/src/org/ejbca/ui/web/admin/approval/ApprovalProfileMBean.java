@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -38,7 +38,6 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -62,7 +61,7 @@ import org.ejbca.util.mail.MailSender;
  *
  */
 @ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
-@ManagedBean(name="approvalProfileMBean")
+@Named("approvalProfileMBean")
 public class ApprovalProfileMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -3751383340600251434L;
@@ -122,7 +121,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
 
-    @ManagedProperty(value = "#{approvalProfilesMBean}")
+    @Inject
     private ApprovalProfilesMBean approvalProfilesMBean;
     
     public ApprovalProfileMBean() {
