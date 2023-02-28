@@ -376,15 +376,6 @@ public class RestResourceSystemTestBase {
         fileOutputStream.close();
     }
 
-        protected void setupClientKeyStore(final CAInfo serverCertCaInfo, final KeyPair clientKeys, final X509Certificate clientCert)
-            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
-        CLIENT_KEYSTORE = initJksKeyStore(LOGIN_STORE_PATH);
-        importDataIntoJksKeystore(LOGIN_STORE_PATH, CLIENT_KEYSTORE, CertTools.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"),
-                trustedCaCertificateChain.get(0).getEncoded(), clientKeys, clientCert.getEncoded());
-
-    }
-
     private static Certificate getCertificateFromBytes(final byte[] certificateBytes) throws CertificateException {
         final CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         final InputStream certificateInputStream = new ByteArrayInputStream(certificateBytes);
