@@ -163,7 +163,6 @@ import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
-import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -359,10 +358,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>13<td>=<td>7.9.0
      * <tr><th>14<td>=<td>7.10.0
      * <tr><th>15<td>=<td>7.11.0
-     * <tr><th>16<td>=<td>7.12.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 16;
+    private static final int RA_MASTER_API_VERSION = 15;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -3014,18 +3012,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public void revokeCertWithParameters(AuthenticationToken authenticationToken, CertRevocationDto certificateRevocationParameters, boolean checkDate)
-            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
-        // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
-        final int caId = CertTools.stringToBCDNString(certificateRevocationParameters.getIssuerDN()).hashCode();
-        final BigInteger serialNr = StringTools.getBigIntegerFromHexString(certificateRevocationParameters.getCertificateSN());
-        caSession.verifyExistenceOfCA(caId);
-        endEntityManagementSession.revokeCert(authenticationToken, serialNr, certificateRevocationParameters.getRevocationDate(), 
-                certificateRevocationParameters.getInvalidityDate(), certificateRevocationParameters.getIssuerDN(), certificateRevocationParameters.getReason(), checkDate);
-    }
-
-    @Override
     public void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
@@ -3045,9 +3031,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, CertificateProfileDoesNotExistException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, CertificateProfileDoesNotExistException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
-
         final int caId = CertTools.stringToBCDNString(certRevocationDto.getIssuerDN()).hashCode();
         caSession.verifyExistenceOfCA(caId);
         endEntityManagementSession.revokeCertWithMetadata(authenticationToken, certRevocationDto);
