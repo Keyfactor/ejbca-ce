@@ -53,6 +53,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
@@ -98,6 +99,7 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -153,6 +155,7 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
@@ -796,6 +799,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(DO_STORE_OCSP_ON_DEMAND, doStoreOcspResponsesOnDemand);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public Map<String, List<String>> getAlternateCertificateChains() {
         if (data.containsKey(ALTERNATECHAINS)) {
@@ -1328,7 +1332,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
         }
 
-        SubjectPublicKeyInfo pkinfo = verifyAndCorrectSubjectPublicKeyInfo(publicKey);
+        SubjectPublicKeyInfo pkinfo = verifyAndCorrectSubjectPublicKeyInfo(publicKey, providedRequestMessage);
         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo);
 
         // Only created and used if Certificate Transparency is enabled
@@ -1347,7 +1351,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (altName != null && altName.length() > 0) {
                 altNameGNs = CertTools.getGeneralNamesFromAltName(altName);
             }
-            CertTools.checkNameConstraints(cacert, subjectDNName, altNameGNs);
+            CABase.checkNameConstraints(cacert, subjectDNName, altNameGNs);
         }
 
         // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!
@@ -1583,7 +1587,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     if (presignKey == null) {
                         throw new CertificateCreateException("No pre-sign key exist usable with algorithm " + sigAlg + ", PRESIGN_CERTIFICATE_VALIDATION is not possible with this CA.");
                     }
-                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(presignKey), X509CAImpl.SIGN_BUFFER_SIZE);
+                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(CryptoProviderTools.getProviderNameFromAlg(sigAlg)).build(presignKey), X509CAImpl.SIGN_BUFFER_SIZE);
                     // Since this certificate may be written to file through the validator we want to ensure it's not a real certificate
                     // We do that by signing with a hard coded fake key, and set authorityKeyIdentifier accordingly, so the cert can
                     // not be verified even accidentally by someone
@@ -1637,8 +1641,15 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                  *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID
                  *  and should not have any other key usages (see RFC 6962, section 3.1)
                  */
+                final String prov;
+                if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+                    // Ability to use the PQC provider
+                    prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+                } else {
+                    prov = provider;
+                }
                 final ContentSigner signer = new BufferingContentSigner(
-                        new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
+                        new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
                 // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
@@ -1714,7 +1725,13 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (log.isTraceEnabled()) {
             log.trace(">certgen.generate");
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
+        final String prov;
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+            prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+        } else {
+            prov = provider;
+        }
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate cert;
         try {
@@ -1831,11 +1848,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * When the parameters are inherited, the parameters field SHALL contain
      * implictlyCA, which is the ASN.1 value NULL.
      * 
-     * @param publicKey to verify that it has the proper aÁlgorithmIdentifier.parameters
+     * EC Point encoding can be either non-compressed, the normal case (MUST in RFC3279) or compressed (MAY in RFC3279)
+     * 
+     * @param publicKey to verify that it has the proper ÁlgorithmIdentifier.parameters
+     * @param providedRequestMessage if the public key comes from a CSR (P10, CRMF, etc) if can give information how to encode the public key in the certificate, i.e. compressed EC points 
      * @return SubjectPublicKeyInfo that can be put in a certificate
      * @throws IllegalKeyException if the publicKey is so invalid that it can not be safely fixed, issuance must be aborted
      */
-    private SubjectPublicKeyInfo verifyAndCorrectSubjectPublicKeyInfo(final PublicKey publicKey) throws IllegalKeyException {
+    private SubjectPublicKeyInfo verifyAndCorrectSubjectPublicKeyInfo(final PublicKey publicKey, final RequestMessage providedRequestMessage) throws IllegalKeyException {
         SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
         final AlgorithmIdentifier keyAlgId = pkinfo.getAlgorithm();
         if (keyAlgId == null) {
@@ -1858,8 +1878,26 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             } catch (IOException e) {
                 throw new IllegalKeyException("RSA public key with invalid AlgorithmIdentifier parameters detected, and we are unable to modify it: ", e);
             }                        
-        } else if (keyAlgId.getAlgorithm().equals(X9ObjectIdentifiers.id_ecPublicKey) && (keyAlgId.getParameters() == null)) {
-            throw new IllegalKeyException("EC public key without AlgorithmIdentifier parameters, invalid public key.");                
+        } else if (keyAlgId.getAlgorithm().equals(X9ObjectIdentifiers.id_ecPublicKey)) {
+            if (keyAlgId.getParameters() == null) {
+                throw new IllegalKeyException("EC public key without AlgorithmIdentifier parameters, invalid public key.");
+            }
+            // See if the public key is encoded with compressed point encoding, in that case we should return with the same encoding
+            if (providedRequestMessage != null && providedRequestMessage.getRequestSubjectPublicKeyInfo() != null) {
+                final byte[] encoding = providedRequestMessage.getRequestSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+                // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
+                // You'll never see 0.
+                // In CMP you can request server generated keys by a SubjectPublicKeyInfo with only an AlgorithmIdentifier and empty publicKey BIT STRING
+                if ((encoding != null && encoding.length > 0) && (encoding[0] == 2 || encoding[0] == 3)) {
+                    if (!(publicKey instanceof BCECPublicKey)) {
+                        log.warn("CSR has compressed EC point format, but can not set COMPRESSED as encoding because publicKey is not BCECPublicKey: " + publicKey.getClass().getName());                        
+                    } else {
+                        log.debug("CSR has compressed EC point format, setting COMPRESSED as certificate SubjectPublicKeyInfo encoding");
+                        ((BCECPublicKey)publicKey).setPointFormat("COMPRESSED");
+                        pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+                    }
+                }
+            }
         }
         return pkinfo;
     }
@@ -1948,7 +1986,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             GeneralName generalName = gns[j];
             // Look for DNS name
             if (generalName.getTagNo() == 2) {
-                final String value = DERIA5String.getInstance(generalName.getName()).getString();
+                final String value = ASN1IA5String.getInstance(generalName.getName()).getString();
                 final Matcher matcher = parenthesesRegex.matcher(value);
                 if (matcher.find()) {
                     final String newValue = matcher.replaceAll("(PRIVATE)");
@@ -2172,7 +2210,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         
         try {
-            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias)), X509CAImpl.SIGN_BUFFER_SIZE);
+            String prov = cryptoToken.getSignProviderName();
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(prov)) {
+                prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+            }
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(cryptoToken.getPrivateKey(alias)), X509CAImpl.SIGN_BUFFER_SIZE);
             crl = crlgen.build(signer);
         } catch (OperatorCreationException e) {
             // Very fatal error

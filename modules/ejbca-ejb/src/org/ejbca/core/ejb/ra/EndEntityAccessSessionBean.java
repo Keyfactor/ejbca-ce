@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -31,6 +33,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -82,6 +85,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
+    @Resource
+    private TransactionSynchronizationRegistry registry;
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -93,7 +98,14 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
-    
+
+    private PerTransactionData perTransactionData;
+
+    @PostConstruct
+    public void postConstruct() {
+        perTransactionData = new PerTransactionData(registry);
+    }
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username)
@@ -228,6 +240,15 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     public UserData findByUsername(final String username) {
         if (username == null) {
             return null;
+        }
+        if (perTransactionData.isInTransaction()) {
+            final UserData pendingUser = perTransactionData.getPendingUserData(username); // Pending addition in the current transaction
+            if (pendingUser != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("User '" + username + "' is a pending addition / has a pending modification.");
+                }
+                return pendingUser;
+            }
         }
         return entityManager.find(UserData.class, StringTools.trim(username));
     }

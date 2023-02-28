@@ -39,12 +39,15 @@
        <fileset dir="${ejbca.home}/lib/jee">
            <include name="javaee-api*.jar"/>
            <include name="jaxb-api*.jar"/>
+           <include name="jaxws-api*.jar"/>
+           <include name="javax.jws-api*.jar"/>
         </fileset>
        <fileset dir="${mod.path}/dist">
            <include name="ejbca-ejb.jar" />
            <include name="cesecore-common.jar"/>
            <include name="cesecore-entity.jar"/>
            <include name="cesecore-ejb-interface.jar"/>
+           <include name="x509-common-util.jar"/>
         </fileset>
     </path>
     
