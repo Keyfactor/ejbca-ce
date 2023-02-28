@@ -145,7 +145,6 @@ public class RestResourceSystemTestBase {
     private static final String HTTPS_HOST = SystemTestsConfiguration.getRemoteHost(CONFIGURATION_SESSION.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
     private static final String HTTPS_PORT = SystemTestsConfiguration.getRemotePortHttps(CONFIGURATION_SESSION.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS));
     //
-    private static KeyStore CLIENT_KEYSTORE;
     private static final String KEY_STORE_PASSWORD = "changeit";
     private static final String TRUSTED_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "truststore_" + new Date().getTime() + ".jks";
     private static final String CERTIFICATE_USER_NAME = "RestApiTestUser";
