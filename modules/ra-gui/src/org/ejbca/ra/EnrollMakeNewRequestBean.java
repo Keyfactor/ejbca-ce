@@ -3068,7 +3068,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public List<SelectItem> getSshVerifyRequiredOptions() {
         final List<SelectItem> options = new ArrayList<>();
         options.add(new SelectItem(true, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_enabled")));
-        options.add(new SelectItem(true, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_disabled")));
+        options.add(new SelectItem(false, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_disabled")));
         return options;
     }
 
