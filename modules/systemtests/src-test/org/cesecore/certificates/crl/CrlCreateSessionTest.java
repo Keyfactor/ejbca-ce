@@ -244,7 +244,7 @@ public class CrlCreateSessionTest {
             final PublicKey pubkey = KeyTools.genKeys("1024", "RSA").getPublic();
             final RequestMessage req = new SimpleRequestMessage(pubkey, "testremovefromcrl", "foo123");
             final Certificate cert = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class, new CertificateGenerationParams()).getCertificate();
-            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             
             Thread.sleep(1000);
             
@@ -258,7 +258,7 @@ public class CrlCreateSessionTest {
             Thread.sleep(1000);
             
             // Unrevoke the certificate
-            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), null, RevokedCertInfo.NOT_REVOKED);
             
             Thread.sleep(1000);
             
@@ -287,8 +287,8 @@ public class CrlCreateSessionTest {
             assertNull("Revoked certificate should no longer be included on Delta CRL after generating a new Base CRL", crlEntry);
             
             // Revoke the certificate again, and unrevoke it directly
-            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), null, RevokedCertInfo.NOT_REVOKED);
             
             // Generate a new Base CRL. Unrevoked certificates should not appear on Base CRLs 
             forceCRL(ca);

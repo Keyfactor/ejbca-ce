@@ -466,7 +466,7 @@ public abstract class ProtocolOcspTestBase {
 
         X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken,
                 revokedUser, req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), revocationReason);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), null, revocationReason);
 
         @SuppressWarnings("unused")
         X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken,

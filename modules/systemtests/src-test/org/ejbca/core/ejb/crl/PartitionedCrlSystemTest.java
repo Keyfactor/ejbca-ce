@@ -501,7 +501,7 @@ public class PartitionedCrlSystemTest {
 
     /** Revokes a certificate. Supports backdated revocation. */
     private void revokeCertificate(final Certificate cert, final Date revocationDate) throws CertificateRevokeException, AuthorizationDeniedException {
-        internalCertificateSessionSession.setRevokeStatus(admin, cert, revocationDate, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        internalCertificateSessionSession.setRevokeStatus(admin, cert, revocationDate, null, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
         log.debug("Revoked certificate with fingerprint " + CertTools.getFingerprintAsString(cert));
     }
 
