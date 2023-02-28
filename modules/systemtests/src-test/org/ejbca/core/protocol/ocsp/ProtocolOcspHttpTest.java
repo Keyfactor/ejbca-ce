@@ -376,7 +376,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.trace(">test03OcspRevoked()");
         loadUserCert(this.caid);
         // Now revoke the certificate and try again
-        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         this.helper.reloadKeys();
         this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), 
                             RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
@@ -388,7 +388,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.trace(">testOcspRevokedUnespecifiedReason()");
         loadUserCert(this.caid);
         // Now revoke the certificate and try again
-        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
         this.helper.reloadKeys();
         this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), 
                             RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
@@ -1283,7 +1283,7 @@ Content-Type: text/html; charset=iso-8859-1
             assertNotNull("Failed to create new certificate", xcert);
            
             // Revoke the certificate with unspecified reason
-            this.revocationSession.revokeCertificate(admin, xcert, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+            this.revocationSession.revokeCertificate(admin, xcert, null, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
             
             // -------- Testing without an internal key binding the revocatin will be present in the response.  
             OCSPReqBuilder gen = new OCSPReqBuilder();
