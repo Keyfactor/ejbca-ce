@@ -2213,6 +2213,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
         }
 
+        if (!isSshVerifyRequiredModifiable() && criticalOptions != null &&
+                criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP) &&
+                !getSshVerifyRequired()) {
+                    criticalOptions.remove(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
+        }
         // TODO: additional extension validation later
                 
     }
