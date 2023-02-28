@@ -542,7 +542,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (cmscerts != null) {
                     X509Certificate cmscert = (X509Certificate) cmscerts.get(0);
                     final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(cmscert));
-                    revocationSession.revokeCertificate(admin, cdw, cainfo.getCRLPublishers(), new Date(),
+                    revocationSession.revokeCertificate(admin, cdw, cainfo.getCRLPublishers(), new Date(), /*invalidityDate*/null,
                             RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());
                 }
                 initExternalCAService(admin, caid, next);
@@ -2516,7 +2516,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final List<CertificateDataWrapper> cacerts = certificateStoreSession.getCertificateDatasBySubject(ca.getSubjectDN());
             final Date now = new Date();
             for (final CertificateDataWrapper cdw : cacerts) {
-                revocationSession.revokeCertificateInNewTransaction(admin, cdw, ca.getCRLPublishers(), now, reason, ca.getSubjectDN());
+                revocationSession.revokeCertificateInNewTransaction(admin, cdw, ca.getCRLPublishers(), now, /*invalidityDate*/null, reason, ca.getSubjectDN());
             }
             // Revoke all certificates issued by this CA. If this is a root CA the CA certificates will be included in this batch as well
             // but if this is a subCA these are only the "entity" certificates issued by this CA
