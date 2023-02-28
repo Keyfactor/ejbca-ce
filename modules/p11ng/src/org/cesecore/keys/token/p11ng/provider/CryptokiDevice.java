@@ -1531,7 +1531,7 @@ public class CryptokiDevice {
                                        final Map<Long, Object> overridePrivate, final CertificateGenerator certGenerator, final boolean storeCertificate)
                 throws CertificateException, OperatorCreationException {
             final RSAKeyGenParameterSpec rsaKeyGenParameterSpec;
-            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
+            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumeric(keySpec);
             final int keyLength = Integer.parseInt(formatCheckedKeySpec);
 
             rsaKeyGenParameterSpec = new RSAKeyGenParameterSpec(keyLength, RSAKeyGenParameterSpec.F4);
