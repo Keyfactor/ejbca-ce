@@ -54,6 +54,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -349,7 +350,7 @@ public class CertificateCrlReaderSystemTest {
     public void readSignedCertificateFromFromSubCaFromDisk() throws Exception {
         serviceName = "readCertificateFromDisk";
         final String subCaDn = "CN=readSignedCertificateFromFromSubCaFromDisk";
-        final X509CA subCa = CaTestUtils.createTestX509CA(subCaDn, null, false, testCa.getCAId(),
+        final X509CA subCa = CaTestUtils.createTestX509CA(subCaDn, null, SoftCryptoToken.class.getName(), testCa.getCAId(),
                 X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         
         caAdminSession.createCA(ADMIN_AUTHENTICATION_TOKEN, subCa.getCAInfo());
