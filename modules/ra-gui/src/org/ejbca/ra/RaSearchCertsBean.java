@@ -44,6 +44,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.ValidityDate;
@@ -143,16 +144,16 @@ public class RaSearchCertsBean implements Serializable {
         @Override
         public void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason,
                 final Date newDate, final String issuerDn)
-                throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
+                throws NoSuchEndEntityException, CertificateProfileDoesNotExistException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
                 CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException/*, ParseException*/ {
             //We can implement invalidityDate in RA GUI in the future, for now send null..
             BigInteger bintSN = new BigInteger(raCertificateDetails.getSerialnumberRaw());
             String serialNumberHexString = bintSN.toString(16);
-            CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDn, serialNumberHexString); 
-            certRevocationParameters.setRevocationDate(newDate);
-            certRevocationParameters.setReason(newRevocationReason);
-            raMasterApiProxyBean.revokeCertWithParameters(
-                    raAuthenticationBean.getAuthenticationToken(), certRevocationParameters, newDate == null ? false : true);
+            CertRevocationDto certRevocationMetadata = new CertRevocationDto(issuerDn, serialNumberHexString); 
+            certRevocationMetadata.setRevocationDate(newDate);
+            certRevocationMetadata.setReason(newRevocationReason);
+            certRevocationMetadata.setCheckDate(newDate == null ? false : true);
+            raMasterApiProxyBean.revokeCertWithMetadata(raAuthenticationBean.getAuthenticationToken(), certRevocationMetadata);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
             raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,

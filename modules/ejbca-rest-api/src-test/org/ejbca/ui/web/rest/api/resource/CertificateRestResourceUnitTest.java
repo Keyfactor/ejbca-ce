@@ -127,12 +127,12 @@ public class CertificateRestResourceUnitTest {
         final String expectedRevocationDateString = DATE_FORMAT_ISO8601.format(new Date());
         final RevocationReasons revocationReason = RevocationReasons.KEYCOMPROMISE;
         final CertificateStatus response = new CertificateStatus("REVOKED", new Date().getTime(), revocationReason.getDatabaseValue(), 123456);
-        CertRevocationDto certRevocationParameters = new CertRevocationDto(anyString(), anyObject(BigInteger.class).toString()); 
-        certRevocationParameters.setInvalidityDate(anyObject(Date.class));
-        certRevocationParameters.setRevocationDate(anyObject(Date.class));
-        certRevocationParameters.setReason(anyObject(Integer.class));
+        CertRevocationDto certRevocationMetadata = new CertRevocationDto(anyString(), anyObject(BigInteger.class).toString()); 
+        certRevocationMetadata.setInvalidityDate(anyObject(Date.class));
+        certRevocationMetadata.setRevocationDate(anyObject(Date.class));
+        certRevocationMetadata.setReason(anyObject(Integer.class));
         // when
-        raMasterApiProxy.revokeCertWithParameters(anyObject(AuthenticationToken.class), certRevocationParameters, anyBoolean());
+        raMasterApiProxy.revokeCertWithMetadata(anyObject(AuthenticationToken.class), certRevocationMetadata);
         expect(raMasterApiProxy.getCertificateStatus(anyObject(AuthenticationToken.class), anyString(), anyObject(BigInteger.class))).andReturn(response);
         replay(raMasterApiProxy);
         final Invocation.Builder request = server

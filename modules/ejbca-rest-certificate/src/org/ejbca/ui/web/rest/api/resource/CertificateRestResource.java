@@ -54,6 +54,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -235,6 +236,8 @@ public class CertificateRestResource extends BaseRestResource {
      * @param date           revocation date (optional). Must be valid ISO8601 date string
      * @param invalidityDate invalidity date (optional). Must be valid ISO8601 date string
      * @return JSON representation of serialNr, issuerDn, revocation status, date and optional message.
+     * @throws CertificateProfileDoesNotExistException 
+     * @throws IllegalArgumentException 
      */
     public Response revokeCertificate(
             final HttpServletRequest requestContext,
@@ -244,7 +247,7 @@ public class CertificateRestResource extends BaseRestResource {
             final String date,
             final String invalidityDate)
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException {
+            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException, IllegalArgumentException, CertificateProfileDoesNotExistException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         RevocationReasons reasons = RevocationReasons.getFromCliValue(reason);
         // TODO Replace with @ValidRevocationReason
@@ -273,11 +276,12 @@ public class CertificateRestResource extends BaseRestResource {
             }
         }
         final Date validatedInvalidityDate = getValidatedDate(invalidityDate);
-        CertRevocationDto certRevocationParameters = new CertRevocationDto(issuerDN, serialNumber); 
-        certRevocationParameters.setInvalidityDate(validatedInvalidityDate);
-        certRevocationParameters.setRevocationDate(getValidatedDate(date));
-        certRevocationParameters.setReason(revocationReason);
-        raMasterApi.revokeCertWithParameters(admin, certRevocationParameters, true);
+        CertRevocationDto certRevocationMetadata = new CertRevocationDto(issuerDN, serialNumber); 
+        certRevocationMetadata.setInvalidityDate(validatedInvalidityDate);
+        certRevocationMetadata.setRevocationDate(getValidatedDate(date));
+        certRevocationMetadata.setReason(revocationReason);
+        certRevocationMetadata.setCheckDate(true);
+        raMasterApi.revokeCertWithMetadata(admin, certRevocationMetadata);
         certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
         final Date revocationDate = certificateStatus.isRevoked() ? certificateStatus.revocationDate : null;
 

@@ -802,16 +802,6 @@ public interface RaMasterApi {
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException;
 
     /**
-     * @see EndEntityManagementSessionLocal#revokeCert(AuthenticationToken, BigInteger, Date, Date, String, int, boolean)
-     * @throws CADoesntExistsException in addition to the above throws if the CA (from issuer DN) is not handled by this instance, fail-fast
-     * @since RA Master API version 16 (EJBCA 7.12.0)
-     */
-    void revokeCertWithParameters(AuthenticationToken authenticationToken, CertRevocationDto certificateRevocationParameters, boolean checkDate)
-            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException;
-
-    
-    /**
      * Request status change of a certificate (revoke or reactivate).
      * Requires authorization to CA, EEP for the certificate and '/ra_functionality/revoke_end_entity'.
      * Difference with normal RevokeCertCommand is that
