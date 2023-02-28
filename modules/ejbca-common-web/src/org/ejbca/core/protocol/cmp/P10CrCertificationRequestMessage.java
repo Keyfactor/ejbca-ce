@@ -22,9 +22,9 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.InfoTypeAndValue;
 import org.bouncycastle.asn1.cmp.PKIBody;
@@ -194,7 +194,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
             } catch (IllegalArgumentException ie) {
                 // This was not a DirectoryString type, it could then be IA5string, breaking pkcs#9 v2.0
                 // but some version of openssl have been known to produce IA5strings
-                str = DERIA5String.getInstance((obj));
+                str = ASN1IA5String.getInstance((obj));
             }
 
             if (str != null) {

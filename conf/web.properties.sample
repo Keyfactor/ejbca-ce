@@ -310,6 +310,11 @@ httpsserver.tokentype=JKS
 #cryptotoken.p11.attr.255.name=
 #cryptotoken.p11.attr.255.file=
 
+# PQC algorithms can be enabled in the Admin UI
+# Only for testing until officially standardized
+# Default: false (not enabled)
+#cryptotoken.pqc.enabled=true
+
 #
 # Enable usage of Azure Key Vault Crypto Token in the Admin UI
 # Default: false (not enabled)

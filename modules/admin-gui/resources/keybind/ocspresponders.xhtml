@@ -50,7 +50,7 @@
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATEISSUER}"/></f:facet>
 					<h:outputLink value="/ejbca/adminweb/viewcertificate.xhtml" rendered="#{guiInfo.certificateBound}">
 						<f:param name="certsernoparameter" value="#{guiInfo.caCertificateSerialNumber},#{guiInfo.caCertificateIssuerDn}"/>
-						<f:param name="returnTo" value="#{ocspResponderMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding' ? '2' : '3'}"/>
+						<f:param name="returnTo" value="2"/>
 						<h:outputText value="#{guiInfo.certificateInternalCaName}" rendered="#{guiInfo.issuedByInternalCa}"/>
 						<h:outputText value="#{guiInfo.certificateIssuerDn}" rendered="#{!guiInfo.issuedByInternalCa}"/>
 					</h:outputLink>

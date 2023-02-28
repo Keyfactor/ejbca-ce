@@ -22,11 +22,11 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Hex;
@@ -53,7 +53,7 @@ import org.ejbca.ra.RaCertificateDetails.Callbacks;
  *  
  * @version $Id$
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaViewCertBean implements Serializable {
 
@@ -62,14 +62,10 @@ public class RaViewCertBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value = "#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
 
-    public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
-        this.raAuthenticationBean = raAuthenticationBean;
-    }
-
-    @ManagedProperty(value = "#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
 
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {

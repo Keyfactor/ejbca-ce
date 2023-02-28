@@ -2502,7 +2502,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("EJBCA REST exception", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
             throw new EjbcaException(e.getErrorCode(), e);
-        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException | RuntimeException e) {  // EJBException, ClassCastException, ...
+        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
