@@ -84,8 +84,8 @@ public class PublisherQueueProxySessionBean implements PublisherQueueProxySessio
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher) {
-        return queueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher);
+    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher, final long maxNumberOfJobs) {
+        return queueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher, maxNumberOfJobs);
     }
 
     @Override

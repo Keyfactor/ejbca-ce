@@ -13,7 +13,6 @@
 package org.cesecore.keys.token;
 
 /**
- * @version $Id$
  *
  */
 public interface CryptoTokenSession {

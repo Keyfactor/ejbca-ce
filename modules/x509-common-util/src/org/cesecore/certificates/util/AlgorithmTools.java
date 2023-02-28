@@ -43,11 +43,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.anssi.ANSSINamedCurves;
+import org.bouncycastle.asn1.bc.BCObjectIdentifiers;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.cryptopro.ECGOST3410NamedCurves;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
@@ -68,11 +71,17 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.pqc.jcajce.interfaces.DilithiumKey;
+import org.bouncycastle.pqc.jcajce.interfaces.DilithiumPublicKey;
+import org.bouncycastle.pqc.jcajce.interfaces.FalconKey;
+import org.bouncycastle.pqc.jcajce.interfaces.FalconPublicKey;
+import org.bouncycastle.pqc.jcajce.interfaces.KyberKey;
+import org.bouncycastle.pqc.jcajce.interfaces.NTRUKey;
+import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 /**
  * Various helper methods for handling the mappings between different key and
  * signature algorithms.
@@ -134,6 +143,7 @@ public abstract class AlgorithmTools {
     public static final List<Integer> DEFAULTBITLENGTHS_RSA = Arrays.asList( 1024, 1536, 2048, 3072, 4096, 6144, 8192 );
     public static final List<Integer> DEFAULTBITLENGTHS_DSA = Arrays.asList( 1024 );
     public static final List<Integer> DEFAULTBITLENGTHS_EC = getAllNamedEcCurveBitLengths();    
+    public static final List<Integer> DEFAULTBITLENGTHS_NTRU = Arrays.asList( 128, 192, 256 );
     public static final List<Integer> DEFAULTBITLENGTHS_DSTU = Arrays.asList( 167, 173, 179, 191, 233, 237, 307, 367, 431 );
     
     public static List<Integer> getAllBitLengths() {
@@ -142,6 +152,7 @@ public abstract class AlgorithmTools {
         allBitLengths.addAll(DEFAULTBITLENGTHS_DSTU);
         allBitLengths.addAll(DEFAULTBITLENGTHS_EC);
         allBitLengths.addAll(DEFAULTBITLENGTHS_DSA);
+        allBitLengths.addAll(DEFAULTBITLENGTHS_NTRU);
         return new ArrayList<>(allBitLengths);
     }
 
@@ -152,6 +163,22 @@ public abstract class AlgorithmTools {
     /** Signature algorithms supported by EDDSA keys */
     public static final List<String> SIG_ALGS_ED448 = Collections.unmodifiableList(Arrays.asList(
             AlgorithmConstants.SIGALG_ED448
+    ));
+
+    public static final List<String> SIG_ALGS_FALCON512 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_FALCON512
+    ));
+    public static final List<String> SIG_ALGS_FALCON1024 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_FALCON1024
+    ));
+    public static final List<String> SIG_ALGS_DILITHIUM2 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_DILITHIUM2
+    ));
+    public static final List<String> SIG_ALGS_DILITHIUM3 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_DILITHIUM3
+    ));
+    public static final List<String> SIG_ALGS_DILITHIUM5 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_DILITHIUM5
     ));
 
     /** Signature algorithms supported by GOST keys */
@@ -168,6 +195,7 @@ public abstract class AlgorithmTools {
     private static Map<String, List<String>> allEcCurveNamesKnownByProvider = preProcessCurveNames(true);
     private static Map<String, List<String>> allGostCurveNames = preProcessGostCurveNames(false);
     private static Map<String, List<String>> allGostCurveNamesKnownByProvider = preProcessGostCurveNames(true);
+    private static Map<String, List<String>> ecKeySpecAliases;
 
     /**
      * Gets the name of matching key algorithm from a public key as defined by
@@ -203,6 +231,14 @@ public abstract class AlgorithmTools {
             // comes from SUN and not BC, most probably due to the multi release jdk used by BC
         } else if (publickey.getClass().getCanonicalName().equals("sun.security.ec.ed.EdDSAPublicKeyImpl")) {
             keyAlg = AlgorithmConstants.KEYALGORITHM_ED25519;
+        } else if (publickey instanceof FalconKey) {
+            keyAlg = ((FalconKey)publickey).getAlgorithm();            
+        } else if (publickey instanceof DilithiumKey) {
+            keyAlg = ((DilithiumKey)publickey).getAlgorithm();            
+        } else if (publickey instanceof KyberKey) {
+            keyAlg = ((KyberKey)publickey).getAlgorithm();            
+        } else if (publickey instanceof NTRUKey) {
+            keyAlg = ((NTRUKey)publickey).getAlgorithm();            
         }
         return keyAlg;
     }
@@ -210,7 +246,9 @@ public abstract class AlgorithmTools {
     /** @return a list of all available key algorithms */
     public static List<String> getAvailableKeyAlgorithms() {
         final List<String> ret = new ArrayList<>(Arrays.asList(AlgorithmConstants.KEYALGORITHM_DSA, AlgorithmConstants.KEYALGORITHM_ECDSA,
-                AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED448));
+                AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED448, 
+                AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON1024,
+                AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.KEYALGORITHM_NTRU));
         for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
             ret.add(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName));
         }
@@ -458,6 +496,24 @@ public abstract class AlgorithmTools {
         if ( publickey instanceof DSAPublicKey ) {
             return SIG_ALGS_DSA;
         }
+        if ( publickey instanceof FalconKey ) {
+            FalconParameterSpec spec = ((FalconKey)publickey).getParameterSpec();
+            if (FalconParameterSpec.falcon_512.equals(spec)) {
+                return SIG_ALGS_FALCON512;                
+            } else if (FalconParameterSpec.falcon_1024.equals(spec)) {
+                return SIG_ALGS_FALCON1024;
+            }
+        }
+        if ( publickey instanceof DilithiumKey ) {
+            DilithiumParameterSpec spec = ((DilithiumKey)publickey).getParameterSpec();
+            if (DilithiumParameterSpec.dilithium2.equals(spec)) {
+                return SIG_ALGS_DILITHIUM2;
+            } else if (DilithiumParameterSpec.dilithium3.equals(spec)) {
+                return SIG_ALGS_DILITHIUM3;
+            } else if (DilithiumParameterSpec.dilithium5.equals(spec)) {
+                return SIG_ALGS_DILITHIUM5;
+            }
+        }
 
         return Collections.emptyList();
     }
@@ -483,6 +539,16 @@ public abstract class AlgorithmTools {
             ret = AlgorithmConstants.KEYALGORITHM_ED25519;
         } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_ED448) ) {
             ret = AlgorithmConstants.KEYALGORITHM_ED448;
+        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_FALCON512) ) {
+            ret = AlgorithmConstants.KEYALGORITHM_FALCON512;
+        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_FALCON1024) ) {
+            ret = AlgorithmConstants.KEYALGORITHM_FALCON1024;
+        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_DILITHIUM2) ) {
+            ret = AlgorithmConstants.KEYALGORITHM_DILITHIUM2;
+        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_DILITHIUM3) ) {
+            ret = AlgorithmConstants.KEYALGORITHM_DILITHIUM3;
+        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_DILITHIUM5) ) {
+            ret = AlgorithmConstants.KEYALGORITHM_DILITHIUM5;
         } else {
             ret = AlgorithmConstants.KEYALGORITHM_RSA;
         }
@@ -560,6 +626,10 @@ public abstract class AlgorithmTools {
             return publicKey.getAlgorithm();
         } else if ( publicKey instanceof DSAPublicKey ) {
             keyspec = Integer.toString( ((DSAPublicKey) publicKey).getParams().getP().bitLength() );
+        } else if ( publicKey instanceof FalconPublicKey ) {
+            return ((FalconPublicKey) publicKey).getParameterSpec().getName().toUpperCase();
+        } else if ( publicKey instanceof DilithiumPublicKey ) {
+            return ((DilithiumPublicKey) publicKey).getParameterSpec().getName().toUpperCase();
         }
         if (log.isTraceEnabled()) {
             log.trace("<getKeySpecification: "+keyspec);
@@ -624,6 +694,14 @@ public abstract class AlgorithmTools {
 
     /** @return a list of aliases for the provided curve name (including the provided name) */
     public static List<String> getEcKeySpecAliases(final String namedEllipticCurve) {
+        // Turns out this method slows down issuance significantly, cache results. See ECA-XXXX
+        if (ecKeySpecAliases != null) {
+            if (ecKeySpecAliases.containsKey(namedEllipticCurve)) {
+                return ecKeySpecAliases.get(namedEllipticCurve);
+            }
+        } else {
+            ecKeySpecAliases = new HashMap<>();
+        }
         final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(namedEllipticCurve);
         final List<String> ret = new ArrayList<>();
         ret.add(namedEllipticCurve);
@@ -640,6 +718,7 @@ public abstract class AlgorithmTools {
                 }
             }
         }
+        ecKeySpecAliases.put(namedEllipticCurve, ret);
         return ret;
     }
 
@@ -706,13 +785,16 @@ public abstract class AlgorithmTools {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
             break;
         case AlgorithmConstants.SIGALG_ED25519:
-            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-            break;
         case AlgorithmConstants.SIGALG_ED448:
+        case AlgorithmConstants.SIGALG_FALCON512:
+        case AlgorithmConstants.SIGALG_FALCON1024:
+        case AlgorithmConstants.SIGALG_DILITHIUM2:
+        case AlgorithmConstants.SIGALG_DILITHIUM3:
+        case AlgorithmConstants.SIGALG_DILITHIUM5:
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
             break;
         default:
-            //Find the hash algoritihm 
+            //Find the hash algorithm 
             final String hashAlgo = getHashAlgorithm(signatureAlgorithm);
             if(publicKey instanceof RSAPublicKey) {
                 if(signatureAlgorithm.contains("MGF1")) {
@@ -800,7 +882,6 @@ public abstract class AlgorithmTools {
         boolean isGost3410 = algname.contains("GOST3410");
         boolean isDstu4145 = algname.contains("DSTU4145");
         boolean isSpecialECC = isGost3410 || isDstu4145;
-
         boolean ret = false;
         if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_RSA)) {
             if (publicKey instanceof RSAPublicKey) {
@@ -830,15 +911,23 @@ public abstract class AlgorithmTools {
              if (StringUtils.equals(AlgorithmConstants.KEYALGORITHM_ED448, publicKey.getAlgorithm())) {
                  ret = true;
              }
-          }
+         } else if (StringUtils.containsIgnoreCase(signatureAlgorithm, "FALCON")) {
+             if (publicKey instanceof FalconKey) {
+                 ret = true;
+             }
+         } else if (StringUtils.containsIgnoreCase(signatureAlgorithm, "DILITHIUM")) {
+             if (publicKey instanceof DilithiumKey) {
+                 ret = true;
+             }
+         }
         return ret;
     }
 
     /**
      * Simple method that looks at the certificate and determines, from EJBCA's standpoint, which signature algorithm it is
      *
-     * @param cert the cert to examine
-     * @return Signature algorithm name from AlgorithmConstants.SIGALG_SHA1_WITH_RSA etc.
+     * @param cert the cert to examine, MUST be self signed as the returned result depends on the public key
+     * @return Signature algorithm name from AlgorithmConstants.SIGALG_SHA256_WITH_RSA etc.
      */
     public static String getSignatureAlgorithm(Certificate cert) {
         String signatureAlgorithm = null;
@@ -888,6 +977,12 @@ public abstract class AlgorithmTools {
         } else if ( publickey instanceof BCEdDSAPublicKey ) {
             // EdDSA algorithms are named the same as the key algo, i.e. Ed25519 or Ed488
             signatureAlgorithm = publickey.getAlgorithm();
+        } else if ( publickey instanceof FalconKey ) {
+            // FALCON algorithms are named the same as the key algo, i.e. FALCON-512 or FALCON-1024
+            signatureAlgorithm = certSignatureAlgorithm;
+        } else if ( publickey instanceof DilithiumKey ) {
+            // Dilithium algorithms are named the same as the key algo, i.e. DILITHIUM2 or DILITHIUM5
+            signatureAlgorithm = certSignatureAlgorithm;
         } else {
             if (certSignatureAlgorithm.contains("SHA3-")) {
                 if (certSignatureAlgorithm.contains("256")) {
@@ -978,6 +1073,13 @@ public abstract class AlgorithmTools {
         if (sigAlgOid.equals(EdECObjectIdentifiers.id_Ed25519.getId()) || sigAlgOid.equals(EdECObjectIdentifiers.id_Ed448.getId())) {
             return CMSSignedGenerator.DIGEST_SHA256;
         }
+        if (sigAlgOid.equals(BCObjectIdentifiers.falcon_512.getId()) || sigAlgOid.equals(BCObjectIdentifiers.falcon_1024.getId())) {
+            return CMSSignedGenerator.DIGEST_SHA256;
+        }
+        if (sigAlgOid.equals(BCObjectIdentifiers.dilithium2.getId()) || sigAlgOid.equals(BCObjectIdentifiers.dilithium3.getId()) ||
+                sigAlgOid.equals(BCObjectIdentifiers.dilithium5.getId())) {
+            return CMSSignedGenerator.DIGEST_SHA256;
+        }
 
         return CMSSignedGenerator.DIGEST_SHA256;
     }
@@ -1007,6 +1109,16 @@ public abstract class AlgorithmTools {
             oid = EdECObjectIdentifiers.id_Ed25519;
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
             oid = EdECObjectIdentifiers.id_Ed448;
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_FALCON512)) {
+            oid = BCObjectIdentifiers.falcon_512;
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_FALCON1024)) {
+            oid = BCObjectIdentifiers.falcon_1024;
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DILITHIUM2)) {
+            oid = BCObjectIdentifiers.dilithium2;
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DILITHIUM3)) {
+            oid = BCObjectIdentifiers.dilithium3;
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DILITHIUM5)) {
+            oid = BCObjectIdentifiers.dilithium5;
         }
         if (digestAlg != null) {
             if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA1) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
@@ -1192,6 +1304,21 @@ public abstract class AlgorithmTools {
         if(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && sigAlgOid.getId().startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
             return AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
         }
+        if (sigAlgOid.equals(BCObjectIdentifiers.falcon_512)) {
+            return AlgorithmConstants.SIGALG_FALCON512;
+        }
+        if (sigAlgOid.equals(BCObjectIdentifiers.falcon_1024)) {
+            return AlgorithmConstants.SIGALG_FALCON1024;
+        }
+        if (sigAlgOid.equals(BCObjectIdentifiers.dilithium2)) {
+            return AlgorithmConstants.SIGALG_DILITHIUM2;
+        }
+        if (sigAlgOid.equals(BCObjectIdentifiers.dilithium3)) {
+            return AlgorithmConstants.SIGALG_DILITHIUM3;
+        }
+        if (sigAlgOid.equals(BCObjectIdentifiers.dilithium5)) {
+            return AlgorithmConstants.SIGALG_DILITHIUM5;
+        }
 
         return null;
     }
@@ -1274,4 +1401,16 @@ public abstract class AlgorithmTools {
         }
         throw new NoSuchAlgorithmException("The signature algorithm " + signatureAlgorithm + " uses an unsupported digest algorithm.");
     }
+    
+    public static final boolean isPQC(String name) {
+        if (name == null) {
+            return false;
+        }
+        return StringUtils.startsWithIgnoreCase(name, "FALCON") || name.startsWith("1.3.9999.3")
+                || name.equalsIgnoreCase("SPHINCSPLUS") || name.equalsIgnoreCase("SPHINCS+") || name.startsWith(BCObjectIdentifiers.sphincsPlus.getId())
+                || StringUtils.startsWithIgnoreCase(name, "DILITHIUM") || name.startsWith("1.3.6.1.4.1.2.267.7")
+                || StringUtils.startsWithIgnoreCase(name, "NTRU") || name.startsWith(BCObjectIdentifiers.pqc_kem_ntru.getId())
+                || StringUtils.startsWithIgnoreCase(name, "KYBER") || name.startsWith(BCObjectIdentifiers.pqc_kem_kyber.getId());
+    }
+
 }

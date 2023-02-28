@@ -644,7 +644,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             try {
                 cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
             } catch (InvalidKeyException e1) {
-                throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
+                throw new IllegalStateException("The CA's test key alias points to an invalid key.", e1);
             }
         }
         

@@ -606,7 +606,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
         GeneralNames gns = CertTools.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,iPAddress=192.0.2.123,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE");
-        gns = swapGeneralNames(gns, 0, 5); // Swap iPAddress and rfc822Name to test that the order is preserved
+        gns = swapGeneralNames(gns, 0, 5); // Swap rfc822Name and directoryName to test that the order is preserved
         Extension ext = new Extension(Extension.subjectAlternativeName, false, gns.toASN1Primitive().getEncoded(ASN1Encoding.DER));
         ExtensionsGenerator gen = ca.getSubjectAltNameExtensionForCTCert(ext);
         Extensions exts = gen.generate();
@@ -615,7 +615,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertNotNull("A subjectAltName extension should be present", genext);
         assertNull("No CT redated extension should be present", ctext);
         String altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=(PRIVATE).secret.se, dNSName=(PRIVATE).ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
+        assertEquals("altName is not what it should be", "directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=(PRIVATE).secret.se, dNSName=(PRIVATE).ultrasecret.no, rfc822name=foo@bar.com", altName);
     }
 
     class TestValidator implements CertificateValidationDomainService {
@@ -647,6 +647,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         KeyPair userKeyPairRSA = genTestKeyPair("SHA256WithRSA");
         KeyPair userKeyPairECDSA = genTestKeyPair("SHA256WithECDSA");
         KeyPair userKeyPairDSA = genTestKeyPair("SHA1WithDSA");
+        KeyPair userKeyPairEd25519 = genTestKeyPair(AlgorithmConstants.SIGALG_ED25519);
+        KeyPair userKeyPairDilithium3 = genTestKeyPair(AlgorithmConstants.SIGALG_DILITHIUM3);
+        KeyPair userKeyPairFalcon512 = genTestKeyPair(AlgorithmConstants.SIGALG_FALCON512);
         // These will return null if GOST or DSTU support is not enabled
         KeyPair userKeyPairGOST = genTestKeyPair("GOST3411withECGOST3410");
         KeyPair userKeyPairDSTU = genTestKeyPair("GOST3411withDSTU4145");
@@ -658,6 +661,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
             if (userKeyPairGOST != null) {
                 runValidatorTests(cryptoToken, x509ca, userKeyPairGOST);
             } else {
@@ -677,6 +683,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
 
         // Create a CA using SHA1WithDSA as sigAlg
@@ -686,6 +695,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
 
         // Create a CA using SHA512WithRSAAndMGF1 (RSA-PSS) as sigAlg
@@ -695,6 +707,42 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+        }
+        // Create a CA using Ed25519 as sigAlg
+        {
+            final CryptoToken cryptoToken = getNewCryptoToken();
+            final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_ED25519, null, null);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+        }
+        // Create a CA using Dilithium3 as sigAlg
+        {
+            final CryptoToken cryptoToken = getNewCryptoToken();
+            final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_DILITHIUM3, null, null);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+        }
+        // Create a CA using Falcon-512 as sigAlg
+        {
+            final CryptoToken cryptoToken = getNewCryptoToken();
+            final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_FALCON512, null, null);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
     }
     
@@ -1950,6 +1998,12 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             return KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
         } else if(algName.contains("ECDSA")) {
             return KeyTools.genKeys("brainpoolp224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        } else if(algName.equals(AlgorithmConstants.SIGALG_ED25519)) {
+            return KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);
+        } else if(algName.equals(AlgorithmConstants.SIGALG_DILITHIUM3)) {
+            return KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM3);
+        } else if(algName.equals(AlgorithmConstants.SIGALG_FALCON512)) {
+            return KeyTools.genKeys(AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.SIGALG_FALCON512);
         } else {
             return KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }
