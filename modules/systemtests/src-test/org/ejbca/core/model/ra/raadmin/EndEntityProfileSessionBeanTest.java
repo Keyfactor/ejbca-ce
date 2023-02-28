@@ -321,8 +321,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             
             // 1.2 Test 1 available CAs for this EEP
             // Create first CA.
-            cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName1 + "_token", "1024");
-            catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName1 + "_token", "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caInfo1 = getNewCAInfo(caName1, catoken1);
             caAdminSession.createCA(alwaysAllowToken, caInfo1);
             eeProfile.setAvailableCAs(Collections.singletonList(caInfo1.getCAId()));
@@ -333,8 +333,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                         
             // 1.3 Test 2 available CAs for this EEP.
             // Create second CA.
-            cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName2 + "_token", "1024");
-            catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName2 + "_token", "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caInfo2 = getNewCAInfo(caName2, catoken2);
             caAdminSession.createCA(alwaysAllowToken, caInfo2);
             eeProfile.setAvailableCAs(Arrays.asList(caInfo1.getCAId(), caInfo2.getCAId()));

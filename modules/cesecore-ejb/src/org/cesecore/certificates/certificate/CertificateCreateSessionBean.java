@@ -787,19 +787,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if(StringUtils.isBlank(subjectDN)) {
             return;
         }
-        //boolean multipleCheckOk = false;
         
-        // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
-        // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
-        // See ECA-3309
-        //
-        // Some time in the future, when we want to use multiple checks on the database, a separate method should be added to execute this commented out code.
-//        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
-//            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
-//        }
-        
-        // If one of the checks failed, we need to investigate further what went wrong
-        if (/*!multipleCheckOk && */enforceUniqueDistinguishedName) {
+        // If this check failed, we need to investigate further what went wrong
+        if (enforceUniqueDistinguishedName) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(ca.getSubjectDN(), subjectDN);
             if (!users.isEmpty() && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", username,
@@ -825,21 +815,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (enforceUniquePublicKeys) {
             subjectKeyId = KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier();
         }
-        //boolean multipleCheckOk = false;
         
-        // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
-        // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
-        // See ECA-3309
-//        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
-//            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
-//        }
-        
-        if (/*!multipleCheckOk && */enforceUniquePublicKeys) {
+        if (enforceUniquePublicKeys) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(ca.getSubjectDN(), subjectKeyId);
             if (!users.isEmpty() && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", username);
                 log.info(msg+listUsers(users));
-                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
+                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
         }
     }
@@ -862,7 +844,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             if (!certificates.isEmpty()) {
                 final String msg = intres.getLocalizedMessage("createcert.enforce_key_renewal", username);
                 log.info(msg);
-                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS, msg);
+                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS, msg);
             }
         }
     }
