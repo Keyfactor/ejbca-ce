@@ -150,10 +150,23 @@
 		<fail unless="wsdl.present" message="Generation of client side Web Services code requires ${mod.ejbca-ws.wsdl} to be present."/>
 		<delete><fileset dir="${ejbca-ws-cli.src-gen.dir}" includes="**"></fileset></delete>
 		<mkdir dir="${ejbca-ws-cli.build.dir}" />
+    	
+    	<taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport" classpathref="wsgen.classpath"/>
+    	
+    	<wsimport 
+    		wsdl="${mod.ejbca-ws.wsdl}"
+    		sourcedestdir="${ejbca-ws-cli.src-gen.dir}"
+    		destdir="${ejbca-ws-cli.build.dir}"
+    		package="org.ejbca.core.protocol.ws.client.gen"
+    		keep="true">  	
+    	</wsimport>
+    	<!--
 		<exec command="${java.home}/../bin/wsimport" failonerror="true">
 			<arg line="-s ${ejbca-ws-cli.src-gen.dir} -d ${ejbca-ws-cli.build.dir} -p org.ejbca.core.protocol.ws.client.gen -keep ${mod.ejbca-ws.wsdl}"/>
 		</exec>
-        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
+        -->
+    	
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="Certificate"/>
     	</antcall>
         <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
