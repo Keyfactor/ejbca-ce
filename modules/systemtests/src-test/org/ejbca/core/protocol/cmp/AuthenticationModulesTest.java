@@ -657,7 +657,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg = "CA with DN 'C=SE,CN=cmprevuser1' is unknown";
             assertEquals(expectedErrMsg, errMsg);
             removeAuthenticationToken(adminToken, admCert, adminName);
@@ -808,7 +808,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         final String expectedErrMsg = "The authentication module 'DnPartPwd' cannot be used in RA mode";
         assertEquals(expectedErrMsg, errMsg);
     }
@@ -836,7 +836,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         final String expectedErrMsg = "The authentication module 'DnPartPwd' cannot be used in RA mode";
         assertEquals(expectedErrMsg, errMsg);
     }
@@ -873,7 +873,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         assertEquals("'CN=cmpTestUnauthorizedAdmin,C=SE' is not an authorized administrator.", errMsg);
     }
 
@@ -919,7 +919,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         String expectedErrmsg = "Omitting some verifications can only be accepted in RA mode and when the CMP request has already been authenticated, for example, through the use of NestedMessageContent";
         assertEquals(expectedErrmsg, errMsg);
         removeAuthenticationToken(adminToken, admCert, adminName);
@@ -1301,7 +1301,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg = "Authentication failed for message. clientTestUser.";
             assertEquals(expectedErrMsg, errMsg);
         } finally {
@@ -1342,7 +1342,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg = "Authentication failed for message. clientTestUser.";
             assertEquals(expectedErrMsg, errMsg);
         } finally {
@@ -1415,7 +1415,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 PKIBody body = respObject.getBody();
                 assertEquals(PKIBody.TYPE_ERROR, body.getType());
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
                 String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
                 assertEquals(expectedErrMsg, errMsg);
             }
@@ -1453,7 +1453,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 PKIBody body = respObject.getBody();
                 assertEquals(PKIBody.TYPE_ERROR, body.getType());
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
                 String expectedErrMsg = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"
                         + testUsername + "'";
                 assertEquals(expectedErrMsg, errMsg);
@@ -1484,7 +1484,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: cmptestuser26.";
             assertEquals(expectedErrMsg, errMsg);
             // Step 4 now set status to NEW, and a clear text password, then it should finally work
@@ -1509,7 +1509,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             PKIBody body3 = respObject3.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body3.getType());
             err = (ErrorMsgContent) body3.getContent();
-            String errMsg3 = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg3 = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg3 = "The certificate attached to the PKIMessage in the extraCert field is not active.";
             assertEquals(expectedErrMsg3, errMsg3);
         } finally {
@@ -1556,7 +1556,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         final String expectedErrMsg = "PKI Message is not authenticated properly. No HMAC protection was found.";
         assertEquals(expectedErrMsg, errMsg);
     }
@@ -1589,7 +1589,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         String expectedErrMsg = "PKI Message is not authenticated properly. No PKI protection is found.";
         assertEquals(expectedErrMsg, errMsg);
     }
@@ -1687,9 +1687,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         String ecdsaCADN = "CN=CmpECDSATestCA";
         String keyspec = "prime256v1";
 
-        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ecdsaCADN, keyspec);
+        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ecdsaCADN, keyspec, keyspec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA,
-                AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+                AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         String caname = CertTools.getPartFromDN(ecdsaCADN, "CN");
@@ -1941,7 +1941,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         final String expectedErrMsg = "Unaccepted KeyId 'EMPTY' in CMP request";
         assertEquals(expectedErrMsg, errMsg);
     }
@@ -1976,7 +1976,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         final String expectedErrMsg = "Unaccepted KeyId 'EMPTY' in CMP request";
         assertEquals(expectedErrMsg, errMsg);
     }
@@ -2068,7 +2068,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         String roleName = getRoleName();
         final Role role = roleSession.getRole(ADMIN, null, roleName);
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
+                CertTools.getIssuerDN(cert).hashCode(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.getRoleId(), null));
         return token;
     }

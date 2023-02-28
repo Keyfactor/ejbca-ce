@@ -168,18 +168,22 @@ public class KeyGenParams implements Serializable {
     }
     
     /**
-     * Get key specification as a numeric string if RSA, or left untouched
+     * Get key specification as a numeric string if RSA or Falcon or similar, or left untouched
      * 
      * @return the key specification string 
      */
-    public static String getKeySpecificationNumericIfRsa(final String keySpec) {
-        final String keySpecificationNumericIfRsa;
+    public static String getKeySpecificationNumeric(final String keySpec) {
+        final String keySpecificationNumeric;
         if (StringUtils.startsWith(keySpec, AlgorithmConstants.KEYALGORITHM_RSA)) {
-            keySpecificationNumericIfRsa = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
+            keySpecificationNumeric = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
+        } else if (StringUtils.startsWithIgnoreCase(keySpec, AlgorithmConstants.KEYALGORITHM_FALCON512)) {
+            keySpecificationNumeric = keySpec.substring(AlgorithmConstants.KEYALGORITHM_FALCON512.length());
+        } else if (StringUtils.startsWithIgnoreCase(keySpec, AlgorithmConstants.KEYALGORITHM_FALCON1024)) {
+            keySpecificationNumeric = keySpec.substring(AlgorithmConstants.KEYALGORITHM_FALCON1024.length());
         } else {
-            keySpecificationNumericIfRsa = keySpec;
+            keySpecificationNumeric = keySpec;
         }
-        return keySpecificationNumericIfRsa;
+        return keySpecificationNumeric;
     }
     
     /**
