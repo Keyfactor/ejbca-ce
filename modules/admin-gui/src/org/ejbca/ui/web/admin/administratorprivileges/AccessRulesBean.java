@@ -36,6 +36,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -159,7 +160,10 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         /** @return one of the {@link AccessRuleState} enum names representing the current state of this rule */
         public String getState() { return state.name(); }
         /** Set one of the {@link AccessRuleState} enum names representing the current state of this rule */
-        public void setState(String state) { this.state = AccessRuleState.valueOf(state); }
+        public void setState(String state) {
+            // Unchanged Inherit rules are pruned at the client side, and will be null here.
+            this.state = StringUtils.isNotEmpty(state) ? AccessRuleState.valueOf(state) : AccessRuleState.UNDEFINED;
+        }
         /** @return one of the {@link AccessRuleState} enum representing the current state of this rule */
         private AccessRuleState getStateEnum() { return state; }
         /** @return true if the resource in this istance is '/' */

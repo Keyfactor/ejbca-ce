@@ -381,7 +381,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         final String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: " + RENEWAL_USERNAME + ".";
         assertEquals(expectedErrMsg, errMsg);
 
@@ -470,7 +470,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
         final String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field is not active.";
         assertEquals(expectedErrMsg, errMsg);
 
@@ -556,7 +556,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
         String expectedErrMsg = "Error. Received a CMP KeyUpdateRequest for a non-existing end entity";
         assertEquals(expectedErrMsg, errMsg);
 
@@ -605,7 +605,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         body = respObject.getBody();
         assertEquals(23, body.getType());
         err = (ErrorMsgContent) body.getContent();
-        errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
         expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
         assertEquals(expectedErrMsg, errMsg);
         
@@ -688,7 +688,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
         final String expectedErrMsg = "Invalid key. The public key in the KeyUpdateRequest is the same as the public key in the existing end entity certificate";
         assertEquals(expectedErrMsg, errMsg);
 
@@ -903,7 +903,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             final PKIBody body = respObject.getBody();
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
             final String expectedErrMsg = "No issuer certificate for certificate in certification path found";
             assertTrue(errMsg.contains(expectedErrMsg));
         } finally {
@@ -980,7 +980,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
         final String expectedErrMsg = "'" + RENEWAL_USER_DN + "' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
         if(log.isTraceEnabled()) {
@@ -1141,7 +1141,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
         final String expectedErrMsg = "Error. Received a CMP KeyUpdateRequest for a non-existing end entity";
         assertEquals(expectedErrMsg, errMsg);
 
@@ -1308,7 +1308,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
         final String expectedErrMsg = "EndEntityCertificate authentication module is not configured. For a KeyUpdate request to be authentication " +
         		                        "in RA mode, EndEntityCertificate authentication module has to be set and configured";
         assertEquals(expectedErrMsg, errMsg);
@@ -1402,7 +1402,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             final PKIBody body = respObject.getBody();
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
             final String expectedErrMsg = "User 'cmpTestAdmin' is not allowed to use same key as another user is using.";
             assertEquals(expectedErrMsg, errMsg);
         } else {
@@ -1492,7 +1492,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0) .getString();
         
         final String expectedErrMsg = "'CN=certRenewalUser,O=PrimeKey Solutions AB,C=SE' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
@@ -1603,7 +1603,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         String roleName = getRoleName();
         final Role role = roleSession.getRole(ADMIN, null, roleName);
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
+                CertTools.getIssuerDN(cert).hashCode(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.getRoleId(), null));
         return token;
     }

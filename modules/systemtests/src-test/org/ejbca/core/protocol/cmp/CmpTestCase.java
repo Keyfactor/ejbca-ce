@@ -249,6 +249,10 @@ public abstract class CmpTestCase extends CaTestCase {
         assertTrue("Certificate profile with name " + name + " already exists. Clear test data first.", this.certProfileSession.getCertificateProfile(name) == null);
         final CertificateProfile result = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         result.setAllowDNOverride(true);
+        // Add NTRU, just to demonstrate that it is possible in testCrmfHttpOkUserWithPQC
+        List<String> algos = result.getAvailableKeyAlgorithmsAsList();
+        algos.add(AlgorithmConstants.KEYALGORITHM_NTRU);
+        result.setAvailableKeyAlgorithmsAsList(algos);
         int id = -1;
         try {
             this.certProfileSession.addCertificateProfile(ADMIN, name, result);
@@ -961,7 +965,7 @@ public abstract class CmpTestCase extends CaTestCase {
                         if (pkiStatusInfo != null) {
                             final PKIFreeText pkiFreeText = pkiStatusInfo.getStatusString();
                             if (pkiFreeText != null) {
-                                errorStr = pkiFreeText.getStringAt(0).getString();
+                                errorStr = pkiFreeText.getStringAtUTF8(0).getString();
                             }                        
                         }
                     }
@@ -1394,8 +1398,8 @@ public abstract class CmpTestCase extends CaTestCase {
             pkiStatusInfo = null;
             fail("Unsuported exptag '"+exptag+"'");
         }
-        log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + pkiStatusInfo.getStatusString().getStringAt(0).getString() + "'.");
-        assertEquals(failMsg, pkiStatusInfo.getStatusString().getStringAt(0).getString());
+        log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + pkiStatusInfo.getStatusString().getStringAtUTF8(0).getString() + "'.");
+        assertEquals(failMsg, pkiStatusInfo.getStatusString().getStringAtUTF8(0).getString());
     }
 
     public static void checkCmpPKIErrorMessage(byte[] pkiMessageBytes, String sender, X500Name recipient, int expectedErrorCode, String errorMsg) throws IOException {
@@ -1417,11 +1421,11 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals("Unexpected status.", 2, pkiStatusInfo.getStatus().intValue());
         final PKIFreeText pkiFreeText = pkiStatusInfo.getStatusString();
         if (log.isDebugEnabled() && pkiFreeText!=null) {
-            log.debug("Response error message: " + pkiFreeText.getStringAt(0).getString());
+            log.debug("Response error message: " + pkiFreeText.getStringAtUTF8(0).getString());
         }
         assertEquals("Return wrong error code.", expectedErrorCode, pkiStatusInfo.getFailInfo().intValue());
         if (errorMsg != null) {
-            assertEquals(errorMsg, pkiFreeText.getStringAt(0).getString());
+            assertEquals(errorMsg, pkiFreeText.getStringAtUTF8(0).getString());
         }
     }
 

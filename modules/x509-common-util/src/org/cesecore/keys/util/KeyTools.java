@@ -74,6 +74,12 @@ import javax.crypto.Cipher;
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.AsymmetricJWK;
+import com.nimbusds.jose.jwk.JWK;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -111,22 +117,25 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.bouncycastle.pqc.crypto.ntru.NTRUParameters;
+import org.bouncycastle.pqc.jcajce.interfaces.DilithiumPrivateKey;
+import org.bouncycastle.pqc.jcajce.interfaces.DilithiumPublicKey;
+import org.bouncycastle.pqc.jcajce.interfaces.FalconPrivateKey;
+import org.bouncycastle.pqc.jcajce.interfaces.FalconPublicKey;
+import org.bouncycastle.pqc.jcajce.interfaces.NTRUKey;
+import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.NTRUParameterSpec;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.AsymmetricJWK;
-import com.nimbusds.jose.jwk.JWK;
+import org.cesecore.util.CryptoProviderTools;
 
 /**
  * Tools to handle common key and keystore operations.
- * 
  */
 public final class KeyTools {
     private static final Logger log = Logger.getLogger(KeyTools.class);
@@ -160,7 +169,7 @@ public final class KeyTools {
      * @param algSpec
      *            AlgorithmParameterSpec of keys to generate, typically an EXParameterSpec for EC keys, or null if keySpec is to be used. See {@link KeyTools#getKeyGenSpec(PublicKey)}
      * @param keyAlg
-     *            algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see AlgorithmConstants.KEYALGORITHM_XX, if value is Ed25519 or Ed448, not keySpec or algSpec is needed
+     *            algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see AlgorithmConstants.KEYALGORITHM_XX, if value is Ed25519, Ed448, FALCON-512, FALCON-1024, DILITHIUM2, DILITHIUM3, DILITHIUM5 keySpec or algSpec is not needed
      * 
      * @see org.cesecore.certificates.util.AlgorithmConstants
      * @see org.bouncycastle.asn1.x9.X962NamedCurves
@@ -177,7 +186,7 @@ public final class KeyTools {
             log.trace(">genKeys(" + keySpec + ", " + keyAlg + ")");
         }
 
-        final KeyPairGenerator keygen;
+        KeyPairGenerator keygen;
         try {
             // A small note on RSA keys. 
             // RSA keys are encoded as a SubjectPublicKeyInfo in X.509 certificates (public key) and PKCS#8 private key blobs (private key)
@@ -189,14 +198,14 @@ public final class KeyTools {
             // How it's encoded can be controlled during key generation. We use "RSA" for RSA keys, which means rsaEncryption.
             // Albeit we don't see any need right now (May 2020), it is possible to use id-RSASSA-PSS if on uses RSASSA-PSS instead of RSA when creating the
             // KeyPairGeneratos, i.e. KeyPairGenerator.getInstance("RSASSA-PSS", BouncyCastleProvider.PROVIDER_NAME)
-            keygen = KeyPairGenerator.getInstance(keyAlg, BouncyCastleProvider.PROVIDER_NAME);
+            keygen = KeyPairGenerator.getInstance(keyAlg, CryptoProviderTools.getProviderNameFromAlg(keyAlg));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algorithm " + keyAlg + " was not recognized.", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
         }
         if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA) || StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_EC)) {
-            if ((keySpec != null) && !StringUtils.equals(keySpec, "implicitlyCA")) {
+            if ((keySpec != null)) {
                 log.debug("Generating named curve ECDSA key pair: " + keySpec);
                 // Check if we have an OID for this named curve
                 if (ECUtil.getNamedCurveOid(keySpec) != null) {
@@ -225,14 +234,8 @@ public final class KeyTools {
             } else if (algSpec != null) {
                 log.debug("Generating ECDSA key pair from AlgorithmParameterSpec: " + algSpec);
                 keygen.initialize(algSpec, new SecureRandom());
-            } else if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                log.debug("Generating implicitlyCA encoded ECDSA key pair");
-                // If the keySpec is null, we have "implicitlyCA" defined EC parameters
-                // The parameters were already installed when we installed the provider
-                // We just make sure that ecSpec == null here
-                keygen.initialize(null, new SecureRandom());
             } else {
-                throw new InvalidAlgorithmParameterException("No keySpec no algSpec and no implicitlyCA specified");
+                throw new InvalidAlgorithmParameterException("No keySpec or algSpec specified");
             }
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
             final AlgorithmParameterSpec ecSpec;
@@ -266,6 +269,30 @@ public final class KeyTools {
             // DSA key with "DSA" in keyspec
             final int keysize = Integer.parseInt(keySpec.substring(3));
             keygen.initialize(keysize);
+        } else if (StringUtils.isNumeric(keySpec) && StringUtils.startsWithIgnoreCase(keyAlg, "FALCON")) {
+            // Falcon has security levels, such as Falcon-512
+            final AlgorithmParameterSpec spec;
+            if ("512".equals(keySpec)) {
+                spec = FalconParameterSpec.falcon_512;
+            } else if ("1024".equals(keySpec)) {
+                spec = FalconParameterSpec.falcon_1024;                
+            } else {
+                throw new InvalidAlgorithmParameterException(keySpec + " is not a valid FALCON algorithm parameter");
+            }
+            keygen.initialize(spec);
+        } else if (StringUtils.startsWithIgnoreCase(keyAlg, "DILITHIUM")) {
+            // Dilithium has security levels, 1, 2, 3
+            final AlgorithmParameterSpec spec;
+            if ("DILITHIUM2".equalsIgnoreCase(keyAlg)) {
+                spec = DilithiumParameterSpec.dilithium2;
+            } else if ("DILITHIUM3".equals(keyAlg)) {
+                spec = DilithiumParameterSpec.dilithium3;
+            } else if ("DILITHIUM5".equals(keyAlg)) {
+                spec = DilithiumParameterSpec.dilithium5;
+            } else {
+                throw new InvalidAlgorithmParameterException(keySpec + " is not a valid DILITHIUM key algorithm specification");
+            }
+            keygen.initialize(spec);
         } else if (StringUtils.isNumeric(keySpec) && !StringUtils.startsWith(keyAlg, "Ed")) {
             // RSA or DSA key where keyspec is simply the key length
             // If it is Ed, be nice and ignore the keysize
@@ -398,8 +425,7 @@ public final class KeyTools {
      * 
      * @param pk
      *            PublicKey used to derive the keysize
-     * @return -1 if key is unsupported, otherwise a number >= 0. 0 usually means the length can not be calculated, for example if the key is an EC
-     *         key and the "implicitlyCA" encoding is used.
+     * @return -1 if key is unsupported, otherwise a number >= 0. 0 usually means the length can not be calculated
      */
     public static int getKeyLength(final PublicKey pk) {
         if (pk instanceof RSAPublicKey) {
@@ -442,6 +468,38 @@ public final class KeyTools {
                 return 448;
             }
         }
+        if (pk instanceof FalconPublicKey) {
+            // Security levels 2, 3, 5 corresponds to security bit strength 128, 192, 256 (equals to AES 128, 192, 256)
+            // For example: https://asecuritysite.com/pqc/falcon01
+            if (FalconParameterSpec.falcon_512.equals(((FalconPublicKey)pk).getParameterSpec())) {
+                return 128;                
+            } else if (FalconParameterSpec.falcon_1024.equals(((FalconPublicKey)pk).getParameterSpec())) {
+                return 256;
+            }
+
+        }
+        if (pk instanceof DilithiumPublicKey) {
+            // Security levels 2, 3, 5 corresponds to security bit strength 128, 192, 256 (equals to AES 128, 192, 256)
+            if (DilithiumParameterSpec.dilithium2.equals(((DilithiumPublicKey)pk).getParameterSpec())) {
+                return 128;
+            } else if (DilithiumParameterSpec.dilithium3.equals(((DilithiumPublicKey)pk).getParameterSpec())) {
+                return 192;
+            } else if (DilithiumParameterSpec.dilithium5.equals(((DilithiumPublicKey)pk).getParameterSpec())) {
+                return 256;
+            }
+        }
+        if (pk instanceof NTRUKey) {
+            // Security levels 2, 3, 5 corresponds to security bit strength 128, 192, 256 (equals to AES 128, 192, 256)
+            if (NTRUParameterSpec.ntruhps2048509.equals(((NTRUKey)pk).getParameterSpec())) {
+                return NTRUParameters.ntruhps2048509.getSessionKeySize();
+            } else if (NTRUParameterSpec.ntruhps2048677.equals(((NTRUKey)pk).getParameterSpec())) {
+                return NTRUParameters.ntruhps2048677.getSessionKeySize();
+            } else if (NTRUParameterSpec.ntruhrss701.equals(((NTRUKey)pk).getParameterSpec())) {
+                return NTRUParameters.ntruhrss701.getSessionKeySize();
+            } else if (NTRUParameterSpec.ntruhps4096821.equals(((NTRUKey)pk).getParameterSpec())) {
+                return NTRUParameters.ntruhps4096821.getSessionKeySize();
+            }
+        }
         if (pk instanceof DSAPublicKey) {
             final DSAPublicKey dsapub = (DSAPublicKey) pk;
             if (dsapub.getParams() != null) {
@@ -449,7 +507,7 @@ public final class KeyTools {
             }
             return dsapub.getY().bitLength();
         }
-        // Unknown key type
+        // Unknown key type, or something that does not have an intuitive key length (Dilithium for example)
         return -1;
     }
 
@@ -514,6 +572,16 @@ public final class KeyTools {
             log.debug("getKeyGenSpec: BCEdDSAPublicKey");
             final EdDSAParameterSpec edSpec = new EdDSAParameterSpec(pk.getAlgorithm());
             return edSpec;
+        }
+        if (pk instanceof FalconPublicKey) {
+            log.debug("getKeyGenSpec: FalconPublicKey");
+            final FalconParameterSpec spec = ((FalconPublicKey)pk).getParameterSpec();
+            return spec;
+        }
+        if (pk instanceof DilithiumPublicKey) {
+            log.debug("getKeyGenSpec: DilithiumPublicKey");
+            final DilithiumParameterSpec spec = ((DilithiumPublicKey)pk).getParameterSpec();
+            return spec;
         }
         return null;
     }
@@ -1214,7 +1282,13 @@ public final class KeyTools {
                 final SignDataOperation operation = new SignDataOperation(priv, input);
                 // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
                 final List<String> availableSignAlgorithms = AlgorithmTools.getSignatureAlgorithms(pub);
-                SignWithWorkingAlgorithm.doSignTask(availableSignAlgorithms, getProvider(sProvider), operation);
+                final String sigProvName;
+                if (BouncyCastleProvider.PROVIDER_NAME.equals(sProvider)) {
+                    sigProvName = CryptoProviderTools.getProviderNameFromAlg(pub.getAlgorithm());
+                } else {
+                    sigProvName = sProvider;
+                }
+                SignWithWorkingAlgorithm.doSignTask(availableSignAlgorithms, getProvider(sigProvName), operation);
                 signBV = operation.getSignature();
                 testSigAlg = operation.getSignatureAlgorithm();
                 if (signBV == null) {
@@ -1227,10 +1301,11 @@ public final class KeyTools {
             }
             {
                 final Signature signature;
+                final String provider = CryptoProviderTools.getProviderNameFromAlg(testSigAlg);
                 try {
-                    signature = Signature.getInstance(testSigAlg, "BC");
+                    signature = Signature.getInstance(testSigAlg, provider);
                 } catch (NoSuchProviderException | NoSuchAlgorithmException e) {
-                    throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+                    throw new IllegalStateException(provider + " was not found as a provider.", e);
                 }
                 signature.initVerify(pub);
                 signature.update(input);
@@ -1338,8 +1413,12 @@ public final class KeyTools {
             len = 255;
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
             len = 448;
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_FALCON512)) {
+            len = Integer.parseInt(keyspec.substring(6));
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_FALCON1024)) {
+            len = Integer.parseInt(keyspec.substring(6));
         } else {
-            // Assume it's elliptic curve
+            // Assume it's elliptic curve or Dilithium
             final KeyPair kp = KeyTools.genKeys(keyspec, keyAlg);
             len = KeyTools.getKeyLength(kp.getPublic());
         }
@@ -1357,10 +1436,7 @@ public final class KeyTools {
         final boolean isGost3410 = AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(keyAlg);
         final boolean isDstu4145 = AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keyAlg.startsWith(AlgorithmConstants.DSTU4145_OID + ".");
         if (isEcdsa || isGost3410 || isDstu4145) {
-            // We allow key lengths of 0, because that means that implicitlyCA is used. 
-            // for ImplicitlyCA we have no idea what the key length is, on the other hand only real professionals
-            // will ever use that to we will allow it.
-            if ((len > 0) && (len < 224)) {
+            if ((len >= 0) && (len < 224)) {
                 final String msg = "ECDSA keys of smaller size than 224 is not allowed for a CA. Requested length was " + len;             
                 throw new InvalidKeyException(msg);
             }                            
@@ -1394,6 +1470,21 @@ public final class KeyTools {
         }
         if (keyspec.equalsIgnoreCase(AlgorithmConstants.KEYALGORITHM_ED448)) {
             return AlgorithmConstants.KEYALGORITHM_ED448;
+        }
+        if (StringUtils.startsWithIgnoreCase(keyspec, AlgorithmConstants.KEYALGORITHM_FALCON512)) {
+            return AlgorithmConstants.KEYALGORITHM_FALCON512;
+        }
+        if (StringUtils.startsWithIgnoreCase(keyspec, AlgorithmConstants.KEYALGORITHM_FALCON1024)) {
+            return AlgorithmConstants.KEYALGORITHM_FALCON1024;
+        }
+        if (StringUtils.startsWithIgnoreCase(keyspec, AlgorithmConstants.KEYALGORITHM_DILITHIUM2)) {
+            return AlgorithmConstants.KEYALGORITHM_DILITHIUM2;
+        }
+        if (StringUtils.startsWithIgnoreCase(keyspec, AlgorithmConstants.KEYALGORITHM_DILITHIUM3)) {
+            return AlgorithmConstants.KEYALGORITHM_DILITHIUM3;
+        }
+        if (StringUtils.startsWithIgnoreCase(keyspec, AlgorithmConstants.KEYALGORITHM_DILITHIUM5)) {
+            return AlgorithmConstants.KEYALGORITHM_DILITHIUM5;
         }
         if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keyspec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             return AlgorithmConstants.KEYALGORITHM_ECGOST3410;
@@ -1435,7 +1526,7 @@ public final class KeyTools {
             final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(asn1EncodedPublicKey);
             final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithm();
             final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
-            final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+            final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), CryptoProviderTools.getProviderNameFromAlg(keyAlg.getAlgorithm().getId()));
             return keyFact.generatePublic(xKeySpec);
         } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException | IllegalArgumentException e) {
             log.debug("Unable to decode PublicKey.", e);
@@ -1448,14 +1539,25 @@ public final class KeyTools {
             Object obj = pemParser.readObject();
             if (obj instanceof PEMKeyPair) {
                 final PEMKeyPair pemKeyPair = (PEMKeyPair) obj;
-                final JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                final String alg = pemKeyPair.getPrivateKeyInfo().getPrivateKeyAlgorithm().getAlgorithm().getId();
+                final JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(CryptoProviderTools.getProviderNameFromAlg(alg));
                 return keyConverter.getKeyPair(pemKeyPair);
             } else {
-                final PrivateKeyInfo edPrivInfo = (PrivateKeyInfo)obj;
-                final JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-                final EdDSAPrivateKey edPrivKey = (EdDSAPrivateKey)keyConverter.getPrivateKey(edPrivInfo);
-                final EdDSAPublicKey edPubKey = edPrivKey.getPublicKey();
-                return new KeyPair(edPubKey, edPrivKey);
+                final PrivateKeyInfo privInfo = (PrivateKeyInfo)obj;
+                final String alg = privInfo.getPrivateKeyAlgorithm().getAlgorithm().getId();
+                final JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(CryptoProviderTools.getProviderNameFromAlg(alg));
+                final PrivateKey privKey = keyConverter.getPrivateKey(privInfo);
+                if (privKey instanceof EdDSAPrivateKey) {
+                    final EdDSAPublicKey edPubKey = ((EdDSAPrivateKey)privKey).getPublicKey();
+                    return new KeyPair(edPubKey, privKey);         
+                } else if (privKey instanceof FalconPrivateKey) {
+                    final FalconPublicKey pubKey = (FalconPublicKey)((FalconPrivateKey)privKey).getPublicKey();
+                    return new KeyPair(pubKey, privKey);   
+                } else if (privKey instanceof DilithiumPrivateKey) {
+                    final DilithiumPublicKey pubKey = (DilithiumPublicKey)((DilithiumPrivateKey)privKey).getPublicKey();
+                    return new KeyPair(pubKey, privKey);   
+                }
+                throw new IllegalStateException("No known keytype for object " + privKey.getClass().getName());
             }
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -1504,6 +1606,15 @@ public final class KeyTools {
             PublicKeyFactory.createKey(asn1bytes); // Check that it's a valid public key
             return asn1bytes;
         } catch (IOException | IllegalArgumentException e) {
+            // It may be that the key is a PQC key. Right now (BC1.72b12) there are two different PublicKeyFactory
+            // for standard and PQC keys, in the future it's likely to be merged into a universal one making this code obsolete
+            // Try to see if it's a PQC key
+            try {
+                org.bouncycastle.pqc.crypto.util.PublicKeyFactory.createKey(asn1bytes);
+                return asn1bytes;
+            } catch (IOException | IllegalArgumentException pq1) {
+                // It wasn't PQC either, Ignore and throw the original error
+            }
             throw new CertificateParsingException("File is neither a valid PEM nor DER file.", e);
         }
     }

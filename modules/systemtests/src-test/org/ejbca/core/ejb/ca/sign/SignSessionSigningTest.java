@@ -13,9 +13,11 @@
 package org.ejbca.core.ejb.ca.sign;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
@@ -27,45 +29,57 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
- * @version $Id$
  *
  */
-@RunWith(CryptoTokenTestRunner.class)
+@RunWith(Parameterized.class)
 public class SignSessionSigningTest {
-
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return CryptoTokenRunner.defaultRunners;
+    }
     
     private final SignProxySessionRemote signProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
+    @Rule
+    public TestName testName = new TestName();
 
-    private X509CA x509ca;
+    private X509CAInfo x509ca;
+    
+    private CryptoTokenRunner cryptoTokenRunner;
+    
+    public SignSessionSigningTest(CryptoTokenRunner cryptoTokenRule) {
+        this.cryptoTokenRunner = cryptoTokenRule;
+    }
     
     @Before
     public void setUp() throws Exception {
-        x509ca = cryptoTokenRule.createX509Ca(); 
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
+        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
     }
     
     @After
     public void tearDown() throws Exception {
-        cryptoTokenRule.cleanUp();
+        cryptoTokenRunner.cleanUp();
     }
     
     /**
@@ -74,7 +88,7 @@ public class SignSessionSigningTest {
     @Test
     public void testSignPayload() throws CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException, CertificateException, CMSException, OperatorCreationException {
         byte[] payload = new byte[]{1, 2, 3, 4};
-        X509Certificate cacert =  (X509Certificate) x509ca.getCACertificate();
+        X509Certificate cacert =  (X509Certificate) x509ca.getCertificateChain().get(0);
         //Have the data signed using the CA's signing keys
         CMSSignedData signedData = new CMSSignedData(signProxySession.signPayload(payload, x509ca.getCAId()));
         //Construct a signer in order to verify the change

@@ -46,7 +46,7 @@ public class CryptokiManager {
         CryptokiDevice result = devices.get(getId(libName, libDir));
         if (result == null) {
             NativeLibrary.addSearchPath(libName, libDir);
-            final ExtendedJNANativeI jnaiNative = (ExtendedJNANativeI) Native.loadLibrary(libName, ExtendedJNANativeI.class);
+            final ExtendedJNANativeI jnaiNative = (ExtendedJNANativeI) Native.load(libName, ExtendedJNANativeI.class);
             final ExtendedCryptokiE ce = new ExtendedCryptokiE(new ExtendedCryptoki(new ExtendedJNA(jnaiNative)));
             result = new CryptokiDevice(ce, withCache, getInstallOrReInstallProvider(), libName);
             devices.put(getId(libName, libDir), result);

@@ -189,7 +189,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 "catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal."));
         registerParameter(new Parameter(KEY_SPEC_KEY, "Key Specification", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key specification for CA signing key (soft crypto token) and OCSP service keys. Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192). " + "Keyspec for DSA keys is size of DSA keys (1024). "
-                        + "Keyspec for ECDSA keys is name of curve or 'implicitlyCA'' (see docs)."));
+                        + "Keyspec for ECDSA keys is name of curve."));
         registerParameter(new Parameter(KEY_TYPE_KEY, "Key Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key type for CA signing key (soft crypto token) and OCSP service keys. Keytype is RSA, DSA, ECDSA, Ed25519 or Ed448"));
         registerParameter(new Parameter(VALIDITY_KEY, "Validity", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,

@@ -597,7 +597,7 @@ public class CertToolsUnitTest {
         assertNull(CertTools.getPartFromDN(dn12, "OU"));
 
         String dn13 = "C=SE, O=PrimeKey, EmailAddress=foo@primekey.se";
-        ArrayList<String> emails = CertTools.getEmailFromDN(dn13);
+        List<String> emails = CertTools.getEmailFromDN(dn13);
         assertEquals(emails.get(0), "foo@primekey.se");
 
         String dn14 = "C=SE, E=foo@primekey.se, O=PrimeKey";
@@ -859,7 +859,7 @@ public class CertToolsUnitTest {
         assertEquals("identifier 10003/1.2.3.4.5.6", permanentIdentifier);
 
         String customAlt = "rfc822Name=foo@bar.com";
-        ArrayList<String> oids = CertTools.getCustomOids(customAlt);
+        List<String> oids = CertTools.getCustomOids(customAlt);
         assertEquals(0, oids.size());
         customAlt = "rfc822Name=foo@bar.com, 1.1.1.1.2=foobar, 1.2.2.2.2=barfoo";
         oids = CertTools.getCustomOids(customAlt);
@@ -1327,16 +1327,19 @@ public class CertToolsUnitTest {
 
         String altName = "rfc822name=foo@bar.se, uri=http://foo.bar.se, directoryName=" + CertTools.escapeFieldValue("CN=testDirName, O=Foo, OU=Bar, C=SE")
                 + ", dnsName=foo.bar.se";
+        
+        
         GeneralNames san = CertTools.getGeneralNamesFromAltName(altName);
         GeneralName[] gns = san.getNames();
         boolean found = false;
         for (int i = 0; i < gns.length; i++) {
             int tag = gns[i].getTagNo();
-            if (tag == 4) {
+            if (tag == GeneralName.directoryName) {
                 found = true;
                 ASN1Encodable enc = gns[i].getName();
                 X500Name dir = (X500Name) enc;
                 String str = dir.toString();
+                
                 log.debug("DirectoryName: " + str);
                 assertEquals("CN=testDirName,O=Foo,OU=Bar,C=SE", str);
             }
@@ -1346,20 +1349,22 @@ public class CertToolsUnitTest {
 
         altName = "rfc822name=foo@bar.se, rfc822name=foo@bar.com, uri=http://foo.bar.se, directoryName="
                 + CertTools.escapeFieldValue("CN=testDirName, O=Foo, OU=Bar, C=SE") + ", dnsName=foo.bar.se, dnsName=foo.bar.com";
+
         san = CertTools.getGeneralNamesFromAltName(altName);
+        
         gns = san.getNames();
         int dnscount = 0;
         int rfc822count = 0;
         for (int i = 0; i < gns.length; i++) {
             int tag = gns[i].getTagNo();
-            if (tag == 2) {
+            if (tag == GeneralName.dNSName) {
                 dnscount++;
                 ASN1Encodable enc = gns[i].getName();
                 DERIA5String dir = (DERIA5String) enc;
                 String str = dir.getString();
                 log.info("DnsName: " + str);
             }
-            if (tag == 1) {
+            if (tag == GeneralName.rfc822Name) {
                 rfc822count++;
                 ASN1Encodable enc = gns[i].getName();
                 DERIA5String dir = (DERIA5String) enc;
@@ -1557,7 +1562,7 @@ public class CertToolsUnitTest {
         assertNotNull("getGeneralNamesFromAltName failed for " + altName, gn);
 
         GeneralName[] names = gn.getNames();
-        String ret = CertTools.getGeneralNameString(0, names[1].getName());
+        String ret = CertTools.getGeneralNameString(0, names[0].getName());
         assertEquals("krb5principal=foo/bar@P.SE", ret);
 
         altName = "krb5principal=foo@P.SE";
@@ -1582,7 +1587,7 @@ public class CertToolsUnitTest {
         String otherName = "krb5principal=foo/bar@P.SE, " + RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::8db00be05041ad00149e27ad134c64002af06147932d2859413e28add0f01b58::245C975D648DB3B0B27BB1ABAF3A321416340F50FACCE197D28A3F00B2E93C09, upn=upn@u.com";
         GeneralNames gn = CertTools.getGeneralNamesFromAltName(otherName);
         GeneralName[] names = gn.getNames();
-        String ret = CertTools.getGeneralNameString(0, names[2].getName());
+        String ret = CertTools.getGeneralNameString(0, names[1].getName());
         assertEquals(names.length, 3);
         assertEquals(RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::8db00be05041ad00149e27ad134c64002af06147932d2859413e28add0f01b58::245C975D648DB3B0B27BB1ABAF3A321416340F50FACCE197D28A3F00B2E93C09", ret);
 

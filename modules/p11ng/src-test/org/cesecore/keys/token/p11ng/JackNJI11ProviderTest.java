@@ -512,7 +512,7 @@ public class JackNJI11ProviderTest {
     private static final CryptoToken createTokenFromClass(final String classpath) {
         try {
             Class<?> implClass = Class.forName(classpath);
-            Object obj = implClass.newInstance();
+            Object obj = implClass.getDeclaredConstructor().newInstance();
             return (CryptoToken) obj;
         } catch (Throwable e) {
             log.error("Error contructing Crypto Token (setting to null). Classpath="+classpath, e);

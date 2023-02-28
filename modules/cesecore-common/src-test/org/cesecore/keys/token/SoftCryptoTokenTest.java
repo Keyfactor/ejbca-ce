@@ -24,8 +24,6 @@ import org.junit.Test;
 
 /**
  * Tests soft keystore crypto token
- *
- * @version $Id$
  */
 public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 
@@ -42,20 +40,32 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 	@Test
     public void testCryptoTokenECC() throws Exception {
     	CryptoToken catoken = createSoftToken(true);
-        doCryptoTokenECC(catoken, "secp256r1", 256, "secp384r1", 384);
-    }
-
-	@Test
-    public void testCryptoTokenECCImplicitlyCA() throws Exception {
-    	CryptoToken catoken = createSoftToken(true);
-        doCryptoTokenECC(catoken, "implicitlyCA", 0, "prime192v1", 192);
+        doCryptoTokenECCAndPQ(catoken, "secp256r1", 256, "secp384r1", 384);
     }
 
 	@Test
 	public void testCryptoTokenED() throws Exception {
 	    CryptoToken catoken = createSoftToken(true);
-	    doCryptoTokenECC(catoken, "Ed25519", 255, "Ed448", 448);
+	    doCryptoTokenECCAndPQ(catoken, "Ed25519", 255, "Ed448", 448);
 	}
+
+	@Test
+	public void testCryptoTokenFalcon() throws Exception {
+	    CryptoToken catoken512 = createSoftToken(true);
+	    doCryptoTokenECCAndPQ(catoken512, "FALCON-512", 128, "FALCON-512", 128);
+        CryptoToken catoken1024 = createSoftToken(true);
+        doCryptoTokenECCAndPQ(catoken1024, "FALCON-1024", 256, "FALCON-1024", 256);
+	}
+	
+    @Test
+    public void testCryptoTokenDilithium() throws Exception {
+        CryptoToken catoken2 = createSoftToken(true);
+        doCryptoTokenECCAndPQ(catoken2, "DILITHIUM2", 128, "DILITHIUM2", 128);
+        CryptoToken catoken3 = createSoftToken(true);
+        doCryptoTokenECCAndPQ(catoken3, "DILITHIUM3", 192, "DILITHIUM3", 192);
+        CryptoToken catoken5 = createSoftToken(true);
+        doCryptoTokenECCAndPQ(catoken5, "DILITHIUM5", 256, "DILITHIUM5", 256);
+    }
 
 	@Test
     public void testCryptoTokenDSA() throws Exception {

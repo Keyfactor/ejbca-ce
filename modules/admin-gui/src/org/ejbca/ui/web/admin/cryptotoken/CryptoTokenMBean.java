@@ -955,8 +955,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     final List<AcmeExternalAccountBinding> eabs = acmeAlias.getExternalAccountBinding();
                     if (eabs != null) {
                         for (AcmeExternalAccountBinding eab :eabs) {
-                            if (eab.getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
-                                    && (Boolean) eab.getDataMap().get("encryptKey")
+                            final Object encryptKey = eab.getDataMap().get("encryptKey");
+                            if ("ACME_EAB_RFC_COMPLIANT".equals(eab.getAccountBindingTypeIdentifier())
+                                    && encryptKey != null && (Boolean)encryptKey
                                     && Integer.toString(cryptoTokenId).equals(eab.getDataMap().get("encryptionKeyId"))) {
                                 result.add(acmeAlias.getConfigurationId());
                             }
@@ -1491,6 +1492,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmConstants.KEYALGORITHM_ED448));
+        if (WebConfiguration.isPQCEnabled()) {
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+        }
         for (String alg : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
             for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
                 final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);

@@ -30,8 +30,6 @@
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src-test"/>
 	<classpathentry kind="src" path="modules/cmpclient/src"/>
-	<classpathentry kind="src" path="modules/cmpProxy/src"/>
-	<classpathentry kind="src" path="modules/cmpProxy/src-test"/>
 	<classpathentry kind="src" path="modules/configdump/src-cli"/>
 	<classpathentry kind="src" path="modules/configdump/src-common"/>
 	<classpathentry kind="src" path="modules/configdump/src-ejb"/>
@@ -60,6 +58,7 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-certificate/src"/>
+	<classpathentry kind="src" path="modules/ejbca-rest-coap/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-configdump/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-ca/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-cryptotoken/src"/>
@@ -74,10 +73,6 @@
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-test"/>
 	<classpathentry kind="src" path="modules/est/src-war"/>
-	<classpathentry kind="src" path="modules/externalra-scep/src"/>
-	<classpathentry kind="src" path="modules/externalra-scep/src-test"/>
-	<classpathentry kind="src" path="modules/externalra/src"/>
-	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
 	<classpathentry kind="src" path="modules/msae/src"/>
@@ -146,7 +141,6 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.4.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/geronimo-osgi-locator-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
@@ -168,6 +162,11 @@
 	<classpathentry kind="lib" path="lib/jee/jaxws-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javax.xml.soap-api-1.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javax.ejb-api-3.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/jaxws-rt-2.3.6.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/streambuffer-1.5.10.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/policy-2.7.10.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-1.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
@@ -178,12 +177,6 @@
 			<attribute name="owner.project.facets" value="jst.jsf;jst.web"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-fileupload-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.35.jar"/>
@@ -206,10 +199,10 @@
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-172.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk18on-172.jar"/>
-	<classpathentry kind="lib" path="lib/bctls-jdk18on-172.jar"/>
-	<classpathentry kind="lib" path="lib/bcutil-jdk18on-172.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-173b12.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk18on-173b12.jar"/>
+	<classpathentry kind="lib" path="lib/bctls-jdk18on-173b12.jar"/>
+	<classpathentry kind="lib" path="lib/bcutil-jdk18on-173b12.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.4.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-5.1.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/classmate-1.5.1.jar"/>
@@ -237,13 +230,14 @@
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.21.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.12.0.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.12.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-3.3.12.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-3.3.12.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-jaxws-3.3.12.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.12.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.12.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-wsdl-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload-1.5.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-4.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-4.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-4.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-jaxws-4.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-4.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-4.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-wsdl-4.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/istack-commons-runtime-3.0.11.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jakarta.xml.bind-api-2.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jaxb-runtime-2.3.3.jar"/>
@@ -257,5 +251,10 @@
 	<classpathentry kind="lib" path="lib/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javaee-api-8.0.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
