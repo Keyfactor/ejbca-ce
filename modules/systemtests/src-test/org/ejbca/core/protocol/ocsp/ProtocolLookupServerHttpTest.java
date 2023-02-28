@@ -260,7 +260,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         assertNotNull("Failed to create certificate", ocspTestCert);
         
         // Revoke the certificate immediately!
-        revocationSession.revokeCertificate(admin, ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        revocationSession.revokeCertificate(admin, ocspTestCert, null, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
 
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
