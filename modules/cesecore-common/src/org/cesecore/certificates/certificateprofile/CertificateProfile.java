@@ -1295,6 +1295,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return  doSelectedEcRequirebitLenths()
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)
+                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_NTRU)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
@@ -3141,7 +3142,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // Verify that the key algorithm is compliant with the certificate profile
         if (!getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
             if(log.isDebugEnabled()) {
-                log.debug("List of available algorithms " + getAvailableKeyAlgorithmsAsList() + " does not contain the on of the public key: " + keyAlgorithm);
+                log.debug("Algorithm " + keyAlgorithm + " is not among the list of available algorithms: " + getAvailableKeyAlgorithmsAsList());
             }
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
         }
@@ -3170,6 +3171,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (keyLength == -1) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", publicKey.getClass().getName()));
         }
+        // This can look a bit illogical from a configuration perspective, it checks if the requested key length/strength is
+        // in in interval. I.e. if you select 2048 and 4096 for RSA keys in a certificate profile, but does not select 3072
+        // 3072 is still allowed because it is within the interval configured in the certificate profile
         if ((keyLength < (getMinimumAvailableBitLength() - 1)) || (keyLength > (getMaximumAvailableBitLength()))) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", keyLength));
         }

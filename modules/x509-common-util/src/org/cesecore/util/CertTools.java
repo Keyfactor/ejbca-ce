@@ -69,6 +69,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -157,9 +160,6 @@ import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
-
-import com.keyfactor.util.certificate.CertificateImplementationRegistry;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Tools to handle common certificate operations.
@@ -565,7 +565,7 @@ public abstract class CertTools {
      * 
      * @return ArrayList containing email or empty list if email is not present
      */
-    public static ArrayList<String> getEmailFromDN(String dn) {
+    public static List<String> getEmailFromDN(String dn) {
         if (log.isTraceEnabled()) {
             log.trace(">getEmailFromDN(" + dn + ")");
         }
@@ -610,7 +610,7 @@ public abstract class CertTools {
                 log.error("Error parsing certificate: ", e);
             }
             log.debug("Searching for EMail Address in Subject DN");
-            ArrayList<String> emails = CertTools.getEmailFromDN(x509cert.getSubjectDN().getName());
+            List<String> emails = CertTools.getEmailFromDN(x509cert.getSubjectDN().getName());
             if (!emails.isEmpty()) {
                 return emails.get(0);
             }
@@ -836,7 +836,7 @@ public abstract class CertTools {
      * 
      * @return ArrayList containing unique oids or empty list if no custom OIDs are present
      */
-    public static ArrayList<String> getCustomOids(String dn) {
+    public static List<String> getCustomOids(String dn) {
         if (log.isTraceEnabled()) {
             log.trace(">getCustomOids: dn:'" + dn);
         }
@@ -1647,7 +1647,7 @@ public abstract class CertTools {
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
             boolean isCA) throws OperatorCreationException, CertificateException  {
-        return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, BouncyCastleProvider.PROVIDER_NAME);
+        return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, CryptoProviderTools.getProviderNameFromAlg(sigAlg));
     }
 
     /** Generates a self signed certificate with keyUsage X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, i.e. a CA certificate
@@ -1885,7 +1885,7 @@ public abstract class CertTools {
         } else if (entityPubKey instanceof ECPublicKey) {
             ECPublicKey ecpk = (ECPublicKey) entityPubKey;
             try {
-                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
+                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams());
                 final String algo = ecpk.getAlgorithm();
                 if (algo.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
                     try {
@@ -1909,10 +1909,7 @@ public abstract class CertTools {
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating ECPublicKey from spec: ", e);
                 publicKey = entityPubKey;
-            } catch (NullPointerException e) {
-                log.debug("NullPointerException, probably it is implicitlyCA generated keys: " + e.getMessage());
-                publicKey = entityPubKey;
-            }
+            } 
         } else {
             log.debug("Not converting key of class. " + entityPubKey.getClass().getName());
             publicKey = entityPubKey;
@@ -1976,6 +1973,9 @@ public abstract class CertTools {
             for (final Extension extension : additionalExtensions) {
                 certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
             }
+        }
+        if (provider == null || BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+            provider = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
         }
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(issuerPrivKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
@@ -2631,6 +2631,8 @@ public abstract class CertTools {
 
     /**
      * From an altName string as defined in getSubjectAlternativeName
+     * There is no specific order now in the final alts produced in the cert, 
+     * whatever order is specified in profilemappings.properties or from CSR will be applied. 
      * 
      * @param altName
      * @return ASN.1 GeneralNames
@@ -2640,183 +2642,248 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">getGeneralNamesFromAltName: " + altName);
         }
+        
+        if(StringUtils.isNotBlank(altName)) {
+            return getGeneralNamesFromAltNameInternal(altName);
+        } else {
+            return null;
+        }
+    }
+
+    private static GeneralNames getGeneralNamesFromAltNameInternal(String altName) {
+
         final ASN1EncodableVector vec = new ASN1EncodableVector();
 
-        for (final String email : CertTools.getEmailFromDN(altName)) {
-            vec.add(new GeneralName(1, /*new DERIA5String(iter.next())*/email));
-        }
 
-        for (final String dns : CertTools.getPartsFromDN(altName, CertTools.DNS)) {
-            vec.add(new GeneralName(2, new DERIA5String(dns)));
-        }
 
-        final String directoryName = getDirectoryStringFromAltName(altName);
-        if (directoryName != null) {
-            final X500Name x500DirectoryName = new X500Name(CeSecoreNameStyle.INSTANCE, directoryName);
-            final GeneralName gn = new GeneralName(4, x500DirectoryName);
-            vec.add(gn);
-        }
+        String[] result = altName.split("(?<!\\\\),");
 
-        for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI)) {
-            vec.add(new GeneralName(6, new DERIA5String(uri)));
-        }
-        for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI1)) {
-            vec.add(new GeneralName(6, new DERIA5String(uri)));
-        }
-        for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI2)) {
-            vec.add(new GeneralName(6, new DERIA5String(uri)));
-        }
+        for (final String str : result) {
 
-        for (final String addr : CertTools.getPartsFromDN(altName, CertTools.IPADDR)) {
-            final byte[] ipoctets = StringTools.ipStringToOctets(addr);
-            if (ipoctets.length > 0) {
-                final GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
-                vec.add(gn);
-            } else {
-                log.error("Cannot parse/encode ip address, ignoring: " + addr);
-            }
-        }
-        for (final String oid : CertTools.getPartsFromDN(altName, CertTools.REGISTEREDID)) {
-            vec.add(new GeneralName(GeneralName.registeredID, oid));
-        }
+            String[] subResult = str.trim().split("=");
 
-        // UPN is an OtherName see method getUpn... for asn.1 definition
-        for (final String upn : CertTools.getPartsFromDN(altName, CertTools.UPN)) {
-            final ASN1EncodableVector v = new ASN1EncodableVector();
-            v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
-            v.add(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
-            vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
-        }
+            switch (subResult[0].trim().toUpperCase()) {
 
-        // XmpAddr is an OtherName see method getUTF8String...... for asn.1 definition
-        for (final String xmppAddr : CertTools.getPartsFromDN(altName, CertTools.XMPPADDR)) {
-            final ASN1EncodableVector v = new ASN1EncodableVector();
-            v.add(new ASN1ObjectIdentifier(CertTools.XMPPADDR_OBJECTID));
-            v.add(new DERTaggedObject(true, 0, new DERUTF8String(xmppAddr)));
-            vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
-        }
-
-        // srvName is an OtherName see method getIA5String...... for asn.1 definition
-        for (final String srvName : CertTools.getPartsFromDN(altName, CertTools.SRVNAME)) {
-            final ASN1EncodableVector v = new ASN1EncodableVector();
-            v.add(new ASN1ObjectIdentifier(CertTools.SRVNAME_OBJECTID));
-            v.add(new DERTaggedObject(true, 0, new DERIA5String(srvName)));
-            vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
-        }
-
-        // FASC-N is an OtherName see method getOctetString...... for asn.1 definition (PIV FIPS 201-2)
-        // We take the input as being a hex encoded octet string
-        for (final String fascN : CertTools.getPartsFromDN(altName, CertTools.FASCN)) {
-            final ASN1EncodableVector v = new ASN1EncodableVector();
-            v.add(new ASN1ObjectIdentifier(CertTools.FASCN_OBJECTID));
-            v.add(new DERTaggedObject(true, 0, new DEROctetString(Hex.decode(fascN))));
-            vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
-        }
-
-        // PermanentIdentifier is an OtherName see method getPermananentIdentifier... for asn.1 definition
-        for (final String permanentIdentifier : CertTools.getPartsFromDN(altName, CertTools.PERMANENTIDENTIFIER)) {
-            final String[] values = getPermanentIdentifierValues(permanentIdentifier);
-            final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
-            v.add(new ASN1ObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
-            // First the PermanentIdentifier sequence
-            final ASN1EncodableVector piSeq = new ASN1EncodableVector();
-            if (values[0] != null) {
-                piSeq.add(new DERUTF8String(values[0]));
-            }
-            if (values[1] != null) {
-                piSeq.add(new ASN1ObjectIdentifier(values[1]));
-            }
-            v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
-            // GeneralName gn = new GeneralName(new DERSequence(v), 0);
-            final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
-            vec.add(gn);
-        }
-
-        for (final String guid : CertTools.getPartsFromDN(altName, CertTools.GUID)) {
-            final ASN1EncodableVector v = new ASN1EncodableVector();
-            final String dashRemovedGuid = guid.replace("-", "");
-            byte[] guidbytes = Hex.decode(dashRemovedGuid);
-            if (guidbytes != null) {
-                v.add(new ASN1ObjectIdentifier(CertTools.GUID_OBJECTID));
-                v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
-                final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                vec.add(gn);
-            } else {
-                log.error("Cannot decode hexadecimal guid, ignoring: " + guid);
-            }
-        }
-
-        // Krb5PrincipalName is an OtherName, see method getKrb5Principal...for ASN.1 definition
-        for (final String principalString : CertTools.getPartsFromDN(altName, CertTools.KRB5PRINCIPAL)) {
-            // Start by parsing the input string to separate it in different parts
-            if (log.isDebugEnabled()) {
-                log.debug("principalString: " + principalString);
-            }
-            // The realm is the last part moving back until an @
-            final int index = principalString.lastIndexOf('@');
-            String realm = "";
-            if (index > 0) {
-                realm = principalString.substring(index + 1);
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("realm: " + realm);
-            }
-            // Now we can have several principals separated by /
-            final ArrayList<String> principalarr = new ArrayList<>();
-            int jndex = 0;
-            int bindex = 0;
-            while (jndex < index) {
-                // Loop and add all strings separated by /
-                jndex = principalString.indexOf('/', bindex);
-                if (jndex == -1) {
-                    jndex = index;
+            case DnComponents.DNEMAILADDRESS:
+            case DnComponents.RFC822NAME:
+                for (final String email : CertTools.getEmailFromDN(str)) {
+                    vec.add(new GeneralName(1, /*new DERIA5String(iter.next())*/email));
                 }
-                String s = principalString.substring(bindex, jndex);
-                if (log.isDebugEnabled()) {
-                    log.debug("adding principal name: " + s);
-                }
-                principalarr.add(s);
-                bindex = jndex + 1;
-            }
+                break;
 
-            // Now we must construct the rather complex asn.1...
-            final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
-            v.add(new ASN1ObjectIdentifier(CertTools.KRB5PRINCIPAL_OBJECTID));
-
-            // First the Krb5PrincipalName sequence
-            final ASN1EncodableVector krb5p = new ASN1EncodableVector();
-            // The realm is the first tagged GeneralString
-            krb5p.add(new DERTaggedObject(true, 0, new DERGeneralString(realm)));
-            // Second is the sequence of principal names, which is at tagged position 1 in the krb5p
-            final ASN1EncodableVector principals = new ASN1EncodableVector();
-            // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
-            principals.add(new DERTaggedObject(true, 0, new ASN1Integer(0)));
-            // The names themselves are yet another sequence
-            final ASN1EncodableVector names = new ASN1EncodableVector();
-            for (final String principalName : principalarr) {
-                names.add(new DERGeneralString(principalName));
-            }
-            principals.add(new DERTaggedObject(true, 1, new DERSequence(names)));
-            krb5p.add(new DERTaggedObject(true, 1, new DERSequence(principals)));
-
-            v.add(new DERTaggedObject(true, 0, new DERSequence(krb5p)));
-            final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
-            vec.add(gn);
-        }
-
-        // SIM is an OtherName. See RFC-4683
-        for (final String internalSimString : CertTools.getPartsFromDN(altName, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD)) {
-            if (StringUtils.isNotBlank(internalSimString)) {
-                final String[] tokens = internalSimString.split(RFC4683Tools.LIST_SEPARATOR); 
-                if (tokens.length==3) {
-                    ASN1Primitive gn = RFC4683Tools.createSimGeneralName(tokens[0], tokens[1], tokens[2]);
-                    vec.add(gn);
-                    if (log.isDebugEnabled()) {
-                        log.debug("SIM GeneralName added: " + gn.toString());
+            case DnComponents.IPADDRESS:
+                for (final String addr : CertTools.getPartsFromDN(str, CertTools.IPADDR)) {
+                    final byte[] ipoctets = StringTools.ipStringToOctets(addr);
+                    if (ipoctets.length > 0) {
+                        final GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
+                        vec.add(gn);
+                    } else {
+                        log.error("Cannot parse/encode ip address, ignoring: " + addr);
                     }
                 }
-            }            
+                break;
+
+            case DnComponents.DNSNAME:
+                for (final String dns : CertTools.getPartsFromDN(str, CertTools.DNS)) {
+                    vec.add(new GeneralName(2, new DERIA5String(dns)));
+                }
+                break;
+
+            case DnComponents.DIRECTORYNAME:
+                final String directoryName = getDirectoryStringFromAltName(str);
+                if (directoryName != null) {
+                    final X500Name x500DirectoryName = new X500Name(CeSecoreNameStyle.INSTANCE, directoryName);
+                    final GeneralName gn = new GeneralName(4, x500DirectoryName);
+                    vec.add(gn);
+                }
+                break;
+                
+            case DnComponents.URI:
+                for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI)) {
+                    vec.add(new GeneralName(6, new DERIA5String(uri)));
+                }
+                break;
+                
+            case DnComponents.URI1:
+                for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI1)) {
+                    vec.add(new GeneralName(6, new DERIA5String(uri)));
+                }
+                break;
+
+            case DnComponents.UNIFORMRESOURCEID:
+                for (final String uri : CertTools.getPartsFromDN(str, CertTools.URI2)) {
+                    vec.add(new GeneralName(6, new DERIA5String(uri)));
+                }
+                break;
+                
+            case DnComponents.REGISTEREDID:
+                for (final String oid : CertTools.getPartsFromDN(str, CertTools.REGISTEREDID)) {
+                    vec.add(new GeneralName(GeneralName.registeredID, oid));
+                }
+                break;
+
+            case DnComponents.UPN:
+                // UPN is an OtherName see method getUpn... for asn.1 definition
+                for (final String upn : CertTools.getPartsFromDN(str, CertTools.UPN)) {
+                    final ASN1EncodableVector v = new ASN1EncodableVector();
+                    v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
+                    v.add(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
+                    vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
+                }
+                break;
+
+            case DnComponents.XMPPADDR:
+                // XmpAddr is an OtherName see method getUTF8String...... for asn.1 definition
+                for (final String xmppAddr : CertTools.getPartsFromDN(str, CertTools.XMPPADDR)) {
+                    final ASN1EncodableVector v = new ASN1EncodableVector();
+                    v.add(new ASN1ObjectIdentifier(CertTools.XMPPADDR_OBJECTID));
+                    v.add(new DERTaggedObject(true, 0, new DERUTF8String(xmppAddr)));
+                    vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
+                }
+                break;
+
+            case DnComponents.SRVNAME:
+                // srvName is an OtherName see method getIA5String...... for asn.1 definition
+                for (final String srvName : CertTools.getPartsFromDN(str, CertTools.SRVNAME)) {
+                    final ASN1EncodableVector v = new ASN1EncodableVector();
+                    v.add(new ASN1ObjectIdentifier(CertTools.SRVNAME_OBJECTID));
+                    v.add(new DERTaggedObject(true, 0, new DERIA5String(srvName)));
+                    vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
+                }
+                break;
+                
+            case DnComponents.FASCN:
+                // FASC-N is an OtherName see method getOctetString...... for asn.1 definition (PIV FIPS 201-2)
+                // We take the input as being a hex encoded octet string
+                for (final String fascN : CertTools.getPartsFromDN(str, CertTools.FASCN)) {
+                    final ASN1EncodableVector v = new ASN1EncodableVector();
+                    v.add(new ASN1ObjectIdentifier(CertTools.FASCN_OBJECTID));
+                    v.add(new DERTaggedObject(true, 0, new DEROctetString(Hex.decode(fascN))));
+                    vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
+                }
+                break;
+                
+            case DnComponents.PERMANENTIDENTIFIER:
+                // PermanentIdentifier is an OtherName see method getPermananentIdentifier... for asn.1 definition
+                for (final String permanentIdentifier : CertTools.getPartsFromDN(str, CertTools.PERMANENTIDENTIFIER)) {
+                    final String[] values = getPermanentIdentifierValues(permanentIdentifier);
+                    final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+                    v.add(new ASN1ObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
+                    // First the PermanentIdentifier sequence
+                    final ASN1EncodableVector piSeq = new ASN1EncodableVector();
+                    if (values[0] != null) {
+                        piSeq.add(new DERUTF8String(values[0]));
+                    }
+                    if (values[1] != null) {
+                        piSeq.add(new ASN1ObjectIdentifier(values[1]));
+                    }
+                    v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
+                    // GeneralName gn = new GeneralName(new DERSequence(v), 0);
+                    final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                    vec.add(gn);
+                }
+                break;
+
+            case DnComponents.GUID:
+                for (final String guid : CertTools.getPartsFromDN(str, CertTools.GUID)) {
+                    final ASN1EncodableVector v = new ASN1EncodableVector();
+                    final String dashRemovedGuid = guid.replace("-", "");
+                    byte[] guidbytes = Hex.decode(dashRemovedGuid);
+                    if (guidbytes != null) {
+                        v.add(new ASN1ObjectIdentifier(CertTools.GUID_OBJECTID));
+                        v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
+                        final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                        vec.add(gn);
+                    } else {
+                        log.error("Cannot decode hexadecimal guid, ignoring: " + guid);
+                    }
+                }
+                break;
+
+            case DnComponents.KRB5PRINCIPAL:
+                // Krb5PrincipalName is an OtherName, see method getKrb5Principal...for ASN.1 definition
+                for (final String principalString : CertTools.getPartsFromDN(str, CertTools.KRB5PRINCIPAL)) {
+                    // Start by parsing the input string to separate it in different parts
+                    if (log.isDebugEnabled()) {
+                        log.debug("principalString: " + principalString);
+                    }
+                    // The realm is the last part moving back until an @
+                    final int index = principalString.lastIndexOf('@');
+                    String realm = "";
+                    if (index > 0) {
+                        realm = principalString.substring(index + 1);
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug("realm: " + realm);
+                    }
+                    // Now we can have several principals separated by /
+                    final ArrayList<String> principalarr = new ArrayList<>();
+                    int jndex = 0;
+                    int bindex = 0;
+                    while (jndex < index) {
+                        // Loop and add all strings separated by /
+                        jndex = principalString.indexOf('/', bindex);
+                        if (jndex == -1) {
+                            jndex = index;
+                        }
+                        String s = principalString.substring(bindex, jndex);
+                        if (log.isDebugEnabled()) {
+                            log.debug("adding principal name: " + s);
+                        }
+                        principalarr.add(s);
+                        bindex = jndex + 1;
+                    }
+
+                    // Now we must construct the rather complex asn.1...
+                    final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+                    v.add(new ASN1ObjectIdentifier(CertTools.KRB5PRINCIPAL_OBJECTID));
+
+                    // First the Krb5PrincipalName sequence
+                    final ASN1EncodableVector krb5p = new ASN1EncodableVector();
+                    // The realm is the first tagged GeneralString
+                    krb5p.add(new DERTaggedObject(true, 0, new DERGeneralString(realm)));
+                    // Second is the sequence of principal names, which is at tagged position 1 in the krb5p
+                    final ASN1EncodableVector principals = new ASN1EncodableVector();
+                    // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
+                    principals.add(new DERTaggedObject(true, 0, new ASN1Integer(0)));
+                    // The names themselves are yet another sequence
+                    final ASN1EncodableVector names = new ASN1EncodableVector();
+                    for (final String principalName : principalarr) {
+                        names.add(new DERGeneralString(principalName));
+                    }
+                    principals.add(new DERTaggedObject(true, 1, new DERSequence(names)));
+                    krb5p.add(new DERTaggedObject(true, 1, new DERSequence(principals)));
+
+                    v.add(new DERTaggedObject(true, 0, new DERSequence(krb5p)));
+                    final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                    vec.add(gn);
+                }
+                break;
+
+            case DnComponents.SUBJECTIDENTIFICATIONMETHOD:
+            case RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD:
+                // SIM is an OtherName. See RFC-4683
+                for (final String internalSimString : CertTools.getPartsFromDN(str, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD)) {
+                    if (StringUtils.isNotBlank(internalSimString)) {
+                        final String[] tokens = internalSimString.split(RFC4683Tools.LIST_SEPARATOR);
+                        if (tokens.length == 3) {
+                            ASN1Primitive gn = RFC4683Tools.createSimGeneralName(tokens[0], tokens[1], tokens[2]);
+                            vec.add(gn);
+                            if (log.isDebugEnabled()) {
+                                log.debug("SIM GeneralName added: " + gn.toString());
+                            }
+                        }
+                    }
+                }
+                break;
+
+            default:
+                log.info("Unknown SAN tag encountered!" + subResult[0]);
+                break;
+            }
         }
+
+
         
         // To support custom OIDs in altNames, they must be added as an OtherName of plain type UTF8String
         for (final String oid : CertTools.getCustomOids(altName)) {
@@ -4236,8 +4303,8 @@ public abstract class CertTools {
             SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publickey.getEncoded());
             reqInfo = new CertificationRequestInfo(subject, pkinfo, attributes);
 
-            if (provider == null) {
-                provider = BouncyCastleProvider.PROVIDER_NAME;
+            if (provider == null || BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+                provider = CryptoProviderTools.getProviderNameFromAlg(signatureAlgorithm);
             }
             signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(privateKey), 20480);
             signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
@@ -4284,7 +4351,7 @@ public abstract class CertTools {
      * @throws OperatorCreationException
      */
     public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws OperatorCreationException {
-        return new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(pubkey);
+        return new JcaContentVerifierProviderBuilder().setProvider(CryptoProviderTools.getProviderNameFromAlg(pubkey.getAlgorithm())).build(pubkey);
     }
 
     /**

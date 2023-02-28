@@ -19,7 +19,6 @@ import javax.ejb.Local;
 
 /**
  * 
- * @version $Id$
  */
 @Local
 public interface CryptoTokenSessionLocal extends CryptoTokenSession {
