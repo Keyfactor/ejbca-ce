@@ -15,9 +15,9 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
  * 
  */
 @ViewScoped
-@ManagedBean(name="viewCAInfoMBean")
+@Named("viewCAInfoMBean")
 public class ViewCAInfoMBean extends BaseManagedBean implements Serializable {
 		 
 	private static final long serialVersionUID = 109073226626366410L;

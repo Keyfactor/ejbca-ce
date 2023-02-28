@@ -43,9 +43,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.component.html.HtmlSelectOneMenu;
@@ -55,6 +52,9 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -114,8 +114,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.cert.OID;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page.
@@ -130,7 +131,7 @@ import org.ejbca.util.cert.OID;
  * all permutations that could potentially be affected down the line.)
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EnrollMakeNewRequestBean implements Serializable {
 
@@ -152,14 +153,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value = "#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
 
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
 
-    @ManagedProperty(value = "#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
 
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
@@ -1237,11 +1238,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // Corrections for SAN rfc822name and UPN (which might be a valid e-mail)
         for (EndEntityProfile.FieldInstance field : getSubjectAlternativeName().getOptionalFieldInstances()) {
             // An optional and modifiable SAN rfc822name or UPN field with a domain or list of domains can be left blank.
-            if(field.isUpnRfc() && field.isSelectableValuesUpnRfcDomainOnly() && field.getSelectableValuesUpnRfc().contains(field.getValue())) {
+            if (field.isUpnRfc() && field.isSelectableValuesUpnRfcDomainOnly() && field.getSelectableValuesUpnRfc().contains(field.getValue())
+                    && !field.getValue().contains("@")) {
                 field.setValue("");
             }
             // An optional (or modifiable) SAN rfc822name and UPN using the EE e-mail can be disabled.  
-            if(field.isUpnRfc() && field.isUsed() && !field.getRfcEmailUsed()) {
+            if (field.isUpnRfc() && field.isUsed() && !field.getRfcEmailUsed() && !field.getValue().contains("@")) {
                 field.setValue("");
             }
         }
@@ -2230,13 +2232,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                                 + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                     }
                 }
-                for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-                    if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+                for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
+                    if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
                         for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                             final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                             final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
                             if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                                availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
+                                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
                                         CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
                             } else {
                                 if (log.isTraceEnabled()) {

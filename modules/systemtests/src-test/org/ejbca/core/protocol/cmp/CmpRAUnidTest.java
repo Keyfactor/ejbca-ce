@@ -61,6 +61,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -114,6 +116,8 @@ public class CmpRAUnidTest extends CmpTestCase {
         CryptoProviderTools.installBCProvider();
         // We must instantiate this after provider is installed as we set SN handling there 
         SUBJECT_DN = new X500Name("C=SE,SN=" + SUBJECT_SN + ",CN=unid-fnr");
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+
     }
 
     public CmpRAUnidTest() throws Exception {
@@ -164,6 +168,7 @@ public class CmpRAUnidTest extends CmpTestCase {
                 log.error("Could not create end entity profile.", e);
             }
         }
+        
 
     }
 
@@ -242,7 +247,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             if (body.getContent() instanceof ErrorMsgContent) {
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
                 log.error(errMsg);
                 fail("CMP ErrorMsg received: " + errMsg);
                 unid = null;
@@ -308,7 +313,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             if (body.getContent() instanceof ErrorMsgContent) {
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
                 log.error(errMsg);
                 fail("CMP ErrorMsg received: " + errMsg);
                 unid = null;

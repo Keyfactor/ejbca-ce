@@ -17,11 +17,11 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.log4j.Logger;
@@ -44,9 +44,8 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 /**
  * Managed bean with isAuthorized method.
  *
- * @version $Id$
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class RaAccessBean implements Serializable {
 
@@ -65,7 +64,7 @@ public class RaAccessBean implements Serializable {
     @Deprecated // Breaks peer connections in the RA web. Will be removed in ECA-9938
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 

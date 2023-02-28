@@ -29,10 +29,12 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -80,6 +82,8 @@ import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 /**
  *
  */
+@Named("ocspResponderMBean")
+@SessionScoped
 public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     private static final long serialVersionUID = 1L;
@@ -594,7 +598,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         if (ocspExtensions == null) {
             final int internalKeyBindingId = Integer.parseInt(getCurrentInternalKeyBindingId());
             if (internalKeyBindingId == 0) {
-                ocspExtensions = new ListDataModel<>(new ArrayList<String>());
+                ocspExtensions = new ListDataModel<>(new ArrayList<>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
@@ -602,6 +606,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                     ocspExtensions = new ListDataModel<>(internalKeyBinding.getOcspExtensions());
                 } catch (AuthorizationDeniedException e) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
+                    ocspExtensions = new ListDataModel<>(new ArrayList<>());
                 }
             }
         }

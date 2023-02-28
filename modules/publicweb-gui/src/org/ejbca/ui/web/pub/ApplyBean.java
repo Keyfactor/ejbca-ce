@@ -33,6 +33,8 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.Serializable;
@@ -470,13 +472,13 @@ public class ApplyBean implements Serializable {
                         StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve)));
             }
         }
-        for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-            if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+        for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
+            if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
                 for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                     final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                     final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
                     if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                        ret.add(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name + ";" + CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg));
+                        ret.add(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name + ";" + CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg));
                     } else {
                         if (log.isTraceEnabled()) {
                             log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");

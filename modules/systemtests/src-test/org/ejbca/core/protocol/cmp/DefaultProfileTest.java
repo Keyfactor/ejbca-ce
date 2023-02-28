@@ -90,6 +90,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -139,6 +141,7 @@ public class DefaultProfileTest extends CmpTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
     }
 
     @AfterClass
@@ -685,7 +688,7 @@ public class DefaultProfileTest extends CmpTestCase {
         String roleName = getRoleName();
         final Role role = roleSession.getRole(ADMIN, null, roleName);
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
+                CertTools.getIssuerDN(cert).hashCode(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.getRoleId(), null));
         return token;
     }
