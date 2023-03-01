@@ -109,7 +109,7 @@ public class AuthorizationSystemSessionBeanTest {
             TestX509CertificateAuthenticationToken authToken = getNestedX509TestToken(roleName);
             // revoke first and then check access to skip cache population
             internalCertificateStoreSession.setRevokeStatus(
-                    new TestAlwaysAllowLocalAuthenticationToken(roleName), authToken.getCertificate(), null, 0);
+                    new TestAlwaysAllowLocalAuthenticationToken(roleName), authToken.getCertificate(), null, null, 0);
             RaAuthorizationResult accessRules = raMasterApiProxyBean.getAuthorization(authToken);
             assertNotNull("accessRules is not fetched.", accessRules);
             assertTrue("accessRules should be empty for revoked certs.", accessRules.getAccessRules().isEmpty());
