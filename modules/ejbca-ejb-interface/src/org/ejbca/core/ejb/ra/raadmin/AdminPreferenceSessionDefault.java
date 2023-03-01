@@ -11,7 +11,7 @@ public abstract class AdminPreferenceSessionDefault {
         if (admin instanceof X509CertificateAuthenticationToken) {
             return CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
         } else if (admin instanceof PublicAccessAuthenticationToken) {
-            return null;
+            return admin.getClass().getSimpleName();
         } else {
             return admin.getClass().getSimpleName() + ":" + admin.getPreferredMatchValue();
         }

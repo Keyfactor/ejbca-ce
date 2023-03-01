@@ -12,6 +12,20 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -25,25 +39,11 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
-import javax.faces.model.SelectItem;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * Backing bean for edit EST alias view.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EditEstConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -52,7 +52,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
-            "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF");
+            "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF", "VID", "PID");
 
     private String selectedRaNameSchemeDnPart;
 
@@ -62,7 +62,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     private TreeMap<Integer, String> caIdToNameMap;
     private TreeMap<String, Integer> caNameToIdMap;
 
-    @ManagedProperty(value = "#{estConfigMBean}")
+    @Inject
     private EstConfigMBean estConfigMBean;
     EstAliasGui estAliasGui = null;
 
@@ -92,6 +92,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         private String extDnPartPwdComponent;
         
         private boolean usesProxyCa;
+        private boolean serverKeyGenEnabled;
         
         
         public String getName() {
@@ -273,6 +274,14 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             this.usesProxyCa = usesProxyCa;
         }
         
+        public boolean isServerKeyGenEnabled() {
+            return serverKeyGenEnabled;
+        }
+
+        public void setServerKeyGenEnabled(boolean serverKeyGenEnabled) {
+            this.serverKeyGenEnabled = serverKeyGenEnabled;
+        }
+        
     }
 
     public EstAliasGui getEstAlias() throws NumberFormatException, AuthorizationDeniedException {
@@ -296,6 +305,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setUserName(estConfiguration.getUsername(aliasName));
             estAliasGui.setPassword(EditEstConfigMBean.HIDDEN_PWD);
             estAliasGui.setAllowSameKey(estConfiguration.getKurAllowSameKey(aliasName));
+            estAliasGui.setServerKeyGenEnabled(estConfiguration.getServerKeyGenerationEnabled(aliasName));
             estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
             estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
             estAliasGui.setVendorMode(estConfiguration.getVendorMode(aliasName));
@@ -400,6 +410,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estConfiguration.setPassword(alias, estAliasGui.getPassword());
         }
         estConfiguration.setKurAllowSameKey(alias, estAliasGui.getAllowSameKey());
+        estConfiguration.setServerKeyGenerationEnabled(alias, estAliasGui.isServerKeyGenEnabled());
         estConfiguration.setExtractUsernameComponent(alias, estAliasGui.getExtUsernameComponent());
         estConfiguration.setExtractDnPwdComponent(alias, estAliasGui.getExtDnPartPwdComponent());
         estConfiguration.setOperationMode(alias, estAliasGui.getOperationMode());

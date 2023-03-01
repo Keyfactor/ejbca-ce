@@ -857,7 +857,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         assertEquals("RsaKeyValidator with CAB forum settings must have public key modulus do not allow power of prime value.",
                 keyValidator.isPublicKeyModulusDontAllowPowerOfPrime(), RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_DONT_ALLOW_POWER_OF_PRIME);
         assertEquals("RsaKeyValidator with CAB forum settings must have min factor value.", keyValidator.getPublicKeyModulusMinFactor(),
-                new Integer(RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR));
+                Integer.valueOf(RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR));
         assertNull("RsaKeyValidator with CAB forum settings must have public key modulus min value.", keyValidator.getPublicKeyModulusMin());
         assertNull("RsaKeyValidator with CAB forum settings must have public key modulus max value.", keyValidator.getPublicKeyModulusMax());
     }
