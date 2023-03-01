@@ -108,7 +108,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithEdDSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaEddsa", "Ed25519");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaEddsa", "Ed25519", "Ed25519", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "Ed25519");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -119,7 +119,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithFalcon() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaFalcon", "FALCON-512");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaFalcon", "FALCON-512", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "FALCON-512");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -130,7 +130,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithDilithium() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDilitium", "DILITHIUM2");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDilitium", "DILITHIUM2", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "DILITHIUM2");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
