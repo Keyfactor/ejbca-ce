@@ -665,13 +665,13 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                         lastInvDate = invalidityDateExtension.getDate();
                                     }
                                 } catch (IOException | ParseException e) {
-                                    log.debug("Failed to parse reason code of CRLEntry: " + e.getMessage());
+                                    log.debug("Failed to parse invalidity date of CRLEntry: " + e.getMessage());
                                     throw new CRLException(e);
                                 }
                             }
                         }
-                        // Also include the crl in the delta CRL if invalidity date has changed since the last base CRL
-                        if (!revCertInfo.getInvalidityDate().equals(lastInvDate)) {
+                        // Also include the revoked certificate entry in the delta CRL if invalidity date has changed since the last base CRL
+                        if (revCertInfo.getInvalidityDate() != null && !revCertInfo.getInvalidityDate().equals(lastInvDate)) {
                             filteredRevCertInfos.add(revCertInfo);
                             continue;
                         }
@@ -819,6 +819,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
     
     private boolean getAllowInvalidityDate(final CAInfo caInfo) {
-        return caInfo == null ? false : caInfo.isAllowInvalidityDate();
+        return caInfo != null && caInfo.isAllowInvalidityDate();
     }
 }
