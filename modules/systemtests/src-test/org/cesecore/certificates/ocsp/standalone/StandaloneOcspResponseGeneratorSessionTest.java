@@ -456,7 +456,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caSignBehalfCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caSignBehalfCertificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
@@ -472,7 +472,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caSignBehalfCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caSignBehalfCertificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
@@ -593,7 +593,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
         //Revoke the responder cert
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, ocspSigningCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, ocspSigningCertificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -740,7 +740,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
         // Revoke the issuer certificate with the specified reason
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caCertificate, new Date(), caRevocationReason);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caCertificate, new Date(), null, caRevocationReason);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -1345,7 +1345,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 // Try to send a signed OCSP requests
                 final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                         (X509Certificate) x509ca.getCertificateChain().get(0) , ocspSigningCertificate.getSerialNumber());
-                internalCertificateStoreSession.setRevokeStatus(authenticationToken, ocspAuthenticationCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+                internalCertificateStoreSession.setRevokeStatus(authenticationToken, ocspAuthenticationCertificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
                 final OCSPResp ocspResponseSigned = sendRequest(ocspRequestSigned);
                 assertEquals("We expected an 'UNAUTHORIZED' status code: ", OCSPResp.UNAUTHORIZED, ocspResponseSigned.getStatus());
              //   validateSuccessfulResponse((BasicOCSPResp) ocspResponseSigned.getResponseObject(), ocspSigningCertificate.getPublicKey());
