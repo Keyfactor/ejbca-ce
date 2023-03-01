@@ -528,7 +528,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                         continue;
                     }                  
                     // Authorization to the CA was already checked at the head of this method, so no need to do so now
-                    certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+                    certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), /*invalidityDate*/null, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
                     revoked = true;
                 }
                 if (revoked && ca.getGenerateCrlUponRevocation()) {
@@ -679,7 +679,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // If we don't store the certificate in the database, we wont support revocation/reactivation so issuing revoked certificates would be
                     // really strange.
                     if (ca.isUseCertificateStorage() && certProfile.getUseCertificateStorage()) {
-                        certificateStoreSession.setRevokeStatus(admin, result, new Date(), revreason);
+                        certificateStoreSession.setRevokeStatus(admin, result, new Date(), /*invalidityDate*/null, revreason);
                     } else {
                         log.warn("CA configured to revoke issued certificates directly, but not to store issued the certificates. Revocation will be ignored. Please verify your configuration.");
                     }

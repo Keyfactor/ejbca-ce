@@ -28,7 +28,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 public interface NoConflictCertificateStoreSessionLocal extends NoConflictCertificateStoreSession {
 
     /** @see CertificateStoreSessionLocal#setRevokeStatus */
-    boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
+    boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
     
     /** @see CertificateStoreSessionLocal#getCertificateData(String) */
     public CertificateDataWrapper getCertificateData(final String fingerprint);
