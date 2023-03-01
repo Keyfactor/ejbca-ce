@@ -107,7 +107,7 @@ public class RequestControlFilter implements Filter {
                 if (endDuration != -1) {
                     durationString = durationString.substring(0, endDuration);
                 }
-                Long duration = new Long(durationString);
+                Long duration = Long.valueOf(durationString);
 
                 // compile the corresponding pattern, and store it with this delay in the map
                 Pattern waitPattern = Pattern.compile(paramValue);

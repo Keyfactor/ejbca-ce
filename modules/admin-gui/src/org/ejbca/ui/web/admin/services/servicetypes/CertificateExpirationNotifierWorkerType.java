@@ -22,8 +22,10 @@ public class CertificateExpirationNotifierWorkerType extends BaseEmailNotifyingW
 	private static final long serialVersionUID = -3680823921964522760L;
     public static final String NAME = "CERTNOTIFICATIONWORKER";
 		
+    private static final String CERTNOTIFICATIONWORKER_SUB_PAGE = "certnotificationworker.xhtml";
+    
 	public CertificateExpirationNotifierWorkerType(){
-		super(NAME, ServiceTypeUtil.CERTNOTIFICATIONWORKER_SUB_PAGE, org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker.class.getName());
+		super(NAME, CERTNOTIFICATIONWORKER_SUB_PAGE, org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker.class.getName());
 		
 	}
 }

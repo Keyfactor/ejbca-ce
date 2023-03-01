@@ -34,11 +34,11 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -95,7 +95,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -103,7 +102,7 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 
-@ManagedBean
+@Named
 @SessionScoped
 public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
@@ -523,27 +522,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         
         // Add CA Services
-        String keyType = AlgorithmConstants.KEYALGORITHM_RSA;
-        String extendedServiceKeySpec = caInfoDto.getSignatureAlgorithmParam();
-        if (extendedServiceKeySpec.startsWith("DSA")) {
-            keyType = AlgorithmConstants.KEYALGORITHM_DSA;
-        } else if (extendedServiceKeySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
-            keyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-        } else if (AlgorithmTools.isDstu4145Enabled() && extendedServiceKeySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
-            keyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
-        } else {
-            keyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
-        }
-        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-        if (keyType.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
-            // Never use larger keys than 2048 bit RSA for OCSP signing
-            int len = Integer.parseInt(extendedServiceKeySpec);
-            if (len > 2048) {
-                extendedServiceKeySpec = "2048";
-            }
-        }
-        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CmsCertificate, " + getCaDn(), "",
-                extendedServiceKeySpec, keyType));
+        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
+
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo caInfo = createX509CaInfo(getCaDn(), null, getCaName(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, encodedValidity, 
                 CAInfo.SELFSIGNED, caToken, null, extendedcaservices);

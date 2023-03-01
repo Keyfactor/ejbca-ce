@@ -20,7 +20,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.jacknji.classpath"/>
-        <path location="${mod.cesecore-common.lib}"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 	
 	<path id="test.classpath">
@@ -30,7 +30,6 @@
 		<path refid="lib.jee-client.classpath"/>
 		<path location="${p11ng.build.dir}"/>
 		<path location="${p11ng.build-test.dir}"/>
-		<path location="${mod.cesecore-common.lib}"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.slf4jlog4j.classpath"/>
@@ -70,11 +69,6 @@
     	<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
     	<copy file="${jndi.properties.file}" tofile="${p11ng.build-test.dir}/jndi.properties" failonerror="false"/>
 		<copy file="${jboss-ejb-client.properties}" todir="${p11ng.build-test.dir}" failonerror="true"/>
-    	<javac destdir="${p11ng.build-test.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
-    				<src path="${cesecore-common.dir}/cesecore-common/src-test"/>
-    				<include name="org/cesecore/keys/token/PKCS11TestUtils.java"/>
-    				<include name="org/cesecore/keys/token/CryptoTokenTestBase.java"/>
-    			</javac>
     	<javac srcdir="${p11ng.src.test.dir}" destdir="${p11ng.build-test.dir}" debug="on" includeantruntime="no"
     	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
 			<sourcepath location="${mod.systemtests.path}/src-test/"/>

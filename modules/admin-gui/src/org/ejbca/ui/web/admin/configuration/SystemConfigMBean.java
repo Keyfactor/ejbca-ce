@@ -38,13 +38,13 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Hex;
@@ -114,7 +114,7 @@ import com.nimbusds.jwt.SignedJWT;
  * Backing bean for the various system configuration pages.
  *
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
@@ -1334,6 +1334,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRunningEnterprise()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST_COAP_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRunningEnterprise()) {

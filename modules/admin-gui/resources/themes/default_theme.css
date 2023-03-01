@@ -1526,5 +1526,9 @@ a.button:active {
     white-space: pre-wrap;
 }
 
+/* Set on document.documentElement */
+.waiting { cursor: wait; opacity: 0.5; }
+.waiting input { cursor: wait; }
+
 /*--------------------------------------------------------------------------*/
 /* EOF */

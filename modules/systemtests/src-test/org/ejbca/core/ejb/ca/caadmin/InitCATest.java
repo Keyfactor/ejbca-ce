@@ -56,6 +56,7 @@ import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -207,7 +208,7 @@ public class InitCATest extends CaTestCase {
 
             final Role role = roleSession.persistRole(admin, new Role(null, ROLE_NAME));
             final RoleMember roleMember = roleMemberSession.persist(admin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    origCaId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser", role.getRoleId(), null));
             // Now change a value and initialize
             log.debug("Trying to initialize with changed Subject DN");
@@ -225,7 +226,7 @@ public class InitCATest extends CaTestCase {
             assertEquals("CAId was not updated in certificate profile.", newCaId, (int)certProf.getAvailableCAs().get(0));
 
             eeProf = endEntityProfileSession.getEndEntityProfile(ENDENTITY_PROFILE_NAME);
-            assertEquals("CAId was not updated in end-entity profile.", new Integer(newCaId), eeProf.getAvailableCAs().get(0));
+            assertEquals("CAId was not updated in end-entity profile.", Integer.valueOf(newCaId), eeProf.getAvailableCAs().get(0));
             assertEquals("CAId was not updated in end-entity profile.", newCaId, eeProf.getDefaultCA());
 
             userdatasource = (CustomUserDataSourceContainer)userDataSourceSession.getUserDataSource(admin, DATASOURCE_NAME);
@@ -267,10 +268,10 @@ public class InitCATest extends CaTestCase {
             cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
         }
         if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
+            cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("RSA1024").build());
         }
         if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+            cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
         }
 
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);

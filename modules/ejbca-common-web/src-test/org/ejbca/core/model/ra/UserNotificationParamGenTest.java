@@ -62,11 +62,11 @@ public class UserNotificationParamGenTest {
         String msg = paramGen.interpolate("${USERNAME} ${user.USERNAME} ${PASSWORD} ${user.PASSWORD} ${CN} ${user.CN} ${C}" +
         						" ${approvalAdmin.CN} ${approvalAdmin.C} ${approvalAdmin.O}" +
         						" ${user.EE.EMAIL} ${user.SAN.EMAIL} ${requestAdmin.EE.EMAIL} ${requestAdmin.CN} ${requestAdmin.SAN.EMAIL}" +
-        						" ${revokedCertificate.CERTSERIAL} ${revokedCertificate.EXPIREDATE} ${revokedCertificate.CERTSUBJECTDN} " +
+        						" ${revokedCertificate.CERTSERIAL} ${revokedCertificate.CERTSERIALDECIMAL} ${revokedCertificate.EXPIREDATE} ${revokedCertificate.CERTSUBJECTDN} " +
         						" ${revokedCertificate.CERTISSUERDN} ${revokedCertificate.REVOCATIONSTATUS} ${revokedCertificate.REVOCATIONREASON} ${approvalRequestID}");
         assertFalse("Interpolating message failed", (msg==null || msg.length()==0));
         assertEquals("foo foo foo$123\\bar foo$123\\bar foome foome SE approvaluser SE Org fooee@foo.se fooalt@foo.se adminee@foo.se Test Admin adminalt@foo.se" +
-                " " + new BigInteger(certificateSerialNumber).toString(16).toUpperCase() +" " + ValidityDate.formatAsISO8601(now, ValidityDate.TIMEZONE_SERVER) + " CN=foo,O=Org,C=SE " +
+                " " + new BigInteger(certificateSerialNumber).toString(16).toUpperCase() + " " + certificateSerialNumber + " " + ValidityDate.formatAsISO8601(now, ValidityDate.TIMEZONE_SERVER) + " CN=foo,O=Org,C=SE " +
                 " CN=The CA,O=Org,C=NO Revoked certificateHold 123", msg);
 		
 	}

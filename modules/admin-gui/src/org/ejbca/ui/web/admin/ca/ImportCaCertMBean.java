@@ -21,8 +21,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
@@ -32,7 +32,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.kfenroll.ProxyCa;
-import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo.ProxyCaInfoBuilder;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -44,7 +43,7 @@ import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
  * JSF MBean backing the import ca cert page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
 

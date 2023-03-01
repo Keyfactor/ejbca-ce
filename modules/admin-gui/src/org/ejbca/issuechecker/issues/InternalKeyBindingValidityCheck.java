@@ -93,7 +93,7 @@ public class InternalKeyBindingValidityCheck extends ConfigurationIssue {
                 .filter(internalKeyBinding -> internalKeyBinding.getStatus() == InternalKeyBindingStatus.ACTIVE)
                 .map(internalKeyBinding -> new InternalKeyBindingEntry(internalKeyBinding, getCertificate(internalKeyBinding)))
                 .filter(entry -> entry.getX509Certificate().isPresent())
-                .filter(entry -> !CertTools.isCertificateValid(entry.getX509Certificate().get(), /* log? */ false))
+                .filter(entry -> !CertTools.isCertificateValid(entry.getX509Certificate().get(), false, 0))
                 .map(entry -> Ticket
                         .builder(this, TicketDescription.fromResource(
                                 "INTERNAL_KEY_BINDING_VALIDITY_CHECK_TICKET_DESCRIPTION",

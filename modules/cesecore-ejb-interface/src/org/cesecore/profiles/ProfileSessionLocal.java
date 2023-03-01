@@ -88,4 +88,11 @@ public interface ProfileSessionLocal {
      */
     List<ProfileData> findByNameAndType(final String name, final String type);
 
+    /**
+     * 
+     * @param profileType a profile type
+     * @return the number of profiles of a certain type
+     */
+    long getNumberOfProfileByType(String profileType);
+
 }

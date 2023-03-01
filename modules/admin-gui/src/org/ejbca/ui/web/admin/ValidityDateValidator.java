@@ -18,6 +18,7 @@ import java.text.ParseException;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
@@ -32,8 +33,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 /** JSF validator to check that the input does not contain any invalid characters and is a valid time unit format (i.e. '3y 6mo -10d 6h 30m 30s') 
  *  or a validity end date (ISO8601 format, i.e. 'yyyy-MM-dd HH:mm:ssZZ', 'yyyy-MM-dd HH:mmZZ' or 'yyyy-MM-ddZZ' with optional '+00:00' appended). 
  * 
- * @version $Id$
  */
+@FacesValidator("validityDateValidator")
 public class ValidityDateValidator implements Validator<Object> {
 
     private static final Logger log = Logger.getLogger(ValidityDateValidator.class);

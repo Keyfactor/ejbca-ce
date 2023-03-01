@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="x509-common-util" basedir="../.." default="jar">
+	<property environment="env" />
+	<dirname property="x509-common-util.dir" file="${ant.file.x509-common-util}"/>
+
+    <import file="${x509-common-util.dir}/../build-helpers.xml"/>
+
+	<property name="x509-common-util.build.dir" location="${x509-common-util.dir}/build"/>
+	<property name="x509-common-util.build-test.dir" location="${x509-common-util.dir}/build-test"/>
+	<property name="x509-common-util.src-test.dir" location="${x509-common-util.dir}/src-test"/>
+
+	<path id="compile.classpath">
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-codec.classpath"/>
+		<path refid="lib.commons-collections4.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.guava.classpath"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in KeyTools -->
+		<path refid="lib.jee.classpath" />
+		<path refid="lib.jacknji.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/> <!-- Needed for Webfault in exceptions -->
+	</path>
+
+	<path id="test.classpath">
+		<path location="${x509-common-util.build.dir}/classes"/>
+		<path location="${x509-common-util.build-test.dir}"/>
+		<path refid="compile.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
+	</path>
+	
+	<!-- The buildservicemanifest needs additional classes in order to run. -->
+	<path id="manifest.classpath">
+		<path refid="compile.classpath"/>
+		<path location="${x509-common-util.dir}/build/classes"/>
+	</path>
+
+	<target name="jar" depends="">
+		<mkdir dir="${x509-common-util.dir}/build/classes"/>
+		<javac srcdir="${x509-common-util.dir}/src" destdir="${x509-common-util.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+			<classpath refid="compile.classpath"/>
+		</javac>
+		<buildservicemanifest interface="com.keyfactor.util.certificate.CertificateImplementation;org.cesecore.keys.token.PKCS11SlotListWrapperFactory"
+		    		file="${x509-common-util.dir}/build/classes" classpath="manifest.classpath"/>
+		<mkdir dir="${x509-common-util.dir}/dist"/>
+		<jar destfile="${x509-common-util.dir}/dist/x509-common-util.jar">
+     
+			<fileset dir="${x509-common-util.dir}/build" includes="META-INF/**/*"/>
+			<fileset dir="${x509-common-util.dir}/build/classes/" excludes="**/*.java"/>
+			<fileset dir="${x509-common-util.dir}/src/" excludes="**/*.java"/>
+			<fileset dir="${ejbca.home}/src/java">
+				<include name="defaultvalues.properties"/>
+				<include name="dncomponents.properties"/>
+				<include name="profilemappings.properties"/>
+	            <include name="profilemappings_enterprise.properties"/>
+			</fileset>
+			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+		</jar>
+	</target>
+
+	<target name="clean" depends="">
+		<delete dir="${x509-common-util.dir}/dist"/>
+		<delete dir="${x509-common-util.build.dir}"/>
+		<delete dir="${x509-common-util.build-test.dir}"/>
+	</target>
+
+	<target name="compile-tests" depends="jar">
+		<mkdir dir="${x509-common-util.build-test.dir}" />
+		<javac srcdir="${x509-common-util.src-test.dir}" destdir="${x509-common-util.build-test.dir}" debug="on" includeantruntime="no"
+	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
+		<copy file="${log4j.test.file}" tofile="${x509-common-util.build-test.dir}/log4j.xml" failonerror="true"/>
+		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
+		<copy file="${systemtests.properties.file}" todir="${x509-common-util.build-test.dir}" failonerror="false"/>
+	</target>
+
+	<target name="test" depends="compile-tests" description="Run tests for this module">
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${x509-common-util.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${x509-common-util.build-test.dir}" includes="**/*Test.class">
+				</fileset>
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+		</junit>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=FooTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<condition property="remoteDebugJvmArgs"
+				   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				   else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${x509-common-util.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${x509-common-util.build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
+		</junit>
+	</target>
+
+</project>

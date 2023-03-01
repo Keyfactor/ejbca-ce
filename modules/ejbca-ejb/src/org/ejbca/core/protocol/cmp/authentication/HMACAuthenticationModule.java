@@ -199,7 +199,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                             final List<EndEntityInformation> endEntityInformations;
                             final String extractedUsername = getUsernameByDnComponent(subjectDN);
                             if (StringUtils.isNotBlank(extractedUsername)) {
-                                endEntityInformation = this.endEntityAccessSession.findUser(authenticationToken, username);
+                                endEntityInformation = this.endEntityAccessSession.findUser(authenticationToken, extractedUsername);
                             }
                             if (endEntityInformation == null) {
                                 final X500Name issuer = certTemplate.getIssuer();

@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
@@ -27,8 +28,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * JSF validator that check that fields do no contain any ASCII control characters.
  * Newlines and tabs are allowed, though. 
  *
- * @version $Id$
  */
+@FacesValidator("multiLineFreeTextValidator")
 public class MultiLineFreeTextValidator implements Validator<Object> {
     private static final Logger log = Logger.getLogger(MultiLineFreeTextValidator.class);
 

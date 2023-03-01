@@ -30,13 +30,14 @@
 		<path refid="lib.swagger.classpath"/>
 		<path refid="lib.jackson2.classpath"/>
         <path refid="lib.jboss-logging.classpath"/>
-        <path refid="lib.commons-fileupload.classpath"/>
+        <path refid="lib.commons-fileupload.classpath"/><!-- only for FileUploadException -->
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
         <path location="${mod.ejbca-rest-common.lib}"/>
         <path location="${mod.ejbca-rest-certificate.lib}"/>
+		<path location="${mod.ejbca-rest-coap.lib}"/>
         <path location="${mod.ejbca-rest-configdump.lib}"/>
         <path location="${mod.ejbca-rest-ca.lib}"/>
         <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
@@ -78,6 +79,7 @@
             <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
 			<lib file="${mod.ejbca-rest-common.lib}"/>
 			<lib file="${mod.ejbca-rest-certificate.lib}"/>
+			<lib file="${mod.ejbca-rest-coap.lib}"/>
 			<lib file="${mod.ejbca-rest-configdump.lib}"/>
 			<lib file="${mod.ejbca-rest-ca.lib}"/>
 			<lib file="${mod.ejbca-rest-cryptotoken.lib}"/>

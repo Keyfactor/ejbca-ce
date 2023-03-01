@@ -13,6 +13,36 @@
 
 package org.ejbca.core.ejb;
 
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.CodeSource;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.EJB;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.audit.AuditDevicesConfig;
@@ -33,6 +63,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.Base64;
@@ -60,32 +91,9 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.JDBCUtil;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.CodeSource;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * Singleton used to start services and perform upgrade tasks at startup.
@@ -98,7 +106,7 @@ public class StartupSingletonBean {
 
     private static final Logger log = Logger.getLogger(StartupSingletonBean.class);
     private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Application internal");
-    
+        
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -208,7 +216,46 @@ public class StartupSingletonBean {
         log.debug(">startup re-installing BC-provider");
         CryptoProviderTools.removeBCProvider();
         CryptoProviderTools.installBCProvider();
-
+        
+        // Register forbidden characters
+        // Using 'instance().getString' instead of 'getString' since an empty String (size 0) must be returned when the property is defined without any value.
+        final String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
+        if (StringUtils.isNotBlank(forbiddenCharacters)) {
+            StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters.toCharArray());
+        }
+       
+        //Register password encryption count
+        final String encryptionCount = ConfigurationHolder.getString("password.encryption.count");
+        if (StringUtils.isNumeric(encryptionCount)) {
+            StringConfigurationCache.INSTANCE.setPasswordEncryptionCount(Integer.valueOf(encryptionCount) );
+        }
+        
+        //Register encryption key
+        StringConfigurationCache.INSTANCE.setEncryptionKey(ConfigurationHolder.getString("password.encryption.key").toCharArray());
+        
+        //Read if GOST3410 or DSTU4145 are defined in cesecore.properties
+        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(ConfigurationHolder.getString("extraalgs.gost3410.oidtree") != null);
+        AlgorithmConfigurationCache.INSTANCE.setDstu4145Enabled(ConfigurationHolder.getString("extraalgs.dstu4145.oidtree") != null);
+        //Read and cache all configuration defined algorithms 
+        final List<String> configurationDefinedAlgorithms = ConfigurationHolder.getPrefixedPropertyNames("extraalgs");
+        AlgorithmConfigurationCache.INSTANCE.setConfigurationDefinedAlgorithms(configurationDefinedAlgorithms);
+        for (String algorithm : configurationDefinedAlgorithms) {
+            AlgorithmConfigurationCache.INSTANCE.addConfigurationDefinedAlgorithmTitle(algorithm,
+                    ConfigurationHolder.getString("extraalgs." + algorithm.toLowerCase() + ".title"));
+        }
+        //Check if legacy keystore format should be used
+        CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null ? false
+                : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12")));
+        
+        final String disableHashingSignMechanisms = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
+        CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(disableHashingSignMechanisms==null || Boolean.parseBoolean(disableHashingSignMechanisms.trim()));
+        
+        CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache")));
+        
+        final String doPermitExtractablePrivateKeys = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
+        CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(
+                doPermitExtractablePrivateKeys != null && doPermitExtractablePrivateKeys.trim().equalsIgnoreCase(Boolean.TRUE.toString()));
+                
         // Run java seed collector, that can take a little time the first time it is run
         log.debug(">startup initializing random seed, can take a little time...");
         SecureRandom rand = new SecureRandom();

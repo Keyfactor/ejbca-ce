@@ -63,6 +63,7 @@ public interface EndEntityManagementSession {
      * @throws EndEntityExistsException if an end entity by the specified username already exists
      * @deprecated use {@link #addUser(AuthenticationToken, EndEntityInformation, boolean)} instead.
      */
+    @Deprecated
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
     		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int caid)
     		throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
@@ -595,6 +596,10 @@ public interface EndEntityManagementSession {
      * remote. User data may contain a counter with nr of requests before used
      * should be set to generated. In this case this counter will be decreased,
      * and if it reaches 0 status will be generated.
+     * <p>
+     * Note that the database update is suppressed in case there were no modifications
+     * beside the modification time and the password hash. Also, transaction conflicts
+     * in UserData are resolved.
      *
      * @throws NoSuchEndEntityException if the user does not exist.
      */

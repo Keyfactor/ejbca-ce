@@ -12,15 +12,24 @@
  *************************************************************************/
 package org.ejbca.core.protocol;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1PrintableString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.Attribute;
@@ -28,12 +37,6 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 
 /** Extends the PKCS10RequestMessgae and contains a few function to parse MS specific information like GUID, DNS, Template etc..
  */
@@ -78,7 +81,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
      *    	         :           }
      *    	         :         }
      */
-    private ArrayList<String> getMSRequestInfo() {
+    private List<String> getMSRequestInfo() {
         ArrayList<String> ret = new ArrayList<String>(); 
         if (pkcs10 == null) {
         	log.error("PKCS10 not inited!");
@@ -98,9 +101,9 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
             while (enumeration.hasMoreElements()) {
             	Object current = enumeration.nextElement();
             	if (current instanceof DERPrintableString) {
-                	ret.add(DERPrintableString.getInstance(current).getString());
+                	ret.add(ASN1PrintableString.getInstance(current).getString());
             	} else if (current instanceof DERUTF8String) {
-                	ret.add(DERUTF8String.getInstance(current).getString());
+                	ret.add(ASN1UTF8String.getInstance(current).getString());
             	} else if (current instanceof ASN1Integer) {
                 	ret.add(ASN1Integer.getInstance(current).toString());
             	} else {
@@ -121,7 +124,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
      * This is probably the machine from where the reqeust was made.
      */
     public String getMSRequestInfoDNS() {
-    	ArrayList<String> ri = getMSRequestInfo();
+    	List<String> ri = getMSRequestInfo();
     	if (ri.size() != 0) {
     		return (String) ri.get(1);
     	} else {

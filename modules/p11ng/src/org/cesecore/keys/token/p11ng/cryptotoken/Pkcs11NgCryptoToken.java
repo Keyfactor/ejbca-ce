@@ -41,8 +41,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -57,6 +55,8 @@ import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+
 /** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */
 public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser {
@@ -65,9 +65,6 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(Pkcs11NgCryptoToken.class);
-    
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
     
     protected CryptokiDevice.Slot slot;
 
@@ -204,11 +201,11 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     @Override
     public PrivateKey getPrivateKey(final String alias) throws CryptoTokenOfflineException {
         if (slot == null) {
-            throw new CryptoTokenOfflineException(intres.getLocalizedMessage("token.nodevice"));
+            throw new CryptoTokenOfflineException("Could not instantiate crypto token. Device unavailable.");
         }
         final PrivateKey privateKey = slot.getReleasableSessionPrivateKey(alias);
         if (privateKey == null) {
-            final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+            final String msg = " No key with alias '" + alias + "'."; 
             log.warn(msg);
             throw new CryptoTokenOfflineException(msg);
         }
@@ -238,7 +235,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             }
             final Certificate certificate = slot.getCertificate(alias);
             if (certificate == null) {
-                final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+                final String msg = " No key with alias '" + alias + "'."; 
                 throw new CryptoTokenOfflineException(msg);
             }
             publicKey = certificate.getPublicKey();
@@ -288,9 +285,9 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         try {
             if (keySpec.toUpperCase().startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
-            } else if (AlgorithmTools.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+            } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-            } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
+            } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keySpec.startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_DSTU4145;
             } else if (!Character.isDigit(keySpec.charAt(0))) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;

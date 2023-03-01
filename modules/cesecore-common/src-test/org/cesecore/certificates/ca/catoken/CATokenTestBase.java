@@ -42,9 +42,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 
 /**
- * 
- * @version $Id$
- *
  */
 public abstract class CATokenTestBase {
 
@@ -448,7 +445,295 @@ public abstract class CATokenTestBase {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
 	}
 
-	abstract String getProvider();
+	protected void doCaTokenFalcon(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
+            CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    	final CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
+    	try {
+    		// Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
+    		catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+    		catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+    		catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_FALCON512);
+    		catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+    
+    		// First we start by deleting all old entries
+            for (int i=0; i<4; i++) {
+                cryptoToken.deleteEntry("falcontest0000"+i);
+            }
+    		cryptoToken.deleteEntry(ENCRYPTION_KEY);
+    
+    		// Try to delete something that does not exist, it should work without error
+    		cryptoToken.deleteEntry("sdkfjhsdkfjhsd4447");
+    
+    		assertEquals("FALCON-512", catoken.getSignatureAlgorithm());
+    		assertEquals("SHA256WithRSA", catoken.getEncryptionAlgorithm());
+    		assertEquals(getProvider(), cryptoToken.getSignProviderName());
+    
+    		cryptoToken.activate(TOKEN_PIN.toCharArray());
+    		assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+    		assertEquals(CAToken.DEFAULT_KEYSEQUENCE, catoken.getKeySequence());
+    
+    		// Generate the first key, will get name rsatest+nextsequence = rsatest00001
+    		Integer seq = Integer.valueOf(CAToken.DEFAULT_KEYSEQUENCE);
+    		cryptoToken.generateKeyPair("1024", ENCRYPTION_KEY);
+            final String firstSignKeyAlias = catoken.generateNextSignKeyAlias();
+            cryptoToken.generateKeyPair(keySpecification, firstSignKeyAlias);
+            catoken.activateNextSignKey();
+            seq += 1;
+    		assertEquals(seq, Integer.valueOf(catoken.getKeySequence()));
+            PrivateKey priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            PublicKey pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+    		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+    		assertEquals(128, KeyTools.getKeyLength(pub));
+    		assertEquals("FALCON-512", AlgorithmTools.getKeyAlgorithm(pub));
+            String keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+    		// There should exist an encryption key when we have generated keys with renew = false
+    		// Encryption key should be an RSA key with 2048 bit, since signature key is ECDSA
+    		PublicKey encPub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+    		assertEquals(1024, KeyTools.getKeyLength(encPub));
+    
+    		// Generate new keys, moving the old ones to "previous key"
+    		final String nextSignKeyAlias2 = catoken.generateNextSignKeyAlias();
+            final PublicKey currentSingKey2 = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            final String keySpec2 = AlgorithmTools.getKeySpecification(currentSingKey2);
+            log.debug("currentSingKey2: " + currentSingKey2 + " keySpec2: " + keySpec2);
+            cryptoToken.generateKeyPair(keySpec2, nextSignKeyAlias2);
+            catoken.activateNextSignKey();
+    		Properties p = catoken.getProperties();
+    		String previousSequence = p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
+    		assertEquals(seq, Integer.valueOf(previousSequence));
+    		seq += 1;
+    		assertEquals(seq, Integer.valueOf(catoken.getKeySequence()));
+    		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+    		pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+    		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+    		assertEquals(128, KeyTools.getKeyLength(pub));
+    		String newkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+    		assertFalse("New kays are same as old keys, should not be...", keyhash.equals(newkeyhash));
+    		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+    		pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+    		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+    		assertEquals(128, KeyTools.getKeyLength(pub));
+    		String previouskeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+    		assertEquals(keyhash, previouskeyhash);
+    
+    		// Generate new keys, not activating them, this should create a "next key", keeping the current and previous as they are
+    		// Generate new keys, moving the old ones to "previous key"
+    		final String nextSignKeyAlias3 = catoken.generateNextSignKeyAlias();
+            final PublicKey currentSingKey3 = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            final String keySpec3 = AlgorithmTools.getKeySpecification(currentSingKey3);
+            cryptoToken.generateKeyPair(keySpec3, nextSignKeyAlias3);
+            p = catoken.getProperties();
+    		String previousSequence2 = p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
+    		assertEquals(previousSequence, previousSequence2);
+    		assertEquals(seq, Integer.valueOf(catoken.getKeySequence()));
+    		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+    		pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+    		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+    		assertEquals(128, KeyTools.getKeyLength(pub));
+    		String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
+    		assertEquals(newkeyhash, newkeyhash2);
+    		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+    		pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+    		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+    		assertEquals(128, KeyTools.getKeyLength(pub));
+    		String previouskeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
+    		assertEquals(previouskeyhash, previouskeyhash2);
+    		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
+    		pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
+    		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+    		String nextkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+    		assertFalse(newkeyhash2.equals(nextkeyhash));
+    		String nextSequence = p.getProperty(CATokenConstants.NEXT_SEQUENCE_PROPERTY);
+    		Integer nextseq = seq + 1;
+    		assertEquals(nextseq, Integer.valueOf(nextSequence));
+    		// Make sure the properties was set correctly so we did not get the "default" key as next
+    		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
+    
+    		// finally activate the "next key" moving that to current and moving the current to previous
+    		catoken.activateNextSignKey();
+    		p = catoken.getProperties();
+    		String previousSequence3 = p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
+    		assertEquals(seq, Integer.valueOf(previousSequence3));
+    		assertEquals(nextseq, Integer.valueOf(catoken.getKeySequence()));
+    		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+    		pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+    		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+    		assertEquals(128, KeyTools.getKeyLength(pub));
+    		String currentkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+    		assertEquals(nextkeyhash, currentkeyhash);
+    		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+    		pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+    		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+    		assertEquals(128, KeyTools.getKeyLength(pub));
+    		String previouskeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
+    		assertEquals(newkeyhash2, previouskeyhash3);
+    		try  {
+    			cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
+    			assertTrue("Should have thrown because the key should not exist", false);
+    		} catch (CryptoTokenOfflineException e) {
+    			// NOPMD: ignore this
+    		}
+    		// There exist an RSA encryption key
+    		pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+    		assertEquals(1024, KeyTools.getKeyLength(pub));
+    	} finally {
+    		// Clean up and delete our generated keys
+            for (int i=0; i<4; i++) {
+                cryptoToken.deleteEntry("falcontest0000"+i);
+            }
+    		cryptoToken.deleteEntry("rsatest00001");			
+    		cryptoToken.deleteEntry("ecctest0000000002");
+    		cryptoToken.deleteEntry("ecctest0000000003");
+    	}
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+
+	protected void doCaTokenDilithium(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
+	CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
+	    log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+	    final CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
+	    try {
+	        // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
+	        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+	        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+	        catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
+	        catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+
+	        // First we start by deleting all old entries
+	        for (int i=0; i<4; i++) {
+	            cryptoToken.deleteEntry("dilithiumtest0000"+i);
+	        }
+	        cryptoToken.deleteEntry(ENCRYPTION_KEY);
+
+	        // Try to delete something that does not exist, it should work without error
+	        cryptoToken.deleteEntry("sdkfjhsdkfjhsd4447");
+
+	        assertEquals("DILITHIUM2", catoken.getSignatureAlgorithm());
+	        assertEquals("SHA256WithRSA", catoken.getEncryptionAlgorithm());
+	        assertEquals(getProvider(), cryptoToken.getSignProviderName());
+
+	        cryptoToken.activate(TOKEN_PIN.toCharArray());
+	        assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+	        assertEquals(CAToken.DEFAULT_KEYSEQUENCE, catoken.getKeySequence());
+
+	        // Generate the first key, will get name rsatest+nextsequence = rsatest00001
+	        Integer seq = Integer.valueOf(CAToken.DEFAULT_KEYSEQUENCE);
+	        cryptoToken.generateKeyPair("1024", ENCRYPTION_KEY);
+	        final String firstSignKeyAlias = catoken.generateNextSignKeyAlias();
+	        cryptoToken.generateKeyPair(keySpecification, firstSignKeyAlias);
+	        catoken.activateNextSignKey();
+	        seq += 1;
+	        assertEquals(seq, Integer.valueOf(catoken.getKeySequence()));
+	        PrivateKey priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        PublicKey pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+	        assertEquals(128, KeyTools.getKeyLength(pub));
+	        assertEquals("DILITHIUM2", AlgorithmTools.getKeyAlgorithm(pub));
+	        String keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+	        // There should exist an encryption key when we have generated keys with renew = false
+	        // Encryption key should be an RSA key with 2048 bit, since signature key is ECDSA
+	        PublicKey encPub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+	        assertEquals(1024, KeyTools.getKeyLength(encPub));
+
+	        // Generate new keys, moving the old ones to "previous key"
+	        final String nextSignKeyAlias2 = catoken.generateNextSignKeyAlias();
+	        final PublicKey currentSingKey2 = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        final String keySpec2 = AlgorithmTools.getKeySpecification(currentSingKey2);
+	        log.debug("currentSingKey2: " + currentSingKey2 + " keySpec2: " + keySpec2);
+	        cryptoToken.generateKeyPair(keySpec2, nextSignKeyAlias2);
+	        catoken.activateNextSignKey();
+	        Properties p = catoken.getProperties();
+	        String previousSequence = p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
+	        assertEquals(seq, Integer.valueOf(previousSequence));
+	        seq += 1;
+	        assertEquals(seq, Integer.valueOf(catoken.getKeySequence()));
+	        priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+	        assertEquals(128, KeyTools.getKeyLength(pub));
+	        String newkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+	        assertFalse("New kays are same as old keys, should not be...", keyhash.equals(newkeyhash));
+	        priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+	        pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+	        assertEquals(128, KeyTools.getKeyLength(pub));
+	        String previouskeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+	        assertEquals(keyhash, previouskeyhash);
+
+	        // Generate new keys, not activating them, this should create a "next key", keeping the current and previous as they are
+	        // Generate new keys, moving the old ones to "previous key"
+	        final String nextSignKeyAlias3 = catoken.generateNextSignKeyAlias();
+	        final PublicKey currentSingKey3 = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        final String keySpec3 = AlgorithmTools.getKeySpecification(currentSingKey3);
+	        cryptoToken.generateKeyPair(keySpec3, nextSignKeyAlias3);
+	        p = catoken.getProperties();
+	        String previousSequence2 = p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
+	        assertEquals(previousSequence, previousSequence2);
+	        assertEquals(seq, Integer.valueOf(catoken.getKeySequence()));
+	        priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+	        assertEquals(128, KeyTools.getKeyLength(pub));
+	        String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
+	        assertEquals(newkeyhash, newkeyhash2);
+	        priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+	        pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+	        assertEquals(128, KeyTools.getKeyLength(pub));
+	        String previouskeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
+	        assertEquals(previouskeyhash, previouskeyhash2);
+	        priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
+	        pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
+	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+	        String nextkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+	        assertFalse(newkeyhash2.equals(nextkeyhash));
+	        String nextSequence = p.getProperty(CATokenConstants.NEXT_SEQUENCE_PROPERTY);
+	        Integer nextseq = seq + 1;
+	        assertEquals(nextseq, Integer.valueOf(nextSequence));
+	        // Make sure the properties was set correctly so we did not get the "default" key as next
+	        priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
+
+	        // finally activate the "next key" moving that to current and moving the current to previous
+	        catoken.activateNextSignKey();
+	        p = catoken.getProperties();
+	        String previousSequence3 = p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
+	        assertEquals(seq, Integer.valueOf(previousSequence3));
+	        assertEquals(nextseq, Integer.valueOf(catoken.getKeySequence()));
+	        priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+	        assertEquals(128, KeyTools.getKeyLength(pub));
+	        String currentkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+	        assertEquals(nextkeyhash, currentkeyhash);
+	        priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+	        pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+	        assertEquals(128, KeyTools.getKeyLength(pub));
+	        String previouskeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
+	        assertEquals(newkeyhash2, previouskeyhash3);
+	        try  {
+	            cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
+	            assertTrue("Should have thrown because the key should not exist", false);
+	        } catch (CryptoTokenOfflineException e) {
+	            // NOPMD: ignore this
+	        }
+	        // There exist an RSA encryption key
+	        pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+	        assertEquals(1024, KeyTools.getKeyLength(pub));
+	    } finally {
+	        // Clean up and delete our generated keys
+	        for (int i=0; i<4; i++) {
+	            cryptoToken.deleteEntry("dilithiumtest0000"+i);
+	        }
+	        cryptoToken.deleteEntry("rsatest00001");            
+	        cryptoToken.deleteEntry("ecctest0000000002");
+	        cryptoToken.deleteEntry("ecctest0000000003");
+	    }
+	    log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+	}
+
+    abstract String getProvider();
 
 	protected void doActivateDeactivate(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException,
 	        NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException,

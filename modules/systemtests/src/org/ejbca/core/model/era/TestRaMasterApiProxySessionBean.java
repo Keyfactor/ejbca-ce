@@ -19,6 +19,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -111,6 +112,11 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
     public List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, 
             String fingerprint, String rootSubjectDnHash) {
         return raMasterApiProxyBean.searchForCertificateChainWithPreferredRoot(authenticationToken, fingerprint, rootSubjectDnHash);
+    }
+    
+    @Override
+    public RaAuthorizationResult getAuthorization(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        return raMasterApiProxyBean.getAuthorization(authenticationToken);
     }
         
 

@@ -99,21 +99,9 @@
     <property name="mod.scep-war.war" location="${mod.dist.path}/scep.war" />
     <property name="mod.webdist-war.path" location="${mod.path}/ejbca-webdist-war" />
     <property name="mod.webdist-war.war" location="${mod.dist.path}/webdist.war" />
-    <property name="mod.cesecore-p11.dist" location="${ejbca.dist.path}/ext" />
-    <property name="mod.cesecore-p11.path" location="${mod.path}/cesecore-p11" />
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
-    <property name="mod.cmpHttpProxy.dist" location="${ejbca.dist.path}/cmpHttpProxy" />
-    <property name="mod.cmpProxy.path" location="${mod.path}/cmpProxy" />
-    <property name="mod.externalra.path" location="${mod.path}/externalra" />
-    <property name="mod.externalra.lib" location="${mod.dist.path}/externalra.jar" />
-    <property name="mod.externalra-cli.path" location="${ejbca.dist.path}/externalra-cli" />
-    <property name="mod.externalra-cli.lib" location="${mod.externalra-cli.path}/externalra-cli.jar" />
-    <property name="mod.externalra-service.lib" location="${mod.dist.path}/externalra-service.jar" />
-    <property name="mod.externalra-datasources.dist" location="${ejbca.dist.path}/datasources" />
-    <property name="mod.externalra-scep.path" location="${mod.path}/externalra-scep" />
-    <property name="mod.externalra-scep.war" location="${ejbca.dist.path}/scepraserver.war" />
     <property name="mod.logsigning.lib" location="${ejbca.dist.path}/ejbcalogsigning.jar" />
     <property name="mod.jbosslog4jsafer.lib" location="${mod.dist.path}/jbosslog4jsafer.jar" />
 	<property name="mod.scep-ra.path" location="${mod.path}/scep-ra" />
@@ -158,12 +146,13 @@
 	<property name="mod.caa-cli.lib" location="${mod.dist.caa-cli.dir}/caa-cli.jar" />
     <property name="mod.est-war.path" location="${mod.path}/est" />
     <property name="mod.est.war" location="${mod.dist.path}/est.war" />
-    <property name="mod.webtest.path" location="${mod.path}/ejbca-webtest"/>
     <property name="mod.ejbca-rest-api.path" location="${mod.path}/ejbca-rest-api" />
     <property name="mod.ejbca-rest-common.path" location="${mod.path}/ejbca-rest-common" />
     <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
     <property name="mod.ejbca-rest-certificate.path" location="${mod.path}/ejbca-rest-certificate" />
     <property name="mod.ejbca-rest-certificate.lib" location="${mod.dist.path}/ejbca-rest-certificate.jar" />
+	<property name="mod.ejbca-rest-coap.path" location="${mod.path}/ejbca-rest-coap" />
+    <property name="mod.ejbca-rest-coap.lib" location="${mod.dist.path}/ejbca-rest-coap.jar" />
     <property name="mod.ejbca-rest-configdump.path" location="${mod.path}/ejbca-rest-configdump" />
     <property name="mod.ejbca-rest-configdump.lib" location="${mod.dist.path}/ejbca-rest-configdump.jar" />
     <property name="mod.ejbca-rest-ca.path" location="${mod.path}/ejbca-rest-ca" />
@@ -191,19 +180,14 @@
 	<property name="mod.proxy-ca.jar" location="${mod.dist.path}/proxy-ca.jar" />
 	<property name="mod.p11ng.path" location="${mod.path}/p11ng" />
 	<property name="mod.p11ng.lib" location="${mod.dist.path}/p11ng.jar" />
+	<property name="mod.x509-common-util.path" location="${mod.path}/x509-common-util" />
+	<property name="mod.x509-common-util.lib" location="${mod.dist.path}/x509-common-util.jar" />
 	
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
-	<property name="externalra.enabled" value="false"/>
 	<property name="ejbcaws.enabled" value="true" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
-	<condition property="externalra.enabled.true">
-		<and>
-			<istrue value="${externalra.enabled}"/>
-			<available file="${mod.externalra.path}/build.xml" />
-		</and>
-	</condition>
 
 	<!-- Files of global interest -->
 	<!-- Depends on load of propertyDefaults.xml...therefore put in the end
@@ -348,14 +332,10 @@
 	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
 	<path id="lib.hc.classpath"><fileset dir="${ejbca.home}/lib" includes="httpcore-*.jar httpclient-*.jar httpmime-*.jar"/></path>
 	<path id="lib.commons-io.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-io-*.jar"/></path>
-	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
-	<path id="lib.mail.classpath">
-		<fileset dir="${ejbca.home}/lib/ext" includes="mailapi.jar"/>
-	</path>
 	<path id="lib.jsch.classpath"><fileset dir="${ejbca.home}/lib" includes="jsch-*.jar"/></path>
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.owaspcsrfguard.classpath"><fileset dir="${ejbca.home}/lib/" includes="csrfguard-*.jar"/></path>
-	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
+	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="jldap-*.jar"/></path>
 	<path id="lib.adsddl.classpath"><fileset dir="${ejbca.home}/lib" includes="adsddl-*.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
 	<path id="lib.kerb4j.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb4j-server-common-*.jar"/></path>
@@ -390,11 +370,6 @@
 		</fileset>
 	</path>
 
-	<path id="lib.javaxejb.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
-		<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
-	</path>
-
 	<!-- Remote EJB requires application specific implementation to be available -->
 	<path id="lib.jee-client.classpath">
 		<fileset dir="${appserver.home}">
@@ -416,9 +391,19 @@
 	</path>
 
 	<path id="lib.jee.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-8.*.jar"/>
 		<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
 	</path>
+	
+	<path id="lib.jaxws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jaxws-api-*.jar"/></path>
+	<path id="lib.javax.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.ejb-api-*.jar"/></path>
+	<path id="lib.javax.activaton.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="activation-*.jar"/></path>
+	<path id="lib.javax.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.jws-api-*.jar"/></path>
+	<path id="lib.javax.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.xml.soap-api-*.jar"/></path>
+	<path id="lib.javax.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.mail-*.jar"/></path>
+
+	<path id="lib.javax.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="javax.servlet-api-*.jar"/></path>
+	
 
     <!-- Client jars needed din order to run a WS client on Java 9 and later where the WS stack is not part of the SDK -->
     <path id="soapclient.classpath">
@@ -428,9 +413,16 @@
         <fileset dir="${ejbca.home}/lib/jee/soapclient">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${ejbca.home}/lib/ext">
-            <include name="geronimo-osgi-locator*.jar"/>
-        </fileset>
+        <fileset dir="${ejbca.home}/lib/hibernate">
+        	<include name="stax-ex-*.jar"/>
+       	</fileset>
+
+    	<fileset dir="${ejbca.home}/lib/jee">
+    		<include name="jaxws-api-*.jar"/>
+    		<include name="javax.jws-api-*.jar"/>
+    		<include name="activation-*.jar"/>
+    		<include name="javax.xml.soap-api-*.jar"/>
+    	</fileset>
     </path>
 
 	<path id="lib.servicemanifestbuilder.classpath">
@@ -450,10 +442,13 @@
 	</path>
 	
 	<path id="lib.cesecore-common.classpath"><fileset file="${mod.cesecore-common.lib}"/></path>
+	
+	<path id="lib.x509-common-util.classpath"><fileset file="${mod.x509-common-util.lib}"/></path>
 
 	<path id="lib.ejbca-common.classpath">
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.cesecore-common.classpath"/>
+		<path refid="lib.x509-common-util.classpath"/>
     	<path location="${mod.ejbca-common.lib}"/>
 	</path>
 
@@ -564,14 +559,6 @@
     <condition property="mod.va.exists">
         <available file="${mod.va.path}/build.xml" />
     </condition>
-        
-	<condition property="mod.externalra.exists">
-		<available file="${mod.externalra.path}/build.xml" />
-    </condition>
-	
-	<condition property="mod.externalra-scep.exists">
-		<available file="${mod.externalra-scep.path}/build.xml" />
-    </condition>
 
 	<condition property="ejbca-db-cli.available">
 		<available file="${mod.ejbca-entity.path}/src-cli/org" type="dir"/>
@@ -587,6 +574,10 @@
 
     <condition property="mod.ejbca-rest-certificate.exists">
         <available file="${mod.ejbca-rest-certificate.path}/build.xml"/>
+    </condition>
+
+	<condition property="mod.ejbca-rest-coap.exists">
+        <available file="${mod.ejbca-rest-coap.path}/build.xml"/>
     </condition>
 
     <condition property="mod.ejbca-rest-configdump.exists">
@@ -690,10 +681,6 @@
 	<condition property="mod.ct.exists">
 		<available file="${mod.ct.path}/build.xml" />
     </condition>
-
-	<condition property="mod.webtest.exists">
-		<available file="${mod.webtest.path}/build.xml" />
-	</condition>
 
 	<condition property="mod.proxy-ca.exists">
 		<available file="${mod.proxy-ca.path}/build.xml" />

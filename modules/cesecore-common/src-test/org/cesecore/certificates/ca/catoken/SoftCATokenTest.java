@@ -24,9 +24,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
 
 /**
- * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.
- * 
- * @version $Id$
+ * Tests soft keystore CA tokens.
  */
 public class SoftCATokenTest extends CATokenTestBase {
 
@@ -50,6 +48,17 @@ public class SoftCATokenTest extends CATokenTestBase {
     public void testCATokenECC() throws Exception {
     	CryptoToken cryptoToken = createSoftToken(true);
         doCaTokenECC("secp256r1", cryptoToken, getCaTokenProperties("ecctest" + CAToken.DEFAULT_KEYSEQUENCE));
+    }
+
+	@Test
+	public void testCATokenFalcon() throws Exception {
+	    CryptoToken cryptoToken = createSoftToken(true);
+	    doCaTokenFalcon("FALCON-512", cryptoToken, getCaTokenProperties("falcontest" + CAToken.DEFAULT_KEYSEQUENCE));
+	}
+    @Test
+    public void testCATokenDilithium() throws Exception {
+        CryptoToken cryptoToken = createSoftToken(true);
+        doCaTokenDilithium("DILITHIUM2", cryptoToken, getCaTokenProperties("dilithiumtest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
     @Test

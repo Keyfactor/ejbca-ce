@@ -16,9 +16,9 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * JSF MBean backing the ca cert sign page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class CertSignRequestMBean extends BaseManagedBean implements Serializable {
 

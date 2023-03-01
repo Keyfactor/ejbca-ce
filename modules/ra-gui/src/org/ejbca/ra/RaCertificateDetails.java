@@ -272,7 +272,7 @@ public class RaCertificateDetails {
 
             if (certificate instanceof X509Certificate) {
                 this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
-                this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
+                this.signatureAlgorithm = CertTools.getCertSignatureAlgorithmNameAsString(certificate);
 
                 final X509Certificate x509Certificate = (X509Certificate)certificate;
                 this.typeVersion = Integer.toString(x509Certificate.getVersion());
@@ -330,7 +330,7 @@ public class RaCertificateDetails {
                 this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
             } else if (certificate instanceof CardVerifiableCertificate) {
                 this.created = ValidityDate.formatAsUTCSecondsGranularity(CertTools.getNotBefore(certificate).getTime());
-                this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
+                this.signatureAlgorithm = CertTools.getCertSignatureAlgorithmNameAsString(certificate);
 
                 final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate)certificate;
                 this.typeVersion = String.valueOf(CVCertificateBody.CVC_VERSION);

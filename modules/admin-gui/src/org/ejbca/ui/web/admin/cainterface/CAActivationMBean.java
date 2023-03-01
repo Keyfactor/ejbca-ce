@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -53,7 +53,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * JSF Managed Bean or the CA Activation page of the Admin GUI.
  *
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class CAActivationMBean extends BaseManagedBean implements Serializable {
 

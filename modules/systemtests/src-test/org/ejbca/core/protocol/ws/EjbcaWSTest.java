@@ -12,6 +12,52 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimeZone;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -52,6 +98,7 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.cvc.CvCertificateUtility;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -134,8 +181,6 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.CesecoreException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.DateNotValidException;
-import org.ejbca.core.protocol.ws.client.gen.DateNotValidException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -152,6 +197,7 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
+import org.ejbca.cvc.CVCProvider;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -162,51 +208,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyManagementException;
-import java.security.KeyPair;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimeZone;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
@@ -283,9 +285,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     private final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
             EjbRemoteHelper.MODULE_TEST); 
     
-    private static String originalForbiddenChars;
+    private static char[] originalForbiddenChars;
     private final static SecureRandom secureRandom;
-    private final static String forbiddenCharsKey = "forbidden.characters";
+
     static {
         try {
             secureRandom = SecureRandom.getInstance("SHA1PRNG");
@@ -304,7 +306,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         fileHandles = setupAccessRights(WS_ADMIN_ROLENAME);
         CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        originalForbiddenChars = cesecoreConfigurationProxySession.getConfigurationValue(forbiddenCharsKey);
+        originalForbiddenChars = cesecoreConfigurationProxySession.getForbiddenCharacters();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new CvCertificateUtility());
+        Security.addProvider(new CVCProvider());   
     }
 
     @Before
@@ -319,7 +323,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         cleanUpAdmins(WS_TEST_ROLENAME);
         CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, originalForbiddenChars);
+        cesecoreConfigurationProxySession.setForbiddenCharacters(originalForbiddenChars);
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         for (File file : fileHandles) {
@@ -1308,8 +1312,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         approvalProfile.setNumberOfApprovalsRequired(1);
         final int approvalProfileId = createApprovalProfile(approvalProfile, true);
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.REVOCATION, approvalProfileId, caAdminSessionRemote, caSession, catoken);
             X509Certificate adminCert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME)).iterator().next();
             Set<X509Certificate> credentials = new HashSet<>();
@@ -1416,7 +1420,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             approvalProfile.setNumberOfApprovalsRequired(2);
             int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
             approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfile);
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             createTestCA();
             EndEntityInformation approvingAdmin = new EndEntityInformation(adminUsername, "CN=" + adminUsername, getTestCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -1432,12 +1436,12 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                                     StandardRules.CAACCESSBASE.resource()),
                             null));
             roleMemberSession.persist(intAdmin,
-                    new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(),
+                    new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(), RoleMember.NO_PROVIDER,
                             X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                             adminUsername, role.getRoleId(), null));
             roleId = role.getRoleId();
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caId = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.ADDEDITENDENTITY, approvalProfileId,
                     caAdminSessionRemote, caSession, catoken);
             KeyPair keys = KeyTools.genKeys("1024", "RSA");
@@ -1839,7 +1843,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void testEjbcaVersion() {
         final String version = ejbcaraws.getEjbcaVersion();
         // We don't know which specific version we are testing
-        final String expectedSubString = "EJBCA 7.";
+        final String expectedSubString = "EJBCA 8.";
         assertTrue("Wrong version: "+version + " (expected to contain " + expectedSubString + ")", version.contains(expectedSubString));    }
 
     @Test
@@ -1973,7 +1977,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void testTimeFormatConversionFromCustom() throws EjbcaException {
         final String relativeTimeFormat = "0123:12:31";
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Convert from UserDataVOWS with relative date format to endEntityInformation
         userDataVoWs.setStartTime(relativeTimeFormat);
         userDataVoWs.setEndTime(relativeTimeFormat);
@@ -2005,7 +2009,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 .format(nowWithOutSeconds);
         final String newTimeFormatWithZulu = newTimeFormatResponse.replace("+00:00", "Z");
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Test using a time format that ends with Z instead of +00.00
         userDataVoWs.setStartTime(newTimeFormatWithZulu);
         final EndEntityInformation endEntityInformationZ = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, false);
@@ -2019,7 +2023,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void testTimeFormatConversionFromInvalid() throws EjbcaException {
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Try some invalid end time date format
         userDataVoWs.setStartTime("2011-02-28 12:32:00+00:00"); // Valid
         userDataVoWs.setEndTime("12:32 2011-02-28"); // Invalid
@@ -2192,7 +2196,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void test48CertificateRequestWithForbiddenCharsDefault() throws Exception {
         long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, null);
+        cesecoreConfigurationProxySession.setForbiddenCharacters(null);
         testCertificateRequestWithSpecialChars(
                 "CN=test48CertificateRequestWithForbiddenCharsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
                 "CN=test48CertificateRequestWithForbiddenCharsDefault" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
@@ -2205,7 +2209,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void test49CertificateRequestWithForbiddenCharsDefinedAsDefault() throws Exception {
         long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
+        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         testCertificateRequestWithSpecialChars(
                 "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
                 "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
@@ -2216,15 +2220,14 @@ public class EjbcaWSTest extends CommonEjbcaWs {
      */
     @Test
     public void test50CertificateRequestWithForbiddenCharsDefinedBogus() throws Exception {
-        long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "tset");
+        cesecoreConfigurationProxySession.setForbiddenCharacters("tset".toCharArray());
         try {
             testCertificateRequestWithSpecialChars(
-                    "CN=test" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                    "CN=////" + rnd + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
+                    "CN=test" +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                    "CN=////" + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
         } finally {
             // we must remove this bogus settings otherwise next setupAdmin() will fail
-            cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "");
+            cesecoreConfigurationProxySession.setForbiddenCharacters(null);
         }
     }
 
@@ -2233,12 +2236,12 @@ public class EjbcaWSTest extends CommonEjbcaWs {
      */
     @Test
     public void test51CertificateRequestWithNoForbiddenChars() throws Exception {
-        long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "");
+        final String testName = "test50CertificateRequestWithForbiddenCharsDefinedBogus";
+        cesecoreConfigurationProxySession.setForbiddenCharacters("".toCharArray());
         // Using JDK8 \r is transformed into \n for some reason, expected will work if: O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE
         testCertificateRequestWithSpecialChars(
-                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
+                "CN=test51CertificateRequestWithNoForbiddenChars" + testName +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                "CN=test51CertificateRequestWithNoForbiddenChars" + testName +   ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
     }
 
 
@@ -2413,7 +2416,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
     @Test
     public void test57CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
+        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         final long rnd = Math.abs(secureRandom.nextLong());
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
@@ -2426,7 +2429,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
     @Test
     public void test58SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
+        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         final long rnd = Math.abs(secureRandom.nextLong());
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
@@ -3347,7 +3350,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     }
 
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {
-        String userName = "wsSpecialChars" + secureRandom.nextLong();
+        String userName = "wsSpecialChars";
+        deleteUser(userName);
         final UserDataVOWS userData = new UserDataVOWS();
         userData.setUsername(userName);
         userData.setPassword(PASSWORD);
@@ -3386,9 +3390,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             expectedSubjectDN = expectedSubjectDN.replace("\\r", "\\n");
             assertEquals(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "')" , expectedSubjectDN,
                     resultingSubjectDN);
+        } finally {
+            deleteUser(userName);
         }
-
-        deleteUser(userName);
     }
     
     /**
@@ -3450,6 +3454,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     private void deleteUser(final String username) {
         try {
             endEntityManagementSession.deleteUser(intAdmin, username);
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
         } catch (NoSuchEndEntityException e) {
             // NOPMD: Ignore
         } catch (AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {

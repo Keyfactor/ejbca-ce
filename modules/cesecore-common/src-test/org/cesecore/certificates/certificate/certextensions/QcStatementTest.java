@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
@@ -219,18 +219,18 @@ public class QcStatementTest {
         ASN1Sequence roleseqinner1 = ASN1Sequence.getInstance(roleseq.getObjectAt(0));
         ASN1ObjectIdentifier roleId1 = ASN1ObjectIdentifier.getInstance(roleseqinner1.getObjectAt(0));
         assertEquals("RoleId is not what we set", QcStatement.id_etsi_psd2_role_psp_as, roleId1.getId());        
-        DERUTF8String roleName1 = DERUTF8String.getInstance(roleseqinner1.getObjectAt(1));
+        ASN1UTF8String roleName1 = ASN1UTF8String.getInstance(roleseqinner1.getObjectAt(1));
         assertEquals("RoleName is not what we set", "PSP_AS", roleName1.toString());        
         ASN1Sequence roleseqinner2 = ASN1Sequence.getInstance(roleseq.getObjectAt(1));
         ASN1ObjectIdentifier roleId2 = ASN1ObjectIdentifier.getInstance(roleseqinner2.getObjectAt(0));
         assertEquals("RoleId is not what we set", QcStatement.id_etsi_psd2_role_psp_ic, roleId2.getId());        
-        DERUTF8String roleName2 = DERUTF8String.getInstance(roleseqinner2.getObjectAt(1));
+        ASN1UTF8String roleName2 = ASN1UTF8String.getInstance(roleseqinner2.getObjectAt(1));
         assertEquals("RoleName is not what we set", "PSP_IC", roleName2.toString());        
         // The second one is the NCAName
-        DERUTF8String ncaname = DERUTF8String.getInstance(psd2seq.getObjectAt(1));
+        ASN1UTF8String ncaname = ASN1UTF8String.getInstance(psd2seq.getObjectAt(1));
         assertEquals("NCAName is not what we set", "PrimeKey Solutions AB, Solna Access, Plan A8, Sundbybergsvägen 1, SE-17173 Solna", ncaname.toString());
         // The third one is the NCAId
-        DERUTF8String ncaid = DERUTF8String.getInstance(psd2seq.getObjectAt(2));
+        ASN1UTF8String ncaid = ASN1UTF8String.getInstance(psd2seq.getObjectAt(2));
         assertEquals("NCAId is not what we set", "SE-PK", ncaid.toString());
         
     }
