@@ -26,7 +26,8 @@ public class CertRevocationDto implements Serializable {
     String issuerDN;
     String certificateSN;
     Integer reason;
-    Date revocationDate; 
+    Date revocationDate;
+    Date invalidityDate;
     Integer certificateProfileId;
     boolean checkDate;    
     
@@ -73,6 +74,15 @@ public class CertRevocationDto implements Serializable {
         this.revocationDate = revocationDate;
     }
 
+    public Date getInvalidityDate() {
+        return invalidityDate;
+    }
+
+    public void setInvalidityDate(Date invalidityDate) {
+        this.invalidityDate = invalidityDate;
+    }
+
+    
     public Integer getCertificateProfileId() {
         return certificateProfileId;
     }

@@ -793,11 +793,11 @@ public interface RaMasterApi {
             throws ApprovalException, WaitingForApprovalException;
 
     /**
-     * @see EndEntityManagementSessionLocal#revokeCert(AuthenticationToken, BigInteger, Date, String, int, boolean)
+     * @see EndEntityManagementSessionLocal#revokeCert(AuthenticationToken, BigInteger, Date, Date, String, int, boolean)
      * @throws CADoesntExistsException in addition to the above throws if the CA (from issuer DN) is not handled by this instance, fail-fast
      * @since RA Master API version 3 (EJBCA 6.12.0)
      */
-    void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
+     void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException;
 

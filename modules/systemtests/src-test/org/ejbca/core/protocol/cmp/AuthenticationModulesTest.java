@@ -1499,7 +1499,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             fingerprint3 = CertTools.getFingerprintAsString(cert2);
 
             // Step 5, revoke the certificate and try again
-            this.internalCertStoreSession.setRevokeStatus(ADMIN, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+            this.internalCertStoreSession.setRevokeStatus(ADMIN, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
             final byte[] resp3 = sendCmpHttp(ba, 200, ALIAS);
             // This should have failed
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()

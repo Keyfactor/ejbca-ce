@@ -134,7 +134,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                     log.info("Revoking '" + serialHex + "' " + "(" + serialNumber.toString() + ")");
                     try {
                         //log.info("Reason code: " + reason);
-                        endentityManagementSession.revokeCert(authenticationToken, serialNumber, crlEntry.getRevocationDate(), issuerDn, reasonCode, false);
+                        endentityManagementSession.revokeCert(authenticationToken, serialNumber, crlEntry.getRevocationDate(), /*crlEntry.getInvalidityDate()*/null, issuerDn, reasonCode, false);
                     } catch (AlreadyRevokedException e) {
                         log.warn("Failed to revoke '" + serialHex + "'. (Status might be 'Archived'.) Error message was: " + e.getMessage());
                     } catch (ApprovalException | RevokeBackDateNotAllowedForProfileException | NoSuchEndEntityException | WaitingForApprovalException e) {

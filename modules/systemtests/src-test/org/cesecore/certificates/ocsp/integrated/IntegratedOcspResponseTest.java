@@ -702,7 +702,7 @@ public class IntegratedOcspResponseTest {
         OCSPReq req = gen.build();
 
         // Now revoke the ocspCertificate
-        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), expectedRevocationReason);
+        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), null, expectedRevocationReason);
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
