@@ -12,6 +12,38 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.naming.InvalidNameException;
+import javax.persistence.EntityManager;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -36,6 +68,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CABase;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -120,37 +153,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
-import org.ejbca.util.PrinterManager;
 import org.ejbca.util.dn.DistinguishedName;
 import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.naming.InvalidNameException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import java.awt.print.PrinterException;
-import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 /**
  * Manages end entities in the database using UserData Entity Bean.
@@ -163,6 +168,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
+    @Resource
+    private TransactionSynchronizationRegistry registry;
+    private PerTransactionData perTransactionData;
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
@@ -195,10 +203,32 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+
+    private enum UserDataChangeMode {
+        IGNORE,
+        IF_NO_CONFLICT,
+        MANDATORY_CHANGE
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        perTransactionData = new PerTransactionData(registry);
+    }
 
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration() {
         return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    }
+
+    @Override
+    public EndEntityInformation initializeEndEntityTransaction(final String username) {
+        EndEntityInformation existingUser = endEntityAccessSession.findUser(username);
+        existingUser = (existingUser != null ? new EndEntityInformation(existingUser) : null);
+        final OriginalEndEntity originalInfo = new OriginalEndEntity(existingUser);
+        perTransactionData.setOriginalEndEntity(username, originalInfo);
+        return existingUser;
     }
 
     @Override
@@ -420,7 +450,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapOrder);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
-                CertTools.checkNameConstraints(caCert, subjectDNName, subjectAltName);
+                CABase.checkNameConstraints(caCert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
                 e.setErrorCode(ErrorCode.NAMECONSTRAINT_VIOLATION);
                 throw e;
@@ -475,7 +505,32 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 if (existsUser(userData.getUsername())){
                     throw new EndEntityExistsException("User " + userData.getUsername() + " already exists.");
                 }
-                entityManager.persist(userData);
+                if (!perTransactionData.couldSuppressUserDataModification(username)) {
+                    entityManager.persist(userData);
+                } else {
+                    // Instead of calling entityManager.persist() here, we use a beforeCompletion callback
+                    // that gets called at the end of the transaction.
+                    // This is necessary since we want to remove the UserData entity from the transaction
+                    // in some cases (see suppressUnwantedUserDataChanges()).
+                    perTransactionData.setPendingUserData(userData);
+                    registry.registerInterposedSynchronization(new Synchronization() {
+                        @Override
+                        public void beforeCompletion() {
+                            final UserData user = perTransactionData.getPendingUserData(username);
+                            if (user != null) {
+                                log.debug("Adding end-entity in beforeCompletion of transaction");
+                                entityManager.persist(userData);
+                                entityManager.flush();
+                            } else {
+                                log.debug("Not adding end-entity in beforeCompletion of transaction");
+                            }
+                            perTransactionData.clearEndEntityTransactionInfo(username);
+                        }
+                        @Override
+                        public void afterCompletion(final int transactionStatus) {
+                        }
+                    });
+                }
                 // Although EndEntityInformation should always have a null password for
                 // autogenerated end entities, the notification framework
                 // expect it to exist. Since nothing else but printing is done after
@@ -488,13 +543,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     approvalRequestID = endEntity.getExtendedInformation().getAddEndEntityApprovalRequestId();
                 }
                 sendNotification(authenticationToken, endEntity, EndEntityConstants.STATUS_NEW, approvalRequestID, lastApprovingAdmin, null);
-                if (type.contains(EndEntityTypes.PRINT)) {
-                    print(profile, endEntity);
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Type ("+type.getHexValue()+") does not contain SecConst.USER_PRINT, no print job created.");
-                    }
-                }
                 logAuditEvent(
                         EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.SUCCESS,
                         authenticationToken, caId, null, username,
@@ -614,6 +662,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Rename the end entity. Username is a primary key of the UserData table and we need to use JPA for this to get rowProtection.
         // we need to add a new end entity and remove the old one.
+        perTransactionData.clearEndEntityTransactionInfo(currentUsername);
         final long now = System.currentTimeMillis();
         final UserData userDataClone = currentUserData.clone();
         userDataClone.setUsername(newUsername);
@@ -818,7 +867,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.info(msg);
             throw new NoSuchEndEntityException(msg);
         }
-        final EndEntityInformation originalCopy = userData.toEndEntityInformation();
+        final EndEntityInformation originalCopy = new EndEntityInformation(userData.toEndEntityInformation());
         
         // Merge all DN and SAN values from previously saved end entity
         if (profile.getAllowMergeDn()) {
@@ -934,7 +983,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapOrder);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
-                CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName);
+                CABase.checkNameConstraints(cacert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
                 e.setErrorCode(ErrorCode.NAMECONSTRAINT_VIOLATION);
                 throw e;
@@ -1039,6 +1088,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // use the old time modified in any notifications
             final EndEntityInformation notificationEndEntityInformation = userData.toEndEntityInformation();
             userData.setTimeModified(new Date().getTime());
+            perTransactionData.setPendingUserData(userData);
             // We also want to be able to handle non-clear generated passwords in the notification, although EndEntityInformation
             // should always have a null password for autogenerated end entities the notification framework expects it to
             // exist.
@@ -1060,13 +1110,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
             // Add the diff later on, in order to have it after the "msg"
             if (newStatus != oldStatus) {
-                // Only print stuff on a printer on the same conditions as for
-                // notifications, we also only print if the status changes, not for
-                // every time we press save
-                if (type.contains(EndEntityTypes.PRINT)
-                        && (newStatus == EndEntityConstants.STATUS_NEW || newStatus == EndEntityConstants.STATUS_KEYRECOVERY || newStatus == EndEntityConstants.STATUS_INITIALIZED)) {
-                    print(profile, endEntityInformation);
-                }
                 logAuditEvent(
                         EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS,
                         authenticationToken, caId, null, username,
@@ -1183,9 +1226,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     };
 
     @Override
-    public int decRequestCounter(
-            String username
-    ) throws NoSuchEndEntityException, ApprovalException, WaitingForApprovalException {
+    public int decRequestCounter(String username) throws NoSuchEndEntityException, ApprovalException, WaitingForApprovalException {
         if (log.isTraceEnabled()) {
             log.trace(">decRequestCounter(" + username + ")");
         }
@@ -1255,12 +1296,124 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Local admin call from EndEntityManagementSession.decRequestCounter"));
             setUserStatus(admin, data1, EndEntityConstants.STATUS_GENERATED, 0, null);
         }
+        suppressUnwantedUserDataChanges(perTransactionData.getOriginalEndEntity(username), data1);
         if (log.isTraceEnabled()) {
             log.trace("<decRequestCounter(" + username + "): " + counter);
         }
         return counter;
     }
-	
+
+    @Override
+    public void suppressUnwantedUserDataChanges(final String username) {
+        final OriginalEndEntity originalInfo = perTransactionData.getOriginalEndEntity(username);
+        if (originalInfo != null) { // We should always update for status changes, so we must update if the original state is not known
+            final UserData newUserData = endEntityAccessSession.findByUsername(username);
+            suppressUnwantedUserDataChanges(originalInfo, newUserData);
+        }
+    }
+
+    private void suppressUnwantedUserDataChanges(final OriginalEndEntity originalEndEntity, final UserData newUserData) {
+        switch (classifyUserDataChanges(originalEndEntity, newUserData)) {
+        case IGNORE:
+            entityManager.detach(newUserData);
+            break;
+        case IF_NO_CONFLICT:
+            entityManager.detach(newUserData);
+            try {
+                endEntityManagementSession.changeUserInNewTransaction(newUserData, !originalEndEntity.isExisting());
+            } catch (EJBException e) {
+                if (e.getCause() instanceof OptimisticLockException) {
+                    log.info("User '" + newUserData.getUsername() + "' was updated in concurrent transaction, and will not be updated. The OptimisticLockException was ignored.");
+                } else {
+                    throw e;
+                }
+            }
+            break;
+        case MANDATORY_CHANGE:
+            // Keep the UserData changes in the current transaction
+            if (perTransactionData.getPendingUserData(newUserData.getUsername()) != null) {
+                entityManager.persist(newUserData);
+            }
+            break;
+        }
+        perTransactionData.clearEndEntityTransactionInfo(newUserData.getUsername());
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void changeUserInNewTransaction(final UserData newUserData, final boolean isNew) {
+            if (isNew) {
+                entityManager.persist(newUserData);
+            } else {
+                entityManager.merge(newUserData);
+            }
+    }
+
+    /**
+     * Classifies a change in the UserData table:
+     * <ul>
+     * <li>Actual status changes result in MANDATORY_CHANGE, to ensure that NEW -> GENERATED changes are updated in the database.
+     * <li>Other changes, and new additions of end-entities, result in IF_NO_CONFLICT.
+     * <li>IGNORE is returned when there are no changes (besides timestamp update etc.)
+     */
+    private UserDataChangeMode classifyUserDataChanges(final OriginalEndEntity originalInfo, final UserData newUserData) {
+        // We should always update for status changes, so we must update if the original state is not known
+        if (originalInfo == null) {
+            return UserDataChangeMode.MANDATORY_CHANGE;
+        }
+        // Always add new end-entities
+        if (!originalInfo.isExisting()) {
+            return UserDataChangeMode.IF_NO_CONFLICT;
+        }
+        final EndEntityInformation newCopy = newUserData.toEndEntityInformation();
+        final EndEntityInformation originalCopy = originalInfo.getEndEntity();
+        // Force update on actual status change
+        if (newUserData.getStatus() != originalCopy.getStatus()) {
+            return UserDataChangeMode.MANDATORY_CHANGE;
+        }
+        // Force update on request counter change
+        final ExtendedInformation newExtendedInfo = newUserData.getExtendedInformation();
+        final ExtendedInformation oldExtendedInfo = originalCopy.getExtendedInformation();
+        if ((newExtendedInfo != null) != (oldExtendedInfo != null)) {
+            return UserDataChangeMode.MANDATORY_CHANGE;
+        }
+        if (newExtendedInfo != null) {
+            if (!StringUtils.equals(
+                    newExtendedInfo.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER),
+                    oldExtendedInfo.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER))) {
+                return UserDataChangeMode.MANDATORY_CHANGE;
+            }
+        }
+        // Modification time is ignored
+        newCopy.setTimeModified(originalCopy.getTimeModified());
+        if (newUserData.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+            // Passwords are ignored because they are typically hashed.
+            // This is only safe to do if the end-entity will end in GENERATED state.
+            originalCopy.setPassword(null);
+            newCopy.setPassword(null);
+        }
+        final Map<String, String[]> diff = originalCopy.getDiff(newCopy);
+        UserDataChangeMode changeMode = UserDataChangeMode.IGNORE;
+        for (final Map.Entry<String,String[]> entry : diff.entrySet()) {
+            final String[] values = entry.getValue();
+            final String oldValue = values[0];
+            final String newValue = values[1];
+            // Sometimes we end up with (null, "") or ("", null) here.
+            // For example with SubjectAltName, but lets handle it for all attributes.
+            if (StringUtils.trimToNull(oldValue) == null && StringUtils.trimToNull(newValue) == null) {
+                continue;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Key " + entry.getKey() + " has changed from '" + oldValue + "' to '" + newValue + "'. Will update end-entity");
+            }
+            changeMode = UserDataChangeMode.IF_NO_CONFLICT;
+        }
+        if (log.isDebugEnabled() && changeMode == UserDataChangeMode.IGNORE) {
+            log.debug("Will not update UserData of '" + originalCopy.getUsername() + "' because there are no changes.");
+        }
+        return changeMode;
+    }
+
     @Override
     public void cleanUserCertDataSN(String userName) throws NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
@@ -1432,6 +1585,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final Date timeModified = new Date();
         data1.setStatus(status);
         data1.setTimeModified(timeModified.getTime());
+        perTransactionData.setPendingUserData(data1);
         logAuditEvent(
                 EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS,
                 authenticationToken, caId, null, username,
@@ -2090,28 +2244,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         return count > 0;
     }
-    
-    private void print(EndEntityProfile profile, EndEntityInformation userdata) {
-        try {
-            if (log.isDebugEnabled()) {
-                log.debug("profile.getUsePrinting(): "+profile.getUsePrinting());
-            }
-            if (profile.getUsePrinting()) {
-                String[] pINs = new String[1];
-                pINs[0] = userdata.getPassword();
-                PrinterManager.print(profile.getPrinterName(), profile.getPrinterSVGFileName(), profile.getPrinterSVGData(),
-                        profile.getPrintedCopies(), 0, userdata, pINs, new String[0]);
-            }
-        } catch (PrinterException e) {
-            String msg = intres.getLocalizedMessage("ra.errorprint", userdata.getUsername(), e.getMessage());
-            log.error(msg, e);
-        }
-    }
 
-    private void sendNotification(
-            final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation, final int newStatus,
-            final int approvalRequestID, final AuthenticationToken lastApprovingAdmin, CertificateDataWrapper revokedCertificate
-    ) {
+    private void sendNotification(final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation, final int newStatus,
+            final int approvalRequestID, final AuthenticationToken lastApprovingAdmin, CertificateDataWrapper revokedCertificate) {
         if (endEntityInformation == null) {
             if (log.isDebugEnabled()) {
                 log.debug("No UserData, no notification sent.");

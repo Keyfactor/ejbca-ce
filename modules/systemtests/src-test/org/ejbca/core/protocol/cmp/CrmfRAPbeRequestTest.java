@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -41,6 +42,8 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.bouncycastle.pqc.jcajce.spec.NTRUParameterSpec;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -94,6 +97,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -146,6 +151,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             userDN = new X500Name(USERDN_COMMUNITY);
             issuerDN = ISSUERDN_COMMUNITY;
         }
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
     }
 
     public CrmfRAPbeRequestTest() throws Exception {
@@ -238,6 +245,35 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     }
 
     @Test
+    public void testCrmfHttpOkUserWithPQC() throws Exception {
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        // We need custom notBefore and after for the verifications of the test
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_WEEK, -1);
+        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+        // in validity
+        Date notBefore = cal.getTime();
+        cal.add(Calendar.DAY_OF_WEEK, 3);
+        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+        // in validity
+        Date notAfter = cal.getTime();
+
+        KeyPair falconKeyPair = KeyTools.genKeys("falcon-512", "falcon-512");
+        final PKIMessage certRequestFalcon = genCertReq(issuerDN, userDN, falconKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
+        runCrmfHttpOkUser(certRequestFalcon, nonce, transid, notAfter, false, null);
+
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("NTRU", BouncyCastlePQCProvider.PROVIDER_NAME);
+        keygen.initialize(NTRUParameterSpec.ntruhrss701);
+        KeyPair ntruKeyPair = keygen.generateKeyPair();
+
+        final PKIMessage certRequestNTRU = genCertReq(issuerDN, userDN, ntruKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
+        runCrmfHttpOkUser(certRequestNTRU, nonce, transid, notAfter, false, null);
+    }
+
+    @Test
     public void testCrmfHttpOkUserWithSAN() throws Exception {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -312,7 +348,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
         CertResponse certResponse = certRepMessage.getResponse()[0];
         PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
-        assertEquals("Wrong error", "Subject DN has multi value RDNs, which is not allowed.", pkiStatusInfo.getStatusString().getStringAt(0).toString());
+        assertEquals("Wrong error", "Subject DN has multi value RDNs, which is not allowed.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
         
         // Enable multi-value RDNs in the EE profile and try again, should still fail due to no UID allowed in profile
         eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);
@@ -329,7 +365,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         certRepMessage = (CertRepMessage) pkiBody.getContent();
         certResponse = certRepMessage.getResponse()[0];
         pkiStatusInfo = certResponse.getStatus();
-        assertEquals("Wrong error", "Wrong number of UID fields in Subject DN.", pkiStatusInfo.getStatusString().getStringAt(0).toString());
+        assertEquals("Wrong error", "Wrong number of UID fields in Subject DN.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
         
         // Add UID to profile, so the request will succeed
         eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);
@@ -561,8 +597,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
            
             
             // Generate CA with approvals for revocation enabled
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(ADMIN, caname, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(ADMIN, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             int caID = RevocationApprovalTest.createApprovalCA(ADMIN, caname, ApprovalRequestType.REVOCATION, approvalProfileId, this.caAdminSession, this.caSession, catoken);
             // Get CA cert
             cainfo = (X509CAInfo) this.caSession.getCAInfo(ADMIN, caID);

@@ -135,6 +135,14 @@ public class ProfileSessionBean implements ProfileSessionLocal {
         return ret;
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public long getNumberOfProfileByType(final String profileType) {
+        TypedQuery<Long> query = entityManager.createQuery("SELECT count(a) FROM ProfileData a WHERE a.profileType=:profileType", Long.class);
+        query.setParameter("profileType", profileType);
+        return query.getSingleResult();
+    }
+    
     private boolean isFreeProfileId(final int id) {
         boolean foundfree = false;
         if (findById(id) == null) {

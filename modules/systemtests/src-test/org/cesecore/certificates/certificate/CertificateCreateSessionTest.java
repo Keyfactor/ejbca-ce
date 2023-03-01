@@ -1233,7 +1233,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 assertTrue("Should not create new certificate for this user with the same key", false);
             } catch (CesecoreException e) {
                 assertEquals("User 'enforceKeyRenewalTestUser' is not allowed to use same key as another certificate is using.", e.getMessage());
-                assertEquals(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS, e.getErrorCode());
+                assertEquals(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS, e.getErrorCode());
             }
         } finally {
             // Configure the CA as it was before the test

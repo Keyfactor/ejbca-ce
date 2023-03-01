@@ -40,6 +40,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -98,6 +99,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
@@ -203,7 +205,14 @@ public class CmpMessageHelper {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Signing CMP message with signature alg: " + signatureAlgorithmName);
         }
-        Signature sig = Signature.getInstance(signatureAlgorithmName, provider);
+        final String prov;
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+            // Ability to use the PQC provider
+            prov = CryptoProviderTools.getProviderNameFromAlg(signatureAlgorithmName);
+        } else {
+            prov = provider;
+        }
+        Signature sig = Signature.getInstance(signatureAlgorithmName, prov);
         sig.initSign(key);
         sig.update(getProtectedBytes(head, pkiMessage.getBody()));
         final PKIMessage protectedPkiMessage;
@@ -687,7 +696,7 @@ public class CmpMessageHelper {
         for (int i = 1; i < seqSize; i++) {
             final ASN1Encodable o4 = ASN1Sequence.getInstance(o2).getObjectAt(i);
             if (o4 instanceof DERBitString) {
-                reasonbits = new ReasonFlags(DERBitString.getInstance(o4));
+                reasonbits = new ReasonFlags(DERBitString.convert(ASN1BitString.getInstance(o4)));
             } else if (o4 instanceof DERGeneralizedTime) {
                 DERGeneralizedTime.getInstance(o4); // bad since time, not used in the bouncycastle class
             } else if (o4 instanceof DERSequence) {

@@ -267,7 +267,7 @@ public abstract class CryptoTokenTestBase {
      * @throws CryptoTokenAuthenticationFailedException
      * @throws InvalidAlgorithmParameterException
      */
-    protected void doCryptoTokenECC(CryptoToken cryptoToken, String curve1, int keyLen1, String curve2, int keyLen2) throws KeyStoreException,
+    protected void doCryptoTokenECCAndPQ(CryptoToken cryptoToken, String curve1, int keyLen1, String curve2, int keyLen2) throws KeyStoreException,
             NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException, NoSuchProviderException, InvalidKeyException,
             SignatureException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
 

@@ -1415,5 +1415,9 @@ a.button:active {
 .card.prio-warn { background-color: #ffcc00; }
 .card.prio-error { background-color: #ff8566; }
 
+/* Set on document.documentElement */
+.waiting { cursor: wait; opacity: 0.5; }
+.waiting input { cursor: wait; }
+
 /*--------------------------------------------------------------------------*/
 /* EOF */

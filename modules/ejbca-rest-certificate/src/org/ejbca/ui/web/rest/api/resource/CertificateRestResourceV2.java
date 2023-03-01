@@ -14,7 +14,6 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.EJB;

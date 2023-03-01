@@ -131,8 +131,9 @@ public class RaAuthenticationHelper implements Serializable {
             }
             if (authenticationToken == null) {
                 // Instead of checking httpServletRequest.isSecure() (connection deemed secure by container), we check if a TLS session is present
-                final boolean confidentialTransport = currentTlsSessionId != null;
-                authenticationToken = webAuthenticationProviderSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), confidentialTransport);
+                Object cipherSuite = httpServletRequest.getAttribute("javax.servlet.request.cipher_suite");
+                final boolean confidentialTransport = cipherSuite != null;
+                authenticationToken = webAuthenticationProviderSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), confidentialTransport );
             }
         }
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);

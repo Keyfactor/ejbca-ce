@@ -75,6 +75,8 @@ public class DNFieldExtractor implements Serializable {
     public static final int ROLE = 70;
     public static final int DESCRIPTION = 60;
     public static final int ORGANIZATIONIDENTIFIER = 106;
+    public static final int VID = 107;
+    public static final int PID = 108;
 
     // Subject Alternative Names.
     public static final int OTHERNAME = 16;
@@ -204,7 +206,7 @@ public class DNFieldExtractor implements Serializable {
      */
     public final void setDN(final String dninput, final int type) throws IllegalArgumentException {
         this.type = type;
-        final ArrayList<Integer> ids;
+        final List<Integer> ids;
         if (type == TYPE_SUBJECTDN) {
             ids = DnComponents.getDnDnIds();
         } else if (type == TYPE_SUBJECTALTNAME) {
@@ -234,7 +236,7 @@ public class DNFieldExtractor implements Serializable {
                             // If DN is multi valued we will split it up and create a non-multi-value DN string, in order to make it easy to validate the different 
                             // fields against required fields and validators in an EE profile
                             hasMultiValueRDN = true;
-                            AttributeTypeAndValue avas[] = rdn.getTypesAndValues();
+                            AttributeTypeAndValue[] avas = rdn.getTypesAndValues();
                             for (AttributeTypeAndValue ava : avas) {
                                 // We only allow a subset of DN attributes to be multi-valued however
                                 if (!allowedMulti.contains(ava.getType())) {
@@ -260,8 +262,8 @@ public class DNFieldExtractor implements Serializable {
                 final String[] dnexploded = LDAPDN.explodeDN(dn, false);
                 for (int i = 0; i < dnexploded.length; i++) {
                     boolean exists = false;
-                    for(Integer id : ids) {
-                        Integer number = fieldnumbers.get(id);
+                    for(final int id : ids) {
+                        int number = fieldnumbers.get(id);
                         String field;
                         if (type == TYPE_SUBJECTDN) {
                             field = DnComponents.getDnExtractorFieldFromDnId(id);

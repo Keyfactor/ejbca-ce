@@ -43,6 +43,29 @@
 			<f:selectItems value="#{editService.availablePublishers}" />
 		</h:selectManyListbox>
 	</h:panelGroup>
+	
+	<h:panelGroup>
+		<h:outputText value="#{web.text.PUBLISHERQUEUEMAX}" />		
+	</h:panelGroup>
+	<h:panelGroup>
+	<ui:remove>
+		<!--
+		The below javascript only allows the input of numbers
+		  -->
+	</ui:remove>
+			<h:inputText id="publisherQueueMax"
+				onkeypress="if(event.which &lt; 48 || event.which &gt; 57) return false;"
+				disabled="#{not editService.hasEditRights}" size="10"
+				value="#{editService.publishWorkerType.maxNumberOfEntriesToPublish}">
+				 <f:validator validatorId="noNegativeNumbersValidator"/>
+			</h:inputText>
+			<ui:remove>
+				<!-- Solve spacing with CSS  -->
+			</ui:remove>
+			<f:verbatim>&#xA0;&#xA0;</f:verbatim>
+			<h:outputText value="#{web.text.PUBLISHERQUEUEMAX_HELP}"
+			styleClass="help" />
+		</h:panelGroup>
 
 </ui:composition>
 </body>

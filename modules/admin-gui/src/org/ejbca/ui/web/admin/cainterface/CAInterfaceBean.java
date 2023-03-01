@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,7 +50,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -95,6 +93,7 @@ import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -110,7 +109,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -118,9 +116,10 @@ import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
-import org.ejbca.ui.web.admin.ca.EditCaUtil;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -132,6 +131,9 @@ public class CAInterfaceBean implements Serializable {
 	private static final long serialVersionUID = 3L;
 	private static final Logger log = Logger.getLogger(CAInterfaceBean.class);
 	private static final String LIST_SEPARATOR = ";";
+	
+    private static final String DEFAULT_KEY_SIZE = "2048";
+
 
 	private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private AuthorizationSessionLocal authorizationSession;
@@ -376,7 +378,7 @@ public class CAInterfaceBean implements Serializable {
                 }
                 // Next, create a CA signing key
                 final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(caInfoDto.getSignatureAlgorithmParam());
-                String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + EditCaUtil.DEFAULT_KEY_SIZE;
+                String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + DEFAULT_KEY_SIZE;
                 if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
                 } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
@@ -395,20 +397,20 @@ public class CAInterfaceBean implements Serializable {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED25519;
                 } else if(AlgorithmConstants.KEYALGORITHM_ED448.equals(caSignKeyAlgo)) {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED448;
-                } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
+                } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-                } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
+                } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
                 }
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), caSignKeySpec);
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), KeyGenParams.builder(caSignKeySpec).build());
                 if(caInfoDto.getCaType()!=CAInfo.CATYPE_CITS) {
                     // Next generate recommended RSA key pairs for decryption and test
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), AlgorithmConstants.KEYALGORITHM_RSA + "2048");
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), AlgorithmConstants.KEYALGORITHM_RSA + "1024");
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_RSA + "2048").build());
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_RSA + "1024").build());
                 } else {
                     // encryption key is only 256bit for now
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), "secp256r1");
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), "secp256r1");
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), KeyGenParams.builder("secp256r1").build());
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), KeyGenParams.builder("secp256r1").build());
                 }
             }
             return actionCreateCaMakeRequestInternal(caInfoDto, approvals, availablePublisherValues, availableKeyValidatorValues,
@@ -487,9 +489,6 @@ public class CAInterfaceBean implements Serializable {
         PublicKey encryptionKey = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
         caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
                 
-        if (caInfoDto.getSignKeySpec() == null || caInfoDto.getSignKeySpec().length() == 0) {
-            throw new Exception("No extended CA service key specification supplied.");
-        }
         if (caInfoDto.getKeySequenceFormatAsString() == null) {
             caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         } else {
@@ -579,7 +578,7 @@ public class CAInterfaceBean implements Serializable {
 
 	            final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null) ?
                         Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
-                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos();
 	            if (caInfoDto.getCrlPeriod() != 0 && !illegaldnoraltname) {
                     X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
                             .setSubjectDn(caInfoDto.getCaSubjectDN())
@@ -730,7 +729,7 @@ public class CAInterfaceBean implements Serializable {
 
                 final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null) ?
                         Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
-                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos();
                 if (caInfoDto.getCrlPeriod() != 0 && !illegaldnoraltname) {
                     SshCaInfo.SshCAInfoBuilder sshCAInfoBuilder = new SshCaInfo.SshCAInfoBuilder()
                             .setSubjectDn(caInfoDto.getCaSubjectDN())
@@ -790,7 +789,7 @@ public class CAInterfaceBean implements Serializable {
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
                 // TODO: Validations on CaInfoDTO
 
-                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos();
                 final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
                 CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder()
                                            .setName(caInfoDto.getCaName())
@@ -910,30 +909,9 @@ public class CAInterfaceBean implements Serializable {
         return isCA && certProfile.getUseNameConstraints();
     }
 
-    public List<ExtendedCAServiceInfo> makeExtendedServicesInfos(String keySpec, String subjectdn, boolean serviceCmsActive) {
-	    String keyType = AlgorithmConstants.KEYALGORITHM_RSA;
-        try {
-            Integer.parseInt(keySpec);
-        } catch (NumberFormatException e) {
-            if (keySpec.startsWith("DSA")) {
-                keyType = AlgorithmConstants.KEYALGORITHM_DSA;
-            } else if (keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
-                keyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-            } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
-                keyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
-            } else {
-                keyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
-            }
-        }
-
-        final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
-
+    public List<ExtendedCAServiceInfo> makeExtendedServicesInfos() {
         List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         // Create and active External CA Services.
-        extendedcaservices.add(
-                new CmsCAServiceInfo(cmsactive,
-                        "CN=CMSCertificate, " + subjectdn, "",
-                        keySpec, keyType));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         return extendedcaservices;
     }
@@ -1041,8 +1019,7 @@ public class CAInterfaceBean implements Serializable {
                    throw new ParameterException(ejbcawebbean.getText("CRLPARTITIONNUMBERINVALID"));
                }
                // Update extended CA Service data.
-               final String signkeyspec = caInfoDto.getSignKeySpec() != null ? caInfoDto.getSignKeySpec() : EditCaUtil.DEFAULT_KEY_SIZE;
-               List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(signkeyspec, subjectDn, caInfoDto.isServiceCmsActive());
+               List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos();
 
                final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
                        ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
@@ -1141,8 +1118,7 @@ public class CAInterfaceBean implements Serializable {
                 final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
                         ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize())
                         : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
-                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(),
-                        caInfoDto.isServiceCmsActive());
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos();
 
                 SshCaInfo.SshCAInfoBuilder sshCAInfoBuilder = new SshCaInfo.SshCAInfoBuilder().setSubjectDn(caInfoDto.getCaSubjectDN())
                         .setName(caInfoDto.getCaName()).setStatus(CAConstants.CA_ACTIVE)
@@ -1163,7 +1139,7 @@ public class CAInterfaceBean implements Serializable {
                         .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
-                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos();
                 CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder().setCaId(caid)
                                                                                                    .setName(caInfoDto.getCaName())
                                                                                                    .setDescription(caInfoDto.getDescription())
@@ -1375,36 +1351,6 @@ public class CAInterfaceBean implements Serializable {
         return ret;
 	}
 
-    public List<Entry<String,String>> getAvailableKeySpecs() {
-        final List<Entry<String,String>> ret = new ArrayList<>();
-        // Legacy idea: Never use larger keys than 2048 bit RSA for CMS signing
-        // Reference: RFC 6485 - The Profile for Algorithms and Key Sizes for Use in the Resource PKI. [§ 3, and 5]
-        final int[] SIZES_RSA = {1024, 1536, 2048, 3072, 4096/*, 6144, 8192*/};
-        final int[] SIZES_DSA = {1024};
-        for (int size : SIZES_RSA) {
-            ret.add(new SimpleEntry<>(String.valueOf(size), "RSA "+size));
-        }
-        for (int size : SIZES_DSA) {
-            ret.add(new SimpleEntry<>("DSA"+size, "DSA "+size));
-        }
-        @SuppressWarnings("unchecked")
-        final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
-        while (ecNamedCurves.hasMoreElements()) {
-            final String ecNamedCurve = ecNamedCurves.nextElement();
-            ret.add(new SimpleEntry<>(ecNamedCurve, "ECDSA "+ecNamedCurve));
-        }
-
-        for (String alg : CesecoreConfiguration.getExtraAlgs()) {
-            for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
-                final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
-                final String name = CesecoreConfiguration.getExtraAlgSubAlgName(alg, subalg);
-                ret.add(new SimpleEntry<>(name, title));
-            }
-        }
-
-        return ret;
-    }
-
     public boolean createAuthCertSignRequest(int caid, byte[] request) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
         if (request != null) {
             byte[] signedreq = caadminsession.createAuthCertSignRequest(authenticationToken, caid, request);
@@ -1422,6 +1368,8 @@ public class CAInterfaceBean implements Serializable {
                 diskFileItemFactory.setSizeThreshold(59999);
                 ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
                 upload.setSizeMax(60000);
+                // Upload consists of at least 6 DiskFileItems, at least 5 form fields and 1 data stream.
+                upload.setFileCountMax(10);
                 final List<FileItem> items = upload.parseRequest(request);
                 for (final FileItem item : items) {
                     if (item.isFormField()) {
