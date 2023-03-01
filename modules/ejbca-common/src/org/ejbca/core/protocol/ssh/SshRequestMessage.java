@@ -33,6 +33,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
@@ -51,12 +52,12 @@ public class SshRequestMessage implements RequestMessage {
 
     private static final long serialVersionUID = 1L;
     
-    private final String keyId;
-    private final String comment;
+    private String keyId;
+    private String comment;
     private byte[] publicKey;
-    private final List<String> principals;
-    private final Map<String, String> criticalOptions;
-    private final Map<String, byte[]> additionalExtensions;
+    private List<String> principals;
+    private Map<String, String> criticalOptions;
+    private Map<String, byte[]> additionalExtensions;
     private String username;
     private transient String serialNumber;
     private String password;
@@ -206,6 +207,79 @@ public class SshRequestMessage implements RequestMessage {
         return null;
     }
 
+    public static class Builder {
+        private String keyId;
+        private String comment;
+        private byte[] publicKey;
+        private List<String> principals;
+        private Map<String, String> criticalOptions;
+        private  Map<String, byte[]> additionalExtensions;
+        private String username;
+        private transient String serialNumber;
+        private String password;
+
+        public Builder keyId(String keyId) {
+            this.keyId = keyId;
+            return this;
+        }
+
+        public Builder comment(String comment) {
+            this.comment = comment;
+            return this;
+        }
+
+        public Builder publicKey(byte[] publicKey) {
+            this.publicKey = publicKey;
+            return this;
+        }
+
+        public Builder principals(List<String> principals) {
+            this.principals = principals;
+            return this;
+        }
+
+        public Builder criticalOptions(Map<String, String> criticalOptions) {
+            this.criticalOptions = criticalOptions;
+            return this;
+        }
+
+        public Builder additionalExtensions(Map<String, byte[]> additionalExtensions) {
+            this.additionalExtensions = additionalExtensions;
+            return this;
+        }
+
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder serialNumber(String serialNumber) {
+            this.serialNumber = serialNumber;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public SshRequestMessage build() {
+            return new SshRequestMessage(this);
+        }
+    }
+
+    private SshRequestMessage(final SshRequestMessage.Builder builder) {
+        this.keyId = builder.keyId;
+        this.comment = builder.comment;
+        this.publicKey = builder.publicKey;
+        this.principals = builder.principals;
+        this.criticalOptions = builder.criticalOptions;
+        this.additionalExtensions = builder.additionalExtensions;
+        this.username = builder.username;
+        this.serialNumber = builder.serialNumber;
+        this.password = builder.password;
+    }
+
     @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException {
         //Key can either come in as a straight java public key or an SSH public key, we'll accept both. First try a standard public key.
@@ -225,6 +299,10 @@ public class SshRequestMessage implements RequestMessage {
                 }
             }
         }
+    }
+    @Override
+    public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
+        return null;
     }
 
     @Override
@@ -365,9 +443,12 @@ public class SshRequestMessage implements RequestMessage {
         } else {
             userdata.setDN("CN="); // will set to blank DN
         }
-        
-        String placeHolderSanString =  SshCertificateUtils.createSanForStorage(
-                getPrincipals(), getComment(), getCriticalOptions().get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP));
+
+        String sourceAddress = null;
+        if(criticalOptions!=null) {
+            sourceAddress = criticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP);
+        }
+        String placeHolderSanString =  SshCertificateUtils.createSanForStorage(getPrincipals(), getComment(), sourceAddress);
         if(StringUtils.isNotBlank(placeHolderSanString)) {
             userdata.setSubjectAltName(placeHolderSanString);
         }

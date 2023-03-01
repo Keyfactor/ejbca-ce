@@ -58,11 +58,12 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * @version $Id$
@@ -202,13 +203,6 @@ public class LegacyKeyStoreTools {
 				*/
         	} else {
         		ECGenParameterSpec ecSpec = new ECGenParameterSpec(name);
-        		if (StringUtils.equals(name,"implicitlyCA")) {
-        			log.debug("Generating implicitlyCA encoded ECDSA key pair");
-        			// If the keySpec is null, we have "implicitlyCA" defined EC parameters
-        			// The parameters were already installed when we installed the provider
-        			// We just make sure that ecSpec == null here
-        			ecSpec = null;
-        		}
         		kpg.initialize(ecSpec);        		
         	}
         } catch( InvalidAlgorithmParameterException e ) {
@@ -308,9 +302,9 @@ public class LegacyKeyStoreTools {
 
         if (keySpec.toUpperCase().startsWith("DSA")) {
             generateDSA(Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
-        } else if (AlgorithmTools.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+        } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             generateGOST3410(keySpec, keyEntryName);
-        } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
+        } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keySpec.startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
             generateDSTU4145(keySpec, keyEntryName);
         } else {
 

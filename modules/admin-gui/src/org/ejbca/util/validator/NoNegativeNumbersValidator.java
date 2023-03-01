@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
@@ -27,9 +28,8 @@ import org.cesecore.internal.InternalResources;
 /**
  * Validates that no negative numbers can be set for a Rsa Key Validator.
  * 
- * @version $Id$
  */
-
+@FacesValidator("noNegativeNumbersValidator")
 public class NoNegativeNumbersValidator implements Validator<Object> {
     
     /** Localization of log and error messages. */
@@ -43,7 +43,9 @@ public class NoNegativeNumbersValidator implements Validator<Object> {
         if (null != object){
             final BigInteger integerValue;
             if (object instanceof  Integer ){
-                integerValue = BigInteger.valueOf(((Integer) object).intValue());
+                integerValue = BigInteger.valueOf((int) object);
+            } else if(object instanceof Long) {
+                integerValue = BigInteger.valueOf((long) object);
             } else {
                 integerValue = (BigInteger) object; 
             }

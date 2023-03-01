@@ -37,7 +37,6 @@
     	<delete dir="${reports.base.dir}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
-        <delete file="velocity.log" />
         <ant antfile="modules/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 	
@@ -547,7 +546,7 @@
 			<isset property="bundle-hibernate-jpa"/>
 		</condition>
 		<!-- Include Xerces library if it don't exist in the current application server (jboss6 won't start with it). -->
-		<condition property="bundle-xerces-exclude" value="xerces*.jar, xml-apis.jar" else="">
+		<condition property="bundle-xerces-exclude" value="xerces*.jar" else="">
 			<isset property="exclude-xerces"/>
 		</condition>
 		<!-- Special JBoss EAP 6 handling -->
@@ -574,7 +573,7 @@
                 <include name="cert-cvc-*.jar" />
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-*.jar" unless="jbosseap6-specials"/>
-                <include name="ldap.jar" />
+                <include name="jldap-*.jar" />
             	<include name="adsddl-*.jar"/>
                 <include name="commons-*.jar" />
 				<include name="nimbus-jose-jwt-*.jar"/>
@@ -622,7 +621,6 @@
   				<include name="oauth2-oidc-sdk-*.jar"/>
         	</zipfileset>
         	
-            <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="cesecore-ejb.jar" />
@@ -662,7 +660,6 @@
     		</fileset>
         	
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
-                <include name="externalra-service.jar" />
                 <include name="ejbca-common-web.jar" />
                 <include name="ejbca-interface.jar" />
                 <include name="ejbca-entity.jar" />
@@ -698,6 +695,7 @@
         		<include name="ejbca-cits.jar" />
         		<include name="proxy-ca.jar" />
         		<include name="p11ng.jar" />
+        		<include name="x509-common-util.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
@@ -762,7 +760,7 @@
     		<fileset dir="${ant.home}/lib/" includes="ant.jar"/>
     	</path>
     	<!-- extdirs="${lib}" -->
-        <javadoc packagenames="org.ejbca.*,org.cesecore.*" maxmemory="256m" destdir="${apidoc}" classpathref="javadoc-dependencies.classpath" 
+        <javadoc packagenames="org.ejbca.*,org.cesecore.*,com.keyfactor.*" maxmemory="256m" destdir="${apidoc}" classpathref="javadoc-dependencies.classpath" 
         	author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB." >
             <sourcepath location="${ejbca.home}/modules/cesecore-common/src"/>
         	<sourcepath location="${ejbca.home}/modules/cesecore-cvcca/src"/>
@@ -783,8 +781,6 @@
             <sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	
         	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src"/>
         	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src-gen"/>
-           	<sourcepath location="${ejbca.home}/modules/externalra-scep/src"/>
-           	<sourcepath location="${ejbca.home}/modules/externalra/src"/>
         	<sourcepath location="${ejbca.home}/modules/peerconnector/src-cli"/>
         	<sourcepath location="${ejbca.home}/modules/peerconnector/src-common"/>
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-ejb"/>
@@ -792,6 +788,9 @@
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-publ"/>
         	<sourcepath location="${ejbca.home}/modules/peerconnector/src-rar"/>
         	<sourcepath location="${ejbca.home}/modules/p11ng/src"/>
+        	<sourcepath location="${ejbca.home}/modules/x509-common-util/src"/>
+        	<sourcepath location="${ejbca.home}/modules/acme/src-common"/>
+        	<sourcepath location="${ejbca.home}/modules/cits/src"/>
 		<sourcepath location="${ejbca.home}/modules/peerconnector/src-war"/>
 		<sourcepath location="${ejbca.home}/modules/peerconnector/src-ra"/>
         	<sourcepath location="${ejbca.home}/modules/va/src-war"/>
@@ -904,7 +903,9 @@
     <!-- Make a ZIP release file of EJBCA, and a SHA1 checksum of the release    -->
 	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->
     <!-- ======================================================================= -->
-	<property name="edition" value="ce"/> <!-- ce if edition not set on command line with -Dedition=xyz" -->
+	<condition property="edition" value="ee" else="ce">
+		<available file="${ejbca.home}/modules/plugins-ee/build.xml" />
+	</condition>
 	<property name="variant" value=""/> <!-- If we are running on a full EJBCA instance! -->
 
 	<!-- This property is used to distinguish if we are running in full EJBCA or on a VA/RA only instance. To exclude parts from ejbca.sh accordingly -->
@@ -921,7 +922,7 @@
 		   <not><equals arg1="${doc.update}" arg2="false"/></not>
 	</condition>
 	
-	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dedition=ee or ce (default) -Dvariant='ra', 'va' or 'eidas'">
+	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dvariant='ra', 'va' or 'eidas'">
 		<antcall target="clean" />
 		<!-- Always retrieve current version from Confluence -->
 		<antcall target="doc" inheritAll="true">
@@ -933,24 +934,9 @@
 		<copy todir="doc/dist" overwrite="true">
 		    <fileset dir="tmp/htdocs/docs" includes="**/*" excludes="**/jquery.min.js"/>
 		</copy>
-		<!-- A small script that converts the version x.y.z to x_y_z to be used in the file. JavaScript does not work under Java 1.5. -->
-		<scriptdef name="convertdot" language="javascript">
-		    <![CDATA[
-	          ver = project.getProperty("app.version.number");
-			  // We have to "cast" ver to a javascript string to avoid errors in JDK about "is ambiguous"
-			  relstring = (ver+"").replace(/\./g,'_');
-		      //self.log(ver);
-		      //self.log(relstring);
-			  project.setProperty("ejbca.zipversion", relstring);
-	          str = project.getProperty("ejbca.zipversion");
-		    ]]>
-	    </scriptdef>
+
 		<antcall target="update-gitrev" /> <!-- update git revision version property -->
 		<antcall target="update-edition" />
-        
-		<condition property="edition.is.ee" value="true">
-            <equals arg1="${edition}" arg2="ee" casesensitive="true"/>
-        </condition>
 		
 		<condition property="build.contains.eidas">
 			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
@@ -977,10 +963,7 @@
         </condition>
         
         <condition property="build.contains.cesecore-cvcca" value="true">
-        	<and>
-        		<equals arg1="${edition}" arg2="ee" casesensitive="true"/>
-        		<istrue value="${running.full.ejbca}" />
-        	</and>	
+			<istrue value="${running.full.ejbca}" />
         </condition>
 		
 		<condition property="variant.suffix" value="_RA">
@@ -1022,7 +1005,16 @@
 	        </filterchain>
 	    </copy>
 
-		<convertdot/> <!-- convert dots to underscores in version string -->
+		<!-- Using native ant to convert dots in app.version.number for the zipversion -->
+		<loadresource property="ejbca.zipversion">
+			<propertyresource name="app.version.number"/>
+			<filterchain>
+				<tokenfilter>
+					<replacestring from="." to="_"/>
+				</tokenfilter>
+			</filterchain>
+		</loadresource>
+
         <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
 		<property name="basezipfile" value="ejbca_${edition}_${ejbca.zipversion}${variant.suffix}"/>
 		
@@ -1053,97 +1045,16 @@
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />
                 <exclude name="modules/cesecore-common/build/**" />
+		    	<exclude name="modules/x509-common-util/build/**" />
                 <exclude name="modules/cesecore-ejb-interface/build/**" />
                 <exclude name="modules/cesecore-entity/build/**" />
                 <exclude name="modules/ejbca-common/build-common/**" />
                 <exclude name="modules/va/build-va-publisher/**" />
-                <!-- Exclude continuous integration files -->
-                <exclude name="jenkins-files/**" />
-		    	<!-- Exclude Web Tests -->
-		    	<exclude name="modules/ejbca-webtest/**"/>
-                <exclude name="lib/ext/webtest/**"/>
 		    	<!-- Exclude internal Confluence information -->
 		    	<exclude name="src/doc.properties" />
-		    	<!-- Exclude modules that are not present in Community Edition -->
-                <exclude unless="edition.is.ee" name="modules/ejbca-entity/src-cli/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-entity/src-test/org/ejbca/ui/cli/OcspMonitoringToolTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/database/DatabaseCliCommandTest.java"/>
-                <exclude unless="edition.is.ee" name="conf/databaseprotection.properties.sample"/>
-                <exclude unless="edition.is.ee" name="modules/cesecore-entity/src/org/cesecore/dbprotection/ProtectedDataConfiguration.java"/>
-                <exclude unless="edition.is.ee" name="modules/cesecore-entity/src/org/cesecore/dbprotection/ProtectedDataIntegrityImpl.java"/>
-                <exclude unless="edition.is.ee" name="modules/cesecore-entity/src-test/org/cesecore/dbprotection/**"/>
-                <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/ca/CvcEacCA.java"/>
-                <exclude unless="edition.is.ee" name="modules/cesecore-common/src-test/org/cesecore/certificates/ca/CVCCATest.java"/>
-		    	<exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/ui/web/pub/cluster/VaPeerStatusServletSystemTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/ws/EjbcaWSCVCTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/ca/caadmin/CVCCAsTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/ui/cli/ca/CaInitCvcCommandTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/CaImportCVCCACommand.java"/>
-				<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/config/oauth/**"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/ui/cli/ca/CaImportCVCCACommandTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/ca/sign/SignSessionCvcTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/cesecore/certificates/ca/CaCvcSessionTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/cesecore/certificates/certificatetransparency/CertificateTransparencyTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/cmp/authentication/CmpVendorModeImpl.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/cmp/VendorAuthenticationTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/cmpProxy/**"/>
-                <exclude unless="edition.is.ee" name="modules/ct/**"/>
-                <exclude unless="edition.is.ee" name="lib/ct/**"/>
 		    	<exclude unless="build.contains.cesecore-cvcca" name="modules/cesecore-cvcca/**"/>
 		    	<exclude unless="build.contains.cesecore-x509ca" name="modules/cesecore-x509ca/**"/>
-                <exclude unless="edition.is.ee" name="modules/peerconnector/**"/>
-                <exclude unless="edition.is.ee" name="modules/peerconnector/src-interface/org/ejbca/peerconnector/**"/>
-                <exclude unless="edition.is.ee" name="modules/peerconnector/src-ejb/org/ejbca/peerconnector/**"/>
-                <exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/peerconnector/**"/>
-                <exclude unless="edition.is.ee" name="modules/admin-gui/resources/peerconnector/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/acme/AcmeConfigMBean.java"/>
-				<exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/acme/AcmeAliasConfigMBean.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-common-web/src/org/ejbca/core/model/services/workers/PreCertificateRevocationWorker.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ScepRaModeExtension.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ProtocolScepHttpRATest.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/upgrade/UpgradeSessionBeanEnterpriseTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ClientCertificateRenewalExtension.java"/>
-                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ScepClientCertificateRenewalTest.java"/>
-                <exclude unless="edition.is.ee" name="src/java/profilemappings_enterprise.properties"/>
-                <exclude unless="edition.is.ee" name="modules/edition-specific-ee/**"/>
-                <exclude unless="edition.is.ee" name="modules/externalra/**"/>
-                <exclude unless="edition.is.ee" name="modules/externalra-scep/**"/>
-                <exclude unless="edition.is.ee" name="modules/cmpclient/**"/>
-                <exclude unless="edition.is.ee" name="modules/acme/**"/>
-                <exclude unless="edition.is.ee" name="lib/dnsjava-*.jar"/>
-                <exclude unless="edition.is.ee" name="lib/dnssecjava-*.jar"/>
-                <exclude unless="edition.is.ee" name="modules/est/**"/>
-                <exclude unless="edition.is.ee" name="modules/caa/**"/>
-                <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/certificate/certextensions/BasicCVCertificateExtension.java"/>
-                <exclude unless="edition.is.ee" name="modules/configdump/**"/>
-                <exclude unless="edition.is.ee" name="modules/unidfnr/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-ca/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-camanagement/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-configdump/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-cryptotoken/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-endentity/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-ssh/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CaRestResourceSwagger.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CaManagementRestResourceSwagger.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/ConfigdumpRestResourceSwagger.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CryptoTokenRestResourceSwagger.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/EndEntityRestResourceSwagger.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/EndEntityRestResourceV2Swagger.java"/>
-		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/SshRestResourceSwagger.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaRestResourceUnitTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaRestResourceSystemTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaManagementRestResourceSystemTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CryptoTokenRestResourceSystemTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSystemTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSearchPaginationSystemTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CustomRestHeaderSystemTest.java"/>
-                <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/p11ng/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/p11ng-cli/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
-		    	<exclude unless="edition.is.ee" name="modules/msae/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/cits/**"/>
-                <!-- List of modules to exclude from non-eIDAS editions -->
+				<!-- List of modules to exclude from non-eIDAS editions -->
 		    	<!-- Exclude standard values if eIDAS edition for which we will include the updated version below -->
                 <exclude if="build.contains.eidas" name="src/java/defaultvalues.properties"/> 
                 <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliKeyAuthorizationCommand.java" unless="build.contains.eidas"/>
@@ -1195,12 +1106,8 @@
 			
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
-		    	<exclude name="bin/backup/**" />
-                <exclude name="jenkins-files/**" />
-		    	<exclude name="modules/statedump/**" />
-                <exclude unless="edition.is.ee" name="modules/ejbca-entity/**"/>
-                <exclude unless="edition.is.ee" name="modules/configdump/**"/>
-                <exclude unless="edition.is.ee" name="modules/externalra/**"/>
+				<exclude name="bin/backup/**" />
+				<exclude name="modules/statedump/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
@@ -1454,7 +1361,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
 			replace='\1${Revision}' />
 		<echo>Updated "git.revision" to: ${Revision}</echo>
     </target>
-	
+
 	<target name="update-edition" depends="deprecated:check">
 		<condition property="app.edition" value="Enterprise" >
 			<matches string="${edition}" pattern="^ee$"/>
@@ -1466,7 +1373,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
 					replace='\1${app.edition}' />
 				<echo>Updated "app.edition.verbose" to: ${app.edition}</echo>
 	</target>
-     
+
 	<!--
         Target for signing a JAR (JAR, EAR, WAR or ZIP)
         parameter: signjar.file=file to sign 
@@ -1506,9 +1413,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	/>
 	</target>
 	
-	<target name="externalra:check" unless="mod.externalra.exists">
-		<fail>External RA does not exist in EJBCA Community. Please contact a sales representative at PrimeKey Solutions for information about how to get an Enterprise License.</fail>
-	</target>
 	
 	<target name="ejbca.ear.module-dependencies">
         <ant dir="modules" target="ejbca.ear.module-dependencies" inheritall="true" inheritrefs="true"/>
@@ -1519,7 +1423,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
     </target>
 	
 	<target name="ejbca-db-cli:fail" unless="ejbca-db-cli.available">
-		<fail>EJBCA DB CLI does not exist in EJBCA Community. Please contact a sales representative at PrimeKey Solutions for information about how to get an Enterprise License.</fail>
+		<fail>EJBCA DB CLI does not exist in EJBCA Community. Please contact a sales representative at Keyfactor for information about how to get an Enterprise License.</fail>
 	</target>
 
     <target name="ejbca-db-cli" depends="deprecated:check, ejbca-db-cli:fail" description="Build EJBCA JPA database CLI">
@@ -1529,10 +1433,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     <target name="ejbca-caa-cli" depends="deprecated:check" if="caa.exists" description="Creates a CLI jar for CAA lookups">
     	<ant dir="modules" target="ejbca-caa-cli" />
     </target>
-
-	<target name="ejbca-webtest" depends="deprecated:check" if="webtest.exists" description="Builds EJBCA web test module">
-		<ant dir="modules" target="ejbca-webtest" />
-	</target>
 	
 	<target name="ejbca-ejb-interface">
        	<ant dir="modules" target="ejbca-ejb-interface" />
@@ -1632,10 +1532,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		<ant dir="modules" target="p11ng-cli" />
     </target>	
 	
-    <target name="cmpHttpProxy" depends="deprecated:check" description="Builds a CMP HTTP proxy. (Enterprise only)">
-    	<ant dir="modules" target="cmpHttpProxy" />
-    </target>
-	
 	<target name="showtime" >
 		<tstamp>
 			<format property="completiontime" pattern="yyyy-MM-dd HH:mm:ss Z"/>
@@ -1654,26 +1550,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     <target name="ejbca-ws-generate" depends="deprecated:check" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
     	<ant dir="modules" target="ejbca-ws-generate"/>
     </target>
-
-	<target name="externalra-service" depends="externalra:check" >
-    	<ant dir="modules" target="externalra-service"/>
-	</target>
-
-	<target name="externalra-client" depends="deprecated:check, externalra:check" if="mod.externalra.exists" description="Build the EJBCA External RA Service CLI (Enterprise Edition Only).">
-    	<ant dir="modules" target="externalra-client"/>
-	</target>
-
-	<target name="externalra-library"  if="mod.externalra.exists" depends="deprecated:check,externalra:check" description="Build the EJBCA External RA Library.">
-    	<ant dir="modules" target="externalra-library"/>
-	</target>
-
-	<target name="externalra-scep" depends="deprecated:check, externalra:check"  if="mod.externalra-scep.exists" description="Build the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only).">
-		<ant dir="modules" target="externalra-scep"/>
-	</target>
-
-	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only)" depends="externalra:check,externalra-scep,deprecated:check">
-		<antcall target="jee:deploy-scep-war" />
-	</target>
 
 	<!-- Target that copies all org.cesecore java files from EJBCA to cesecore (if it is in a subdirectory cesecore above ejbca dir).
 	     Since EJBCA usually is the master for cesecore fies, this eases code merge very much.
@@ -1736,17 +1612,5 @@ SHA-256 checksum: ${cesecorebinSHA256}
             </fileset>
         </copy>
     </target>
-
-	<!-- Setup Firefox profiles for Selenium UI Tests -->
-	<target name="ejbca:setup:selenium" description="Sets the general EJBCA settings required by some Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-certificates" />
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-firefox-profiles" />
-	</target>
-	<target name="ejbca:setup:selenium-certificates" description="Sets the certificates settings required by Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-certificates" />
-	</target>
-	<target name="ejbca:setup:selenium-firefox-profiles" description="Sets the firefox profiles settings required by Selenium tests.">
-		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-firefox-profiles" />
-	</target>
 
 </project>

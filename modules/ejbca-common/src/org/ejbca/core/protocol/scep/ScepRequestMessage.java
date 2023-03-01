@@ -25,6 +25,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -38,9 +39,9 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1PrintableString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
@@ -321,7 +322,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         requestKeyInfo = bOut.toByteArray();
                         //Create Certificate used for debugging
                         try {
-							signercert = CertTools.getCertfromByteArray(requestKeyInfo, Certificate.class);
+							signercert = CertTools.getCertfromByteArray(requestKeyInfo, X509Certificate.class);
 							if (log.isDebugEnabled()) {
 								log.debug("requestKeyInfo is SubjectDN: " + CertTools.getSubjectDN(signercert) +
 										", Serial=" + CertTools.getSerialNumberAsString(signercert) +
@@ -356,7 +357,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     }
                     if (a.getAttrType().getId().equals(id_transId)) {
                         Enumeration<?> values = a.getAttrValues().getObjects();
-                        DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
+                        ASN1PrintableString str = ASN1PrintableString.getInstance(values.nextElement());
                         transactionId = str.getString();
                         if (log.isDebugEnabled()) {
                         	log.debug("transactionId = " + transactionId);
@@ -364,7 +365,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     }
                     if (a.getAttrType().getId().equals(id_messageType)) {
                         Enumeration<?> values = a.getAttrValues().getObjects();
-                        DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
+                        ASN1PrintableString str = ASN1PrintableString.getInstance(values.nextElement());
                         messageType = Integer.parseInt(str.getString());
                         if (log.isDebugEnabled()) {
                         	log.debug("messagetype = " + messageType);

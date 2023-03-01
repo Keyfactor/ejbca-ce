@@ -234,7 +234,7 @@ function checkfieldforlegalemailcharswithoutat(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
   text = text.trim();
-  re = /[^\u0041-\u005a\u0061-\u007a\u00a1-\ud7ff\ue000-\uffff_0-9\.\-\']/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00a1-\ud7ff\ue000-\uffff_0-9\.\-\'\+]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -456,6 +456,9 @@ function resetTimer(validity) {
     /** Scroll the element with elementId into view on AJAX requests success. */
     var onAjaxSuccessScrollTo = function(data, elementId) {
         if (data.status == "success") {
+            if (document.documentElement.classList) {
+                document.documentElement.classList.remove("waiting");
+            }
         	var y = 0;
         	if (elementId) {
             	var element = document.getElementById(elementId);
@@ -477,10 +480,34 @@ function resetTimer(validity) {
         }
     };
 
+    var pruneUnchangedInheritRules = function() {
+        // This (and the following form submission can be slow)
+        if (document.documentElement.classList) {
+            document.documentElement.classList.add("waiting");
+        }
+        // Remove useless access rules from the form submission.
+        // This is necessary because large form submissions may exceed limits in the appserver
+        var initiallyInheritSelects = document.getElementsByClassName("selectStateRadio_UNDEFINED");
+        for (var i = 0; i < initiallyInheritSelects.length; i++) {
+            // An access rules that was in Inherit/UNDEFINED at page load time
+            var selectContainer = initiallyInheritSelects[i];
+            var options = selectContainer.getElementsByTagName("input");
+            for (var j = 0; j < options.length; j++) {
+                var option = options[j];
+                if (option.checked && option.value === "UNDEFINED") {
+                    // It is still Inherit/UNDEFINED. Skip submitting it
+                    option.setAttribute("form", "dummyForm");
+                }
+            }
+        }
+        return true;
+    };
+
     // Setup name space...
     window.ejbca = window.ejbca || {};
     ejbca.adminweb = ejbca.adminweb || {};
     // ...and expose API functions under this name space.
     ejbca.adminweb.onAjaxSuccessScrollTo = onAjaxSuccessScrollTo;
     ejbca.adminweb.hideShowCellsByClass = hideShowCellsByClass;
+    ejbca.adminweb.pruneUnchangedInheritRules = pruneUnchangedInheritRules;
 }());
