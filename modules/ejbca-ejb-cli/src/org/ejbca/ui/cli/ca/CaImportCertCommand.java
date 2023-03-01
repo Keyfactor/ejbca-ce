@@ -346,7 +346,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                     crlPartitionIndex, null, new Date().getTime(), null);
             if (status == CertificateConstants.CERT_REVOKED) {
                 try {
-                    endEntityManagementSession.revokeCert(getAuthenticationToken(), CertTools.getSerialNumber(certificate), revocationTime, CertTools.getIssuerDN(certificate),
+                    endEntityManagementSession.revokeCert(getAuthenticationToken(), CertTools.getSerialNumber(certificate), revocationTime, /*invalidityDate*/null, CertTools.getIssuerDN(certificate),
                             revocationReason.getDatabaseValue(), false);
                 } catch (ApprovalException e) {
                     log.error(e.getMessage());

@@ -48,7 +48,7 @@ public interface RevocationSessionLocal extends RevocationSession {
      * @throws CertificaterevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
-    void revokeCertificate(AuthenticationToken admin, CertificateDataWrapper cdw, Collection<Integer> publishers, Date revocationDate, int reason,
+    void revokeCertificate(AuthenticationToken admin, CertificateDataWrapper cdw, Collection<Integer> publishers, Date revocationDate, Date invalidityDate, int reason,
             String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
 
     /**
@@ -88,7 +88,7 @@ public interface RevocationSessionLocal extends RevocationSession {
      * @throws AuthorizationDeniedException (rollback)
      */
     void revokeCertificateInNewTransaction(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers,
-            Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
+            Date revocationDate, Date invalidityDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
 
     /**
      * Revokes incompletely issued certificates, that have been submitted to CT logs and/or published, but

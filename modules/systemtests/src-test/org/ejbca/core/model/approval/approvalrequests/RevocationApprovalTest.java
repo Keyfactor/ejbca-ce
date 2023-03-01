@@ -448,7 +448,7 @@ public class RevocationApprovalTest extends CaTestCase {
             assertNotNull("Test user certificate was not created", usercert);
 
             RevocationApprovalRequest revAr = new RevocationApprovalRequest(CertTools.getSerialNumber(usercert), CertTools.getIssuerDN(usercert), username, 
-                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null, null);
+                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null, null, null);
             revAr.execute(endEntityManagementSession, 4711, null);
             // Verify that the certificate was revokes
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
@@ -556,7 +556,7 @@ public class RevocationApprovalTest extends CaTestCase {
         //Create approval profile and revoke certificate
         ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
         assertNotNull("Could not find approval profile with id: " + approvalProfileId, approvalProfile);
-        revocationSession.revokeCertificate(internalAdmin, usercertTest06, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        revocationSession.revokeCertificate(internalAdmin, usercertTest06, null, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         //Assert revoke date is added and certificate is revoked
         assertNotNull(certificateStoreSession.getCertificateInfo(usercertTest06fp).getRevocationDate());
         assertEquals(CertificateStatus.REVOKED,
@@ -564,7 +564,7 @@ public class RevocationApprovalTest extends CaTestCase {
 
         try {
             //Revoke certificate with new back dated revocation date. Should be possible 
-            endEntityManagementSession.revokeCert(requestingAdmin, usercertTest06.getSerialNumber(), newBackdatedRevocationDate,
+            endEntityManagementSession.revokeCert(requestingAdmin, usercertTest06.getSerialNumber(), newBackdatedRevocationDate, null,
                     usercertTest06.getIssuerDN().toString(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, true);
             fail("WaitingForApprovalException should have been thrown to show that this action is waiting for approval.");
         } catch (ApprovalException e) {
@@ -586,7 +586,7 @@ public class RevocationApprovalTest extends CaTestCase {
 
         try {
             //try change date for revocation to a later date
-            endEntityManagementSession.revokeCert(requestingAdmin, CertTools.getSerialNumber(usercertTest06), newForwardRevocationDate,
+            endEntityManagementSession.revokeCert(requestingAdmin, CertTools.getSerialNumber(usercertTest06), newForwardRevocationDate, null,
                     CertTools.getIssuerDN(usercertTest06), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, true);
         } catch (AlreadyRevokedException e) {
             log.debug(e.getMessage());

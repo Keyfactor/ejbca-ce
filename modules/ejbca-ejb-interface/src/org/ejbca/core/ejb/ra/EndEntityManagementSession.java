@@ -417,6 +417,7 @@ public interface EndEntityManagementSession {
      * @param admin
      * @param certserno
      * @param revocationdate after this the the certificate is not valid
+     * @param invalidityDate after this the the certificate is regarded as  invalid
      * @param issuerdn
      * @param reason
      * @param checkPermission if true and if 'revocationdate' is not null then the certificate profile must allow back dating otherwise a {@link RevokeBackDateNotAllowedForProfileException} is thrown.
@@ -428,7 +429,7 @@ public interface EndEntityManagementSession {
      * @throws AlreadyRevokedException
      * @throws RevokeBackDateNotAllowedForProfileException
      */
-    void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkPermission)
+    void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, Date invalidityDate, String issuerdn, int reason, boolean checkPermission)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException,
             RevokeBackDateNotAllowedForProfileException;
 
@@ -494,6 +495,7 @@ public interface EndEntityManagementSession {
      * @param approvalRequestID the ID of the approval request submitted to revoke the certificate
      * @param lastApprovingAdmin the last administrator to have approved the request
      * @param revocationDate the date for revocation.
+     * @param invalidityDate the date the certificate was regarded as  invalid
      * @throws AlreadyRevokedException if the certificate was already revoked
      * @throws NoSuchEndEntityException
      * @throws ApprovalException if an approval already exists for this request.
@@ -501,7 +503,7 @@ public interface EndEntityManagementSession {
      * @throws AlreadyRevokedException
      */
     void revokeCertAfterApproval(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason, int approvalRequestID,
-            AuthenticationToken lastApprovingAdmin, Date revocationDate)
+            AuthenticationToken lastApprovingAdmin, Date revocationDate, Date invalidityDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
     
     /**

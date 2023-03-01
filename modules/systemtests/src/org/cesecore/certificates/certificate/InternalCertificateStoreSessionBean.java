@@ -326,7 +326,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
+    public boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
         // authorization is handled by setRevokeStatus(admin, certificate, reason, userDataDN);
         final CertificateDataWrapper cdw = certStore.getCertificateDataByIssuerAndSerno(issuerdn, serno);
         if (cdw == null) {
@@ -334,12 +334,12 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             log.info(msg);
             throw new CertificateRevokeException(msg);
         }
-        return certStore.setRevokeStatus(admin, cdw, revokedDate, reason);
+        return certStore.setRevokeStatus(admin, cdw, revokedDate, invalidityDate, reason);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
+    public boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
         // Must be authorized to CA in order to change status is certificates issued by the CA
         if (certificate == null) {
             throw new IllegalArgumentException("Passed certificate may not be null.");
@@ -365,7 +365,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         } else {
             cdw = new CertificateDataWrapper(certificateData, null);
         }
-        return noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
+        return noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, invalidityDate, reason);
     }
 
     @Override
