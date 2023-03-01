@@ -3018,9 +3018,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
         final int caId = CertTools.stringToBCDNString(issuerDn).hashCode();
         caSession.verifyExistenceOfCA(caId);
-        endEntityManagementSession.revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, checkDate);
+        endEntityManagementSession.revokeCert(authenticationToken, certSerNo, revocationDate, /*invalidityDate*/null, issuerDn, reason, checkDate);
     }
 
+    
     @Override
     public void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
         throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
@@ -3030,9 +3031,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, CertificateProfileDoesNotExistException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, CertificateProfileDoesNotExistException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
-
         final int caId = CertTools.stringToBCDNString(certRevocationDto.getIssuerDN()).hashCode();
         caSession.verifyExistenceOfCA(caId);
         endEntityManagementSession.revokeCertWithMetadata(authenticationToken, certRevocationDto);

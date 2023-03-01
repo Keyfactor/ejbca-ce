@@ -267,7 +267,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
                     certificateProfileId, endEntityProfileId, crlPartitionIndex, null, now.getTime(), null);
 
             if (status == CertificateConstants.CERT_REVOKED) {
-                endEntityManagementSession.revokeCert(authenticationToken, certificate.getSerialNumber(), revocationTime, issuer,
+                endEntityManagementSession.revokeCert(authenticationToken, certificate.getSerialNumber(), revocationTime, /*invalidityDate*/null, issuer,
                         revocationReason.getDatabaseValue(), false);
                 log.info("Certificate with serial '" + CertTools.getSerialNumberAsString(certificate) + "' has been revoked.");
             }

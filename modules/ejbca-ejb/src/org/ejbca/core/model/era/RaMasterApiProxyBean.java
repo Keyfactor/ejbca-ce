@@ -1988,10 +1988,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
     }
 
+
     @Override
     public void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, CertificateProfileDoesNotExistException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, CertificateProfileDoesNotExistException {
         // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
         CADoesntExistsException caDoesntExistException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
