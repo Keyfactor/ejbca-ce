@@ -228,7 +228,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     	Date now = new Date();
     	assertNotNull(info.getUpdateTime());
     	assertTrue(now.after(info.getUpdateTime()));
-    	internalCertStoreSession.setRevokeStatus(roleMgmgToken, ce, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+    	internalCertStoreSession.setRevokeStatus(roleMgmgToken, ce, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
     	CertificateInfo info1 = certificateStoreSession.getCertificateInfo(fp);
     	assertEquals("revocation reason does not match.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, info1.getRevocationReason());
     	log.info("revocationdate (after rev)=" + info1.getRevocationDate());
@@ -259,7 +259,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			log.debug("revoking cert with fp=" + fp);
 			// Revoke all foos certificates, note that revokeCertificate will
 			// not change status of certificates that are already revoked
-			internalCertStoreSession.setRevokeStatus(roleMgmgToken, tmpcert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
+			internalCertStoreSession.setRevokeStatus(roleMgmgToken, tmpcert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
 			log.debug("Revoked cert " + fp);
 		}
 
@@ -291,16 +291,16 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
              
              // now revoke them again with Key Compromise
              result = internalCertStoreSession.setRevokeStatus(roleMgmgToken, issuerDn, serialnumber,
-                     new Date(System.currentTimeMillis() + 1000_000), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+                     new Date(System.currentTimeMillis() + 1000_000), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
              assertFalse("Certificate revocation reason was updated even though date is in future", result);
          
              // now revoke them again with Key Compromise
-             internalCertStoreSession.setRevokeStatus(roleMgmgToken, issuerDn, serialnumber, new Date(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+             internalCertStoreSession.setRevokeStatus(roleMgmgToken, issuerDn, serialnumber, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
              assertFalse("Certificate revocation reason was updated even though updated reason is not key compromise", result);
              
              // now revoke them again with Key Compromise
              result = internalCertStoreSession.setRevokeStatus(roleMgmgToken, issuerDn, serialnumber, 
-                     yesterday, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+                     yesterday, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
              assertTrue("Certificate revocation reason was updated even though updated reason is not key compromise", result);
              log.debug("Revoked cert with key compromise: " + fp);
          }
@@ -357,7 +357,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         log.debug("notBefore=" + data3.getNotBefore());
         assertEquals("Wrong notBefore", CertTools.getNotBefore(cert), data3.getNotBefore());
 
-		internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 		data3 = certificateStoreSession.getCertificateInfo(fp);
 		assertNotNull("Failed to find cert", data3);
 		log.debug("found by key! =" + data3);
@@ -419,7 +419,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
         assertEquals("Wrong EEP", EndEntityConstants.NO_END_ENTITY_PROFILE, data3.getEndEntityProfileIdOrZero());
 
-		boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 		assertTrue("Failed to revoke cert that should have worked", worked);
 		data3 = certificateStoreSession.getCertificateInfo(fp);
 		assertNotNull("Failed to find cert", data3);
@@ -448,7 +448,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 		assertEquals("Wrong reason!", revinfo.revocationReason, data3.getRevocationReason());
 
 		// Try to revoke again, should return false since no changes should be done in database since certificate is already revoked
-		worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 		assertFalse("Revoked cert in database although it should not have worked", worked);
     }
 
@@ -470,7 +470,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     	// Revoke certificate and set to ON HOLD, this will change status from
     	// ARCHIVED to REVOKED
-    	boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+    	boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 		assertTrue("Failed to revoke cert that should have worked", worked);
     	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
     	assertEquals(CertificateStatus.REVOKED, status);
@@ -496,20 +496,20 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     	assertEquals(revDate, status.revocationDate);
 
     	// Now unrevoke the certificate, REMOVEFROMCRL
-    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
 		assertTrue("Failed to revoke cert that should have worked", worked);
     	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
     	assertEquals(CertificateStatus.OK, status);
 
     	// Revoke certificate and set to ON HOLD again, this will change status to REVOKED (again)
-    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 		assertTrue("Failed to revoke cert that should have worked", worked);
     	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
     	assertEquals(CertificateStatus.REVOKED, status);
     	assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
     	// Now unrevoke the certificate, NOT_REVOKED
-    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.NOT_REVOKED);
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), null, RevokedCertInfo.NOT_REVOKED);
 		assertTrue("Failed to revoke cert that should have worked", worked);
     	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
     	assertEquals(CertificateStatus.OK, status);
@@ -521,7 +521,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     	assertEquals(CertificateStatus.OK, status);
 
     	// Finally revoke for real, this will change status from ARCHIVED to REVOKED
-    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
 		assertTrue("Failed to revoke cert that should have worked", worked);
     	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
     	assertEquals(CertificateStatus.REVOKED, status);
@@ -529,7 +529,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     	revDate = status.revocationDate;
 
     	// Try to unrevoke the certificate, should not work, because it is permanently revoked
-    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.NOT_REVOKED);
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), null, RevokedCertInfo.NOT_REVOKED);
 		assertFalse("Revoked cert in database although it should not have worked", worked);
     	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
     	assertEquals(CertificateStatus.REVOKED, status);
@@ -562,13 +562,13 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         // Try to change status of a cert with an admin that does not have access to CA
     	X509Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
         try {
-            internalCertStoreSession.setRevokeStatus(adminTokenNoAuth, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
+            internalCertStoreSession.setRevokeStatus(adminTokenNoAuth, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
         	assertTrue("Should throw", false);
         } catch (AuthorizationDeniedException e) {
         	// NOPMD
         }
         try {
-            internalCertStoreSession.setRevokeStatus(adminTokenNoAuth, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
+            internalCertStoreSession.setRevokeStatus(adminTokenNoAuth, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
         	assertTrue("Should throw", false);
         } catch (AuthorizationDeniedException e) {
         	// NOPMD
