@@ -105,7 +105,7 @@ public interface InternalCertificateStoreSessionRemote {
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
-    boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
+    boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
     
     /**
      * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
@@ -118,7 +118,7 @@ public interface InternalCertificateStoreSessionRemote {
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
-    boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason)
+    boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, Date invalidityDate, int reason)
         throws CertificateRevokeException, AuthorizationDeniedException;
     
     /** Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database

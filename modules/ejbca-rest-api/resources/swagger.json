@@ -416,6 +416,13 @@
             "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "invalidity_date",
+            "in": "query",
+            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
+            "required": false,
+            "type": "string"
           }
         ],
         "responses": {
@@ -1965,6 +1972,12 @@
           "format": "date-time",
           "example": "1970-01-01T00:00:00Z",
           "description": "Revokation date"
+        },
+        "invalidity_date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "1970-01-01T00:00:00Z",
+          "description": "Invalidity date"
         },
         "message": {
           "type": "string",
