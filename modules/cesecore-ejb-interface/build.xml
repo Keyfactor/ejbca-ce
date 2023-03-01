@@ -18,8 +18,10 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/>
 		<path location="${cesecore-ejb-interface.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb-interface.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 
 	<path id="test.classpath">

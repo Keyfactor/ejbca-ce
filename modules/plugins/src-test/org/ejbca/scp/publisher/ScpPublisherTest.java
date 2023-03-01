@@ -87,8 +87,8 @@ public class ScpPublisherTest {
     
     @Before
     public void setup() throws CAExistsException, CryptoTokenOfflineException, AuthorizationDeniedException {
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, CA_NAME, String.valueOf(1024));
-        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, CA_NAME, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo(CA_DN, CA_NAME, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
                 CAInfo.SELFSIGNED, null, caToken);
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -123,7 +123,8 @@ public class ScpPublisherTest {
         properties.setProperty(ScpPublisher.SCP_KNOWN_HOSTS_PROPERTY_NAME, "/Users/mikek/.ssh/known_hosts");
         properties.setProperty(ScpPublisher.SSH_USERNAME, "mikek");
         String password = "";
-        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password));
+        String encryptionKey = "supersecretpassword";
+        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password, encryptionKey, false));
         scpPublisher.init(properties);
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); 
         final int reason = RevocationReasons.KEYCOMPROMISE.getDatabaseValue();
@@ -152,7 +153,8 @@ public class ScpPublisherTest {
         properties.setProperty(ScpPublisher.SCP_KNOWN_HOSTS_PROPERTY_NAME, "/Users/mikek/.ssh/known_hosts");
         properties.setProperty(ScpPublisher.SSH_USERNAME, "mikek");
         String password = "";
-        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password));
+        final String encryptionKey = "supersecretpassword";
+        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password, encryptionKey, false));
         scpPublisher.init(properties);
         TestAlwaysAllowLocalAuthenticationToken testAlwaysAllowLocalAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken("testPublishCrl");
         scpPublisher.storeCRL(testAlwaysAllowLocalAuthenticationToken, testCrl, null, 0, null);

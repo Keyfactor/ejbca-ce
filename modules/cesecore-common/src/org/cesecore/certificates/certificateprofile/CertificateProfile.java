@@ -12,7 +12,23 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
-import org.apache.commons.codec.binary.Base64;
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -37,23 +53,6 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
-
-import java.io.Serializable;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -1296,6 +1295,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return  doSelectedEcRequirebitLenths()
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)
+                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_NTRU)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
@@ -2987,17 +2987,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public Map<String, byte[]> getSshExtensionsMap() {
         if(!data.containsKey(SSH_EXTENSIONS)) {
-            Map<String, String> extensions = new HashMap<>();
+            Map<String, byte[]> extensions = new HashMap<>();
             for(SshExtension sshExtension : SshExtension.values()) {
-                extensions.put(sshExtension.getLabel(), Base64.encodeBase64String(sshExtension.getValue()));
+                extensions.put(sshExtension.getLabel(), sshExtension.getValue());
             }
             data.put(SSH_EXTENSIONS, extensions);
         }
-        Map<String, byte[]> extensions = new HashMap<>();
-        for(Entry<String, String> sshExtension : ((Map<String, String>) data.get(SSH_EXTENSIONS)).entrySet()) {
-            extensions.put(sshExtension.getKey(), Base64.decodeBase64(sshExtension.getValue()));
-        }
-        return extensions;
+        return (Map<String, byte[]>) data.get(SSH_EXTENSIONS);
     }
 
     public List<String> getSshExtensions() {
@@ -3005,22 +3001,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setSshExtensions(Map<String, byte[]> extensions) {
-        Map<String, String> extensionMap = new HashMap<>();
-        for(Entry<String, byte[]> sshExtension : extensions.entrySet()) {
-            extensionMap.put(sshExtension.getKey(), Base64.encodeBase64String(sshExtension.getValue()));
-        }
-        data.put(SSH_EXTENSIONS, extensionMap);
+        data.put(SSH_EXTENSIONS, extensions);
     }
 
     public void setSshExtensions(List<String> extensionsList) {
         Map<String, String> extensions = new HashMap<>();
         for(String extension : extensionsList) {
-            // may need to enhance for custom extensions
-            SshExtension sshExtension = SshExtension.findbyLabel(extension);
-            if(sshExtension==null) {
-                continue;
-            }
-            extensions.put(extension, Base64.encodeBase64String(sshExtension.getValue()));
+            extensions.put(extension, "");
         }
         data.put(SSH_EXTENSIONS, extensions);
     }
@@ -3155,7 +3142,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // Verify that the key algorithm is compliant with the certificate profile
         if (!getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
             if(log.isDebugEnabled()) {
-                log.debug("List of available algorithms " + getAvailableKeyAlgorithmsAsList() + " does not contain the on of the public key: " + keyAlgorithm);
+                log.debug("Algorithm " + keyAlgorithm + " is not among the list of available algorithms: " + getAvailableKeyAlgorithmsAsList());
             }
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
         }
@@ -3184,6 +3171,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (keyLength == -1) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", publicKey.getClass().getName()));
         }
+        // This can look a bit illogical from a configuration perspective, it checks if the requested key length/strength is
+        // in in interval. I.e. if you select 2048 and 4096 for RSA keys in a certificate profile, but does not select 3072
+        // 3072 is still allowed because it is within the interval configured in the certificate profile
         if ((keyLength < (getMinimumAvailableBitLength() - 1)) || (keyLength > (getMaximumAvailableBitLength()))) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", keyLength));
         }
@@ -3536,6 +3526,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
+    }
+    
+    /**
+     * Determine if the certificate profile supports Elliptic Curve Cryptography (ECC).
+     *
+     * @param certificateProfile the certificate profile to check.
+     * @return true if the certificate profile supports a key algorithm which utilises ECC, false otherwise.
+     */
+    public boolean isEccCapable() {
+        return getAvailableKeyAlgorithmsAsList().contains("ECDSA")
+                || getAvailableKeyAlgorithmsAsList().contains("ECGOST3410")
+                || getAvailableKeyAlgorithmsAsList().contains("DSTU4145");
     }
 
 }

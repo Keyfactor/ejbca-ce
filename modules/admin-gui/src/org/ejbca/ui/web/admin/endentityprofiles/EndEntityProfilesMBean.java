@@ -33,10 +33,10 @@ import java.util.zip.ZipInputStream;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
@@ -68,7 +68,7 @@ import org.ejbca.util.HttpTools;
  * JSF MBean backing edit end entity profiles page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EndEntityProfilesMBean extends BaseManagedBean implements Serializable {
 

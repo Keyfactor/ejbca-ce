@@ -22,9 +22,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.model.ListDataModel;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -47,7 +47,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  *
  */
 @SessionScoped
-@ManagedBean(name="approvalProfilesMBean")
+@Named("approvalProfilesMBean")
 public class ApprovalProfilesMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -2452049885728885525L;

@@ -13,16 +13,16 @@
 #openssl pkcs12 -in signer.p12 -nodes -nocerts -out signer.priv
 
 OPENSSL=/usr/bin/openssl
-SCRIPTNAME=`basename $0`
-OPTION=$1
-DATE=`date +"%Y-%m-%d"`
-BACKUPDIR=signed_files
+SCRIPTNAME="$(basename "$0")"
+OPTION="$1"
+# DATE=`date +"%Y-%m-%d"`
+# BACKUPDIR=signed_files
 
 if [ "$OPTION" = "sign" ]; then
     PRIVATEKEY="$2"
     FILE="$3"
     SIGNATUREFILE="$4"
-    $OPENSSL dgst -sign $PRIVATEKEY -sha1 $FILE > $SIGNATUREFILE
+    $OPENSSL dgst -sign "$PRIVATEKEY" -sha256 "$FILE" > $SIGNATUREFILE
 
     exit 0
 
@@ -31,13 +31,13 @@ elif [ "$OPTION" = "verify" ]; then
     FILE="$3"
     SIGNATUREFILE="$4"
 
-    $OPENSSL dgst -verify $PUBLICKEY -signature $SIGNATUREFILE -sha1 $FILE
+    $OPENSSL dgst -verify $PUBLICKEY -signature $SIGNATUREFILE -sha256 $FILE
     exit $?
 
 else
     echo "Usage:"
-    echo "$SCRIPTNAME sign <path to private key> <path to file to sign> <path to signature>"
-    echo "$SCRIPTNAME verify <path to public key> <file that IS signed> <file which contains the signature>"
+    echo "${SCRIPTNAME} sign <path to private key> <path to file to sign> <path to signature>"
+    echo "${SCRIPTNAME} verify <path to public key> <file that IS signed> <file which contains the signature>"
     echo "Return code of verify is 0 if OK and 1 if verify failed"
     exit 0
 fi

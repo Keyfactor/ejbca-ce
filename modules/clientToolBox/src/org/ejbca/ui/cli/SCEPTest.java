@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1PrintableString;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DEROctetString;
@@ -444,7 +445,7 @@ class SCEPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("MessageType.AttrValues should be 1: " + values.size());
                     return false;
                 }
-                ASN1String str = DERPrintableString.getInstance((values.getObjectAt(0)));
+                ASN1String str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
                 String messageType = str.getString();
                 if (!StringUtils.equals(messageType, "3")) {
                     StressTest.this.performanceTest.getLog().error("MessageType should be 3: " + messageType);
@@ -461,7 +462,7 @@ class SCEPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("PKIStatus.AttrValues should be 1: " + values.size());
                     return false;
                 }
-                str = DERPrintableString.getInstance((values.getObjectAt(0)));
+                str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
                 String responsestatus = str.getString();
                 if (!StringUtils.equals(expectedResponseStatus.getStringValue(), responsestatus)) {
                     StressTest.this.performanceTest.getLog().error("ResponseStatus should be " + expectedResponseStatus.getValue() + " but was: " + responsestatus);
@@ -513,7 +514,7 @@ class SCEPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("TransId.AttrValues should be 1: " + values.size());
                     return false;
                 }
-                str = DERPrintableString.getInstance((values.getObjectAt(0)));
+                str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
                 // transid should be the same as the one we sent
                 if (!StringUtils.equals(transId, str.getString())) {
                     StressTest.this.performanceTest.getLog().error("TransId should be " + transId + " but was: " + str.getString());
@@ -651,7 +652,7 @@ class SCEPTest extends ClientToolBox {
                 AttributeTable tab = signerInfo.getSignedAttributes();
                 Attribute attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_pkiStatus));
                 ASN1Set values = attr.getAttrValues();
-                ASN1String str = DERPrintableString.getInstance((values.getObjectAt(0)));
+                ASN1String str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
                 String responsestatus = str.getString();
                 if (extectedResponseStatus.getStringValue().equals(responsestatus)) {
                     return true;

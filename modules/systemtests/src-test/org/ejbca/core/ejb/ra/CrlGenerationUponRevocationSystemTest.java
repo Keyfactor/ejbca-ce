@@ -480,11 +480,11 @@ public class CrlGenerationUponRevocationSystemTest extends CaTestCase {
     }
  
     private final X509CAInfo createTestCAWithGenerateCrlUponRevocation(final String caName, final long deltaCrlPeriod) throws Exception {
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, caName, "2048");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, caName, "2048", "2048", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
 
         log.debug("Creating CryptoToken with ID " + cryptoTokenId + " to be used by CA " + caName);
         final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN=" + caName, caName, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
         caInfo.setDescription("JUnit RSA CA");
