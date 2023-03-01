@@ -175,18 +175,21 @@ public class RaCertificateDetails {
     private String updatedRevocationDate = null;
     private boolean caAllowsChangeOfRevocationReason = false;
     private boolean cpAllowsRevocationBackdate = false;
+    private boolean caAllowsInvalidityDate = false;
 
     public RaCertificateDetails(final CertificateDataWrapper cdw, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
+                    final Map<String, Boolean> caNameToAllowsInvalidityDate,
                     final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
                     final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
         this.callbacks = callbacks;
-        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
+        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,
                 caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
     }
 
     public void reInitialize(final CertificateDataWrapper cdw, final Map<Integer, String> cpIdToNameMap,
             final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
+            final Map<String, Boolean> caNameToAllowsInvalidityDate,
             final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
             final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
         this.cdw = cdw;
@@ -216,6 +219,10 @@ public class RaCertificateDetails {
         if (cpNameToAllowsRevocationBackdating != null && this.cpName != null &&
                 cpNameToAllowsRevocationBackdating.containsKey(this.cpName)) {
             this.cpAllowsRevocationBackdate = cpNameToAllowsRevocationBackdating.get(this.cpName);
+        }
+        if (caNameToAllowsInvalidityDate != null && this.caName != null &&
+                caNameToAllowsInvalidityDate.containsKey(this.caName)) {
+            this.caAllowsInvalidityDate = caNameToAllowsInvalidityDate.get(this.caName);
         }
         this.status = certificateData.getStatus();
         this.revocationReason = certificateData.getRevocationReason();
@@ -361,6 +368,9 @@ public class RaCertificateDetails {
         } else {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getUpdateTime(), TimeZone.getDefault());
         }
+        if (certificateData.getInvalidityDate() != null && certificateData.getInvalidityDate() != -1 && isCaAllowsInvalidityDate()) {
+            this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
+        }
         final String subjectKeyIdB64 = certificateData.getSubjectKeyId();
         if (subjectKeyIdB64!=null) {
             this.subjectKeyId = new String(Hex.encode(Base64.decode(subjectKeyIdB64.getBytes())));
@@ -456,6 +466,10 @@ public class RaCertificateDetails {
      */
     public boolean isCpAllowingRevocationBackdate() {
         return this.cpAllowsRevocationBackdate;
+    }
+
+    public boolean isCaAllowsInvalidityDate() {
+        return caAllowsInvalidityDate;
     }
 
     /** @return a localized certificate (revocation) status string */

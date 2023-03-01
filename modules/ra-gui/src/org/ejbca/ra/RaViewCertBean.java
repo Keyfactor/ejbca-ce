@@ -77,6 +77,7 @@ public class RaViewCertBean implements Serializable {
     private Map<Integer, String> eepIdToNameMap = null;
     private Map<Integer, String> cpIdToNameMap = null;
     private Map<String, String> caSubjectToNameMap = new HashMap<>();
+    private Map<String, Boolean> caNameToAllowsInvalidityDate = new HashMap<>();
     private Map<String, Boolean> caNameToAllowsChangeOfRevocationReason = new HashMap<>();
     private Map<String, Boolean> cpNameToAllowsRevocationBackdating = new HashMap<>();
 
@@ -100,8 +101,8 @@ public class RaViewCertBean implements Serializable {
                 // Re-initialize object if status has changed
                 final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                         raCertificateDetails.getFingerprint());
-                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
-                        cpNameToAllowsRevocationBackdating);
+                raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,
+                        caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
             }
             return ret;
         }
@@ -120,8 +121,8 @@ public class RaViewCertBean implements Serializable {
             raMasterApiProxyBean.revokeCertWithMetadata(raAuthenticationBean.getAuthenticationToken(), certRevocationMetadata);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
-            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsChangeOfRevocationReason,
-                    cpNameToAllowsRevocationBackdating);
+            raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,
+                    caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
         }
 
         @Override
@@ -159,9 +160,11 @@ public class RaViewCertBean implements Serializable {
                 for (final CAInfo caInfo : caInfos) {
                     caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
                     caNameToAllowsChangeOfRevocationReason.put(caInfo.getName(), caInfo.isAllowChangingRevocationReason());
+                    caNameToAllowsInvalidityDate.put(caInfo.getName(), caInfo.isAllowInvalidityDate());
                 }
-                raCertificateDetails = new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
-                        caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
+                raCertificateDetails = new RaCertificateDetails(cdw, raCertificateDetailsCallbacks,
+                        cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate, caNameToAllowsChangeOfRevocationReason,
+                        cpNameToAllowsRevocationBackdating);
             }
         }
     }
