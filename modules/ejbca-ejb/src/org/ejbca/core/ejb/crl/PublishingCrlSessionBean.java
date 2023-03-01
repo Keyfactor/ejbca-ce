@@ -645,7 +645,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, crlPartitionIndex, lastBaseCrlInfo.getCreateDate().getTime(), 
                         true, getAllowInvalidityDate(cainfo));
 
-                // If invalidity date is considered when generating delta crl then additional filtering must be applied to the collection of RevokedCertiInfos
+                // If invalidity date is considered when generating delta CRL then additional filtering must be applied to the collection of RevokedCertInfos
                 if (getAllowInvalidityDate(cainfo)) {
                     Collection<RevokedCertInfo> filteredRevCertInfos = new ArrayList<>();
                     for (RevokedCertInfo revCertInfo : revcertinfos) {
@@ -656,6 +656,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             filteredRevCertInfos.add(revCertInfo);
                             continue;
                         }
+                        // The invalidity date of the certificate in the previous base CRL is determined in order to compare it to the current up to date invalidity date value
                         if (crlEntry.hasExtensions()) {
                             final byte[] extensionValue = crlEntry.getExtensionValue(Extension.invalidityDate.getId());
                             if (extensionValue != null) {
