@@ -336,9 +336,7 @@
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ws-wsdl" depends="ejbca-common-web" description="Generate the EJBCA Web Services WSDL">
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="true" inheritrefs="true"/>
-	</target>
+
 
 	<target name="ejbca-ws-common" depends="ejbca-common" description="Build the EJBCA Web Services common library">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build-jar" inheritall="true" inheritrefs="true"/>
@@ -349,8 +347,11 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ws-generate" depends="ejbca-common-web, ejbca-ws-wsdl" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
+	<target name="ejbca-ws-wsdl" depends="edition-specific-interface, ejbca-common-web" description="Generate the EJBCA Web Services WSDL">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="ejbca-ws-generate" depends="ejbca-common-web, ejbca-ws-wsdl" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="generate" inheritall="true" inheritrefs="true"/>
 	</target>
 
