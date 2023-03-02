@@ -89,8 +89,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests CRL create session.
- * 
- * @version $Id$
  */
 public class PublishingCrlSessionTest extends RoleUsingTestCase {
 
@@ -192,7 +190,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
          */
 
         // Get number of last CRL
-        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), false, CertificateConstants.NO_CRL_PARTITION, -1);
+        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), false, CertificateConstants.NO_CRL_PARTITION, -1, false);
         log.debug("Number of revoked certificates=" + revfp.size());
         crl = getLastCrl(testx509ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
