@@ -29,7 +29,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRunner;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.junit.After;
@@ -44,6 +43,7 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**

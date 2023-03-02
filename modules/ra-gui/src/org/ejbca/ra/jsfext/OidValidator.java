@@ -8,7 +8,8 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Validator used to verify OID inputs. May be used to either validate a plain OID, e.g. "1.2.3.4"

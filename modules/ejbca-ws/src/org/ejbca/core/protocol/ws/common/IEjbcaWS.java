@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.ws.common;
 import java.security.cert.CertificateExpiredException;
 import java.util.List;
 
-import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -23,7 +22,6 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
@@ -56,6 +54,9 @@ import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.protocol.DateNotValidException;
 import org.ejbca.util.KeyValuePair;
 import org.ejbca.util.query.IllegalQueryException;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Primary interface to the EJBCA RA WebService.
@@ -365,7 +366,7 @@ public interface IEjbcaWS {
 	 * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
 	 * @throws CertificateExpiredException if certificate expired.
 	 * @throws CesecoreException if an error occurred
-	 * @see org.cesecore.ErrorCode
+	 * @see com.keyfactor.ErrorCode
 	 */
     List<Certificate> cvcRequest(String username, String password, String cvcReq)
 	throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
@@ -540,7 +541,7 @@ public interface IEjbcaWS {
 	 * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
 	 * @param keySpec that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
 	 * @param keyAlg that the generated key should have, RSA, ECDSA. Use one of the constants in
-	 * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
+	 * {@link com.keyfactor.util.crypto.algorithm.AlgorithmConstants}.KEYALGORITHM_...
 	 * @return the generated keystore
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
@@ -1235,7 +1236,7 @@ public interface IEjbcaWS {
 	 * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
 	 * @param keySpec that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
 	 * @param keyAlg that the generated key should have, RSA, ECDSA. Use one of the constants in
-	 * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
+	 * {@link com.keyfactor.util.crypto.algorithm.AlgorithmConstants}.KEYALGORITHM_...
 	 * @return the generated token data
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized to request

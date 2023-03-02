@@ -46,10 +46,6 @@ import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.util.cert.CrlExtensions;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
@@ -60,6 +56,11 @@ import org.ejbca.ui.web.rest.api.io.response.CaInfoRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CreateCrlRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CrlRestResponse;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * JAX-RS resource handling CA related requests.

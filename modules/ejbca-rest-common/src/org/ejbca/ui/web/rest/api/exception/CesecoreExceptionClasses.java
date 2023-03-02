@@ -24,8 +24,9 @@ import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificatetransparency.CTLogException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * A wrapper class to map a CesecoreException to its Enum representation to simplify the decision logic.

@@ -40,7 +40,8 @@ import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;

@@ -22,10 +22,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.util.CeSecoreNameStyle;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Represents two APIs: list (needed for JSF) and map

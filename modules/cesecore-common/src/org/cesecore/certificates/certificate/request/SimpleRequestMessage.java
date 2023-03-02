@@ -26,7 +26,8 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.keys.util.PublicKeyWrapper;
-import org.cesecore.util.CeSecoreNameStyle;
+
+import com.keyfactor.util.CeSecoreNameStyle;
 
 /**
  * Class to handle simple requests from only a public key, all required parameters must be set.

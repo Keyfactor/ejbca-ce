@@ -25,7 +25,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.CesecoreException;
+
+import com.keyfactor.CesecoreException;
 
 /**
  * Base implementation for domain objects (or other objects) with dynamic UI properties.
