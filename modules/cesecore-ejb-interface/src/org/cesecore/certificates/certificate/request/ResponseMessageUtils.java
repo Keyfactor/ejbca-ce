@@ -13,6 +13,7 @@
 
 package org.cesecore.certificates.certificate.request;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Collection;
@@ -34,15 +35,12 @@ public abstract class ResponseMessageUtils {
         CertificateResponseMessage ret = null;
         // Create the response message and set all required fields
         try {
-            ret = (CertificateResponseMessage) responseClass.newInstance();
-        } catch (InstantiationException e) {
+            ret = (CertificateResponseMessage) responseClass.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             //TODO : do something with these exceptions
             log.error("Error creating response message", e);
             return null;
-        } catch (IllegalAccessException e) {
-            log.error("Error creating response message", e);
-            return null;
-        }
+        } 
         if (ret.requireSignKeyInfo()) {
             ret.setSignKeyInfo(certs, signPriv, provider);
         }

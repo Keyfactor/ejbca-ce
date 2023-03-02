@@ -12,9 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
+import java.io.IOException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -36,6 +39,9 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -76,8 +82,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * This session bean provides a bridge between EJBCA and CESecore by incorporating CRL creation (CESeCore) with publishing (EJBCA)
  * into a single atomic action.
- *
- *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublishingCrlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
@@ -486,7 +490,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     log.debug("Listing revoked certificates. Free memory=" + freeMemory);
                 }
                 revokedCertificates = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, false,
-                        crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl);
+                        crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
 
                 //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
@@ -502,7 +506,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 log.info("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN,
-                                        false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl);
+                                        false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
@@ -639,8 +643,44 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             // We can not create a CRL for a CA that is waiting for certificate response
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE ) {
                 // Find all revoked certificates
-                revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, crlPartitionIndex, lastBaseCrlInfo.getCreateDate().getTime(), true);
+                revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, crlPartitionIndex, lastBaseCrlInfo.getCreateDate().getTime(), 
+                        true, getAllowInvalidityDate(cainfo));
 
+                // If invalidity date is considered when generating delta CRL then additional filtering must be applied to the collection of RevokedCertInfos
+                if (getAllowInvalidityDate(cainfo)) {
+                    Collection<RevokedCertInfo> filteredRevCertInfos = new ArrayList<>();
+                    for (RevokedCertInfo revCertInfo : revcertinfos) {
+                        Date lastInvDate = null;                        
+                        X509CRLEntry crlEntry = lastBaseCrlInfo.getCrl().getRevokedCertificate(revCertInfo.getUserCertificate());
+                        // If the cert was not revoked before the last base CRL, then it needs to be included in the delta CRL
+                        if (crlEntry == null) {
+                            filteredRevCertInfos.add(revCertInfo);
+                            continue;
+                        }
+                        // The invalidity date of the certificate in the previous base CRL is determined in order to compare it to the current up to date invalidity date value
+                        if (crlEntry.hasExtensions()) {
+                            final byte[] extensionValue = crlEntry.getExtensionValue(Extension.invalidityDate.getId());
+                            if (extensionValue != null) {
+                                try {
+                                    final ASN1GeneralizedTime invalidityDateExtension = ASN1GeneralizedTime.getInstance(JcaX509ExtensionUtils.parseExtensionValue(extensionValue));
+                                    if (invalidityDateExtension != null) {
+                                        lastInvDate = invalidityDateExtension.getDate();
+                                    }
+                                } catch (IOException | ParseException e) {
+                                    log.debug("Failed to parse invalidity date of CRLEntry: " + e.getMessage());
+                                    throw new CRLException(e);
+                                }
+                            }
+                        }
+                        // Also include the revoked certificate entry in the delta CRL if invalidity date has changed since the last base CRL
+                        if (revCertInfo.getInvalidityDate() != null && !revCertInfo.getInvalidityDate().equals(lastInvDate)) {
+                            filteredRevCertInfos.add(revCertInfo);
+                            continue;
+                        }
+                    }                    
+                    revcertinfos = filteredRevCertInfos;
+                }
+                
                 // if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
                     if (log.isDebugEnabled()) {
@@ -659,7 +699,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                     log.debug("Collecting revocation information for renewed certificate '" + renewedCertificateSubjectDN + "' and merging them with ones for " + caCertSubjectDN);
                                 }
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
-                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, false, crlPartitionIndex, -1, true);
+                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, false, 
+                                        crlPartitionIndex, -1, true, getAllowInvalidityDate(cainfo));
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
@@ -777,5 +818,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     private Certificate getCaCertificate(final CAInfo caInfo) {
         final Collection<Certificate> certificateChain = caInfo.getCertificateChain();
         return certificateChain.isEmpty() ? null : certificateChain.iterator().next();
+    }
+    
+    private boolean getAllowInvalidityDate(final CAInfo caInfo) {
+        return caInfo != null && caInfo.isAllowInvalidityDate();
     }
 }

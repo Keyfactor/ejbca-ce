@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -204,10 +205,10 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         for (final String normalizerName : getNormalizations())  {
             try {
                 final Class<?> normalizerClass = Class.forName(normalizerName);
-                final DomainBlacklistNormalizer normalizer = (DomainBlacklistNormalizer) normalizerClass.newInstance();
+                final DomainBlacklistNormalizer normalizer = (DomainBlacklistNormalizer) normalizerClass.getDeclaredConstructor().newInstance();
                 normalizer.initialize(data);
                 newNormalizers.add(normalizer);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 log.error("Failed to load Domain Block List Normalizer '" + normalizerName + "'.");
                 newInitializationFailure = true;
             }
@@ -216,9 +217,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         for (final String checkerName : getChecks())  {
             try {
                 final Class<?> checkerClass = Class.forName(checkerName);
-                final DomainBlacklistChecker checker = (DomainBlacklistChecker) checkerClass.newInstance();
+                final DomainBlacklistChecker checker = (DomainBlacklistChecker) checkerClass.getDeclaredConstructor().newInstance();
                 newCheckers.add(checker);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 log.error("Failed to load Domain Block List Checker '" + checkerName + "'.");
                 newInitializationFailure = true;
             }
