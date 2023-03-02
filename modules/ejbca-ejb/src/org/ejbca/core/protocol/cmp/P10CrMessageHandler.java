@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -315,9 +316,10 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
         //Only run if value hasn't been set in CAInfo, which should be done during the 7.4.0 upgrade
         if (!StringUtils.isEmpty(preProcessorClass) && StringUtils.isEmpty(cainfo.getRequestPreProcessor())) {
             try {
-                ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                 req = extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName);
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
                 throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
             }
         } else {

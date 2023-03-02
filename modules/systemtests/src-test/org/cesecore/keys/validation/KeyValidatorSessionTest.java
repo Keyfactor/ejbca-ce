@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -691,7 +692,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         int id = 0; // id of the Validator we will add
         try {
             // See if we have to remove the old validator first
-            @SuppressWarnings("unchecked")
             final Map<String, Integer> nameMap = MapUtils.invertMap(keyValidatorProxySession.getKeyValidatorIdToNameMap());
             if (nameMap.containsKey(name)) {
                 final int idtoremove = nameMap.get(name);
@@ -745,7 +745,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         int id = 0; // id of the Validator we will add
         int id1 = 0;
         // See if we have to remove the old validator first
-        @SuppressWarnings("unchecked")
         final Map<String, Integer> nameMap = MapUtils.invertMap(keyValidatorProxySession.getKeyValidatorIdToNameMap());
         if (nameMap.containsKey(name)) {
             final int idtoremove = nameMap.get(name);
@@ -1004,8 +1003,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     // Code duplication: see org.cesecore.keys.validation.KeyValidatorTestUtil
     public static KeyValidator createKeyValidator(final Class<? extends KeyValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
-            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
-        KeyValidator result = type.newInstance();
+            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        KeyValidator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);
@@ -1046,12 +1045,17 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
      * @return the concrete key validator instance.
      * @throws IllegalAccessException Illegal access exception
      * @throws InstantiationException Instantiation exception
+     * @throws SecurityException 
+     * @throws NoSuchMethodException 
+     * @throws InvocationTargetException 
+     * @throws IllegalArgumentException 
      */
     // Code duplication: Re-factor.
     private static CertificateValidator createCertificateValidator(Class<? extends CertificateValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
-            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
-        CertificateValidator result = type.newInstance();
+            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, NoSuchMethodException, SecurityException {
+        CertificateValidator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);
