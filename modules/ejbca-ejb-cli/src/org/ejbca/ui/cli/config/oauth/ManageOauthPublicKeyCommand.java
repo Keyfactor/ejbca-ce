@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.oauth;
 
+import com.keyfactor.util.keys.KeyTools;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -20,7 +21,6 @@ import java.security.cert.CertificateParsingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -241,7 +241,7 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
 
         byte[] inputKeyBytes = value.getBytes(StandardCharsets.US_ASCII);
         try {
-            inputKeyBytes = org.cesecore.util.Base64.decode(inputKeyBytes);
+            inputKeyBytes = com.keyfactor.util.Base64.decode(inputKeyBytes);
         } catch (RuntimeException e) {
             log.info("New key is not in Base64 format. Assuming it is PEM or JWK format.");
         }

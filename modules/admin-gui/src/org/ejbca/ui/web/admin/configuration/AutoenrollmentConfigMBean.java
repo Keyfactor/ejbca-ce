@@ -23,9 +23,10 @@ import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import com.keyfactor.util.StringTools;
 
 /**
  */

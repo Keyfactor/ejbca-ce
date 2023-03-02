@@ -14,7 +14,7 @@ package org.cesecore.dbprotection;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * An exception thrown when there is an error with database protection, this error is fatal and should lead to 

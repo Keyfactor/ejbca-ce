@@ -23,7 +23,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Provides a serializable POJO for transmitting certificate information over SCP 

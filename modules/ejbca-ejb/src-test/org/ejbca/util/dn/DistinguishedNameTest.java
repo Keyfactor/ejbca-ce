@@ -20,9 +20,10 @@ import java.util.Map;
 
 import javax.naming.ldap.Rdn;
 
-import org.cesecore.certificates.util.DnComponents;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

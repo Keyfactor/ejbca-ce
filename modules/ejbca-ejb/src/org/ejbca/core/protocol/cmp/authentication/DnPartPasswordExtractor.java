@@ -19,9 +19,10 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Extracts password from the request DN of a CMRF/PKCS#10 request message

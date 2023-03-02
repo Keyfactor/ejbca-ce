@@ -37,8 +37,9 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Base class for CMP request messages.

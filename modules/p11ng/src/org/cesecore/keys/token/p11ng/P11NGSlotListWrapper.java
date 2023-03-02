@@ -10,9 +10,11 @@
 package org.cesecore.keys.token.p11ng;
 
 import org.apache.log4j.Logger;
-import org.cesecore.keys.token.PKCS11SlotListWrapper;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice.Slot;
+
+import com.keyfactor.util.keys.token.pkcs11.PKCS11SlotListWrapper;
+
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 
 import java.io.File;

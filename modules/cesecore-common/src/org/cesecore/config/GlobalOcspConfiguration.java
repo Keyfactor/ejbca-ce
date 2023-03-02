@@ -15,7 +15,8 @@ package org.cesecore.config;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 import java.io.Serializable;
 import java.util.Objects;

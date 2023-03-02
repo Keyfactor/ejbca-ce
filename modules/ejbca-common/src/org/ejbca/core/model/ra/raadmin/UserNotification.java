@@ -20,7 +20,8 @@ import java.util.LinkedHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Class holding information about user notification sent when a user transitions through

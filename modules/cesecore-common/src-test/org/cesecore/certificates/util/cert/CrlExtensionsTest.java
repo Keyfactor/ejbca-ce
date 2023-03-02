@@ -25,9 +25,10 @@ import java.util.Set;
 
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * Test of CrlExtensions utility class.

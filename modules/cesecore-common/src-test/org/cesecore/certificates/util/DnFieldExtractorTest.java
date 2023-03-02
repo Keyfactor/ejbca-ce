@@ -21,6 +21,8 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
+import com.keyfactor.util.certificate.DnComponents;
+
 
 /**
  * Tests the DNFieldExtractor class.

@@ -17,6 +17,8 @@ import javax.ejb.Remote;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 
+import com.keyfactor.util.certificate.CertificateWrapper;
+
 /**
  * Remote interface for CertificateStoreSession.
  * 
@@ -29,7 +31,7 @@ public interface CertificateStoreSessionRemote extends CertificateStoreSession {
      * Stores a certificate (remote EJB interface).
      * 
      * @param admin An authentication token to authorize the action
-     * @param cert Wrapper of the certificate to be stored. Use {@link org.cesecore.util.EJBTools#wrap} to construct to the wrapper.
+     * @param cert Wrapper of the certificate to be stored. Use {@link com.keyfactor.util.EJBTools#wrap} to construct to the wrapper.
      * @param cafp Fingerprint (hex) of the CAs certificate.
      * @param username username of end entity owning the certificate.
      * @param status the status from the CertificateConstants.CERT_ constants
@@ -49,7 +51,7 @@ public interface CertificateStoreSessionRemote extends CertificateStoreSession {
     /**
      * Finds a certificate by fingerprint (remote EJB interface, supports unnamed ECC and Brainpool)
      * @param fingerprint Fingerprint of certificate
-     * @return Wrapped certificate, or null if no certificate was found. Use {@link org.cesecore.util.EJBTools#unwrap} to extract the certificate.
+     * @return Wrapped certificate, or null if no certificate was found. Use {@link com.keyfactor.util.EJBTools#unwrap} to extract the certificate.
      */
     CertificateWrapper findCertificateByFingerprintRemote(String fingerprint);
 

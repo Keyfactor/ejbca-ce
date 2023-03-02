@@ -17,10 +17,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**

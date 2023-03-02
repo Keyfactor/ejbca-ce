@@ -24,6 +24,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 
+import com.keyfactor.util.certificate.CertificateWrapper;
+
 /**
  * Interface for certificate store operations
  * Stores certificate in the local database using Certificate JPA Beans. 

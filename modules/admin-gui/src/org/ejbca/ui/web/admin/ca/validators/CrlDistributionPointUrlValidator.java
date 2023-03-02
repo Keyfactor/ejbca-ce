@@ -15,8 +15,9 @@ package org.ejbca.ui.web.admin.ca.validators;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.StringTools;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;

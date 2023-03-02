@@ -31,7 +31,6 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.junit.util.CryptoTokenRunner;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.junit.After;
@@ -43,6 +42,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  *

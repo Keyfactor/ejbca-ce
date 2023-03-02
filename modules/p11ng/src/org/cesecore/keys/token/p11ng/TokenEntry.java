@@ -17,7 +17,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Represents an entry in the token with at minimum an alias and a type.

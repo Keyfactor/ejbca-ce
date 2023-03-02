@@ -25,8 +25,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectedData;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * Used as base class for NoConflictCertificateData and CertificateData to group the common logic for those entites

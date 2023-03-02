@@ -33,8 +33,8 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ExternalScriptsAllowlist;
-import org.cesecore.util.StringTools;
 
+import com.keyfactor.util.StringTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 

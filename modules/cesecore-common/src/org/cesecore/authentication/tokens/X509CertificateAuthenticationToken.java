@@ -30,7 +30,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * This is an implementation of the AuthenticationToken concept, based on using an {@link X509Certificate} as it's single credential, and that

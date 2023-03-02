@@ -57,15 +57,10 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.roles.AdminGroupData;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.StringTools;
 import org.easymock.EasyMock;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
@@ -74,6 +69,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Unit tests for the class DatabaseCliCommand

@@ -15,8 +15,9 @@ package org.ejbca.core.model.ra;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * The certificate profile is not allowing revocation back date.

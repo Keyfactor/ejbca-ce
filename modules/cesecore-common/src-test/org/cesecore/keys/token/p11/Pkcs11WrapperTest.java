@@ -24,12 +24,15 @@ import java.util.Arrays;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.keys.token.PKCS11SlotListWrapper;
 import org.cesecore.keys.token.PKCS11TestUtils;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.pkcs11.PKCS11SlotListWrapper;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * Tests instantiating the PKCS11SlotListWrapper

@@ -46,8 +46,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.util.EJBTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
@@ -72,6 +70,9 @@ import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.

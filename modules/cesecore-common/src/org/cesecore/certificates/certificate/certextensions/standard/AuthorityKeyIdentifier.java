@@ -33,8 +33,9 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
 
 /**
  * 
