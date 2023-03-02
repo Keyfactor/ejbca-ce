@@ -1645,7 +1645,11 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ejbca-ws"/>
     </target>
 
-    <target name="ejbca-ws-generate" depends="deprecated:check" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
+    <target name="ejbca-ws-wsdl" depends="deprecated:check" description="Generate the EJBCA Web Services WSDL">
+    	<ant dir="modules" target="ejbca-ws-wsdl"/>
+    </target>
+	
+    <target name="ejbca-ws-generate-client" depends="deprecated:check" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
     	<ant dir="modules" target="ejbca-ws-generate"/>
     </target>
 
