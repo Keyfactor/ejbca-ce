@@ -9,6 +9,7 @@
 	<import file="${ejbca-ws.dir}/../build-helpers.xml"/>
 
 	<property name="ejbca-ws.build.dir" location="${ejbca-ws.dir}/build"/>
+	<property name="ejbca-ws.gen_source.dir" location="${ejbca-ws.dir}/gen-source"/>
 	<property name="ejbca-ws.build-lib.dir" location="${ejbca-ws.dir}/build-lib"/>
 	<property name="ejbca-ws.src.dir" location="${ejbca-ws.dir}/src"/>
 
@@ -107,7 +108,7 @@
 
 	<target name="generate-wsdl" depends="compile">
 		<pathconvert property="wsdl-generate.classpath-string" refid="wsdl-generate.classpath"/>
-		<!-- <mkdir dir="${ejbca-ws.dir}/temp" />-->
+		<mkdir dir="${ejbca-ws.gen_source.dir}" />
 		<!-- Generate a WSDL file that can be used for client stub generation -->
 		<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen" classpathref="wsgen.classpath" />
 		<wsgen 
@@ -115,7 +116,9 @@
 			resourcedestdir="${mod.dist.path}"
 			genwsdl="true"
 			xnocompile="true"	
-			verbose="true">
+			verbose="true"
+			keep="true"
+			sourcedestdir="${ejbca-ws.gen_source.dir}">
 			<classpath>
 				<path refid="wsdl-generate.classpath"/>
 				<path refid="wsgen.classpath"/>
