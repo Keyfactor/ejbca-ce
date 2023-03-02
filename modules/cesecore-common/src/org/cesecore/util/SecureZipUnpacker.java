@@ -14,6 +14,9 @@
 package org.cesecore.util;
 
 import org.apache.log4j.Logger;
+
+import com.keyfactor.util.StreamSizeLimitExceededException;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;

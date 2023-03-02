@@ -25,9 +25,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.util.StringTools;
 
 import com.google.common.base.Preconditions;
+import com.keyfactor.util.StringTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**

@@ -21,8 +21,9 @@ import java.util.Set;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.query.QueryCriteria;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Allows auditing of securely logged events.

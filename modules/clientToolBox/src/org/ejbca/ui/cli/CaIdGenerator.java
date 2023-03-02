@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.cesecore.util.CertTools;
+import com.keyfactor.util.CertTools;
 
 /**
  * <p><b>CaId Module Module</b>

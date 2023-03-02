@@ -60,9 +60,10 @@ import org.bouncycastle.asn1.x509.Time;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.Arrays;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
 
 /**
  * Certificate request message (crmf) according to RFC4211.

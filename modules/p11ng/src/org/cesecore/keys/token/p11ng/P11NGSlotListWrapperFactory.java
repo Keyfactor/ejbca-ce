@@ -17,8 +17,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
-import org.cesecore.keys.token.PKCS11SlotListWrapper;
-import org.cesecore.keys.token.PKCS11SlotListWrapperFactory;
+
+import com.keyfactor.util.keys.token.pkcs11.PKCS11SlotListWrapper;
+import com.keyfactor.util.keys.token.pkcs11.PKCS11SlotListWrapperFactory;
 
 /**
  * Factory class for creating P11NGSlotListWrapper in a thread safe way
