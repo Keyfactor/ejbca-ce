@@ -151,6 +151,12 @@
 		<delete><fileset dir="${ejbca-ws-cli.src-gen.dir}" includes="**"></fileset></delete>
 		<mkdir dir="${ejbca-ws-cli.build.dir}" />
     	
+    	<!--
+		<exec command="${java.home}/../bin/wsimport" failonerror="true">
+			<arg line="-s ${ejbca-ws-cli.src-gen.dir} -d ${ejbca-ws-cli.build.dir} -p org.ejbca.core.protocol.ws.client.gen -keep ${mod.ejbca-ws.wsdl}"/>
+		</exec>
+        -->
+    	<!--
     	<taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport" classpathref="wsgen.classpath"/>
     	
     	<wsimport 
@@ -160,11 +166,7 @@
     		package="org.ejbca.core.protocol.ws.client.gen"
     		keep="true">  	
     	</wsimport>
-    	<!--
-		<exec command="${java.home}/../bin/wsimport" failonerror="true">
-			<arg line="-s ${ejbca-ws-cli.src-gen.dir} -d ${ejbca-ws-cli.build.dir} -p org.ejbca.core.protocol.ws.client.gen -keep ${mod.ejbca-ws.wsdl}"/>
-		</exec>
-        -->
+
     	
     	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="Certificate"/>
@@ -205,6 +207,7 @@
     	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="ExtendedInformationWS"/>
     	</antcall>
+    	-->
 		<delete dir="${ejbca-ws-cli.build.dir}" />	<!-- Since we cannot specify the target java version we have to recompile -->
     </target>
 
