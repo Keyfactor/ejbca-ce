@@ -64,7 +64,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.SecureXMLDecoder;
@@ -89,6 +88,8 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Handles management of Publishers.

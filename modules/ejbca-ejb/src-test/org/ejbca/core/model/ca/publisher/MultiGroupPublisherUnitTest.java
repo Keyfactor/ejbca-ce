@@ -44,7 +44,6 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
@@ -54,6 +53,8 @@ import org.easymock.TestSubject;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Unit test for MultiGroupPublisher.

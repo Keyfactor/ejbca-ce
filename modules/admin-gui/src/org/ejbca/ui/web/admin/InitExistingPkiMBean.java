@@ -29,9 +29,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
 
 @Named
 @SessionScoped

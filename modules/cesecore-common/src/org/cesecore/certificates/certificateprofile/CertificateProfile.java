@@ -44,15 +44,16 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.ssh.SshCertificateType;
 import org.cesecore.certificates.certificate.ssh.SshExtension;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -1413,7 +1414,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns the chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
      * algorithm used to sign the CA certificate).
      *
-     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      * @return JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used to
      *         sign the CA certificate).
      */
@@ -1429,7 +1430,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param signAlg
      *            JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
      *            to sign the CA certificate).
-     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      */
     public void setSignatureAlgorithm(String signAlg) {
         data.put(SIGNATUREALGORITHM, signAlg);

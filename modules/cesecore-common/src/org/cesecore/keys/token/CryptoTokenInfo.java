@@ -15,8 +15,11 @@ package org.cesecore.keys.token;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.util.Named;
+
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * Non-sensitive information about a CryptoToken.

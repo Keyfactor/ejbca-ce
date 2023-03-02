@@ -44,7 +44,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
-import org.cesecore.util.EJBTools;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
@@ -60,6 +59,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.keyfactor.util.EJBTools;
 
 /**
  * A unit test class for CertificateRestResource to test its content.

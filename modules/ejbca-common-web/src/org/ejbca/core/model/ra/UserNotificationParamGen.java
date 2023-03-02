@@ -23,8 +23,9 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.util.CertTools;
 import org.ejbca.util.NotificationParamGen;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Variables used with userdata

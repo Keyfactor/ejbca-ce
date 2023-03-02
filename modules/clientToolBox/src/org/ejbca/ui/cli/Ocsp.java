@@ -32,9 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.core.protocol.ocsp.OCSPUnidClient;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidResponse;
@@ -42,6 +39,10 @@ import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
 
 /**
  * Used to stress test the OCSP interface

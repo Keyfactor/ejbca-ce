@@ -19,7 +19,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.CeSecoreNameStyle;
+
+import com.keyfactor.util.CeSecoreNameStyle;
 
 /**
  * DN string utilities.

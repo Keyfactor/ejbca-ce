@@ -46,7 +46,6 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -60,6 +59,8 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaCertificateDetails.Callbacks;
+
+import com.keyfactor.util.EJBTools;
 
 /**
  * Backing bean for Search Certificates page.

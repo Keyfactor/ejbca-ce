@@ -19,11 +19,12 @@ import java.util.List;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * Provides find methods for EndEntityInformation objects. 

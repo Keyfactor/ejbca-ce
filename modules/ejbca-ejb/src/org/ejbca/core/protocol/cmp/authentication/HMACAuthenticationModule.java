@@ -33,7 +33,6 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -43,6 +42,8 @@ import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
 import org.ejbca.core.protocol.cmp.CmpPbmac1Verifyer;
 import org.ejbca.core.protocol.cmp.CmpMessageProtectionVerifyer;
 import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Checks the authentication of the PKIMessage.

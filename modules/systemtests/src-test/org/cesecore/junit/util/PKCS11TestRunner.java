@@ -13,7 +13,8 @@
 package org.cesecore.junit.util;
 
 import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.keys.token.PKCS11CryptoToken;
+
+import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 
 /**
  * Test runner for PKCS#11 crypto tokens
