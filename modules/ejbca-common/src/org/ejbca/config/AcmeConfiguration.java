@@ -172,13 +172,13 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
                 setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_SCHEME);
             }
             if (data.get(KEY_RA_NAMEGENERATIONPARAMS) == null) {
-                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_PARAMS);
+                setRANameGenParams(DEFAULT_RA_USERNAME_GENERATION_PARAMS);
             }
             if (data.get(KEY_RA_NAMEGENERATIONPREFIX) == null) {
-                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_PREFIX);
+                setRANameGenPrefix(DEFAULT_RA_USERNAME_GENERATION_PREFIX);
             }
             if (data.get(KEY_RA_NAMEGENERATIONPOSTFIX) == null) {
-                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
+                setRANameGenPostfix(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
             }
             // v5. Added configurable order validity.
             if (data.get(KEY_ORDER_VALIDITY) == null) {
