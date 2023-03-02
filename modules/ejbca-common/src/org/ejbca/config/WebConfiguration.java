@@ -19,9 +19,10 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.StringTools;
 import org.ejbca.util.SlotList;
 import org.ejbca.util.URIUtil;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * This file handles configuration from web.properties

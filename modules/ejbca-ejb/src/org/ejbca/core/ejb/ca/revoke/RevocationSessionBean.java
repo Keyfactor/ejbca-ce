@@ -62,13 +62,14 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:

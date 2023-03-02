@@ -22,6 +22,8 @@ import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
+
 /**
  * Tests crypto token manager
  * 

@@ -25,9 +25,9 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.SecurityFilterInputStream;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SecurityFilterInputStream;
 import com.keyfactor.util.certificate.CertificateImplementation;
 
 /**

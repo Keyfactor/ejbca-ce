@@ -19,7 +19,8 @@ import java.util.Collection;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.Base64;
+
+import com.keyfactor.util.Base64;
 
 /**
  * Response message utilities.
