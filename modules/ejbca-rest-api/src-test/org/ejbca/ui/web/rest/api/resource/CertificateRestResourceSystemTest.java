@@ -351,7 +351,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String serialNumber = generateTestSerialNumber();
         final String revocationDate = "3000-01-01T00:00:00Z";
         final int expectedErrorCode = 400;
-        final String expectedErrorMessage = MessageFormat.format("Revocation date in the future: ''{0}''.", revocationDate);
+        final String expectedErrorMessage = MessageFormat.format("Date in the future: ''{0}''.", revocationDate);
         // when
         final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, KEYCOMPROMISE.getStringValue(), revocationDate);
         // then
