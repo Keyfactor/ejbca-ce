@@ -3414,7 +3414,7 @@ public abstract class CertTools {
      * @param oid An OID for an extension 
      * @return an Extension ASN1Primitive from a certificate, or null
      */
-    protected static ASN1Primitive getExtensionValue(X509Certificate cert, String oid) {
+    public static ASN1Primitive getExtensionValue(X509Certificate cert, String oid) {
         if (cert == null) {
             return null;
         }

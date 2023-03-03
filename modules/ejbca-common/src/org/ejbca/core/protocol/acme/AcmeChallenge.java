@@ -70,6 +70,7 @@ public interface AcmeChallenge {
 
         DNS_HTTP_01(AcmeIdentifierTypes.DNS, "http-01"),
         DNS_DNS_01(AcmeIdentifierTypes.DNS, "dns-01"),
+        DNS_TLS_ALPN_01(AcmeIdentifierTypes.DNS, "tls-alpn-01"),
         IP_HTTP_01(AcmeIdentifierTypes.IP, "http-01");
 
         private final AcmeIdentifierTypes acmeIdentifierType;
