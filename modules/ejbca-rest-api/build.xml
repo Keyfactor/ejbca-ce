@@ -30,7 +30,7 @@
 		<path refid="lib.swagger.classpath"/>
 		<path refid="lib.jackson2.classpath"/>
         <path refid="lib.jboss-logging.classpath"/>
-        <path refid="lib.commons-fileupload.classpath"/>
+        <path refid="lib.commons-fileupload.classpath"/><!-- only for FileUploadException -->
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>

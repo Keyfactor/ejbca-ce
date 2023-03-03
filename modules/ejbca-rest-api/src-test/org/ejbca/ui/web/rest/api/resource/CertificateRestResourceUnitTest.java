@@ -49,6 +49,7 @@ import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
@@ -126,8 +127,12 @@ public class CertificateRestResourceUnitTest {
         final String expectedRevocationDateString = DATE_FORMAT_ISO8601.format(new Date());
         final RevocationReasons revocationReason = RevocationReasons.KEYCOMPROMISE;
         final CertificateStatus response = new CertificateStatus("REVOKED", new Date().getTime(), revocationReason.getDatabaseValue(), 123456);
+        CertRevocationDto certRevocationMetadata = new CertRevocationDto(anyString(), anyObject(BigInteger.class).toString()); 
+        certRevocationMetadata.setInvalidityDate(anyObject(Date.class));
+        certRevocationMetadata.setRevocationDate(anyObject(Date.class));
+        certRevocationMetadata.setReason(anyObject(Integer.class));
         // when
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
+        raMasterApiProxy.revokeCertWithMetadata(anyObject(AuthenticationToken.class), certRevocationMetadata);
         expect(raMasterApiProxy.getCertificateStatus(anyObject(AuthenticationToken.class), anyString(), anyObject(BigInteger.class))).andReturn(response);
         replay(raMasterApiProxy);
         final Invocation.Builder request = server

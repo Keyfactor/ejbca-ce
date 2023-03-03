@@ -56,10 +56,11 @@ public interface CertificateStoreSession {
      * @param deltaCrl true to get RevokedCertInfo for a delta CRL, false to get entries for a complete CRL.
      * @param crlPartitionIndex the CRL Partition Index, or CertificateConstants.NO_CRL_PARTITION if not using a partitioned CRL.
      * @param lastBaseCrlDate a date (Date.getTime()) of last base CRL or -1 for a complete CRL
+     * @param allowInvalidityDate whether invalidity date for CRL generation is allowed in CA configuration
      * @return Collection of RevokedCertInfo, reverse ordered by expireDate
      *         where last expireDate is first in array.
      */
-    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate);
+    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean allowInvalidityDate);
 
     /**
      * Lists certificates for a given subject signed by the given issuer.

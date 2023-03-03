@@ -44,7 +44,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
 	private static final Logger log = Logger.getLogger(RevocationApprovalRequest.class);
-	private static final int LATEST_VERSION = 2;
+	private static final int LATEST_VERSION = 3;
 
 	private int approvalType = -1;
 	private String username = null;
@@ -52,6 +52,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	private String issuerDN = null;
 	private int reason = -2;
 	private Date revocationDate = null;
+	private Date invalidityDate = null;
 
 	/** Constructor used in externalization only */
 	public RevocationApprovalRequest() {}
@@ -60,7 +61,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * Construct an ApprovalRequest for the revocation of a certificate.
 	 */
     public RevocationApprovalRequest(BigInteger certificateSerialNumber, String issuerDN, String username, int reason,
-            AuthenticationToken requestAdmin, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, Date revocationDate) {
+            AuthenticationToken requestAdmin, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, Date revocationDate, Date invalidityDate) {
         super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile, /* validation results */ null);
 		this.approvalType = ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE;
 		this.username = username;
@@ -68,6 +69,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		this.certificateSerialNumber = certificateSerialNumber;
 		this.issuerDN = issuerDN;
 		this.revocationDate = revocationDate;
+		this.invalidityDate = invalidityDate;
 	}
 
 	/**
@@ -114,7 +116,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
 					endEntityManagementSession.revokeCertAfterApproval(getRequestAdmin(), certificateSerialNumber, issuerDN, reason, approvalRequestID,
-					        lastApprovalAdmin, revocationDate);
+					        lastApprovalAdmin, revocationDate, invalidityDate);
 					break;
 				default:
 					log.error("Unknown approval type " + approvalType);
@@ -186,6 +188,9 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		if (revocationDate != null) {
             retval.add(new ApprovalDataText("REVOCATIONDATE", ValidityDate.formatAsISO8601ServerTZ(revocationDate.getTime(), TimeZone.getDefault()), true, false));
 		}
+		if (invalidityDate != null) {
+            retval.add(new ApprovalDataText("INVALIDITYDATE", ValidityDate.formatAsISO8601ServerTZ(invalidityDate.getTime(), TimeZone.getDefault()), true, false));
+		}
 		return retval;
 	}
 
@@ -225,6 +230,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		out.writeObject(certificateSerialNumber);
 		out.writeObject(issuerDN);
 		out.writeObject(revocationDate);
+		out.writeObject(invalidityDate);
 	}
 
 	@Override
@@ -237,6 +243,11 @@ public class RevocationApprovalRequest extends ApprovalRequest {
         if (version == 2) {
             readVersionOneData(in);
             revocationDate = (Date) in.readObject();
+        }
+        if (version == 3) {
+            readVersionOneData(in);
+            revocationDate = (Date) in.readObject();
+            invalidityDate = (Date) in.readObject();
         }
     }
 

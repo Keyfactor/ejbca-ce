@@ -45,8 +45,8 @@ public enum CAFactory {
             final String caimpl = "org.cesecore.certificates.ca.X509CAImpl";
             try {
                 Class<?> clazz = Class.forName(caimpl);
-                caImplMap.put("X509CA", (CACommon)clazz.newInstance());
-            } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
+                caImplMap.put("X509CA", (CACommon) clazz.getDeclaredConstructor().newInstance());
+            } catch (IllegalAccessException | ClassNotFoundException | InstantiationException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 Logger.getLogger(CAFactory.class).info("Could not construct org.cesecore.certificates.ca.X509CAImpl implementation for developers: ", e);
             }
             // If no CA implementations were found, log error
