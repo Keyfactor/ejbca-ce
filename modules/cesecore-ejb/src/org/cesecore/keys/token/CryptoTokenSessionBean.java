@@ -42,7 +42,6 @@ import org.cesecore.util.QueryResultWrapper;
 /**
  * Basic CRUD and activation caching of CryptoTokens is provided through this local access SSB.
  * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

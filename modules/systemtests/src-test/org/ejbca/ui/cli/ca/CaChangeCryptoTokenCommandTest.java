@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -25,6 +24,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -72,7 +72,7 @@ public class CaChangeCryptoTokenCommandTest {
         cryptoTokenId1 = caSession.getCAInfo(authenticationToken, CA_NAME).getCAToken().getCryptoTokenId();
         cryptoTokenName1 = tokenSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId1).getName();
         log.info("First crypto token: "+cryptoTokenId1+", "+cryptoTokenName1);
-        cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, CRYPTOTOKEN_BASENAME, String.valueOf(1024));
+        cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, CRYPTOTOKEN_BASENAME, "RSA1024", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         cryptoTokenName2 = tokenSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId2).getName();
         log.info("Second crypto token: "+cryptoTokenId2+", "+cryptoTokenName2);
     }
@@ -115,9 +115,9 @@ public class CaChangeCryptoTokenCommandTest {
             // Default properties from creating the Test CA
             assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING));
             assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING));
-            assertNull(info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
-            assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
-            assertEquals(null, info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING));
+            assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
+            assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
+            assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING));
             
             // Second change the crypto token
             assertEquals(CommandResult.SUCCESS, caChangeCryptoTokenCommand.execute(EXECUTE_HAPPY_PATH_ARGS));
@@ -128,7 +128,7 @@ public class CaChangeCryptoTokenCommandTest {
             assertEquals("Crypto token id should have changed", cryptoTokenId2, cryptoTokenId);
             assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING));
             assertEquals("signKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING));
-            assertNull(info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
+            assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
             assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
             assertEquals("encryptKey", info.getCAToken().getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING));
 
