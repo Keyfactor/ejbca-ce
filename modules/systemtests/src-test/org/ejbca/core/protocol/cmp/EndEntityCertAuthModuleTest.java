@@ -61,6 +61,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -205,7 +206,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             CaTestUtils.removeCa(ADMIN, caSession.getCAInfo(ADMIN, subcaid));
             log.debug("Removed CA in beforeClass: " + subcaid);            
         }
-        adminsubca = CaTestUtils.createTestX509SubCAGenKeys(ADMIN, "CN=" + AUTH_PARAM_SUBCA, "foo123".toCharArray(), adminca.getCAId(), "1024");
+        adminsubca = CaTestUtils.createTestX509SubCAGenKeys(ADMIN, "CN=" + AUTH_PARAM_SUBCA, "foo123".toCharArray(), adminca.getCAId(), "1024",
+                "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         
         StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
 

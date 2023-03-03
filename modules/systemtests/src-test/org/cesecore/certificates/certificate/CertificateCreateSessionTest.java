@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -1107,7 +1108,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             //Fourth certificate. Should be revoked but on hold. 
             responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
-            internalCertStoreSession.setRevokeStatus(alwaysAllowToken, responseMessage.getCertificate(), new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertStoreSession.setRevokeStatus(alwaysAllowToken, responseMessage.getCertificate(), new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             onhold = CertTools.getSerialNumber(responseMessage.getCertificate());
             
             //Update the profile with the new constraint
@@ -1233,7 +1234,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 assertTrue("Should not create new certificate for this user with the same key", false);
             } catch (CesecoreException e) {
                 assertEquals("User 'enforceKeyRenewalTestUser' is not allowed to use same key as another certificate is using.", e.getMessage());
-                assertEquals(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS, e.getErrorCode());
+                assertEquals(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS, e.getErrorCode());
             }
         } finally {
             // Configure the CA as it was before the test
@@ -1245,8 +1246,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         }
     }
 
-    private Validator createKeyValidator(Class<? extends Validator> type, final String name, final String description) throws InstantiationException, IllegalAccessException {
-        Validator result = type.newInstance();
+    private Validator createKeyValidator(Class<? extends Validator> type, final String name, final String description) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        Validator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);
