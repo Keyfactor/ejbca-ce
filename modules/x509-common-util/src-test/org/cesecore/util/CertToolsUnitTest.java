@@ -1581,6 +1581,15 @@ public class CertToolsUnitTest {
         String s = CertTools.getSubjectAlternativeName(krbcert);
         assertEquals("krb5principal=foo/bar@P.COM", s);
     }
+    
+    @Test
+    public void testMoreThanOneUri() throws Exception {
+        String altName = "uri=http://www.a.se, uri=http://www.b.se";
+        GeneralNames gn = CertTools.getGeneralNamesFromAltName(altName);
+        assertNotNull("getGeneralNamesFromAltName failed for " + altName, gn);
+        GeneralName[] names = gn.getNames();
+        assertEquals("Expected 2 URIs but was " + names.length, names.length, 2);
+    }
 
     @Test
     public void testIdOnSIM() throws Exception {
