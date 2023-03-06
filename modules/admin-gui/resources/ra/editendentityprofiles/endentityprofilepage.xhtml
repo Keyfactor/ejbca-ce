@@ -1056,6 +1056,38 @@
                     <h:outputText styleClass="help"
                         value="#{web.text.SSH_OPTION_SOURCE_ADDRESS_HELP}" />
                 </h:panelGrid>
+                <h:panelGroup>
+						&nbsp;
+				</h:panelGroup>
+                <h:panelGroup id="sshVerifyRequiredGroup">
+                    <h:outputText value="#{web.text.SSH_OPTION_VERIFY_REQUIRED}" />
+                </h:panelGroup>
+                <h:panelGrid id="sshVerifyRequiredGrid" columns="2">
+                    <h:selectOneMenu id="sshVerifyRequiredSelectOneMenu" value="#{endEntityProfileMBean.profiledata.sshVerifyRequired}">
+                        <f:selectItems id="sshVerifyRequiredSelectList" value="#{endEntityProfileMBean.sshVerifyRequiredOptions}"/>
+                    </h:selectOneMenu>
+                    <br />
+                    <h:panelGrid id="sshVerifyRequiredRequiredAndModifiableGrid"
+                        columns="4">
+                        <h:selectBooleanCheckbox
+                            id="sshVerifyRequiredRequiredCheckBox"
+                            value="#{endEntityProfileMBean.profiledata.sshVerifyRequiredRequired}"
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="sshVerifyRequiredRequiredCheckBox"
+                            value="#{web.text.REQUIRED}" />
+                        <h:selectBooleanCheckbox
+                            id="sshVerifyRequiredRequiredModifiableCheckBox"
+                            value="#{endEntityProfileMBean.profiledata.sshVerifyRequiredModifiable}"
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="sshVerifyRequiredRequiredModifiableCheckBox"
+                            value="#{web.text.MODIFYABLE}" />
+                    </h:panelGrid>
+                    <br />
+                    <h:outputText styleClass="help"
+                        value="#{web.text.SSH_OPTION_VERIFY_REQUIRED_HELP}" />
+                </h:panelGrid>
             </h:panelGrid>
                 
                     
