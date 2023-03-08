@@ -13,6 +13,7 @@
 package org.ejbca.core.model.approval.profile;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -137,8 +138,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         getType();
         ApprovalProfile clone;
         try {
-            clone = (ApprovalProfile) getType().newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            clone = (ApprovalProfile) getType().getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw new IllegalStateException("Could not instansiate class of type " + getType().getCanonicalName());
         }
         clone.setProfileName(getProfileName());

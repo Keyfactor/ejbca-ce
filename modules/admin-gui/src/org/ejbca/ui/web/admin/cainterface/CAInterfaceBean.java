@@ -1368,6 +1368,8 @@ public class CAInterfaceBean implements Serializable {
                 diskFileItemFactory.setSizeThreshold(59999);
                 ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
                 upload.setSizeMax(60000);
+                // Upload consists of at least 6 DiskFileItems, at least 5 form fields and 1 data stream.
+                upload.setFileCountMax(10);
                 final List<FileItem> items = upload.parseRequest(request);
                 for (final FileItem item : items) {
                     if (item.isFormField()) {

@@ -80,8 +80,6 @@ import static org.junit.Assert.fail;
 
 /**
  * Tests PKIXCertRevocationStatusChecker
- * 
- * @version $Id$
  */
 public class CertRevocationStatusCheckerTest extends CaTestCase {
 
@@ -375,7 +373,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             
             // Generate CRL
-            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1);
+            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             int fullnumber = getLastCrlNumber(CADN, false);
             int deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -400,7 +398,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), CADN, 0);
             
             // Generate a new CRL. It should contain usercert
-            revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1);
+            revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             fullnumber = getLastCrlNumber(CADN, false);
             deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -468,7 +466,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             usercertFp = CertTools.getFingerprintAsString(usercert);
             
             // Generate CRL
-            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1);
+            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             int fullnumber = getLastCrlNumber(CADN, false);
             int deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -494,7 +492,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), cainfo.getSubjectDN(), 0);
             
             // Generate a new CRL. It should contain usercert
-            revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1);
+            revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             fullnumber = getLastCrlNumber(CADN, false);
             deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -550,7 +548,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             usercertFp = CertTools.getFingerprintAsString(usercert);
             
             // Generate CRL
-            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1);
+            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             int fullnumber = getLastCrlNumber(CADN, false);
             int deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -615,7 +613,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             
             // Generate CRL for the "real" CA
-            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1);
+            Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             int fullnumber = getLastCrlNumber(CADN, false);
             int deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -639,7 +637,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             
             // Generate CRL for the second testCA
-            revcerts = certStoreSession.listRevokedCertInfo(testca2SubjectDN,false, CertificateConstants.NO_CRL_PARTITION, -1);
+            revcerts = certStoreSession.listRevokedCertInfo(testca2SubjectDN,false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             fullnumber = getLastCrlNumber(testca2SubjectDN, false);
             deltanumber = getLastCrlNumber(testca2SubjectDN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -666,7 +664,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             eeManagementSession.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(usercert), CADN, 0);
             
             // Generate a new CRL. It should contain usercert
-            revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1);
+            revcerts = certStoreSession.listRevokedCertInfo(CADN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
             fullnumber = getLastCrlNumber(CADN, false);
             deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
