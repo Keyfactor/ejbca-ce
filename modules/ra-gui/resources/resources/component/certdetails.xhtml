@@ -230,6 +230,13 @@
             <h:outputText id="revocationdate" value="#{cc.attrs.raCertificateDetails.revocationDate}" rendered="#{!cc.attrs.raCertificateDetails.active}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
+            <h:outputLabel for="invaliditydate" value="#{msg.component_certdetails_field_invaliditydate}"
+                           rendered="#{!cc.attrs.raCertificateDetails.active and cc.attrs.raCertificateDetails.caAllowsInvalidityDate}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="invaliditydate" value="#{cc.attrs.raCertificateDetails.invalidityDate}"
+                          rendered="#{!cc.attrs.raCertificateDetails.active and cc.attrs.raCertificateDetails.caAllowsInvalidityDate}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
             <h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
             <h:panelGroup id="revokeGroup" styleClass="#{cc.attrs.styleValue} revokeGroup">
                 <h:selectOneMenu id="newRevocationReason" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
