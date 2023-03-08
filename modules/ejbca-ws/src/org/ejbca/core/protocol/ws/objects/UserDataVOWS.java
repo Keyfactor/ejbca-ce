@@ -43,7 +43,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  *   user.setExtendedInformation(ei);
  *</pre>
  * 
- * @version $Id$
  */
 public class UserDataVOWS implements Serializable{
 	
