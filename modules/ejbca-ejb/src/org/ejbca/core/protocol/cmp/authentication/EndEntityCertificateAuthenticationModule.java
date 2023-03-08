@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -160,7 +161,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     implClass = Class.forName(implClassName);
                     log.debug("CmpVendorModeImpl is available, and used, in this version of EJBCA.");
                 }
-                impl = (CmpVendorMode)implClass.newInstance();
+                impl = (CmpVendorMode) implClass.getDeclaredConstructor().newInstance();
                 impl.setCaSession(caSession);
                 impl.setCmpConfiguration(cmpConfiguration);
             } catch (ClassNotFoundException e) {
@@ -168,11 +169,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 implExists = false;
                 log.info("CMP Vendor mode is not available in the version of EJBCA.");
                 impl = new CmpVendorModeNoopImpl();
-            } catch (InstantiationException e) {
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 log.error("Error intitilizing CmpVendorMode: ", e);
-            } catch (IllegalAccessException e) {
-                log.error("Error intitilizing CmpVendorMode: ", e);
-            }
+            } 
         } else {
             impl = new CmpVendorModeNoopImpl();
         }

@@ -211,7 +211,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                         int reason = getCRLReasonValue(entry);
                         log.info("Reason code: " + reason);
                         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAuthenticationToken(),
-                                serialNr, entry.getRevocationDate(), issuer, reason, false);
+                                serialNr, entry.getRevocationDate(), /*entry.getInvalidityDate()*/null, issuer, reason, false);
                         revoked++;
                     } catch (AlreadyRevokedException e) {
                         already_revoked++;
