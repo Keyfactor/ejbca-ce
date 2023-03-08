@@ -31,6 +31,7 @@ public interface SshCertificate {
     String CERTIFICATE_TYPE = "SSH";
     String CRITICAL_OPTION_FORCE_COMMAND = "force-command";
     String CRITICAL_OPTION_SOURCE_ADDRESS = "source-address";
+    String CRITICAL_OPTION_VERIFY_REQUIRED = "verify-required";
 
     /**
      * Encodes the certificte body of this certificate, minus the signature
