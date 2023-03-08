@@ -9,9 +9,11 @@
 	<import file="${ejbca-ws.dir}/../build-helpers.xml"/>
 
 	<property name="ejbca-ws.build.dir" location="${ejbca-ws.dir}/build"/>
-	<property name="ejbca-ws.gen_source.dir" location="${ejbca-ws.dir}/gen-source"/>
 	<property name="ejbca-ws.build-lib.dir" location="${ejbca-ws.dir}/build-lib"/>
+	<property name="ejbca-ws.build-lib-gen.dir" location="${ejbca-ws.dir}/build-lib-gen"/>
 	<property name="ejbca-ws.src.dir" location="${ejbca-ws.dir}/src"/>
+
+	<property name="ejbca-ws.src-gen.dir" location="${ejbca-ws-cli.dir}/src-gen"/>
 
 	<path id="compile.classpath">
 		<path refid="compile-library.classpath"/>
@@ -83,6 +85,8 @@
 	<target name="clean" description="Clean up this module">
 		<delete dir="${ejbca-ws.build.dir}" />
 		<delete dir="${ejbca-ws.build-lib.dir}" />
+		<delete dir ="${ejbca-ws.build-lib-gen.dir}"/>
+		<delete dir="${mod.ejbca-ws-gen.dir}" />
 		<delete file="${mod.ejbca-ws.war}" />
 		<delete file="${mod.ejbca-ws.lib}" />
 		<delete file="${mod.ejbca-ws.wsdl}" />
@@ -90,6 +94,7 @@
 	</target>
 
 	<target name="compile" depends="">
+		<mkdir dir="${mod.dist.path}"/>
 		<mkdir dir="${ejbca-ws.build.dir}" />
 		<javac destdir="${ejbca-ws.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile.classpath">
@@ -108,8 +113,13 @@
 
 	<target name="generate-wsdl" depends="compile">
 		<pathconvert property="wsdl-generate.classpath-string" refid="wsdl-generate.classpath"/>
-		<mkdir dir="${ejbca-ws.gen_source.dir}" />
+		<mkdir dir="${mod.dist.path}"/>
+		<mkdir dir="${mod.ejbca-ws-gen.dir}" />
+		<!-- Create a temporary directory, because we're going to want to repackage the generated files -->
+		<mkdir dir="${ejbca-ws.dir}/temp" />
+
 		<!-- Generate a WSDL file that can be used for client stub generation -->
+
 		<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen" classpathref="wsgen.classpath" />
 		<wsgen 
 			sei="org.ejbca.core.protocol.ws.EjbcaWS" 
@@ -118,23 +128,38 @@
 			xnocompile="true"	
 			verbose="true"
 			keep="true"
-			sourcedestdir="${ejbca-ws.gen_source.dir}">
+			sourcedestdir="${ejbca-ws.dir}/temp">
 			<classpath>
 				<path refid="wsdl-generate.classpath"/>
 				<path refid="wsgen.classpath"/>
 			</classpath>
 		</wsgen>
-		<!--	cp="${wsdl-generate.classpath-string}" 
-		sourcedestdir="${ejbca-ws.dir}/temp/" -->
-		
-		<!-- 
-		
-		<exec command="${java.home}/../bin/wsgen" failonerror="true">
-			<arg line="-classpath ${wsdl-generate.classpath-string} -r ${mod.dist.path} -d ${ejbca-ws.dir}/temp/ -wsdl org.ejbca.core.protocol.ws.EjbcaWS"/>
-		</exec>-->
-		<!-- This is maybe not the optimal way of doing this since it compiles the whole thing again.. but it still
-			 better than deploying the application server first. -->
-		<!-- <delete dir="${ejbca-ws.dir}/temp" includeemptydirs="true"/>-->
+
+		<!-- Copy over the generated files from wsgen and set the package name.
+			 We're going to need these repackages JAVA files when generating the client library from ejbca-ws-cli -->
+		<copy overwrite="true" 
+			todir="${mod.ejbca-ws-gen.dir}/org/ejbca/core/protocol/ws/client/gen">
+			<fileset dir="${ejbca-ws.dir}/temp/org/ejbca/core/protocol/ws/jaxws">
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+		<replace
+			token="package org.ejbca.core.protocol.ws.jaxws;"
+		    value="package org.ejbca.core.protocol.ws.client.gen;">
+			<fileset dir="${mod.ejbca-ws-gen.dir}/org/ejbca/core/protocol/ws/client/gen/">
+				<include name="**/*.java"/>
+			</fileset>
+		</replace>
+
+		<mkdir dir="${ejbca-ws.build-lib-gen.dir}" />
+		<!-- Compile and lib the repackaged files -->
+		<javac destdir="${ejbca-ws.build-lib-gen.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="wsdl-generate.classpath">
+			<src path="${mod.ejbca-ws-gen.dir}" />
+		</javac>
+		<jar destfile="${mod.ejbca-ws-gen.lib}" basedir="${ejbca-ws.build-lib-gen.dir}"/>
+
+		<!-- Delete the tmp dir -->
+		<delete dir="${ejbca-ws.dir}/temp" includeemptydirs="true"/>
 	</target>
 
 </project>

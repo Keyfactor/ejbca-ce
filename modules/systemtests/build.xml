@@ -84,6 +84,7 @@
 		<path refid="lib.jackson2.classpath"/>
 		<pathelement location="${mod.ejbca-rest-common.lib}"/>
 		<path refid="lib.resteasy-jaxrs.classpath"/>
+		<path location="${mod.ejbca-ws-client-gen.lib}" />
 	</path>
 
 	<path id="common.classpath">

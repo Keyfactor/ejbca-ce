@@ -34,11 +34,14 @@
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
 		<path location="${mod.ejbca-ws-client.lib}"/>
+		<path location="${mod.ejbca-ws-gen.lib}" />
+		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<path location="${mod.caa.lib}.lib}"/>
 		<path refid="lib.hc.classpath"/> <!-- Apache http client for REST API calls -->
 		<path refid="lib.json-simple.classpath"/> <!-- for REST API calls -->
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- needed by KeyTools -->
 		<path location="${mod.x509-common-util.lib}"/>
+
 	</path>
 
 	<path id="compile-test.classpath">

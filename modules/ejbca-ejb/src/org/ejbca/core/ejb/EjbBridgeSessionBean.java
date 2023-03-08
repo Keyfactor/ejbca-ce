@@ -107,7 +107,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB CryptoTokenSessionLocal cryptoTokenSession;
 	@EJB EjbcaAuditorSessionLocal ejbcaAuditorSession;
 	@EJB EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-	@EJB EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
 	@EJB EndEntityAccessSessionLocal endEntityAccessSession;
 	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     @EJB EndEntityManagementSessionLocal endEntityManagementSession;
@@ -163,7 +162,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public CryptoTokenSessionLocal getCryptoTokenSession() { return cryptoTokenSession; }
 	@Override public EjbcaAuditorSessionLocal getEjbcaAuditorSession() { return ejbcaAuditorSession; }
 	@Override public EjbcaRestHelperSessionLocal getEjbcaRestHelperSession() { return ejbcaRestHelperSession; }
-	@Override public EjbcaWSHelperSessionLocal getEjbcaWSHelperSession() { return ejbcaWSHelperSession; }
     @Override public EndEntityAccessSessionLocal getEndEntityAccessSession() { return endEntityAccessSession; }
     @Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return endEntityAuthenticationSession; }
 	@Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return endEntityManagementSession; }

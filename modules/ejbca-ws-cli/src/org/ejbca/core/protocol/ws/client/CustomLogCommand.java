@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
@@ -112,7 +113,9 @@ public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminComm
 					incert = CertTools.getCertfromByteArray(bytes, Certificate.class); // check if it is a good cert, decode PEM if it is PEM, etc
 				}				
 				getPrintStream().println("Using certificate with subjectDN '"+CertTools.getSubjectDN(incert)+"', and issuerDN '"+CertTools.getIssuerDN(incert)+"'.");
-				logcert = new org.ejbca.core.protocol.ws.client.gen.Certificate(incert);
+				logcert = new org.ejbca.core.protocol.ws.client.gen.Certificate();
+				logcert.setCertificateData(Base64.encode(incert.getEncoded()));
+				
 			}
 
 			getEjbcaRAWS().customLog(logLevel, type, caname, username, logcert, msg);

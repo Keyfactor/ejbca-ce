@@ -53,16 +53,18 @@
     <property name="mod.ejbca-properties.lib" location="${mod.dist.path}/ejbca-properties.jar" />
     <property name="mod.ejbca-properties.path" location="${mod.path}/ejbca-properties" />
     <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />
-	<property name="mod.ejbca-ws-cli.libname" value="ejbca-ws-cli.jar" />
-	<property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/${mod.ejbca-ws-cli.libname}" />
+	<property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/ejbca-ws-cli.jar" />
     <property name="mod.ejbca-ws-cli.path" location="${mod.path}/ejbca-ws-cli" />
-   	<property name="mod.ejbca-ws-client.libname" value="ejbca-ws-client.jar" />
-   	<property name="mod.ejbca-ws-client.lib" location="${mod.dist.path}/${mod.ejbca-ws-client.libname}" />
+   	<property name="mod.ejbca-ws-client.lib" location="${mod.dist.path}/ejbca-ws-client.jar" />
+	<property name="mod.ejbca-ws-client-gen.lib" location="${ejbca.home}/lib/ejbca-ws-client-gen.jar" />
     <property name="mod.ejbca-ws-ejb.jar" location="${mod.dist.path}/ejbca-ws-ejb.jar" />
     <property name="mod.ejbca-ws.path" location="${mod.path}/ejbca-ws" />
     <property name="mod.ejbca-ws.lib" location="${mod.dist.path}/ejbca-ws.jar" />
     <property name="mod.ejbca-ws.wsdl" location="${mod.dist.path}/EjbcaWSService.wsdl" />
+	<property name="mod.ejbca-ws-gen.dir" location="${mod.dist.path}/ejbca-ws-gen/build-gen" />
+	<property name="mod.ejbca-ws-gen.lib" location="${ejbca.home}/lib/ejbca-ws-gen.jar" />
     <property name="mod.ejbca-ws.wsdl-schema" location="${mod.dist.path}/EjbcaWSService_schema1.xsd" />
+	<property name="mod.ejbca-ws-ejb-interface.lib" location="${mod.dist.path}/ejbca-ws-ejb-interface.jar" />
     <property name="mod.peerconnector.path" location="${mod.path}/peerconnector"/>
 	<property name="mod.peerconnector-cli.lib" location="${mod.dist.path}/peerconnector-cli.jar" />
     <property name="mod.peerconnector-common.lib" location="${mod.dist.path}/peerconnector-common.jar" />

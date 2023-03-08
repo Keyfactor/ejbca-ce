@@ -36,6 +36,7 @@
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-ws.lib}"/>
+		<path location="${mod.ejbca-ws-client-gen.lib}" />
 	</path>
 
 	<path id="servicemanifest-ejbca-ejb.classpath">

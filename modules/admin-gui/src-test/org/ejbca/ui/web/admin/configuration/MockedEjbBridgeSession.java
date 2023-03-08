@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.math.IntRange;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -263,10 +264,6 @@ echo "    }"
     @Override public synchronized EjbcaRestHelperSessionLocal getEjbcaRestHelperSession() {
         if (ejbcaRestHelperSession == null) { ejbcaRestHelperSession = EasyMock.createStrictMock(EjbcaRestHelperSessionLocal.class); }
         return ejbcaRestHelperSession;
-    }
-    @Override public synchronized EjbcaWSHelperSessionLocal getEjbcaWSHelperSession() {
-        if (ejbcaWSHelperSession == null) { ejbcaWSHelperSession = EasyMock.createStrictMock(EjbcaWSHelperSessionLocal.class); }
-        return ejbcaWSHelperSession;
     }
     @Override public synchronized EndEntityAccessSessionLocal getEndEntityAccessSession() {
         if (endEntityAccessSession == null) { endEntityAccessSession = EasyMock.createStrictMock(EndEntityAccessSessionLocal.class); }
