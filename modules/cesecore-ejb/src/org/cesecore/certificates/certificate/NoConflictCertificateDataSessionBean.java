@@ -32,8 +32,6 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * Low level CRUD functions to access NoConflictCertificateData 
- *  
- * @version $Id$
  */
 @Stateless // Local only bean, no remote interface
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -88,7 +86,8 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
     }
     
     @Override
-    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate, final boolean keepExpiredCertsOnCrl) {
+    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate, 
+            final boolean keepExpiredCertsOnCrl, final boolean allowInvalidityDate) {
         if (log.isDebugEnabled()) {
             log.debug("Querying for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "'" +
                     ", Delta CRL: " + deltaCrl +
@@ -138,7 +137,7 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         query.setParameter("status1", CertificateConstants.CERT_REVOKED);
         query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
         query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
-        return getRevokedCertInfosInternal(query);
+        return getRevokedCertInfosInternal(query, allowInvalidityDate);
     }
     
 }

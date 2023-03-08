@@ -100,7 +100,7 @@ public class AuditDevicesConfig {
                         try {
                             // Instantiate device
                             final Class<AuditLogDevice> implClass = (Class<AuditLogDevice>) Class.forName(deviceClass);
-                            final AuditLogDevice auditLogDevice = implClass.newInstance();
+                            final AuditLogDevice auditLogDevice = implClass.getDeclaredConstructor().newInstance();
                             final String name = implClass.getSimpleName();
                             loggers.put(name, auditLogDevice);
                             log.info("Registered audit device using implementation: " + deviceClass);

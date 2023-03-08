@@ -113,7 +113,7 @@ public class CertificateExtensionFactory {
 		if (classPath != null) {
 			try {
 				final Class<?> implClass = Class.forName(classPath);
-				ret = (StandardCertificateExtension)implClass.newInstance();					
+				ret = (StandardCertificateExtension) implClass.getDeclaredConstructor().newInstance();					
 				ret.init(certProf);                    
 			} catch (ReflectiveOperationException e) {
 				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);

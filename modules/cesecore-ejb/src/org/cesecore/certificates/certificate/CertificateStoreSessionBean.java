@@ -399,13 +399,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // This method was only used from CertificateDataTest and it didn't care about the expireDate, so it will only select fingerprints now.
         return certificateDataSession.findFingerprintsByIssuerDN(CertTools.stringToBCDNString(StringTools.strip(issuerdn)));
     }
-
+    
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean allowInvalidityDate) {
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo()");
         }
-        return certificateDataSession.getRevokedCertInfos(CertTools.stringToBCDNString(StringTools.strip(issuerDN)), deltaCrl, crlPartitionIndex, lastBaseCrlDate);
+        return certificateDataSession.getRevokedCertInfos(CertTools.stringToBCDNString(StringTools.strip(issuerDN)), deltaCrl, crlPartitionIndex, lastBaseCrlDate, allowInvalidityDate);
     }
 
     @Override
@@ -1155,18 +1155,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
+    public boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
         if (cdw == null) {
             throw new IllegalArgumentException("Passed certificate data may not be null.");
         }
         final BaseCertificateData certificateData = cdw.getBaseCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
         authorizedToCA(admin, caid);
-        return setRevokeStatusNoAuth(admin, certificateData, revokedDate, reason);
+        return setRevokeStatusNoAuth(admin, certificateData, revokedDate, invalidityDate, reason);
     }
 
     @Override
-    public boolean setRevokeStatusNoAuth(AuthenticationToken admin, BaseCertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException {
+    public boolean setRevokeStatusNoAuth(AuthenticationToken admin, BaseCertificateData certificateData, Date revokeDate, Date invalidityDate, int reason) throws CertificateRevokeException {
         String serialNumber = "unknown";
         try {
             // This will work for X.509
@@ -1199,27 +1199,38 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             }
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(reason);
-
+            if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+                certificateData.setInvalidityDate(invalidityDate);
+            } else {
+                certificateData.setInvalidityDate(-1L);
+            }
             final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
         } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
-
             certificateData.setUpdateTime(now.getTime());
             certificateData.setStatus(CertificateConstants.CERT_REVOKED);
             certificateData.setRevocationReason(reason);
-
+            if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+                certificateData.setInvalidityDate(invalidityDate);
+            }
             if (revokeDate != null) {
                 certificateData.setRevocationDate(revokeDate);
             }
-
             final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
-
+            returnVal = true;
+        } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+            certificateData.setUpdateTime(now.getTime());
+            certificateData.setInvalidityDate(invalidityDate);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), Integer.valueOf(certificateData.getRevocationReason()), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true;
         } else if (((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL))
                 && (certificateData.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {

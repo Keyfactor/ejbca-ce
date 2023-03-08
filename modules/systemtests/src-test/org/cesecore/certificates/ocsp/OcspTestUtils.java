@@ -47,6 +47,7 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
@@ -101,6 +102,12 @@ public final class OcspTestUtils {
     }
 
     public static void deleteCa(AuthenticationToken authenticationToken, X509CA x509ca) throws AuthorizationDeniedException {
+        if (x509ca != null) {
+            deleteCa(authenticationToken, (X509CAInfo) x509ca.getCAInfo());
+        }
+    }
+    
+    public static void deleteCa(AuthenticationToken authenticationToken, X509CAInfo x509ca) throws AuthorizationDeniedException {
         if (x509ca != null) {
             CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
@@ -331,7 +338,7 @@ public final class OcspTestUtils {
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, certificate, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, certificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
     }
 
     public static void removeInternalKeyBinding(AuthenticationToken alwaysAllowtoken, String keyBindingName) throws AuthorizationDeniedException {

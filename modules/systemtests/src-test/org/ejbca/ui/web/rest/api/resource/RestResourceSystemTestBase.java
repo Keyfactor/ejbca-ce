@@ -243,6 +243,7 @@ public class RestResourceSystemTestBase {
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
                 globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_COAP_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName(), true);
@@ -257,6 +258,7 @@ public class RestResourceSystemTestBase {
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
                 globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), false);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_COAP_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName(), false);

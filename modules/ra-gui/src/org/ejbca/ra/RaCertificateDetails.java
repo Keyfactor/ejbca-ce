@@ -53,6 +53,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -90,10 +91,12 @@ public class RaCertificateDetails {
          * @param newDate New revocation date (can be null if backdate is not desired)
          * @param issuerDn Distinguished name of certificate issuer
          * @throws RevokeBackDateNotAllowedForProfileException Backdating fails if not allowed in certificate profile
+         * @throws CertificateProfileDoesNotExistException 
+         * @throws IllegalArgumentException 
          */
         void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason, final Date newDate,
                 final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException;
+                AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, CertificateProfileDoesNotExistException;
         boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
                                                                                 WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
         boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
@@ -102,6 +105,7 @@ public class RaCertificateDetails {
 
     private static final Logger log = Logger.getLogger(RaCertificateDetails.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
     public static String PARAM_REQUESTID = "requestId";
 
     private final Callbacks callbacks;
@@ -130,6 +134,7 @@ public class RaCertificateDetails {
     private int revocationReason;
     private String updated;
     private String revocationDate = "";
+    private String invalidityDate = "";
     private String publicKeyAlgorithm = "";
     private String publicKeySpecification = "";
     private String publicKeyParameter = "";
@@ -170,18 +175,21 @@ public class RaCertificateDetails {
     private String updatedRevocationDate = null;
     private boolean caAllowsChangeOfRevocationReason = false;
     private boolean cpAllowsRevocationBackdate = false;
+    private boolean caAllowsInvalidityDate = false;
 
     public RaCertificateDetails(final CertificateDataWrapper cdw, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
+                    final Map<String, Boolean> caNameToAllowsInvalidityDate,
                     final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
                     final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
         this.callbacks = callbacks;
-        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap,
+        reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,
                 caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
     }
 
     public void reInitialize(final CertificateDataWrapper cdw, final Map<Integer, String> cpIdToNameMap,
             final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
+            final Map<String, Boolean> caNameToAllowsInvalidityDate,
             final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
             final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
         this.cdw = cdw;
@@ -211,6 +219,10 @@ public class RaCertificateDetails {
         if (cpNameToAllowsRevocationBackdating != null && this.cpName != null &&
                 cpNameToAllowsRevocationBackdating.containsKey(this.cpName)) {
             this.cpAllowsRevocationBackdate = cpNameToAllowsRevocationBackdating.get(this.cpName);
+        }
+        if (caNameToAllowsInvalidityDate != null && this.caName != null &&
+                caNameToAllowsInvalidityDate.containsKey(this.caName)) {
+            this.caAllowsInvalidityDate = caNameToAllowsInvalidityDate.get(this.caName);
         }
         this.status = certificateData.getStatus();
         this.revocationReason = certificateData.getRevocationReason();
@@ -356,6 +368,9 @@ public class RaCertificateDetails {
         } else {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getUpdateTime(), TimeZone.getDefault());
         }
+        if (certificateData.getInvalidityDate() != null && certificateData.getInvalidityDate() != -1 && isCaAllowsInvalidityDate()) {
+            this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
+        }
         final String subjectKeyIdB64 = certificateData.getSubjectKeyId();
         if (subjectKeyIdB64!=null) {
             this.subjectKeyId = new String(Hex.encode(Base64.decode(subjectKeyIdB64.getBytes())));
@@ -453,6 +468,10 @@ public class RaCertificateDetails {
         return this.cpAllowsRevocationBackdate;
     }
 
+    public boolean isCaAllowsInvalidityDate() {
+        return caAllowsInvalidityDate;
+    }
+
     /** @return a localized certificate (revocation) status string */
     public String getStatus() {
         switch (status) {
@@ -474,6 +493,7 @@ public class RaCertificateDetails {
     }
     public String getUpdated() { return updated; }
     public String getRevocationDate() { return revocationDate; }
+    public String getInvalidityDate() { return invalidityDate; }
     public String getPublicKeyAlgorithm() { return publicKeyAlgorithm; }
     public String getPublicKeySpecification() { return publicKeySpecification; }
     public String getPublicKeyParameter() { return publicKeyParameter; }
@@ -636,7 +656,7 @@ public class RaCertificateDetails {
                 callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             }
             log.error(e);
-        } catch (NoSuchEndEntityException | CADoesntExistsException | AuthorizationDeniedException e) {
+        } catch (NoSuchEndEntityException | CertificateProfileDoesNotExistException | CADoesntExistsException | AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             log.error(e);
         }

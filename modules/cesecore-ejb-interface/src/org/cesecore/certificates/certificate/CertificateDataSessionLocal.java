@@ -24,8 +24,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
  * Local interface for CertificateDataSession.
- * 
- * @version $Id$
  */
 @Local
 public interface CertificateDataSessionLocal extends CertificateDataSession {
@@ -93,7 +91,7 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
 
     
     /** @return return the query results as a Collection<RevokedCertInfo>. */
-    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate);
+    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean allowInvalidityDate);
     
     /** @return return the query results as a List. */
     List<CertificateData> findByExpireDateWithLimit(long expireDate, int maxNumberOfResults);

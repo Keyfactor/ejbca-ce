@@ -15,8 +15,6 @@ package org.cesecore.certificates.certificate;
 
 /**
  * Interface for basic CRUD operations related to NoConflictCertificateData (local-only interface)
- * 
- * @version $Id$
  */
 public interface NoConflictCertificateDataSession {
     

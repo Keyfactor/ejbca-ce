@@ -15,6 +15,7 @@ package org.ejbca.ra;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,7 +53,7 @@ public abstract class RaAbstractDn {
     /**
      * @return one of the DnComponents.getDnProfileFields, DnComponents.getAltNameFields() or DnComponents.getDirAttrFields
      */
-    protected abstract ArrayList<String> getAbstractDnFields();
+    protected abstract List<String> getAbstractDnFields();
     
     /**
      * Intended to be used for Subject DN: ;

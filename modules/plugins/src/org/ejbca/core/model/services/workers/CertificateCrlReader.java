@@ -321,7 +321,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
         if (storedCertificate != null) {
             // Certificate already exist, just update status
             try {
-                certificateStoreSession.setRevokeStatus(admin, storedCertificate, new Date(scpObject.getRevocationDate()), scpObject.getRevocationReason());
+                certificateStoreSession.setRevokeStatus(admin, storedCertificate, new Date(scpObject.getRevocationDate()), /*invalidityDate*/null, scpObject.getRevocationReason());
             } catch (CertificateRevokeException e) {
                 log.info("Certificate with issuer " + scpObject.getIssuer() + " and serial number " + scpObject + " was already revoked.", e);
             }

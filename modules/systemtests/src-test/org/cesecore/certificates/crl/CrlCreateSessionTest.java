@@ -98,8 +98,6 @@ import static org.junit.Assert.fail;
 /**
  * Basic vanilla tests for CrlCreateSession. Contains quite some code lifted from PublishingCrlSession that doesn't belong under the CESeCore
  * package. 
- * 
- * @version $Id$
  *
  */
 public class CrlCreateSessionTest {
@@ -137,7 +135,7 @@ public class CrlCreateSessionTest {
         final int caid = caSession.getCAInfo(authenticationToken, className).getCAId();
         final CA ca = (CA)caTestSessionRemote.getCA(authenticationToken, caid);
         final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-        final Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
+        final Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false, false);
         final int fullnumber = getLastCrlNumber(certSubjectDN, false);
         final int deltanumber = getLastCrlNumber(certSubjectDN, true);
         final int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
@@ -161,7 +159,7 @@ public class CrlCreateSessionTest {
         int caid = caSession.getCAInfo(authenticationToken, className).getCAId();
         CA ca = (CA)caTestSessionRemote.getCA(authenticationToken, caid);
         final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-        Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
+        Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false, false);
         int fullnumber = getLastCrlNumber(certSubjectDN, false);
         int deltanumber = getLastCrlNumber(certSubjectDN, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -244,7 +242,7 @@ public class CrlCreateSessionTest {
             final PublicKey pubkey = KeyTools.genKeys("1024", "RSA").getPublic();
             final RequestMessage req = new SimpleRequestMessage(pubkey, "testremovefromcrl", "foo123");
             final Certificate cert = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class, new CertificateGenerationParams()).getCertificate();
-            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             
             Thread.sleep(1000);
             
@@ -258,7 +256,7 @@ public class CrlCreateSessionTest {
             Thread.sleep(1000);
             
             // Unrevoke the certificate
-            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), null, RevokedCertInfo.NOT_REVOKED);
             
             Thread.sleep(1000);
             
@@ -287,8 +285,8 @@ public class CrlCreateSessionTest {
             assertNull("Revoked certificate should no longer be included on Delta CRL after generating a new Base CRL", crlEntry);
             
             // Revoke the certificate again, and unrevoke it directly
-            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), null, RevokedCertInfo.NOT_REVOKED);
             
             // Generate a new Base CRL. Unrevoked certificates should not appear on Base CRLs 
             forceCRL(ca);
@@ -351,8 +349,8 @@ public class CrlCreateSessionTest {
             final X509Certificate rootcacert = CertTools.genSelfCert(rootcadn, 3650, null, rootcakp.getPrivate(), rootcakp.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, "BC", false);
             
             // Create sub ca
-            final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             X509CAInfo subcainfo = X509CAInfo.getDefaultX509CAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "365d", CAInfo.SIGNEDBYEXTERNALCA, null, catoken);
             X509CA subca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(subcainfo);
             subca.setCAToken(catoken);
@@ -484,7 +482,7 @@ public class CrlCreateSessionTest {
             long crlperiod = cainfo.getCRLPeriod();
             // Find all revoked certificates for a complete CRL
 
-            Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false);
+            Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, false, CertificateConstants.NO_CRL_PARTITION, -1, false, false);
             Date now = new Date();
             Date check = new Date(now.getTime() - crlperiod);
             AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
@@ -535,7 +533,8 @@ public class CrlCreateSessionTest {
             baseCrlNumber = basecrlinfo.getLastCRLNumber();
         }
         // Find all revoked certificates
-        Collection<RevokedCertInfo> revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, CertificateConstants.NO_CRL_PARTITION, baseCrlCreateTime, false);
+        Collection<RevokedCertInfo> revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, CertificateConstants.NO_CRL_PARTITION, 
+                baseCrlCreateTime, false, false);
         if (log.isDebugEnabled()) {
             log.debug("Found " + revcertinfos.size() + " revoked certificates.");
         }
