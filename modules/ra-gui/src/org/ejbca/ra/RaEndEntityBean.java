@@ -506,11 +506,14 @@ public class RaEndEntityBean implements Serializable {
             }
         }
 
-        boolean isClearPwd = false;
-        if (eep.getUse(EndEntityProfile.CLEARTEXTPASSWORD, 0)) {
-            if (eep.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || StringUtils.isNotEmpty(endEntityInformation.getPassword())) {
-                isClearPwd = true;
-            }
+        boolean isClearPwd = raEndEntityDetails.isClearPasswordAllowed() && raEndEntityDetails.getClearPassword();
+        if (isClearPwd && StringUtils.isEmpty(endEntityInformation.getPassword()) 
+                && endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW) {
+            // end entity/UserData password is only set if clearPassword was already selected before
+            // otherwise, new password must be given to be stored in clear
+            raLocaleBean.addMessageError("editendentity_password_blank");
+            editEditEndEntityCancel();
+            return;
         }
 
         if (endEntityInformation.isSshEndEntity()) {

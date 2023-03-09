@@ -82,6 +82,9 @@ public class RaEndEntityDetails {
     private final String created;
     private final String modified;
     private final int status;
+    
+    private boolean clearPasswordDirty;
+    private boolean useClearPassword;
 
     // SSH End entity fields
     private final boolean sshTypeEndEntity;
@@ -418,6 +421,48 @@ public class RaEndEntityDetails {
     }
     public boolean isSendNotification() {
         return endEntityInformation.getSendNotification();
+    }
+    
+    public boolean isClearPasswordAllowed() {
+        EndEntityProfile profile = getEndEntityProfile();
+        if (profile != null) {
+            boolean allowClearPwd = profile.isClearTextPasswordUsed() && !isTokenTypeUserGenerated();
+            if(!clearPasswordDirty) {
+                if(!allowClearPwd) {
+                    useClearPassword = false;
+                } else {
+                    useClearPassword = profile.isClearTextPasswordDefault();
+                }
+            }
+            return allowClearPwd;
+        }
+        return false;
+    }
+    
+    public boolean isClearPasswordRequired() {
+        EndEntityProfile profile = getEndEntityProfile();
+        if (profile != null) {
+            boolean requireClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordRequired();
+            if(requireClearPwd && !clearPasswordDirty) {
+                useClearPassword = true;
+                clearPasswordDirty = true;
+            }
+            return requireClearPwd;
+        }
+        return false;
+    }
+    
+    public boolean getClearPassword() {
+        if(!clearPasswordDirty) {
+            useClearPassword = StringUtils.isNotEmpty(endEntityInformation.getPassword());
+            clearPasswordDirty = true;
+        }
+        return useClearPassword;
+    }
+    
+    public void setClearPassword(boolean clearPwd) {
+        clearPasswordDirty = true;
+        useClearPassword = clearPwd;
     }
 
     public boolean isCertificateSerialNumberOverrideEnabled() {
