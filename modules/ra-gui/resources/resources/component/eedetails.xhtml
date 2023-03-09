@@ -290,12 +290,17 @@
                 rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword}"
-                rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated and not empty cc.attrs.raEndEntityDetails.endEntityInformation.password}"
+                rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword_true}"
-                rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated and not empty cc.attrs.raEndEntityDetails.endEntityInformation.password}"
+            <h:outputText id="cleartextpassword" value="#{cc.attrs.raEndEntityDetails.clearPassword ? msg.component_eedetails_field_notification_true : msg.component_eedetails_field_notification_false}"
+                rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed and ((not cc.attrs.editMode) or cc.attrs.approvalRequestMode)}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-
+            <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+            	  rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed and cc.attrs.editMode}">
+            	<h:selectBooleanCheckbox id="cleartextpasswordcheckbox" value="#{cc.attrs.raEndEntityDetails.clearPassword}"
+                	disabled="#{cc.attrs.raEndEntityDetails.clearPasswordRequired}"/>
+            </h:panelGroup>
+		
             <h:outputLabel for="logins" value="#{msg.component_eedetails_field_logins}"
                 rendered="#{cc.attrs.raEndEntityDetails.loginsMaxEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
