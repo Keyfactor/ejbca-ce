@@ -332,8 +332,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public PublishingResult doChunk(AuthenticationToken admin, BasePublisher publisher) {
-        log.info("        PUBLISHER DEBUGGING       " + publisher);
-        log.error("        PUBLISHER DEBUGGING        " + publisher);
         final Collection<PublisherQueueData> publisherQueueDatas = getPendingEntriesForPublisherWithLimit(publisher.getPublisherId(), 100);
         return doPublish(admin, publisher, publisherQueueDatas);
     }
