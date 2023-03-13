@@ -110,6 +110,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
     public static final String DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN = "default";
     
+    private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[] { "TLSv1.2", "TLSv1.3" };
+    
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
     
@@ -639,6 +641,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     public void setPreferredRootCaSubjectDn(String preferredRootCaSubjectDn) {
         data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, preferredRootCaSubjectDn);
+    }
+    
+    public String[] getTlsAlpnProtocolsEnabled() {
+        return DEFAULT_TLS_APLN_PROTOCOLS_ENABLED;
     }
     
     /** Initializes a new acme configuration with default values. */
