@@ -39,6 +39,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.Extension;
@@ -304,8 +305,8 @@ public class RaCertificateDetails {
                 PrivateKeyUsagePeriod pkup = CertTools.getPrivateKeyUsagePeriod(x509Certificate);
                 if (pkup != null) {
                     try {
-                        String pkupNotBefore = ValidityDate.formatAsISO8601ServerTZ(pkup.getNotBefore().getDate().getTime(), TimeZone.getDefault());
-                        String pkupNotAfter = ValidityDate.formatAsISO8601ServerTZ(pkup.getNotAfter().getDate().getTime(), TimeZone.getDefault());
+                        String pkupNotBefore = generalizedTimeToString(pkup.getNotBefore());
+                        String pkupNotAfter = generalizedTimeToString(pkup.getNotAfter());
                         this.privateKeyUsagePeriod = "Not Before: " + pkupNotBefore + ", Not After: " + pkupNotAfter;
                     } catch (ParseException e) {
                         log.debug("Failed to parse Subject Directory Attributes extension: " + e.getMessage());
@@ -377,6 +378,10 @@ public class RaCertificateDetails {
         }
         this.accountBindingId = certificateData.getAccountBindingId();
         styleRowCallCounter = 0;    // Reset
+    }
+
+    private String generalizedTimeToString(final ASN1GeneralizedTime gt) throws ParseException {
+        return gt != null ? ValidityDate.formatAsISO8601ServerTZ(gt.getDate().getTime(), TimeZone.getDefault()) : "not specified";
     }
 
     public String getFingerprint() { return fingerprint; }
