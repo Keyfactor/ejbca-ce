@@ -177,7 +177,7 @@ public interface InternalCertificateStoreSessionRemote {
     boolean presentInIncompleteIssuanceJournal(int caId, BigInteger serialNumber);
 
     /**
-     * @return X509Certificate[] all entries in CaCertificateCache
+     * @return List<CertificateDataWrapper> for all entries in CaCertificateCache
      */
-    X509Certificate[] getCaCertificateCacheEntries();
+    List<CertificateDataWrapper> getCaCertificateCacheEntries();
 }
