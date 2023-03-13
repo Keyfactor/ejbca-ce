@@ -297,14 +297,18 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     }
     
     @Override
-    public X509Certificate[] getCaCertificateCacheEntries() {
+    public List<CertificateDataWrapper> getCaCertificateCacheEntries() {
         final Set<X509Certificate> allCaCerts = new HashSet<>();
         X509Certificate[] rootCerts = CaCertificateCache.INSTANCE.getRootCertificates();
         for (X509Certificate root: rootCerts) {
             allCaCerts.add(root);
             getCachedCaCertEntries(root, allCaCerts);
         }
-        return allCaCerts.toArray(new X509Certificate[allCaCerts.size()]);
+        List<CertificateDataWrapper> certificateWrappers = new ArrayList<>();
+        for (X509Certificate cert: allCaCerts) {
+            certificateWrappers.add(new CertificateDataWrapper(cert, null, null));
+        }
+        return certificateWrappers;
     }
 
     @Override

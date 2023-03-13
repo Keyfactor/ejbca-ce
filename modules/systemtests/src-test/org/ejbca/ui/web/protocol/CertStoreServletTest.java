@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -140,7 +142,9 @@ public class CertStoreServletTest extends CaTestCase {
             fingerprint = enrollSubCa(ca1.getCAInfo().getCAId());
             log.info("The number of CAs created was " + setOfSubjectKeyIDs.size() + ".");
             internalCertificateStoreSession.reloadCaCertificateCache();
-            X509Certificate[] caCacheEntries = internalCertificateStoreSession.getCaCertificateCacheEntries();
+            List<CertificateDataWrapper>  wrappedCaCacheEntries = internalCertificateStoreSession.getCaCertificateCacheEntries();
+            List<X509Certificate> caCacheEntries = new ArrayList<>();
+            wrappedCaCacheEntries.forEach(x -> caCacheEntries.add((X509Certificate) x.getCertificate()));
             int matchFound = 0;
             for (X509Certificate cert: caCacheEntries) {
                 if(setOfSubjectKeyIDs.contains(HashID.getFromKeyID(cert).getKey())) {
