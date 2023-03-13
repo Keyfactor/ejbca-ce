@@ -48,6 +48,8 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     private boolean upgraded = false;
     public static final String VERSION = "version";
 
+    protected float mapLoadFactor = 0.75f; // expected initial capacity/loadFactor, avoiding the unnecessary resize while copy
+    
 	/**
      * Creates a new UpgradeableDataHashMap object.
      */
@@ -254,7 +256,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      */
     protected LinkedHashMap<Object, Object> getClonedData() {
         // We need to make a deep copy of the hashmap here
-        LinkedHashMap<Object, Object> clonedData = new LinkedHashMap<>(data.size());
+        LinkedHashMap<Object, Object> clonedData = new LinkedHashMap<>((int)Math.ceil(data.size()/mapLoadFactor));
         for (final Entry<Object,Object> entry : data.entrySet()) {
                 Object value = entry.getValue();
                 if (value instanceof ArrayList<?>) {
