@@ -2443,7 +2443,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public Object clone() {
     	final EndEntityProfile clone = new EndEntityProfile(0);
     	// We need to make a deep copy of the hashmap here
-    	clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/mapLoadFactor)); 
+    	clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR)); 
     	for (final Entry<Object,Object> entry : data.entrySet()) {
     		Object value = entry.getValue();
     		if (value instanceof ArrayList<?>) {
