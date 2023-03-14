@@ -125,6 +125,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     /** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
     List<Certificate> findActiveCertificatesByType(Collection<Integer> certificateTypes);
     
+    /** @return a List<Certificate> of active CA certificates of status SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION. 
+     * Only to be used with certificateTypes= {CertificateConstants.CERTTYPE_ROOTCA, CertificateConstants.CERTTYPE_SUBCA}*/
+    List<Certificate> findActiveCaCertificatesByType(Collection<Integer> certificateTypes);
     
     /**
      * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types for the given
