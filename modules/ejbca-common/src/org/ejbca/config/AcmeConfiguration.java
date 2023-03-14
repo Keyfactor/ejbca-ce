@@ -378,7 +378,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         return urlTemplate==null ? "http://{identifer}/.well-known/acme-challenge/{token}" : urlTemplate;
     }
     public void setValidationHttpCallBackUrlTemplate(final String urlTemplate) {
-        super.data.put(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE, urlTemplate);
+        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+            super.data.put(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE, urlTemplate);
+        }
     }
     
     /** 
@@ -386,7 +388,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
      * for arbitrary DNS names on your host -> https://localhost:1443
      **/
     public void setValidationTlsAlpnLocalhost(final boolean useLocalhost) {
-        super.data.put(KEY_VALIDATION_TLS_ALPN_USE_LOCALHOST, useLocalhost);
+        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+            super.data.put(KEY_VALIDATION_TLS_ALPN_USE_LOCALHOST, useLocalhost);
+        }
     }
     
     /** @return true if the tls-alpn-01 challenge validation is done against localhost */
@@ -406,7 +410,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
      * See AcmeInMemoryTlsAlpServer.PORT.
      **/
     public void setValidationTlsAlpnPort(final int port) {
-        super.data.put(KEY_VALIDATION_TLS_ALPN_PORT, port);
+        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+            super.data.put(KEY_VALIDATION_TLS_ALPN_PORT, port);
+        }
     }
 
     /** @return an URL of where the current Terms Of Services can be located. */
