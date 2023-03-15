@@ -22,12 +22,14 @@ import java.security.KeyPair;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Enumerated;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -73,7 +75,6 @@ import com.keyfactor.util.EJBTools;
 /**
  * Imports a CRL file to the database.
  *
- * @version $Id$
  */
 public class CaImportCRLCommand extends BaseCaAdminCommand {
 
@@ -211,8 +212,17 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                     try {
                         int reason = getCRLReasonValue(entry);
                         log.info("Reason code: " + reason);
+                        Date invalidityDate = null;
+                        ASN1GeneralizedTime asn1GeneralizedTime = CrlExtensions.extractInvalidityDate(entry);
+                        if (asn1GeneralizedTime != null) {
+                            try {
+                                invalidityDate = asn1GeneralizedTime.getDate();
+                            } catch (ParseException e) {
+                                log.info("Failed to parse invalidityDate for crl entry with serial number " + serialNr);
+                            }
+                        }
                         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAuthenticationToken(),
-                                serialNr, entry.getRevocationDate(), /*entry.getInvalidityDate()*/null, issuer, reason, false);
+                                serialNr, entry.getRevocationDate(), invalidityDate, issuer, reason, false);
                         revoked++;
                     } catch (AlreadyRevokedException e) {
                         already_revoked++;
