@@ -213,7 +213,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * Creates a revoked certificate data, for use with OCSP or CRL generation.
      * @see CertificateStoreSessionLocal#updateLimitedCertificateDataStatus(AuthenticationToken, int, String, String, String, BigInteger, int, Date, int, String)
      */
-    void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException;
+    void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint, Date invalidityDate) throws AuthorizationDeniedException;
     
     /**
      * Method for populating the CertificateData table with limited information for example from a CRL, so the OCSP responder can answer if a certificate is revoked.
@@ -234,7 +234,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws AuthorizationDeniedException
      */
     void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final String subjectDn, final String username, final BigInteger serialNumber,
-            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException;
+            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint, Date invalidityDate) throws AuthorizationDeniedException;
     
     /** Reloads the cache containing CA certificates */
     void reloadCaCertificateCache();

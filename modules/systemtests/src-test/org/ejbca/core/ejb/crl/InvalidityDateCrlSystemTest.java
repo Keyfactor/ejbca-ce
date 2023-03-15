@@ -40,6 +40,9 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -220,9 +223,9 @@ public class InvalidityDateCrlSystemTest {
         byte[] deltaCertificateExtensionValue = crlDeltaCertificate.getExtensionValue(Extension.invalidityDate.getId());
         Assert.assertNotNull("Invalidity date extention should be present in crl record", deltaCertificateExtensionValue);
 
-        ASN1GeneralizedTime time = getTimeFromCrlExtension(extensionValue);
+        ASN1GeneralizedTime time = CrlExtensions.extractInvalidityDate(crlRevokedCertificate);
         assertEquals("Certificate invalidity date not as expected", invalidityDate.toString(), time.getDate().toString());
-        ASN1GeneralizedTime time2 = getTimeFromCrlExtension(deltaCertificateExtensionValue);
+        ASN1GeneralizedTime time2 = CrlExtensions.extractInvalidityDate(crlDeltaCertificate);
         assertEquals("Certificate invalidity date not as expected", invalidityDate2.toString(), time2.getDate().toString());
 
         log.trace("<generateAndPublishCrlWithInvalidityDate");
@@ -257,7 +260,7 @@ public class InvalidityDateCrlSystemTest {
         byte[] extensionValue = crlDeltaCertificate.getExtensionValue(Extension.invalidityDate.getId());
         Assert.assertNotNull("Invalidity date extention should be present in crl record", extensionValue);
 
-        ASN1GeneralizedTime time = getTimeFromCrlExtension(extensionValue);
+        ASN1GeneralizedTime time = CrlExtensions.extractInvalidityDate(crlDeltaCertificate);
         assertEquals("Certificate invalidity date not as expected", invalidityDate.toString(), time.getDate().toString());
 
         log.trace("<generateAndPublishCrlWithInvalidityDateSetAfterRevocation");
@@ -292,7 +295,7 @@ public class InvalidityDateCrlSystemTest {
         X509CRLEntry crlRevokedCertificate = crl.getRevokedCertificate((X509Certificate) cert);
         byte[] extensionValue = crlRevokedCertificate.getExtensionValue(Extension.invalidityDate.getId());
         Assert.assertNotNull("Invalidity date extention should be present in crl record", extensionValue);
-        ASN1GeneralizedTime time = getTimeFromCrlExtension(extensionValue);
+        ASN1GeneralizedTime time = CrlExtensions.extractInvalidityDate(crlRevokedCertificate);
         assertEquals("Certificate invalidity date not as expected", invalidityDate.toString(), time.getDate().toString());
 
         X509CRLEntry crlDeltaCertificate = deltaCrl.getRevokedCertificate((X509Certificate) cert);
@@ -300,7 +303,7 @@ public class InvalidityDateCrlSystemTest {
         Assert.assertNotNull("Delta crl should contain changed certificate", crlDeltaCertificate);
         byte[] extensionValueChanged = crlDeltaCertificate.getExtensionValue(Extension.invalidityDate.getId());
         Assert.assertNotNull("Changed invalidity date extention should be present in crl record", extensionValueChanged);
-        ASN1GeneralizedTime time2 = getTimeFromCrlExtension(extensionValueChanged);
+        ASN1GeneralizedTime time2 = CrlExtensions.extractInvalidityDate(crlDeltaCertificate);
         assertEquals("Certificate invalidity date not as expected", changedInvalidityDate.toString(), time2.getDate().toString());
 
         Assert.assertNull("Unexpected invalidity date in crl", crlDeltaSecondCertificate.getExtensionValue(Extension.invalidityDate.getId()));
@@ -339,7 +342,7 @@ public class InvalidityDateCrlSystemTest {
         Assert.assertNotNull("Delta crl should contain changed certificate", crlDeltaCertificate);
         byte[] extensionValueChanged = crlDeltaCertificate.getExtensionValue(Extension.invalidityDate.getId());
         Assert.assertNotNull("Invalidity date extention should be present in crl record", extensionValueChanged);
-        ASN1GeneralizedTime time = getTimeFromCrlExtension(extensionValueChanged);
+        ASN1GeneralizedTime time = CrlExtensions.extractInvalidityDate(crlDeltaCertificate);
         assertEquals("Certificate invalidity date not as expected", invalidityDate.toString(), time.getDate().toString());
 
         Assert.assertNull("Unexpected invalidity date in crl", crlDeltaSecondCertificate.getExtensionValue(Extension.invalidityDate.getId()));
@@ -401,14 +404,4 @@ public class InvalidityDateCrlSystemTest {
         return crl;
     }
 
-    /**
-     * parses crl extension and returns time value
-     */
-    private ASN1GeneralizedTime getTimeFromCrlExtension(byte[] extensionValue) throws IOException {
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(extensionValue));
-        ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        ASN1Primitive obj = aIn.readObject();
-        return ASN1GeneralizedTime.getInstance(obj);
-    }
 }

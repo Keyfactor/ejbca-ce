@@ -1681,18 +1681,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final BigInteger serialNumber,
-            final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException {
+            final Date revocationDate, final int reasonCode, final String caFingerprint, final Date invalidityDate) throws AuthorizationDeniedException {
         // The idea is to set SubjectDN to an empty string. However, since Oracle treats an empty String as NULL,
         // and since CertificateData.SubjectDN has a constraint that it should not be NULL, we are setting it to
         // "CN=limited" instead of an empty string
         updateLimitedCertificateDataStatus(admin, caId, issuerDn, "CN=limited", null, serialNumber,
-                CertificateConstants.CERT_REVOKED, revocationDate, reasonCode, caFingerprint);
+                CertificateConstants.CERT_REVOKED, revocationDate, reasonCode, caFingerprint, invalidityDate);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final String subjectDn, final String username, final BigInteger serialNumber,
-            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException {
+            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint, Date invalidityDate) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
             final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caId);
             throw new AuthorizationDeniedException(msg);
@@ -1714,6 +1714,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 limitedCertificateData.setStatus(status);
                 limitedCertificateData.setRevocationReason(reasonCode);
                 limitedCertificateData.setRevocationDate(revocationDate);
+                limitedCertificateData.setInvalidityDate(invalidityDate);
                 limitedCertificateData.setUpdateTime(System.currentTimeMillis());
                 limitedCertificateData.setCaFingerprint(caFingerprint);
                 log.info("Adding limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
@@ -1730,6 +1731,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
                     limitedCertificateData.setRevocationReason(reasonCode);
                     limitedCertificateData.setRevocationDate(revocationDate);
+                    limitedCertificateData.setInvalidityDate(invalidityDate);
                     limitedCertificateData.setUpdateTime(System.currentTimeMillis());
                     entityManager.merge(limitedCertificateData);
         	    } else {
