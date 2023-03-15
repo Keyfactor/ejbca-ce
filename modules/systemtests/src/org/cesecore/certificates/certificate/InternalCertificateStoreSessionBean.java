@@ -316,13 +316,13 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     @Override
     public void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber,
             Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException {
-        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
+        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint, null);
     }
     
     @Override
     public void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username, BigInteger serialNumber,
             int status, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException {
-        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, subjectDn, username, serialNumber, status, revocationDate, reasonCode, caFingerprint);
+        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, subjectDn, username, serialNumber, status, revocationDate, reasonCode, caFingerprint, null);
     }
 
     @Override
