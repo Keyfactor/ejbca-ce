@@ -57,6 +57,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
@@ -372,6 +373,14 @@ public class RestResourceSystemTestBase {
         final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilePath);
         keyStore.store(fileOutputStream, KEY_STORE_PASSWORD.toCharArray());
         fileOutputStream.close();
+    }
+
+    protected static void setupClientKeyStore(final CAInfo serverCertCaInfo, final KeyPair clientKeys, final X509Certificate clientCert)
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
+        KeyStore clientKeyStore = initJksKeyStore(LOGIN_STORE_PATH);
+        importDataIntoJksKeystore(LOGIN_STORE_PATH, clientKeyStore, CertTools.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"),
+                trustedCaCertificateChain.get(0).getEncoded(), clientKeys, clientCert.getEncoded());
     }
 
     private static Certificate getCertificateFromBytes(final byte[] certificateBytes) throws CertificateException {

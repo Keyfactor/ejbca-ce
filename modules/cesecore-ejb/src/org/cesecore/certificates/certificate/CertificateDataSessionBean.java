@@ -489,6 +489,18 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         query.setParameter("ctypes", certificateTypes);
         return getCertificateList( query.getResultList());
     }
+    
+    @Override
+    public List<Certificate> findActiveCaCertificatesByType(final Collection<Integer> certificateTypes) {
+        // only loads active CA certificates compared to findActiveCertificatesByType
+        final TypedQuery<CertificateData> query = entityManager
+                .createQuery("SELECT a FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes) AND a.username=:uname", CertificateData.class);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("ctypes", certificateTypes);
+        query.setParameter("uname", CertificateConstants.CERT_USERNAME_SYSTEMCA);
+        return getCertificateList( query.getResultList());
+    }
 
     @Override
     public List<Certificate> findActiveCertificatesByTypeAndIssuer(final Collection<Integer> certificateTypes, final String issuerDN) {
