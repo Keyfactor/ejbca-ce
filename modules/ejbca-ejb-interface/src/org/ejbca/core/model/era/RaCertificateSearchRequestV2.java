@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Search request for certificates from RA UI.
@@ -94,7 +95,7 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
     /** Copy constructor to Bridge V1 and V2 request. Invoked by V1. */
     public RaCertificateSearchRequestV2(final RaCertificateSearchRequest request) {
         maxResults = request.getMaxResults();
-        pageNumber = request.getPageNumber();
+        pageNumber = request.getPageNumber() >= 0 ? request.getPageNumber() + 1 : -1;
         eepIds.addAll(request.getEepIds());
         cpIds.addAll(request.getCpIds());
         caIds.addAll(request.getCaIds());
@@ -430,5 +431,22 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
             return false;
         }
         return true;
+    }
+
+    private boolean isValidDecSerialNumber(final String s) {
+        // Assumption: Half of the leading bits might be zero, so the string could use only half of the length.
+        return (s != null && s.length() >= 10 && StringUtils.isNumeric(s));
+    }
+
+    /** @return true if the query could match a serial number (assuming serial numbers are at least 64 bits long) */
+    public boolean isSerialNumberSearch() {
+        return  isValidDecSerialNumber(serialNumberSearchStringFromDec) || isValidDecSerialNumber(serialNumberSearchStringFromHex);
+    }
+
+    public void resetToSerialNumberSearch() {
+        setSubjectDnSearchString("");
+        setSubjectAnSearchString("");
+        setUsernameSearchString("");
+        setExternalAccountIdSearchString("");
     }
 }
