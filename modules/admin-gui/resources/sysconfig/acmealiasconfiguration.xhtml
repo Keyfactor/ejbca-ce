@@ -409,14 +409,17 @@
                     	<h:outputText value="#{web.text.ACME_REQUIRE_EXTERNAL_ACCOUNT_BINDING_HELP}" styleClass="help" style="font-size: smaller"/>
                     </h:panelGroup>
                     <h:selectBooleanCheckbox id="externalAccountBinding" value="#{acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
-                    	<f:ajax listener="#{acmeAliasConfigMBean.toggleCurrentEabEditMode}" render="@all"></f:ajax>
+                    	<f:ajax listener="#{acmeAliasConfigMBean.toggleCurrentEabEditMode}" render="eab-settings eab-group-container"></f:ajax>
                     </h:selectBooleanCheckbox>
-                    
+						                    
+                </h:panelGrid>
+                
+                <h:panelGrid columns="2" id="eab-settings">                    
                     <h:outputLabel for="eabType" value="#{web.text.ACME_EAB_TYPE}" rendered="#{acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" styleClass="titles"/>
 					<h:selectOneMenu id="eabType" value="#{acmeAliasConfigMBean.eabType}" 
 						rendered="#{acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}"
 						disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
-						<f:ajax listener="#{acmeAliasConfigMBean.eabTypeChanged}" render="@all"/>
+						<f:ajax listener="#{acmeAliasConfigMBean.eabTypeChanged}" render="eab-group-container"/>
 						<f:selectItems value="#{acmeAliasConfigMBean.availableEabs}" />
 					</h:selectOneMenu>
 					
@@ -425,10 +428,12 @@
 						<h:commandButton action="#{acmeAliasConfigMBean.addEab}" value="#{web.text.ACME_ADD_EAB}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" style="margin-right:3px;" immediate="true"/>					
 						<h:commandButton action="#{acmeAliasConfigMBean.removeEab}" value="#{web.text.ACME_REMOVE_EAB}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" style="margin-right:3px;" immediate="true"/>
 					</h:panelGroup>
-						                    
+										                    
                 </h:panelGrid>
                 
-                <h:panelGroup id="eab-group" binding="#{acmeAliasConfigMBean.dataGridContainer}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}">
+                <h:panelGroup id="eab-group-container">
+                	<h:panelGroup id="eab-group" binding="#{acmeAliasConfigMBean.dataGridContainer}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}">
+				</h:panelGroup>
 				</h:panelGroup>
 				
                 <h:panelGrid columns="1">
