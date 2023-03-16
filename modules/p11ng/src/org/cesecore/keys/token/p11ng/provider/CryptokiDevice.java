@@ -353,6 +353,8 @@ public class CryptokiDevice {
                 c.Login(loginSession.getId(), CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
                 // The loginSession can be used as a normal session, push it back to the idle pool if no error occurred
                 releaseSession(loginSession);
+                // Clear object and attribute caches
+                cryptoki.clear();
             } catch (Exception e) {
                 try {
                     // Avoid session leak. Close the acquired session if login failed.
