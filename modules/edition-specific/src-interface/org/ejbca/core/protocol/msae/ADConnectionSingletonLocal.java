@@ -27,22 +27,31 @@ import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 @Local
 public interface ADConnectionSingletonLocal {
 
-    void updateConnectionProperties(String alias);
-    
-    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, boolean followLdapReferral,String alias) throws LDAPException;
+    default void updateConnectionProperties(String alias) {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
 
-    public List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings(String alias);
+    default void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, boolean followLdapReferral,
+            int ldapReadTimeout, int ldapConnectTimeout, String alias) throws LDAPException {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
 
-    public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String alias) throws LDAPException;
-    
+    default List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings(String alias) {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
+
+    default NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String alias) throws LDAPException {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
+
     default void setLoginDN(final String loginDN, final String alias) {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
-    
+
     default boolean publishCertificateToLDAP(String distinguishedName, X509Certificate cert, String domain, String alias) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
-    
+
     default SearchResult getADDetails(String searchBase, String searchFilter, SearchControls searchCtls, String alias) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
@@ -50,5 +59,5 @@ public interface ADConnectionSingletonLocal {
     default SearchResult getDomainAndNETBIOS(String distinguishedName, String domain, String alias) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
-    
+
 }
