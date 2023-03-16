@@ -300,7 +300,7 @@ public class OCSPUnidClient {
         // Compare nonces to see if the server sent the same nonce as we sent
         Extension nonceext = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
     	if (nonceext != null) {
-            final byte[] noncerep = nonceext.getExtnValue().getEncoded();
+            final byte[] noncerep = nonceext.getExtnValue().getOctets();
         	ASN1InputStream ain = new ASN1InputStream(noncerep);
         	ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
         	ain.close();
