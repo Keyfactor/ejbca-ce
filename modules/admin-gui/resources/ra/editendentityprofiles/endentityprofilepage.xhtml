@@ -287,7 +287,7 @@
                         disabled="#{endEntityProfileMBean.viewOnly or not endEntityProfileMBean.batchGenerationUse}">
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="batchRequiredCheckBox"
-                        value="#{web.text.REQUIRED}" />
+                        value="#{web.text.ENFORCE_DEFAULT}" />
                 </h:panelGrid>
                 <h:panelGroup>
 						&nbsp;
@@ -1692,7 +1692,7 @@
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
                         for="sendNotificationRequiredCheckBox"
-                        value="#{web.text.REQUIRED}" />
+                        value="#{web.text.ENFORCE_DEFAULT}" />
                     <h:commandButton id="addButton"
                         value="#{endEntityProfileMBean.notificationAdded ? web.text.ADDANOTHER : web.text.ADD}"
                         action="#{endEntityProfileMBean.addNotification}"
@@ -1701,7 +1701,7 @@
                         <f:ajax
                             render="userNotificationsWrapper sendNotificationsDeleteAllGroup sendNotificationGrid" />
                     </h:commandButton>
-                    <h:panelGroup styleClass="errorMessage" layout="block" rendered="${endEntityProfileMBean.emailConfigurationMissing}">
+                    <h:panelGroup styleClass="errorMessage missingEmailConfiguration" layout="block" rendered="${endEntityProfileMBean.emailConfigurationMissing}">
                         <h:outputText value="${web.text.MISSING_EMAIL_CONFIGURATION}"/>
                     </h:panelGroup>
                 </h:panelGrid>
