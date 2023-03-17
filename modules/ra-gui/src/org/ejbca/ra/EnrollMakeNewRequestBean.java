@@ -2656,6 +2656,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
     
     public boolean getClearPassword() {
+         if(!clearPasswordDirty) {
+            isClearPasswordAllowed();
+        }
         return useClearPassword;
     }
     
