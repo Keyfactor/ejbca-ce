@@ -292,7 +292,7 @@
             <h:outputLabel for="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword}"
                 rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="cleartextpassword" value="#{cc.attrs.raEndEntityDetails.clearPassword ? msg.component_eedetails_field_notification_true : msg.component_eedetails_field_notification_false}"
+            <h:outputText id="cleartextpassword" value="#{cc.attrs.raEndEntityDetails.clearPasswordViewMode ? msg.component_eedetails_field_notification_true : msg.component_eedetails_field_notification_false}"
                 rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed and ((not cc.attrs.editMode) or cc.attrs.approvalRequestMode)}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"

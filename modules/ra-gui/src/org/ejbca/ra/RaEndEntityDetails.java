@@ -431,7 +431,7 @@ public class RaEndEntityDetails {
                 if(!allowClearPwd) {
                     useClearPassword = false;
                 } else {
-                    useClearPassword = profile.isClearTextPasswordDefault();
+                    useClearPassword = StringUtils.isNotEmpty(endEntityInformation.getPassword());
                 }
             }
             return allowClearPwd;
@@ -444,7 +444,7 @@ public class RaEndEntityDetails {
         if (profile != null) {
             boolean requireClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordRequired();
             if(requireClearPwd && !clearPasswordDirty) {
-                useClearPassword = true;
+                useClearPassword = profile.isClearTextPasswordDefault() && StringUtils.isNotEmpty(endEntityInformation.getPassword());
                 clearPasswordDirty = true;
             }
             return requireClearPwd;
@@ -454,10 +454,14 @@ public class RaEndEntityDetails {
     
     public boolean getClearPassword() {
         if(!clearPasswordDirty) {
-            useClearPassword = StringUtils.isNotEmpty(endEntityInformation.getPassword());
-            clearPasswordDirty = true;
+            isClearPasswordAllowed();
+            isClearPasswordRequired();
         }
         return useClearPassword;
+    }
+    
+    public boolean getClearPasswordViewMode() {
+        return StringUtils.isNotEmpty(endEntityInformation.getPassword());
     }
     
     public void setClearPassword(boolean clearPwd) {
