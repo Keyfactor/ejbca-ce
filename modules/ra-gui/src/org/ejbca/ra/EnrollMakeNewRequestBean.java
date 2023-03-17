@@ -2647,7 +2647,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (profile != null) {
             boolean requireClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordRequired();
             if(requireClearPwd && !clearPasswordDirty) {
-                useClearPassword = true;
+                useClearPassword = profile.isClearTextPasswordDefault();
                 clearPasswordDirty = true;
             }
             return requireClearPwd;
