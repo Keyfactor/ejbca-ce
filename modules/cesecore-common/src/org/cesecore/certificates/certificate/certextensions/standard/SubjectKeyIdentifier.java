@@ -47,11 +47,16 @@ public class SubjectKeyIdentifier extends StandardCertificateExtension implement
         super.setCriticalFlag(certProf.getSubjectKeyIdentifierCritical());
     }
     
+    @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         SubjectPublicKeyInfo spki = SubjectPublicKeyInfo.getInstance(userPublicKey.getEncoded());
         X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
-        return x509ExtensionUtils.createSubjectKeyIdentifier(spki);
+        if (certProfile.getUseTruncatedSubjectKeyIdentifier()) {
+            return x509ExtensionUtils.createTruncatedSubjectKeyIdentifier(spki);            
+        } else {
+            return x509ExtensionUtils.createSubjectKeyIdentifier(spki);
+        }
     }
 
     @Override

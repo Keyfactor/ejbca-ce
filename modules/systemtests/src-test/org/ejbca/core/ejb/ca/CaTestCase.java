@@ -654,9 +654,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     InvalidAlgorithmException, AuthorizationDeniedException {
         createCa(SECP256R1, TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
     }
-    protected static void createEllipticCurveDsaCa(String keySpec) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    protected static void createEllipticCurveDsaCa(String keySpec, int certProfile) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
-        createCa(keySpec, TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        createCa(keySpec, TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, certProfile);
     }
     protected static void createEdDsaCa(final String keyAlg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
@@ -670,6 +670,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private static void createCa(final String keySpec, final String name, final String sigAlg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
+        createCa(keySpec, name, sigAlg, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);        
+    }
+
+    private static void createCa(final String keySpec, final String name, final String sigAlg, int certProfile) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    InvalidAlgorithmException, AuthorizationDeniedException {
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, name, keySpec, keySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create and active Extended CA Services.
@@ -678,7 +683,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final List<CertificatePolicy> policies = new ArrayList<>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + name, name, CAConstants.CA_ACTIVE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
+                certProfile, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit CA " + name);
         cainfo.setPolicies(policies);
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
