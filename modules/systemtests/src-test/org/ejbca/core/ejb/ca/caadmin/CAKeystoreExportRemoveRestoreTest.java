@@ -144,8 +144,8 @@ public class CAKeystoreExportRemoveRestoreTest {
     private void subTestExportRemoveRestore(String cryptoTokenName, String signKeySpecification, final String encryptionKeySpec, String signatureAlgorithm, String encryptionAlgorithm) throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, cryptoTokenName, signKeySpecification, encryptionKeySpec);
-            CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, signatureAlgorithm, encryptionAlgorithm);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, cryptoTokenName, signKeySpecification, encryptionKeySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, signatureAlgorithm, encryptionAlgorithm, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             exportRemoveRestore(catoken);
         } finally {
             // Remove original keystore if it would still exist
@@ -168,19 +168,19 @@ public class CAKeystoreExportRemoveRestoreTest {
         try {
             // CA using SHA1withRSA and 2048 bit RSA KEY
             final String CANAME1 = "TestExportRemoveRestoreCA1";
-            cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME1, "1024", "1024");
-            final CAToken catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME1, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             final CAInfo cainfo1 = getNewCAInfo(CANAME1, catoken1);
             // This CA uses DSA instead
             final String CANAME2 = "TestExportRemoveRestoreCA2";
             
-            cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME2, "DSA1024", "1024");
-            final CAToken catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME2, "DSA1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             final CAInfo cainfo2 = getNewCAInfo(CANAME2, catoken2);
             // This CA uses RSA but with 1024 bits
             final String CANAME3 = "TestExportRemoveRestoreCA3";
-            cryptoTokenId3 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME3, "1024", "1024");
-            final CAToken catoken3 = CaTestUtils.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId3 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME3, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken3 = CaTestUtils.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             final CAInfo cainfo3 = getNewCAInfo(CANAME3, catoken3);
             // Remove CAs if they already exists, but not crypto tokens
             caSession.removeCA(internalAdmin, cainfo1.getCAId());
@@ -249,8 +249,8 @@ public class CAKeystoreExportRemoveRestoreTest {
         try {
             // CA using SHA1withRSA and 2048 bit RSA KEY
             final String CANAME = "TestExportRemoveRestoreCA1";
-            int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), CANAME, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), CANAME, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             cainfo = getNewCAInfo(CANAME, catoken);
 
             byte[] keystorebytes1 = null;
