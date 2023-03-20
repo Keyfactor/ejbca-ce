@@ -18,7 +18,6 @@ import java.util.Properties;
 import org.cesecore.util.Named;
 
 import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**

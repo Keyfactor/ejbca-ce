@@ -82,6 +82,7 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.junit.After;
 import org.junit.Before;
@@ -99,7 +100,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 
 /**
  * Test class for JackNJI11Provider signing with various algorithms.

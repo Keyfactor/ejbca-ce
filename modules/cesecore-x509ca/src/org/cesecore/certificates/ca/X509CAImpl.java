@@ -815,7 +815,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#updateCA(org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
+     * @see org.cesecore.certificates.ca.X509CA#updateCA(com.keyfactor.util.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
      */
     @Override
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
@@ -865,7 +865,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createPKCS7(org.cesecore.keys.token.CryptoToken, java.security.cert.X509Certificate, boolean)
+     * @see org.cesecore.certificates.ca.X509CA#createPKCS7(om.keyfactor.util.keys.token.CryptoToken, java.security.cert.X509Certificate, boolean)
      */
     @Override
     public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
@@ -944,7 +944,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createPKCS7Rollover(org.cesecore.keys.token.CryptoToken)
+     * @see org.cesecore.certificates.ca.X509CA#createPKCS7Rollover(om.keyfactor.util.keys.token.CryptoToken)
      */
     @Override
     public byte[] createPKCS7Rollover(CryptoToken cryptoToken) throws SignRequestSignatureException {
@@ -1017,7 +1017,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createRequest(org.cesecore.keys.token.CryptoToken, java.util.Collection, java.lang.String, java.security.cert.Certificate, int, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
+     * @see org.cesecore.certificates.ca.X509CA#createRequest(om.keyfactor.util.keys.token.CryptoToken, java.util.Collection, java.lang.String, java.security.cert.Certificate, int, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
      */
     @Override
     public byte[] createRequest(final CryptoToken cryptoToken, final Collection<ASN1Encodable> attributes, final String signAlg, final Certificate cacert,
@@ -1056,7 +1056,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createAuthCertSignRequest(org.cesecore.keys.token.CryptoToken, byte[])
+     * @see org.cesecore.certificates.ca.X509CA#createAuthCertSignRequest(om.keyfactor.util.keys.token.CryptoToken, byte[])
      */
     @Override
     public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, final byte[] request) throws CryptoTokenOfflineException {
@@ -1104,7 +1104,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createOrRemoveLinkCertificateDuringCANameChange(org.cesecore.keys.token.CryptoToken, boolean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration, java.security.cert.Certificate)
+     * @see org.cesecore.certificates.ca.X509CA#createOrRemoveLinkCertificateDuringCANameChange(om.keyfactor.util.keys.token.CryptoToken, boolean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration, java.security.cert.Certificate)
      */
     @Override
     public void createOrRemoveLinkCertificateDuringCANameChange(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile,
@@ -1113,7 +1113,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createOrRemoveLinkCertificate(org.cesecore.keys.token.CryptoToken, boolean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration, java.security.cert.Certificate)
+     * @see org.cesecore.certificates.ca.X509CA#createOrRemoveLinkCertificate(om.keyfactor.util.keys.token.CryptoToken, boolean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration, java.security.cert.Certificate)
      */
     @Override
     public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile,
@@ -1123,7 +1123,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateCertificate(org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.certificate.request.RequestMessage, java.security.PublicKey, int, java.util.Date, java.util.Date, org.cesecore.certificates.certificateprofile.CertificateProfile, org.bouncycastle.asn1.x509.Extensions, java.lang.String, org.cesecore.certificates.ca.CertificateGenerationParams, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
+     * @see org.cesecore.certificates.ca.X509CA#generateCertificate(om.keyfactor.util.keys.token.CryptoToken, org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.certificate.request.RequestMessage, java.security.PublicKey, int, java.util.Date, java.util.Date, org.cesecore.certificates.certificateprofile.CertificateProfile, org.bouncycastle.asn1.x509.Extensions, java.lang.String, org.cesecore.certificates.ca.CertificateGenerationParams, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
      */
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,

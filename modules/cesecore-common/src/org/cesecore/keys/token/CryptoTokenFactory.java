@@ -21,7 +21,6 @@ import java.util.Properties;
 import com.google.common.base.Preconditions;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;

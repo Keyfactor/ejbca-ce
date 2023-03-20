@@ -1153,7 +1153,7 @@ public abstract class CertTools {
     * @throws FileNotFoundException if certFile was not found
     * @throws CertificateParsingException if the file contains an incorrect certificate.
     * 
-    * @deprecated Use org.cesecore.util.CertTools.getCertsFromPEM(String, Class<T>) instead
+    * @deprecated Use com.keyfactor.util.CertTools.getCertsFromPEM(String, Class<T>) instead
     */
     @Deprecated
    public static List<Certificate> getCertsFromPEM(String certFilename) throws FileNotFoundException, CertificateParsingException {
@@ -1247,7 +1247,7 @@ public abstract class CertTools {
      *
      * @throws CertificateParsingException if the stream contains an incorrect certificate.
      * 
-     * @deprecated Use org.cesecore.util.CertTools.getCertsFromPEM(InputStream, Class<T>) instead. 
+     * @deprecated Use com.keyfactor.util.CertTools.getCertsFromPEM(InputStream, Class<T>) instead. 
      */
     @Deprecated
     public static List<Certificate> getCertsFromPEM(InputStream certstream) throws CertificateParsingException {
@@ -1350,7 +1350,7 @@ public abstract class CertTools {
      * @return byte array containing PEM certificate
      * @exception CertificateException if the stream does not contain a correct certificate.
      * 
-     * @deprecated Since 6.0.0, use org.cesecore.util.CertTools.getPemFromCertificateChain(Collection<Certificate>) instead
+     * @deprecated Since 6.0.0, use com.keyfactor.util.CertTools.getPemFromCertificateChain(Collection<Certificate>) instead
      */
     @Deprecated
     public static byte[] getPEMFromCerts(Collection<Certificate> certs) throws CertificateException {
@@ -1457,7 +1457,7 @@ public abstract class CertTools {
      * @return a Certificate 
      * @throws CertificateParsingException if certificate couldn't be parsed from cert
      * 
-     * @deprecated Use org.cesecore.util.CertTools.getCertfromByteArray(byte[], String, Class<T>) instead. 
+     * @deprecated Use com.keyfactor.util.CertTools.getCertfromByteArray(byte[], String, Class<T>) instead. 
      */
     @Deprecated
     public static Certificate getCertfromByteArray(byte[] cert, String provider) throws CertificateParsingException {
@@ -1483,7 +1483,7 @@ public abstract class CertTools {
      * 
      * @throws CertificateParsingException if the byte array does not contain a proper certificate.
      * 
-     * @deprecated Use org.cesecore.util.CertTools.getCertfromByteArray(byte[], Class<T>) to specify return type instead.
+     * @deprecated Use com.keyfactor.util.CertTools.getCertfromByteArray(byte[], Class<T>) to specify return type instead.
      */
     @Deprecated
     public static Certificate getCertfromByteArray(byte[] cert) throws CertificateParsingException {

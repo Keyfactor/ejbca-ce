@@ -10,7 +10,12 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package com.keyfactor.util.keys.token.pkcs11;
+package org.cesecore.keys.token;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.security.Security;
 import java.util.Properties;
@@ -26,13 +31,8 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.CryptoTokenTestBase;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.

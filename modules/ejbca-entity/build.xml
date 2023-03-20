@@ -257,7 +257,7 @@
         	<include name="org/ejbca/database/**/*.java"/>
         	<!-- Include classes that are instantiated through reflection -->
         	<include name="org/cesecore/keys/token/SoftCryptoToken.java"/>
-        	<include name="com/keyfactor/util/keys/token/pkcs11/PKCS11CryptoToken.java"/>
+        	<include name="org/cesecore/keys/token/PKCS11CryptoToken.java"/>
 	    	<src path="${ejbca-entity.src-cli.dir}"/>
 	    	<src path="${ejbca-entity.src.dir}"/>
         	<src path="${ejbca.home}/modules/ejbca-ejb/src"/>
