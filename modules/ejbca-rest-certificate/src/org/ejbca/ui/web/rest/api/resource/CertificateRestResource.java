@@ -258,19 +258,15 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid serial number format. Should be "
                     + "HEX encoded (optionally with '0x' prefix) e.g. '0x10782a83eef170d4'");
         }
-        CertificateStatus certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
         final int revocationReason;
-        if (!certificateStatus.isRevoked()) {
-            if (reasons == null) {
-                throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid revocation reason.");
-            } else {
-                revocationReason = reasons.getDatabaseValue();
-            }
+        if (reasons != null) {
+            revocationReason = reasons.getDatabaseValue();
         } else {
-            if (reasons != null) {
-                revocationReason = reasons.getDatabaseValue();
+            final CertificateStatus existingStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
+            if (!existingStatus.isRevoked()) {
+                throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid revocation reason.");
             } else if (invalidityDate != null) {
-                revocationReason = certificateStatus.revocationReason;
+                revocationReason = existingStatus.revocationReason;
             } else {
                 throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalidity date or revocation reason missing.");  
             }
@@ -282,7 +278,7 @@ public class CertificateRestResource extends BaseRestResource {
         certRevocationMetadata.setReason(revocationReason);
         certRevocationMetadata.setCheckDate(true);
         raMasterApi.revokeCertWithMetadata(admin, certRevocationMetadata);
-        certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
+        final CertificateStatus certificateStatus = raMasterApi.getCertificateStatus(admin, issuerDN, serialNr);
         final Date revocationDate = certificateStatus.isRevoked() ? certificateStatus.revocationDate : null;
 
         final RevokeStatusRestResponse result = RevokeStatusRestResponse.builder().
@@ -328,7 +324,7 @@ public class CertificateRestResource extends BaseRestResource {
                 .setNumberOfResults(count - processedResults)
                 .build();
         CertificatesRestResponse certificatesRestResponse = new CertificatesRestResponse(
-                CertificatesRestResponse.converter().toRestResponses(new ArrayList<Certificate>(expiringCertificates)));
+                CertificatesRestResponse.converter().toRestResponses(new ArrayList<>(expiringCertificates)));
         ExpiringCertificatesRestResponse response = new ExpiringCertificatesRestResponse(paginationRestResponseComponent, certificatesRestResponse);
         return Response.ok(response).build();
     }
@@ -396,7 +392,7 @@ public class CertificateRestResource extends BaseRestResource {
             byte[] certificateBytes = raMasterApi.createCertificate(admin, endEntityInformation); // X509Certificate
             Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
-                byte[] pemBytes = CertTools.getPemFromCertificateChain(Collections.singletonList((Certificate) certificate));
+                byte[] pemBytes = CertTools.getPemFromCertificateChain(Collections.singletonList(certificate));
                 response = CertificateRestResponse.builder().setCertificate(pemBytes).
                         setSerialNumber(CertTools.getSerialNumberAsString(certificate)).setResponseFormat("PEM").build();
             } else {

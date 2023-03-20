@@ -1131,7 +1131,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);
             if (certificateDataWrapper == null) {
                 certificateDataWrapper = certificateStoreSession.storeCertificate(authenticationToken, 
-                        validatedChain.get(i), "SYSTEMCA", cafp,
+                        validatedChain.get(i), CertificateConstants.CERT_USERNAME_SYSTEMCA, cafp,
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_CROSS_CA_CHAIN,
                         CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
                         CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
@@ -3398,7 +3398,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             String name = "SYSTEMCERT";
             if (type != CertificateConstants.CERTTYPE_ENDENTITY) {
-                name = "SYSTEMCA";
+                name = CertificateConstants.CERT_USERNAME_SYSTEMCA;
             }
             // Store CA certificate in the database if it does not exist
             CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);

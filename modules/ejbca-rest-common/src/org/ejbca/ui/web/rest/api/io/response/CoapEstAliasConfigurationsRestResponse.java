@@ -15,25 +15,30 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.List;
+
 /**
- * A class representing the response for EST simpleenroll and simplereenroll requests with CoAP REST method.
- * Used for communicating with CoAP Proxy
+ * A class representing the response for EST Alias Configuration requests with CoAP REST method, to discover
+ * configured EST aliases.
  *
+ * Used for communicating with CoAP Proxy
  */
-public class CoapEstEnrollRestResponse {
+public class CoapEstAliasConfigurationsRestResponse {
 
-    @ApiModelProperty(value = "Enrolled Certificate", example = "MIIDXzCCA...eW1Zro0=")
-    private String enrolledCertificate;
+    @ApiModelProperty(value = "Aliases", example = "")
+    private List<CoapEstAliasConfigurationRestResponse> aliases;
 
-    public CoapEstEnrollRestResponse(String enrolledCertificate) {
-        this.enrolledCertificate = enrolledCertificate;
+    public CoapEstAliasConfigurationsRestResponse() {}
+
+    public CoapEstAliasConfigurationsRestResponse(List<CoapEstAliasConfigurationRestResponse> aliases) {
+        this.aliases = aliases;
     }
 
-    public String getEnrolledCertificate() {
-        return enrolledCertificate;
+    public List<CoapEstAliasConfigurationRestResponse> getAliases() {
+        return aliases;
     }
 
-    public void setEnrolledCertificate(String enrolledCertificate) {
-        this.enrolledCertificate = enrolledCertificate;
+    public void setAliases(List<CoapEstAliasConfigurationRestResponse> aliases) {
+        this.aliases = aliases;
     }
 }
