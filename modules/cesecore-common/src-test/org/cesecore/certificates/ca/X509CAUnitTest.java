@@ -464,9 +464,10 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
         Certificate usercert = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
-        String authKeyId = new String(Hex.encode(CertTools.getAuthorityKeyId(usercert)));
+        byte[] authKeyIdBytes = CertTools.getAuthorityKeyId(usercert);
+        assertEquals("Length of method 1 Key Identifier should be langth of SHA1 hash", 20, authKeyIdBytes.length);
+        String authKeyId = new String(Hex.encode(authKeyIdBytes));
         String keyhash = CertTools.getFingerprintAsString(cryptoToken.getPublicKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getEncoded());
-
         // Save CA data
         Object o = ca.saveData();
 
