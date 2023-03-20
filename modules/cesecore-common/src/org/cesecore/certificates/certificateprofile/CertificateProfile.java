@@ -3194,7 +3194,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);
         // We need to make a deep copy of the hashmap here
-        clone.data = new LinkedHashMap<>(data.size());
+        clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR));
         for (final Entry<Object,Object> entry : data.entrySet()) {
                 Object value = entry.getValue();
                 if (value instanceof ArrayList<?>) {
