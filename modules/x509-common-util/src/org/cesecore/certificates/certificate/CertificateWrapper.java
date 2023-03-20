@@ -25,7 +25,6 @@ import java.security.cert.Certificate;
  *
  * @see org.cesecore.util.EJBTools
  * 
- * @version $Id$
  */
 public interface CertificateWrapper extends Serializable {
 

@@ -151,6 +151,11 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
                 }
             }
             internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData());
+            final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties =
+                    (List<DynamicUiProperty<? extends Serializable>>) getInternalKeyBindingPropertyList().getWrappedData();
+            for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
+                internalKeyBinding.setProperty(property.getName(), property.getValue());
+            }
 
             setCurrentInternalKeybindingId(
                     String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding)));

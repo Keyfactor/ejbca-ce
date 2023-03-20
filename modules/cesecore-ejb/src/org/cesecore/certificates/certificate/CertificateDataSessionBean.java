@@ -39,8 +39,6 @@ import org.cesecore.util.ValueExtractor;
 
 /**
  * Low level CRUD functions to access CertificateData
- *
- * @version $Id$
  */
 @Stateless //(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -229,11 +227,13 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     }
 
     @Override
-    public Collection<RevokedCertInfo> getRevokedCertInfos(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate) {
+    public Collection<RevokedCertInfo> getRevokedCertInfos(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate, 
+            final boolean allowInvalidityDate) {
         if (log.isDebugEnabled()) {
             log.debug("Querying for revoked certificates. IssuerDN: '" + issuerDN + "'" +
                     ", Delta CRL: " + deltaCrl +
-                    ", Last Base CRL Date: " + FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastBaseCrlDate));
+                    ", Last Base CRL Date: " + FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastBaseCrlDate) +
+                    ", Allow Invalidity Date: " + allowInvalidityDate);
         }
         final String crlPartitionExpression;
         final String ordering;
@@ -248,7 +248,21 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         } else {
             ordering = "";
         }
-        if (deltaCrl) {
+        if (allowInvalidityDate && deltaCrl) {
+            // For delta CRL generation with invalidityDate. Results will be filtered later. This is needed since we will need to compare the results with the revoked cert entries
+            // in the last base CRL in order to figure out which certificates had their invalidity date changed since the last base CRL. We can't determine that in the query here.
+            query = getEntityManager().createNativeQuery(
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, a.invalidityDate as invalidityDate  FROM CertificateData a WHERE "
+                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND a.updateTime>:lastBaseCrlDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
+                            + crlPartitionExpression + ordering,
+                    "RevokedCertInfoSubset");
+            query.setParameter("lastBaseCrlDate", lastBaseCrlDate);
+            query.setParameter("revocationDate", -1L);
+            query.setParameter("status1", CertificateConstants.CERT_REVOKED);
+            query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
+            query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration            
+        }
+        else if (deltaCrl) {
             // Delta CRL
             query = getEntityManager().createNativeQuery(
                     "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, a.invalidityDate as invalidityDate  FROM CertificateData a WHERE "
@@ -270,7 +284,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         }
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        return getRevokedCertInfosInternal(query);
+        return getRevokedCertInfosInternal(query, allowInvalidityDate);
     }
 
     @Override
@@ -473,6 +487,18 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
         query.setParameter("ctypes", certificateTypes);
+        return getCertificateList( query.getResultList());
+    }
+    
+    @Override
+    public List<Certificate> findActiveCaCertificatesByType(final Collection<Integer> certificateTypes) {
+        // only loads active CA certificates compared to findActiveCertificatesByType
+        final TypedQuery<CertificateData> query = entityManager
+                .createQuery("SELECT a FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes) AND a.username=:uname", CertificateData.class);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("ctypes", certificateTypes);
+        query.setParameter("uname", CertificateConstants.CERT_USERNAME_SYSTEMCA);
         return getCertificateList( query.getResultList());
     }
 

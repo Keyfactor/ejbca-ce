@@ -339,7 +339,11 @@ public abstract class BaseCertificateData extends ProtectedData {
      * @param invalidityDate invalidity date
      */
     public void setInvalidityDate(Date invalidityDate) {
+        if (invalidityDate == null) {
+            setInvalidityDate(-1L);
+        } else {
             setInvalidityDate(invalidityDate.getTime());
+        }       
     }
     
     /**

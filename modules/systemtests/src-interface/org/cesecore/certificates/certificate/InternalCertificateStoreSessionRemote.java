@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -105,7 +106,7 @@ public interface InternalCertificateStoreSessionRemote {
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
-    boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
+    boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
     
     /**
      * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
@@ -118,7 +119,7 @@ public interface InternalCertificateStoreSessionRemote {
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
-    boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason)
+    boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, Date invalidityDate, int reason)
         throws CertificateRevokeException, AuthorizationDeniedException;
     
     /** Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database
@@ -174,4 +175,9 @@ public interface InternalCertificateStoreSessionRemote {
 
     /** Checks if a certificate is  present in IncompleteIssuanceJournalData */
     boolean presentInIncompleteIssuanceJournal(int caId, BigInteger serialNumber);
+
+    /**
+     * @return List<CertificateDataWrapper> for all entries in CaCertificateCache
+     */
+    List<CertificateDataWrapper> getCaCertificateCacheEntries();
 }

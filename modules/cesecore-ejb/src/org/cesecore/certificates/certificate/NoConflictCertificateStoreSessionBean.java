@@ -201,12 +201,15 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, 
+            boolean allowInvalidityDate) {
         if (log.isTraceEnabled()) {
-            log.trace(">listRevokedCertInfo('" + issuerDN + "', " + deltaCrl + ", " + crlPartitionIndex + ", " + lastBaseCrlDate + ", " + keepExpiredCertsOnCrl + ")");
+            log.trace(">listRevokedCertInfo('" + issuerDN + "', " + deltaCrl + ", " + crlPartitionIndex + ", " + lastBaseCrlDate + ", " + keepExpiredCertsOnCrl + ", "
+                    + allowInvalidityDate + ")");
         }
-        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate);
-        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate, keepExpiredCertsOnCrl);
+        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate, allowInvalidityDate);
+        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerDN, deltaCrl, crlPartitionIndex, 
+                lastBaseCrlDate, keepExpiredCertsOnCrl, allowInvalidityDate);
         if (log.isDebugEnabled()) {
             log.debug("listRevokedCertInfo: Got " + revokedInCertData.size() + " entries from CertificateData and " + revokedInNoConflictData.size() + " entries from NoConflictCertificateData");
         }
@@ -284,14 +287,14 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     // Only invoked for testing.
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final int reason)
+    public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final Date invalidityDate, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
         if (cdw.getBaseCertificateData() instanceof NoConflictCertificateData) {
             if (entityManager.contains(cdw.getBaseCertificateData())) {
                 throw new IllegalStateException("Cannot update existing row in NoConflictCertificateData. It is append-only.");
             }
         }
-        return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
+        return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, invalidityDate, reason);
     }
     
     @Override

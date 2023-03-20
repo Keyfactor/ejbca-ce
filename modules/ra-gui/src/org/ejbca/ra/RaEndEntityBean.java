@@ -157,6 +157,7 @@ public class RaEndEntityBean implements Serializable {
     List<EndEntityProfile.FieldInstance> sshPrincipals;
     private String sshCriticalOptionsForceCommand;
     private String sshCriticalOptionsSourceAddress;
+    private boolean sshCriticalOptionsVerifyRequired;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -229,6 +230,7 @@ public class RaEndEntityBean implements Serializable {
                     sshComment = raEndEntityDetails.getSshComment();
                     sshCriticalOptionsForceCommand = raEndEntityDetails.getSshForceCommand();
                     sshCriticalOptionsSourceAddress = raEndEntityDetails.getSshSourceAddress();
+                    sshCriticalOptionsVerifyRequired = raEndEntityDetails.getSshVerifyRequired();
                 }
             }
         }
@@ -523,11 +525,17 @@ public class RaEndEntityBean implements Serializable {
                         SshCertificateUtils.createSanForStorage(sshPrincipalFieldsToString(getSshPrincipals()), sshComment, sshCriticalOptionsSourceAddress));
             }
             if (sshCriticalOptionsForceCommand != raEndEntityDetails.getSshForceCommand()
-                    || sshCriticalOptionsSourceAddress != raEndEntityDetails.getSshSourceAddress()) {
+                    || sshCriticalOptionsSourceAddress != raEndEntityDetails.getSshSourceAddress()
+                    || sshCriticalOptionsVerifyRequired != raEndEntityDetails.getSshVerifyRequired()) {
                 changed = true;
                 final Map<String, String> criticalOptions = endEntityInformation.getExtendedInformation().getSshCriticalOptions();
                 criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, sshCriticalOptionsForceCommand);
                 criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, sshCriticalOptionsSourceAddress);
+                if (sshCriticalOptionsVerifyRequired) {
+                    criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
+                } else {
+                    criticalOptions.remove(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
+                }
                 endEntityInformation.getExtendedInformation().setSshCriticalOptions(criticalOptions);
             }
         }
@@ -1516,6 +1524,21 @@ public class RaEndEntityBean implements Serializable {
 
     public boolean isSshSourceAddressModifiable() {
         return raEndEntityDetails.isSshSourceAddressModifiable();
+    }
+
+    public boolean getSshVerifyRequired() {
+        return sshCriticalOptionsVerifyRequired;
+    }
+
+    public void setSshVerifyRequired(final boolean newVerifyRequired) {
+        sshCriticalOptionsVerifyRequired = newVerifyRequired;
+    }
+
+    public List<SelectItem> getSshVerifyRequiredOptions() {
+        final List<SelectItem> options = new ArrayList<>();
+        options.add(new SelectItem(true, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_enabled")));
+        options.add(new SelectItem(false, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_disabled")));
+        return options;
     }
 
     /**

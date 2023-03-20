@@ -2699,13 +2699,13 @@ public abstract class CertTools {
                 break;
                 
             case DnComponents.URI:
-                for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI)) {
+                for (final String uri : CertTools.getPartsFromDN(str, CertTools.URI)) {
                     vec.add(new GeneralName(6, new DERIA5String(uri)));
                 }
                 break;
                 
             case DnComponents.URI1:
-                for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI1)) {
+                for (final String uri : CertTools.getPartsFromDN(str, CertTools.URI1)) {
                     vec.add(new GeneralName(6, new DERIA5String(uri)));
                 }
                 break;
