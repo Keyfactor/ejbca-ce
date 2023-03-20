@@ -21,6 +21,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -1747,8 +1748,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void reloadCaCertificateCache() {
         log.info("Reloading CA certificate cache.");
-        Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
-                CertificateConstants.CERTTYPE_ROOTCA, null));
+        Collection<Certificate> certs = certificateDataSession.findActiveCaCertificatesByType(Arrays.asList(CertificateConstants.CERTTYPE_SUBCA,
+                        CertificateConstants.CERTTYPE_ROOTCA));
         CaCertificateCache.INSTANCE.loadCertificates(certs);
         log.info("Reloaded CA certificate cache with "+certs.size()+" certificates");
     }
