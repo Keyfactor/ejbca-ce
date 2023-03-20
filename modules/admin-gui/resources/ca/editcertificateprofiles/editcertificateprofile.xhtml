@@ -805,6 +805,14 @@
                         disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="cbsubjectkeyidentifier"
                         value="#{web.text.USE} " />
+                    <h:selectBooleanCheckbox
+                        id="cbtruncatedSubjectkeyidentifier"
+                        value="#{certProfileBean.certificateProfile.useTruncatedSubjectKeyIdentifier}"
+                        disabled="#{!certProfileBean.certificateProfile.useSubjectKeyIdentifier or certProfileBean.viewOnly}" />
+                    <h:outputLabel for="cbtruncatedSubjectkeyidentifier"
+                        value="#{web.text.EXT_PKIX_TRUNCATEDSUBJECTKEYID}" />
+                    <h:outputText styleClass="help"
+                        value=" #{web.text.EXT_PKIX_TRUNCATEDSUBJECTKEYID_HELP}" />
                 </h:panelGroup>
 
             </h:panelGrid>
