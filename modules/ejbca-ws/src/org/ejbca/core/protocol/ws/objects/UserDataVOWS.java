@@ -16,6 +16,10 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 
@@ -42,8 +46,30 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  *   ei.add(new ExtendedInformationWS (ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
  *   user.setExtendedInformation(ei);
  *</pre>
- * 
+ *  namespace = "server",
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "userDataVOWS", propOrder = {
+    "username",
+    "password",
+    "clearPwd",
+    "subjectDN",
+    "caName",
+    "subjectAltName",
+    "email",
+    "status",
+    "tokenType",
+    "sendNotification",
+    "keyRecoverable",
+    "endEntityProfileName",
+    "certificateProfileName",
+    "hardTokenIssuerName",
+    "startTime",
+    "endTime",
+    "certificateSerialNumber",
+    "extendedInformation",
+    "cardNumber"
+})
 public class UserDataVOWS implements Serializable{
 	
 	private static final long serialVersionUID = 7557071186257332026L;

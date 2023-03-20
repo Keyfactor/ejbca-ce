@@ -34,11 +34,10 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
  *   RevokationDate 
  *   Reason (One of the REVOKATION_REASON constants)
  *
- * @version $Id$
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "revokeStatus", propOrder = {
+@XmlType(name = "revokeStatus", namespace = "server", propOrder = {
     "certificateSN",
     "issuerDN",
     "reason",
