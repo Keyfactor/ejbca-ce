@@ -39,6 +39,7 @@ import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
@@ -53,7 +54,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 import com.keyfactor.util.keys.token.pkcs11.P11SlotUser;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
