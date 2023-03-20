@@ -676,6 +676,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
                 globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
             adLoginPassword = autoEnrollmentConfiguration.getAdLoginPassword(autoenrollmentConfigMBean.getSelectedAlias());
+            if (StringUtils.isEmpty(adLoginPassword)) {
+                addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", "Invalid Credentials");
+                return;
+            }
         }
         try {
             availableTemplates = null;
