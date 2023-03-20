@@ -179,6 +179,7 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ValidityDate;
@@ -197,7 +198,6 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**

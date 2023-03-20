@@ -26,23 +26,23 @@ public class CryptoTokenConstantsWS {
     public static final String NODEFAULTPWD = org.cesecore.keys.token.SoftCryptoToken.NODEFAULTPWD;
     /** Boolean indicating if it should be allowed to extract private keys */
     public static final String ALLOW_EXTRACTABLE_PRIVATE_KEY = com.keyfactor.util.keys.token.CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY;
-    //public static final String ALLOW_NONEXISTING_SLOT_PROPERTY = org.cesecore.keys.token.CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY;
+    //public static final String ALLOW_NONEXISTING_SLOT_PROPERTY = om.keyfactor.util.keys.token.CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY;
     
     // -------------------
     // PKCS11 Crypto Token
     // -------------------
     /** Specific to PKCS#11. The slot label value */
-    public static final String SLOT_LABEL_VALUE = com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken.SLOT_LABEL_VALUE;
+    public static final String SLOT_LABEL_VALUE = org.cesecore.keys.token.PKCS11CryptoToken.SLOT_LABEL_VALUE;
     /** Specific to PKCS#11. The slot label type */
-    public static final String SLOT_LABEL_TYPE = com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken.SLOT_LABEL_TYPE;
+    public static final String SLOT_LABEL_TYPE = org.cesecore.keys.token.PKCS11CryptoToken.SLOT_LABEL_TYPE;
     /** Specific to PKCS#11. The path to the shared PKCS11 library */
-    public static final String SHLIB_LABEL_KEY = com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken.SHLIB_LABEL_KEY;
+    public static final String SHLIB_LABEL_KEY = org.cesecore.keys.token.PKCS11CryptoToken.SHLIB_LABEL_KEY;
     /** Specific to PKCS#11. The attributes label */
-    public static final String ATTRIB_LABEL_KEY = com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken.ATTRIB_LABEL_KEY;
+    public static final String ATTRIB_LABEL_KEY = org.cesecore.keys.token.PKCS11CryptoToken.ATTRIB_LABEL_KEY;
     /** A user defined name of the slot provider. Used in order to be able to have two different providers
      * (with different PKCS#11 attributes) for the same slot. If this is not set (null), the default
      * java provider name is used (SunPKCS11-pkcs11LibName-slotNr for example SunPKCS11-libcryptoki.so-slot1).
      */
-    public final static String TOKEN_FRIENDLY_NAME = com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken.TOKEN_FRIENDLY_NAME;
+    public final static String TOKEN_FRIENDLY_NAME = org.cesecore.keys.token.PKCS11CryptoToken.TOKEN_FRIENDLY_NAME;
     
 }

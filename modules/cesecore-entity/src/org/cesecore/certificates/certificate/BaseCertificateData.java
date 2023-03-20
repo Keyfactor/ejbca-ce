@@ -175,7 +175,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract int getRowVersion();
     
     /**
-     * @return certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like org.cesecore.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
+     * @return certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
      */
     public abstract String getCertificateRequest();
     
@@ -304,7 +304,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract void setCaFingerprint(String cafp);
     
     /**
-     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like org.cesecore.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
+     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
      */
     public abstract void setCertificateRequest(String certificateRequest);
     
