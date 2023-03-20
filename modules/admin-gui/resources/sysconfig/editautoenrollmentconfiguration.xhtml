@@ -257,7 +257,8 @@
 				<h:panelGroup>
 					<br/>
 					<h:commandButton id="msaeAdTestConnection" value="#{web.text.TEST_CONNECTION}"
-									 action="#{msAutoEnrollmentSettings.testAdConnection}">
+									 action="#{msAutoEnrollmentSettings.testAdConnection}"
+									 onclick="setTimeout('document.getElementById(\'' + this.id + '\').disabled=true;', 50);" >
 					 </h:commandButton>
 				</h:panelGroup>
             </h:panelGrid>
