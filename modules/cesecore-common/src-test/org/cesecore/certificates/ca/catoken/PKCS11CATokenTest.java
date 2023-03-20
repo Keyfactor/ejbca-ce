@@ -19,6 +19,7 @@ import static org.junit.Assume.assumeTrue;
 import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,6 @@ import org.junit.Test;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 
 /**
  * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.

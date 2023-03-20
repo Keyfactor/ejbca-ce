@@ -37,6 +37,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSession;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
@@ -59,7 +60,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 

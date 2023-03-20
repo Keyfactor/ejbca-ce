@@ -13,6 +13,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.Security;
 import java.util.Properties;
 
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -24,7 +25,6 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
