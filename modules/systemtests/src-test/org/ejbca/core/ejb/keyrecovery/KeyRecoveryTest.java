@@ -274,8 +274,8 @@ public class KeyRecoveryTest extends CaTestCase {
         final String encryptionCipher =  "brainpoolP256t1";
         //Create a new CA with a EC crypto token
         final String caName = "testAddAndRemoveKeyPairECEncryptWithECCDH_Ca";
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "secp256r1", encryptionCipher);
-        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "secp256r1", encryptionCipher, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
                 CAInfo.SELFSIGNED, null, caToken);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
@@ -333,8 +333,8 @@ public class KeyRecoveryTest extends CaTestCase {
     public void testAddAndRemoveKeyPairECEncryptWithECCDH() throws Exception {
         //Create a new CA with a EC crypto token
         final String caName = "testAddAndRemoveKeyPairECEncryptWithECCDH_Ca";
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "secp256r1", "secp256r1");
-        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "secp256r1", "secp256r1", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
                 CAInfo.SELFSIGNED, null, caToken);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);

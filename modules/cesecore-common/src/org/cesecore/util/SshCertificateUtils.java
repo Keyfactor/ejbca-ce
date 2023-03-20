@@ -140,7 +140,11 @@ public class SshCertificateUtils {
      * @return SSH subject AN text field formatted for storage
      */
     public static String createSanForStorage(final String principalString, final String comment, String sourceAddress) {
-        return createSanForStorage(Arrays.asList(principalString.split(":")), comment, sourceAddress);
+        List<String> principals = null;
+        if (!StringUtils.isEmpty(principalString)) {
+            principals = Arrays.asList(principalString.split(":"));
+        }
+        return createSanForStorage(principals, comment, sourceAddress);
     }
 
 }

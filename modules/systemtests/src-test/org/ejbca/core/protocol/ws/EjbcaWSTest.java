@@ -1310,8 +1310,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         approvalProfile.setNumberOfApprovalsRequired(1);
         final int approvalProfileId = createApprovalProfile(approvalProfile, true);
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.REVOCATION, approvalProfileId, caAdminSessionRemote, caSession, catoken);
             X509Certificate adminCert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME)).iterator().next();
             Set<X509Certificate> credentials = new HashSet<>();
@@ -1418,7 +1418,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             approvalProfile.setNumberOfApprovalsRequired(2);
             int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
             approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfile);
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             createTestCA();
             EndEntityInformation approvingAdmin = new EndEntityInformation(adminUsername, "CN=" + adminUsername, getTestCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -1439,7 +1439,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                             adminUsername, role.getRoleId(), null));
             roleId = role.getRoleId();
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caId = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.ADDEDITENDENTITY, approvalProfileId,
                     caAdminSessionRemote, caSession, catoken);
             KeyPair keys = KeyTools.genKeys("1024", "RSA");

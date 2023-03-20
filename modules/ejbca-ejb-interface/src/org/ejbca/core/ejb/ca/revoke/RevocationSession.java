@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.ca.revoke;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -46,6 +47,6 @@ public interface RevocationSession {
      * @throws CertificaterevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
-    void revokeCertificate(AuthenticationToken admin, Certificate cert, Collection<Integer> publishers, int reason, String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
+    void revokeCertificate(AuthenticationToken admin, Certificate cert, Collection<Integer> publishers, Date invalidityDate, int reason, String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
 
 }

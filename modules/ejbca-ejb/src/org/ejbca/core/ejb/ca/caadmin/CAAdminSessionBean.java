@@ -644,7 +644,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             try {
                 cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
             } catch (InvalidKeyException e1) {
-                throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
+                throw new IllegalStateException("The CA's test key alias points to an invalid key.", e1);
             }
         }
         
@@ -1130,7 +1130,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);
             if (certificateDataWrapper == null) {
                 certificateDataWrapper = certificateStoreSession.storeCertificate(authenticationToken, 
-                        validatedChain.get(i), "SYSTEMCA", cafp,
+                        validatedChain.get(i), CertificateConstants.CERT_USERNAME_SYSTEMCA, cafp,
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_CROSS_CA_CHAIN,
                         CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
                         CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
@@ -2487,7 +2487,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final List<CertificateDataWrapper> cacerts = certificateStoreSession.getCertificateDatasBySubject(ca.getSubjectDN());
             final Date now = new Date();
             for (final CertificateDataWrapper cdw : cacerts) {
-                revocationSession.revokeCertificateInNewTransaction(admin, cdw, ca.getCRLPublishers(), now, reason, ca.getSubjectDN());
+                revocationSession.revokeCertificateInNewTransaction(admin, cdw, ca.getCRLPublishers(), now, /*invalidityDate*/null, reason, ca.getSubjectDN());
             }
             // Revoke all certificates issued by this CA. If this is a root CA the CA certificates will be included in this batch as well
             // but if this is a subCA these are only the "entity" certificates issued by this CA
@@ -3397,7 +3397,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             String name = "SYSTEMCERT";
             if (type != CertificateConstants.CERTTYPE_ENDENTITY) {
-                name = "SYSTEMCA";
+                name = CertificateConstants.CERT_USERNAME_SYSTEMCA;
             }
             // Store CA certificate in the database if it does not exist
             CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);

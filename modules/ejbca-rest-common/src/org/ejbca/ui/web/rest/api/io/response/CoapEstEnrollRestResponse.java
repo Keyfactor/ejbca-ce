@@ -22,18 +22,18 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class CoapEstEnrollRestResponse {
 
-    @ApiModelProperty(value = "Certificate", example = "MIIDXzCCA...eW1Zro0=")
-    private String cert;
+    @ApiModelProperty(value = "Enrolled Certificate", example = "MIIDXzCCA...eW1Zro0=")
+    private String enrolledCertificate;
 
-    public CoapEstEnrollRestResponse(String cert) {
-        this.cert = cert;
+    public CoapEstEnrollRestResponse(String enrolledCertificate) {
+        this.enrolledCertificate = enrolledCertificate;
     }
 
-    public String getCert() {
-        return cert;
+    public String getEnrolledCertificate() {
+        return enrolledCertificate;
     }
 
-    public void setCert(String cert) {
-        this.cert = cert;
+    public void setEnrolledCertificate(String enrolledCertificate) {
+        this.enrolledCertificate = enrolledCertificate;
     }
 }
