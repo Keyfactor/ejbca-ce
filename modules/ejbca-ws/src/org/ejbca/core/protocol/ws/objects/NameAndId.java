@@ -14,11 +14,16 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.io.Serializable;
 
-/** Value object holding a Name and Id pair, for example for a CA or a end entity- or certificate profile.
+import javax.xml.bind.annotation.XmlType;
+
+/** 
+ * Value object holding a Name and Id pair, for example for a CA or a end entity- or certificate profile.
  * 
- * @author Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
- * @version $Id$
  */
+@XmlType(name = "nameAndId", namespace = "server", propOrder = {
+        "name",
+        "id"
+})
 public class NameAndId implements Serializable{
 
 	/** Serial version UID, must be changed if class undergoes structural changes */

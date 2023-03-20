@@ -13,14 +13,22 @@
 
 package org.ejbca.core.protocol.ws.objects;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 import org.ejbca.core.model.token.TokenConstants;
 
 /**
- * base class that this is a certificate response
- * of either a Certificate or KeyStore
+ * base class that this is a certificate response of either a Certificate or KeyStore
  * 
- * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "tokenCertificateResponseWS", namespace = "server", propOrder = {
+    "type",
+    "certificate",
+    "keyStore"
+})
 public class TokenCertificateResponseWS {
 
 	private int type = 0;
