@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -174,4 +175,9 @@ public interface InternalCertificateStoreSessionRemote {
 
     /** Checks if a certificate is  present in IncompleteIssuanceJournalData */
     boolean presentInIncompleteIssuanceJournal(int caId, BigInteger serialNumber);
+
+    /**
+     * @return List<CertificateDataWrapper> for all entries in CaCertificateCache
+     */
+    List<CertificateDataWrapper> getCaCertificateCacheEntries();
 }
