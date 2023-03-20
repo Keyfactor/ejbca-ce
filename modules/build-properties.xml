@@ -55,7 +55,8 @@
     <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />
 	<property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/ejbca-ws-cli.jar" />
     <property name="mod.ejbca-ws-cli.path" location="${mod.path}/ejbca-ws-cli" />
-   	<property name="mod.ejbca-ws-client.lib" location="${mod.dist.path}/ejbca-ws-client.jar" />
+	<property name="mod.ejbca-ws-client.libname" value="ejbca-ws-client.jar" />
+	<property name="mod.ejbca-ws-client.lib" location="${mod.dist.path}/${mod.ejbca-ws-client.libname}" />
 	<property name="mod.ejbca-ws-client-gen.lib" location="${ejbca.home}/lib/ejbca-ws-client-gen.jar" />
     <property name="mod.ejbca-ws-ejb.jar" location="${mod.dist.path}/ejbca-ws-ejb.jar" />
     <property name="mod.ejbca-ws.path" location="${mod.path}/ejbca-ws" />

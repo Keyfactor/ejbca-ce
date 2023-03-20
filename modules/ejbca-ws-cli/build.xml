@@ -143,7 +143,7 @@
 		<mkdir dir="${ejbca-ws-cli.build.dir}" />
     	
     	<taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport" classpathref="wsgen.classpath"/>
-    	<wsimport 
+     	<wsimport 
     		wsdl="${mod.ejbca-ws.wsdl}"
     		sourcedestdir="${mod.ejbca-ws-gen.dir}"
     		destdir="${ejbca-ws-cli.build.dir}"
@@ -166,8 +166,20 @@
     	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="ExtendedInformationWS"/>
     	</antcall>
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
+    		<param name="class" value="HardTokenDataWS"/>
+    	</antcall>
         <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="KeyStore"/>
+    	</antcall>
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
+    		<param name="class" value="KeyValuePair"/>
+    	</antcall>
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
+    		<param name="class" value="NameAndId"/>
+    	</antcall>
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
+    		<param name="class" value="PinDataWS"/>
     	</antcall>
     	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
     	 	<param name="class" value="RevokeStatus"/>
@@ -175,8 +187,14 @@
     	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
     	 	<param name="class" value="SshRequestMessageWs"/>
     	</antcall>
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
+    		<param name="class" value="TokenCertificateRequestWS"/>
+    	</antcall>
         <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="TokenCertificateResponseWS"/>
+    	</antcall>
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
+   			<param name="class" value="UserDataSourceVOWS"/>
     	</antcall>
         <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="UserDataVOWS"/>
@@ -221,6 +239,10 @@
 		<replace file="${ejbca-ws-cli.tmp.src}/org/ejbca/core/protocol/ws/client/gen/${class}.java"
 			     token="package org.ejbca.core.protocol.ws.objects;"
 			     value="package org.ejbca.core.protocol.ws.client.gen;"/>
+		<!-- Fix the namespace --> 
+	 	<replace file="${ejbca-ws-cli.tmp.src}/org/ejbca/core/protocol/ws/client/gen/${class}.java"
+					     token="namespace = &quot;server&quot;"
+					     value="namespace = &quot;client&quot;"/>
 	</target>
 
     <target name="setup">

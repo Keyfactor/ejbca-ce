@@ -239,7 +239,7 @@ public class EjbcaWS implements IEjbcaWS {
     private AuthenticationToken getAdmin(final boolean allowNonAdmins) throws AuthorizationDeniedException {
         final MessageContext msgContext = wsContext.getMessageContext();
         final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
-
+        
         final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         final X509Certificate certificate = certificates != null ? certificates[0] : null;
         final String oauthBearerToken = HttpTools.extractBearerAuthorization(request.getHeader(HttpTools.AUTHORIZATION_HEADER));

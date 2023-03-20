@@ -593,7 +593,7 @@
 				<include name="kerby-asn1-*.jar"/>
             	<include name="kerb-crypto-*.jar"/>
             	<!-- Internally generated WS server and client files. -->
-            	<include name="ejbca-ws-*.jar"/>
+            	<include name="ejbca-ws-client-gen.jar"/>
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->

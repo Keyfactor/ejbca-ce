@@ -14,6 +14,8 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlType;
+
 /**
  * Class used to represent extended information in userdata in the WebService API.
  * <br>&nbsp;<br>
@@ -32,8 +34,11 @@ import java.io.Serializable;
  *   user.setExtendedInformation (ei);
  *</pre>
  * 
- * @version $Id$
  */
+@XmlType(name = "extendedInformationWS", namespace = "server", propOrder = {
+        "name",
+        "value"
+})
 public class ExtendedInformationWS implements Serializable{
 	
    /**

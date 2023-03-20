@@ -18,13 +18,20 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 import org.cesecore.util.Base64;
 
 /**
  * Wrapper class for holding WS keystore data
  * 
- * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "keyStore", namespace = "server", propOrder = {
+        "keystoreData"
+    })
 public class KeyStore extends TokenCertificateResponseWS {
 	
 	private byte[] keystoreData = null;

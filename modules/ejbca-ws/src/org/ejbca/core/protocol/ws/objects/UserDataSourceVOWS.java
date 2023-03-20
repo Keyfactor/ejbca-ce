@@ -18,12 +18,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 /**
- * Class used to represent userdatasource in the WebService API.
- * because of profile names is used instead of ID's.
+ * Class used to represent userdatasource in the WebService API because profile names are used instead of ID's.
  * 
- * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "userDataSourceVOWS", namespace = "server", propOrder = {
+    "userDataVOWS",
+    "isModifyable"
+})
 public class UserDataSourceVOWS implements Serializable{
 
 	private static final long serialVersionUID = 4582471233805101416L;
