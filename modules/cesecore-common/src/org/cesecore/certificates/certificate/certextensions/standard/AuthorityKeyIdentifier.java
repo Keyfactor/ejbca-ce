@@ -65,6 +65,9 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension impleme
         X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
         final boolean isRootCA = (certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA);
         // If it is a Root CA, AKI and SKI are the same, and if we have said to use truncated SKI, the AKi should be the same
+        // We have a real corner case here. If you have a root CA with method 1 KeyID, then you renew it changing to method 2 keyID
+        // The renewed cert will have method 2 keyID, but if you create a link certificate the link certificate should have the AKI of the
+        // old certificate, i.e. method 1. This does not happen here as we have no way of knowing if it's a link certificate we create here.
         if (isRootCA && certProfile.getUseTruncatedSubjectKeyIdentifier()) {
             // Just because there is no x509ExtensionUtils.createTruncatedAuthorityKeyIdentifier
             final SubjectKeyIdentifier ski = x509ExtensionUtils.createTruncatedSubjectKeyIdentifier(spki);            
