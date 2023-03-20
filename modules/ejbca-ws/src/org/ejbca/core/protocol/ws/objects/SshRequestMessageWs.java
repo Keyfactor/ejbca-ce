@@ -17,10 +17,23 @@ import java.security.PublicKey;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 /**
- * @version $Id$
  *
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "sshRequestMessageWs", namespace = "server", propOrder = {
+        "publicKey",
+        "keyId",
+        "principals",
+        "additionalExtensions",
+        "criticalOptions",
+        "comment"
+
+})
 public class SshRequestMessageWs implements Serializable {
 
     private static final long serialVersionUID = 1L;
