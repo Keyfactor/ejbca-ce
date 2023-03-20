@@ -940,6 +940,21 @@
 								/>
                             <h:message for="criticalOptionsForceCommand" id="critcialOptionForceCommandMessage" styleClass="validationErrorMessage showErrorMessage"/>
 						</h:panelGroup>
+
+						<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="criticalOptionsVerifyRequired" value="#{msg.enroll_ssh_critical_verify_required}" 
+								rendered="#{!enrollMakeNewRequestBean.requiredCriticalOptionsVerifyRequired}"/>
+							<h:outputLabel for="criticalOptionsVerifyRequired" value="#{msg.enroll_ssh_critical_verify_required} *" 
+								rendered="#{enrollMakeNewRequestBean.requiredCriticalOptionsVerifyRequired}"/>
+							<h:selectOneMenu id="criticalOptionsVerifyRequired"
+									value="#{enrollMakeNewRequestBean.criticalOptionsVerifyRequired}"
+									disabled="#{not enrollMakeNewRequestBean.modifiableCriticalOptionsVerifyRequired}"
+									requiredMessage="#{msg.enroll_ssh_option_required}"
+									required="#{enrollMakeNewRequestBean.requiredCriticalOptionsVerifyRequired}">
+								<f:selectItems id="sshVerifyRequiredSelectList" value="#{enrollMakeNewRequestBean.sshVerifyRequiredOptions}"/>
+							</h:selectOneMenu>
+                            <h:message for="criticalOptionsVerifyRequired" id="critcialOptionVerifyRequiredMessage" styleClass="validationErrorMessage showErrorMessage"/>
+						</h:panelGroup>
 						
 						<!-- <h:panelGroup layout="block" styleClass="pure-control-group" 
 									rendered="#{enrollMakeNewRequestBean.renderedSshAdditionalExtensions}" >

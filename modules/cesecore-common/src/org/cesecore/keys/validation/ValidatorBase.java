@@ -284,7 +284,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         clone.setProfileId(getProfileId());
 
         // We need to make a deep copy of the hashmap here
-        LinkedHashMap<Object, Object> dataMap = new LinkedHashMap<>(data.size());
+        LinkedHashMap<Object, Object> dataMap = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR));
         for (final Entry<Object, Object> entry : data.entrySet()) {
             Object value = entry.getValue();
             if (value instanceof ArrayList<?>) {
