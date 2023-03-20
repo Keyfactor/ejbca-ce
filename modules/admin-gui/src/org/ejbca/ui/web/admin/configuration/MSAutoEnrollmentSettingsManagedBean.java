@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -480,7 +481,11 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
         // TODO: Implement and maybe return a Map<id, template> so findMsTemplateByOid is simpler
         if (availableTemplates == null) {
-            availableTemplates = adConnection.getCertificateTemplateSettings(autoenrollmentConfigMBean.getSelectedAlias());
+            final String selectedAlias = autoenrollmentConfigMBean.getSelectedAlias();
+            if (selectedAlias == null) {
+                return Collections.emptyList();
+            }
+            availableTemplates = adConnection.getCertificateTemplateSettings(selectedAlias);
         }
         return availableTemplates;
     }
