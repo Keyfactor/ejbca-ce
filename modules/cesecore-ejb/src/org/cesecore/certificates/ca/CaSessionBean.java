@@ -47,6 +47,7 @@ import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -56,7 +57,6 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;

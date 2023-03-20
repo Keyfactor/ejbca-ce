@@ -19,13 +19,12 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
-
-import com.keyfactor.util.keys.token.pkcs11.PKCS11CryptoToken;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
