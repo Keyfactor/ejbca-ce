@@ -203,7 +203,9 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                         log.info("Dummy certificate  '" + serialHex + "' has been stored.");
                     }
                     // This check will not catch a certificate with status CertificateConstants.CERT_ARCHIVED
-                    if (!strict && EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).isRevoked(issuer, serialNr)) {
+                    ASN1GeneralizedTime asn1GeneralizedTime = CrlExtensions.extractInvalidityDate(entry);
+                    if (!strict && EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).isRevoked(issuer, serialNr)
+                            && asn1GeneralizedTime == null) {
                         log.info("Certificate '" + serialHex + "' is already revoked");
                         already_revoked++;
                         continue;
@@ -213,7 +215,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                         int reason = getCRLReasonValue(entry);
                         log.info("Reason code: " + reason);
                         Date invalidityDate = null;
-                        ASN1GeneralizedTime asn1GeneralizedTime = CrlExtensions.extractInvalidityDate(entry);
+
                         if (asn1GeneralizedTime != null) {
                             try {
                                 invalidityDate = asn1GeneralizedTime.getDate();
