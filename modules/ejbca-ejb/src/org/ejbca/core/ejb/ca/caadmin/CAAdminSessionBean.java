@@ -2874,7 +2874,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         int caId = StringTools.strip(CertTools.getSubjectDN(cacert)).hashCode();
         Properties caTokenProperties = CAToken.getPropertiesFromString(catokenproperties);
         // Create the CryptoToken
-        int cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken" + caId, PKCS11CryptoToken.class.getName(),
+        int cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken" + caId, catokenclasspath,
                 caTokenProperties, null, catokenpassword.toCharArray());
         final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
         // Set a lot of properties on the crypto token
