@@ -106,11 +106,6 @@ public class CRLUpdateWorker extends BaseWorker {
         if (conflictingCaIds.isEmpty()) {
             try {
                 runningCaIds.addAll(caids);
-                try {
-                    Thread.sleep(14000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
                 long polltime = getNextInterval();
                 // Use true here so the service works the same as before upgrade from 3.9.0 when this function of
                 // selecting CAs did not exist, no CA = Any CA.
