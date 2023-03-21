@@ -1207,7 +1207,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             } else {
                 certificateData.setInvalidityDate(-1L);
             }
-            final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1725,7 +1725,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 deleteLimitedCertificateData(limitedFingerprint);
         	} else {
         	    final CertificateData limitedCertificateData = cdw.getCertificateData();
-        	    if (cdw.getCertificateData().getRevocationDate()!=revocationDate.getTime() || cdw.getCertificateData().getRevocationReason()!=reasonCode) {
+                if (cdw.getCertificateData().getRevocationDate() != revocationDate.getTime() || cdw.getCertificateData().getRevocationReason() != reasonCode
+                        || cdw.getCertificateData().getInvalidityDate() != invalidityDate.getTime()) {
                     // Update the limited entry
                     log.info("Updating limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
                     limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
