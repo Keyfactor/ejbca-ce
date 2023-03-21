@@ -24,7 +24,7 @@ import org.ejbca.core.model.token.TokenConstants;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "tokenCertificateResponseWS", namespace = "server", propOrder = {
+@XmlType(name = "tokenCertificateResponseWS", propOrder = {
     "type",
     "certificate",
     "keyStore"

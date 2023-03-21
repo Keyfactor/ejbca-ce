@@ -29,7 +29,7 @@ import org.cesecore.util.Base64;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "keyStore", namespace = "server", propOrder = {
+@XmlType(name = "keyStore", propOrder = {
         "keystoreData"
     })
 public class KeyStore extends TokenCertificateResponseWS {

@@ -37,7 +37,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "revokeStatus", namespace = "server", propOrder = {
+@XmlType(name = "revokeStatus", propOrder = {
     "certificateSN",
     "issuerDN",
     "reason",
