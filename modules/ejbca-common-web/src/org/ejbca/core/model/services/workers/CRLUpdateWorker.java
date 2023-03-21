@@ -46,7 +46,7 @@ public class CRLUpdateWorker extends BaseWorker {
     /** Semaphore that tries to make sure that this CRL creation job does not run several times on the same machine.
      * Since CRL generation can sometimes take a lot of time, this is needed.
      */
-	private static boolean running = false;
+	private static Set<Integer> runningCaIds = new HashSet<>();
 
     /**
      * <p>Check if the {@link CRLUpdateWorker} can run on this node.
@@ -100,20 +100,27 @@ public class CRLUpdateWorker extends BaseWorker {
         // A semaphore used to not run parallel CRL generation jobs if it is slow in generating CRLs, and this job runs very often
         Set<Integer> updatedCas = new HashSet<>();
         Set<Integer> updatedCasDelta = new HashSet<>();
-		if (!running) {
-			try {
-				running = true;
-			    long polltime = getNextInterval();
-			    // Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
-			    // selecting CAs did not exist, no CA = Any CA.
-			    Collection<Integer> caids = getAllCAIdsToCheck(caSession, true);
-			    updatedCas.addAll(publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000));
-			    updatedCasDelta.addAll(publishingCrlSession.createDeltaCRLs(getAdmin(), caids, polltime*1000));
-			} catch (AuthorizationDeniedException e) {
-			    log.error("Internal authentication token was denied access to importing CRLs or revoking certificates.", e);
-			} finally {
-				running = false;
-			}	
+        Collection<Integer> caids = getAllCAIdsToCheck(caSession, true);
+        Collection<Integer> conflictingCaIds = new HashSet<>(runningCaIds);
+        conflictingCaIds.retainAll(caids);
+        if (conflictingCaIds.isEmpty()) {
+            try {
+                runningCaIds.addAll(caids);
+                try {
+                    Thread.sleep(14000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                long polltime = getNextInterval();
+                // Use true here so the service works the same as before upgrade from 3.9.0 when this function of
+                // selecting CAs did not exist, no CA = Any CA.
+                updatedCas.addAll(publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000));
+                updatedCasDelta.addAll(publishingCrlSession.createDeltaCRLs(getAdmin(), caids, polltime*1000));
+            } catch (AuthorizationDeniedException e) {
+                log.error("Internal authentication token was denied access to importing CRLs or revoking certificates.", e);
+            } finally {
+                runningCaIds.removeAll(caids);
+            }
             if (updatedCas.isEmpty() && updatedCasDelta.isEmpty()) {
                 return new ServiceExecutionResult(Result.NO_ACTION, "CRL Update Worker " + serviceName + " ran, but no CAs needed updating.");
             } else {
@@ -134,13 +141,12 @@ public class CRLUpdateWorker extends BaseWorker {
                     stringBuilder.append(" The following CA generated new delta CRLs: " + constructNameList(deltaCaNames) + ".");
                 }
                 return new ServiceExecutionResult(Result.SUCCESS, stringBuilder.toString());
-                
+
             }
-        } else {
-            String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", CRLUpdateWorker.class.getName());
+        }else {
+            String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.caconflict", serviceName, conflictingCaIds);
             log.info(msg);
             return new ServiceExecutionResult(Result.NO_ACTION, msg);
         }
-
 	}
 }
