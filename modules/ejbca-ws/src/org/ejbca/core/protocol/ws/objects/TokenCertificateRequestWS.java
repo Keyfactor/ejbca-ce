@@ -27,7 +27,7 @@ import org.ejbca.core.model.token.TokenConstants;
  * @deprecated Since EJBCA 7.1.0
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "tokenCertificateRequestWS", namespace = "server", propOrder = {
+@XmlType(name = "tokenCertificateRequestWS", propOrder = {
     "cAName",
     "certificateProfileName",
     "validityIdDays",

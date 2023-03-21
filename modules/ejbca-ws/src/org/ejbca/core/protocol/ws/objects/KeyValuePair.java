@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "keyValuePair", namespace = "server", propOrder = {
+@XmlType(name = "keyValuePair", propOrder = {
     "key",
     "value"
 })

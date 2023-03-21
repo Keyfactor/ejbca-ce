@@ -25,7 +25,7 @@ import org.cesecore.util.Base64;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "certificate", namespace = "server", propOrder = {
+@XmlType(name = "certificate", propOrder = {
     "certificateData"
 })
 public class Certificate extends TokenCertificateResponseWS {

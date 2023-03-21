@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlType;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "sshRequestMessageWs", namespace = "server", propOrder = {
+@XmlType(name = "sshRequestMessageWs", propOrder = {
         "publicKey",
         "keyId",
         "principals",

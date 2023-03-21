@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
  *</pre>
  * 
  */
-@XmlType(name = "extendedInformationWS", namespace = "server", propOrder = {
+@XmlType(name = "extendedInformationWS", propOrder = {
         "name",
         "value"
 })

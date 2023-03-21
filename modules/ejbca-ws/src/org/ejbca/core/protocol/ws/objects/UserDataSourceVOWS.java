@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "userDataSourceVOWS", namespace = "server", propOrder = {
+@XmlType(name = "userDataSourceVOWS", propOrder = {
     "userDataVOWS",
     "isModifyable"
 })

@@ -24,7 +24,7 @@ import org.cesecore.util.CertTools;
  * Holds certificate WS response data 
  *
  */
-@XmlType(name = "certificateResponse", namespace = "server", propOrder = {
+@XmlType(name = "certificateResponse", propOrder = {
          "responseType",
          "data"
  })

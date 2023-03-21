@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
  * Value object holding a Name and Id pair, for example for a CA or a end entity- or certificate profile.
  * 
  */
-@XmlType(name = "nameAndId", namespace = "server", propOrder = {
+@XmlType(name = "nameAndId", propOrder = {
         "name",
         "id"
 })
