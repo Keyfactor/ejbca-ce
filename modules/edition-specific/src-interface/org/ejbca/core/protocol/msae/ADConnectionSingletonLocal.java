@@ -27,10 +27,6 @@ import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 @Local
 public interface ADConnectionSingletonLocal {
 
-    default void updateConnectionProperties(String alias) {
-        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
-    }
-
     default void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, boolean followLdapReferral,
             int ldapReadTimeout, int ldapConnectTimeout, String alias) throws LDAPException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
