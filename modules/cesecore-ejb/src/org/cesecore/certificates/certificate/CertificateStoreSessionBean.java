@@ -523,7 +523,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(final String issuerDN, final byte subjectKeyId[], final String subjectDN, final String username) {
+    public boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(final String issuerDN, final byte[] subjectKeyId, final String subjectDN, final String username) {
         if (log.isTraceEnabled()) {
             log.trace(">isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(), issuer='" + issuerDN + "'");
         }
@@ -1222,7 +1222,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (revokeDate != null) {
                 certificateData.setRevocationDate(revokeDate);
             }
-            final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1230,7 +1230,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
             certificateData.setUpdateTime(now.getTime());
             certificateData.setInvalidityDate(invalidityDate);
-            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), Integer.valueOf(certificateData.getRevocationReason()), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), certificateData.getRevocationReason(), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1245,13 +1245,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
 
-            final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
         } else {
-            final String msg = INTRES.getLocalizedMessage("store.ignorerevoke", serialNumber, Integer.valueOf(certificateData.getStatus()), Integer.valueOf(reason));
+            final String msg = INTRES.getLocalizedMessage("store.ignorerevoke", serialNumber, certificateData.getStatus(), reason);
             log.info(msg);
             returnVal = false; // we did _not_ change status in the database
         }
@@ -1282,9 +1282,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final int maxRows = 10000;
             int firstResult = 0;
             // Revoking all non revoked certificates.
-
             // Update 10000 records at a time
-            firstResult = 0;
             List<CertificateData> list = findAllNonRevokedCertificates(bcdn, firstResult, maxRows);
             while (list.size() > 0) {
             	for (int i = 0; i<list.size(); i++) {
@@ -1297,7 +1295,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             	firstResult += maxRows;
             	list = findAllNonRevokedCertificates(bcdn, firstResult, maxRows);
             }
-            final String msg = INTRES.getLocalizedMessage("store.revokedallbyca", issuerdn, Integer.valueOf(revoked), Integer.valueOf(reason));
+            final String msg = INTRES.getLocalizedMessage("store.revokedallbyca", issuerdn, revoked, reason);
     		Map<String, Object> details = new LinkedHashMap<>();
     		details.put("msg", msg);
     		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
@@ -1641,7 +1639,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.TRUE);
                 }
             }
-            if (!UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue()) {
+            if (!UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()) {
                 // It was possible to store a second certificate with same serial number. Unique number not working.
                 log.info( INTRES.getLocalizedMessage("createcert.not_unique_certserialnumberindex") );
             }
@@ -1654,7 +1652,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                         " This is expected if DELETE is not granted to the EJBCA database user.", e);
             }
         }
-        return UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()!=null && UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue();
+        return UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()!=null && UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex();
     }
 
 
@@ -1807,7 +1805,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             // Schedule a new timer of this type
             final long interval = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
             if (interval > 0) {
-                timerService.createSingleActionTimer(interval, new TimerConfig(Integer.valueOf(TIMERID_CACERTIFICATECACHE), false));
+                timerService.createSingleActionTimer(interval, new TimerConfig(TIMERID_CACERTIFICATECACHE, false));
             }
         }
     }
