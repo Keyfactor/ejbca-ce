@@ -12,6 +12,12 @@
  *************************************************************************/
 package com.keyfactor.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -30,16 +36,6 @@ import org.bouncycastle.asn1.x509.OtherName;
 import org.bouncycastle.tsp.TSPAlgorithms;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.RFC4683Tools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * See <a href="https://tools.ietf.org/html/rfc4683">RFC 4683</a>

@@ -24,9 +24,6 @@ import org.junit.Test;
 
 import com.keyfactor.pkcs11.PKCS11TestUtils;
 import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * Some general test methods for Pkcs11SlotLabel

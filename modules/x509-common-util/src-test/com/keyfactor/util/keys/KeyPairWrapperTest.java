@@ -22,8 +22,6 @@ import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyPairWrapper;
-import com.keyfactor.util.keys.KeyTools;
 
 /**
  *

@@ -37,9 +37,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.ISignOperation;
-import com.keyfactor.util.keys.SignWithWorkingAlgorithm;
-import com.keyfactor.util.keys.TaskWithSigningException;
 
 /**
  * Test of the class SignWithWorkingAlgorithm.

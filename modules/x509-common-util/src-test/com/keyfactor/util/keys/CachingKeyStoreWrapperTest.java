@@ -26,9 +26,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.keys.CachingKeyStoreWrapper;
-import com.keyfactor.util.keys.KeyStoreTools;
-import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Stand alone test of CachingKeyStoreWrapper.
