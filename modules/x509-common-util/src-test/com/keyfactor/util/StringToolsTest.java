@@ -36,7 +36,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.StringTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**

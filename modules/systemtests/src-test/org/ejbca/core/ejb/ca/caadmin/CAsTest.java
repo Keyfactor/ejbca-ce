@@ -13,6 +13,14 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.lang.reflect.Field;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -36,10 +44,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
-
-import com.keyfactor.util.certificate.CertificateImplementationRegistry;
-import com.keyfactor.util.certificate.x509.X509CertificateUtility;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.dstu.BCDSTU4145PublicKey;
@@ -93,6 +97,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
@@ -108,14 +113,6 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests CA administration.
