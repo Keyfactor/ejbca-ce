@@ -34,7 +34,7 @@
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
 		<path location="${mod.ejbca-ws-client.lib}"/>
-		<path location="${mod.ejbca-ws-gen.lib}" />
+		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<path location="${mod.caa.lib}.lib}"/>
 		<path refid="lib.hc.classpath"/> <!-- Apache http client for REST API calls -->
