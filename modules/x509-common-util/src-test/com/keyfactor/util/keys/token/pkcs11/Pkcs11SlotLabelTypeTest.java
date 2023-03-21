@@ -17,8 +17,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
-
 /**
  *
  */

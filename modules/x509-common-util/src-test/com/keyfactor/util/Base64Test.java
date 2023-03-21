@@ -25,10 +25,6 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-
 /**
  * Tests base64 encoding and decoding
  *

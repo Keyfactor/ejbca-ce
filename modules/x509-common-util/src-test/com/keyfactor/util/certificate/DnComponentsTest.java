@@ -13,6 +13,10 @@
 
 package com.keyfactor.util.certificate;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -20,11 +24,6 @@ import org.junit.Test;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests the DnComponents class.
