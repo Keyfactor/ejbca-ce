@@ -27,7 +27,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 @Deprecated
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "hardTokenDataWS", namespace = "server",
+@XmlType(name = "hardTokenDataWS", 
     propOrder = {
     "certificates",
     "copies",
