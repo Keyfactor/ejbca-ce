@@ -33,8 +33,8 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
 
 /**
  * Class for standard X509 certificate extension. 

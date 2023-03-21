@@ -24,8 +24,6 @@ import java.io.OutputStream;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import com.keyfactor.util.SecurityFilterInputStream;
-
 /** Tests SecurityFilterInputStream class that can be used to prevent java heap-overflow during
  * reading from input stream
  * 

@@ -28,9 +28,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import com.keyfactor.util.FileTools;
-import com.keyfactor.util.StreamSizeLimitExceededException;
-
 /**
  * Tests the FileTools class.
  */
