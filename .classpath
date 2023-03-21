@@ -165,7 +165,6 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/policy-2.7.10.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/ejbca-ws-gen.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>

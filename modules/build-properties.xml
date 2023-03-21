@@ -63,7 +63,6 @@
     <property name="mod.ejbca-ws.lib" location="${mod.dist.path}/ejbca-ws.jar" />
     <property name="mod.ejbca-ws.wsdl" location="${mod.dist.path}/EjbcaWSService.wsdl" />
 	<property name="mod.ejbca-ws-gen.dir" location="${mod.dist.path}/ejbca-ws-gen/build-gen" />
-	<property name="mod.ejbca-ws-gen.lib" location="${ejbca.home}/lib/ejbca-ws-gen.jar" />
     <property name="mod.ejbca-ws.wsdl-schema" location="${mod.dist.path}/EjbcaWSService_schema1.xsd" />
 	<property name="mod.ejbca-ws-ejb-interface.lib" location="${mod.dist.path}/ejbca-ws-ejb-interface.jar" />
     <property name="mod.peerconnector.path" location="${mod.path}/peerconnector"/>
