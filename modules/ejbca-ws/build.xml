@@ -151,13 +151,6 @@
 			</fileset>
 		</replace>
 
-		<mkdir dir="${ejbca-ws.build-lib-gen.dir}" />
-		<!-- Compile and lib the repackaged files -->
-		<javac destdir="${ejbca-ws.build-lib-gen.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="wsdl-generate.classpath">
-			<src path="${mod.ejbca-ws-gen.dir}" />
-		</javac>
-		<jar destfile="${mod.ejbca-ws-gen.lib}" basedir="${ejbca-ws.build-lib-gen.dir}"/>
-
 		<!-- Delete the tmp dir -->
 		<delete dir="${ejbca-ws.dir}/temp" includeemptydirs="true"/>
 	</target>
