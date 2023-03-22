@@ -18,7 +18,8 @@ import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 import java.util.ArrayList;
 import java.util.Arrays;

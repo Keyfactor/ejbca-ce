@@ -18,7 +18,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 import static org.ejbca.ui.web.admin.attribute.AttributeMapping.REQUEST;
 

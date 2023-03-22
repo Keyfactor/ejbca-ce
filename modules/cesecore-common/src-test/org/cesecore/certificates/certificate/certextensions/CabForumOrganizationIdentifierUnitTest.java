@@ -41,14 +41,14 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Tests of {@link CabForumOrganizationIdentifier}

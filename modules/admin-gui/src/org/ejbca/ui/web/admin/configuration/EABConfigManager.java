@@ -17,8 +17,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.util.StringTools;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

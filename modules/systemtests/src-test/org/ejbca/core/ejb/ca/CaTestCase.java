@@ -52,7 +52,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -64,19 +63,13 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -95,6 +88,14 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.Assert;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * This class represents an abstract class for all tests which require testing
@@ -654,9 +655,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     InvalidAlgorithmException, AuthorizationDeniedException {
         createCa(SECP256R1, TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
     }
-    protected static void createEllipticCurveDsaCa(String keySpec) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    protected static void createEllipticCurveDsaCa(String keySpec, int certProfile) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
-        createCa(keySpec, TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        createCa(keySpec, TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, certProfile);
     }
     protected static void createEdDsaCa(final String keyAlg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
@@ -670,6 +671,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private static void createCa(final String keySpec, final String name, final String sigAlg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
+        createCa(keySpec, name, sigAlg, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);        
+    }
+
+    private static void createCa(final String keySpec, final String name, final String sigAlg, int certProfile) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    InvalidAlgorithmException, AuthorizationDeniedException {
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, name, keySpec, keySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create and active Extended CA Services.
@@ -678,7 +684,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final List<CertificatePolicy> policies = new ArrayList<>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + name, name, CAConstants.CA_ACTIVE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
+                certProfile, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit CA " + name);
         cainfo.setPolicies(policies);
         cainfo.setExtendedCAServiceInfos(extendedcaservices);

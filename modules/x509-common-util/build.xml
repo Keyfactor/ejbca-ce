@@ -42,7 +42,7 @@
 		<javac srcdir="${x509-common-util.dir}/src" destdir="${x509-common-util.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="compile.classpath"/>
 		</javac>
-		<buildservicemanifest interface="com.keyfactor.util.certificate.CertificateImplementation;org.cesecore.keys.token.PKCS11SlotListWrapperFactory"
+		<buildservicemanifest interface="com.keyfactor.util.certificate.CertificateImplementation;com.keyfactor.util.keys.token.pkcs11.PKCS11SlotListWrapperFactory"
 		    		file="${x509-common-util.dir}/build/classes" classpath="manifest.classpath"/>
 		<mkdir dir="${x509-common-util.dir}/dist"/>
 		<jar destfile="${x509-common-util.dir}/dist/x509-common-util.jar">

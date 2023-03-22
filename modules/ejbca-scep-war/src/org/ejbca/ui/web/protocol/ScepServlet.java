@@ -37,9 +37,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -54,6 +51,10 @@ import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 
 /**

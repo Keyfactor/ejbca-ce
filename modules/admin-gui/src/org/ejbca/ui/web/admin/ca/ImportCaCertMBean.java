@@ -32,12 +32,13 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.kfenroll.ProxyCa;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
 
 /**
  * JSF MBean backing the import ca cert page.

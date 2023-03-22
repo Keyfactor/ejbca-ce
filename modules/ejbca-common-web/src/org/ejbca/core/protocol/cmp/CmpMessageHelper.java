@@ -97,11 +97,12 @@ import org.bouncycastle.pkcs.jcajce.JcePBMac1CalculatorBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * Helper class to create different standard parts of CMP messages
