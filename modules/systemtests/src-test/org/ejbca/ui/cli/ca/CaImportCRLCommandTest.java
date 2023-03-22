@@ -56,8 +56,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * System test class for CaImportCRLCommand
- * 
- * @version $Id$
+ *
  */
 public class CaImportCRLCommandTest {
 
