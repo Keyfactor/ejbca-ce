@@ -20,13 +20,14 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import java.security.InvalidKeyException;
 import java.util.ArrayList;

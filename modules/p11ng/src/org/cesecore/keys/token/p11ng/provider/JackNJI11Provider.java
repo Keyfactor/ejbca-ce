@@ -57,10 +57,7 @@ import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11ng.MechanismNames;
-import org.cesecore.util.StringTools;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKK;
 import org.pkcs11.jacknji11.CKM;
@@ -69,6 +66,9 @@ import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
 
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.sun.jna.Memory;
 
 /**

@@ -20,8 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
-import org.cesecore.util.CertTools;
 
+import com.keyfactor.util.CertTools;
 import com.novell.ldap.LDAPDN;
 
 /**

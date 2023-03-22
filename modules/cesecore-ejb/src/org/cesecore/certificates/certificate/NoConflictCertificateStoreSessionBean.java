@@ -51,9 +51,10 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * These methods call CertificateStoreSession for certificates that are plain CertificateData entities.

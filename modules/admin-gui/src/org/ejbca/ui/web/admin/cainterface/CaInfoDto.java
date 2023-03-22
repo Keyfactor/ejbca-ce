@@ -19,7 +19,8 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 import java.util.ArrayList;
 import java.util.List;

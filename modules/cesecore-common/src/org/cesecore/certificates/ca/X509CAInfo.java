@@ -52,8 +52,9 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
+
+import com.keyfactor.util.CertTools;
 
 
 /**

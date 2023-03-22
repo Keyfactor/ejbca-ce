@@ -16,6 +16,8 @@ package org.cesecore.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.keyfactor.util.StringTools;
+
 /**
  * An implementation of HashMap that base64 encodes all String's that you 'put', if it's not asciiPrintable, where Base64 encoding is not needed. 
  * It encodes (non asciiPrintable) to form "B64:<base64 encoded string>". It only encodes objects of type String.

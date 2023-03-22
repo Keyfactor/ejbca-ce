@@ -41,7 +41,6 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceDataSessionLocal;
@@ -52,6 +51,8 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Backing bean for the "Inspect Publisher Queue" page.

@@ -68,7 +68,9 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
 
 /**
  * A class to check whether a certificate is revoked or not using either OCSP or CRL. 
