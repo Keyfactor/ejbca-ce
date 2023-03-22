@@ -29,10 +29,7 @@ import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.Base64;
 import org.cesecore.util.GUIDGenerator;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
@@ -42,6 +39,10 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.IPatternLogger;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;

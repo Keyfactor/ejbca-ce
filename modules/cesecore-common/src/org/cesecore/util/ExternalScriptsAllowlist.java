@@ -23,6 +23,8 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.keyfactor.util.StringTools;
+
 /**
  * Class containing logic for a list of scripts allowed to be executed by "External Command Validators".
  */

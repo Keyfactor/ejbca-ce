@@ -168,7 +168,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * 
      * @param subjectKeyId Is the ASN.1 SubjectKeyIdentifier of the public key as a byte array
      * @return null or the certificate which is active, matches the argument and has the latest updateTime
-     * @see org.cesecore.keys.util.KeyTools#createSubjectKeyId(java.security.PublicKey)
+     * @see com.keyfactor.util.keys.KeyTools#createSubjectKeyId(java.security.PublicKey)
      */
     Certificate findMostRecentlyUpdatedActiveCertificate(byte[] subjectKeyId);
 

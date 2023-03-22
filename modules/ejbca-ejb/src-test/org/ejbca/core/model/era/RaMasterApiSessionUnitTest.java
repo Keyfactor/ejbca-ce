@@ -39,10 +39,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
 import org.easymock.EasyMock;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -61,6 +58,10 @@ import org.ejbca.test.EjbMocker;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * Unit tests of {@link RaMasterApiSessionBean}

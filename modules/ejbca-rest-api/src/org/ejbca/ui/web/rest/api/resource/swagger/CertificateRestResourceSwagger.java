@@ -18,7 +18,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.SwaggerDefinition.Scheme;
-import org.cesecore.CesecoreException;
+
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
@@ -43,6 +43,8 @@ import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.resource.BaseRestResource;
 import org.ejbca.ui.web.rest.api.resource.CertificateRestResource;
+
+import com.keyfactor.CesecoreException;
 
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;

@@ -31,6 +31,8 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 
+import com.keyfactor.util.CertTools;
+
 /**
  * Tools to handle calls with <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html">Java Process API</a>.
  *

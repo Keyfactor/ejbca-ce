@@ -24,13 +24,13 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**

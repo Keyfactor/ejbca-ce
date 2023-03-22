@@ -12,8 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.model.ra.raadmin;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * Thrown when an end entity profile was not found. 

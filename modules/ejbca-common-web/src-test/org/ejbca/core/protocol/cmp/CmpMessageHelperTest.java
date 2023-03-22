@@ -41,9 +41,10 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cert.cmp.GeneralPKIMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * JUnit tests for CmpMessageHelper.

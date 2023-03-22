@@ -1,9 +1,10 @@
 package org.cesecore.authentication.oauth;
 
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyTools;
 
 public class OAuthKeyInfoTest {
     private static final String OAUTH_KEY = "OauthSystemTestKey";
