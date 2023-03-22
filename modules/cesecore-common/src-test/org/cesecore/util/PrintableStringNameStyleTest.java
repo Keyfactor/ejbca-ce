@@ -20,6 +20,9 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.junit.Test;
 
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+
 /**
  *
  */

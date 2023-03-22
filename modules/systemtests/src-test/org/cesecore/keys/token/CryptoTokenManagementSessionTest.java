@@ -28,12 +28,16 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * Tests CryptoToken management API.

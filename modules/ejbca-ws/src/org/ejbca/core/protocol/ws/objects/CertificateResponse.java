@@ -17,8 +17,8 @@ import java.security.cert.X509Certificate;
 
 import javax.xml.bind.annotation.XmlType;
 
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * Holds certificate WS response data 

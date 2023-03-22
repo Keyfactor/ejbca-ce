@@ -41,11 +41,11 @@ import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.OAuthProviderUIHelper;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyTools;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -499,7 +499,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
         byte[] inputKeyBytes = oauthKeyEditor.getPublicKeyValue().getBytes(StandardCharsets.US_ASCII);
         try {
-            inputKeyBytes = org.cesecore.util.Base64.decode(inputKeyBytes);
+            inputKeyBytes = com.keyfactor.util.Base64.decode(inputKeyBytes);
         } catch (RuntimeException e) {
             log.info("New key is not in Base64 format. Assuming it is PEM or JWK format.");
         }

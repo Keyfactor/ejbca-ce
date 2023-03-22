@@ -1,5 +1,21 @@
 package org.ejbca.core.ejb.crl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.KeyPair;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -24,10 +40,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -45,20 +58,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.KeyPair;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.security.cert.X509CRLEntry;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 public class InvalidityDateCrlSystemTest {
 

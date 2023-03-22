@@ -74,8 +74,6 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Hostname;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.EventTypes;
@@ -127,7 +125,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
@@ -146,8 +143,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -156,28 +151,18 @@ import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.CvcKeyTools;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.ECAUtils;
-import org.cesecore.util.EJBTools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.CmpConfiguration;
@@ -219,6 +204,22 @@ import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.CAIdTools;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * Manages CAs in EJBCA.
@@ -2874,7 +2875,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         int caId = StringTools.strip(CertTools.getSubjectDN(cacert)).hashCode();
         Properties caTokenProperties = CAToken.getPropertiesFromString(catokenproperties);
         // Create the CryptoToken
-        int cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken" + caId, PKCS11CryptoToken.class.getName(),
+        int cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken" + caId, catokenclasspath,
                 caTokenProperties, null, catokenpassword.toCharArray());
         final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
         // Set a lot of properties on the crypto token

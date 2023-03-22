@@ -14,7 +14,7 @@ package org.cesecore.util;
 
 import java.util.List;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * The external process exception is the base exception to handle (platform dependent) external process calls ({@link ExternalProcessTools}. 

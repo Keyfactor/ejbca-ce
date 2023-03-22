@@ -51,11 +51,12 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dbprotection.DatabaseProtectionException;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
 import org.cesecore.util.query.QueryGenerator;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * This class handles secure logs auditing.

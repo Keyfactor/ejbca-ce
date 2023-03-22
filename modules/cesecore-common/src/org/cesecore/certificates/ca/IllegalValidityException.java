@@ -12,7 +12,7 @@
  *************************************************************************/  
 package org.cesecore.certificates.ca;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * Error due to an invalid request validity period for a certificate.

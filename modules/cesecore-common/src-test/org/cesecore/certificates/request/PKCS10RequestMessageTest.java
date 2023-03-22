@@ -26,9 +26,10 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.KeyTools;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

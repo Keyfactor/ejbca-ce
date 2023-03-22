@@ -31,14 +31,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -46,6 +40,13 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * Imports a keystore and creates a new X509 CA from it

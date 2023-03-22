@@ -29,8 +29,6 @@ import java.util.List;
 
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.model.services.workers.CertificateCrlReader;
 import org.ejbca.scp.publisher.ScpContainer;
@@ -39,6 +37,9 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Unit tests for the CertificateCrlReader Worker

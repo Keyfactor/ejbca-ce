@@ -61,6 +61,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 /**
  * Provider for signing and decrypting with Azure Key Vault REST API.
  */

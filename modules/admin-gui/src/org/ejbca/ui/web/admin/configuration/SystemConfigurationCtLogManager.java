@@ -23,7 +23,8 @@ import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CtLogManager;
-import org.cesecore.keys.util.KeyTools;
+
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * This class is used to manage CT logs in EJBCA's system configuration. It adds some additional

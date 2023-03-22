@@ -19,7 +19,8 @@ import java.util.Set;
 
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.util.AlgorithmConstants;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * RaResponse for Certificate Profile Info.

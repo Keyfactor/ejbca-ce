@@ -40,10 +40,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
@@ -62,6 +59,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * A unit test class for CaRestResource to test its content.

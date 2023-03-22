@@ -71,16 +71,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
@@ -101,6 +96,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 @Named
 @SessionScoped

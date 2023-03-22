@@ -21,7 +21,6 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.CertTools;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.AuthorizationRole;
 import org.ejbca.cvc.CVCAuthorizationTemplate;
@@ -35,6 +34,7 @@ import org.ejbca.cvc.ReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.CertificateImplementation;
 
 /**

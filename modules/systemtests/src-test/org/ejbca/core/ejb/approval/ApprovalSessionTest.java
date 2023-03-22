@@ -49,19 +49,13 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
@@ -86,6 +80,13 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Test of approvals.

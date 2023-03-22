@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -79,26 +80,14 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.CertificateImportException;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -109,9 +98,21 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * Tests CA administration.
@@ -228,6 +229,11 @@ public class CAsTest extends CaTestCase {
         String policyId = CertTools.getCertificatePolicyId(cert, 0);
         assertNotNull("CA certificate should have a Certificate Policy from CA settings", policyId);
         assertEquals("1.2.3.4", policyId);
+        byte[] authKeyIdBytes = CertTools.getAuthorityKeyId(cert);
+        assertEquals("Length of method 1 Authority Key Identifier should be length of SHA1 hash", 20, authKeyIdBytes.length);
+        byte[] subjectKeyIdBytes = CertTools.getSubjectKeyId(cert);
+        assertEquals("Length of method 1 Subject Key Identifier should be length of SHA1 hash", 20, subjectKeyIdBytes.length);
+        assertTrue("For a Root CA, authority and subject KeyIDs must be the same", Objects.deepEquals(authKeyIdBytes, subjectKeyIdBytes));
 
         // Test to generate a certificate request from the CA
         Collection<Certificate> cachain = info.getCertificateChain();
@@ -285,6 +291,12 @@ public class CAsTest extends CaTestCase {
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_ECDSA_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
             X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            byte[] authKeyIdBytes = CertTools.getAuthorityKeyId(cert);
+            assertEquals("Length of method 1 Authority Key Identifier should be length of SHA1 hash", 20, authKeyIdBytes.length);
+            byte[] subjectKeyIdBytes = CertTools.getSubjectKeyId(cert);
+            assertEquals("Length of method 1 Subject Key Identifier should be length of SHA1 hash", 20, subjectKeyIdBytes.length);
+            assertTrue("For a Root CA, authority and subject KeyIDs must be the same", Objects.deepEquals(authKeyIdBytes, subjectKeyIdBytes));
+
             PublicKey pk = bccert.getPublicKey();
             org.bouncycastle.jce.spec.ECParameterSpec spec = checkECKey(pk);
             final String H = spec.getH().toString(16);
@@ -307,6 +319,38 @@ public class CAsTest extends CaTestCase {
         assertTrue("Creating ECDSA CA failed", ret);
     }
 
+    /** Adds a CA Using ECDSA keys to the database, with truncated method of Authority and Subject KeyID. */
+    @Test
+    public void test04AddECDSACAWithTruncatedKeyID() throws Exception {
+        final String profileName = "ROOTCATRUNCATEDKEYID";
+        try {
+            CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+            cp.setUseTruncatedSubjectKeyIdentifier(true);
+            int profileID = certificateProfileSession.addCertificateProfile(admin, profileName, cp);
+            createEllipticCurveDsaCa("P-256", profileID);
+            CAInfo info = caSession.getCAInfo(admin, TEST_ECDSA_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_ECDSA_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_ECDSA_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            byte[] authKeyIdBytes = CertTools.getAuthorityKeyId(cert);
+            assertEquals("Length of method 2 Authority Key Identifier should be 8 bytes", 8, authKeyIdBytes.length);
+            byte[] subjectKeyIdBytes = CertTools.getSubjectKeyId(cert);
+            assertEquals("Length of method 2 Subject Key Identifier should be 8 bytes", 8, subjectKeyIdBytes.length);
+            assertTrue("For a Root CA, authority and subject KeyIDs must be the same", Objects.deepEquals(authKeyIdBytes, subjectKeyIdBytes));
+
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating ECDSA CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_ECDSA_CA_NAME);
+            certificateProfileSession.removeCertificateProfile(admin, profileName);
+        }
+    }
+
     /** Adds a CA Using ECDSA keys, using the new curve curve25519, to the database. It also checks that the CA is stored correctly.
      * Note that this is a flawed case. Curve25519 should not be used with ECDSA. The test case works, but we don't offer this curve for ECDSA
      */
@@ -314,7 +358,7 @@ public class CAsTest extends CaTestCase {
     public void testAddECDSACAWithCurve25519() throws Exception {
         boolean ret = false;
         try {
-            createEllipticCurveDsaCa("curve25519");
+            createEllipticCurveDsaCa("curve25519", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
             CAInfo info = caSession.getCAInfo(admin, "TESTECDSA");
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);

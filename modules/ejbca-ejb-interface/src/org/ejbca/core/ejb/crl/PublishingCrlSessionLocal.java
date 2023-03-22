@@ -24,7 +24,8 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.crl.CRLInfo;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @version $Id$

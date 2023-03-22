@@ -35,8 +35,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
 import org.ejbca.ui.web.rest.api.io.request.Pagination;
@@ -44,6 +42,9 @@ import org.ejbca.ui.web.rest.api.io.request.PaginationSummary;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * A unit test class for SearchCertificatesRestResponseV2 conversion.

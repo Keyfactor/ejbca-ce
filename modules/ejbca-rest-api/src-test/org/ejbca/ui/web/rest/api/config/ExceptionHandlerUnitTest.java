@@ -45,10 +45,8 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificatetransparency.CTLogException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.util.StreamSizeLimitExceededException;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
@@ -78,6 +76,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.keyfactor.util.StreamSizeLimitExceededException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * A unit test class for ExceptionHandler to test correctness of mapping between Exception and Error/Info response.

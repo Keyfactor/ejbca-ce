@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 /**
  * An exception thrown when someone tries to create and end-entity that already exists.

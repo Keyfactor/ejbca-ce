@@ -57,10 +57,8 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ConcurrentCache;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
@@ -80,6 +78,9 @@ import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 
 /**

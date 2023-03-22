@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.ws.client;
 
 import java.math.BigInteger;
 
-import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -25,6 +24,8 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Revokes a given certificate

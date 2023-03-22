@@ -34,7 +34,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
@@ -42,6 +41,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.util.TCPTool;
 
+import com.keyfactor.util.CertTools;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPConnection;

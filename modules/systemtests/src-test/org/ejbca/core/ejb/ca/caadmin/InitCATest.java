@@ -43,30 +43,22 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -77,6 +69,15 @@ import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * Tests initialization of uninitialized CAs (e.g. imported from statedumps).

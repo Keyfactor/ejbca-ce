@@ -44,13 +44,14 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SshCertificateUtils;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * UI representation of a result set item from the back end.

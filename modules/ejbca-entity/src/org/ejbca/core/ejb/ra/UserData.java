@@ -33,12 +33,13 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.CryptoTools;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Representation of an End Entity, called User for legacy reasons an end entity can be a server, device, or a user.

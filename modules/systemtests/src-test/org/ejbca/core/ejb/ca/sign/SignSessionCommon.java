@@ -28,8 +28,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -37,6 +35,9 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
 
 
 /**

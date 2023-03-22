@@ -54,9 +54,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.cert.CrlExtensions;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -68,6 +65,10 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
 
 /**
  * Imports a CRL file to the database.

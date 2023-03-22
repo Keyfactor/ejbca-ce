@@ -39,12 +39,13 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Some test methods that are used from system tests

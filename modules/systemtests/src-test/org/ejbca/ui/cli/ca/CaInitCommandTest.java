@@ -46,18 +46,19 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

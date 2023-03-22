@@ -134,12 +134,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.CrlExtensions;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -147,10 +142,6 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -203,6 +194,16 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 
 public abstract class CommonEjbcaWs extends CaTestCase {
@@ -837,7 +838,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         // certificate for this key should be impossible
         final ErrorCode errorCode = certreqInternal(ca1userData2, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10);
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(org.cesecore.ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
+        assertEquals(com.keyfactor.ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
                 errorCode.getInternalErrorCode());
 
         // test that the user that was denied a cert can get a cert with another
@@ -891,7 +892,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         // certificate with this DN should fail
         final ErrorCode errorCode = certreqInternal(ca1userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10);
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(org.cesecore.ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
+        assertEquals(com.keyfactor.ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
                 errorCode.getInternalErrorCode());
 
         // test that the user that was denied a cert can get a cert with another
@@ -1146,7 +1147,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                 ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
                 fail("CRMF request with bad PKMAC should fail with ErrorCode.BAD_REQUEST_SIGNATURE.");
             } catch (EjbcaException_Exception e) {
-                assertEquals("Unexpected error.", org.cesecore.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), e.getFaultInfo().getErrorCode().getInternalErrorCode());
+                assertEquals("Unexpected error.", com.keyfactor.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), e.getFaultInfo().getErrorCode().getInternalErrorCode());
             }
         }
         // Try when the PKMAC is created with the wrong enrollment code
@@ -1160,7 +1161,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                 ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
                 fail("CRMF request with bad PKMAC should fail with ErrorCode.BAD_REQUEST_SIGNATURE.");
             } catch (EjbcaException_Exception e) {
-                assertEquals("Unexpected error.", org.cesecore.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), e.getFaultInfo().getErrorCode().getInternalErrorCode());
+                assertEquals("Unexpected error.", com.keyfactor.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), e.getFaultInfo().getErrorCode().getInternalErrorCode());
             }
         }
     }
@@ -2039,7 +2040,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             errorCode = e.getFaultInfo().getErrorCode();
         }
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.CA_NOT_EXISTS.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), com.keyfactor.ErrorCode.CA_NOT_EXISTS.getInternalErrorCode());
 
         // restore CA name
         user1.setCaName(getAdminCAName());
@@ -2054,7 +2055,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         }
 
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.EE_PROFILE_NOT_EXISTS.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), com.keyfactor.ErrorCode.EE_PROFILE_NOT_EXISTS.getInternalErrorCode());
 
         // restore EE profile
         user1.setEndEntityProfileName("EMPTY");
@@ -2069,7 +2070,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         }
 
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), com.keyfactor.ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode());
 
         // restore Certificate profile
         user1.setCertificateProfileName("ENDUSER");
@@ -2084,7 +2085,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         }
 
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.UNKOWN_TOKEN_TYPE.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), com.keyfactor.ErrorCode.UNKOWN_TOKEN_TYPE.getInternalErrorCode());
     }
 
     protected void errorOnGeneratePkcs10() throws Exception {
@@ -2115,7 +2116,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             errorCode = e.getFaultInfo().getErrorCode();
         }
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(org.cesecore.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), errorCode.getInternalErrorCode());
+        assertEquals(com.keyfactor.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), errorCode.getInternalErrorCode());
         errorCode = null;
         // ///// Check Error.USER_WRONG_STATUS ///////
         user1.setStatus(EndEntityConstants.STATUS_REVOKED);
@@ -2129,7 +2130,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             errorCode = e.getFaultInfo().getErrorCode();
         }
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(org.cesecore.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), errorCode.getInternalErrorCode());
+        assertEquals(com.keyfactor.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), errorCode.getInternalErrorCode());
         // PKCS#10 signed by a different key than the public key in the request (Proof Of Possession fail)
         user1.setStatus(EndEntityConstants.STATUS_NEW);
         ejbcaraws.editUser(user1);
@@ -2144,7 +2145,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         } catch (EjbcaException_Exception e) {
             log.info(e.getMessage(), e);
             errorCode = e.getFaultInfo().getErrorCode();
-            assertEquals(org.cesecore.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), errorCode.getInternalErrorCode());
+            assertEquals(com.keyfactor.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), errorCode.getInternalErrorCode());
         }
         log.trace("<errorOnGeneratePkcs10");
     }
@@ -2174,7 +2175,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             ejbcaraws.pkcs12Req("WSTESTUSER31", "foo1234", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
-            assertEquals(org.cesecore.ErrorCode.BAD_USER_TOKEN_TYPE.getInternalErrorCode(), errorCode.getInternalErrorCode());
+            assertEquals(com.keyfactor.ErrorCode.BAD_USER_TOKEN_TYPE.getInternalErrorCode(), errorCode.getInternalErrorCode());
         }
         assertNotNull(errorCode);
         errorCode = null;
@@ -2187,7 +2188,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             ejbcaraws.pkcs12Req("WSTESTUSER31", PASSWORD, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
-            assertEquals(org.cesecore.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), errorCode.getInternalErrorCode());
+            assertEquals(com.keyfactor.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), errorCode.getInternalErrorCode());
         }
         assertNotNull(errorCode);
         errorCode = null;
@@ -2201,7 +2202,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             ejbcaraws.pkcs12Req("WSTESTUSER31", "foo1234", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
-            assertEquals(org.cesecore.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), errorCode.getInternalErrorCode());
+            assertEquals(com.keyfactor.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), errorCode.getInternalErrorCode());
         }
         assertNotNull(errorCode);
     }

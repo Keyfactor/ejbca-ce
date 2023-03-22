@@ -40,7 +40,6 @@ import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
@@ -49,6 +48,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Backing bean for MSAutoEnrollmentConfiguration in System Settings.

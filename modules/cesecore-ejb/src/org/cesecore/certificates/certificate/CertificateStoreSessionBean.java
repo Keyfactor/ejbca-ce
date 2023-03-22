@@ -82,12 +82,14 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.CvcKeyTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.cvc.PublicKeyEC;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -224,7 +226,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      * @param incert The certificate to be stored.
      * @param username username of end entity owning the certificate.
      * @param cafp Fingerprint (hex) of the CAs certificate.
-     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like org.cesecore.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
+     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
      * @param status the status from the CertificateConstants.CERT_ constants
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under

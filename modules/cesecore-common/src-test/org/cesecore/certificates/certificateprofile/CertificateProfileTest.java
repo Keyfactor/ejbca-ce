@@ -32,6 +32,12 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.primitives.Booleans;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
@@ -39,13 +45,8 @@ import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
 
 /**

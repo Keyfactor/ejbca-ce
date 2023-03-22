@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -32,6 +31,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Revokes a certificate in the database.

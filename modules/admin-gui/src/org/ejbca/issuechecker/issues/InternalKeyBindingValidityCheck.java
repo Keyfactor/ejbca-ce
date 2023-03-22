@@ -28,10 +28,11 @@ import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingStatus;
-import org.cesecore.util.CertTools;
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.TicketDescription;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Produce an error for each active internal key binding with an expired certificate.

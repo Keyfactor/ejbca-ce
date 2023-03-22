@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.ca.auth;
 
 import org.apache.log4j.Logger;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -32,7 +31,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -46,6 +44,9 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;

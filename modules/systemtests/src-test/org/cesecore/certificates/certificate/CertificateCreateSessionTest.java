@@ -43,8 +43,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.CaTestUtils;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -79,10 +77,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.EccKeyValidator;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorSessionRemote;
@@ -90,9 +85,6 @@ import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
 import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -103,6 +95,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Tests creating certificate with extended key usage.

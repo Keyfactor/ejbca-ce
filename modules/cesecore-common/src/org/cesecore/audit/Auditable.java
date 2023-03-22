@@ -23,8 +23,9 @@ import org.cesecore.audit.audit.AuditLogExporterException;
 import org.cesecore.audit.audit.AuditLogValidationReport;
 import org.cesecore.audit.audit.AuditLogValidatorException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.query.QueryCriteria;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Interface for querying, validating and exporting log.

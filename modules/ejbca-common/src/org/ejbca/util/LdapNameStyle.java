@@ -20,7 +20,8 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
-import org.cesecore.util.CeSecoreNameStyle;
+
+import com.keyfactor.util.CeSecoreNameStyle;
 
 /**
  * Name style used for parsing and building DNs for use with LDAP. 

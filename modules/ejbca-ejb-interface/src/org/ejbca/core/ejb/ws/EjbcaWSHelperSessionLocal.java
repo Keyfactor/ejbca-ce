@@ -22,15 +22,12 @@ import java.util.List;
 
 import javax.ejb.Local;
 
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.keybind.CertificateImportException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -41,6 +38,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.query.Query;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Local interface for EjbcaWSHelperSession. These methods are used from EjbcaWS only

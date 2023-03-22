@@ -32,14 +32,15 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Servlet used for requesting browser certificate renewals.

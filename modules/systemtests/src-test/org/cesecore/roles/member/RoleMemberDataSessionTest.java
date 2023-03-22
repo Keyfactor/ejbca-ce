@@ -33,8 +33,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMeta
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
@@ -42,11 +40,14 @@ import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationTokenM
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * @version $Id$

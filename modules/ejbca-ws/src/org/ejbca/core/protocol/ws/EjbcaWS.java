@@ -52,8 +52,6 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -76,7 +74,6 @@ import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -86,13 +83,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
@@ -161,6 +152,16 @@ import org.ejbca.util.KeyValuePair;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * Implementor of the IEjbcaWS interface.

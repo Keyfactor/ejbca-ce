@@ -17,8 +17,9 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;

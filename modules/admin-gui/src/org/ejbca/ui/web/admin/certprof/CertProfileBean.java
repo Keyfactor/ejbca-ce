@@ -35,13 +35,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -49,6 +45,11 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.cvc.AccessRightAuthTerm;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 import javax.annotation.PostConstruct;
 import javax.faces.context.FacesContext;

@@ -39,23 +39,23 @@ import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.token.BaseCryptoToken;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.p11.P11SlotUser;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import com.keyfactor.util.keys.token.pkcs11.P11SlotUser;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */

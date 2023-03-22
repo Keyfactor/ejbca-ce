@@ -64,7 +64,6 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.CustomServiceWorkerProperty;
@@ -74,6 +73,8 @@ import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.scp.publisher.ScpContainer;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * This custom worker reads Certificates and CRLs from a local directory periodically and inserts them into the database. 
