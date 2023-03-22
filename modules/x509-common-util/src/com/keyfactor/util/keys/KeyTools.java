@@ -64,7 +64,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -73,17 +72,6 @@ import java.util.List;
 import javax.crypto.Cipher;
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.AsymmetricJWK;
-import com.nimbusds.jose.jwk.JWK;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -133,6 +121,14 @@ import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.bouncycastle.pqc.jcajce.spec.NTRUParameterSpec;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 
 /**
  * Tools to handle common key and keystore operations.
@@ -1644,60 +1640,6 @@ public final class KeyTools {
                 log.debug(msg);
                 throw new CertificateParsingException(msg, e);
             }
-        }
-    }
-
-    /** Like {@link getBytesFromPublicKeyFile}, but allows certificates and JWK keys also <code>{"kid":</code>... */
-    public static byte[] getBytesFromOauthKey(final byte[] bytes) throws CertificateParsingException {
-        try {
-            return getBytesFromPublicKeyFile(bytes);
-        } catch (CertificateParsingException originalException) {
-            if (bytes.length == 0) {
-                throw originalException; // No point in parsing empty files as cert or JWK
-            }
-            log.debug("Could not parse key as PEM or DER, trying to parse as certificate.");
-            try {
-                final X509Certificate cert = CertTools.getCertfromByteArray(bytes, X509Certificate.class);
-                final PublicKey publicKey = cert.getPublicKey();
-                return publicKey.getEncoded();
-            } catch (CertificateParsingException certException) {
-                log.debug("Could not parse key as PEM, DER or certificate, trying to parse as JWK.");
-                try {
-                    final JWK jwk = JWK.parse(new String(bytes, StandardCharsets.US_ASCII));
-                    if (jwk instanceof AsymmetricJWK) {
-                        return ((AsymmetricJWK) jwk).toPublicKey().getEncoded();
-                    } else {
-                        throw new CertificateParsingException("Wrong type of JWK key. Expected asymmetric key (EC or RSA), got unsupported key type " + jwk.getKeyType().toString());
-                    }
-                } catch (ParseException | JOSEException | RuntimeException jwkException) {
-                    log.debug("Failed to parse key as PEM, DER, X.509 certificate or JWK. Exception stack traces follow.");
-                    log.debug("PEM/DER public key parsing exception", originalException);
-                    log.debug("PEM/DER certificate parsing exception", certException);
-                    log.debug("JWK parsing exception", jwkException);
-                    throw new CertificateParsingException("Key could neither be parsed as PEM, DER, certificate or JWK", originalException);
-                }
-            }
-        }
-    }
-
-    /**
-     * Extracts the Key ID from JWK key.
-     * @param bytes Encoded public key. Do <em>not</em> use the return value from getBytesFromOauthKey, that is always in DER format.
-     * @return Key ID as a string, or null on any error (e.g. non JWK key)
-     */
-    public static String getKeyIdFromJwkKey(final byte[] bytes) {
-        try {
-            final JWK jwk = JWK.parse(new String(bytes, StandardCharsets.US_ASCII));
-            final String keyId = jwk.getKeyID();
-            if (log.isDebugEnabled()) {
-                log.debug("Extracted JWK Key ID: " + keyId);
-            }
-            return keyId;
-        } catch (RuntimeException | ParseException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Not a JWK key, ignoring: " + e.getMessage(), e);
-            }
-            return null;
         }
     }
 
