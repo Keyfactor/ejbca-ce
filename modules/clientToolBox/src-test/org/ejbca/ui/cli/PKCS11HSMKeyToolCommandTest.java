@@ -28,9 +28,6 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.util.KeyStoreTools;
-import org.cesecore.util.CertTools;
 import org.ejbca.util.keystore.KeyStoreToolsFactory;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -43,6 +40,10 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;

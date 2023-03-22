@@ -37,9 +37,10 @@ import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.util.CertTools;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Unit test for Partitioned CRL functionality in the X509CA class.

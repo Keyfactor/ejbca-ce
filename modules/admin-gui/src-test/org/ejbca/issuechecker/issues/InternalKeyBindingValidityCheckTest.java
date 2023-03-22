@@ -30,10 +30,10 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
-import org.cesecore.util.CertTools;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.keyfactor.util.CertTools;
 
 /**
  * Unit tests for {@link InternalKeyBindingValidityCheck}.

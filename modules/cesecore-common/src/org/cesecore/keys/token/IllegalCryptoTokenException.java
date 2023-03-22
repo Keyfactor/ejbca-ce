@@ -12,7 +12,7 @@
  *************************************************************************/ 
 package org.cesecore.keys.token;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * Error due to malformed key store. The cause of failure can be related to illegal key length etc.

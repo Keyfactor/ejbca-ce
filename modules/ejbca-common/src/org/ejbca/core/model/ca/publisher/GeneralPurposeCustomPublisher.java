@@ -28,11 +28,12 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.ExternalProcessTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.InternalEjbcaResources;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * This class is used for publishing to user defined script or command.

@@ -17,7 +17,8 @@ import java.io.Serializable;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.roles.Role;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Value object for the RoleMemberData entity bean, so that we don't have to pass information like row protection remotely.

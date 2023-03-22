@@ -18,7 +18,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 /**
  *  Singleton configuration holder for String related values, such as forbidden characters. Allows configurations to be registered and retrieved whether 

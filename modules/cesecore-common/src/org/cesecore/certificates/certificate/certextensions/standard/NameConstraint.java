@@ -35,7 +35,8 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.util.CeSecoreNameStyle;
+
+import com.keyfactor.util.CeSecoreNameStyle;
 
 /**
  * Extension for Name Constraints.

@@ -17,8 +17,8 @@ import javax.ejb.Stateless;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.StringTools;
 
+import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.string.StringConfigurationCache;
 

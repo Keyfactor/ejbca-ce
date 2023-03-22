@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.profiles.Profile;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.ExternalProcessTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
@@ -39,6 +38,8 @@ import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * External command certificate validator for multiple platforms.

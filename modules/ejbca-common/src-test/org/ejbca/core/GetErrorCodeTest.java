@@ -13,9 +13,10 @@
 package org.ejbca.core;
 
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.junit.Test;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

@@ -26,11 +26,12 @@ import javax.inject.Named;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 
 /**

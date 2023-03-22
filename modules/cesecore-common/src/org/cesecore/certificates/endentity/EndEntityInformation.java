@@ -29,8 +29,9 @@ import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.SecureXMLDecoder;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.XmlSerializer;
+
+import com.keyfactor.util.StringTools;
 
 
 /**

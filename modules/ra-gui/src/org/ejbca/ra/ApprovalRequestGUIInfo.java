@@ -30,7 +30,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.roles.Role;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.Approval;
@@ -48,6 +47,8 @@ import org.ejbca.core.model.era.RaApprovalStepInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Keeps localized information about an approval request.

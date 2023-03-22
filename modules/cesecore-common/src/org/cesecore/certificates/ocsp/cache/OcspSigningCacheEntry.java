@@ -29,10 +29,11 @@ import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.RespID;
 import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keybind.impl.OcspKeyBinding;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
 
 /**
  * Hold information needed for creating an OCSP response without database lookups.

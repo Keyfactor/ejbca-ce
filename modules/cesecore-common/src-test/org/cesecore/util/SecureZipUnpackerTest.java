@@ -20,6 +20,8 @@ import java.util.zip.ZipInputStream;
 
 import org.junit.Test;
 
+import com.keyfactor.util.StreamSizeLimitExceededException;
+
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;

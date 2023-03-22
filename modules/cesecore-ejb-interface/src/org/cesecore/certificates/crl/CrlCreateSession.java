@@ -18,7 +18,8 @@ import java.util.Date;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Interface for CrlCreateSession, a session bean for generating CRLs and deltaCRLs.

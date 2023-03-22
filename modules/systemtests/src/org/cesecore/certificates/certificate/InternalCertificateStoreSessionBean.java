@@ -47,9 +47,11 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
+
+import com.keyfactor.util.CertTools;
+
 import org.ejbca.util.JDBCUtil;
 
 /**

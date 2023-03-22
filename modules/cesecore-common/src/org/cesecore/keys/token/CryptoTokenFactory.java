@@ -19,10 +19,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.google.common.base.Preconditions;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 
 
 /**

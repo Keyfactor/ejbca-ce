@@ -14,9 +14,10 @@
 package org.ejbca.ui.cli;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.library.CommandLibrary;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Main entry point for the EJBCA EJB CLI
