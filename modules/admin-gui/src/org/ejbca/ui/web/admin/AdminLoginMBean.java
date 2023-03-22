@@ -299,17 +299,20 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
 
     private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
         String url = oauthKeyInfo.getOauthLoginUrl();
-        return addParametersToUrl(oauthKeyInfo, url);
+        String scope = oauthKeyInfo.getScope();
+        return addParametersToUrl(oauthKeyInfo, url, scope);
     }
 
-    private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url) {
+    private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url, String scope) {
         UriBuilder uriBuilder = UriBuilder.fromUri(url);
-        String scope = "openid";
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            scope += " offline_access " + oauthKeyInfo.getScope();
+            scope += " offline_access ";
         }
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oauthKeyInfo.isAudienceCheckDisabled()) {
             scope += " " + oauthKeyInfo.getAudience();
+        }
+        if (StringUtils.isNotEmpty(oauthKeyInfo.getScope())) {
+            scope += " " + oauthKeyInfo.getScope();
         }
         uriBuilder
                 .queryParam("scope", scope)
