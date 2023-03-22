@@ -331,7 +331,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
                 // Information has been redacted, just write the minimum
                 certificateStoreSession.updateLimitedCertificateDataStatus(admin, caId, scpObject.getIssuer(), "CN=limited", scpObject.getUsername(),
                         scpObject.getSerialNumber(), scpObject.getCertificateStatus(), new Date(scpObject.getRevocationDate()),
-                        scpObject.getRevocationReason(), caFingerprint);
+                        scpObject.getRevocationReason(), caFingerprint, null);
             } else {
                 // Certificate doesn't exist, create new entry
                 final int endEntityProfileId = EndEntityConstants.NO_END_ENTITY_PROFILE;
