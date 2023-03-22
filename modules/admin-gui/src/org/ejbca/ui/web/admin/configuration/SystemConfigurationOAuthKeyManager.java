@@ -43,9 +43,9 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.OAuthProviderUIHelper;
+import org.ejbca.util.oauth.OAuthTools;
 
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.keys.KeyTools;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -505,7 +505,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
         final byte[] parsedPublicKey;
         try {
-            parsedPublicKey = KeyTools.getBytesFromOauthKey(inputKeyBytes);
+            parsedPublicKey = OAuthTools.getBytesFromOauthKey(inputKeyBytes);
         } catch (CertificateParsingException e) {
             log.info("Could not parse public key from certificate string " + oauthKeyEditor.getPublicKeyValue());
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYSTRING");
@@ -561,7 +561,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
         final byte[] newOauthKeyPublicKey;
         try {
-            newOauthKeyPublicKey = KeyTools.getBytesFromOauthKey(uploadedFileBytes);
+            newOauthKeyPublicKey = OAuthTools.getBytesFromOauthKey(uploadedFileBytes);
         } catch (CertificateParsingException exception) {
             log.info("Could not parse the certificate file.", exception);
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYFILE", oauthKeyEditor.getPublicKeyFile().getName(), exception.getMessage());
@@ -582,7 +582,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         String keyIdentifier = oauthKeyEditor.getKeyIdentifier();
         if (StringUtils.isBlank(keyIdentifier)) {
             // If the upload was a JWK, we can extract the Key ID from it.
-            keyIdentifier = KeyTools.getKeyIdFromJwkKey(newOauthKeyPublicKey);
+            keyIdentifier = OAuthTools.getKeyIdFromJwkKey(newOauthKeyPublicKey);
             if (!validateInputNotEmpty(keyIdentifier, "OAUTHKEYTAB_KEYIDENTIFIER_EMPTY")) {
                 return null;
             }
