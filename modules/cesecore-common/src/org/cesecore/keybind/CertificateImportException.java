@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 /**
  * An exception thrown when someone tries to import a certificate and an error occurs.

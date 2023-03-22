@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.cesecore.util.Base64;
+import com.keyfactor.util.Base64;
 
 /**
  * Holds certificate WS elements

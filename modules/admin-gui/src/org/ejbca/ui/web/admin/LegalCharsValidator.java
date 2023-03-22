@@ -23,8 +23,9 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.StringTools;
 
 /** JSF validator to check that input fields do not contain characters that might be dangerous for SQL queries 
  * (non parameterized queries that is).

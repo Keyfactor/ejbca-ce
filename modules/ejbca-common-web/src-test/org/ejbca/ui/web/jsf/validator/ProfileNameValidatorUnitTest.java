@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.jsf.validator;
 
-import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.junit.Before;
@@ -24,6 +23,8 @@ import org.powermock.api.easymock.PowerMock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import com.keyfactor.util.StringTools;
 
 import javax.faces.application.Application;
 import javax.faces.component.UIComponent;
