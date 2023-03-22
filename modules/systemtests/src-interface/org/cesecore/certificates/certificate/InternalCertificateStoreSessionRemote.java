@@ -43,7 +43,7 @@ public interface InternalCertificateStoreSessionRemote {
 
     /**
      * This method removes the given certificate(s) by fingerprint (primary key).
-     * @see org.cesecore.util.CertTools#getFingerprintAsString
+     * @see com.keyfactor.util.CertTools#getFingerprintAsString
      * 
      * @param fingerprint fingerprint of the certificate(s) to remove.
      * @return number of rows (certificates) removed from the Base64CertTable

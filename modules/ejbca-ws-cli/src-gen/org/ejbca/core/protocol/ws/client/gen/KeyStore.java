@@ -18,7 +18,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
-import org.cesecore.util.Base64;
+import com.keyfactor.util.Base64;
 
 /**
  * Wrapper class for holding WS keystore data

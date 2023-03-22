@@ -15,12 +15,13 @@ package org.ejbca.core.model.ra;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.dn.DistinguishedName;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

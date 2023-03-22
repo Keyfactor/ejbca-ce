@@ -23,10 +23,11 @@ import javax.security.auth.callback.CallbackHandler;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cesecore.keys.token.CachingKeyStoreWrapper;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.util.KeyStoreTools;
+
+import com.keyfactor.util.keys.CachingKeyStoreWrapper;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * @version $Id$

@@ -34,7 +34,6 @@ import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.util.cert.CrlExtensions;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.NetworkTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
@@ -42,6 +41,8 @@ import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Worker used for downloading external CRLs and populating the local database with limited CertificateData entries,
