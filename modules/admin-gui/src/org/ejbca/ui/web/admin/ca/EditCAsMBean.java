@@ -1540,6 +1540,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         if (makeRequest && !illegalDnOrAltName) {
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", caInfoDto.getCaName());
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caType", caInfoDto.getCaType());
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put(SESSION.CA_INTERFACE_BEAN, caBean);
             return EditCaUtil.DISPLAY_RESULT_NAV;
@@ -1942,10 +1943,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     // ======================================= Helpers ===================================================================//
 
     private String makeRequestEditCa() {
+        CAInfo caInfo = null;
         try {
-            getCaInfo();
+            caInfo = getCaInfo();
         } catch (NumberFormatException | AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage(e);
+            return "";
+        }
+        if (caInfo==null) {
             return "";
         }
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
@@ -1972,6 +1977,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caBean.saveRequestData(certreq);
 
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", editCaName);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caType", caInfo.getCAType());
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put(SESSION.CA_INTERFACE_BEAN, caBean);
 
