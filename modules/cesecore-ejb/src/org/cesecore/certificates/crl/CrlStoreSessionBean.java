@@ -168,6 +168,9 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
                 log.trace(">getLastCRLInfoLightWeight(" + issuerDn + ", " + deltaCRL + ")");
             }
             final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
+            if(crlNumber==0) {
+                return null;
+            }
 
             final List<Object[]> thisNextUpdateList = findThisUpdateNextUpdateByIssuerDNAndCRLNumber(issuerDn, crlPartitionIndex, crlNumber);
 
