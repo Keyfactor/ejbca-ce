@@ -18,13 +18,14 @@ import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Tests the CA session bean using PKCS11 HSM crypto token for the CA.

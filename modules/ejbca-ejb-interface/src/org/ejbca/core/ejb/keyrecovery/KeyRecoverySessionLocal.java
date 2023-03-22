@@ -18,9 +18,10 @@ import java.util.List;
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.CertificateWrapper;
-import org.cesecore.keys.util.KeyPairWrapper;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.keys.KeyPairWrapper;
 
 /**
  * Local interface for KeyRecoverySession.
