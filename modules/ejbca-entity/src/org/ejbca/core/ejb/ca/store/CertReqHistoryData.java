@@ -42,12 +42,13 @@ import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64PutHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SecureXMLDecoder;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.FixEndOfBrokenXML;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Representation of historical information about the data user to create a certificate.

@@ -61,10 +61,6 @@ import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
-import org.cesecore.keys.token.CachingKeyStoreWrapper;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.util.KeyStoreTools;
-import org.cesecore.util.CertTools;
 import org.ejbca.cvc.AccessRights;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.AuthorizationRole;
@@ -79,6 +75,11 @@ import org.ejbca.util.CMS;
 import org.ejbca.util.CliTools;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import org.ejbca.util.keystore.KeyStoreToolsFactory;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.CachingKeyStoreWrapper;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 
 

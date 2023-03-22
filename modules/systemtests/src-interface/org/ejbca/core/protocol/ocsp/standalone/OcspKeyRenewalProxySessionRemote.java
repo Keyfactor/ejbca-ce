@@ -17,7 +17,7 @@ import java.security.KeyStoreException;
 
 import javax.ejb.Remote;
 
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @version $Id$

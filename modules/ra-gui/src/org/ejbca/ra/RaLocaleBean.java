@@ -31,8 +31,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.log4j.Logger;
-import org.cesecore.ErrorCode;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * JSF Managed Bean for handling localization of clients.

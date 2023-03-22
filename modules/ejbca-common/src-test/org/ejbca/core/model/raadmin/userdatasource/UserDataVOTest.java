@@ -17,11 +17,12 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
-import org.cesecore.util.Base64;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;

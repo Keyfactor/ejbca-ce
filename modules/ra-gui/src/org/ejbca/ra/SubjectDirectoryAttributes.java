@@ -15,8 +15,9 @@ package org.ejbca.ra;
 import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Contains Subject Directory attributes
