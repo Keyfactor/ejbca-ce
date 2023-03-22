@@ -32,9 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.util.HTMLTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /** 
  * Servlet implementing server side of the Certificate Store.

@@ -59,10 +59,11 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * CA is a base class that should be inherited by all CA types

@@ -29,9 +29,10 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.Base64;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Wrapper of a FileOutputStream that also produces a signature for the same data

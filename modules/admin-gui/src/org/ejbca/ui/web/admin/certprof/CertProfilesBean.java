@@ -47,9 +47,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExi
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -59,6 +57,9 @@ import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * JSF MBean backing the certificate profiles pages.

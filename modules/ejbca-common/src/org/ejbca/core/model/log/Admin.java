@@ -22,8 +22,9 @@ package org.ejbca.core.model.log;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.authorization.AdminInformation;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * This is a class containing information about the administrator or admin performing the event.

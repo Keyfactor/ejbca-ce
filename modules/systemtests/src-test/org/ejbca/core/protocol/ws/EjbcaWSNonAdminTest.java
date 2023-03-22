@@ -53,9 +53,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -75,6 +73,9 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;

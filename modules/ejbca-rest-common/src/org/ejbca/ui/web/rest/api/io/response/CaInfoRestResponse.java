@@ -19,7 +19,8 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * A class representing general information about CA certificate.

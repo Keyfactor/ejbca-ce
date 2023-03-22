@@ -98,14 +98,15 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.client.CMPSendHTTP;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Used to stress test the CMP interface.

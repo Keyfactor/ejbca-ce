@@ -19,19 +19,20 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @version $Id$

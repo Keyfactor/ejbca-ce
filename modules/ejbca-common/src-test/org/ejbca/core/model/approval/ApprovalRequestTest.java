@@ -25,13 +25,14 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.keys.validation.ValidationResult;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

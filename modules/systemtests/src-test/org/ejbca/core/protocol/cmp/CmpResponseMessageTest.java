@@ -33,11 +33,8 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
 import org.junit.After;
 import org.junit.Before;
@@ -52,6 +49,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * This class tests attributes of the CMP response message such as the CA 

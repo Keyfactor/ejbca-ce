@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * An exception thrown when an end entity is thought to exist but does not.

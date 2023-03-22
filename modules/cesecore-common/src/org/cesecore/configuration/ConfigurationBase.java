@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.StringTools;
 
+import com.keyfactor.util.StringTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
