@@ -92,7 +92,6 @@ import org.junit.Test;
 import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 
-import com.keyfactor.commons.p11ng.provider.JackNJI11Provider;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.KeyTools;
