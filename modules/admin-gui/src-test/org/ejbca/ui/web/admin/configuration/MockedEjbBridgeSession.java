@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.math.IntRange;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -67,7 +66,6 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
-import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -149,7 +147,6 @@ echo "    }"
     private CryptoTokenSessionLocal cryptoTokenSession;
     private EjbcaAuditorSessionLocal ejbcaAuditorSession;
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-    private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
     private EndEntityAccessSessionLocal endEntityAccessSession;
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     private EndEntityManagementSessionLocal endEntityManagementSession;
@@ -409,7 +406,6 @@ echo "    }"
         list.add(cryptoTokenSession);
         list.add(ejbcaAuditorSession);
         list.add(ejbcaRestHelperSession);
-        list.add(ejbcaWSHelperSession);
         list.add(endEntityAccessSession);
         list.add(endEntityAuthenticationSession);
         list.add(endEntityManagementSession);
