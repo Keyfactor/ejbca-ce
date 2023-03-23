@@ -21,7 +21,7 @@
     <property name="es.iface.dir" location="modules/edition-specific/src-interface/org/ejbca/core/protocol/ws/objects"/>
     <property name="ws.objects.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/objects"/>
     <property name="ws.common.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/common"/>
-    <property name="ws.master.file" location="${ws.common.dir}/IEjbcaWS.java"/>
+    <property name="ws.master.file" location="${ws.common.dir}/EjbcaWS.java"/>
    	<property file="src/doc.properties"/>
     <property name="confluence.url"  value="none" />
     <property name="confluence.port"  value="-1" />
