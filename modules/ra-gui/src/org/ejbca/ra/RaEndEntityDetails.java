@@ -83,6 +83,9 @@ public class RaEndEntityDetails {
     private final String created;
     private final String modified;
     private final int status;
+    
+    private boolean clearPasswordDirty;
+    private boolean useClearPassword;
 
     // SSH End entity fields
     private final boolean sshTypeEndEntity;
@@ -419,6 +422,52 @@ public class RaEndEntityDetails {
     }
     public boolean isSendNotification() {
         return endEntityInformation.getSendNotification();
+    }
+    
+    public boolean isClearPasswordAllowed() {
+        EndEntityProfile profile = getEndEntityProfile();
+        if (profile != null) {
+            boolean allowClearPwd = profile.isClearTextPasswordUsed() && !isTokenTypeUserGenerated();
+            if(!clearPasswordDirty) {
+                if(!allowClearPwd) {
+                    useClearPassword = false;
+                } else {
+                    useClearPassword = StringUtils.isNotEmpty(endEntityInformation.getPassword());
+                }
+            }
+            return allowClearPwd;
+        }
+        return false;
+    }
+    
+    public boolean isClearPasswordRequired() {
+        EndEntityProfile profile = getEndEntityProfile();
+        if (profile != null) {
+            boolean requireClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordRequired();
+            if(requireClearPwd && !clearPasswordDirty) {
+                useClearPassword = profile.isClearTextPasswordDefault() && StringUtils.isNotEmpty(endEntityInformation.getPassword());
+                clearPasswordDirty = true;
+            }
+            return requireClearPwd;
+        }
+        return false;
+    }
+    
+    public boolean getClearPassword() {
+        if(!clearPasswordDirty) {
+            isClearPasswordAllowed();
+            isClearPasswordRequired();
+        }
+        return useClearPassword;
+    }
+    
+    public boolean getClearPasswordViewMode() {
+        return StringUtils.isNotEmpty(endEntityInformation.getPassword());
+    }
+    
+    public void setClearPassword(boolean clearPwd) {
+        clearPasswordDirty = true;
+        useClearPassword = clearPwd;
     }
 
     public boolean isCertificateSerialNumberOverrideEnabled() {
