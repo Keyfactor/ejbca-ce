@@ -41,7 +41,6 @@
 		<path refid="lib.xstream.classpath"/>
 		<path location="${mod.ejbca-common.lib}" />
 		<path location="${mod.ejbca-ws-client-gen.lib}" />
-		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<!-- Use by ? -->
 		<path refid="lib.commons-logging.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
@@ -86,7 +85,6 @@
 		<path refid="lib.jackson2.classpath"/>
 		<pathelement location="${mod.ejbca-rest-common.lib}"/>
 		<path refid="lib.resteasy-jaxrs.classpath"/>
-		<path location="${mod.ejbca-ws-client-gen.lib}" />
 	</path>
 
 	<path id="common.classpath">
