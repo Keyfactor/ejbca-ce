@@ -353,6 +353,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                             auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                         }
+                    } else {
+                        publishStatus = PublisherConst.STATUS_SUCCESS;
                     }
                 }
                 if (publishStatus != PublisherConst.STATUS_SUCCESS) {
