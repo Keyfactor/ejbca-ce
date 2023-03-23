@@ -26,6 +26,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
+import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
@@ -34,8 +35,6 @@ import com.keyfactor.util.FileTools;
 /**
  * Logs a custom log entry in EJBCA log.
  *
- * @author Tomas Gustavsson
- * @version $Id$
  */
 public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -113,7 +112,9 @@ public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminComm
 					incert = CertTools.getCertfromByteArray(bytes, Certificate.class); // check if it is a good cert, decode PEM if it is PEM, etc
 				}				
 				getPrintStream().println("Using certificate with subjectDN '"+CertTools.getSubjectDN(incert)+"', and issuerDN '"+CertTools.getIssuerDN(incert)+"'.");
-				logcert = new org.ejbca.core.protocol.ws.client.gen.Certificate(incert);
+				logcert = new org.ejbca.core.protocol.ws.client.gen.Certificate();
+				logcert.setCertificateData(Base64.encode(incert.getEncoded()));
+				
 			}
 
 			getEjbcaRAWS().customLog(logLevel, type, caname, username, logcert, msg);
