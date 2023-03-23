@@ -1023,9 +1023,10 @@
 								</h:inputSecret>
 								<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.passwordRendered}">
+							<h:panelGroup layout="block" styleClass="pure-control-group" 
+										rendered="#{enrollMakeNewRequestBean.passwordRendered and enrollMakeNewRequestBean.clearPasswordAllowed}">
 								<h:outputLabel for="passwordClearPassword" value="#{msg.component_eedetails_field_cleartextpassword}"/>
-								<h:selectBooleanCheckbox id="passwordClearPassword" disabled="true"
+								<h:selectBooleanCheckbox id="passwordClearPassword" disabled="#{enrollMakeNewRequestBean.clearPasswordRequired}"
 														 value="#{enrollMakeNewRequestBean.clearPassword}" />
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.emailRendered}" id="emailBlock">
