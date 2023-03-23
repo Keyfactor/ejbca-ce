@@ -17,13 +17,11 @@
     <property name="docs.dest.acme" location="tmp/htdocs/docs/acme"/>
     <property name="docs.dest.logtypes" location="tmp/htdocs/docs/logtypes"/>
     <property name="jdocs.ws.tmp" location="tmp/jdocswstmp"/>
-    <property name="ws.client.gen.relative-path" value="org/ejbca/core/protocol/ws/client/gen"/>
     <property name="client.ws.class" value="EjbcaWS"/>
     <property name="es.iface.dir" location="modules/edition-specific/src-interface/org/ejbca/core/protocol/ws/objects"/>
     <property name="ws.objects.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/objects"/>
     <property name="ws.common.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/common"/>
-    <property name="ws.client.gen.src" location="modules/ejbca-ws-cli/src-gen"/>
-    <property name="ws.master.file" location="${ws.common.dir}/IEjbcaWS.java"/>
+    <property name="ws.master.file" location="${ws.common.dir}/EjbcaWS.java"/>
    	<property file="src/doc.properties"/>
     <property name="confluence.url"  value="none" />
     <property name="confluence.port"  value="-1" />
@@ -143,18 +141,6 @@
         <echo message="WS=${ws.objects.dir}"/>
         <mkdir dir="${jdocs.ws.tmp}"/>
         <mkdir dir="${docs.dest.ws}"/>
-	    <copy overwrite="yes" todir="${jdocs.ws.tmp}">
-		  <fileset dir="${ws.client.gen.src}">
-			<exclude name="**/${client.ws.class}.java"/>
-			<exclude name="**/ObjectFactory.java"/>
-		  </fileset>
-	    </copy>
-	    <copy overwrite="yes" file="${ws.objects.dir}/package.html" todir="${jdocs.ws.tmp}/${ws.client.gen.relative-path}"/>
-	  	<java classname="org.ejbca.util.JAXWSDocAndConvTools" classpath="${docs.tools.dest}" failonerror="yes" fork="true" inputstring="">
-	  	    <arg value="${ws.master.file}"/>
-	  	    <arg value="${ws.client.gen.src}/${ws.client.gen.relative-path}/${client.ws.class}.java"/>
-		    <arg value="${jdocs.ws.tmp}"/>
-	  	</java>
 	    <javadoc destdir="${docs.dest.ws}"
 	             author="true"
 	             version="true"
