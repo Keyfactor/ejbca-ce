@@ -74,6 +74,7 @@
 	</target>
 	
 	<target name="compile-common-web" depends="">
+		<mkdir dir="${mod.dist.path}"/>
 		<mkdir dir="${ejbca-common-web.build.dir}" />
 		<javac srcdir="${ejbca-common-web.src.dir}" destdir="${ejbca-common-web.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	 classpathref="compile-common-web.classpath"/>

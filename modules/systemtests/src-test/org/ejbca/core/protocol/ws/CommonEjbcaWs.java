@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -167,7 +174,6 @@ import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
-import org.ejbca.core.protocol.ws.client.gen.EndEntityProfileNotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ErrorCode;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -198,13 +204,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 
 public abstract class CommonEjbcaWs extends CaTestCase {
@@ -547,7 +546,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     
     private void editUser(String userName, String caName) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
             CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
-            WaitingForApprovalException_Exception, IllegalQueryException_Exception, EndEntityProfileNotFoundException_Exception {
+            WaitingForApprovalException_Exception, IllegalQueryException_Exception {
         createUser(userName, "CN="+userName, caName, WS_EEPROF_EI, WS_CERTPROF_EI);
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
@@ -639,8 +638,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     protected void editUser() throws CADoesntExistsException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, AuthorizationDeniedException, ApprovalException_Exception,
             AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception,
-            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IllegalQueryException_Exception,
-            EndEntityProfileNotFoundException_Exception {
+            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IllegalQueryException_Exception {
         createTestCA(CA1);
         createTestCA(CA2);
         int certificateProfileId = createCertificateProfile(WS_CERTPROF_EI);
