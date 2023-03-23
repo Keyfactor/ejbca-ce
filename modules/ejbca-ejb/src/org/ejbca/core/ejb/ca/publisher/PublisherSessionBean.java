@@ -103,6 +103,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
+    private static final String PROPERTYKEY_STORECRL = "storeCRL";
+
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
@@ -306,9 +308,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 final String name = getPublisherName(id);
                 // If it should be published directly
                 if (!publ.getOnlyUseQueue()) {
-                    boolean publishCrl = false;
-                    if (publ.getType() == PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
-                        final String PROPERTYKEY_STORECRL = "storeCRL";
+                    boolean publishCrl = true;
+                    if (isOcspResponsePublisher(publ)) {
                         List<CustomPublisherProperty> properties = ((CustomPublisherContainer) publ).getCustomUiPropertyList(admin);
                         publishCrl = properties.stream()
                             .filter(property -> property.getName().equals(PROPERTYKEY_STORECRL))
