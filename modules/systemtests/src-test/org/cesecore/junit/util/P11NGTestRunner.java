@@ -28,7 +28,7 @@ public class P11NGTestRunner extends HardtokenTestRunnerBase {
     
     private static final String P11NG_TOKEN_CLASSNAME = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
     
-    private static final String JACKNJI11_PROVIDER = "org.cesecore.keys.token.p11ng.provider.JackNJI11Provider";
+    private static final String JACKNJI11_PROVIDER = "com.keyfactor.commons.p11ng.provider.JackNJI11Provider";
     
     public P11NGTestRunner() {
         try {
