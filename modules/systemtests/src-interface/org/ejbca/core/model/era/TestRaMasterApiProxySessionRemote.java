@@ -108,7 +108,7 @@ public interface TestRaMasterApiProxySessionRemote {
      * @throws ApprovalException if the request requires approval
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
      * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
-     * @see org.ejbca.core.protocol.ws.common.EjbcaWS#certificateRequest
+     * @see org.ejbca.core.protocol.ws.EjbcaWS#certificateRequest
      */
     byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
             final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
