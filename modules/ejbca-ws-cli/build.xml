@@ -54,7 +54,6 @@
 		<path refid="compile.classpath"/>
 		<!-- Library containing the server side generated files -->
 		<path location="${mod.ejbca-ws-client-gen.lib}" />
-		<path location="${mod.ejbca-ws-client-gen.lib}" />
 	</path>
 
     <target name="build" description="Build this module" depends="compile, setup">
