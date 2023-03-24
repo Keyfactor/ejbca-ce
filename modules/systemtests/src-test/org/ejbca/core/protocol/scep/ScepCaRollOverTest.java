@@ -37,6 +37,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
@@ -350,7 +351,7 @@ public class ScepCaRollOverTest extends ScepTestBase {
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, ROLLOVER_USER_DN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert,
-                keyTestRollover, SMIMECapability.dES_CBC);
+                keyTestRollover, PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
 
         // Clean up
         try {
@@ -366,7 +367,7 @@ public class ScepCaRollOverTest extends ScepTestBase {
         byte[] retMsg2 = sendScep(false, msgBytes2);
         assertNotNull(retMsg2);
         checkScepResponse(retMsg2, ROLLOVER_USER_DN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false,
-                subcaRolloverCert, keyTestRollover, SMIMECapability.dES_CBC);
+                subcaRolloverCert, keyTestRollover, PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
 
     }
 
@@ -388,7 +389,7 @@ public class ScepCaRollOverTest extends ScepTestBase {
         final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
                 keyTestRollover.getPrivate(), keyTestRollover.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
         final byte[] msgBytes = gen.generateCertReq(userDN, "foo123", transId, caRolloverCert, senderCertificate, keyTestRollover.getPrivate(),
-                SMIMECapability.dES_CBC);
+                PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
         byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
