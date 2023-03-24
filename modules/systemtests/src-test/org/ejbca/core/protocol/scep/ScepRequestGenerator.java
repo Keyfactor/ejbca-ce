@@ -10,9 +10,14 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
@@ -21,8 +26,11 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
@@ -46,10 +54,6 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /** Class used to generate SCEP messages. Used for SCEP clients and testing
  */
@@ -96,22 +100,22 @@ public class ScepRequestGenerator {
         X500Name name = CertTools.stringToBcX500Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());       
         // wrap message in pkcs#7
-        return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey, encryptionAlg);        
+        return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);        
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws IOException, OperatorCreationException, CertificateException, CMSException {
+            final PrivateKey signatureKey, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws IOException, OperatorCreationException, CertificateException, CMSException {
         // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         // Requested extensions attribute
         // AltNames
         final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
-        return generateCertReq( dn, password, transactionId, ca, extgen.generate(), senderCertificate, signatureKey, encryptionAlg);
+        return generateCertReq( dn, password, transactionId, ca, extgen.generate(), senderCertificate, signatureKey, wrappingAlg, encryptionAlg);
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, Extensions exts,
-            final X509Certificate senderCertificate, final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws OperatorCreationException, CertificateException,
+            final X509Certificate senderCertificate, final PrivateKey signatureKey, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws OperatorCreationException, CertificateException,
             IOException, CMSException {
         this.cacert = ca;
         this.reqdn = dn;
@@ -143,7 +147,7 @@ public class ScepRequestGenerator {
                 CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
         // wrap message in pkcs#7
-        return wrap(p10request.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_PKCSREQ), transactionId, senderCertificate, signatureKey, encryptionAlg);
+        return wrap(p10request.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_PKCSREQ), transactionId, senderCertificate, signatureKey, wrappingAlg, encryptionAlg);
     }
 
     public byte[] generateGetCertInitial(String dn, String transactionId, X509Certificate caCertificate, final X509Certificate senderCertificate,
@@ -161,16 +165,28 @@ public class ScepRequestGenerator {
         DERSequence seq = new DERSequence(vec);
 
         // wrap message in pkcs#7
-        return wrap(seq.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL), transactionId, senderCertificate, signatureKey, encryptionAlg);
+        return wrap(seq.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL), transactionId, senderCertificate, signatureKey, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);
     }
     
     /**
-     * @param encryptionAlg SMIMECapability.dES_CBC (DES) or SMIMECapability.dES_EDE3_CBC (3DES)
+     * @param encryptionAlg SMIMECapability.dES_CBC (DES), SMIMECapability.dES_EDE3_CBC (3DES), SMIMECapability.AES256_CBC (AES256)
+     * @param wrappingAlg PKCSObjectIdentifiers.rsaEncryption (RSA/ECB/PKCS), PKCSObjectIdentifiers.id_RSAES_OAEP (RSA/OAEP) 
      */
-    private CMSEnvelopedData envelope(CMSTypedData envThis, ASN1ObjectIdentifier encryptionAlg) throws CMSException, CertificateEncodingException {
+    private CMSEnvelopedData envelope(CMSTypedData envThis, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws CMSException, CertificateEncodingException {
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-        // Envelope the CMS message
-        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cacert).setProvider(BouncyCastleProvider.PROVIDER_NAME));
+        // Envelope the CMS message with encryptionAlg, wrapping the symmetric encryption with wrappingAlg
+        final AlgorithmIdentifier aid;
+        if (PKCSObjectIdentifiers.id_RSAES_OAEP.equals(wrappingAlg)) {
+            final RSAESOAEPparams params = new RSAESOAEPparams(
+                    new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE), 
+                    new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE)),
+                    new AlgorithmIdentifier(PKCSObjectIdentifiers.id_pSpecified, new DEROctetString(new byte[0])));
+            aid = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, params);
+        } else {
+            // PKCSObjectIdentifiers.rsaEncryption
+            aid = new AlgorithmIdentifier(wrappingAlg);            
+        }
+        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cacert, aid).setProvider(BouncyCastleProvider.PROVIDER_NAME));
         JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(encryptionAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME);
         CMSEnvelopedData ed = edGen.generate(envThis, jceCMSContentEncryptorBuilder.build());
         return ed;
@@ -231,12 +247,12 @@ public class ScepRequestGenerator {
     }
 
     private byte[] wrap(byte[] envBytes, String messageType, String transactionId, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
+            final PrivateKey signatureKey, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
 
         // 
         // Create inner enveloped data
         //
-        CMSEnvelopedData ed = envelope(new CMSProcessableByteArray(envBytes), encryptionAlg);
+        CMSEnvelopedData ed = envelope(new CMSProcessableByteArray(envBytes), wrappingAlg, encryptionAlg);
         log.debug("Enveloped data is " + ed.getEncoded().length + " bytes long");
         CMSTypedData msg = new CMSProcessableByteArray(ed.getEncoded());
         //
