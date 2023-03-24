@@ -34,14 +34,23 @@ import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
 import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509CRLHolder;
 import org.bouncycastle.cms.CMSAbsentContent;
 import org.bouncycastle.cms.CMSEnvelopedData;
@@ -68,14 +77,8 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-
 /**
- * A response message for scep (pkcs7).
- *
- * @version $Id$
+ * A response message for SCEP (pkcs7).
  */
 public class ScepResponseMessage implements CertificateResponseMessage {
     /**
@@ -146,6 +149,8 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     private transient String digestAlg = CMSSignedDataGenerator.DIGEST_SHA256;
     /** Default content encryption algorithm, can be overridden by request message */
     private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
+    /** Default key encryption algorithm, can be overridden by request message */
+    private transient ASN1ObjectIdentifier keyEncAlg = PKCSObjectIdentifiers.rsaEncryption;
     
     private transient CertificateData certificateData;
     private transient Base64CertData base64CertData;
@@ -302,17 +307,28 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
                 CMSSignedData s = gen.generate(new CMSAbsentContent(), false);
 
-                // Envelope the CMS message
+                // Envelope the CMS message with encryptionAlg, wrapping the symmetric encryption with keyEncAlg
+                final AlgorithmIdentifier aid;
+                if (PKCSObjectIdentifiers.id_RSAES_OAEP.equals(keyEncAlg)) {
+                    final RSAESOAEPparams params = new RSAESOAEPparams(
+                            new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE), 
+                            new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE)),
+                            new AlgorithmIdentifier(PKCSObjectIdentifiers.id_pSpecified, new DEROctetString(new byte[0])));
+                    aid = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, params);
+                } else {
+                    // PKCSObjectIdentifiers.rsaEncryption
+                    aid = new AlgorithmIdentifier(keyEncAlg);   
+                }
                 if (recipientKeyInfo != null) {
                     try {
                         X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo, X509Certificate.class);
                         log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
-                        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec).setProvider(BouncyCastleProvider.PROVIDER_NAME));
+                        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec, aid).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                     } catch (CertificateParsingException e) {
                         throw new IllegalArgumentException("Can not decode recipients self signed certificate!", e);
                     }
                 } else {
-                    edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator((X509Certificate) cert).setProvider(BouncyCastleProvider.PROVIDER_NAME));
+                    edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator((X509Certificate) cert, aid).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                 }
                 try {
                     JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(contentEncAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -482,8 +498,11 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             if (log.isDebugEnabled()) {
                 log.debug("Setting " + (this.contentEncAlg != null ? this.contentEncAlg.getId() : "null") + " as preferred content encryption algorithm in SCEP response.");
             }
+            this.keyEncAlg = scep.getKeyEncAlg();
+            if (log.isDebugEnabled()) {
+                log.debug("Setting " + (this.keyEncAlg != null ? this.keyEncAlg.getId() : "null") + " as preferred key encryption algorithm in SCEP response.");
+            }
         }
-
     }
     
     @Override
