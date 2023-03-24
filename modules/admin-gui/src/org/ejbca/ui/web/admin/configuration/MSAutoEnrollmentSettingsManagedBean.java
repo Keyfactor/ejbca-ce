@@ -71,6 +71,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final String SELECT_MST = "Select a Template";
     private static final String KEYTAB_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE = "application/octet-stream";
+    private static final String KRB5_CONF_CONTENT_TYPE_PLAIN = "text/plain";
 
     
     // MSAE Kerberos Settings
@@ -575,7 +576,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         if (krb5ConfFile != null) {
             String contentType = krb5ConfFile.getContentType();
 
-            if(!contentType.equals(KRB5_CONF_CONTENT_TYPE)) {
+            if(!(contentType.equals(KRB5_CONF_CONTENT_TYPE) || contentType.equals(KRB5_CONF_CONTENT_TYPE_PLAIN))) {
                 addErrorMessage("MSAE_KRB5_CONF_ERROR_WRONG_CONTENT");
                 return;
             }
