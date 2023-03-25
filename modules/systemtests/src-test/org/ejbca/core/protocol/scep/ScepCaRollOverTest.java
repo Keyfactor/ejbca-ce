@@ -104,7 +104,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
- *
+ * Test CA rollover functionality in SCEP, i.e. when a CA cert is renewed and clients gets a new cert from the new CA
  */
 @RunWith(Parameterized.class)
 public class ScepCaRollOverTest extends ScepTestBase {
@@ -228,7 +228,7 @@ public class ScepCaRollOverTest extends ScepTestBase {
         if( 403 != con.getResponseCode()) {
             throw new IllegalStateException("Should get an error response code if no rollover certificate exists");
         }
-        checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
+        checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard");
 
         // Create a rollover certificate
         final int subCAId = cainfo.getCAId();
@@ -306,7 +306,7 @@ public class ScepCaRollOverTest extends ScepTestBase {
 
             
         // Now we should get the certificate chain of the rollover cert
-        checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
+        checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard");
         final List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA, currentSubCaCert);
         assertEquals("should return a certificate chain with the rollover certificate", 2, nextChain.size());
         final Certificate nextCert = nextChain.get(0);
