@@ -40,6 +40,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
+import com.keyfactor.util.keys.CachingKeyStoreWrapper;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -61,6 +67,7 @@ import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
+import org.cesecore.config.ConfigurationHolder;
 import org.ejbca.cvc.AccessRights;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.AuthorizationRole;
@@ -76,17 +83,10 @@ import org.ejbca.util.CliTools;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import org.ejbca.util.keystore.KeyStoreToolsFactory;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.keys.CachingKeyStoreWrapper;
-import com.keyfactor.util.keys.KeyStoreTools;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
-
 
 
 /**
  * Manages a key store on a HSM. This class may be extended by a class specific for a typical HSM.
- * 
- * @version $Id$
  *
  */
 public class HSMKeyTool extends ClientToolBox {
@@ -185,6 +185,7 @@ public class HSMKeyTool extends ClientToolBox {
         printCommandString(args, false, objects);
     }
     private static boolean doIt(final String[] orgArgs) throws Exception {
+        System.out.println("FOO3");
         // Get and remove optional switches
         final List<String> argsList = CliTools.getAsModifyableList(orgArgs);
         final KeyStore.ProtectionParameter protectionParameter;
@@ -196,6 +197,12 @@ public class HSMKeyTool extends ClientToolBox {
         }
         final boolean force = CliTools.getAndRemoveSwitch("--force", argsList);
         final String[] args = CliTools.getAsArgs(argsList);
+
+        // For the Java PKCS#11 provider, set pkcs11.disableHashingSignMechanisms if it is changed from the default
+        // Same as is done in StartupSingletonBean for ejbca.ear
+        final String disableHashingSignMechanisms = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
+        CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(disableHashingSignMechanisms==null || Boolean.parseBoolean(disableHashingSignMechanisms.trim()));
+
         if ( args[1].toLowerCase().trim().contains(GENERATE_BATCH_SWITCH) ) {
             if ( args.length < 4 ) {
                 printCommandString( args, "<name of batch file> [", TOKEN_ID_PARAM, "]");
