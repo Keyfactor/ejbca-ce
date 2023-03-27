@@ -184,6 +184,9 @@ public class RaLoginBean implements Serializable {
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oauthKeyInfo.isAudienceCheckDisabled()) {
             scope += " " + oauthKeyInfo.getAudience();
         }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID) ||oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_GENERIC)){
+            scope += " " + oauthKeyInfo.getScope();
+        }
         uriBuilder
                 .queryParam("scope", scope)
                 .queryParam("client_id", oauthKeyInfo.getClient())
