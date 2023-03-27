@@ -171,19 +171,19 @@ public class RaLoginBean implements Serializable {
     
     private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
         String url = oauthKeyInfo.getOauthLoginUrl();
-        String scope = oauthKeyInfo.getScope();
-        return addParametersToUrl(oauthKeyInfo, url, scope);
+        return addParametersToUrl(oauthKeyInfo, url);
     }
 
-    private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url, String scope) {
+    private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url) {
         UriBuilder uriBuilder = UriBuilder.fromUri(url);
+        String scope = "openid";
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            scope += " offline_access ";
+            scope += " offline_access " + oauthKeyInfo.getScope();
         }
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oauthKeyInfo.isAudienceCheckDisabled()) {
             scope += " " + oauthKeyInfo.getAudience();
         }
-        if (StringUtils.isNotEmpty(oauthKeyInfo.getScope())) {
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID) ||oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_GENERIC)){
             scope += " " + oauthKeyInfo.getScope();
         }
         uriBuilder
