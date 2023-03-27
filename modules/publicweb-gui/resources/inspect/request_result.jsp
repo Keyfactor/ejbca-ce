@@ -15,6 +15,7 @@ org.apache.commons.fileupload.disk.DiskFileItemFactory"%>
               diskFileItemFactory.setSizeThreshold(9999);
               ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
 			  upload.setSizeMax(10000);
+			  upload.setFileCountMax(10);
 			  List<FileItem> items = upload.parseRequest(request);
 			  for(FileItem item : items) {
 				if (!item.isFormField()) {
