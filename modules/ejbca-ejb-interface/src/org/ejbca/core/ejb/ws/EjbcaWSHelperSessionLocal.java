@@ -118,7 +118,7 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
     void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status);
     
     /**
-     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caRenewCertRequest 
+     * @see org.ejbca.core.protocol.ws.EjbcaWS#caRenewCertRequest 
      */
     byte[] caRenewCertRequest(AuthenticationToken admin, String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) 
         throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
@@ -130,7 +130,7 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
      * @throws EjbcaException
      * @throws CertificateParsingException
      * @throws IllegalCryptoTokenException
-     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#importCaCert
+     * @see org.ejbca.core.protocol.ws.EjbcaWS#importCaCert
      */
     void importCaCert(AuthenticationToken admin, String caname, byte[] certbytes) throws AuthorizationDeniedException, 
         CAExistsException, IllegalCryptoTokenException, CertificateImportException, EjbcaException, CertificateParsingException;
@@ -142,7 +142,7 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
      * @throws EjbcaException
      * @throws CertificateParsingException
      * @throws CmsCertificatePathMissingException 
-     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#updateCaCert
+     * @see org.ejbca.core.protocol.ws.EjbcaWS#updateCaCert
      */
      void updateCaCert(AuthenticationToken admin, String caname, byte[] certbytes) throws AuthorizationDeniedException, 
          CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException, CmsCertificatePathMissingException; 
@@ -158,7 +158,7 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
       * @throws CertPathValidatorException
       * @throws CesecoreException
       * @throws CertificateParsingException 
-      * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caRenewCertRequest 
+      * @see org.ejbca.core.protocol.ws.EjbcaWS#caRenewCertRequest 
       */
      void caCertResponse(AuthenticationToken admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd, boolean futureRollover) 
          throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CesecoreException, CertificateParsingException;
