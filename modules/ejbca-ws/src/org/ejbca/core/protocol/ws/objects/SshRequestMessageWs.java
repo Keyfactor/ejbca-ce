@@ -22,17 +22,17 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * @version $Id$
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "sshRequestMessageWs", propOrder = {
-    "publicKey",
-    "keyId",
-    "principals",
-    "additionalExtensions",
-    "criticalOptions",
-    "comment"
+        "publicKey",
+        "keyId",
+        "principals",
+        "additionalExtensions",
+        "criticalOptions",
+        "comment"
+
 })
 public class SshRequestMessageWs implements Serializable {
 

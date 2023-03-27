@@ -225,7 +225,7 @@
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-common, ejbca-ws-cli" description="Build EJBCA EJB interfaces library">
+	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-common, ejbca-ws-common" description="Build EJBCA EJB interfaces library">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -311,11 +311,11 @@
         <ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
     </target>
 
-	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-ejb-interface, p11ng">
+	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-common, cesecore-entity, cesecore-ejb-interface, p11ng">
 		<ant antfile="${mod.ejbca-common.path}/build.xml" target="build-common" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="ejbca-common-web" depends="ejbca-ejb-interface" description="Build EJBCA common web library">
+	<target name="ejbca-common-web" depends="cesecore-common, ejbca-common, ejbca-ejb-interface" description="Build EJBCA common web library">
 		<ant antfile="${mod.ejbca-common-web.path}/build.xml" target="build-common-web" inheritall="true" inheritrefs="true"/>
 	</target>
 	
@@ -323,12 +323,8 @@
 		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="build-jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ws" depends="ejbca-common-web, ejbca-properties" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">
+	<target name="ejbca-ws" depends="x509-common-util, cesecore-common, ejbca-properties" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-
-	<target name="ejbca-ws-wsdl" depends="ejbca-common-web" description="Generate the EJBCA Web Services WSDL">
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="ejbca-ws-common" depends="ejbca-common" description="Build the EJBCA Web Services common library">
@@ -340,8 +336,11 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ws-generate" depends="ejbca-common-web, ejbca-ws-wsdl" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
+	<target name="ejbca-ws-wsdl" depends="x509-common-util, cesecore-common, ejbca-common-web, ejbca-ejb-interface, edition-specific-interface" description="Generate the EJBCA Web Services WSDL">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="ejbca-ws-generate" depends="ejbca-common-web, ejbca-ws-wsdl" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="generate" inheritall="true" inheritrefs="true"/>
 	</target>
 
