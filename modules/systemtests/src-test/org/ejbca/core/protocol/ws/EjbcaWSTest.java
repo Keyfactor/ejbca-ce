@@ -444,8 +444,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         super.editUser();
     }
 
-
-
     @Test
     public void test03_1GeneratePkcs10() throws Exception {
         generatePkcs10();

@@ -66,7 +66,6 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
-import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -148,7 +147,6 @@ echo "    }"
     private CryptoTokenSessionLocal cryptoTokenSession;
     private EjbcaAuditorSessionLocal ejbcaAuditorSession;
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-    private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
     private EndEntityAccessSessionLocal endEntityAccessSession;
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     private EndEntityManagementSessionLocal endEntityManagementSession;
@@ -263,10 +261,6 @@ echo "    }"
     @Override public synchronized EjbcaRestHelperSessionLocal getEjbcaRestHelperSession() {
         if (ejbcaRestHelperSession == null) { ejbcaRestHelperSession = EasyMock.createStrictMock(EjbcaRestHelperSessionLocal.class); }
         return ejbcaRestHelperSession;
-    }
-    @Override public synchronized EjbcaWSHelperSessionLocal getEjbcaWSHelperSession() {
-        if (ejbcaWSHelperSession == null) { ejbcaWSHelperSession = EasyMock.createStrictMock(EjbcaWSHelperSessionLocal.class); }
-        return ejbcaWSHelperSession;
     }
     @Override public synchronized EndEntityAccessSessionLocal getEndEntityAccessSession() {
         if (endEntityAccessSession == null) { endEntityAccessSession = EasyMock.createStrictMock(EndEntityAccessSessionLocal.class); }
@@ -412,7 +406,6 @@ echo "    }"
         list.add(cryptoTokenSession);
         list.add(ejbcaAuditorSession);
         list.add(ejbcaRestHelperSession);
-        list.add(ejbcaWSHelperSession);
         list.add(endEntityAccessSession);
         list.add(endEntityAuthenticationSession);
         list.add(endEntityManagementSession);

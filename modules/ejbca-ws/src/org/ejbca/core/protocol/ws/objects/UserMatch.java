@@ -14,13 +14,22 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 import org.ejbca.util.query.BasicMatch;
 
 /**
  * Holder of user match/search data.
  * 
- * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "userMatch", propOrder = {
+    "matchwith",
+    "matchtype",
+    "matchvalue"
+})
 public class UserMatch implements Serializable {
 
     private static final long serialVersionUID = 1L;
