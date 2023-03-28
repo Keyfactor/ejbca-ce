@@ -185,7 +185,6 @@ public class HSMKeyTool extends ClientToolBox {
         printCommandString(args, false, objects);
     }
     private static boolean doIt(final String[] orgArgs) throws Exception {
-        System.out.println("FOO3");
         // Get and remove optional switches
         final List<String> argsList = CliTools.getAsModifyableList(orgArgs);
         final KeyStore.ProtectionParameter protectionParameter;
