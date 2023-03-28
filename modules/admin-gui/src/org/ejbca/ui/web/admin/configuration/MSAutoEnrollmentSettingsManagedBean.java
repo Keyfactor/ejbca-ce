@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -93,6 +94,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private boolean isUseSSL;
     private boolean followLdapReferral;
     private int adConnectionPort;
+    private int ldapReadTimeout;
+    private int ldapConnectTimeout;
     private String adLoginDN;
     private String adLoginPassword;
     private Integer authKeyBinding;
@@ -148,6 +151,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             isUseSSL = autoEnrollmentConfiguration.isUseSSL(autoenrollmentConfigMBean.getSelectedAlias());
             followLdapReferral = autoEnrollmentConfiguration.isFollowLdapReferral(autoenrollmentConfigMBean.getSelectedAlias());
             adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort(autoenrollmentConfigMBean.getSelectedAlias());
+            ldapReadTimeout = autoEnrollmentConfiguration.getLdapReadTimeout(autoenrollmentConfigMBean.getSelectedAlias());
+            ldapConnectTimeout = autoEnrollmentConfiguration.getLdapConnectTimeout(autoenrollmentConfigMBean.getSelectedAlias());
+
             adLoginDN = autoEnrollmentConfiguration.getAdLoginDN(autoenrollmentConfigMBean.getSelectedAlias());
             adLoginPassword = MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD;
             authKeyBinding = autoEnrollmentConfiguration.getAuthKeyBinding(autoenrollmentConfigMBean.getSelectedAlias());
@@ -272,6 +278,22 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setAdConnectionPort(int adConnectionPort) {
         this.adConnectionPort = adConnectionPort;
+    }
+    
+    public int getLdapReadTimeout() {
+        return ldapReadTimeout;
+    }
+
+    public void setLdapReadTimeout(final int ldapReadTimeout) {
+        this.ldapReadTimeout = ldapReadTimeout;
+    }
+    
+    public int getLdapConnectTimeout() {
+        return ldapConnectTimeout;
+    }
+
+    public void setLdapConnectTimeout(final int ldapConnectTimeout) {
+        this.ldapConnectTimeout = ldapConnectTimeout;
     }
 
     public String getAdLoginDN() {
@@ -461,21 +483,24 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
         // TODO: Implement and maybe return a Map<id, template> so findMsTemplateByOid is simpler
         if (availableTemplates == null) {
-            availableTemplates = adConnection.getCertificateTemplateSettings(autoenrollmentConfigMBean.getSelectedAlias());
+            final String selectedAlias = autoenrollmentConfigMBean.getSelectedAlias();
+            if (selectedAlias == null) {
+                return Collections.emptyList();
+            }
+            availableTemplates = adConnection.getCertificateTemplateSettings(selectedAlias);
         }
         return availableTemplates;
     }
 
     public List<SelectItem> getAvailableTemplates() {
-        List<SelectItem> availableTemplates = new ArrayList<>();
-        availableTemplates.add(new SelectItem(SELECT_MST));
+        List<SelectItem> templatesAvailable = new ArrayList<>();
+        templatesAvailable.add(new SelectItem(SELECT_MST));
 
         getAvailableTemplateSettingsFromAD().stream()
-            .sorted((template1, template2) -> template1.getDisplayName().toString().compareTo(template2.getDisplayName().toString()))
-            .map(template -> new SelectItem(template.getOid(), template.getDisplayName()))
-            .forEach(item -> availableTemplates.add(item));
+                .sorted((template1, template2) -> template1.getDisplayName().toString().compareTo(template2.getDisplayName().toString()))
+                .map(template -> new SelectItem(template.getOid(), template.getDisplayName())).forEach(item -> templatesAvailable.add(item));
 
-        return availableTemplates;
+        return templatesAvailable;
     }
 
     /**
@@ -607,23 +632,13 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             final String filename = "keytab.krb";
             ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 
-            OutputStream output = null;
-            try {
-                output = ec.getResponseOutputStream();
+            try (OutputStream output = ec.getResponseOutputStream()) {
                 output.write(keyTabFileBytes);
                 output.flush();
                 fc.responseComplete();
             } catch (IOException e) {
                 log.info("Key Tab " + filename + " could not be downloaded", e);
                 addErrorMessage("MSAE_KEYTAB_ERROR_COULD_NOT_BE_DOWNLOADED");
-            } finally {
-                if (output != null) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                        throw new IllegalStateException("Failed to close outputstream", e);
-                    }
-                }
             }
         } else {
             addErrorMessage("MSAE_KEYTAB_ERROR_COULD_NOT_BE_DOWNLOADED");
@@ -664,29 +679,29 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * Test if a connection can be made to Active Directory with given credentials.
      */
     public void testAdConnection() {
-        String adLoginPassword = getAdLoginPassword();
+        String adLoginPass = getAdLoginPassword();
         if (StringUtils.isBlank(getAdLoginDN())) {
             addErrorMessage("MSAE_AD_TEST_CONNECTION_ERROR_NO_LOGIN");
             return;
         }
-        if (StringUtils.isBlank(adLoginPassword)) {
+        if (StringUtils.isBlank(adLoginPass)) {
             addErrorMessage("MSAE_AD_TEST_CONNECTION_ERROR_NO_PWD");
             return;
         }
-        if (adLoginPassword.equals(HIDDEN_PWD)) {
+        if (adLoginPass.equals(HIDDEN_PWD)) {
             // If password field has been reset in GUI, test connection with persisted password
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
                 globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
-            adLoginPassword = autoEnrollmentConfiguration.getAdLoginPassword(autoenrollmentConfigMBean.getSelectedAlias());
-            if (StringUtils.isEmpty(adLoginPassword)) {
+            adLoginPass = autoEnrollmentConfiguration.getAdLoginPassword(autoenrollmentConfigMBean.getSelectedAlias());
+            if (StringUtils.isEmpty(adLoginPass)) {
                 addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", "Invalid Credentials");
                 return;
             }
         }
         try {
             availableTemplates = null;
-            adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), adLoginPassword, isUseSSL(), isFollowLdapReferral(),
-                    autoenrollmentConfigMBean.getSelectedAlias());
+            adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), adLoginPass, isUseSSL(), isFollowLdapReferral(),
+                    getLdapReadTimeout(), getLdapConnectTimeout(), autoenrollmentConfigMBean.getSelectedAlias());
             addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
         } catch (LDAPException e) {
             addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", e.getFriendlyMessage());
@@ -782,6 +797,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setIsUseSsl(autoenrollmentConfigMBean.getSelectedAlias(), isUseSSL);
             autoEnrollmentConfiguration.setFollowLdapReferral(autoenrollmentConfigMBean.getSelectedAlias(), followLdapReferral);
             autoEnrollmentConfiguration.setAdConnectionPort(autoenrollmentConfigMBean.getSelectedAlias(), adConnectionPort);
+            autoEnrollmentConfiguration.setLdapReadTimeout(autoenrollmentConfigMBean.getSelectedAlias(), ldapReadTimeout);
+            autoEnrollmentConfiguration.setLdapConnectTimeout(autoenrollmentConfigMBean.getSelectedAlias(), ldapConnectTimeout);
+            
             autoEnrollmentConfiguration.setAdLoginDN(autoenrollmentConfigMBean.getSelectedAlias(), adLoginDN);
             // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
             if (!adLoginPassword.equals(MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD)) {
