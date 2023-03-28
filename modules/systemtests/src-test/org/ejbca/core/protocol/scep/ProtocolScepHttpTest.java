@@ -767,10 +767,38 @@ public class ProtocolScepHttpTest extends ScepTestBase {
             //CA's are cleaned by the crypto token rule
         }
     }
-    
-    //
-    // Private helper methods
-    //
+
+    @Test
+    public void testDashesAndUnderscoresInAlias() throws Exception {
+        final String aliasName = "it-has_underscores_and-dashes";
+        final String scepUrl = createScepUrl(aliasName);
+
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+
+        if(!scepConfig.aliasExists(aliasName)) {
+            scepConfig.addAlias(aliasName);
+            globalConfigSession.saveConfiguration(admin, scepConfig);
+        }
+
+        HttpResponse response = WebTestUtils.sendGetRequest(scepUrl);
+        assertEquals("Wrong response code is returned", 200, response.getStatusLine().getStatusCode());
+
+        if(scepConfig.aliasExists(aliasName)) {
+            scepConfig.removeAlias(aliasName);
+            globalConfigSession.saveConfiguration(admin, scepConfig);
+        }
+    }
+
+    private String createScepUrl(final String aliasName) {
+        String resourceName = "/ejbca/publicweb/apply/scep/" + aliasName + "/pkiclient.exe?operation=GetCACert&message=" + x509ca.getName();
+
+        String httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        String httpBaseUrl = "http://" + httpHost + ":" + httpPort;
+
+        return httpBaseUrl + resourceName;
+    }
+
     /**
      * Sends a SCEP request with the alias requestAlias in the URL and expects a SCEP error message 
      * that can inform us about the alias extracted from the URL.
