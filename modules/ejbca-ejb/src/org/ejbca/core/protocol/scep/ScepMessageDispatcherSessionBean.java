@@ -309,8 +309,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format". 
                 // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.            
                 return hasRolloverCert
-                        ? ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3".getBytes())
-                        : ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3".getBytes());
+                        ? ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard".getBytes())
+                        : ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard".getBytes());
             } else {
                 final String msg = "CA was not found: " + caname;
                 log.debug(msg);
