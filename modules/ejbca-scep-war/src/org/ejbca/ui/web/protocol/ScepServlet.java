@@ -442,7 +442,7 @@ public class ScepServlet extends HttpServlet {
         // TEXT" and that will be the SCEP configuration alias.
         
         String alias = null;
-        Pattern pattern = Pattern.compile("/?([A-Za-z0-9]*)/pkiclient.exe");
+        Pattern pattern = Pattern.compile("/?([A-Za-z0-9-_]*)/pkiclient.exe");
         Matcher matcher = pattern.matcher(pathInfo);
         
         if(matcher.find()) {
