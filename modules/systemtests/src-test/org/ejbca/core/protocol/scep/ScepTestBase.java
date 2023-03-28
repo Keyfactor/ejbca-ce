@@ -50,6 +50,8 @@ import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
@@ -246,11 +248,11 @@ public abstract class ScepTestBase {
     protected void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid,
             boolean noca, ASN1ObjectIdentifier encryptionAlg, KeyPair keyPair) throws CMSException, OperatorCreationException,
             NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, CertificateException {
-        checkScepResponse(retMsg, userDN, -1L, _senderNonce, getTransactionId(), crlRep, digestOid, noca, getCaCertificate(), keyPair, encryptionAlg);
+        checkScepResponse(retMsg, userDN, -1L, _senderNonce, getTransactionId(), crlRep, digestOid, noca, getCaCertificate(), keyPair, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);
     }
     
     protected void checkScepResponse(byte[] retMsg, String userDN, long startValidity, String _senderNonce, String transId, boolean crlRep, String digestOid, boolean noca,
-                                   X509Certificate caCertToUse, KeyPair key, ASN1ObjectIdentifier encryptionAlg)
+                                   X509Certificate caCertToUse, KeyPair key, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg)
             throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
             SignatureException, CertificateException {
 
@@ -339,6 +341,10 @@ public abstract class ScepTestBase {
             Iterator<RecipientInformation> riIterator = c.iterator();
             byte[] decBytes = null;
             RecipientInformation recipient = riIterator.next();
+            AlgorithmIdentifier wrapAlg = recipient.getKeyEncryptionAlgorithm();
+            // Was it the expected key wrapping algo from the server?
+            log.debug("Key encryption algorithm from the server is: " + wrapAlg.getAlgorithm().getId());
+            assertEquals("The server did not key wrap with the expected algorithm", wrappingAlg.getId(), wrapAlg.getAlgorithm().getId());
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(key.getPrivate());
             rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
             // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
