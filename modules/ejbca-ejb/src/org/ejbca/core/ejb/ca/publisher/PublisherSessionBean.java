@@ -309,7 +309,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 // If it should be published directly
                 if (!publ.getOnlyUseQueue()) {
                     boolean publishCrl = true;
-                    if (isOcspResponsePublisher(publ)) {
+                    if (isStoreCrlPropertyUsed(publ)) {
                         List<CustomPublisherProperty> properties = ((CustomPublisherContainer) publ).getCustomUiPropertyList(admin);
                         publishCrl = properties.stream()
                             .filter(property -> property.getName().equals(PROPERTYKEY_STORECRL))
@@ -490,6 +490,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return (publisher instanceof CustomPublisherContainer) && 
         StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
         StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "EnterpriseValidationAuthorityPublisher");
+    }
+
+
+    private boolean isStoreCrlPropertyUsed(final BasePublisher publisher) {
+        return (publisher instanceof CustomPublisherContainer) &&
+        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
+        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "ValidationAuthorityPublisher");
     }
     
     
