@@ -98,6 +98,7 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_PEERPROTOCOL_REST                  = "/protocol/rest"; // org.ejbca.peerconnector.PeerProtocolAccessRules.REST
     public static final String REGULAR_PEERPROTOCOL_SCEP                  = "/protocol/scep"; // org.ejbca.peerconnector.PeerProtocolAccessRules.SCEP
     public static final String REGULAR_PEERPROTOCOL_WS                    = "/protocol/web_services"; // org.ejbca.peerconnector.PeerProtocolAccessRules.WS
+    public static final String REGULAR_PEERPROTOCOL_EST_OVER_COAP         = "/protocol/est_over_coap"; // org.ejbca.peerconnector.PeerProtocolAccessRules.EST_OVER_COAP
     
     // Rules for editing/viewing Service workers
     public static final String SERVICES_BASE                              = "/services";
