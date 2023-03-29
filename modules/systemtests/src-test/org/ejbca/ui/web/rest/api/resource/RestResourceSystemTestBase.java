@@ -79,7 +79,11 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -139,6 +143,7 @@ public class RestResourceSystemTestBase {
     protected static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     protected static final EndEntityAuthenticationSessionRemote endEntityAuthenticationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
     protected static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    protected static final RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     //
     protected static final ObjectMapperContextResolver objectMapperContextResolver = new ObjectMapperContextResolver();
     //
@@ -344,7 +349,7 @@ public class RestResourceSystemTestBase {
         return "https://"+ HTTPS_HOST +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";
     }
 
-    private static KeyStore initJksKeyStore(final String keyStoreFilePath) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+    protected static KeyStore initJksKeyStore(final String keyStoreFilePath) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         final File file = new File(keyStoreFilePath);
         final KeyStore keyStore = KeyStore.getInstance("JKS");
         if (file.exists()) {
@@ -356,7 +361,7 @@ public class RestResourceSystemTestBase {
         return keyStore;
     }
 
-    private static void importDataIntoJksKeystore(
+    protected static void importDataIntoJksKeystore(
             final String keyStoreFilePath,
             final KeyStore keyStore,
             final String keyStoreAlias,
@@ -391,7 +396,7 @@ public class RestResourceSystemTestBase {
         return certificateFactory.generateCertificate(certificateInputStream);
     }
 
-    private static EndEntityInformation createEndEntityInformation(final String username, final String subjectDN, final int caId) {
+    protected static EndEntityInformation createEndEntityInformation(final String username, final String subjectDN, final int caId) {
         final EndEntityInformation endEntityInformation = new EndEntityInformation(
                 username,
                 subjectDN,
@@ -450,6 +455,18 @@ public class RestResourceSystemTestBase {
             log.error("Error encoding parameter: " + e.getMessage());
         }
         return path;
+    }
+    
+    public static TestX509CertificateAuthenticationToken setUpAuthTokenAndRole(
+            final String commonNameToken, final String roleName, final List<String> resourcesAllowed, 
+            final List<String> resourcesDenied) throws RoleExistsException, RoleNotFoundException {
+        return roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN=" + commonNameToken, null, roleName,
+                resourcesAllowed, resourcesDenied);
+    }
+
+    public static void tearDownRemoveRole(TestX509CertificateAuthenticationToken authenticationToken) 
+            throws RoleNotFoundException, AuthorizationDeniedException {
+        roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
     }
 
 }
