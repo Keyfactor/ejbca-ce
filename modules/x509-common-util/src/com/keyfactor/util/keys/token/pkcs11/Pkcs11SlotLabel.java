@@ -47,7 +47,7 @@ public class Pkcs11SlotLabel {
     public static final String SUN_PKCS11_CLASS = "sun.security.pkcs11.SunPKCS11";
     public static final String IAIK_PKCS11_CLASS = "iaik.pkcs.pkcs11.provider.IAIKPkcs11";
     public static final String IAIK_JCEPROVIDER_CLASS = "iaik.security.provider.IAIK";
-    public static final String JACKJNI_CLASS = "org.cesecore.keys.token.p11ng.provider.JackNJI11Provider";
+    public static final String JACKJNI_CLASS = "com.keyfactor.commons.p11ng.provider.JackNJI11Provider";
 
     private static final Logger log = Logger.getLogger(Pkcs11SlotLabel.class);
 
