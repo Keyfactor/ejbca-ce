@@ -316,7 +316,11 @@ public class RestResourceSystemTestBase {
      * @see org.jboss.resteasy.client.ClientRequest
      */
     static WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(getHttpClient(true));
+        return newRequest(uriPath, getHttpClient(true));
+    }
+    
+    static WebTarget newRequest(final String uriPath, HttpClient httpClient) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(httpClient);
         ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
         Client newClient = builder.httpEngine(engine).build();
         return newClient.target(getBaseUrl() + uriPath);
@@ -331,12 +335,16 @@ public class RestResourceSystemTestBase {
     }
 
     static HttpClient getHttpClient(boolean isAdmin) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
+        return getHttpClient(isAdmin ? ADMIN_KEYSTORE : NOADMIN_KEYSTORE);
+    }
+    
+    static HttpClient getHttpClient(KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
         // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(TRUST_KEYSTORE);
         final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactory.init(isAdmin ? ADMIN_KEYSTORE : NOADMIN_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
+        keyManagerFactory.init(keyStore, KEY_STORE_PASSWORD.toCharArray());
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         HttpClient client = HttpClients.custom()
                 .setSSLContext(sslContext)
@@ -457,10 +465,10 @@ public class RestResourceSystemTestBase {
         return path;
     }
     
-    public static TestX509CertificateAuthenticationToken setUpAuthTokenAndRole(
-            final String commonNameToken, final String roleName, final List<String> resourcesAllowed, 
+    public static void setUpAuthTokenAndRole(
+            final X509Certificate limitedAdminCertificate, final String roleName, final List<String> resourcesAllowed, 
             final List<String> resourcesDenied) throws RoleExistsException, RoleNotFoundException {
-        return roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN=" + commonNameToken, null, roleName,
+        roleInitializationSession.createRoleAndAddCertificateAsRoleMember(limitedAdminCertificate, null, roleName,
                 resourcesAllowed, resourcesDenied);
     }
 
