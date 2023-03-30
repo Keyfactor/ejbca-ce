@@ -1,8 +1,8 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  Keyfactor Commons - Proprietary Modules:                             *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  Copyright (c), Keyfactor Inc. All rights reserved.                   *
  *  The use of the Proprietary Modules are subject to specific           * 
  *  commercial license terms.                                            *
  *                                                                       *
@@ -40,10 +40,10 @@ import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
-import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
-import org.cesecore.keys.token.p11ng.provider.SlotEntry;
 
+import com.keyfactor.commons.p11ng.provider.CryptokiDevice;
+import com.keyfactor.commons.p11ng.provider.CryptokiManager;
+import com.keyfactor.commons.p11ng.provider.SlotEntry;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -57,7 +57,10 @@ import com.keyfactor.util.keys.token.pkcs11.P11SlotUser;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
-/** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
+/**  
+ * Cryptotoken implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
+ * 
+ * This token is left under org.cesecore because it's explicitly referred to from database protection configuration. 
  */
 public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser {
 
