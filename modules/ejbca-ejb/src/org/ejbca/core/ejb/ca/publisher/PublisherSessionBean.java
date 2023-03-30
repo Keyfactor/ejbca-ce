@@ -310,7 +310,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 if (!publ.getOnlyUseQueue()) {
                     boolean publishCrl = true;
                     if (isStoreCrlPropertyUsed(publ)) {
-                        List<CustomPublisherProperty> properties = ((CustomPublisherContainer) publ).getCustomUiPropertyList(admin);
+                        final List<CustomPublisherProperty> properties = ((CustomPublisherContainer) publ).getCustomUiPropertyList(admin);
                         publishCrl = properties.stream()
                             .filter(property -> property.getName().equals(PROPERTYKEY_STORECRL))
                             .map(property -> Boolean.valueOf(property.getValue()))
