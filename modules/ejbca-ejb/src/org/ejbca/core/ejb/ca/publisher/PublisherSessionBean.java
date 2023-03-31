@@ -494,9 +494,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
 
     private boolean isStoreCrlPropertyUsed(final BasePublisher publisher) {
-        return (publisher instanceof CustomPublisherContainer) &&
+        return (publisher instanceof CustomPublisherContainer) && (
         StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "ValidationAuthorityPublisher");
+        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "ValidationAuthorityPublisher"));
     }
     
     
