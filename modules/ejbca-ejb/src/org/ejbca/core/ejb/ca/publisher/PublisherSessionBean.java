@@ -355,6 +355,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                         }
                     } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("No CRL published. The VA publisher is not configured to do it.");
+                        }
                         publishStatus = PublisherConst.STATUS_SUCCESS;
                     }
                 }
