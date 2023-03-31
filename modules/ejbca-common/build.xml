@@ -32,6 +32,7 @@
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in OAuthTools -->
 	</path>
 	
 	<!-- The buildservicemanifest needs additional classes in order to run. 
