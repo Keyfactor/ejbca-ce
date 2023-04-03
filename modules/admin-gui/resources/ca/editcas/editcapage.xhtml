@@ -171,8 +171,7 @@
 								   style="font-weight: bold;" />
 					<ui:repeat var="failedCrypto"
 							   value="editCAsMBean.failedCryptoTokenLinkMap().entrySet().toArray()">
-						<h:outputLink value="#{failedCrypto.key}" />
-						<h:outputText value="#{failedCrypto.value}" />
+						<h:outputLink value="#{failedCrypto}" />
 					</ui:repeat>
 				</h:panelGroup>
 
