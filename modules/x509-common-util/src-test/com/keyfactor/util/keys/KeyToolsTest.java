@@ -130,21 +130,6 @@ public class KeyToolsTest {
     private static final byte[] ecPublicKey = Base64.decode(("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc" + 
             "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==").getBytes());
 
-    private static final String JWK_KEY_IDENTIFIER = "fAhtTrQfRIB0C31iCdPUe9ZJ_8wx4Ov-wn5MdUxCwoQ";
-    private static final String JWK_PUBLIC_KEY = "{\"kid\":\"fAhtTrQfRIB0C31iCdPUe9ZJ_8wx4Ov-wn5MdUxCwoQ\",\"kty\":\"RSA\",\"alg\":\"RS256\",\"use\":\"sig"+
-            "\",\"n\":\"j4g81S3nhh3vW2eGIYiwLsJC7cHGMunzMsAl6N4zyzDh0DgrtWn3Bawi32DZFAydbvlCRuLDjqw7m6AX7UUVVgUqCLg68B7uPQ2v7oC9swpLi4"+
-            "lQ0C6zTqPdAsKTs7ZFd-4cluSFlBC6xkgqzP4dDvh6hJVHLI9SbbizTraGa9cnwjCuMIVxFbv1UNqM2fevmyjXUcMjdco5laeYcHh5LwAgFjedkagXRj35qAn"+
-            "SDG727mUN0BFDdT-tGpmNkv7BXKd6aLzt5KvgxnNIMrMSlSoa0Pcot6iA7hd8Z_Tm5Jm0DmzAfPqYacGGCocN89x9cpoZEODSXimUfSqVL_3bNw\",\"e\":"+
-            "\"AQAB\",\"x5c\":[\"MIICmTCCAYECBgF2ZxeHxzANBgkqhkiG9w0BAQsFADAQMQ4wDAYDVQQDDAVFSkJDQTAeFw0yMDEyMTUxNTQ3NDRaFw0zMDEyMTUxNT"+
-            "Q5MjRaMBAxDjAMBgNVBAMMBUVKQkNBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj4g81S3nhh3vW2eGIYiwLsJC7cHGMunzMsAl6N4zyzDh0Dgr"+
-            "tWn3Bawi32DZFAydbvlCRuLDjqw7m6AX7UUVVgUqCLg68B7uPQ2v7oC9swpLi4lQ0C6zTqPdAsKTs7ZFd+4cluSFlBC6xkgqzP4dDvh6hJVHLI9SbbizTraGa9"+
-            "cnwjCuMIVxFbv1UNqM2fevmyjXUcMjdco5laeYcHh5LwAgFjedkagXRj35qAnSDG727mUN0BFDdT+tGpmNkv7BXKd6aLzt5KvgxnNIMrMSlSoa0Pcot6iA7hd8"+
-            "Z/Tm5Jm0DmzAfPqYacGGCocN89x9cpoZEODSXimUfSqVL/3bNwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQAGVYzPvxozq/cSknbSUjddkG6rIM5/n4QHx4o/F4"+
-            "KW0Bg2lXvN0ZSSTht5T+6Y4LhSvlcySQiq5zumCC+xPIkNP7ec1CKL9xjzinHDBckh1OxVhQpH157X2hYXAxA+3tIdNIJwd8KYsRXaR+YeyhjOCTNBzZtm0nuT"+
-            "P9eSI3hw3v3uWPtbWeqhjjun8uDYLjW1Ptt+jGLd0VTnqK10n+VAYjLRKQF87+euCVFfPcBzwWwM8JbONKIUGj1MR8R8p4/rzmJ7jbyiEfDwtOKNMIwGUnGHfq"+
-            "gPQkkiE4LY8a4MzdJuSPcT6FXDjvARjk22iEg+LrXOesDQGY/0xwVxs810\"],\"x5t\":\"W_cCMb00oHfX1snRC29oWQeH_IM\",\"x5t#S256\":\"gmvc8"+
-            "frXsa_8ejoDdHSKfAJCA1C3s1hChQNOA2lw1XY\"}";
-
     @BeforeClass
     public static void beforeClass() throws Exception {
         // Install BouncyCastle provider
@@ -814,52 +799,6 @@ public class KeyToolsTest {
         } catch (CertificateParsingException e) {
             assertEquals("The base64 encoded data does not represent a public key.", e.getMessage());
         }
-    }
-
-    @Test
-    public void testGetBytesFromOauthKeyEmpty() {
-        try {
-            KeyTools.getBytesFromOauthKey(new byte[] {});
-            fail("Should throw");
-        } catch (CertificateParsingException e) {
-            assertEquals("Public key file is empty", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testGetBytesFromOauthKeyInvalid() {
-        try {
-            KeyTools.getBytesFromOauthKey(new byte[] {'x'});
-            fail("Should throw");
-        } catch (CertificateParsingException e) {
-            assertEquals("Key could neither be parsed as PEM, DER, certificate or JWK", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testGetBytesFromOauthKeyJwk() throws CertificateParsingException {
-        final byte[] keyBytes = KeyTools.getBytesFromOauthKey(JWK_PUBLIC_KEY.getBytes(StandardCharsets.US_ASCII));
-        assertNotNull("Should get an encoded key", keyBytes);
-        final PublicKey pubKey = KeyTools.getPublicKeyFromBytes(keyBytes);
-        assertNotNull("Bytes should represent a public key", pubKey);
-    }
-
-    @Test
-    public void testGetBytesFromOauthKeyCertificate() throws CertificateParsingException {
-        final byte[] keyBytes = KeyTools.getBytesFromOauthKey(certbytes);
-        assertNotNull("Should get an encoded key", keyBytes);
-        final PublicKey pubKey = KeyTools.getPublicKeyFromBytes(keyBytes);
-        assertNotNull("Bytes should represent a public key", pubKey);
-    }
-
-    @Test
-    public void testGetKeyIdFromJwkKeyBadKey() {
-        assertNull("For malformed keys, the Key ID should be null", KeyTools.getKeyIdFromJwkKey(new byte[] {'x'}));
-    }
-
-    @Test
-    public void testGetKeyIdFromJwkKey() {
-        assertEquals("Wrong Key Identifier as returned", JWK_KEY_IDENTIFIER, KeyTools.getKeyIdFromJwkKey(JWK_PUBLIC_KEY.getBytes(StandardCharsets.US_ASCII)));
     }
 
     @Test
