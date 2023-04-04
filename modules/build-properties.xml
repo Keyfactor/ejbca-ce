@@ -343,7 +343,7 @@
 	<path id="lib.kerb.core.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-core-*.jar"/></path> 
 	<path id="lib.kerby.asn1.classpath"><fileset dir="${ejbca.home}/lib" includes="kerby-asn1-*.jar"/></path> 
 	<path id="lib.kerb.crypto.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-crypto-*.jar"/></path> 
-	<path id="lib.primefaces.classpath"><fileset dir="${ejbca.home}/lib/lib.primefaces.classpath" includes="primefaces-*.jar"/></path>
+	<path id="lib.primefaces.classpath"><fileset dir="${ejbca.home}/lib/primefaces" includes="primefaces-*.jar"/></path>
 
 
 	<path id="lib.xmlpull.classpath">
