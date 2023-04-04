@@ -12,11 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.oauth;
 
-import com.keyfactor.util.keys.KeyTools;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
+import java.text.ParseException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -29,13 +31,11 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+import org.ejbca.util.oauth.OAuthTools;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
-import java.text.ParseException;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 
 /**
  * Adds or removes public keys to/from already existing Trusted OAuth Provider
@@ -153,14 +153,14 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
         byte[] fileBytes = getFileBytes(publicKey);
         byte[] publicKeyByteArray;
         try {
-            publicKeyByteArray = KeyTools.getBytesFromOauthKey(fileBytes);
+            publicKeyByteArray = OAuthTools.getBytesFromOauthKey(fileBytes);
         } catch (final CertificateParsingException e) {
             log.info("Could not parse the public key file.", e);
             return false;
         }
         final String kid;
         if (StringUtils.isBlank(kidParam)) {
-            kid = KeyTools.getKeyIdFromJwkKey(fileBytes);
+            kid = OAuthTools.getKeyIdFromJwkKey(fileBytes);
             if (kid == null) {
                 log.info("Error: This key format does not include the key identifier. Please specify the key identifier manually with " + KEY_IDENTIFIER);
                 return false;
@@ -247,13 +247,13 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
         }
         final byte[] parsedPublicKey;
         try {
-            parsedPublicKey = KeyTools.getBytesFromOauthKey(inputKeyBytes);
+            parsedPublicKey = OAuthTools.getBytesFromOauthKey(inputKeyBytes);
         } catch (CertificateParsingException e) {
             log.info("Could not parse public key from input string ");
             return false;
         }
         if (StringUtils.isBlank(kid)) {
-            kid = KeyTools.getKeyIdFromJwkKey(inputKeyBytes);
+            kid = OAuthTools.getKeyIdFromJwkKey(inputKeyBytes);
             if (kid == null) {
                 log.info("Error: This key format does not include the key identifier. Please specify the key identifier manually with " + KEY_IDENTIFIER);
                 return false;
