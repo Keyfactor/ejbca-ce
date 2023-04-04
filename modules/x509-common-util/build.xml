@@ -16,8 +16,7 @@
 		<path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
-		<path refid="lib.guava.classpath"/>
-		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in KeyTools -->
+		<path refid="lib.guava.classpath"/>	
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.jacknji.classpath"/>
 		<path refid="lib.jaxws-api.classpath"/> <!-- Needed for Webfault in exceptions -->

@@ -14,12 +14,12 @@ import java.security.Security;
 import java.util.Properties;
 
 import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.keyfactor.commons.p11ng.provider.JackNJI11Provider;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
