@@ -176,7 +176,7 @@ class SCEPTest extends ClientToolBox {
 
             public boolean doIt() throws Exception {
                 final String mimetype = "application/x-x509-ca-ra-cert-chain";
-                final String reqUrl = StressTest.this.url + "?operation=GetCACertChain&message=" + StressTest.this.caName;
+                final String reqUrl = StressTest.this.url + "?operation=GetCACertChain&message=" + URLEncoder.encode(StressTest.this.caName, "UTF-8");
                 final HttpURLConnection con = (HttpURLConnection) new URL(reqUrl).openConnection();
                 con.setRequestMethod("GET");
                 con.getDoOutput();
