@@ -326,22 +326,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
 
     private void closeWindow() {
-    //    FacesContext facesContext = FacesContext.getCurrentInstance();
         PrimeFaces.current().executeScript("window.close();");
-        
-     /*
-        //Hack for closing the window after saving
-       
-        //Add the Javascript to the rendered page's header for immediate execution
-
-        AddResource addResource = AddResourceFactory.getInstance(facesContext);
-        //Think of a better solution and you're free to implement it.
-        addResource.addInlineScriptAtPosition(facesContext, AddResource.HEADER_BEGIN, "window.close();");
-        //I'm so, so sorry. I have dishonored my dojo.
-         * 
-         * 
-         */
-        //FIXME mikek make this solution a bit less...bad?
     }
 
     public void setUniqueId(int uniqueId) {
