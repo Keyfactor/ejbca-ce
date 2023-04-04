@@ -73,6 +73,7 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+import org.primefaces.PrimeFaces;
 
 /**
  * Session scoped bean for displaying information about an approval request.
@@ -325,9 +326,12 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
 
     private void closeWindow() {
+    //    FacesContext facesContext = FacesContext.getCurrentInstance();
+        PrimeFaces.current().executeScript("window.close();");
+        
      /*
         //Hack for closing the window after saving
-        FacesContext facesContext = FacesContext.getCurrentInstance();
+       
         //Add the Javascript to the rendered page's header for immediate execution
 
         AddResource addResource = AddResourceFactory.getInstance(facesContext);
