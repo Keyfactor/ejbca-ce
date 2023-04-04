@@ -79,7 +79,11 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -139,6 +143,7 @@ public class RestResourceSystemTestBase {
     protected static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     protected static final EndEntityAuthenticationSessionRemote endEntityAuthenticationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
     protected static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    protected static final RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     //
     protected static final ObjectMapperContextResolver objectMapperContextResolver = new ObjectMapperContextResolver();
     //
@@ -311,7 +316,11 @@ public class RestResourceSystemTestBase {
      * @see org.jboss.resteasy.client.ClientRequest
      */
     static WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(getHttpClient(true));
+        return newRequest(uriPath, getHttpClient(true));
+    }
+    
+    static WebTarget newRequest(final String uriPath, HttpClient httpClient) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(httpClient);
         ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
         Client newClient = builder.httpEngine(engine).build();
         return newClient.target(getBaseUrl() + uriPath);
@@ -326,12 +335,16 @@ public class RestResourceSystemTestBase {
     }
 
     static HttpClient getHttpClient(boolean isAdmin) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
+        return getHttpClient(isAdmin ? ADMIN_KEYSTORE : NOADMIN_KEYSTORE);
+    }
+    
+    static HttpClient getHttpClient(KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
         // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(TRUST_KEYSTORE);
         final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactory.init(isAdmin ? ADMIN_KEYSTORE : NOADMIN_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
+        keyManagerFactory.init(keyStore, KEY_STORE_PASSWORD.toCharArray());
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         HttpClient client = HttpClients.custom()
                 .setSSLContext(sslContext)
@@ -344,7 +357,7 @@ public class RestResourceSystemTestBase {
         return "https://"+ HTTPS_HOST +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";
     }
 
-    private static KeyStore initJksKeyStore(final String keyStoreFilePath) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+    protected static KeyStore initJksKeyStore(final String keyStoreFilePath) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         final File file = new File(keyStoreFilePath);
         final KeyStore keyStore = KeyStore.getInstance("JKS");
         if (file.exists()) {
@@ -356,7 +369,7 @@ public class RestResourceSystemTestBase {
         return keyStore;
     }
 
-    private static void importDataIntoJksKeystore(
+    protected static void importDataIntoJksKeystore(
             final String keyStoreFilePath,
             final KeyStore keyStore,
             final String keyStoreAlias,
@@ -391,7 +404,7 @@ public class RestResourceSystemTestBase {
         return certificateFactory.generateCertificate(certificateInputStream);
     }
 
-    private static EndEntityInformation createEndEntityInformation(final String username, final String subjectDN, final int caId) {
+    protected static EndEntityInformation createEndEntityInformation(final String username, final String subjectDN, final int caId) {
         final EndEntityInformation endEntityInformation = new EndEntityInformation(
                 username,
                 subjectDN,
@@ -450,6 +463,18 @@ public class RestResourceSystemTestBase {
             log.error("Error encoding parameter: " + e.getMessage());
         }
         return path;
+    }
+    
+    public static void setUpAuthTokenAndRole(
+            final X509Certificate limitedAdminCertificate, final String roleName, final List<String> resourcesAllowed, 
+            final List<String> resourcesDenied) throws RoleExistsException, RoleNotFoundException {
+        roleInitializationSession.createRoleAndAddCertificateAsRoleMember(limitedAdminCertificate, null, roleName,
+                resourcesAllowed, resourcesDenied);
+    }
+
+    public static void tearDownRemoveRole(TestX509CertificateAuthenticationToken authenticationToken) 
+            throws RoleNotFoundException, AuthorizationDeniedException {
+        roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
     }
 
 }
