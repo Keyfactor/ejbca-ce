@@ -395,7 +395,6 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlInputFileUpload result = new JsfDynamicUiHtmlInputFileUpload();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, keyPrefix, property);
-        // FIXME mikek result.setStorage("file");
         result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setSize(44);
         return result;

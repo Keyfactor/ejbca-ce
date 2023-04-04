@@ -33,6 +33,7 @@
 		<path refid="lib.owaspcsrfguard.classpath"/>
 		<path refid="lib.snakeyaml.classpath"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
+		<path refid="lib.primefaces.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
