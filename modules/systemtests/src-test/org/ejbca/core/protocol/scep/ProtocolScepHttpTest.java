@@ -41,6 +41,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedGenerator;
@@ -94,7 +95,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
- * Tests http pages of scep
+ * Tests SCEP protocol in CA mode
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -374,6 +375,22 @@ public class ProtocolScepHttpTest extends ScepTestBase {
     }
 
     @Test
+    public void test04ScepRequestOKSHA256RSAOAEPAES() throws Exception {
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);        
+        // Make user that we know...
+        createScepUser(userName1, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, key1, BouncyCastleProvider.PROVIDER_NAME,
+                PKCSObjectIdentifiers.id_RSAES_OAEP, SMIMECapability.aES128_CBC);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        // When the request is encrypted with AES, the response should be as well.
+        checkScepResponse(retMsg, userDN1, -1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, getCaCertificate(), key1, 
+                PKCSObjectIdentifiers.id_RSAES_OAEP, SMIMECapability.aES128_CBC);
+    }
+
+    @Test
     public void test04ScepRequestOKSHA512() throws Exception {
         scepConfiguration.setIncludeCA(scepAlias, true);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);        
@@ -638,7 +655,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
 
     @Test
     public void test10ScepGetCACaps() throws Exception {
-        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
+        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard");
         sendGetCACapsRequest("NonExistent", 404);
     }
 
@@ -683,13 +700,13 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         try {
             createScepUser(first, firstUserDn);
             final byte[] firstMessage = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, firstUserDn, key1, BouncyCastleProvider.PROVIDER_NAME,
-                    SMIMECapability.dES_CBC);
+                    PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
             sendScep(true, firstMessage, HttpServletResponse.SC_OK);
             createScepUser(second, secondUserDn);
             changeScepUser(second, firstUserDn, x509ca.getCAId());
 
             final byte[] secondMessage = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, secondUserDn, key2, BouncyCastleProvider.PROVIDER_NAME,
-                    SMIMECapability.dES_CBC);
+                    PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
             // Send message with GET
             final byte[] retMsg = sendScep(true, secondMessage, HttpServletResponse.SC_BAD_REQUEST);
             String returnMessageString = new String(retMsg);
@@ -750,10 +767,38 @@ public class ProtocolScepHttpTest extends ScepTestBase {
             //CA's are cleaned by the crypto token rule
         }
     }
-    
-    //
-    // Private helper methods
-    //
+
+    @Test
+    public void testDashesAndUnderscoresInAlias() throws Exception {
+        final String aliasName = "it-has_underscores_and-dashes";
+        final String scepUrl = createScepUrl(aliasName);
+
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+
+        if(!scepConfig.aliasExists(aliasName)) {
+            scepConfig.addAlias(aliasName);
+            globalConfigSession.saveConfiguration(admin, scepConfig);
+        }
+
+        HttpResponse response = WebTestUtils.sendGetRequest(scepUrl);
+        assertEquals("Wrong response code is returned", 200, response.getStatusLine().getStatusCode());
+
+        if(scepConfig.aliasExists(aliasName)) {
+            scepConfig.removeAlias(aliasName);
+            globalConfigSession.saveConfiguration(admin, scepConfig);
+        }
+    }
+
+    private String createScepUrl(final String aliasName) {
+        String resourceName = "/ejbca/publicweb/apply/scep/" + aliasName + "/pkiclient.exe?operation=GetCACert&message=" + x509ca.getName();
+
+        String httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        String httpBaseUrl = "http://" + httpHost + ":" + httpPort;
+
+        return httpBaseUrl + resourceName;
+    }
+
     /**
      * Sends a SCEP request with the alias requestAlias in the URL and expects a SCEP error message 
      * that can inform us about the alias extracted from the URL.
@@ -802,13 +847,12 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         createScepUser(userName, userDN, x509ca.getCAId());
     }
     
-
     private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, ASN1ObjectIdentifier encryptionAlg) throws IOException, CMSException,
-            IllegalStateException, OperatorCreationException, CertificateException {
-        return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME, encryptionAlg);
+    IllegalStateException, OperatorCreationException, CertificateException {
+        return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider, ASN1ObjectIdentifier encryptionAlg) throws
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws
             IOException, CMSException, OperatorCreationException, CertificateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keyPair, signatureProvider);
@@ -824,7 +868,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         if (makeCrlReq) {
             msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keyPair.getPrivate(), encryptionAlg);
         } else {
-            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate(), encryptionAlg);
+            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate(), wrappingAlg, encryptionAlg);
         }
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
