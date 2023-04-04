@@ -1,2 +1,0 @@
-"Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
-"Apache's MyFaces";             "tomahawk-1.1.14";                              "ALv2";                 "LICENSE-APACHE-2.0";           "https://myfaces.apache.org/";                                      "JSF 2.0 extension for File Upload support."

@@ -25,6 +25,7 @@ import javax.faces.component.UIOutput;
 import javax.faces.component.UISelectItems;
 import javax.faces.component.behavior.AjaxBehavior;
 import javax.faces.component.html.HtmlCommandButton;
+import javax.faces.component.html.HtmlInputFile;
 import javax.faces.component.html.HtmlInputText;
 import javax.faces.component.html.HtmlInputTextarea;
 import javax.faces.component.html.HtmlOutputLabel;
@@ -43,7 +44,6 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiModelException;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -391,11 +391,11 @@ public class JsfDynamicUiPsmFactory {
      * @param property the dynamic UI property.
      * @return the file chooser instance.
      */
-    public static final HtmlInputFileUpload createFileChooserInstance(final String keyPrefix, final DynamicUiProperty<?> property) {
+    public static final HtmlInputFile createFileChooserInstance(final String keyPrefix, final DynamicUiProperty<?> property) {
         final JsfDynamicUiHtmlInputFileUpload result = new JsfDynamicUiHtmlInputFileUpload();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, keyPrefix, property);
-        result.setStorage("file");
+        // FIXME mikek result.setStorage("file");
         result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setSize(44);
         return result;

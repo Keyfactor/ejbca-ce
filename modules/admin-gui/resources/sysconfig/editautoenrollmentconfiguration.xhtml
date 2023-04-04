@@ -6,7 +6,7 @@
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
     xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-  	xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:p="http://java.sun.com/jsf/html">
+  	xmlns:p="http://java.sun.com/jsf/html">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -105,7 +105,7 @@
 				<h:panelGroup>
 					<h:panelGroup>
 						<br/>
-						<t:inputFileUpload id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}"/>
+						<h:inputFile id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}"/>
 						<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKeyTabFile}"/>
 						<br/>
 					</h:panelGroup>
@@ -124,7 +124,7 @@
 				<h:panelGroup>
 					<h:panelGroup>
 						<br/>
-						<t:inputFileUpload id="msaeKrb5ConfFile" value="#{msAutoEnrollmentSettings.krb5ConfFile}"/>
+						<h:inputFile id="msaeKrb5ConfFile" value="#{msAutoEnrollmentSettings.krb5ConfFile}"/>
 						<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKrb5ConfFile}"/>
 						<br/>
 					</h:panelGroup>

@@ -56,12 +56,13 @@ import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.Part;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -221,7 +222,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String algorithmFromCsr; //PROVIDED BY USER
     private int selectedTokenType;
 
-    private UploadedFile uploadFile;
+    private Part uploadFile;
     private String certificateRequest;
     private String publicKeyModulus;
     private String publicKeyExponent;
@@ -1274,7 +1275,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
         endEntityInformation.setKeyRecoverable(getKeyRecoverableUse());
         endEntityInformation.setSendNotification(getSendNotification());
-        endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
         
         // Fill end-entity information (Username and Password)
@@ -1672,13 +1672,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         byte[] fileContents;
         String pemEncodedCsr;
         try {
-            fileContents = uploadFile.getBytes();
+            fileContents = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
             String fileContentString = new String(fileContents);
             if (fileContentString.startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)||
                     fileContentString.startsWith(CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST)) {
-                pemEncodedCsr = new String(uploadFile.getBytes());
+                pemEncodedCsr = new String(fileContents);
             } else {
-                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(uploadFile.getBytes()));
+                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(fileContents));
             }
         } catch (IOException e) {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
@@ -2713,11 +2713,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return false;
     }
 
-    public UploadedFile getUploadFile() {
+    public Part getUploadFile() {
         return uploadFile;
     }
 
-    public void setUploadFile(UploadedFile uploadFile) {
+    public void setUploadFile(Part uploadFile) {
         this.uploadFile = uploadFile;
     }
 
@@ -3185,7 +3185,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void uploadSshPubKey() {
         if(uploadFile!=null) {
             try {
-                sshPublicKeyString = new String(uploadFile.getBytes());
+                final byte[] fileBytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
+                sshPublicKeyString = new String(fileBytes);
                 updateSshPublicKey();
                 return;
             } catch (IOException e) {

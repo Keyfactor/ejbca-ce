@@ -3,16 +3,16 @@ package org.ejbca.ui.psm.jsf;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.faces.component.html.HtmlInputFile;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.event.ValueChangeListener;
 
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
 import org.cesecore.util.ui.DynamicUiComponent;
 import org.cesecore.util.ui.DynamicUiProperty;
 
-public class JsfDynamicUiHtmlInputFileUpload extends HtmlInputFileUpload implements DynamicUiComponent, PropertyChangeListener {
+public class JsfDynamicUiHtmlInputFileUpload extends HtmlInputFile implements DynamicUiComponent, PropertyChangeListener {
 
     /** Class logger. */
     private static final Logger log = Logger.getLogger(JsfDynamicUiHtmlInputFileUpload.class);

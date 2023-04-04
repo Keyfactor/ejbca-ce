@@ -28,7 +28,6 @@
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.jee.classpath"/>
-		<path refid="lib.tomahawk.classpath"/>
 		<path refid="lib.jacknji.classpath"/>
 		<path refid="lib.guava.classpath"/>
 		<path refid="lib.owaspcsrfguard.classpath"/>
@@ -67,10 +66,10 @@
 	
     <target name="build" description="Build this module" depends="compile">
         <war destfile="${mod.admin-gui.war}" webxml="${admin-gui.resources.dir}/WEB-INF/web.xml" basedir="${admin-gui.build.dir}" excludes="WEB-INF/web.xml">
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-4.1.4.jar"/>
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-extension-session-4.1.4.jar"/>
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-jsp-tags-4.0.0.jar"/>
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/primefaces" includes="primefaces-*.jar"/>
         	<fileset dir="${admin-gui.resources.dir}" excludes="languages/*"/>
         </war>
     </target>
