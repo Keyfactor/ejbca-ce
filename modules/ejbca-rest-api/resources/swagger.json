@@ -1709,6 +1709,40 @@
           }
         }
       }
+    },
+    "/v1/ssh/certificaterequest": {
+      "post": {
+        "tags": [
+          "v1/ssh"
+        ],
+        "summary": "Enrollment with public key",
+        "description": "Enroll for a ssh certificate.",
+        "operationId": "sshCertificateRequest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/SshCertificateRequestRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/SshCertificateRestResponse"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -2941,6 +2975,97 @@
           "type": "string",
           "example": "ssh-rsa AAAAB...QxLwx SshCA",
           "description": "CA\u2019s public key"
+        }
+      }
+    },
+    "SshCertificateRequestRestRequest": {
+      "type": "object",
+      "properties": {
+        "end_entity_profile": {
+          "type": "string",
+          "example": "ExampleEEP",
+          "description": "End Entity profile name"
+        },
+        "certificate_profile": {
+          "type": "string",
+          "example": "ENDUSER",
+          "description": "Certificate profile name"
+        },
+        "certificate_authority": {
+          "type": "string",
+          "example": "CN=ExampleCA",
+          "description": "Certificate Authority (CA) name"
+        },
+        "key_id": {
+          "type": "string",
+          "example": "ski-02",
+          "description": "SSH Key Identifier"
+        },
+        "comment": {
+          "type": "string",
+          "example": "Yellow fish under blue water",
+          "description": "Comment"
+        },
+        "public_key": {
+          "type": "string",
+          "example": "ssh-rsa AAA...EWj",
+          "description": "Public Key"
+        },
+        "principals": {
+          "type": "array",
+          "example": "[“Wishman“, “Bradman“]",
+          "description": "Valid principals",
+          "items": {
+            "type": "string"
+          }
+        },
+        "critical_options": {
+          "description": "Critical options",
+          "$ref": "#/definitions/SshCriticalOptions"
+        },
+        "username": {
+          "type": "string",
+          "example": "JohnDoe",
+          "description": "Username"
+        },
+        "password": {
+          "type": "string",
+          "example": "foo123",
+          "description": "Password"
+        }
+      }
+    },
+    "SshCriticalOptions": {
+      "type": "object",
+      "properties": {
+        "force_command": {
+          "type": "string",
+          "example": "./init.sh",
+          "description": "force-command"
+        },
+        "source_address": {
+          "type": "string",
+          "example": "1.2.3.0/24,1.10.10.1/32",
+          "description": "source-address"
+        }
+      }
+    },
+    "SshCertificateRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "array",
+          "example": "c3N...T09",
+          "description": "Certificate",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "response_format": {
+          "type": "string",
+          "example": "BYTE",
+          "description": "Response format"
         }
       }
     }
