@@ -33,6 +33,7 @@
            <include name="bcprov*.jar"/>
            <include name="bcpkix*.jar"/>
            <include name="bctls*.jar"/>
+           <include name="x509-common-util.jar"/> 
         </fileset>
        <fileset dir="${ejbca.home}/lib/jee">
            <include name="javaee-api*.jar"/>
@@ -45,7 +46,6 @@
            <include name="cesecore-common.jar"/>
            <include name="cesecore-entity.jar"/>
            <include name="cesecore-ejb-interface.jar"/>
-           <include name="x509-common-util.jar"/>
         </fileset>
     </path>
     

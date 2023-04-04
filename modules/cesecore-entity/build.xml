@@ -22,7 +22,7 @@
 		<path refid="lib.commons-config.classpath" />
 		<path refid="lib.jaxws-api.classpath"/>
 		<path location="${cesecore-entity.dir}/../cesecore-common/dist/cesecore-common.jar" />
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 	<path id="test.classpath">

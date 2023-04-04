@@ -52,7 +52,6 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-        <ant antfile="${mod.x509-common-util.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
@@ -237,7 +236,6 @@
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="x509-common-util" depends="-build-x509-common-util, -copy-x509-common-util"/>
     <target name="cesecore-common" depends="-build-cesecore-common, -copy-cesecore-common"/>
     <target name="cesecore-entity" depends="-build-cesecore-entity, -copy-cesecore-entities, -copy-cesecore-common"/>
     <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
@@ -252,18 +250,13 @@
             <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
-        <target name="-build-cesecore-common" depends="x509-common-util">
+        <target name="-build-cesecore-common" >
             <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
         <target name="-build-cesecore-entity" depends="cesecore-common">
             <ant antfile="${mod.cesecore-entity.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
-        </target>
-	
-	 	<target name="-build-x509-common-util" >
-	    	 <ant antfile="${mod.x509-common-util.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
-	    </target>
-	        
+        </target>	        
 	
         
         <target name="-copy-cesecore-entities">
@@ -277,11 +270,6 @@
         	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/modules/dist/"/>
         	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/dist/"/>
         </target>
-	
-		<target name="-copy-x509-common-util">
-	    	<copy file="${ejbca.home}/modules/x509-common-util/dist/x509-common-util.jar" todir="${ejbca.home}/modules/dist/"/>
-	        <copy file="${ejbca.home}/modules/x509-common-util/dist/x509-common-util.jar" todir="${ejbca.home}/dist/"/>
-	    </target>
         
         <target name="-copy-cesecore-cvcca" if="${mod.cesecore-cvcca.exists}">
             <copy file="${ejbca.home}/modules/cesecore-cvcca/dist/cesecore-cvcca.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
@@ -323,7 +311,7 @@
 		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="build-jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ws" depends="x509-common-util, cesecore-common, ejbca-properties" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">
+	<target name="ejbca-ws" depends="cesecore-common, ejbca-properties" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -336,7 +324,7 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ws-wsdl" depends="x509-common-util, cesecore-common, ejbca-common-web, ejbca-ejb-interface, edition-specific-interface" description="Generate the EJBCA Web Services WSDL">
+	<target name="ejbca-ws-wsdl" depends="cesecore-common, ejbca-common-web, ejbca-ejb-interface, edition-specific-interface" description="Generate the EJBCA Web Services WSDL">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="true" inheritrefs="true"/>
 	</target>
 	
