@@ -29,7 +29,6 @@
 		<path refid="lib.commons-logging.classpath"/>
         <path refid="lib.hc.classpath"/>
 		<path refid="lib.jee.classpath"/>
-		<path refid="lib.tomahawk.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
         <path refid="lib.json-smart.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
