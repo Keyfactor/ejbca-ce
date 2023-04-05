@@ -104,7 +104,8 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
             doCipher(cryptoToken, priv, pub, new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, paramsSHA1));
 
             // RSAES_OAEP key encryption, custom OAEP parameters, SHA256, MGF1
-            // SoftHSM2 does not seem to support OAEP with SHA256 but I thinkg we do it correctly
+            // SoftHSM2 does not support OAEP with SHA256 (my version on April 5 2023), but Thales DPoD does. 
+            // Test disabled as SoftHSM doesn't support it, tested manually on DPoD with clientToolBox SCEPTest
             // see https://stackoverflow.com/questions/64888751/rsa-oaep-encryption-with-sha-256-fails-while-with-sha-1-is-ok
 //            final RSAESOAEPparams paramsSHA256 = new RSAESOAEPparams(
 //                    new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE), 
