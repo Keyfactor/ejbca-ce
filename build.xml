@@ -592,7 +592,7 @@
 				<include name="kerb-core-*.jar"/>
 				<include name="kerby-asn1-*.jar"/>
             	<include name="kerb-crypto-*.jar"/>
-        		<include name="x509-common-util.jar" />
+        		<include name="x509-common-util*.jar" />
             	<!-- Internally generated WS server and client files. -->
             	<include name="ejbca-ws-client-gen.jar"/>
             </zipfileset>
