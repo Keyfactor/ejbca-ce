@@ -12,7 +12,6 @@
  *************************************************************************/
 package com.keyfactor.util.keys;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -69,8 +68,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
-
-
 
 import javax.crypto.Cipher;
 import javax.crypto.interfaces.DHPrivateKey;
@@ -704,7 +701,7 @@ public final class KeyTools {
     }
 
     private static KeyStore createP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain, final KeyStore store)
-            throws CertificateException, NoSuchAlgorithmException,InvalidKeySpecException {
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">createP12: alias=" + alias + ", privateKey, certificate=" + CertTools.getSubjectDN(certificate) + ", caCertificateChain.length="
                     + ((caCertificateChain == null) ? 0 : caCertificateChain.length));
