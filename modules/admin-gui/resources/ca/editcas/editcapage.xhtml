@@ -165,11 +165,6 @@
 							rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenIdParamNull}" />
 				</h:panelGroup>
 
-				<h:panelGroup
-						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.failedCryptoTokenExist}">
-					<h:outputLabel value="Failed to access these CryptoTokens:"
-								   style="font-weight: bold;" />
-                </h:panelGroup>
                 <h:panelGroup
                         rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.failedCryptoTokenExist}">
                     <h:outputLabel value="Failed to access these CryptoTokens:"
