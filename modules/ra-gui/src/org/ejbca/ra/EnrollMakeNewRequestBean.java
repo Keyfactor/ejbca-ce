@@ -95,6 +95,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.TokenDownloadType;
@@ -2237,6 +2238,28 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         }
                         availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
                                 + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
+                    }
+                }
+                if (WebConfiguration.isPQCEnabled()) {
+                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_FALCON512)) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON512,
+                                AlgorithmConstants.KEYALGORITHM_FALCON512));
+                    }
+                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_FALCON1024)) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON1024,
+                                AlgorithmConstants.KEYALGORITHM_FALCON1024));
+                   }
+                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DILITHIUM2)) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM2,
+                                AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+                    }
+                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DILITHIUM3)) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM3,
+                                AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
+                    }
+                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DILITHIUM5)) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM5,
+                                AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
                     }
                 }
                 for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
