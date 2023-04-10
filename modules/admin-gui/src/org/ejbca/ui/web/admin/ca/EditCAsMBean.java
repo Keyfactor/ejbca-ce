@@ -1137,8 +1137,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return failedCryptoTokenLinkMap != null && !failedCryptoTokenLinkMap.isEmpty();
     }
 
-    public Map<String, String> failedCryptoTokenLinkMap() {
-        return failedCryptoTokenLinkMap;
+    public ArrayList<String> getFailedCryptoTokenNames() {
+        return new ArrayList<String>(failedCryptoTokenLinkMap.values());
     }
 
 
