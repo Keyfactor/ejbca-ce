@@ -176,7 +176,7 @@ class SCEPTest extends ClientToolBox {
 
             public boolean doIt() throws Exception {
                 final String mimetype = "application/x-x509-ca-ra-cert-chain";
-                final String reqUrl = StressTest.this.url + "?operation=GetCACertChain&message=" + StressTest.this.caName;
+                final String reqUrl = StressTest.this.url + "?operation=GetCACertChain&message=" + URLEncoder.encode(StressTest.this.caName, "UTF-8");
                 final HttpURLConnection con = (HttpURLConnection) new URL(reqUrl).openConnection();
                 con.setRequestMethod("GET");
                 con.getDoOutput();
@@ -877,7 +877,7 @@ class SCEPTest extends ClientToolBox {
         if (args.length < 3) {
             System.out.println(args[0] + " <SCEP url> <CA name> [<number of threads>] [<encryption alg>] [<key encryption alg>] [<wait time between each thread is started>] [<user CN to be prepended by >]");
             System.out.println("SCEP URL ca example: http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe ManagementCA 1");
-            System.out.println("SCEP URL ca example: http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe ManagementCA 1 AES RSA-OAEP");
+            System.out.println("SCEP URL ca example: http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe ManagementCA 1 AES RSA-OAEP-SHA1");
             System.out.println();
             System.out.println("The test requires that your configured SCEP alias 'noca':");
             System.out.println("- using RA mode.");
@@ -886,7 +886,7 @@ class SCEPTest extends ClientToolBox {
             System.out.println("- references a certificate profile with allowExtensionOverride=true and allow 1024 bit keys.");
             System.out.println("- references an end entity profile with 'Use' 'Batch generation");
             System.out.println("- RA name generation parameters. set to CN (default)");
-            System.out.println("Algorithm options are DES, DES3, AES-128, AES-256 (default AES-256) and RSA or RSA-OAEP (default RSA).");
+            System.out.println("Algorithm options are DES, DES3, AES-128, AES-256 (default AES-256) and RSA, RSA-OAEP-SHA1, RSA-OAEP-SHA256 (default RSA, not all HSMs support RSA-OAEP-SHA256).");
             System.out.println();
             return;
         }
@@ -919,12 +919,16 @@ class SCEPTest extends ClientToolBox {
             case "RSA":
                 keyEncryptionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption);
                 break;
-            case "RSA-OAEP":
-                final RSAESOAEPparams params = new RSAESOAEPparams(
+            case "RSA-OAEP-SHA1":
+                final RSAESOAEPparams paramsSHA1 = new RSAESOAEPparams();
+                keyEncryptionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, paramsSHA1);
+                break;
+            case "RSA-OAEP-SHA256":
+                final RSAESOAEPparams paramsSHA256 = new RSAESOAEPparams(
                         new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE), 
                         new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE)),
                         new AlgorithmIdentifier(PKCSObjectIdentifiers.id_pSpecified, new DEROctetString(new byte[0])));
-                keyEncryptionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, params);
+                keyEncryptionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, paramsSHA256);
                 break;
             default:
                 System.out.println("Invalid algorithm option: " + args[5]);

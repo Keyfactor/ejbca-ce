@@ -9,6 +9,8 @@
  *************************************************************************/
 package com.keyfactor.commons.p11ng;
 
+import java.io.IOException;
+import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PSSParameterSpec;
@@ -16,15 +18,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.pkcs11.jacknji11.C;
 import org.pkcs11.jacknji11.CKG;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.ULong;
-
-import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 
 /**
  * Handles mapping between PKCS#11 mechanism constant names and values.
@@ -113,29 +118,37 @@ public class MechanismNames {
         CKM_PARAMS.put("SHA384withRSASSA-PSS", ULong.ulong2b(new long[]{CKM.SHA384, CKG.MGF1_SHA384, 48}));
         CKM_PARAMS.put("SHA512withRSASSA-PSS", ULong.ulong2b(new long[]{CKM.SHA512, CKG.MGF1_SHA512, 64}));
 
-        // Maps to be able to encode RSA-PSS parameters from a parameter spec
-        // Map betwen Java digest algorithm name and mechanism
+        // Maps to be able to encode RSA-PSS and RSAES-OAEP parameters from a parameter spec
+        // Map between Java digest algorithm name and mechanism
         DIGEST_NAME_TO_CKM_MAP.put("SHA1", CKM.SHA_1);
         DIGEST_NAME_TO_CKM_MAP.put("SHA-1", CKM.SHA_1);
+        DIGEST_NAME_TO_CKM_MAP.put(OIWObjectIdentifiers.idSHA1.getId(), CKM.SHA_1);
         DIGEST_NAME_TO_CKM_MAP.put("SHA256", CKM.SHA256);
         DIGEST_NAME_TO_CKM_MAP.put("SHA-256", CKM.SHA256);
+        DIGEST_NAME_TO_CKM_MAP.put(NISTObjectIdentifiers.id_sha256.getId(), CKM.SHA256);
         DIGEST_NAME_TO_CKM_MAP.put("SHA384", CKM.SHA384);
         DIGEST_NAME_TO_CKM_MAP.put("SHA-384", CKM.SHA384);
+        DIGEST_NAME_TO_CKM_MAP.put(NISTObjectIdentifiers.id_sha384.getId(), CKM.SHA384);
         DIGEST_NAME_TO_CKM_MAP.put("SHA512", CKM.SHA512);
         DIGEST_NAME_TO_CKM_MAP.put("SHA-512", CKM.SHA512);
+        DIGEST_NAME_TO_CKM_MAP.put(NISTObjectIdentifiers.id_sha512.getId(), CKM.SHA512);
         // Map between Java digest algorithm name and mask generation mechanism
         DIGEST_NAME_TO_CKG_MAP.put("SHA1", CKG.MGF1_SHA1);
         DIGEST_NAME_TO_CKG_MAP.put("SHA-1", CKG.MGF1_SHA1);
+        DIGEST_NAME_TO_CKG_MAP.put(OIWObjectIdentifiers.idSHA1.getId(), CKG.MGF1_SHA1);
         DIGEST_NAME_TO_CKG_MAP.put("SHA256", CKG.MGF1_SHA256);
         DIGEST_NAME_TO_CKG_MAP.put("SHA-256", CKG.MGF1_SHA256);
+        DIGEST_NAME_TO_CKG_MAP.put(NISTObjectIdentifiers.id_sha256.getId(), CKG.MGF1_SHA256);
         DIGEST_NAME_TO_CKG_MAP.put("SHA384", CKG.MGF1_SHA384);
         DIGEST_NAME_TO_CKG_MAP.put("SHA-384", CKG.MGF1_SHA384);
+        DIGEST_NAME_TO_CKG_MAP.put(NISTObjectIdentifiers.id_sha384.getId(), CKG.MGF1_SHA384);
         DIGEST_NAME_TO_CKG_MAP.put("SHA512", CKG.MGF1_SHA512);
         DIGEST_NAME_TO_CKG_MAP.put("SHA-512", CKG.MGF1_SHA512);
+        DIGEST_NAME_TO_CKG_MAP.put(NISTObjectIdentifiers.id_sha512.getId(), CKG.MGF1_SHA512);
 
         ENCALGOS2L = new HashMap<>();
         ENCALGOS2L.put(PKCSObjectIdentifiers.rsaEncryption.getId(), CKM.RSA_PKCS);
-
+        ENCALGOS2L.put(PKCSObjectIdentifiers.id_RSAES_OAEP.getId(), CKM.RSA_PKCS_OAEP);
     }
 
     /**
@@ -218,5 +231,43 @@ public class MechanismNames {
         return ULong.ulong2b(new long[] {digestMechanism, maskGenMechanism, saltLength});
     }
 
+    public static byte[] encodeOAEPParameters(final AlgorithmParameters params) throws InvalidKeyException {
+        RSAESOAEPparams oaepP;
+        try {
+            // Default parameters defined in RSAESOAEPparams
+            // public final static AlgorithmIdentifier DEFAULT_HASH_ALGORITHM = new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1, DERNull.INSTANCE);
+            // public final static AlgorithmIdentifier DEFAULT_MASK_GEN_FUNCTION = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, DEFAULT_HASH_ALGORITHM);
+            // public final static AlgorithmIdentifier DEFAULT_P_SOURCE_ALGORITHM = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_pSpecified, new DEROctetString(new byte[0]));
+            oaepP = RSAESOAEPparams.getInstance(params.getEncoded());
+        } catch (IOException e) {
+            throw new InvalidKeyException("Unsupported parameters in OAEP parameters: " + e.getMessage());
+        }
+        if (oaepP.getHashAlgorithm() == null) {
+            throw new InvalidKeyException("Unsupported digest in PSS parameters: " + oaepP.getHashAlgorithm());
+        }
+        if (oaepP.getMaskGenAlgorithm() == null) {
+            throw new InvalidKeyException("Unsupported digest in MGF1 parameters: " + oaepP.getMaskGenAlgorithm());
+        }
+        final Long digestMechanism = DIGEST_NAME_TO_CKM_MAP.get(oaepP.getHashAlgorithm().getAlgorithm().getId());
+        final AlgorithmIdentifier mgfParam = AlgorithmIdentifier.getInstance(oaepP.getMaskGenAlgorithm().getParameters());
+        final Long maskGenMechanism = DIGEST_NAME_TO_CKG_MAP.get(mgfParam.getAlgorithm().getId());
+        if (digestMechanism == null) {
+            throw new InvalidKeyException("Unsupported digest in OAEP parameters: " + oaepP.getHashAlgorithm().getAlgorithm().getId());
+        }
+        if (maskGenMechanism == null) {
+            throw new InvalidKeyException("Unsupported digest in MGF1 parameters: " + mgfParam.getAlgorithm().getId());
+        }
+        // PKCSObjectIdentifiers.id_pSpecified is always CKZ_DATA_SPECIFIED as defined in PKCS#11 section 2.1.7, CK_RSA_PKCS_OAEP_SOURCE_TYPE, which is 0x00000001
+        if (!PKCSObjectIdentifiers.id_pSpecified.equals(oaepP.getPSourceAlgorithm().getAlgorithm())) {
+            throw new InvalidKeyException("Unsupported pSource parameters: " + oaepP.getPSourceAlgorithm().getAlgorithm().getId());            
+        }
+        
+        // OAEP default is MGF SHA-1, defined in org.pkcs11.jacknji11.CKM
+        // DEFAULT_PARAMS.put(RSA_PKCS_OAEP, ULong.ulong2b(new long[] {SHA_1, CKG.MGF1_SHA1, CKG.MGF1_SHA1, 0, 0}));
+        // CKG.MGF1_SHA1 is 0x00000001 which happens to be same as CKZ_DATA_SPECIFIED (PKCS#11 section 2.1.7) so we use that constant
+        // We only support pSourceData 0
+        final long CKZ_DATA_SPECIFIED = CKG.MGF1_SHA1;
+        return ULong.ulong2b(new long[] {digestMechanism, maskGenMechanism, CKZ_DATA_SPECIFIED, 0, 0});
+    }
 
 }

@@ -481,9 +481,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 keyEncAlg = recipient.getKeyEncryptionAlgorithm().getAlgorithm();
             }
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(privateKey);
-            // Add an extra mapping to avoid; java.security.NoSuchAlgorithmException: No such algorithm: 1.2.840.113549.1.1.7
-            // Don't know if it's just for some providers (P11/AWSKMS) as it works without it on pure BC, at least in 1.73 and on)
-            rec.setAlgorithmMapping(PKCSObjectIdentifiers.id_RSAES_OAEP, "RSA");
             rec.setProvider(jceProvider); // Use the crypto token provides for asymmetric key operations
             rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME); // Use BC for the symmetric key operations
             // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 

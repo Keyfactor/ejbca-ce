@@ -435,6 +435,15 @@ public final class StringTools {
                 ip.append(t);
             }
             ret = ip.toString();
+        } else if (octets.length == 16) {
+            // IPv6 address is always 16 bytes
+            try {
+                ret = InetAddress.getByAddress(octets).getHostAddress();
+            } catch (UnknownHostException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid IP address parsing octets: " + Hex.toHexString(octets));
+                }
+            }
         }
         return ret;
     }
