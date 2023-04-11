@@ -221,7 +221,8 @@ public class RaEndEntityBean implements Serializable {
                 email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
                 if (email == null || email.length == 1)
                     email = new String[] {"", ""};
-                sendNotification = endEntityInformation.getSendNotification();
+                EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+                sendNotification = endEntityInformation.getSendNotification() || eep.isSendNotificationRequired();
                 psd2NcaName = raEndEntityDetails.getPsd2NcaName();
                 psd2NcaId = raEndEntityDetails.getPsd2NcaId();
                 selectedPsd2PspRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
