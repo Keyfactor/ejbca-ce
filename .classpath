@@ -184,7 +184,7 @@
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jaxb-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections4-4.4.jar"/>
-	<classpathentry kind="lib" path="lib/snakeyaml-1.27.jar"/>
+	<classpathentry kind="lib" path="lib/snakeyaml-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-1.6.4.jar"/>
