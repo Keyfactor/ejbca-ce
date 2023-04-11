@@ -222,7 +222,7 @@ public class RaEndEntityBean implements Serializable {
                 if (email == null || email.length == 1)
                     email = new String[] {"", ""};
                 EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
-                sendNotification = eep.isSendNotificationDefault() || eep.isSendNotificationRequired();
+                sendNotification = endEntityInformation.getSendNotification() || eep.isSendNotificationRequired();
                 psd2NcaName = raEndEntityDetails.getPsd2NcaName();
                 psd2NcaId = raEndEntityDetails.getPsd2NcaId();
                 selectedPsd2PspRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
