@@ -526,6 +526,10 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	private String getHttpParameter(String key) {
 		return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
 	}
+
+	public String timeStampFormatted(Long timeStamp) {
+		return ValidityDate.formatAsISO8601ServerTZ(timeStamp, ValidityDate.TIMEZONE_SERVER);
+	}
 	
 	public void reorderAscByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, ORDER_ASC); }
 	public void reorderDescByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, ORDER_DESC); }
