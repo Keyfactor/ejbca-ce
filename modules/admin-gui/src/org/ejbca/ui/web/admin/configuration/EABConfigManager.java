@@ -12,28 +12,30 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
-import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.EjbcaException;
-
-import com.keyfactor.util.StringTools;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import javax.servlet.http.Part;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * This class is used to manage EAB configs in EJBCA's system configuration.
@@ -42,17 +44,17 @@ public class EABConfigManager {
     private static final Logger log = Logger.getLogger(EABConfigManager.class);
 
     private final SystemConfigurationHelper systemConfigurationHelper;
-    private UploadedFile eabCSVFile = null;
+    private Part eabCSVFile = null;
 
     public EABConfigManager(SystemConfigurationHelper systemConfigurationHelper) {
         this.systemConfigurationHelper = systemConfigurationHelper;
     }
 
-    public UploadedFile getEabCSVFile() {
+    public Part getEabCSVFile() {
         return eabCSVFile;
     }
 
-    public void setEabCSVFile(UploadedFile eabCSVFile) {
+    public void setEabCSVFile(Part eabCSVFile) {
         this.eabCSVFile = eabCSVFile;
     }
 
@@ -61,7 +63,8 @@ public class EABConfigManager {
             systemConfigurationHelper.addErrorMessage("EABTAB_FILEUPLOAD_FAILED");
         } else {
             try {
-                final Map<String, Set<String>> eabConfigMap = parseCsvToMap(eabCSVFile.getBytes(), ",");
+                final byte[] eabBytes = IOUtils.toByteArray(eabCSVFile.getInputStream(), eabCSVFile.getSize());
+                final Map<String, Set<String>> eabConfigMap = parseCsvToMap(eabBytes, ",");
                 systemConfigurationHelper.saveEabConfig(eabConfigMap, generateEabConfigFileHash(eabCSVFile));
                 systemConfigurationHelper.addInfoMessage("EABTAB_UPLOADED");
             } catch (EjbcaException | IOException | NoSuchAlgorithmException e) {
@@ -169,11 +172,11 @@ public class EABConfigManager {
         return namespaces;
     }
 
-    public String generateEabConfigFileHash(UploadedFile eabCSVFile) throws NoSuchAlgorithmException, IOException {
+    public String generateEabConfigFileHash(final Part eabCSVFile) throws NoSuchAlgorithmException, IOException {
         if (eabCSVFile == null) {
             return null;
         }
-        byte[] uploadedFileBytes = eabCSVFile.getBytes();
+        byte[] uploadedFileBytes =  IOUtils.toByteArray(eabCSVFile.getInputStream(), eabCSVFile.getSize());
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hash = digest.digest(uploadedFileBytes);
         return new String(Hex.encode(hash));
