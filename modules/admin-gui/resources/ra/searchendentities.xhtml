@@ -46,29 +46,60 @@
 		
 
 	<h:form id="basic" rendered="#{searchEndEntitiesMBean.selectedTab eq 'Basic'}">
-		<h:panelGrid columns="3" columnClasses="unpadded,unpadded,unpadded">
-			<h:panelGroup>
-				<h:outputText value="#{web.text.FINDENDENTITYWITHUSERNAME}"/>			
-			</h:panelGroup>
-			<h:panelGroup>
-				<h:inputText id="findWithUserNameText"
-								value="#{searchEndEntitiesMBean.searchByName}"/>
-			</h:panelGroup>
-			<h:panelGroup>
+			<h:panelGrid columns="3" columnClasses="unpadded,unpadded,unpadded">
+				<!--  Search by username -->
+				<h:outputText value="#{web.text.FINDENDENTITYWITHUSERNAME}" />
+				<h:inputText
+					value="#{searchEndEntitiesMBean.searchByName}" immediate="true" />
 				<h:commandButton id="findWithUserNameButton"
-									value="#{web.text.SEARCH}"
-									action="#{searchEndEntitiesMBean.performSearch()}">
+					value="#{web.text.SEARCH}"
+					action="#{searchEndEntitiesMBean.performSearchByName()}">
+					<f:ajax execute="@form" event="click" render=":results" />
+				</h:commandButton>
+				<!-- Search by SN -->
+				<h:outputText value="#{web.text.ORIFCERTIFICATSERIAL}" />
+				<h:inputText
+					value="#{searchEndEntitiesMBean.searchBySn}" immediate="true" />
+				<h:commandButton id="findWithUserNameButton"
+					value="#{web.text.SEARCH}"
+					action="#{searchEndEntitiesMBean.performSearchBySerialNumber()}">
+					<f:ajax execute="@form" event="click" render=":results" />
+				</h:commandButton>
+				
 
-								</h:commandButton>
-			</h:panelGroup>
-		</h:panelGrid>
-		
-	
-	</h:form>
+			</h:panelGrid>
+		</h:form>
 	
 	<h:form id="advanced" rendered="#{earchEndEntitiesMBean.selectedTab eq 'Advanced'}">
 	
 	</h:form>
+	
+	<h:dataTable id="results" rendered="#{searchEndEntitiesMBean.searchResults.rowCount!=0}" value="#{searchEndEntitiesMBean.searchResults}" var="searchResult" columnClasses="col1,col2,col3,unpadded">
+			<h:column>
+				<f:facet name="header"><h:outputText value="#{web.text.USERNAME_ABBR}"/></f:facet>
+				<h:panelGrid columns="1" columnClasses="unpadded" styleClass="fullwidth">
+					<h:outputText value="#{searchResult.username}" />
+				</h:panelGrid>
+			</h:column>
+			<h:column>
+				<f:facet name="header"><h:outputText value="#{web.text.CA}"/></f:facet>
+				<h:panelGrid columns="1" columnClasses="unpadded" styleClass="fullwidth">
+					<h:outputText value="#{searchResult.caName}" />
+				</h:panelGrid>
+			</h:column>
+			<h:column>
+				<f:facet name="header"><h:outputText value="#{web.text.DN_ABBR_COMMONNAME}"/></f:facet>
+				<h:panelGrid columns="1" columnClasses="unpadded" styleClass="fullwidth">
+					<h:outputText value="#{searchResult.commonName}" />
+				</h:panelGrid>
+			</h:column>
+			<h:column>
+				<f:facet name="header"><h:outputText value="#{web.text.STATUS}"/></f:facet>
+				<h:panelGrid columns="1" columnClasses="unpadded" styleClass="fullwidth">
+					<h:outputText value="#{searchResult.status}" />
+				</h:panelGrid>
+			</h:column>
+		</h:dataTable>
 
 
 	</ui:define>

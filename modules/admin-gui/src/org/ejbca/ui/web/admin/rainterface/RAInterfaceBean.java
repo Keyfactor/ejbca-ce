@@ -294,7 +294,11 @@ public class RAInterfaceBean implements Serializable {
         log.trace("<changeUserData()");
     }
 
-    /** Method to filter out a user by it's username */
+    /** Method to filter out a user by it's username 
+     * 
+     * @deprecated Remove once conversion to jsf is done
+     */
+    @Deprecated
     public UserView[] filterByUsername(String username) {
         log.trace(">filterByUserName()");
         EndEntityInformation[] userarray = new EndEntityInformation[1];
@@ -356,7 +360,11 @@ public class RAInterfaceBean implements Serializable {
        return usersView.getUsers(index,size);
     }
 
-    /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. */
+    /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. 
+     * 
+     * @deprecated Remove once conversion to jsf is done
+     * */
+    @Deprecated
     public UserView[] filterByCertificateSerialNumber(final String serialnumber, final int index, final int size) {
         final BigInteger serno = new BigInteger(StringTools.stripWhitespace(serialnumber), 16);
         final List<CertificateDataWrapper> cdws = certificatesession.getCertificateDataBySerno(serno);
