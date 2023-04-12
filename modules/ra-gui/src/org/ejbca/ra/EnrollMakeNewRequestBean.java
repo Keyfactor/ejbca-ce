@@ -141,6 +141,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
+    private static final String ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD = "enroll_invalid_certificate_request_not_parsable_subject_dn_field";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
     
     private static final String ENROLL_INVALID_SSH_PUB_KEY = "enroll_invalid_ssh_pub_key";
@@ -1010,6 +1011,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     }
                 }
             }
+            if (RequestFieldType.DN.equals(type) && getCertificateProfile().getAllowDNOverride()) {
+                raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField);
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
+            }
             if (log.isDebugEnabled()) {
                 log.debug("Unparsable subject " + type + " field '" + subjectField +
                         "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
@@ -1351,7 +1356,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     ret = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
                 } else if (tokenDownloadType == TokenDownloadType.PEM) {
                     final Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, Certificate.class);
-                    ret = CertTools.getPemFromCertificateChain(Arrays.asList(certificate));
+                    ret = CertTools.getPemFromCertificateChain(List.of(certificate));
                 } else {
                     ret = certificateDataToDownload;
                 }
@@ -2221,7 +2226,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                                 continue;
                             }
                             final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                            if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                            if (availableBitLengths.contains(bitLength)) {
                                 ecChoices.add(ecNamedCurve);
                             }
                         }
@@ -2244,7 +2249,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                             final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                             final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                            if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                            if (availableBitLengths.contains(bitLength)) {
                                 availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
                                         CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
                             } else {
@@ -2269,7 +2274,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Sort the provided list by label with the exception of any item with null value that ends up first.
      */
     protected static void sortSelectItemsByLabel(final List<SelectItem> items) {
-        Collections.sort(items, new Comparator<SelectItem>() {
+        items.sort(new Comparator<SelectItem>() {
             @Override
             public int compare(final SelectItem item1, final SelectItem item2) {
                 if (item1.getValue() == null || (item1.getValue() instanceof String && ((String) item1.getValue()).isEmpty())) {
