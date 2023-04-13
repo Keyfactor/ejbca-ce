@@ -33,10 +33,11 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.inject.Named;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -99,6 +100,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private boolean addFromTemplateInProgress = false;
     private String certProfileName = "";
     private ListDataModel<CertificateProfileItem> certificateProfileItems = null;
+    private Part uploadFile;
 
     public CertProfilesBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());
@@ -449,13 +451,13 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     //----------------------------------------------
     //                Import profiles
     //----------------------------------------------
-    private UploadedFile uploadFile;
 
-    public UploadedFile getUploadFile() {
+
+    public Part getUploadFile() {
         return uploadFile;
     }
 
-    public void setUploadFile(UploadedFile uploadFile) {
+    public void setUploadFile(Part uploadFile) {
         this.uploadFile = uploadFile;
     }
 
@@ -466,7 +468,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             return;
         }
         try {
-            importProfilesFromZip(getUploadFile().getBytes());
+            final byte[] fileBytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
+            importProfilesFromZip(fileBytes);
             certificateProfileItems = null;
         } catch (IOException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
