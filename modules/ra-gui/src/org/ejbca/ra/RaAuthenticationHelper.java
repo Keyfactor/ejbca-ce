@@ -28,11 +28,12 @@ import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Web session authentication helper.
@@ -131,12 +132,19 @@ public class RaAuthenticationHelper implements Serializable {
             }
             if (authenticationToken == null) {
                 // Instead of checking httpServletRequest.isSecure() (connection deemed secure by container), we check if a TLS session is present
-                final boolean confidentialTransport = currentTlsSessionId != null;
-                authenticationToken = webAuthenticationProviderSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), confidentialTransport);
+                Object cipherSuite = httpServletRequest.getAttribute("javax.servlet.request.cipher_suite");
+                final boolean confidentialTransport = cipherSuite != null;
+                authenticationToken = webAuthenticationProviderSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), confidentialTransport );
             }
         }
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;
+    }
+    
+    /** @return any X509Certificate the client has provided with the request*/
+    public X509Certificate getX509CertificateFromRequest(final HttpServletRequest httpServletRequest) {
+        X509Certificate x509Certificate = getClientX509Certificate(httpServletRequest);
+        return x509Certificate;
     }
 
     /** Checks if an authentication token is accepted by the CA. */
@@ -149,7 +157,7 @@ public class RaAuthenticationHelper implements Serializable {
             return authorizedCas != null && !authorizedCas.isEmpty();
         }
     }
-
+    
     /**
      * Gets bearer token from Authorization header or from session
      * @param httpServletRequest

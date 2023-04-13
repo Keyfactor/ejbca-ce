@@ -36,10 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -68,6 +65,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -91,6 +93,9 @@ import static org.junit.Assert.assertNotNull;
  */
 public class OCSPStressCommandTest {
     Ocsp command = new Ocsp();
+
+    @Rule
+    public Timeout testTimeout = new Timeout(90_000); // per test case
 
     private static final String END_ENTITY_PROFILE_NAME = "OCSPStressCommandTestEEP";
     private static final String CA_NAME = "OCSPStressCommandTestCA";

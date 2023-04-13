@@ -27,7 +27,6 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -41,6 +40,8 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import com.keyfactor.util.FileTools;
 
 /**
  * Test class for working with the various find methods in EJBCA WS
@@ -120,7 +121,7 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         final String endEntityProfileName = "testFindExistingUserEEP";
         final String certificateProfileName = "testFindExistingUserCP";
         int certificateProfileId = createCertificateProfile(certificateProfileName);
-        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        createEndEntityProfile(endEntityProfileName, certificateProfileId);
         final String username1 = "testFindUser1";
         final String caname = "FindUserTestCa";
         createTestCA(caname);
@@ -150,7 +151,7 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         final String endEntityProfileName = prefix + "EEP";
         final String certificateProfileName = prefix + "CP";
         int certificateProfileId = createCertificateProfile(certificateProfileName);
-        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        createEndEntityProfile(endEntityProfileName, certificateProfileId);
         final String username = prefix + "User1";
         final String caname = prefix + "TestCa";
         createTestCA(caname);
@@ -181,7 +182,7 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         final String endEntityProfileName = prefix + "EEP";
         final String certificateProfileName = prefix + "CP";
         int certificateProfileId = createCertificateProfile(certificateProfileName);
-        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        createEndEntityProfile(endEntityProfileName, certificateProfileId);
         final String username = prefix + "User1";
         final String caname = prefix + "TestCa";
         createTestCA(caname);
@@ -212,7 +213,7 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         final String endEntityProfileName = prefix + "EEP";
         final String certificateProfileName = prefix + "CP";
         int certificateProfileId = createCertificateProfile(certificateProfileName);
-        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        createEndEntityProfile(endEntityProfileName, certificateProfileId);
         final String username = prefix + "User1";
         final String caname = prefix + "TestCa";
         createTestCA(caname);
@@ -243,7 +244,7 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         final String endEntityProfileName = prefix + "EEP";
         final String certificateProfileName = prefix + "CP";
         int certificateProfileId = createCertificateProfile(certificateProfileName);
-        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        createEndEntityProfile(endEntityProfileName, certificateProfileId);
         final String username = prefix + "User1";
         final String caname = prefix + "TestCa";
         createTestCA(caname);
@@ -273,7 +274,7 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         final String endEntityProfileName = prefix + "EEP";
         final String certificateProfileName = prefix + "CP";
         int certificateProfileId = createCertificateProfile(certificateProfileName);
-        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        createEndEntityProfile(endEntityProfileName, certificateProfileId);
         final String username = prefix + "User1";
         final String caname = prefix + "TestCa";
         createTestCA(caname);
@@ -303,7 +304,7 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         final String endEntityProfileName = prefix + "EEP";
         final String certificateProfileName = prefix + "CP";
         int certificateProfileId = createCertificateProfile(certificateProfileName);
-        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        createEndEntityProfile(endEntityProfileName, certificateProfileId);
         final String username = prefix + "User1";
         final String caname = prefix + "TestCa";
         createTestCA(caname);
@@ -333,7 +334,7 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         final String endEntityProfileName = prefix + "EEP";
         final String certificateProfileName = prefix + "CP";
         int certificateProfileId = createCertificateProfile(certificateProfileName);
-        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        createEndEntityProfile(endEntityProfileName, certificateProfileId);
         final String username = prefix + "User1";
         final String caname = prefix + "TestCa";
         createTestCA(caname);

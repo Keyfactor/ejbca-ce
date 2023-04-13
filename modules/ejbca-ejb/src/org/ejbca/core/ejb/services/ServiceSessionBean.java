@@ -80,6 +80,7 @@ import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -944,12 +945,12 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         try {
             String clazz = serviceConfiguration.getWorkerClassPath();
             if (StringUtils.isNotEmpty(clazz)) {
-                worker = (IWorker) Thread.currentThread().getContextClassLoader().loadClass(clazz).newInstance();
+                worker = (IWorker) Thread.currentThread().getContextClassLoader().loadClass(clazz).getDeclaredConstructor().newInstance();
                 worker.init(intAdmin, serviceConfiguration, serviceName, runTimeStamp, nextRunTimeStamp);
             } else {
                 log.info("Worker has empty classpath for service " + serviceName);
             }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             // Only display a real error if it is a worker that we are actually
             // using
             if (serviceConfiguration.isActive()) {

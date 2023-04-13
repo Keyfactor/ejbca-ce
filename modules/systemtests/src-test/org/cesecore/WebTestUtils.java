@@ -12,13 +12,25 @@
  *************************************************************************/
 package org.cesecore;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -41,16 +53,23 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -58,6 +77,8 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -65,14 +86,13 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Utility methods to send HTTP requests
- * 
- * @version $Id$
  */
 public final class WebTestUtils {
 
@@ -238,11 +258,333 @@ public final class WebTestUtils {
         }
     }
 
-    /** Returns the certificate of the 'target.servercert.ca' CA, that is, the CA that issued the TLS server certificate */
+    /**
+     * Returns the certificate of the 'target.servercert.ca' CA, that is, the CA that issued the TLS server certificate
+     * 
+     * @return the X.509 certificate.
+     */
     public static X509Certificate getServerCertificate() {
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("WebTestUtils");
         final CAInfo serverCaInfo = CaTestUtils.getServerCertCaInfo(admin);
         final List<Certificate> chain = serverCaInfo.getCertificateChain();
         return (X509Certificate) chain.get(0);
     }
+    
+    /**
+     * Loads the keystore with the given path, or creates a new keystore and stores it under the given path.
+     * 
+     * @param path the absolute file path of the keystore.
+     * @param pwd the keystore password.
+     * @return the keystore.
+     * 
+     * @throws KeyStoreException any.
+     * @throws IOException any.
+     * @throws CertificateException any.
+     * @throws NoSuchAlgorithmException any.
+     */
+    public static KeyStore initJksKeyStore(final String path, final String pwd) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        final File file = new File(path);
+        final KeyStore keyStore = KeyStore.getInstance("JKS");
+        if (file.exists()) {
+            keyStore.load(new FileInputStream(file), pwd.toCharArray());
+        } else {
+            keyStore.load(null, null);
+            keyStore.store(new FileOutputStream(file), pwd.toCharArray());
+        }
+        return keyStore;
+    }
+    
+    /**
+     * Inserts the CA certificate and the key pair and user certificate (if present) into the keystore with the given alias.
+     * 
+     * @param path the absolute file path of the keystore.
+     * @param pwd the keystore password.
+     * @param keystore the keystore.
+     * @param alias the alias name for the objects to be inserted.
+     * @param issuerCertificateBytes the CA certificate to be inserted.
+     * @param keyPair the key pair to be inserted.
+     * @param certificateBytes the certificate to be inserted.
+     * 
+     * @throws IOException any.
+     * @throws CertificateException any.
+     * @throws KeyStoreException any.
+     * @throws NoSuchAlgorithmException any.
+     */
+    public static void importDataIntoJksKeystore(final String path, final String pwd, final KeyStore keystore, final String alias,
+        final byte[] issuerCertificateBytes, final KeyPair keyPair, final byte[] certificateBytes
+    ) throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
+        // Add the certificate.  
+        keystore.setCertificateEntry(alias, CertTools.getCertfromByteArray(issuerCertificateBytes, X509Certificate.class));
+        // Add the key if it exists.
+        if(keyPair != null) {
+            final Certificate[] chain = { CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class) };
+            keystore.setKeyEntry(alias, keyPair.getPrivate(), pwd.toCharArray(), chain);
+        }
+        // Save the new keystore contents.
+        final FileOutputStream fileOutputStream = new FileOutputStream(path);
+        keystore.store(fileOutputStream, pwd.toCharArray());
+        fileOutputStream.close();
+    }
+    
+    /**
+     * Returns a new trust manager factory with the keystore stored under the given path. If the keystore 
+     * does not exists, a new keystore is generated and stored. The first CA certificate in the issuers 
+     * CA chain found (for test usually self-signed ManagementCA) is added to the keystore.
+     * 
+     * TODO: Fix for CA chains > 1.
+     * 
+     * @param path the absolute file path of the keystore.
+     * @param pwd the keystore password.
+     * @param caInfo the CA info object of the CA certificate to be inserted (for test usually self-signed ManagementCA).
+     * @return the trust manager factory.
+     * 
+     * @throws KeyStoreException any.
+     * @throws CertificateException any.
+     * @throws NoSuchAlgorithmException any.
+     * @throws IOException any.
+     */
+    public static TrustManagerFactory createTrustManagerFactory(final String path, final String pwd, final CAInfo caInfo) 
+            throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+        final KeyStore keystore = initJksKeyStore(path, pwd);
+        importDataIntoJksKeystore(path, pwd, keystore, caInfo.getName().toLowerCase(), caInfo.getCertificateChain().get(0).getEncoded(), null, null);
+        final TrustManagerFactory result = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        result.init(keystore);
+        return result;
+    }
+    
+    /**
+     * Returns a new key manager factory with the keystore stored under the given path. If the keystore does not exists, a new keystore is generated and stored. 
+     * 
+     * @param path the absolute file path of the keystore.
+     * @param pwd the keystore password.
+     * @return the key manager factory.
+     * 
+     * @throws KeyStoreException any.
+     * @throws CertificateException any.
+     * @throws NoSuchAlgorithmException any.
+     * @throws IOException any.
+     * @throws UnrecoverableKeyException any.
+     */
+    public static KeyManagerFactory createKeyManagerFactory(final String path, final String pwd) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException {
+        final KeyStore keyStore = WebTestUtils.initJksKeyStore(path, pwd);
+        final KeyManagerFactory result = KeyManagerFactory.getInstance("SunX509");
+        result.init(keyStore, pwd.toCharArray());
+        return result;
+    }
+    
+    /**
+     * Returns a new SSL context object for TLSv1.2 using the given trust manager and key manager factories.
+     *  
+     * @param trustManagerFactory the trust manager factory.
+     * @param keyManagerFactory the key manager factory.
+     * @return the SSL context object.
+     * 
+     * @throws NoSuchAlgorithmException any.
+     * @throws KeyManagementException any.
+     */
+    public static SSLContext createSslContext(final TrustManagerFactory trustManagerFactory, final KeyManagerFactory keyManagerFactory) throws NoSuchAlgorithmException, KeyManagementException {
+        final SSLContext result = SSLContext.getInstance("TLSv1.2");
+        result.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+        return result;
+    }
+    
+    /**
+     * Returns a new end entity information for type {@link EndEntityTypes#ENDUSER} with token type {@link EndEntityConstants#TOKEN_SOFT_P12}.
+     * 
+     * @param caId the ID of the issuing CA.
+     * @param username the name of the end entity
+     * @param subjectDN the subjectDN of the end entity.
+     * @param pwd the password.
+     * 
+     * @return the end entity information object.
+     */
+    public static EndEntityInformation createEndEntityInformation(final int caId, final String username, final String subjectDN, final String pwd) {
+        final EndEntityInformation endEntityInformation = new EndEntityInformation(
+                username,
+                subjectDN,
+                caId,
+                null,
+                null,
+                new EndEntityType(EndEntityTypes.ENDUSER),
+                1,
+                1,
+                EndEntityConstants.TOKEN_SOFT_P12,
+                null);
+        endEntityInformation.setPassword(pwd);
+        return endEntityInformation;
+    }
+    
+    /**
+     * Binds an end entity certificate to a role by it's subjectDN CN attribute.
+     * 
+     * @param roleMemberSession the role member session bean.
+     * @param token the administrator token.
+     * @param username the username of the end entity.
+     * @param description the description text of the role binding.
+     * @param caId the ID of the CA which has issued the end entity certificate.
+     * @param roleId the ID of the role.
+     * 
+     * @return the role member object.
+     * @throws AuthorizationDeniedException if the administrator has insufficient access rules.
+     */
+    public static RoleMember createRoleMember(final RoleMemberSessionRemote roleMemberSession, final AuthenticationToken token, final String username, final String description, final int caId, final int roleId) throws AuthorizationDeniedException {
+        return roleMemberSession.persist( token,
+            new RoleMember(
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                caId,
+                RoleMember.NO_PROVIDER,
+                X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                username,
+                roleId,
+                description
+            )
+        );
+    }
+    
+    /**
+     * Issues and stores a client certificate in JSK format.
+     * 
+     * @param admin the administrator token.
+     * @param path the absolute file path of the keystore.
+     * @param username the name of the end entity.
+     * @param subjectDn the subjectDN.
+     * @param pwd the keystore password (= end entity enrollment code).
+     * @param caId the ID of the issuing CA.
+     * @param caChain the CA chain of the issuing CA.
+     * @return the X.509 certificate of the newly generated keystore.
+     * 
+     * @throws Exception any.
+     */
+    public static X509Certificate issueAndStoreClientCert(final AuthenticationToken admin, final String path, final String username, final String subjectDn, final String pwd, final int caId, final List<Certificate> caChain) throws Exception {
+        final EndEntityManagementSessionRemote eeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+        final KeyStore keyStore = initJksKeyStore(path, pwd);
+        final EndEntityInformation user = createEndEntityInformation(caId, username, subjectDn, pwd);
+        final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        eeSession.addUser(admin, user, false);
+        final SimpleRequestMessage request = new SimpleRequestMessage(keyPair.getPublic(), user.getUsername(), user.getPassword());
+        final X509ResponseMessage response = (X509ResponseMessage) signSession.createCertificate(admin, request, X509ResponseMessage.class, user);
+        final X509Certificate result = (X509Certificate) response.getCertificate();
+        importDataIntoJksKeystore(path, pwd, keyStore, username.toLowerCase(), caChain.get(0).getEncoded(), keyPair, result.getEncoded());
+        return result;
+    }
+    
+    /**
+     * Encapsulates the HTTP(s) client configuration.
+     */
+    public static class HttpClientConfig {
+        
+        AuthenticationToken admin;
+        String username;
+        String subjectDn;
+        String trustStorePath;
+        String keyStorePath;
+        String trustStorePwd;
+        String keyStorePwd;
+        TrustManagerFactory trustManagerFactory;
+        KeyManagerFactory keyManagerFactory;
+        SSLContext sslContext;
+        CAInfo serverCaInfo;
+        CAInfo clientCaInfo;
+        X509Certificate clientCertificate;
+        CloseableHttpClient httpClient;
+        RoleMember roleMember;
+        
+        public HttpClientConfig(final AuthenticationToken admin) {
+            this.admin = admin;
+        } 
+                
+        public HttpClientConfig build() throws Exception {
+            trustManagerFactory = createTrustManagerFactory(trustStorePath, trustStorePwd, serverCaInfo);            
+            clientCertificate = issueAndStoreClientCert(admin, keyStorePath, username, subjectDn, keyStorePwd, clientCaInfo.getCAId(), serverCaInfo.getCertificateChain());
+            keyManagerFactory = createKeyManagerFactory(keyStorePath, keyStorePwd);
+            sslContext = WebTestUtils.createSslContext(trustManagerFactory, keyManagerFactory);
+            return this;
+        }
+        
+        public HttpClientConfig withUsername(final String name) {
+            this.username = name;
+            return this;
+        }
+        
+        public HttpClientConfig withSubjectDn(final String dn) {
+            this.subjectDn = dn;
+            return this;
+        }
+        
+        public HttpClientConfig withTruststorePath(final String path) {
+            this.trustStorePath = path;
+            return this;
+        }
+        
+        public HttpClientConfig withTruststorePwd(final String pwd) {
+            this.trustStorePwd = pwd;
+            return this;
+        }
+        
+        public HttpClientConfig withServerCa(final CAInfo caInfo) {
+            this.serverCaInfo = caInfo;
+            return this;
+        }
+        
+        public HttpClientConfig withKeystorePath(final String path) {
+            this.keyStorePath = path;
+            return this;
+        }
+        
+        public HttpClientConfig withKeystorePwd(final String pwd) {
+            this.keyStorePwd = pwd;
+            return this;
+        }
+        
+        public HttpClientConfig withClientCa(final CAInfo caInfo) {
+            this.clientCaInfo = caInfo;
+            return this;
+        }
+        
+        public String getUsername() {
+            return username;
+        }
+        public String getSubjectDn() {
+            return subjectDn;
+        }
+        public String getTrustStorePath() {
+            return trustStorePath;
+        }
+        public String getKeyStorePath() {
+            return keyStorePath;
+        }
+        public String getTrustStorePwd() {
+            return trustStorePwd;
+        }
+        public String getKeyStorePwd() {
+            return keyStorePwd;
+        }
+        public TrustManagerFactory getTrustManagerFactory() {
+            return trustManagerFactory;
+        }
+        public KeyManagerFactory getKeyManagerFactory() {
+            return keyManagerFactory;
+        }
+        public SSLContext getSslContext() {
+            return sslContext;
+        }
+        public X509Certificate getClientCertificate() {
+            return clientCertificate;
+        }
+        public CloseableHttpClient getHttpClient() {
+            return httpClient;
+        }
+        public RoleMember getRoleMember() {
+            return roleMember;
+        }
+        public void setRoleMember(final RoleMember roleMember) {
+            this.roleMember = roleMember;
+        }
+        public void setHttpClient(final CloseableHttpClient client) {
+            this.httpClient = client;
+        }
+    }
 }
+

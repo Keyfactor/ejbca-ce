@@ -22,9 +22,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.model.ListDataModel;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -33,7 +33,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.approval.ApprovalProfileDoesNotExistException;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -42,12 +41,14 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+import com.keyfactor.util.StringTools;
+
 /**
  * JSF MBean backing the approval profiles page.
  *
  */
 @SessionScoped
-@ManagedBean(name="approvalProfilesMBean")
+@Named("approvalProfilesMBean")
 public class ApprovalProfilesMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -2452049885728885525L;

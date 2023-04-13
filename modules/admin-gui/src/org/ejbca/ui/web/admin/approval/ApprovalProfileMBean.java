@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -38,7 +38,6 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -62,7 +61,7 @@ import org.ejbca.util.mail.MailSender;
  *
  */
 @ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
-@ManagedBean(name="approvalProfileMBean")
+@Named("approvalProfileMBean")
 public class ApprovalProfileMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -3751383340600251434L;
@@ -122,7 +121,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
 
-    @ManagedProperty(value = "#{approvalProfilesMBean}")
+    @Inject
     private ApprovalProfilesMBean approvalProfilesMBean;
     
     public ApprovalProfileMBean() {
@@ -518,17 +517,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                     for (final Role role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            try {
-                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-                                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                            } catch (AuthorizationDeniedException e) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
-                                }
-                            }
+                            roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
+                                    new ArrayList<>()));
                         }
                     }
-                    if(!roleRepresentations.contains(propertyClone.getDefaultValue())) {
+                    if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
                         //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else.
                         roleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
                     }
@@ -542,17 +535,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_VIEWAPPROVALS)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            try {
-                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-                                viewingRoleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                            } catch (AuthorizationDeniedException e) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
-                                }
-                            }
+                            viewingRoleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
+                                    new ArrayList<>()));
                         }
                     }
-                    if(!viewingRoleRepresentations.contains(propertyClone.getDefaultValue())) {
+                    if (!viewingRoleRepresentations.contains(propertyClone.getDefaultValue())) {
                         viewingRoleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
                     }
                     propertyClone.setPossibleValues(viewingRoleRepresentations);

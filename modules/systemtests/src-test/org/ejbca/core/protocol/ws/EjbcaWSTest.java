@@ -12,6 +12,52 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimeZone;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -28,7 +74,6 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CaTestUtils;
-import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -50,8 +95,8 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.cvc.CvCertificateUtility;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -64,20 +109,14 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorProxySessionRemote;
@@ -90,12 +129,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
@@ -133,6 +167,7 @@ import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
+import org.ejbca.core.protocol.ws.client.gen.CesecoreException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -149,6 +184,7 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
+import org.ejbca.cvc.CVCProvider;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -159,50 +195,20 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyManagementException;
-import java.security.KeyPair;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimeZone;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
@@ -279,9 +285,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     private final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
             EjbRemoteHelper.MODULE_TEST); 
     
-    private static String originalForbiddenChars;
+    private static char[] originalForbiddenChars;
     private final static SecureRandom secureRandom;
-    private final static String forbiddenCharsKey = "forbidden.characters";
+
     static {
         try {
             secureRandom = SecureRandom.getInstance("SHA1PRNG");
@@ -300,7 +306,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         fileHandles = setupAccessRights(WS_ADMIN_ROLENAME);
         CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        originalForbiddenChars = cesecoreConfigurationProxySession.getConfigurationValue(forbiddenCharsKey);
+        originalForbiddenChars = cesecoreConfigurationProxySession.getForbiddenCharacters();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new CvCertificateUtility());
+        Security.addProvider(new CVCProvider());   
     }
 
     @Before
@@ -315,7 +323,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         cleanUpAdmins(WS_TEST_ROLENAME);
         CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, originalForbiddenChars);
+        cesecoreConfigurationProxySession.setForbiddenCharacters(originalForbiddenChars);
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         for (File file : fileHandles) {
@@ -435,8 +443,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void test01EditUser() throws Exception {
         super.editUser();
     }
-
-
 
     @Test
     public void test03_1GeneratePkcs10() throws Exception {
@@ -559,6 +565,88 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 endEntityManagementSession.deleteUser(admin, "EVTLSEJBCAWSTEST");
             }
             internalCertificateStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
+        }
+    }
+    
+    /**
+     * Test running a certificate request (including creating an end entity) using the UnidFnr plugin
+     */
+    @Test
+    public void testEditUserWithUnidFnr() throws InvalidAlgorithmParameterException, OperatorCreationException,
+            CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileExistsException, CryptoTokenOfflineException,
+            InvalidAlgorithmException, CAExistsException, ApprovalException_Exception, AuthorizationDeniedException_Exception,
+            EjbcaException_Exception, NotFoundException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
+            WaitingForApprovalException_Exception, IOException, CertificateException, CouldNotRemoveEndEntityException, CADoesntExistsException_Exception, CesecoreException_Exception {
+        final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        final String username = "testEditUserWithUnidFnr";
+        final String password = "foo123";
+        final String fnr = "90123456789";
+        final String lra = "01234";
+        final String serialNumber = fnr + '-' + lra;
+        final String subjectDn = "C=SE, serialnumber=" + serialNumber + ", CN="+username;
+       
+        
+        final String profileNameUnidPrefix = "1234-5678-";
+        final String profileName = profileNameUnidPrefix + "testEditUserWithUnidFnr";
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        int certificateProfileId = certificateProfileSession.addCertificateProfile(intAdmin, profileName, certificateProfile);
+        
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);       
+        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfileSession.addEndEntityProfile(intAdmin, profileName, endEntityProfile);
+        
+        final String issuerDN = "CN=testEditUserWithUnidFnrCa";
+        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        X509CAInfo testX509CaInfo = (X509CAInfo) testX509Ca.getCAInfo();
+        testX509CaInfo.setRequestPreProcessor(UnidFnrHandlerMock.class.getCanonicalName());
+        testX509Ca.updateCA(null, testX509CaInfo, null);
+        caSession.addCA(intAdmin, testX509Ca);
+        final UserDataVOWS endEntity = new UserDataVOWS();
+        endEntity.setUsername(username);
+        endEntity.setPassword(password);
+        endEntity.setClearPwd(false);
+        endEntity.setSubjectDN(subjectDn);
+        endEntity.setCaName(testX509CaInfo.getName());
+        endEntity.setEmail(null);
+        endEntity.setSubjectAltName(null);
+        endEntity.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        endEntity.setEndEntityProfileName(profileName);
+        endEntity.setCertificateProfileName(profileName);
+        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());        
+       
+        try {
+            ejbcaraws.editUser(endEntity);
+            EndEntityInformation createdUser = endEntityAccessSession.findUser(intAdmin, username);
+            final String endEntityInformationUnid = IETFUtils.valueToString(
+                    CertTools.stringToBcX500Name(createdUser.getCertificateDN()).getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+            final String resultingFnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(endEntityInformationUnid);
+            assertNotNull("Unid value was not stored", resultingFnr);
+            assertEquals("FNR value was not correctly converted", fnr, resultingFnr);      
+            //Generate a certificate, see what happens. 
+            PKCS10CertificationRequest request = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name(subjectDn),
+                    keys.getPublic(), null, keys.getPrivate(), null);
+            //Yeah, what happens, Shoresy?
+            CertificateResponse response = ejbcaraws.pkcs10Request(username, password, new String(Base64.encode(request.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            //I hit you, you hit the floor, your mom spends the night. 
+            X509Certificate certificate = response.getCertificate();
+            final X500Name x500Name = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
+            final String unidFromCertificate = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+            assertEquals("serialNumber value in certificate was not the same as in end entity", endEntityInformationUnid, unidFromCertificate);
+           
+                
+        } finally {
+            CaTestUtils.removeCa(intAdmin, testX509CaInfo);
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, profileName);
+            certificateProfileSession.removeCertificateProfile(intAdmin, profileName);
+            try {
+                endEntityManagementSession.deleteUser(intAdmin, username);
+            } catch (NoSuchEndEntityException e) {
+                //NOPMD
+            } 
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
         }
     }
     
@@ -914,6 +1002,266 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         revokeCertBackdated();
     }
 
+    @Test(expected = AlreadyRevokedException_Exception.class)
+    public void test062RevokeCertChangeReasonToKeyCompromiseWithoutFlag() throws Exception {
+        // Revocation reason change should fail if not enabled on CA  level.
+
+        // Given that we have a certificate that is unrevoked, and a CA that doesn't have the "allow
+        // revocation reason change" flag enabled:
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        // First changed into SUPERSEDED
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+        assertNotNull(revokestatus);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        assertTrue(revokestatus.getCertificateSN().equals(serno));
+        assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+        assertNotNull(revokestatus.getRevocationDate());
+
+        // This should throw an exception because CA doesn't have the allow revocation reason change flag.
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+    }
+
+    @Test()
+    public void test063RevokeCertChangeReasonToKeyCompromise() throws Exception {
+        // revokeCert end point should be able to change revocation reason from allowed reasons to Key Compromise
+
+        // Given that we have a certificate that is unrevoked, and a CA has the "allow
+        // revocation reason change" flag enabled:
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+
+        try {
+            // Change the CA flag to TRUE
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            // First changed into SUPERSEDED
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+
+            // Revocation reason can be changed into KEYCOMPROMISE
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+
+            // Revocation reason cannot be changed back from KEYCOMPROMISE to SUPERSEDED
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+            fail("should throw");
+
+        } catch (AlreadyRevokedException_Exception e) {
+            final String message = "Certificate with issuer: CN=CA1 and serial number: " + serno + " has previously been revoked. Revocation reason could not be changed or was not allowed.";
+            assertEquals(message, e.getMessage());
+        } finally {
+            // Clean up
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+        }
+    }
+
+    @Test
+    public void test064RevokeCertBackdatedChangeReasonWithBackdating() throws Exception {
+        // revokeCertBackdated should be able to change reason with backdating from allowed reasons to Key Compromise.
+
+        // Given that we have a certificate that is unrevoked
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+
+        try {
+            // Set the CA to allow change of revocation reason 
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            // Set the Certificate Profile to allow backdated revocation
+            cp.setAllowBackdatedRevocation(true);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
+
+            final String originalRevocationDate = "2022-05-15";
+            final String backDatedRevocationDate = "2020-05-15";
+
+            // Revoke certificate with Revocation reason KeyCompromise and with a set revocation date
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, originalRevocationDate);
+           
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+            assertEquals(originalRevocationDate, revokestatus.getRevocationDate().toString().substring(0, 10));
+
+            // Change date for revocation to earlier date
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, backDatedRevocationDate);
+
+            revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+            assertEquals(backDatedRevocationDate, revokestatus.getRevocationDate().toString().substring(0, 10));
+
+        } finally {
+            // Cleanup
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+
+            cp.setAllowBackdatedRevocation(false);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
+        }
+    }
+
+    @Test
+    public void test065RevokeCertBackdateChangeReasonFutureDateShouldFail() throws Exception {
+        // revokeCertBackdated should only allow backdating.
+
+        // Given that we have a certificate that is unrevoked
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+
+        try {
+            // Set the CA to allow change of revocation reason 
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            // Set the Certificate Profile to allow backdated revocation
+            cp.setAllowBackdatedRevocation(true);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
+            
+            final String originalRevocationDate = "2020-05-15T14:07:09Z";
+            final String forwardDatedRevocationDate = "2022-05-15T14:07:09Z";
+            
+            // Revoke certificate with Revocation reason KeyCompromise and a set revocation date
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, originalRevocationDate);
+            
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+            assertEquals(originalRevocationDate.substring(0, 10), revokestatus.getRevocationDate().toString().substring(0, 10));
+
+            // Change date for revocation to later date. Should not be possible.
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, forwardDatedRevocationDate);
+
+            fail("should throw");
+        }
+        catch (Exception e) {
+            final String message = "New revocation date must be earlier than current revocation date";
+            assertEquals(message, e.getMessage());
+            assertNotNull(e.getMessage());
+        } finally {
+            // Cleanup
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+
+            cp.setAllowBackdatedRevocation(false);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, cp);
+        }
+    }
+
+    @Test
+    public void test066RevokeCertBackdatedChangeReasonWithoutCertificateProfileAllow() throws Exception {
+        // revokeCertBackdated should not be able to use backdated revocation date if it is not allowed
+        // on the Certificate Profile level.
+
+        // Given that we have a certificate that is unrevoked
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+
+        final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(initialRevocationStatus);
+        assertTrue(initialRevocationStatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, CA1);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+
+        assertEquals(false, cp.getAllowBackdatedRevocation());
+
+        try {
+            // Set the CA to allow change of revocation reason
+            cainfo.setAllowChangingRevocationReason(true);
+            caSession.editCA(intAdmin, cainfo);
+
+            final String backdatedRevocationDate = "2022-05-15T14:07:09Z";
+
+            // Revoke certificate with Revocation reason KeyCompromise and a set revocation date
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+
+            // Change date for revocation to later date. Should not be possible.
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, backdatedRevocationDate);
+
+            fail("should throw");
+        }
+        catch (Exception e) {
+            final String message = "Back dated revocation not allowed for certificate profile '" + WS_CERTPROF_EI + "'. Certificate serialNumber '" + serno + "', issuerDN 'CN=CA1'.";
+            assertEquals(message, e.getMessage());
+            assertNotNull(e.getMessage());
+        }
+        finally {
+            // Cleanup
+            cainfo.setAllowChangingRevocationReason(false);
+            caSession.editCA(intAdmin, cainfo);
+        }
+    }
+    
     @Test
     public void test08CheckRevokeStatus() throws Exception {
         checkRevokeStatus();
@@ -962,8 +1310,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         approvalProfile.setNumberOfApprovalsRequired(1);
         final int approvalProfileId = createApprovalProfile(approvalProfile, true);
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.REVOCATION, approvalProfileId, caAdminSessionRemote, caSession, catoken);
             X509Certificate adminCert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME)).iterator().next();
             Set<X509Certificate> credentials = new HashSet<>();
@@ -1070,7 +1418,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             approvalProfile.setNumberOfApprovalsRequired(2);
             int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
             approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfile);
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             createTestCA();
             EndEntityInformation approvingAdmin = new EndEntityInformation(adminUsername, "CN=" + adminUsername, getTestCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -1086,12 +1434,12 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                                     StandardRules.CAACCESSBASE.resource()),
                             null));
             roleMemberSession.persist(intAdmin,
-                    new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(),
+                    new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(), RoleMember.NO_PROVIDER,
                             X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                             adminUsername, role.getRoleId(), null));
             roleId = role.getRoleId();
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caId = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.ADDEDITENDENTITY, approvalProfileId,
                     caAdminSessionRemote, caSession, catoken);
             KeyPair keys = KeyTools.genKeys("1024", "RSA");
@@ -1493,7 +1841,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void testEjbcaVersion() {
         final String version = ejbcaraws.getEjbcaVersion();
         // We don't know which specific version we are testing
-        final String expectedSubString = "EJBCA 7.";
+        final String expectedSubString = "EJBCA 8.";
         assertTrue("Wrong version: "+version + " (expected to contain " + expectedSubString + ")", version.contains(expectedSubString));    }
 
     @Test
@@ -1627,7 +1975,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void testTimeFormatConversionFromCustom() throws EjbcaException {
         final String relativeTimeFormat = "0123:12:31";
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Convert from UserDataVOWS with relative date format to endEntityInformation
         userDataVoWs.setStartTime(relativeTimeFormat);
         userDataVoWs.setEndTime(relativeTimeFormat);
@@ -1659,7 +2007,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 .format(nowWithOutSeconds);
         final String newTimeFormatWithZulu = newTimeFormatResponse.replace("+00:00", "Z");
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Test using a time format that ends with Z instead of +00.00
         userDataVoWs.setStartTime(newTimeFormatWithZulu);
         final EndEntityInformation endEntityInformationZ = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, false);
@@ -1673,7 +2021,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void testTimeFormatConversionFromInvalid() throws EjbcaException {
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
-                "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER");
+                "password", false, "CN=User U", "CA1", null, null, EndEntityConstants.STATUS_NEW, "P12", "EMPTY", "ENDUSER");
         // Try some invalid end time date format
         userDataVoWs.setStartTime("2011-02-28 12:32:00+00:00"); // Valid
         userDataVoWs.setEndTime("12:32 2011-02-28"); // Invalid
@@ -1846,7 +2194,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void test48CertificateRequestWithForbiddenCharsDefault() throws Exception {
         long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, null);
+        cesecoreConfigurationProxySession.setForbiddenCharacters(null);
         testCertificateRequestWithSpecialChars(
                 "CN=test48CertificateRequestWithForbiddenCharsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
                 "CN=test48CertificateRequestWithForbiddenCharsDefault" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
@@ -1859,7 +2207,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void test49CertificateRequestWithForbiddenCharsDefinedAsDefault() throws Exception {
         long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
+        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         testCertificateRequestWithSpecialChars(
                 "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
                 "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
@@ -1870,15 +2218,14 @@ public class EjbcaWSTest extends CommonEjbcaWs {
      */
     @Test
     public void test50CertificateRequestWithForbiddenCharsDefinedBogus() throws Exception {
-        long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "tset");
+        cesecoreConfigurationProxySession.setForbiddenCharacters("tset".toCharArray());
         try {
             testCertificateRequestWithSpecialChars(
-                    "CN=test" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                    "CN=////" + rnd + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
+                    "CN=test" +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                    "CN=////" + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
         } finally {
             // we must remove this bogus settings otherwise next setupAdmin() will fail
-            cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "");
+            cesecoreConfigurationProxySession.setForbiddenCharacters(null);
         }
     }
 
@@ -1887,12 +2234,12 @@ public class EjbcaWSTest extends CommonEjbcaWs {
      */
     @Test
     public void test51CertificateRequestWithNoForbiddenChars() throws Exception {
-        long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "");
+        final String testName = "test50CertificateRequestWithForbiddenCharsDefinedBogus";
+        cesecoreConfigurationProxySession.setForbiddenCharacters("".toCharArray());
         // Using JDK8 \r is transformed into \n for some reason, expected will work if: O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE
         testCertificateRequestWithSpecialChars(
-                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
-                "CN=test51CertificateRequestWithNoForbiddenChars" + rnd +   ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
+                "CN=test51CertificateRequestWithNoForbiddenChars" + testName +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
+                "CN=test51CertificateRequestWithNoForbiddenChars" + testName +   ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
     }
 
 
@@ -2067,7 +2414,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
     @Test
     public void test57CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
+        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         final long rnd = Math.abs(secureRandom.nextLong());
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
@@ -2080,7 +2427,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
     @Test
     public void test58SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
-        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
+        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         final long rnd = Math.abs(secureRandom.nextLong());
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
@@ -3001,7 +3348,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     }
 
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {
-        String userName = "wsSpecialChars" + secureRandom.nextLong();
+        String userName = "wsSpecialChars";
+        deleteUser(userName);
         final UserDataVOWS userData = new UserDataVOWS();
         userData.setUsername(userName);
         userData.setPassword(PASSWORD);
@@ -3040,9 +3388,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             expectedSubjectDN = expectedSubjectDN.replace("\\r", "\\n");
             assertEquals(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "')" , expectedSubjectDN,
                     resultingSubjectDN);
+        } finally {
+            deleteUser(userName);
         }
-
-        deleteUser(userName);
     }
     
     /**
@@ -3104,6 +3452,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     private void deleteUser(final String username) {
         try {
             endEntityManagementSession.deleteUser(intAdmin, username);
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
         } catch (NoSuchEndEntityException e) {
             // NOPMD: Ignore
         } catch (AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {

@@ -85,7 +85,7 @@ public class OAuthProviderUIHelper {
             throw new MissingOAuthKeyAttributeException(
                     EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Label"));
         }
-        if (StringUtils.isEmpty(provider.getAudience())) {
+        if (!provider.isAudienceCheckDisabled() && StringUtils.isEmpty(provider.getAudience())) {
             throw new MissingOAuthKeyAttributeException(
                     EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Audience"));
         }

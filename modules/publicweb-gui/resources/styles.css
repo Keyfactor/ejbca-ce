@@ -195,8 +195,8 @@ acronym { border-bottom: none; }
 	text-decoration: none;
 }
 #header div#banner img {
-	max-height: 84px;
-	margin-top: 0px;
+	max-height: 60px;
+	margin: 10px;
 }
 
 
@@ -218,6 +218,11 @@ acronym { border-bottom: none; }
 .message {
 	margin: 1em 0em;
 	border: solid black 1px;
+}
+
+.errormessage {
+	color: #C00;
+	font-weight: bold;
 }
 
 .message .label {

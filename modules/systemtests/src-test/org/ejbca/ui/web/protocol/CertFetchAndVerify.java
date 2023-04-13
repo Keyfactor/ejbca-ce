@@ -44,11 +44,10 @@ import org.junit.Assert;
  * Note that old CA certificates will only be found if there is now newer with same issuer and subject DN.
  * The test is started by calling {@link #doIt(X509Certificate, Set)}
  * 
- * @version $Id$
  *
  */
 public class CertFetchAndVerify {
-	private final static Logger log = Logger.getLogger(CertFetchAndVerify.class);
+	private static final Logger log = Logger.getLogger(CertFetchAndVerify.class);
 	private final CertificateFactory cf;
 	CertFetchAndVerify() throws CertificateException {
 		this.cf = CertificateFactory.getInstance("X.509");
@@ -58,8 +57,8 @@ public class CertFetchAndVerify {
 	 * message, but it is not. URLDataSource makes two connections when a message is received.
 	 *
 	 */
-	static private class MyDataSource implements DataSource {
-		final private HttpURLConnection connection;
+	private static class MyDataSource implements DataSource {
+		private final HttpURLConnection connection;
 		MyDataSource(URL url ) throws IOException, NoData {
 			this.connection = (HttpURLConnection)url.openConnection();
 			this.connection.connect();

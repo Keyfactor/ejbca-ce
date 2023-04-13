@@ -17,13 +17,13 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
+import javax.inject.Named;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -44,9 +44,8 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 /**
  * Managed bean with isAuthorized method.
  *
- * @version $Id$
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class RaAccessBean implements Serializable {
 
@@ -65,7 +64,7 @@ public class RaAccessBean implements Serializable {
     @Deprecated // Breaks peer connections in the RA web. Will be removed in ECA-9938
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
@@ -191,14 +190,15 @@ public class RaAccessBean implements Serializable {
      * This method shows and hides the whole or part of enrollment menu depending on access rules*/
     public boolean isAuthorizedToEnroll() {
         return isAuthorizedToEnrollMakeRequest() ||
-                isAuthorizedToEnrollCertificate();
+                isAuthorizedToEnrollUsingUsername() ||
+                isAuthorizedToEnrollUsingApprovalRequestId();
     }
 
     /** correspond to menu items in menu.xhtml
      * This method shows and hides the make request sub menu item */
     public boolean isAuthorizedToEnrollMakeRequest() {
         /*
-         * Only check if this admin has been configured to create end entities to display the meny.
+         * Only check if this admin has been configured to create end entities to display the menu.
          * In order to actually make a request, the admin has to have access to
          *  AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.CREATE_END_ENTITY
          * and the CAs available via this profile.
@@ -206,11 +206,12 @@ public class RaAccessBean implements Serializable {
         return isAuthorized(AccessRulesConstants.REGULAR_CREATEENDENTITY);
     }
 
-    /** correspond to menu items in menu.xhtml
-     * This method shows and hides the use request id sub menu item */
-    public boolean isAuthorizedToEnrollCertificate() {
-        // Checks if user is allowed to enroll certificate.
-        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+    public boolean isAuthorizedToEnrollUsingUsername() {
+        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRulesConstants.REGULAR_USEUSERNAME);
+    }
+
+    public boolean isAuthorizedToEnrollUsingApprovalRequestId() {
+        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID);
     }
 
     public boolean isAuthorizedToCas() {
@@ -288,6 +289,11 @@ public class RaAccessBean implements Serializable {
         return isAuthorized(AccessRulesConstants.REGULAR_REVOKEENDENTITY);
     }
 
+    public boolean isAuthorizedToRenewClientCertificate() {
+        // TODO add separate access rules for this?
+        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRulesConstants.REGULAR_EDITENDENTITY);
+    }
+
     /**
      * Determine if the RA master API is functional. Note that this method will
      * return true if there is a signing CA available locally on this RA.
@@ -307,5 +313,18 @@ public class RaAccessBean implements Serializable {
 
     public boolean hasEndEntityProfileAccess() {
         return isAuthorized(AccessRulesConstants.ENDENTITYPROFILEPREFIX);
+    }
+
+    public boolean isRunningEnterprise() {
+        try {
+            Class.forName("org.ejbca.ra.enterprise.RaWebEnterpriseClass");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    public String getEditionFolder() {
+        return isRunningEnterprise() ? "EE" : "CE";
     }
 }

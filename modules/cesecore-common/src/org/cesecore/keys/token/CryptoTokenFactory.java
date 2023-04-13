@@ -12,16 +12,18 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import com.google.common.base.Preconditions;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 
 
 /**
@@ -134,18 +136,18 @@ public class CryptoTokenFactory {
      */
     private boolean loadClass(final String classname){
         try {           
-        	Thread.currentThread().getContextClassLoader().loadClass(classname).newInstance();       
+        	Thread.currentThread().getContextClassLoader().loadClass(classname).getDeclaredConstructor().newInstance();       
             return true;
         } catch (ClassNotFoundException e) {
             log.info(InternalResources.getInstance().getLocalizedMessage("token.classnotfound", classname)); 
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             log.info(InternalResources.getInstance().getLocalizedMessage("token.errorinstansiate", classname, e.getMessage()));
         } catch (IllegalAccessException e) {
             log.error("IllegalAccessException: "+classname, e);
         } catch (NoClassDefFoundError e) {
             // This happens more rarely and should be flagged as an error
             log.error("NoClassDefFoundError: "+classname, e);
-        }
+        } 
         return false;
     }
     
@@ -252,7 +254,7 @@ public class CryptoTokenFactory {
     private static final CryptoToken createTokenFromClass(final String classpath) {
     	try {
     		Class<?> implClass = Class.forName(classpath);
-    		Object obj = implClass.newInstance();
+    		Object obj = implClass.getDeclaredConstructor().newInstance();
     		return (CryptoToken) obj;
     	} catch (Throwable e) {
     		log.error("Error contructing Crypto Token (setting to null). Classpath="+classpath, e);

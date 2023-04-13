@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 /** I represent a generic way to find a certificate and key given an ID. */
 public interface KeyAndCertFinder {
 

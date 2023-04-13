@@ -9,7 +9,8 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *  This file is licensed by original authors under an artistic license  *
+ *  This file is licensed by original authors under the artistic license.*
+ *  See: https://opensource.org/licenses/artistic-license-1.0            *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ra.jsfext;
@@ -57,10 +58,12 @@ import org.apache.log4j.Logger;
  *   <li>Requests wait a maximum of 30 seconds, which can be overridden
  *       per URI pattern in the filter's configuration.</li>
  * </ul>
+ *
+ * (c) 2004, Kevin Chipalowsky (kevin@farwestsoftware.com) and 
+ * Ivelin Ivanov (ivelin@apache.org)
  * 
  * @author Kevin Chipalowsky and Ivelin Ivanov
  * Changed to WebFilter and modernized by PrimeKey
- * @version $Id$
  */
 @WebFilter(filterName = "RequestControlFilter", urlPatterns = {"/*"}, initParams= {
         @WebInitParam(name="excludePattern.1",value="^.+\\.((gif))$"),
@@ -104,7 +107,7 @@ public class RequestControlFilter implements Filter {
                 if (endDuration != -1) {
                     durationString = durationString.substring(0, endDuration);
                 }
-                Long duration = new Long(durationString);
+                Long duration = Long.valueOf(durationString);
 
                 // compile the corresponding pattern, and store it with this delay in the map
                 Pattern waitPattern = Pattern.compile(paramValue);

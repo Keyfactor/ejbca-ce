@@ -29,7 +29,6 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.commons.collections.SetUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -42,8 +41,6 @@ import org.apache.log4j.Logger;
  * 
  * Example use-case: a RevokedCertInfo takes 248 bytes in serialized form, but averages at only 48
  * bytes in compressed serialized form.
- * 
- * @version $Id$
  */
 public class CompressedCollection<T extends Serializable> implements Collection<T> , Serializable {
 
@@ -57,10 +54,9 @@ public class CompressedCollection<T extends Serializable> implements Collection<
     private final List<LookAheadObjectInputStream> oiss = new ArrayList<>();
     private final Set<Class<? extends Serializable>> acceptedClasses;
 
-    @SuppressWarnings("unchecked")
     @SafeVarargs
     public CompressedCollection(final Class<T> elementClass, final Class<? extends Serializable>... nestedClasses) {
-        acceptedClasses = SetUtils.typedSet(new HashSet<>(nestedClasses.length + 1), Serializable.class); // generic varargs are not type safe
+        acceptedClasses = new HashSet<Class<? extends Serializable>>(nestedClasses.length + 1);        
         acceptedClasses.add(elementClass);
         acceptedClasses.addAll(Arrays.asList(nestedClasses));
         clear();

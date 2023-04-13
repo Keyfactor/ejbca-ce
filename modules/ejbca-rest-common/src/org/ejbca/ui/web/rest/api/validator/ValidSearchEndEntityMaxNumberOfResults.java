@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
@@ -27,7 +30,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <ul>
  *     <li>Not null;</li>
  *     <li>Not negative or equal to zero;</li>
- *     <li>Not more than maximum 400.</li>
+ *     <li>Not more than maximum 1000.</li>
  * </ul>
  */
 @Target({TYPE, FIELD, PARAMETER})
@@ -45,7 +48,7 @@ public @interface ValidSearchEndEntityMaxNumberOfResults {
     class Validator implements ConstraintValidator<ValidSearchEndEntityMaxNumberOfResults, Integer> {
 
         private static final int MINIMUM_INCLUSIVE = 0;
-        private static final int MAXIMUM_EXCLUSIVE = 400;
+        private static final int MAXIMUM_EXCLUSIVE = 1000;
 
         @Override
         public void initialize(final ValidSearchEndEntityMaxNumberOfResults validSearchEndEntityMaxNumberOfResults) {

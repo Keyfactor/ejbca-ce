@@ -21,7 +21,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -40,7 +39,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.keyfactor.util.certificate.DnComponents;
+
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
@@ -344,8 +346,8 @@ public class EndEntityManagementTest extends CaTestCase {
             profile.addField(DnComponents.ORGANIZATION);
             profile.addField(DnComponents.COUNTRY);
             profile.addField(DnComponents.COMMONNAME);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
-            profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
+            profile.setAvailableCAs(Collections.singleton(caid));
+            profile.setAllowedRequestsUsed(false);
             endEntityProfileSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
             pid = endEntityProfileSession.getEndEntityProfileId("TESTREQUESTCOUNTER");
         } catch (EndEntityProfileExistsException pee) {
@@ -373,8 +375,8 @@ public class EndEntityManagementTest extends CaTestCase {
 
         // Now allow the counter
         EndEntityProfile ep = endEntityProfileSession.getEndEntityProfile(pid);
-        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
-        ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "2");
+        ep.setAllowedRequestsUsed(true);
+        ep.setAllowedRequests(2);
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         // This time changeUser will be ok
         endEntityManagementSession.changeUser(admin, user, false);
@@ -393,7 +395,7 @@ public class EndEntityManagementTest extends CaTestCase {
 
         // Now disallow the counter, it will be deleted from the user
         ep = endEntityProfileSession.getEndEntityProfile(pid);
-        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
+        ep.setAllowedRequestsUsed(false);
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         ei = user.getExtendedInformation();
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, null);
@@ -405,8 +407,8 @@ public class EndEntityManagementTest extends CaTestCase {
 
         // allow the counter
         ep = endEntityProfileSession.getEndEntityProfile(pid);
-        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
-        ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "2");
+        ep.setAllowedRequestsUsed(true);
+        ep.setAllowedRequests(2);
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         ei = user.getExtendedInformation();
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
@@ -426,8 +428,8 @@ public class EndEntityManagementTest extends CaTestCase {
         // test setuserstatus it will re-set the counter
         endEntityManagementSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_GENERATED);
         ep = endEntityProfileSession.getEndEntityProfile(pid);
-        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
-        ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
+        ep.setAllowedRequestsUsed(true);
+        ep.setAllowedRequests(3);
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         endEntityManagementSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         // decrease the value
@@ -448,8 +450,8 @@ public class EndEntityManagementTest extends CaTestCase {
 
         // test setuserstatus again it will re-set the counter since status is generated
         ep = endEntityProfileSession.getEndEntityProfile(pid);
-        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
-        ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
+        ep.setAllowedRequestsUsed(true);
+        ep.setAllowedRequests(3);
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         endEntityManagementSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         // decrease the value
@@ -639,30 +641,30 @@ public class EndEntityManagementTest extends CaTestCase {
         assertEquals(1000, cachetime);
         // Make sure profile has the right value from the beginning
         EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
-        eep.setAllowMergeDnWebServices(false);
+        eep.setAllowMergeDn(false);
         endEntityProfileSession.changeEndEntityProfile(admin, PROFILE_CACHE_NAME_2, eep);
         // Read profile
         eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
-        boolean value = eep.getAllowMergeDnWebServices();
+        boolean value = eep.getAllowMergeDn();
         assertFalse(value);
 
         // Flush caches to reset cache timeout
         endEntityProfileSession.flushProfileCache();
         // Change profile, not flushing cache
-        eep.setAllowMergeDnWebServices(true);
+        eep.setAllowMergeDn(true);
         endEntityProfileSession.internalChangeEndEntityProfileNoFlushCache(admin, PROFILE_CACHE_NAME_2, eep);
 
         // Wait 2 seconds and try again, now the cache should have been updated
         Thread.sleep(2000);
         eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
-        value = eep.getAllowMergeDnWebServices();
+        value = eep.getAllowMergeDn();
         assertTrue(value);
 
         // Changing using the regular method however should immediately flush the cache
-        eep.setAllowMergeDnWebServices(false);
+        eep.setAllowMergeDn(false);
         endEntityProfileSession.changeEndEntityProfile(admin, PROFILE_CACHE_NAME_2, eep);
         eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
-        value = eep.getAllowMergeDnWebServices();
+        value = eep.getAllowMergeDn();
         assertFalse(value);
     }
 

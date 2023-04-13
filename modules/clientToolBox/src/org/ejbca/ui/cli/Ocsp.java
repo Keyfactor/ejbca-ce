@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamCorruptedException;
 import java.math.BigInteger;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -33,9 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.core.protocol.ocsp.OCSPUnidClient;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidResponse;
@@ -43,6 +39,10 @@ import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
 
 /**
  * Used to stress test the OCSP interface
@@ -170,7 +170,7 @@ public class Ocsp extends ClientToolBox {
                 System.out
                         .println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> [<POST | GET | FNR | FNRGET | FNRPOST>] [<request signing keystore file>] [<request signing password>]");
                 System.out
-                        .println("Certificate serial number file is creates using the WS stress command: ./ejbcawsracli.sh stress... or could also be a text file with one serial number on each row. Start with '0x' if hex.");
+                        .println("Certificate serial number file is the \"result.ser\" created using the WS stress command: ./ejbcaClientToolBox.sh EjbcaWsRaCli stress... or could also be a text file with one serial number on each row. Start with '0x' if hex.");
                 System.out.println("If the directory \"./" + OCSPUnidClient.requestDirectory
                         + "\" exists then a file for each request will be stored in this directory.");
                 System.out.println();
@@ -276,7 +276,7 @@ public class Ocsp extends ClientToolBox {
                 try {
                     serial = new BigInteger(certfilename, 16);
                     if (ocspUrlFromCLI == null) {
-                        System.out.println("OCSP URL is reqired if a serial number is used.");
+                        System.out.println("OCSP URL is required if a serial number is used.");
                         System.exit(-1); // NOPMD, it's not a JEE app
                     }
                     final OCSPUnidClient client = OCSPUnidClient
@@ -289,7 +289,7 @@ public class Ocsp extends ClientToolBox {
             }
             if (serial == null) {
                 // It's not a certificate serial number, so treat it as a filename
-                final Certificate userCert = getCertFromPemFile(certfilename);
+                final X509Certificate userCert = getCertFromPemFile(certfilename);
                 String ocspUrl = ocspUrlFromCLI;
                 if (ocspUrl == null) {
                     ocspUrl = CertTools.getAuthorityInformationAccessOcspUrl(userCert);

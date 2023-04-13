@@ -58,8 +58,9 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.util.Base64;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.SHA1DigestCalculator;
 
 /**
  * 
@@ -131,11 +132,10 @@ public class OcspJunitHelper {
 		assertTrue("Response failed to verify.", verify);
 		// Check nonce (if we sent one)
 		if (nonce != null) {
-			byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
-			assertNotNull(noncerep);
-			ASN1InputStream ain = new ASN1InputStream(noncerep);
-			ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
-			ain.close();
+		    //byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getParsedValue().toASN1Primitive().getEncoded();
+		    Extension ext = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+		    assertNotNull(ext);
+		    ASN1OctetString oct = ASN1OctetString.getInstance(ext.getParsedValue());
 			assertEquals(nonce, new String(oct.getOctets()));
 		}
 		SingleResp[] singleResps = brep.getResponses();
@@ -291,7 +291,10 @@ public class OcspJunitHelper {
 		log.debug("ocspTestCert.getSerialNumber() = " + certSerial);
 		final String sNonce = "123456789";
 		Extension[] extensions = new Extension[1];
-		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(sNonce.getBytes()));
+		// An extensions is wrapped in an octet string, this means that the nonce which is an octet string
+		// is wrapped on another octet string in the extension encoding. Therefore we have to pass it as a byte[], 
+		// then BC does the "Extension" wrapping. If we pass in ASN1Encodable, BC thinks it's wrapped and done
+		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(sNonce.getBytes()).getEncoded());
 		gen.setRequestExtensions(new Extensions(extensions));
 		
 		final OCSPReq req = gen.build();

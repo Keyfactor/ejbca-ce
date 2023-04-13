@@ -168,7 +168,7 @@ public class ApprovalExecutorUtilTest {
         approvalProfile.setNumberOfApprovalsRequired(0);
         assertEquals(0, approvalProfile.getNumberOfApprovalsRequired());
 
-        RevocationApprovalRequest revReq = new RevocationApprovalRequest(null, "", "", 0, null, 0, 0, approvalProfile);
+        RevocationApprovalRequest revReq = new RevocationApprovalRequest(null, "", "", 0, null, 0, 0, approvalProfile, null, null);
         assertFalse(ApprovalExecutorUtil.requireApproval(revReq, null));
         AddEndEntityApprovalRequest addReq = new AddEndEntityApprovalRequest(null, false, null, "", 0, 0, approvalProfile,
                 /* validation results */ null);
@@ -176,7 +176,7 @@ public class ApprovalExecutorUtilTest {
 
         approvalProfile.setNumberOfApprovalsRequired(1);
         assertEquals(1, approvalProfile.getNumberOfApprovalsRequired());
-        revReq = new RevocationApprovalRequest(null, "", "", 0, null, 0, 0, approvalProfile);
+        revReq = new RevocationApprovalRequest(null, "", "", 0, null, 0, 0, approvalProfile, null, null);
         assertTrue(ApprovalExecutorUtil.requireApproval(revReq, null));
     }
 }

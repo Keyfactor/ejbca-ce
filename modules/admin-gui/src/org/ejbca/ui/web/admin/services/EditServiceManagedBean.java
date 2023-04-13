@@ -20,12 +20,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.Application;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -64,10 +64,10 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
-import org.ejbca.ui.web.admin.services.servicetypes.PreCertificateRevocationWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
+import org.ejbca.ui.web.admin.services.servicetypes.PreCertificateRevocationWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.PublishQueueWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RolloverWorkerType;
@@ -79,7 +79,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * Class used to manage the GUI editing of a Service Configuration
  *
  */
-@ManagedBean(name = "editService")
+@Named("editService")
 @SessionScoped
 public class EditServiceManagedBean extends BaseManagedBean {
 
@@ -342,11 +342,8 @@ public class EditServiceManagedBean extends BaseManagedBean {
     public List<SelectItem> getAvailableCAs() {
         List<SelectItem> availableCANames = new ArrayList<>();
         for (Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
-            try {
-                availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName()));
-            } catch (AuthorizationDeniedException e) {
-                log.debug("Not authorized to CA: " + caid);
-            }
+                availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfoInternal(caid).getName()));
+            
         }
         availableCANames.sort(new Comparator<SelectItem>() {
             @Override

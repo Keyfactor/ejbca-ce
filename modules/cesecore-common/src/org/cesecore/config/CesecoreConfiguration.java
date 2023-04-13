@@ -12,13 +12,13 @@
  *************************************************************************/
 package org.cesecore.config;
 
-import org.apache.log4j.Logger;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 /**
  * This file handles configuration from cesecore.properties
@@ -39,7 +39,6 @@ public final class CesecoreConfiguration {
     private CesecoreConfiguration() {
     }
 
-    private static final String TRUE = "true";
     private static final String FALSE = "false";
 
     /**
@@ -114,14 +113,6 @@ public final class CesecoreConfiguration {
     }
 
     /**
-     * @return true if it is permitted to use an extractable private key in a HSM.
-     */
-    public static boolean isPermitExtractablePrivateKeys() {
-        final String value = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
-        return value != null && value.trim().equalsIgnoreCase(TRUE);
-    }
-
-    /**
      * The language that should be used internally for logging, exceptions and approval notifications.
      */
     public static String getInternalResourcesPreferredLanguage() {
@@ -133,50 +124,6 @@ public final class CesecoreConfiguration {
      */
     public static String getInternalResourcesSecondaryLanguage() {
         return ConfigurationHolder.getExpandedString("intresources.secondarylanguage");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaQ() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.q");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaA() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.a");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaB() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.b");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaG() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.g");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaN() {
-        return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.n");
-    }
-
-    /**
-     * Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot this is needed so you
-     * don't have to restart JBoss all the time. In production it may cause failures because the BC provider may get removed just when another thread
-     * wants to use it. Therefore the default value is false.
-     */
-    public static boolean isDevelopmentProviderInstallation() {
-        return TRUE.equalsIgnoreCase(ConfigurationHolder.getString("development.provider.installation"));
     }
 
     /** Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be cached, and in that case for how long. */
@@ -299,26 +246,6 @@ public final class CesecoreConfiguration {
         return value;
     }
 
-    /** Oid tree for GOST32410 */
-    public static String getOidGost3410() {
-        return ConfigurationHolder.getString("extraalgs.gost3410.oidtree");
-    }
-
-    /** Oid tree for DSTU4145 */
-    public static String getOidDstu4145() {
-        return ConfigurationHolder.getString("extraalgs.dstu4145.oidtree");
-    }
-
-    /** Returns extraalgs such as GOST, DSTU */
-    public static List<String> getExtraAlgs() {
-        return ConfigurationHolder.getPrefixedPropertyNames("extraalgs");
-    }
-
-    /** Returns title of the algorithm */
-    public static String getExtraAlgTitle(String algName) {
-        return ConfigurationHolder.getString("extraalgs." + algName.toLowerCase() + ".title");
-    }
-
     /** Returns "subalgorithms", e.g. different keylengths or curves */
     public static List<String> getExtraAlgSubAlgs(String algName) {
         return ConfigurationHolder.getPrefixedPropertyNames("extraalgs." + algName + ".subalgs");
@@ -400,41 +327,6 @@ public final class CesecoreConfiguration {
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("database.crlgenfetchordered"));
     }
 
-    /**
-     * Used just in {@link #getForbiddenCharacters()}. The method is called very
-     * often so we declare this String in the class so it does not have to be
-     * each time the method is called.
-     */
-    final static private String FORBIDDEN_CARACTERS_KEY = "forbidden.characters";
-    /**
-     * Characters forbidden in fields to be stored in the DB.
-     * @return all forbidden characters.
-     */
-    public static char[] getForbiddenCharacters() {
-        // Using 'instance().getString' instead of 'getString' since an empty
-        // String (size 0) must be returned when the property is defined without
-        // any value.
-        final String s = ConfigurationHolder.instance().getString(FORBIDDEN_CARACTERS_KEY);
-        if (s==null) {
-            return ConfigurationHolder.getDefaultValue(FORBIDDEN_CARACTERS_KEY).toCharArray();
-        }
-        return s.toCharArray();
-    }
-
-    /**
-     * @return true if sign mechanisms that uses PKCS#11 for hashing should be disabled, 
-     * if no value is defined for pkcs11.disableHashingSignMechanisms default value is true.
-     */
-    public static boolean p11disableHashingSignMechanisms() {
-        final String value = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
-        return value==null || Boolean.parseBoolean(value.trim());
-    }
-
-    /** @return true key store content of Crypto Tokens should be cached. */
-    public static boolean isKeyStoreCacheEnabled() {
-        return Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache"));
-    }
-
     /** @return a list of enabled TLS protocol versions and cipher suites */
     /*
      * Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
@@ -504,14 +396,6 @@ public final class CesecoreConfiguration {
     public static long getCTFastFailBackOff() {
         return getLongValue("ct.fastfail.backoff", 1000L, "milliseconds");
     }
-
-    /**
-     * @return true if key should be unmodifiable after generation.
-     */
-    public static boolean makeKeyUnmodifiableAfterGeneration() {
-        final String value = ConfigurationHolder.getString("pkcs11.makeKeyUnmodifiableAfterGeneration");
-        return value!=null && Boolean.parseBoolean(value.trim());
-    }
     
     /**
      * 
@@ -522,9 +406,4 @@ public final class CesecoreConfiguration {
         return (customClassWhitelist != null ? customClassWhitelist : "");
     }
 
-    public static boolean useLegacyPkcs12Keystore() {
-        return ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null
-                ? false
-                : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12"));
-    }
 }

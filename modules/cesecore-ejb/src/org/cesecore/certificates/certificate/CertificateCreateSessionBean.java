@@ -46,10 +46,13 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -59,6 +62,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificate.ca.its.ECA;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -99,17 +103,19 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
+
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Session bean for creating certificates.
@@ -332,6 +338,56 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
     
     @Override
+    public ITSCertificate createItsCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final ECA ca,
+            Builder certificateBuilder, CertificateId certifcateId, PublicVerificationKey verificationKey) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException {
+        
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CREATECERT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId())) {
+            final String msg = intres.getLocalizedMessage("createcert.notauthorized", admin.toString(), ca.getCAId());
+            throw new AuthorizationDeniedException(msg);
+        }
+        
+        try {
+        // Audit log that we received the request
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("certprofile", endEntityInformation.getCertificateProfileId());
+        details.put("publickey", new String(Base64.encode(verificationKey.getEncoded(), false)));
+        logSession.log(EventTypes.CERT_REQUEST, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(),
+        String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
+        } catch (IOException e) {
+            throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e.getLocalizedMessage());
+        }
+
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+        if (cryptoToken==null) {
+            final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
+            log.info(msg);
+            CryptoTokenOfflineException exception = new CryptoTokenOfflineException("CA's CryptoToken not found.");
+            auditFailure(admin, exception, exception.getMessage(), "<createItsCertificate(AuthenticationToken, EndEntityInformation, CA, CertificateId, PublicVerificationKey)", ca.getCAId(), endEntityInformation.getUsername());
+            throw exception;
+        }
+
+        final int certProfileId = endEntityInformation.getCertificateProfileId();
+        final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
+        
+        ITSCertificate cert = ca.generateExplicitItsCertificate(cryptoToken, endEntityInformation, verificationKey, null, null, certProfile, certificateBuilder, certifcateId, null);        
+
+        // Audit log that we issued the certificate
+        final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
+        issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
+        try {
+            issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
+        } catch (IOException e) {
+            //Should not be able to happen at this point
+            throw new IllegalStateException();
+        }
+        logSession.log(EventTypes.CERT_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(),
+                issuedetails);
+
+        return cert;
+    }
+
+
+    @Override
     public CertificateDataWrapper createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
             final RequestMessage request, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
             final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams, final long updateTime)
@@ -473,7 +529,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                         continue;
                     }                  
                     // Authorization to the CA was already checked at the head of this method, so no need to do so now
-                    certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+                    certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), /*invalidityDate*/null, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
                     revoked = true;
                 }
                 if (revoked && ca.getGenerateCrlUponRevocation()) {
@@ -624,7 +680,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // If we don't store the certificate in the database, we wont support revocation/reactivation so issuing revoked certificates would be
                     // really strange.
                     if (ca.isUseCertificateStorage() && certProfile.getUseCertificateStorage()) {
-                        certificateStoreSession.setRevokeStatus(admin, result, new Date(), revreason);
+                        certificateStoreSession.setRevokeStatus(admin, result, new Date(), /*invalidityDate*/null, revreason);
                     } else {
                         log.warn("CA configured to revoke issued certificates directly, but not to store issued the certificates. Revocation will be ignored. Please verify your configuration.");
                     }
@@ -729,19 +785,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (enforceUniqueDistinguishedName) {
             subjectDN = endEntityInformation.getCertificateDN();
         }
-        //boolean multipleCheckOk = false;
+        if(StringUtils.isBlank(subjectDN)) {
+            return;
+        }
         
-        // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
-        // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
-        // See ECA-3309
-        //
-        // Some time in the future, when we want to use multiple checks on the database, a separate method should be added to execute this commented out code.
-//        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
-//            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
-//        }
-        
-        // If one of the checks failed, we need to investigate further what went wrong
-        if (/*!multipleCheckOk && */enforceUniqueDistinguishedName) {
+        // If this check failed, we need to investigate further what went wrong
+        if (enforceUniqueDistinguishedName) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(ca.getSubjectDN(), subjectDN);
             if (!users.isEmpty() && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", username,
@@ -767,21 +816,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (enforceUniquePublicKeys) {
             subjectKeyId = KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier();
         }
-        //boolean multipleCheckOk = false;
         
-        // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
-        // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
-        // See ECA-3309
-//        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
-//            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
-//        }
-        
-        if (/*!multipleCheckOk && */enforceUniquePublicKeys) {
+        if (enforceUniquePublicKeys) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(ca.getSubjectDN(), subjectKeyId);
             if (!users.isEmpty() && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", username);
                 log.info(msg+listUsers(users));
-                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
+                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
         }
     }
@@ -804,7 +845,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             if (!certificates.isEmpty()) {
                 final String msg = intres.getLocalizedMessage("createcert.enforce_key_renewal", username);
                 log.info(msg);
-                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS, msg);
+                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS, msg);
             }
         }
     }

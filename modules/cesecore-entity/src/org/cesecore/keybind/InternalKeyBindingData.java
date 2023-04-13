@@ -37,6 +37,8 @@ import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.SecureXMLDecoder;
 
+import com.keyfactor.util.StringTools;
+
 /**
  * Database representation of an InternalKeyBinding.
  * 
@@ -86,7 +88,9 @@ public class InternalKeyBindingData extends ProtectedData implements Serializabl
 
     // @Column
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = StringTools.trim(name);
+    }
 
     // @Column
     /** Use getStatusEnum() instead */

@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -37,18 +38,16 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.CesecoreException;
 import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.profiles.Profile;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.MapTools;
 import org.cesecore.util.NameTranslatable;
 import org.cesecore.util.ValidityDate;
@@ -60,6 +59,9 @@ import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistChecker;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistExactMatchChecker;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistNormalizer;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.CertTools;
 
 /**
  * A Domain Blacklist Validator checks DNSName fields against a set of blacklists.
@@ -76,7 +78,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(DomainBlacklistValidator.class);
-
     private static final Pattern allowedDomainCharacters = Pattern.compile("^[a-zA-Z0-9._-]+$");
 
     /** The domain blacklist validator type. */
@@ -99,8 +100,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     private static final String TEST_BUTTON_KEY = "test_button";
     private static final String TEST_BUTTON_TEXT = "test_button_text";
     private static final String TEST_RESULT_KEY = "test_result";
-
-    private static final int MAX_LOG_DOMAINS = 100;
 
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
@@ -149,8 +148,8 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
 
     /** Replaces the existing domain blacklist with the uploaded one. Takes a byte array. 
-     * @throws DomainBlacklistFileException */
-    public void changeBlacklist(final byte[] bytes) throws DomainBlacklistFileException {
+     * @throws DomainListFileException */
+    public void changeBlacklist(final byte[] bytes) throws DomainListFileException {
         final Set<String> domainSet = new TreeSet<>(); // store entries sorted in database
         try {
             try (final InputStream domainBlacklistInputStream = new ByteArrayInputStream(bytes);
@@ -180,7 +179,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 // The Validator cache is reloaded after saving, so that will trigger a reload of the cache here in DomainBlacklistValidator 
             }
         } catch (IOException e) {
-            throw new DomainBlacklistFileException("Unable to parse domain block list. " + e.getMessage());
+            throw new DomainListFileException("Unable to parse domain block list. " + e.getMessage());
         }
     }
 
@@ -188,13 +187,13 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
      * Performs a basic validation of a domain, just to prevent mistakes.
      * Given that we may want to block fraud domains, we should not be too strict with standards compliance here.
      * Otherwise, we could have used StringTools.isValidSanDnsName
-     * @throws DomainBlacklistFileException 
+     * @throws DomainListFileException 
      */
-    private void validateDomain(final String domain, final int lineNumber) throws DomainBlacklistFileException {
+    private void validateDomain(final String domain, final int lineNumber) throws DomainListFileException {
         if (!allowedDomainCharacters.matcher(domain).matches()) {
             final String message = "Invalid syntax of domain at line " + lineNumber + (lineNumber < 5 ? ". The file must be a plain text file in ASCII format, or UTF-8 format (without Byte Order Mark). Please put one domain per line. IDN domains must be in Punycode format." : "");
             log.info(message);
-            throw new DomainBlacklistFileException(message);
+            throw new DomainListFileException(message);
         }
     }
 
@@ -206,10 +205,10 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         for (final String normalizerName : getNormalizations())  {
             try {
                 final Class<?> normalizerClass = Class.forName(normalizerName);
-                final DomainBlacklistNormalizer normalizer = (DomainBlacklistNormalizer) normalizerClass.newInstance();
+                final DomainBlacklistNormalizer normalizer = (DomainBlacklistNormalizer) normalizerClass.getDeclaredConstructor().newInstance();
                 normalizer.initialize(data);
                 newNormalizers.add(normalizer);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 log.error("Failed to load Domain Block List Normalizer '" + normalizerName + "'.");
                 newInitializationFailure = true;
             }
@@ -218,9 +217,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         for (final String checkerName : getChecks())  {
             try {
                 final Class<?> checkerClass = Class.forName(checkerName);
-                final DomainBlacklistChecker checker = (DomainBlacklistChecker) checkerClass.newInstance();
+                final DomainBlacklistChecker checker = (DomainBlacklistChecker) checkerClass.getDeclaredConstructor().newInstance();
                 newCheckers.add(checker);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 log.error("Failed to load Domain Block List Checker '" + checkerName + "'.");
                 newInitializationFailure = true;
             }

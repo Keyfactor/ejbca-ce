@@ -18,11 +18,13 @@
 	<path id="clientToolBox.lib.classpath">
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-io.classpath"/>	
 		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-text.classpath"/><!-- Dependency of commons-configuration2 -->
+		<path refid="lib.commons-beanutils.classpath"/><!-- Dependency of commons-configuration2 -->
 		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.jacknji.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.log4j.classpath"/> 		
@@ -32,10 +34,13 @@
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
 		<path location="${mod.ejbca-ws-client.lib}"/>
+		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<path location="${mod.caa.lib}.lib}"/>
 		<path refid="lib.hc.classpath"/> <!-- Apache http client for REST API calls -->
 		<path refid="lib.json-simple.classpath"/> <!-- for REST API calls -->
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- needed by KeyTools -->
+		<path location="${mod.x509-common-util.lib}"/>
+
 	</path>
 
 	<path id="compile-test.classpath">
@@ -43,6 +48,7 @@
 		<path refid="lib.system-rules.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.bouncycastle.classpath" />
 		<path refid="lib.cert-cvc.classpath" />
@@ -50,8 +56,10 @@
 		<path location="${mod.systemtest-interface.lib}"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.p11ng.lib}" />
 		<pathelement location="${mod.ejbca-common.lib}"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 
 
@@ -69,6 +77,7 @@
 		<path location="${mod.cesecore-entity.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-common-web.lib}"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 
 	<target name="build" description="Build this module" depends="compile">

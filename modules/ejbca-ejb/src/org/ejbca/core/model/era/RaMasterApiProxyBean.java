@@ -13,14 +13,59 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.DependsOn;
+import javax.ejb.EJB;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,7 +85,6 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -51,18 +95,13 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExi
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
@@ -94,6 +133,7 @@ import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -105,47 +145,14 @@ import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 import org.ejbca.util.query.IllegalQueryException;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.DependsOn;
-import javax.ejb.EJB;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Proxy implementation of the the RaMasterApi that will get the result of the most preferred API implementation
@@ -193,6 +200,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     private RaMasterApi[] raMasterApis = null;
     private RaMasterApi[] raMasterApisLocalFirst = null;
 
+    // Used in tests
+    private RaMasterApi[] savedRaMasterApisBeforeTest;
+    private RaMasterApi[] savedRaMasterApisLocalFirstBeforeTest;
+    private List<String> functionTraceForTest;
+
     /** Default constructor */
     public RaMasterApiProxyBean() {
     }
@@ -217,19 +229,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         try {
             // Load downstream peer implementation if available in this version of EJBCA
             final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerDownstreamImpl");
-            implementations.add((RaMasterApi) c.newInstance());
+            implementations.add((RaMasterApi) c.getDeclaredConstructor().newInstance());
         } catch (ClassNotFoundException e) {
             log.debug("RaMasterApi over Peers is not available on this system.");
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             log.warn("Failed to instantiate RaMasterApi over Peers: " + e.getMessage());
-        }
+        } 
         try {
             // Load upstream peer implementation if available in this version of EJBCA
             final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerUpstreamImpl");
-            implementations.add((RaMasterApi) c.newInstance());
+            implementations.add((RaMasterApi) c.getDeclaredConstructor().newInstance());
         } catch (ClassNotFoundException e) {
             log.debug("RaMasterApi over Peers is not available on this system.");
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             log.warn("Failed to instantiate RaMasterApi over Peers: " + e.getMessage());
         }
         implementations.add(raMasterApiSession);
@@ -243,6 +255,56 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public void deferLocalForTest() {
         raMasterApisLocalFirst = (RaMasterApi[]) ArrayUtils.removeElement(raMasterApisLocalFirst, raMasterApiSession);
         raMasterApisLocalFirst = (RaMasterApi[]) ArrayUtils.add(raMasterApisLocalFirst, raMasterApiSession);
+    }
+
+    // Use in tests only!
+    @Override
+    public void enableFunctionTracingForTest() {
+        restoreFunctionTracingAfterTest(); // if already tracing
+        final int numBackends = raMasterApis.length;
+        savedRaMasterApisBeforeTest = raMasterApis;
+        savedRaMasterApisLocalFirstBeforeTest = raMasterApisLocalFirst;
+        functionTraceForTest = new ArrayList<>();
+        String suffix = TEST_TRACE_SUFFIX_REMOTE;
+        raMasterApis = new RaMasterApi[numBackends];
+        raMasterApisLocalFirst = new RaMasterApi[numBackends];
+        for (int i = 0; i < numBackends; i++) {
+            final RaMasterApi wrapped = wrapInTracingProxy(savedRaMasterApisBeforeTest[i], suffix);
+            raMasterApis[i] = wrapped;
+            raMasterApisLocalFirst[numBackends-1 - i] = wrapped;
+            suffix = TEST_TRACE_SUFFIX_LOCAL;
+        }
+    }
+
+    private RaMasterApi wrapInTracingProxy(final RaMasterApi raMasterApi, final String suffix) {
+        final List<String> functionTrace = functionTraceForTest;
+        return (RaMasterApi) Proxy.newProxyInstance(RaMasterApi.class.getClassLoader(),
+                new Class[] { RaMasterApi.class },
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+                        functionTrace.add(method.getName() + suffix);
+                        return method.invoke(raMasterApi, args);
+                    }
+                });
+    }
+
+    // Use in tests only!
+    @Override
+    public List<String> getFunctionTraceForTest() {
+        return functionTraceForTest;
+    }
+
+    // Use in tests only!
+    @Override
+    public void restoreFunctionTracingAfterTest() {
+        if (savedRaMasterApisBeforeTest != null) {
+            raMasterApis = savedRaMasterApisBeforeTest;
+            raMasterApisLocalFirst = savedRaMasterApisLocalFirstBeforeTest;
+            savedRaMasterApisBeforeTest = null;
+            savedRaMasterApisLocalFirstBeforeTest = null;
+            functionTraceForTest = null;
+        }
     }
 
     @Override
@@ -423,6 +485,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
                 try {
                     for (final Role role : raMasterApi.getAuthorizedRoles(authenticationToken)) {
+                        roleMap.put(role.getRoleId(), role);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return new ArrayList<>(roleMap.values());
+    }
+    
+    @Override
+    public List<Role> getRolesAuthenticationTokenIsMemberOf(final AuthenticationToken authenticationToken) {
+        final Map<Integer, Role> roleMap = new HashMap<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
+                try {
+                    for (final Role role : raMasterApi.getRolesAuthenticationTokenIsMemberOf(authenticationToken)) {
                         roleMap.put(role.getRoleId(), role);
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
@@ -680,7 +759,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public boolean addRequestResponse(AuthenticationToken authenticationToken, RaApprovalResponseRequest requestResponse)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException, ApprovalRequestExecutionException,
-            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException {
+            AdminAlreadyApprovedRequestException, SelfApprovalException, AuthenticationFailedException, EndEntityExistsException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -761,6 +840,44 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return searchResponse;
     }
+    
+    @Override
+    public List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash) {
+        List<CertificateWrapper> searchResponse = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.getApiVersion() >= 15) {
+                        searchResponse = raMasterApi.searchForCertificateChainWithPreferredRoot(authenticationToken, fingerprint, rootSubjectDnHash);
+                        if (searchResponse != null) {
+                            break;
+                        }
+                    } else if (raMasterApi.getApiVersion() >= 10) {
+                        searchResponse = raMasterApi.searchForCertificateChain(authenticationToken, fingerprint);
+                        if (searchResponse != null) {
+                            break;
+                        }
+                    } else {
+                        searchResponse = new ArrayList<>();
+                        do {
+                            CertificateDataWrapper cdw = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
+                            searchResponse.add(cdw);
+                            if (cdw != null && !cdw.getCertificateData().getCaFingerprint().equals(cdw.getCertificateData().getFingerprint())) {
+                                fingerprint = cdw.getCertificateData().getCaFingerprint();
+                            } else {
+                                fingerprint = null;
+                            }
+
+                        } while (fingerprint != null);
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return searchResponse;
+    }
 
     @Override
     public CertificateDataWrapper searchForCertificateByIssuerAndSerial(final AuthenticationToken authenticationToken, final String issuerDN, final String serNo) {
@@ -799,6 +916,29 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     }
                     // If the back end timed out due to a too heavy search we want to allow the client to retry with more fine grained criteria
                     ret.setMightHaveMoreResults(true);
+                }
+            }
+        }
+        return ret;
+    }
+    
+    @Override
+    public RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken,
+            RaCertificateSearchRequestV2 raCertificateSearchRequest) {
+        final RaCertificateSearchResponseV2 ret = new RaCertificateSearchResponseV2();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret.merge(raMasterApi.searchForCertificatesV2(authenticationToken, raCertificateSearchRequest));
+                } catch (UnsupportedOperationException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Trouble during back end invocation: " + e.getMessage());
+                    }
+                    // Just try next implementation
+                } catch (RaMasterBackendUnavailableException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Timeout during back end invocation.", e);
+                    }
                 }
             }
         }
@@ -870,6 +1010,35 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
+    
+    @Override
+    public RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken, 
+            RaEndEntitySearchRequestV2 raEndEntitySearchRequestV2) {
+        final RaEndEntitySearchResponseV2 retMerged = new RaEndEntitySearchResponseV2();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    RaEndEntitySearchResponseV2 retNode = raMasterApi.searchForEndEntitiesV2(authenticationToken, raEndEntitySearchRequestV2);
+                    retMerged.merge(retNode);
+                    retMerged.setSearchSummary(retNode.getSearchSummary());
+                } catch (UnsupportedOperationException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Trouble during back end invocation: " + e.getMessage());
+                    }
+                    // Just try next implementation
+                } catch (RaMasterBackendUnavailableException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Timeout during back end invocation.", e);
+                    }
+                    // If the back end timed out due to a too heavy search we want to allow the client to retry with more fine grained criteria
+                    retMerged.setMightHaveMoreResults(true);
+                }
+            }
+        }
+        retMerged.sortMergedMembers();
+        return retMerged;
+    }
+
 
     @Override
     public Map<Integer, String> getAuthorizedCertificateProfileIdsToNameMap(final AuthenticationToken authenticationToken) {
@@ -918,7 +1087,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
-
+    
     @Override
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
         final IdNameHashMap<CAInfo> ret = new IdNameHashMap<>();
@@ -961,6 +1130,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return ret;
+    }
+    
+    @Override
+    public RaCertificateProfileResponseV2 getCertificateProfileInfo(AuthenticationToken authenticationToken, String profileName) {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.getCertificateProfileInfo(authenticationToken, profileName);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -1142,6 +1325,39 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+    
+    @Override
+    public EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 13) {
+                try {
+                    final EndEntityInformation result = raMasterApi.searchUserWithoutViewEndEntityAccessRule(authenticationToken, username);
+                    if (result != null) {
+                        return result;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean canEndEntityEnroll(AuthenticationToken authenticationToken, String username) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    if (raMasterApi.canEndEntityEnroll(authenticationToken, username)) {
+                        return true;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return false;
+    }
 
     @Override
     public void checkUserStatus(AuthenticationToken authenticationToken, String username, String password)
@@ -1235,94 +1451,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (storedEndEntity.getKeyRecoverable() && globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
             // "Force local key recovery" enabled. The certificate is issued on the CA, but the key pair is generated and stored locally.
-            final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
-            final CAInfo caInfo = caInfos.getValue(storedEndEntity.getCAId());
-            if (caInfo == null) {
-                throw new AuthorizationDeniedException("Not authorized to CA with ID " + storedEndEntity.getCAId() + ", or it does not exist.");
-            }
-            final Certificate[] cachain = caInfo.getCertificateChain().toArray(new Certificate[0]);
-            if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
-                throw new AuthorizationDeniedException("Not authorized to recover keys");
-            }
-            final EndEntityProfile endEntityProfile = getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY).getValue(storedEndEntity.getEndEntityProfileId());
-            if (endEntityProfile == null) {
-                throw new AuthorizationDeniedException("Not authorized to End Entity Profile with ID " + storedEndEntity.getEndEntityProfileId() + ", or it does not exist.");
-            }
-
-            final Integer cryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
-            final String keyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
-            final X509Certificate cert;
-            final KeyPair kp;
-            try {
-                if (storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Creating locally stored key pair for end entity '" + username + "'");
-                    }
-                    // Create new key pair and CSR
-                    final String keyalg = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmType();
-                    final String keyspec = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmSubType();
-                    kp = KeyTools.genKeys(keyspec, keyalg);
-                    // requestCertForEndEntity verifies the password and performs the finishUser operation
-                    cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
-                    // Store key pair
-                    if (cryptoTokenId == null || keyAlias == null) {
-                        log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
-                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
-                    }
-                    if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(cert), username, EJBTools.wrap(kp), cryptoTokenId, keyAlias)) {
-                        // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
-                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
-                    }
-                } else {
-                    // Recover existing key pair
-                    if (log.isDebugEnabled()) {
-                        log.debug("Recovering locally stored key pair for end entity '" + username + "'");
-                    }
-                    final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias);
-                    if (kri == null) {
-                        // This should not happen when the user has its status set to KEYRECOVERY
-                        final String message = "Could not find key recovery data for end entity '" + username + "'";
-                        log.debug(message);
-                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, message);
-                    }
-                    kp = kri.getKeyPair();
-                    if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
-                        final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(), kri.getCertificateSN().toString(16));
-                        if (cdw == null) {
-                            final String msg = "Key recovery data exists for user '" + username + "', but certificate does not: " + kri.getCertificateSN().toString(16);
-                            log.info(msg);
-                            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, msg);
-                        }
-                        cert = (X509Certificate) cdw.getCertificate();
-                        // Verify password and finish user
-                        finishUserAfterLocalKeyRecovery(authenticationToken, username, endEntity.getPassword());
-                    } else {
-                        // requestCertForEndEntity verifies the password and performs the finishUser operation
-                        cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
-                    }
-                    localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
-                }
-                // Build keystore
-                final KeyStore ks;
-                String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-                if (alias == null) {
-                    alias = username;
-                }
-                if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
-                    ks = KeyTools.createJKS(alias, kp.getPrivate(), endEntity.getPassword(), cert, cachain);
-                } else if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_BCFKS) {
-                    ks = KeyTools.createBcfks(alias, kp.getPrivate(), cert, cachain);
-                } else {
-                    ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain);
-                }
-                try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                    ks.store(baos, endEntity.getPassword().toCharArray());
-                    return baos.toByteArray();
-                }
-            } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
-                    InvalidAlgorithmParameterException | IOException e) {
-                throw new IllegalStateException(e);
-            }
+            return generateKeyStoreForceLocalKeyRecovery(authenticationToken, endEntity, username, storedEndEntity, globalConfig);
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Requesting key store for end entity '" + username + "'. Remote peer systems will be queried first");
@@ -1358,6 +1487,152 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw userNotFoundException;
         }
         return null;
+    }
+    
+    // This method is somewhat special, because it should not be sent/forwarded upstream depending on a configuration setting
+    @Override
+    public byte[] generateKeyStoreWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
+            throws AuthorizationDeniedException, EjbcaException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        EjbcaException userNotFoundException = null;
+
+        final String username = endEntity.getUsername();
+        final EndEntityInformation storedEndEntity = searchUserWithoutViewEndEntityAccessRule(authenticationToken, username);
+        if (storedEndEntity == null) {
+            throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User does not exist: " + username);
+        }
+        GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (storedEndEntity.getKeyRecoverable() && globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
+            return generateKeyStoreForceLocalKeyRecovery(authenticationToken, endEntity, username, storedEndEntity, globalConfig);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Requesting key store for end entity '" + username + "'. Remote peer systems will be queried first");
+            }
+        }
+
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    return raMasterApi.generateKeyStoreWithoutViewEndEntityAccessRule(authenticationToken, endEntity);
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (EjbcaException e) {
+                    // If the user is not found (e.g. during key recovery), try next implementation
+                    if (!ErrorCode.USER_NOT_FOUND.equals(e.getErrorCode())) {
+                        throw e;
+                    }
+                    if (userNotFoundException == null) {
+                        userNotFoundException = e;
+                    }
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (userNotFoundException != null) {
+            throw userNotFoundException;
+        }
+        return null;
+    }
+    
+    private byte[] generateKeyStoreForceLocalKeyRecovery(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
+            final String username, final EndEntityInformation storedEndEntity, GlobalConfiguration globalConfig)
+            throws AuthorizationDeniedException, EjbcaException {
+        final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
+        final CAInfo caInfo = caInfos.getValue(storedEndEntity.getCAId());
+        if (caInfo == null) {
+            throw new AuthorizationDeniedException("Not authorized to CA with ID " + storedEndEntity.getCAId() + ", or it does not exist.");
+        }
+        final Certificate[] cachain = caInfo.getCertificateChain().toArray(new Certificate[0]);
+        if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
+            throw new AuthorizationDeniedException("Not authorized to recover keys");
+        }
+        final EndEntityProfile endEntityProfile = getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY).getValue(storedEndEntity.getEndEntityProfileId());
+        if (endEntityProfile == null) {
+            throw new AuthorizationDeniedException("Not authorized to End Entity Profile with ID " + storedEndEntity.getEndEntityProfileId() + ", or it does not exist.");
+        }
+
+        final Integer cryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
+        final String keyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
+        final X509Certificate cert;
+        final KeyPair kp;
+        try {
+            if (storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Creating locally stored key pair for end entity '" + username + "'");
+                }
+                // Create new key pair and CSR
+                final String keyalg = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmType();
+                final String keyspec = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmSubType();
+                kp = KeyTools.genKeys(keyspec, keyalg);
+                // requestCertForEndEntity verifies the password and performs the finishUser operation
+                cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
+                // Store key pair
+                if (cryptoTokenId == null || keyAlias == null) {
+                    log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
+                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
+                }
+                if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(caInfo.getCertificateChain().get(0)),
+                        EJBTools.wrap(cert), username, EJBTools.wrap(kp), cryptoTokenId, keyAlias)) {
+                    // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
+                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
+                }
+            } else {
+                // Recover existing key pair
+                if (log.isDebugEnabled()) {
+                    log.debug("Recovering locally stored key pair for end entity '" + username + "'");
+                }
+                final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias, (X509Certificate) caInfo.getCertificateChain().get(0));
+                if (kri == null) {
+                    // This should not happen when the user has its status set to KEYRECOVERY
+                    final String message = "Could not find key recovery data for end entity '" + username + "'";
+                    log.debug(message);
+                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, message);
+                }
+                kp = kri.getKeyPair();
+                if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
+                    final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(), kri.getCertificateSN().toString(16));
+                    if (cdw == null) {
+                        final String msg = "Key recovery data exists for user '" + username + "', but certificate does not: " + kri.getCertificateSN().toString(16);
+                        log.info(msg);
+                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, msg);
+                    }
+                    cert = (X509Certificate) cdw.getCertificate();
+                    // Verify password and finish user
+                    finishUserAfterLocalKeyRecovery(authenticationToken, username, endEntity.getPassword());
+                } else {
+                    // requestCertForEndEntity verifies the password and performs the finishUser operation
+                    cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
+                }
+                localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
+            }
+            // Build keystore
+            final KeyStore ks;
+            String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+            if (alias == null) {
+                alias = username;
+            }
+            if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
+                ks = KeyTools.createJKS(alias, kp.getPrivate(), endEntity.getPassword(), cert, cachain);
+            } else if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_BCFKS) {
+                ks = KeyTools.createBcfks(alias, kp.getPrivate(), cert, cachain);
+            } else {
+                ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain);
+            }
+            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                ks.store(baos, endEntity.getPassword().toCharArray());
+                return baos.toByteArray();
+            }
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
+                InvalidAlgorithmParameterException | IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
@@ -1473,6 +1748,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         if (caDoesntExistException != null) {
             throw caDoesntExistException;
+        }
+        return null;
+    }
+    
+    @Override
+    public byte[] enrollAndIssueSshCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation,
+            final SshRequestMessage sshRequestMessage)
+            throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (log.isDebugEnabled()) {
+                log.debug("raMasterApi calling enrollAndIssueSshCertificate: " + raMasterApi.getApiVersion() + ", "
+                        + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
+            }
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
+                try {
+                    return raMasterApi.enrollAndIssueSshCertificate(authenticationToken, endEntityInformation, sshRequestMessage);
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
         }
         return null;
     }
@@ -1685,10 +1990,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
     }
 
+
     @Override
     public void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, CertificateProfileDoesNotExistException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, CertificateProfileDoesNotExistException {
         // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
         CADoesntExistsException caDoesntExistException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
@@ -3018,6 +3324,44 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public RaEndEntityProfileResponse getEndEntityProfile(AuthenticationToken authenticationToken, String profileName) throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        EndEntityProfileNotFoundException endentityProfileNotFoundException = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.getEndEntityProfile(authenticationToken, profileName);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Authorization was denied to access the End Entity Profile with name " + profileName + " for proxied request on CA. " + e.getMessage());
+                    }
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                }  catch (EndEntityProfileNotFoundException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("End Entity Profile with name " + profileName +  " could not be found for proxied request on CA. " + e.getMessage());
+                    }
+                    if (endentityProfileNotFoundException == null) {
+                        endentityProfileNotFoundException = e;
+                    }
+                    // Just try next implementation
+                }
+            }
+        }
+        if (endentityProfileNotFoundException != null) {
+            throw endentityProfileNotFoundException;
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
+    }
+
+    @Override
     public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcReq)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             EjbcaException, WaitingForApprovalException, CertificateExpiredException, CesecoreException {
@@ -3043,7 +3387,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     }
                     // Just try next implementation
                 } catch (CADoesntExistsException e) {
-                    log.info("CA for for poxied request cold not be found:" + e.getMessage());
+                    log.info("CA for for proxied request cold not be found:" + e.getMessage());
                     if (caDoesntExistsException == null) {
                         caDoesntExistsException = e;
                     }
@@ -3169,6 +3513,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
                 try {
                     return raMasterApi.getAcmeAuthorizationsByAccountId(accountId);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                try {
+                    return raMasterApi.getAcmePreAuthorizationsByAccountIdAndIdentifiers(accountId, identifiers);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -3462,5 +3820,59 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                            byte[] requestBody, int operationCode) 
+            throws AuthorizationDeniedException, EjbcaException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 13) {
+                try {
+                    return raMasterApi.doEtsiOperation(authenticationToken, ecaCertificateId, 
+                                        requestBody, operationCode);
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
+    }
+
+    @Override
+    public RaCertificateDataOnRenew getCertificateDataForRenew(BigInteger serno, String issuerDn) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.getCertificateDataForRenew(serno, issuerDn);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.selfRenewCertificate(renewCertificateData);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
     }
 }

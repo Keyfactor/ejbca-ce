@@ -32,9 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.util.HTMLTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /** 
  * Servlet implementing server side of the Certificate Store.
@@ -49,7 +50,7 @@ public class CertStoreServlet extends StoreServletBase {
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
 
-	private final static Logger log = Logger.getLogger(CertStoreServlet.class);
+	private static final Logger log = Logger.getLogger(CertStoreServlet.class);
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -59,7 +60,6 @@ public class CertStoreServlet extends StoreServletBase {
 	@Override
 	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 	    returnCerts( this.certCache.findLatestByIssuerDN(HashID.getFromB64(iHash)), resp, iHash );
-		return;
 	}
 
 
@@ -98,7 +98,7 @@ public class CertStoreServlet extends StoreServletBase {
 			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No certificate with hash: "+HTMLTools.htmlescape(name));
 			return;
 		}
-		final byte encoded[];
+		final byte[] encoded;
 		try {
 			encoded = cert.getEncoded();
 		} catch (CertificateEncodingException e) {
@@ -110,7 +110,7 @@ public class CertStoreServlet extends StoreServletBase {
 		resp.getOutputStream().write(encoded);
 	}
 	
-	private void returnCerts(X509Certificate certs[], HttpServletResponse resp, String name) throws IOException, ServletException {
+	private void returnCerts(X509Certificate[] certs, HttpServletResponse resp, String name) throws IOException, ServletException {
 		if (certs==null) {
 			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No certificates with issuer hash DN: "+HTMLTools.htmlescape(name));
 			return;
@@ -133,9 +133,7 @@ public class CertStoreServlet extends StoreServletBase {
 			}
 			mp.writeTo(resp.getOutputStream());
 			resp.flushBuffer();
-		} catch (CertificateEncodingException e) {
-			throw new ServletException(e);
-		} catch (MessagingException e) {
+		} catch (CertificateEncodingException | MessagingException e) {
 			throw new ServletException(e);
 		}
 	}

@@ -18,14 +18,15 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
+import java.util.TimeZone;
 import javax.ejb.EJBException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -39,23 +40,19 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 
-/**
- *
- * @version $Id$
- *
- */
-
 public class RevocationApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
 	private static final Logger log = Logger.getLogger(RevocationApprovalRequest.class);
-	private static final int LATEST_VERSION = 1;
+	private static final int LATEST_VERSION = 3;
 
 	private int approvalType = -1;
 	private String username = null;
 	private BigInteger certificateSerialNumber = null;
 	private String issuerDN = null;
 	private int reason = -2;
+	private Date revocationDate = null;
+	private Date invalidityDate = null;
 
 	/** Constructor used in externalization only */
 	public RevocationApprovalRequest() {}
@@ -64,13 +61,15 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * Construct an ApprovalRequest for the revocation of a certificate.
 	 */
     public RevocationApprovalRequest(BigInteger certificateSerialNumber, String issuerDN, String username, int reason,
-            AuthenticationToken requestAdmin, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
+            AuthenticationToken requestAdmin, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, Date revocationDate, Date invalidityDate) {
         super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile, /* validation results */ null);
 		this.approvalType = ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE;
 		this.username = username;
 		this.reason = reason;
 		this.certificateSerialNumber = certificateSerialNumber;
 		this.issuerDN = issuerDN;
+		this.revocationDate = revocationDate;
+		this.invalidityDate = invalidityDate;
 	}
 
 	/**
@@ -88,6 +87,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		this.reason = reason;
 		this.certificateSerialNumber = null;
 		this.issuerDN = null;
+		this.revocationDate = null;
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
 					endEntityManagementSession.revokeCertAfterApproval(getRequestAdmin(), certificateSerialNumber, issuerDN, reason, approvalRequestID,
-					        lastApprovalAdmin);
+					        lastApprovalAdmin, revocationDate, invalidityDate);
 					break;
 				default:
 					log.error("Unknown approval type " + approvalType);
@@ -124,9 +124,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 			}
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
-		} catch (ApprovalException e) {
-			throw new EJBException("This should never happen",e);
-		} catch (WaitingForApprovalException e) {
+		} catch (ApprovalException | WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (AlreadyRevokedException e) {
 			throw new ApprovalRequestExecutionException("End entity " + username + " was already revoked at execution time.");
@@ -144,18 +142,21 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 */
 	@Override
     public int generateApprovalId() {
-		return generateApprovalId(getApprovalType(), username, reason, certificateSerialNumber, issuerDN, getApprovalProfile().getProfileName());
+		return generateApprovalId(getApprovalType(), username, reason, certificateSerialNumber, issuerDN, getApprovalProfile().getProfileName(), revocationDate);
 	}
 
-	static public int generateApprovalId(int approvalType, String username, int reason, BigInteger certificateSerialNumber, String issuerDN,
-	        String approvalProfileName) {
-		String idString = approvalType + ";" + username + ";" + reason +";";
-		if ( certificateSerialNumber != null && issuerDN != null ) {
-			idString += certificateSerialNumber + ";" + issuerDN + ";";
-		}
-		idString += ";" + approvalProfileName;
-		return idString.hashCode();
-	}
+    public static int generateApprovalId(int approvalType, String username, int reason, BigInteger certificateSerialNumber, String issuerDN,
+            String approvalProfileName, Date revocationDate) {
+        String idString = approvalType + ";" + username + ";" + reason + ";";
+        if (certificateSerialNumber != null && issuerDN != null) {
+            idString += certificateSerialNumber + ";" + issuerDN + ";";
+        }
+        idString += ";" + approvalProfileName;
+        if (revocationDate != null) {
+            idString += ";" + revocationDate.toString();
+        }
+        return idString.hashCode();
+    }
 
 	@Override
     public int getApprovalType() {
@@ -171,7 +172,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 */
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
-		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
+		ArrayList<ApprovalDataText> retval = new ArrayList<>();
 		if ( username != null ) {
 			retval.add(new ApprovalDataText("USERNAME",username,true,false));
 		}
@@ -183,6 +184,12 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		if ( certificateSerialNumber != null && issuerDN != null ) {
 			retval.add(new ApprovalDataText("CERTSERIALNUMBER",certificateSerialNumber.toString(16),true,false));
 			retval.add(new ApprovalDataText("ISSUERDN",issuerDN,true,false));
+		}
+		if (revocationDate != null) {
+            retval.add(new ApprovalDataText("REVOCATIONDATE", ValidityDate.formatAsISO8601ServerTZ(revocationDate.getTime(), TimeZone.getDefault()), true, false));
+		}
+		if (invalidityDate != null) {
+            retval.add(new ApprovalDataText("INVALIDITYDATE", ValidityDate.formatAsISO8601ServerTZ(invalidityDate.getTime(), TimeZone.getDefault()), true, false));
 		}
 		return retval;
 	}
@@ -222,20 +229,35 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		out.writeInt(approvalType);
 		out.writeObject(certificateSerialNumber);
 		out.writeObject(issuerDN);
+		out.writeObject(revocationDate);
+		out.writeObject(invalidityDate);
 	}
 
 	@Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		super.readExternal(in);
+        super.readExternal(in);
         int version = in.readInt();
-        if(version == 1){
-    		username = (String) in.readObject();
-    		reason = in.readInt();
-    		approvalType = in.readInt();
-    		certificateSerialNumber = (BigInteger) in.readObject();
-    		issuerDN = (String) in.readObject();
+        if (version == 1) {
+            readVersionOneData(in);
         }
-	}
+        if (version == 2) {
+            readVersionOneData(in);
+            revocationDate = (Date) in.readObject();
+        }
+        if (version == 3) {
+            readVersionOneData(in);
+            revocationDate = (Date) in.readObject();
+            invalidityDate = (Date) in.readObject();
+        }
+    }
+
+    private void readVersionOneData(final ObjectInput in) throws ClassNotFoundException, IOException {
+        username = (String) in.readObject();
+        reason = in.readInt();
+        approvalType = in.readInt();
+        certificateSerialNumber = (BigInteger) in.readObject();
+        issuerDN = (String) in.readObject();
+    }
 
 	public String getUsername() {
 	    return username;
