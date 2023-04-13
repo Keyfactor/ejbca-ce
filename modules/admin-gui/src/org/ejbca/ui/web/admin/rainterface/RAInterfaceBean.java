@@ -354,7 +354,10 @@ public class RAInterfaceBean implements Serializable {
         return userview;
     }
 
-    /** Method to find all users in database */
+    /** Method to find all users in database 
+     * @deprecated Remove once conversion to jsf is done 
+     */
+    @Deprecated
     public UserView[] findAllUsers(int index, int size) {
        usersView.setUsers(endEntityAccessSession.findAllUsersWithLimit(administrator), caSession.getCAIdToNameMap());
        return usersView.getUsers(index,size);
@@ -363,7 +366,7 @@ public class RAInterfaceBean implements Serializable {
     /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. 
      * 
      * @deprecated Remove once conversion to jsf is done
-     * */
+     */
     @Deprecated
     public UserView[] filterByCertificateSerialNumber(final String serialnumber, final int index, final int size) {
         final BigInteger serno = new BigInteger(StringTools.stripWhitespace(serialnumber), 16);
@@ -393,7 +396,11 @@ public class RAInterfaceBean implements Serializable {
         return usersView.getUsers(index, size);
     }
 
-    /** Method that lists all users with certificate's that expires within given days. */
+    /** Method that lists all users with certificate's that expires within given days. 
+     * 
+     * @deprecated Remove once conversion to jsf is done
+     */
+    @Deprecated
     public UserView[] filterByExpiringCertificates(String days, int index, int size) {
         ArrayList<EndEntityInformation> userlist = new ArrayList<>();
         UserView[] returnval = null;
@@ -421,6 +428,11 @@ public class RAInterfaceBean implements Serializable {
         return returnval;
     }
 
+    /** 
+     * 
+     * @deprecated Remove once conversion to jsf is done
+     */
+    @Deprecated
     public UserView[] filterByQuery(Query query, int index, int size, final String endentityAccessRule) throws IllegalQueryException {
         Collection<EndEntityInformation> userlist = endEntityAccessSession.query(administrator, query,
                 raauthorization.getCAAuthorizationString(),
