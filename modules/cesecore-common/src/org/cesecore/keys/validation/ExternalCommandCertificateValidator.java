@@ -21,17 +21,16 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.profiles.Profile;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.ExternalProcessTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
@@ -39,6 +38,8 @@ import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * External command certificate validator for multiple platforms.
@@ -152,7 +153,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
                 newValues.put("testOut", StringUtils.join(out, System.getProperty("line.separator")));
                 newValues.put("testPath", null);
                 uiModel.firePropertyChange(oldValues, newValues);
-                setTestCertificates(ListUtils.EMPTY_LIST);
+                setTestCertificates(Collections.EMPTY_LIST);
             }
             @Override
             public List<String> getRender() {

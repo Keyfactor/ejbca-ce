@@ -34,11 +34,11 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -71,16 +71,13 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
-import org.cesecore.util.CertTools;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -93,7 +90,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -101,7 +97,13 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 
-@ManagedBean
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+@Named
 @SessionScoped
 public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
@@ -128,6 +130,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private String cryptoTokenType;
     private int currentCryptoTokenId = 0;
     private boolean installed = false;
+    private boolean deletePublicRole = true;
     
     @EJB
     private AuthorizationSystemSessionLocal authorizationSystemSession;
@@ -141,6 +144,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private KeyStoreCreateSessionLocal keyStoreCreateSession;
+    @EJB
+    private RoleSessionLocal roleSession;
     
     private CAInterfaceBean caBean;
     
@@ -271,6 +276,14 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
     public void setCryptoTokenType(String cryptoTokenType) {
         this.cryptoTokenType = cryptoTokenType;
+    }
+
+    public boolean isDeletePublicRole() {
+        return deletePublicRole;
+    }
+
+    public void setDeletePublicRole(boolean deletePublicRole) {
+        this.deletePublicRole = deletePublicRole;
     }
 
     // Read from cryptotoken.xhtml in order to determine whether an option
@@ -415,6 +428,15 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             log.error("Not authorized to create CA: " + e.getMessage());
             return;
         }
+        if (isDeletePublicRole()) {
+            try {
+                roleSession.deleteRoleIdempotent(getAdmin(), null, AuthorizationSystemSession.PUBLIC_ACCESS_ROLE);
+            } catch (AuthorizationDeniedException e) {
+                addErrorMessage("ACCESSRULES_ERROR_UNAUTH", getAdmin() + " not authorized to delete role");
+                log.error("Not authorized to delete role: " + e.getMessage());
+                return;
+            }
+        }
         installed = true;
     }
     
@@ -501,27 +523,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         
         // Add CA Services
-        String keyType = AlgorithmConstants.KEYALGORITHM_RSA;
-        String extendedServiceKeySpec = caInfoDto.getSignatureAlgorithmParam();
-        if (extendedServiceKeySpec.startsWith("DSA")) {
-            keyType = AlgorithmConstants.KEYALGORITHM_DSA;
-        } else if (extendedServiceKeySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
-            keyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-        } else if (AlgorithmTools.isDstu4145Enabled() && extendedServiceKeySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
-            keyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
-        } else {
-            keyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
-        }
-        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-        if (keyType.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
-            // Never use larger keys than 2048 bit RSA for OCSP signing
-            int len = Integer.parseInt(extendedServiceKeySpec);
-            if (len > 2048) {
-                extendedServiceKeySpec = "2048";
-            }
-        }
-        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CmsCertificate, " + getCaDn(), "",
-                extendedServiceKeySpec, keyType));
+        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
+
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo caInfo = createX509CaInfo(getCaDn(), null, getCaName(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, encodedValidity, 
                 CAInfo.SELFSIGNED, caToken, null, extendedcaservices);

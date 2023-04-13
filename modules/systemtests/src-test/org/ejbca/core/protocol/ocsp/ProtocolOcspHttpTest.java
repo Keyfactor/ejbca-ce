@@ -13,10 +13,12 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -57,12 +59,10 @@ import javax.ejb.ObjectNotFoundException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -82,6 +82,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
@@ -128,23 +129,15 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -164,7 +157,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceIn
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
 import org.junit.Before;
@@ -174,14 +166,26 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 
 /**
  * Tests http pages of ocsp
- * 
- * @version $Id$
- *
  */
 public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
+
+    private static final String LOOPBACK_IP = "127.0.0.1";
+
+    private static final String FOO123_PASSWORD = "foo123";
+
+    private static final String PKIX_OCSP_NONCE = "123456789";
 
     public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
@@ -276,7 +280,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         protected void starting(final Description description) {
             log.trace(">" + description.getMethodName());
             super.starting(description);
-        };
+        }
         @Override
         protected void finished(final Description description) {
             log.trace("<" + description.getMethodName());
@@ -306,7 +310,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         cacert = (X509Certificate) CaTestCase.getTestCACert();
         caid = CaTestCase.getTestCAId();
         
-        Map<String, String> config = new HashMap<String, String>();
+        Map<String, String> config = new HashMap<>();
         
         config.put("ocsp.nonexistingisgood", "false");
         config.put("ocsp.nonexistingisrevoked", "false");
@@ -370,12 +374,25 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.trace(">test03OcspRevoked()");
         loadUserCert(this.caid);
         // Now revoke the certificate and try again
-        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         this.helper.reloadKeys();
         this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), 
                             RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         log.trace("<test03OcspRevoked()");
     }
+    
+    @Test
+    public void testOcspRevokedUnespecifiedReason() throws Exception {
+        log.trace(">testOcspRevokedUnespecifiedReason()");
+        loadUserCert(this.caid);
+        // Now revoke the certificate and try again
+        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+        this.helper.reloadKeys();
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), 
+                            RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+        log.trace("<testOcspRevokedUnespecifiedReason()");
+    }
+    
 
     @Override
     @Test
@@ -413,21 +430,21 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
             Extension[] extensions = new Extension[1];
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
             
-            X509CertificateHolder chain[] = new X509CertificateHolder[2];
+            X509CertificateHolder[] chain = new X509CertificateHolder[2];
             chain[0] = new JcaX509CertificateHolder(ocspTestCert);
             chain[1] = new JcaX509CertificateHolder(cacert);
             gen.setRequestorName(chain[0].getSubject());
             OCSPReq req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(keys.getPrivate()), chain);
 
             // First test with a signed OCSP request that can be verified
-            Collection<Certificate> cacerts = new ArrayList<Certificate>();
+            Collection<Certificate> cacerts = new ArrayList<>();
             cacerts.add(cacert);
             CaCertificateCache certcache = CaCertificateCache.INSTANCE;
             certcache.loadCertificates(cacerts);
-            X509Certificate signer = checkRequestSignature("127.0.0.1", req, certcache);
+            X509Certificate signer = checkRequestSignature(LOOPBACK_IP, req, certcache);
             assertNotNull(signer);
             assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
 
@@ -435,7 +452,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             req = gen.build();
             boolean caught = false;
             try {
-                signer = checkRequestSignature("127.0.0.1", req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req, certcache);
             } catch (SignRequestException e) {
                 caught = true;
             }
@@ -444,17 +461,17 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             // sign with a keystore where the CA-certificate is not known
             KeyStore store = KeyStore.getInstance("PKCS12", "BC");
             ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
-            store.load(fis, "foo123".toCharArray());
+            store.load(fis, FOO123_PASSWORD.toCharArray());
             Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
             chain[0] = new JcaX509CertificateHolder((X509Certificate) certs[0]);
             chain[1] = new JcaX509CertificateHolder((X509Certificate) certs[1]);
-            PrivateKey pk = (PrivateKey) store.getKey("privateKey", "foo123".toCharArray());
+            PrivateKey pk = (PrivateKey) store.getKey("privateKey", FOO123_PASSWORD.toCharArray());
             req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), 20480), chain);
             // Send the request and receive a singleResponse, this response should
             // throw an SignRequestSignatureException
             caught = false;
             try {
-                signer = checkRequestSignature("127.0.0.1", req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req, certcache);
             } catch (SignRequestSignatureException e) {
                 caught = true;
             }
@@ -463,17 +480,17 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             // sign with a keystore where the signing certificate has expired
             store = KeyStore.getInstance("PKCS12", "BC");
             fis = new ByteArrayInputStream(ksexpired);
-            store.load(fis, "foo123".toCharArray());
+            store.load(fis, FOO123_PASSWORD.toCharArray());
             certs = KeyTools.getCertChain(store, "ocspclient");
             chain[0] =  new JcaX509CertificateHolder((X509Certificate) certs[0]);
             chain[1] =  new JcaX509CertificateHolder((X509Certificate) certs[1]);
-            pk = (PrivateKey) store.getKey("ocspclient", "foo123".toCharArray());
+            pk = (PrivateKey) store.getKey("ocspclient", FOO123_PASSWORD.toCharArray());
             req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), 20480), chain);
             // Send the request and receive a singleResponse, this response should
             // throw an SignRequestSignatureException
             caught = false;
             try {
-                signer = checkRequestSignature("127.0.0.1", req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req, certcache);
             } catch (SignRequestSignatureException e) {
                 caught = true;
             }
@@ -506,30 +523,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
         }
     } // test08OcspEcdsaGood
-
-    /**
-     * Tests ocsp message
-     *
-     * @throws Exception
-     *           error
-     */
-    @Test
-    public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-        int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
-        final CAInfo caInfo = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
-        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-        helper.reloadKeys();
-        try {
-            // Make user and ocspTestCert that we know...
-            createUserCert(ecdsacaid);
-            this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
-        } finally {
-            endEntityManagementSession.deleteUser(admin, "ocsptest");
-            CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
-        }
-    } // test09OcspEcdsaImplicitlyCAGood
 
     @Override
     @Test
@@ -634,7 +627,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
 
@@ -840,7 +833,6 @@ Content-Type: text/html; charset=iso-8859-1
      * Verify OCSP response for a malicious request where the POST data starts
      * with a proper OCSP request.
      */
-    @Test
     public void test20MaliciousOcspRequest() throws Exception {
         log.trace(">test20MaliciousOcspRequest");
         // Start by sending a valid OCSP requests so we know the helpers work
@@ -902,13 +894,13 @@ Content-Type: text/html; charset=iso-8859-1
         log.trace(">test50OcspUnknownMayBeGood()");
         loadUserCert(this.caid);
         // An OCSP request for an unknown certificate (not exist in db)
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         final String bad1 = "Bad";
         final String bad2 = "Ugly";
         final String good1 = "Good";
         final String good2 = "Beautiful";
         {
-            final Map<String,String> map = new HashMap<String, String>();
+            final Map<String,String> map = new HashMap<>();
             map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
@@ -917,66 +909,23 @@ Content-Type: text/html; charset=iso-8859-1
             this.helper.alterConfig(map);
         }
         this.helper.reloadKeys();
-        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusGood( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(bad1);
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(bad2);
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         {
-            final Map<String,String> map = new HashMap<String, String>();
+            final Map<String,String> map = new HashMap<>();
             map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
             this.helper.alterConfig(map);
         }
         this.helper.setURLEnding("");
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(good1);
-        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusGood( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(good2);
-        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusGood( this.caid, this.cacert, BigInteger.valueOf(1) );
         log.trace("<test50OcspUnknownMayBeGood()");
-    }
-    
-    /**
-     * This test tests the feature of extensions of setting a '*' in front of the value in ocsp.extensionoid
-     * forces that extension to be used for all requests. 
-     * The Common PKI CertHash extension is on such extension that is always used, if configured to be used. 
-     * This extension is specified in the German Common PKI standard:
-     * <a href="http://www.t7ev.org/T7-de/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testUseAlwaysExtensions() throws Exception {
-        log.trace(">testUseAlwaysExtensions");
-        final String ALWAYSUSE_EXT = "ocsp.alwayssendcustomextension";
-        final String oldAlwaysUseExt = cesecoreConfigurationProxySession.getConfigurationValue(ALWAYSUSE_EXT);
-        try {
-            cesecoreConfigurationProxySession.setConfigurationValue(ALWAYSUSE_EXT, OcspCertHashExtension.CERT_HASH_OID);
-            ocspResponseGeneratorSession.reloadOcspExtensionsCache();
-
-            // An OCSP request, ocspTestCert is already created in earlier tests
-            OCSPReqBuilder gen = new OCSPReqBuilder();
-            loadUserCert(this.caid);
-            this.helper.reloadKeys();
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-            OCSPReq req = gen.build();
-            BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-            if (response == null) {
-                throw new Exception("Could not retrieve response, test could not continue.");
-            }
-            // The CertHash is an extension in the responseItem, not in the full response
-            Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID));
-            assertNull("There should be no CertHash extension in the ResponseExtensions, it should be in the responseItem Extensions", responseExtension);
-            SingleResp[] responseItems = response.getResponses();
-            assertNotNull("There should be one response item in the OCSP response", responseItems);
-            assertEquals("There should be one response item in the OCSP response", 1, responseItems.length);
-            responseExtension = responseItems[0].getExtension(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID));
-            assertNotNull("No extension sent with reply in the responseItem", responseExtension);
-        } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(ALWAYSUSE_EXT, oldAlwaysUseExt);
-            ocspResponseGeneratorSession.reloadOcspExtensionsCache();
-            log.trace("<testUseAlwaysExtensions");
-        }
     }
     
     @Test
@@ -984,16 +933,16 @@ Content-Type: text/html; charset=iso-8859-1
         log.trace(">testBase64EncodeInURINonExistingGood");
         loadUserCert(this.caid);
         // An OCSP request for an unknown certificate (not exist in db)
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         final String bad = "MEkwRzBFMEMwQTAJBgUrDgMCGgUABBS6ZiRTm9v22WVorgRHAGsMV3lC+wQUvf1XLZAVhuTwzI8T7SzebIRvwzkCCAIBkFE4Z1MJ";
         {
-            final Map<String,String> map = new HashMap<String, String>();
+            final Map<String,String> map = new HashMap<>();
             map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*\\?"+bad+"$");
             this.helper.alterConfig(map);
         }
         this.helper.reloadKeys();
-        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusGood( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(bad);
         log.trace("<testBase64EncodeInURINonExistingGood");
     }
@@ -1003,16 +952,16 @@ Content-Type: text/html; charset=iso-8859-1
         log.trace(">testBase64EncodeInURINonExistingBad");
         loadUserCert(this.caid);
         // An OCSP request for an unknown certificate (not exist in db)
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         final String bad = "MEkwRzBFMEMwQTAJBgUrDgMCGgUABBS6ZiRTm9v22WVorgRHAGsMV3lC+wQUvf1XLZAVhuTwzI8T7SzebIRvwzkCCAIBkFE4Z1MJ";
         {
-            final Map<String,String> map = new HashMap<String, String>();
+            final Map<String,String> map = new HashMap<>();
             map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*\\?"+bad+"$");
             this.helper.alterConfig(map);
         }
         this.helper.reloadKeys();
-        this.helper.verifyStatusUnknown(this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown(this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(bad);
         log.trace("<testBase64EncodeInURINonExistingBad");
     }
@@ -1030,7 +979,7 @@ Content-Type: text/html; charset=iso-8859-1
         
         loadUserCert(this.caid);
         // An OCSP request for an unknown certificate (not exist in db)
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         final String bad1 = "Bad";
         final String bad2 = "Ugly";
         final String good1 = "Good";
@@ -1038,7 +987,7 @@ Content-Type: text/html; charset=iso-8859-1
         final String revoked1 = "Revoked";
         final String revoked2 = "Denied";
         {
-            final Map<String,String> map = new HashMap<String, String>();
+            final Map<String,String> map = new HashMap<>();
             map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
@@ -1049,26 +998,26 @@ Content-Type: text/html; charset=iso-8859-1
             this.helper.alterConfig(map);
         }
         this.helper.reloadKeys();
-        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.certificateHold, new Date(0) );
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, BigInteger.valueOf(1), CRLReason.certificateHold, new Date(0) );
         this.helper.setURLEnding(bad1);
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(bad2);
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(good1);
-        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusGood( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(good2);
-        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusGood( this.caid, this.cacert, BigInteger.valueOf(1) );
         {
-            final Map<String,String> map = new HashMap<String, String>();
+            final Map<String,String> map = new HashMap<>();
             map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "false");
             this.helper.alterConfig(map);
         }
         this.helper.setURLEnding("");
-        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         this.helper.setURLEnding(revoked1);
-        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.certificateHold, new Date(0) );
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, BigInteger.valueOf(1), CRLReason.certificateHold, new Date(0) );
         this.helper.setURLEnding(revoked2);
-        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.certificateHold, new Date(0) );
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, BigInteger.valueOf(1), CRLReason.certificateHold, new Date(0) );
 
         log.trace("<test60OcspUnknownIsRevoked()");
     }
@@ -1084,7 +1033,7 @@ Content-Type: text/html; charset=iso-8859-1
     public void testExtendedRevokedExtension() throws Exception {
         
         OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, BigInteger.valueOf(1) ));
         OCSPReq req = gen.build();
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
@@ -1093,12 +1042,12 @@ Content-Type: text/html; charset=iso-8859-1
         Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".9"));
         assertNull("Wrong extension sent with reply", responseExtension);
         
-        final Map<String,String> map = new HashMap<String, String>();
+        final Map<String,String> map = new HashMap<>();
         map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
         this.helper.alterConfig(map);
         
         gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, BigInteger.valueOf(1) ));
         req = gen.build();
         response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
@@ -1149,7 +1098,7 @@ Content-Type: text/html; charset=iso-8859-1
             final int eepId = eeProfSession.getEndEntityProfileId(eepname);
         
             if (!endEntityManagementSession.existsUser(username)) {
-                endEntityManagementSession.addUser(admin, username, "foo123", "CN=certUsername", null, "ocsptest@anatom.se", false,
+                endEntityManagementSession.addUser(admin, username, FOO123_PASSWORD, "CN=certUsername", null, "ocsptest@anatom.se", false,
                         eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
                 log.debug("created user: certUsername, foo123, CN=certUsername");
             } else {
@@ -1157,7 +1106,7 @@ Content-Type: text/html; charset=iso-8859-1
                 EndEntityInformation userData = new EndEntityInformation(username, "CN=certUsername",
                         caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                         eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, null);
-                userData.setPassword("foo123");
+                userData.setPassword(FOO123_PASSWORD);
                 endEntityManagementSession.changeUser(admin, userData, false);
                 log.debug("Reset status to NEW");
             }
@@ -1166,7 +1115,7 @@ Content-Type: text/html; charset=iso-8859-1
             KeyPair keys = KeyTools.genKeys("512", "RSA");
             long now = (new Date()).getTime();
             long notAfter = now + 71003083; // 2y3mo
-            xcert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", 
+            xcert = (X509Certificate) signSession.createCertificate(admin, username, FOO123_PASSWORD, 
                     new PublicKeyWrapper(keys.getPublic()), -1, new Date(), new Date(notAfter));
             assertNotNull("Failed to create new certificate", xcert);
             
@@ -1187,7 +1136,7 @@ Content-Type: text/html; charset=iso-8859-1
             ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASS_NAME,
                     "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             if (!endEntityManagementSession.existsUser("ocspSigner")) {
-                endEntityManagementSession.addUser(admin, "ocspSigner", "foo123", "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
+                endEntityManagementSession.addUser(admin, "ocspSigner", FOO123_PASSWORD, "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
                     cpId, EndEntityTypes.ENDUSER.toEndEntityType(),
                         EndEntityConstants.TOKEN_USERGEN, caid);
             } else {
@@ -1195,7 +1144,7 @@ Content-Type: text/html; charset=iso-8859-1
                 EndEntityInformation userData = new EndEntityInformation("ocspSigner", "CN=ocspSigner",
                         caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                         eepId, cpId, null, null, EndEntityConstants.TOKEN_USERGEN, null);
-                userData.setPassword("foo123");
+                userData.setPassword(FOO123_PASSWORD);
                 endEntityManagementSession.changeUser(admin, userData, false);
                 log.debug("Reset status to NEW");
             }
@@ -1250,6 +1199,145 @@ Content-Type: text/html; charset=iso-8859-1
         }
     }
 
+    @Test
+    public void testOmitRevokationReasonIfUnespecified() throws Exception {
+        final String username = "certUsername";
+        String cpname = "ValidityCertProfile";
+        String eepname = "ValidityEEProfile";
+        X509Certificate xcert = null;
+        int cryptoTokenId = 0;
+        int ocspKeyBindingId = 0;
+        final String TESTCLASS_NAME = this.getClass().getSimpleName();
+        
+        CertificateProfileSessionRemote certProfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        EndEntityProfileSessionRemote eeProfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        
+        try {
+            if (certProfSession.getCertificateProfile(cpname) == null) {
+                final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+                cp.setAllowValidityOverride(true);
+                try {
+                    certProfSession.addCertificateProfile(admin, cpname, cp);
+                } catch (CertificateProfileExistsException e) {
+                    log.error("Certificate profile exists: ", e);
+                }
+            }
+            final int cpId = certProfSession.getCertificateProfileId(cpname);
+            if (eeProfSession.getEndEntityProfile(eepname) == null) {
+                final EndEntityProfile eep = new EndEntityProfile(true);
+                eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId);
+                try {
+                    eeProfSession.addEndEntityProfile(admin, eepname, eep);
+                } catch (EndEntityProfileExistsException e) {
+                    log.error("Could not create end entity profile.", e);
+                }
+            }
+            final int eepId = eeProfSession.getEndEntityProfileId(eepname);
+        
+            if (!endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.addUser(admin, username, FOO123_PASSWORD, "CN=certUsername", null, "ocsptest@anatom.se", false,
+                        eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+                log.debug("created user: certUsername, foo123, CN=certUsername");
+            } else {
+                log.debug("User certUsername already exists.");
+                EndEntityInformation userData = new EndEntityInformation(username, "CN=certUsername",
+                        caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                        eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                userData.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.changeUser(admin, userData, false);
+                log.debug("Reset status to NEW");
+            }
+            
+            // Generate certificate for the new user
+            KeyPair keys = KeyTools.genKeys("512", "RSA");
+            long now = (new Date()).getTime();
+            long notAfter = now + 71003083; // 2y3mo
+            xcert = (X509Certificate) signSession.createCertificate(admin, username, FOO123_PASSWORD, 
+                    new PublicKeyWrapper(keys.getPublic()), -1, new Date(), new Date(notAfter));
+            assertNotNull("Failed to create new certificate", xcert);
+           
+            // Revoke the certificate with unspecified reason
+            this.revocationSession.revokeCertificate(admin, xcert, null, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+            
+            // -------- Testing without an internal key binding the revocatin will be present in the response.  
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
+            OCSPReq req = gen.build();
+            BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            assertNotNull("Could not retrieve response, test could not continue.", response);
+            SingleResp resp = response.getResponses()[0];
+            CertificateStatus certStatus = resp.getCertStatus();
+            
+            assertNotNull("Certificate status was null!", certStatus);
+            assertThat(certStatus, instanceOf(RevokedStatus.class));
+            assertEquals("Incorrect revocation reason!", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, ((RevokedStatus)certStatus).getRevocationReason());
+
+            
+            // Now try with a key binding
+            cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(admin, TESTCLASS_NAME);
+            ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASS_NAME,
+                    "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+            if (!endEntityManagementSession.existsUser("ocspSigner")) {
+                endEntityManagementSession.addUser(admin, "ocspSigner", FOO123_PASSWORD, "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
+                    cpId, EndEntityTypes.ENDUSER.toEndEntityType(),
+                        EndEntityConstants.TOKEN_USERGEN, caid);
+            } else {
+                log.debug("User ocspSigner already exists.");
+                EndEntityInformation userData = new EndEntityInformation("ocspSigner", "CN=ocspSigner",
+                        caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                        eepId, cpId, null, null, EndEntityConstants.TOKEN_USERGEN, null);
+                userData.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.changeUser(admin, userData, false);
+                log.debug("Reset status to NEW");
+            }
+            OcspTestUtils.createOcspSigningCertificate(admin, "ocspSigner", "CN=OCSP Signer " + TESTCLASS_NAME, ocspKeyBindingId,
+                    CaTestCase.getTestCAId());
+            OcspTestUtils.updateInternalKeyBindingCertificate(admin, ocspKeyBindingId);
+            OcspTestUtils.setInternalKeyBindingStatus(admin, ocspKeyBindingId, InternalKeyBindingStatus.ACTIVE);
+            OcspTestUtils.clearOcspSigningCache();
+            
+            // The reason by default is omitted from the response in case of unespecified
+            gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
+            req = gen.build();
+            response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            assertNotNull("Could not retrieve response, test could not continue.", response);
+            resp = response.getResponses()[0];
+            certStatus = resp.getCertStatus();
+            assertNotNull("Certificate status was null!", certStatus);
+            assertThat(certStatus, instanceOf(RevokedStatus.class));
+            assertFalse("Revocation reason was present in the status!", ((RevokedStatus)certStatus).hasRevocationReason());
+
+            // Now disable the omit for the revocation reason
+            OcspTestUtils.disableOmitRevocationReasonUnespecified(admin, ocspKeyBindingId);
+            OcspTestUtils.clearOcspSigningCache();
+            
+            // And the proper reason should appear in the response
+            gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
+            req = gen.build();
+            response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            assertNotNull("Could not retrieve response, test could not continue.", response);
+            resp = response.getResponses()[0];
+            certStatus = resp.getCertStatus();
+            assertNotNull("Certificate status was null!", certStatus);
+            assertThat(certStatus, instanceOf(RevokedStatus.class));
+            assertTrue("Revocation reason was not present in the status!", ((RevokedStatus)certStatus).hasRevocationReason());
+            assertEquals("Wrong revocation reason!", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, ((RevokedStatus)certStatus).getRevocationReason());
+            
+        } finally {
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.revokeAndDeleteUser(admin, username, CRLReason.unspecified);
+            }
+            if (endEntityManagementSession.existsUser("ocspSigner")) {
+                endEntityManagementSession.revokeAndDeleteUser(admin, "ocspSigner", CRLReason.unspecified);
+            }
+            CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
+            OcspTestUtils.removeInternalKeyBinding(admin, TESTCLASS_NAME);
+            eeProfSession.removeEndEntityProfile(admin, eepname);
+            certProfSession.removeCertificateProfile(admin, cpname);
+        }
+    }
     
     /**
      * This test tests that the OCSP response for a status unknown contains the header "cache-control" with the value "no-cache, must-revalidate"
@@ -1260,12 +1348,12 @@ Content-Type: text/html; charset=iso-8859-1
     public void testUnknownStatusCacheControlHeader() throws Exception {
         
         // set ocsp configuration
-        Map<String,String> map = new HashMap<String, String>();
+        Map<String,String> map = new HashMap<>();
         map.put(OcspConfiguration.UNTIL_NEXT_UPDATE, "1");
         this.helper.alterConfig(map);
         
         OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, BigInteger.valueOf(1) ));
         OCSPReq req = gen.build();
         
         String sBaseURL = httpReqPath + '/' + resourceOcsp;
@@ -1286,9 +1374,9 @@ Content-Type: text/html; charset=iso-8859-1
         
         // Create a GET request using Nonce extension, in this case we should have no cache-control header
         gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, BigInteger.valueOf(1) ));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();        
         b64 = new String(Base64.encode(req.getEncoded(), false));
@@ -1302,13 +1390,11 @@ Content-Type: text/html; charset=iso-8859-1
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
         OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
+        Extension ext = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
         // Make sure we have a nonce in the response, we should have since we sent one in the request
-        assertNotNull("Response should have nonce since we sent a nonce in the request", noncerep);
-        ASN1InputStream ain = new ASN1InputStream(noncerep);
-        ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
-        ain.close();
-        assertEquals("Response Nonce was not the same as the request Nonce, it must be", "123456789", new String(oct.getOctets()));
+        assertNotNull("Response should have nonce since we sent a nonce in the request", ext);
+        ASN1OctetString oct = ASN1OctetString.getInstance(ext.getParsedValue());
+        assertEquals("Response Nonce was not the same as the request Nonce, it must be", PKIX_OCSP_NONCE, new String(oct.getOctets()));
         assertNull("Cache-Control in reply although we used Nonce in the request. Responses with Nonce should not have a Cache-control header.", con.getHeaderField("Cache-Control"));
     }
     
@@ -1325,7 +1411,7 @@ Content-Type: text/html; charset=iso-8859-1
         // Try sending a request where the preferred signature algorithm in the extension is expected to be used to sign the response.
         
         // set ocsp configuration
-        Map<String,String> map = new HashMap<String, String>();
+        Map<String,String> map = new HashMap<>();
         map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         this.helper.alterConfig(map);
         
@@ -1408,7 +1494,7 @@ Content-Type: text/html; charset=iso-8859-1
         loadUserCert(caid);
         // Try sending a request where the preferred signature algorithm in the extension is expected to be used to sign the response.
         // set ocsp configuration
-        Map<String,String> map = new HashMap<String, String>();
+        Map<String,String> map = new HashMap<>();
         map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         helper.alterConfig(map);
         final ASN1Sequence preferredSignatureAlgorithms = getPreferredSignatureAlgorithms(X9ObjectIdentifiers.ecdsa_with_SHA256, PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -1440,7 +1526,7 @@ Content-Type: text/html; charset=iso-8859-1
         assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response1.getSignatureAlgOID());
         
         // Test requesting SHA1WithRSA, but not having that as an available signature algorithm
-        map = new HashMap<String, String>();
+        map = new HashMap<>();
         map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         helper.alterConfig(map);
         ocspReqBuilder = new OCSPReqBuilder();
@@ -1461,7 +1547,7 @@ Content-Type: text/html; charset=iso-8859-1
     public void testSigAlgExtensionMismatch() throws Exception {
         log.trace(">testSigAlgExtensionNewMismatch");
         loadUserCert(caid);
-        final Map<String,String> map = new HashMap<String, String>();
+        final Map<String,String> map = new HashMap<>();
         map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         helper.alterConfig(map);
         // Try sending a request where the preferred signature algorithm is not compatible with the signing key, but 
@@ -1504,7 +1590,7 @@ Content-Type: text/html; charset=iso-8859-1
     public void testSignCertNotIncludedInResponse() throws Exception {
         loadUserCert(this.caid);
         // set OCSP configuration
-        Map<String,String> map = new HashMap<String, String>();
+        Map<String,String> map = new HashMap<>();
         map.put(OcspConfiguration.INCLUDE_SIGNING_CERT, "false");
         helper.alterConfig(map);
         // This setting is part of the OCSP signing cache so a reload of the cache is required
@@ -1536,7 +1622,7 @@ Content-Type: text/html; charset=iso-8859-1
         X509Certificate subSubCaCert = createSubCA(subSubCaDN, subcaDN.hashCode());
         
         // set OCSP configuration
-        Map<String,String> map = new HashMap<String, String>();
+        Map<String,String> map = new HashMap<>();
         map.put(OcspConfiguration.INCLUDE_CERT_CHAIN, "true");
         GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         ocspConfiguration.setOcspDefaultResponderReference(subSubCaDN);
@@ -1664,7 +1750,7 @@ Content-Type: text/html; charset=iso-8859-1
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
         return req.getEncoded();
@@ -1764,8 +1850,8 @@ Content-Type: text/html; charset=iso-8859-1
         int cryptoTokenId = 0;
         CAInfo info = null;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec);
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec, keySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             // Create and active OSCP CA Service.
             List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1791,20 +1877,12 @@ Content-Type: text/html; charset=iso-8859-1
                 JCEECPublicKey ecpk = (JCEECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                    assertNull("ImplicitlyCA must have null spec", spec);
-                } else {
-                    assertNotNull("secp256r1 must not have null spec", spec);
-                }
+                assertNotNull("secp256r1 must not have null spec", spec);                
             } else if (pk instanceof BCECPublicKey) {
                 BCECPublicKey ecpk = (BCECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                    assertNull("ImplicitlyCA must have null spec", spec);
-                } else {
-                    assertNotNull("secp256r1 must not have null spec", spec);
-                }               
+                assertNotNull("secp256r1 must not have null spec", spec);          
             } else {
                 assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
             }
@@ -1832,8 +1910,8 @@ Content-Type: text/html; charset=iso-8859-1
         X509Certificate cacert = null;
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec);
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec, keySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             // Create and active OSCP CA Service.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1870,8 +1948,8 @@ Content-Type: text/html; charset=iso-8859-1
                     CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException, 
                     CADoesntExistsException, CAExistsException {
         try {
-            int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, subcaDN, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, subcaDN, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             // Create and active OSCP CA Service.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1898,7 +1976,6 @@ Content-Type: text/html; charset=iso-8859-1
     /**
      * This method creates the user "ocsptest" and generated a certificate for it
      */
-    @Override
     protected void loadUserCert(int caid) throws Exception {
         createUserCert(caid);
     }
@@ -1909,7 +1986,7 @@ Content-Type: text/html; charset=iso-8859-1
         final String USERNAME = "ocsptest";
         if (!endEntityManagementSession.existsUser(USERNAME)) {
 
-            endEntityManagementSession.addUser(admin, USERNAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
+            endEntityManagementSession.addUser(admin, USERNAME, FOO123_PASSWORD, "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
@@ -1918,7 +1995,7 @@ Content-Type: text/html; charset=iso-8859-1
             EndEntityInformation userData = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest",
                     caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
-            userData.setPassword("foo123");
+            userData.setPassword(FOO123_PASSWORD);
             endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");
         }
@@ -1926,7 +2003,7 @@ Content-Type: text/html; charset=iso-8859-1
         KeyPair keys = KeyTools.genKeys("512", "RSA");
 
         // user that we know exists...
-        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, USERNAME, FOO123_PASSWORD, new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create new certificate", ocspTestCert);
         return keys;
     }

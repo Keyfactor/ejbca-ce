@@ -13,21 +13,22 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.security.InvalidKeyException;
-import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
-import com.google.common.base.Preconditions;
-
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.util.StringTools;
+
+import com.google.common.base.Preconditions;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * Represents an OAuth Public Key entry
@@ -79,6 +80,8 @@ public final class OAuthKeyInfo implements Serializable {
     private String url;
     private String clientSecret;
     private int skewLimit = 60000;
+    private String publicKeyUrl;
+
     
     // PingID fields
     private String tokenUrl;
@@ -156,7 +159,8 @@ public final class OAuthKeyInfo implements Serializable {
     }
 
     public void setClientSecretAndEncrypt(String clientSecret) {
-        this.clientSecret = StringTools.pbeEncryptStringWithSha256Aes192(clientSecret);
+        final char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
+        this.clientSecret = StringTools.pbeEncryptStringWithSha256Aes192(clientSecret, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
     }
 
     public String getLabel() {
@@ -173,6 +177,14 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setKeys(Map<String, OAuthPublicKey> keys) {
         this.keys = keys;
+    }
+
+    public String getPublicKeyUrl() {
+        return this.publicKeyUrl;
+    }
+
+    public void setPublicKeyUrl(String publicKeyUrl) {
+        this.publicKeyUrl = publicKeyUrl;
     }
 
     public String getClient() {

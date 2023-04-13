@@ -34,11 +34,14 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
@@ -47,6 +50,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -56,8 +61,11 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1BitString;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -73,6 +81,7 @@ import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
@@ -106,6 +115,7 @@ import org.bouncycastle.asn1.crmf.Controls;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -118,9 +128,11 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.cmp.CMPException;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
@@ -134,7 +146,6 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
-import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -149,14 +160,10 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -182,6 +189,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.internal.ArrayComparisonFailure;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 /**
  * Helper class for CMP Junit tests. 
  * You can run this test against a CMP Proxy instead of directoy to the CA by setting the system property httpCmpProxyURL, 
@@ -202,7 +215,7 @@ public abstract class CmpTestCase extends CaTestCase {
     private final String CMP_HOST; // = "127.0.0.1";
 
     protected final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    protected final CertificateStoreSession certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    protected final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     protected final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     protected final EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     protected final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
@@ -237,6 +250,10 @@ public abstract class CmpTestCase extends CaTestCase {
         assertTrue("Certificate profile with name " + name + " already exists. Clear test data first.", this.certProfileSession.getCertificateProfile(name) == null);
         final CertificateProfile result = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         result.setAllowDNOverride(true);
+        // Add NTRU, just to demonstrate that it is possible in testCrmfHttpOkUserWithPQC
+        List<String> algos = result.getAvailableKeyAlgorithmsAsList();
+        algos.add(AlgorithmConstants.KEYALGORITHM_NTRU);
+        result.setAvailableKeyAlgorithmsAsList(algos);
         int id = -1;
         try {
             this.certProfileSession.addCertificateProfile(ADMIN, name, result);
@@ -313,6 +330,14 @@ public abstract class CmpTestCase extends CaTestCase {
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
     }
     
+    public static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+        
+        return genP10CrCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm);
+    }
+ 
     public static PKIMessage genCertReqWithSAN(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
@@ -494,9 +519,94 @@ public abstract class CmpTestCase extends CaTestCase {
             pkiHeaderBuilder.setGeneralInfo(genInfo);
         }
         PKIBody pkiBody = new PKIBody(PKIBody.TYPE_INIT_REQ, certReqMessages);
-        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
-        return pkiMessage;
+        return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
     }
+    
+    protected static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, SubjectPublicKeyInfo spkInfo,  
+            KeyPair protocolEncrKey, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm) throws OperatorCreationException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+        
+        ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+        DERSet attributes = null;
+        
+        // If we did not pass any extensions as parameter, we will create some of our own, standard ones
+        Extensions exts = extensions;
+        if (exts == null) {
+            altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut);
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            if (StringUtils.isNotBlank(altNames)) {
+                // SubjectAltName
+                // Some altNames
+                GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
+                dOut.writeObject(san);
+                byte[] value = bOut.toByteArray();
+                extgen.addExtension(Extension.subjectAlternativeName, false, value);
+            }
+
+            // KeyUsage
+            KeyUsage keyUsage = new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.nonRepudiation);
+            extgen.addExtension(Extension.keyUsage, false, new DERBitString(keyUsage));
+
+            exts = extgen.generate();
+            altnameattr.add(new DERSet(exts));
+
+            // Make the complete extension package
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new DERSequence(altnameattr));
+            attributes = new DERSet(v);
+        }
+        
+        CertificationRequest certificationRequest = null;
+        
+        if (keys != null) {
+            certificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, userDN,
+                    keys.getPublic(), attributes, keys.getPrivate(), null).toASN1Structure();
+        } else if (spkInfo != null) {
+            // If we didn't have a public key, perhaps we passed a SubjectPublicKeyInfo, which can
+            // be a AlgorithmIdentifier followed by a zero-length BIT STRING as specified for server key generation
+            // for CMP in RFC4210
+            certificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, userDN,
+                    getPublicKey(spkInfo, BouncyCastleProvider.PROVIDER_NAME), attributes, null, null).toASN1Structure();
+        } 
+        
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(senderDN), new GeneralName(new X500Name(
+                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
+        
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        pkiHeaderBuilder.setProtectionAlg(pAlg);
+        pkiHeaderBuilder.setSenderKID(senderKID);
+        
+        if (implicitConfirm) {
+            final InfoTypeAndValue genInfo = new InfoTypeAndValue(CMPObjectIdentifiers.it_implicitConfirm);
+            pkiHeaderBuilder.setGeneralInfo(genInfo);
+        }
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_P10_CERT_REQ, certificationRequest);
+        return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+    }
+
+    private static PublicKey getPublicKey(SubjectPublicKeyInfo spkInfo, final String provider)
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+
+        // If there is no public key here, but only an empty bit string, it means we have called for server generated keys
+        // i.e. no public key to see here...
+        if (spkInfo.getPublicKeyData().equals(DERNull.INSTANCE)) {
+            return null;
+        }
+        try {
+            final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(spkInfo).getBytes());
+            final AlgorithmIdentifier keyAlg = spkInfo.getAlgorithm();
+            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
+        } catch (InvalidKeySpecException | IOException e) {
+            final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
+            newe.initCause(e);
+            throw newe;
+        }
+    }    
 
     protected static PKIMessage genRevReq(String issuerDN, X500Name userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
             boolean noRevocationReason, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
@@ -657,6 +767,35 @@ public abstract class CmpTestCase extends CaTestCase {
      return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
  }
     
+    protected static PKIMessage protectPKIMessageWithPbmac1(final PKIMessage msg, final boolean badObjectId, final String password,
+            final int iterations) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return protectPKIMessageWithPbmac1(msg, badObjectId, password, "primekey", iterations);
+    }
+
+    /**
+     * Helper function used in testing for creating a PBMAC1 protected message
+     * @param msg message to protect
+     * @param badObjectId boolean declaring if protection header should have an invalid OID (to facilitate testing error case)
+     * @param password the password used for the password based MAC
+     * @param iterations number of iterations when generating the symmetric key
+     * @return message with PBMAC1 protection
+     */
+    protected static PKIMessage protectPKIMessageWithPbmac1(final PKIMessage msg, final boolean badObjectId, final String password,
+            final String keyId, final int iterations) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+        final String macWithSha256Oid = "1.2.840.113549.2.9";
+        PKIMessage protectedMessage = CmpMessageHelper.protectPKIMessageWithPBMAC1(msg, keyId, password, macWithSha256Oid, iterations, 4096,
+                macWithSha256Oid);
+        if (badObjectId) {
+            ASN1Encodable params = protectedMessage.getHeader().getProtectionAlg().getParameters();
+            final String invalidOid = "1.2.840.113549.1.5.14.7";
+            final AlgorithmIdentifier newProtectionAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(invalidOid), params);
+            PKIHeaderBuilder newHead = CmpMessageHelper.getHeaderBuilder(protectedMessage.getHeader());
+            newHead.setProtectionAlg(newProtectionAlg);
+            protectedMessage = new PKIMessage(newHead.build(), protectedMessage.getBody(), protectedMessage.getProtection());
+        }
+        return protectedMessage;
+    }
+
     protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
     }
@@ -743,7 +882,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
         // Only try to read the response if we expected a 200 (ok) response
         if (httpRespCode != 200) {
-            return null;
+            return new byte[0];
         }
             // Some appserver (Weblogic) responds with
             // "application/pkixcmp; charset=UTF-8"
@@ -774,13 +913,29 @@ public abstract class CmpTestCase extends CaTestCase {
             return respBytes;
     }
 
-    public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
-            boolean signed, String pbeSecret, String expectedSignAlg) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
-        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg, false, null);
+    protected void clearCmpCaches() throws IOException {
+        final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resourceCmp) + "/?clearcache=true";
+        log.info("http URL: " + urlString);
+        URL url = new URL(urlString);
+        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.connect();
+        assertEquals("HTTP request to clear caches was unsuccessful.", 200, con.getResponseCode());
+        assertEquals("text/plain", con.getContentType());
+        try (InputStream is = con.getInputStream()) {
+            assertEquals("Caches cleared.\n", IOUtils.toString(is, StandardCharsets.UTF_8));
+        }
     }
 
     public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
-            boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm, String requiredKeyId) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+            boolean signed, String pbeSecret, String expectedSignAlg, boolean pbmac1) throws IOException, InvalidKeyException,
+            NoSuchAlgorithmException, InvalidCmpProtectionException, CMPException {
+        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg,
+                false, null, pbmac1);
+    }
+
+    public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce,
+            byte[] transId, boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm, String requiredKeyId, boolean pbmac1)
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidCmpProtectionException, CMPException {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
         boolean pbe = (pbeSecret != null);
@@ -811,7 +966,7 @@ public abstract class CmpTestCase extends CaTestCase {
                         if (pkiStatusInfo != null) {
                             final PKIFreeText pkiFreeText = pkiStatusInfo.getStatusString();
                             if (pkiFreeText != null) {
-                                errorStr = pkiFreeText.getStringAt(0).getString();
+                                errorStr = pkiFreeText.getStringAtUTF8(0).getString();
                             }                        
                         }
                     }
@@ -820,11 +975,18 @@ public abstract class CmpTestCase extends CaTestCase {
             }
             assertEquals(expectedSignAlg, algId.getAlgorithm().getId());
         }
-        if (pbe) {
-            AlgorithmIdentifier algId = header.getProtectionAlg();
-            assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: "+header.getFreeText(), algId);
+        if (pbe && !pbmac1) {
+            final AlgorithmIdentifier algId = header.getProtectionAlg();
+            assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: " +
+                    header.getFreeText(), algId);
             assertEquals("Protection algorithm id: " + algId.getAlgorithm().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId
-                    .getAlgorithm().getId()); // 1.2.840.113549.1.1.5 - SHA-1 with RSA Encryption
+                    .getAlgorithm().getId());
+        } else if (pbe && pbmac1) {
+            final AlgorithmIdentifier algId = header.getProtectionAlg();
+            assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: " +
+                    header.getFreeText(), algId);
+            assertEquals("Protection algorithm id: " + algId.getAlgorithm().getId(), PKCSObjectIdentifiers.id_PBMAC1.getId(), algId
+                    .getAlgorithm().getId());
         }
 
         // Check that the signer is the expected CA    
@@ -836,7 +998,7 @@ public abstract class CmpTestCase extends CaTestCase {
         if (signed) {
             // Verify the signature
             byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
-            DERBitString bs = respObject.getProtection();
+            ASN1BitString bs = respObject.getProtection();
             try {
                 final Signature signature = Signature.getInstance(expectedSignAlg, BouncyCastleProvider.PROVIDER_NAME);
                 signature.initVerify(cacert);
@@ -868,49 +1030,58 @@ public abstract class CmpTestCase extends CaTestCase {
             } else if (requiredKeyId != null) {
                 assertTrue("RequiredKey should be "+requiredKeyId+" but was null", false);
             }
-            // Verify the PasswordBased protection of the message
-            byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
-            DERBitString protection = respObject.getProtection();
-            AlgorithmIdentifier pAlg = header.getProtectionAlg();
-            log.debug("Protection type is: " + pAlg.getAlgorithm().getId());
-            PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
-            int iterationCount = pp.getIterationCount().getPositiveValue().intValue();
-            log.debug("Iteration count is: " + iterationCount);
-            AlgorithmIdentifier owfAlg = pp.getOwf();
-            // Normal OWF alg is 1.3.14.3.2.26 - SHA1
-            log.debug("Owf type is: " + owfAlg.getAlgorithm().getId());
-            AlgorithmIdentifier macAlg = pp.getMac();
-            // Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
-            log.debug("Mac type is: " + macAlg.getAlgorithm().getId());
-            byte[] salt = pp.getSalt().getOctets();
-            // log.info("Salt is: "+new String(salt));
-            byte[] raSecret = pbeSecret!=null ? pbeSecret.getBytes() : new byte[0];
-            byte[] basekey = new byte[raSecret.length + salt.length];
-            System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
-            for (int i = 0; i < salt.length; i++) {
-                basekey[raSecret.length + i] = salt[i];
-            }
-            // Construct the base key according to rfc4210, section 5.1.3.1
-            try {
-                MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
-                for (int i = 0; i < iterationCount; i++) {
-                    basekey = dig.digest(basekey);
-                    dig.reset();
+            if (!pbmac1) { // If pbmac1 is not true we are using standard PasswordBasedMAC format
+                // Verify the PasswordBased protection of the message
+                byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
+                ASN1BitString protection = respObject.getProtection();
+                AlgorithmIdentifier pAlg = header.getProtectionAlg();
+                log.debug("Protection type is: " + pAlg.getAlgorithm().getId());
+                PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
+                int iterationCount = pp.getIterationCount().getPositiveValue().intValue();
+                log.debug("Iteration count is: " + iterationCount);
+                AlgorithmIdentifier owfAlg = pp.getOwf();
+                // Normal OWF alg is 1.3.14.3.2.26 - SHA1
+                log.debug("Owf type is: " + owfAlg.getAlgorithm().getId());
+                AlgorithmIdentifier macAlg = pp.getMac();
+                // Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
+                log.debug("Mac type is: " + macAlg.getAlgorithm().getId());
+                byte[] salt = pp.getSalt().getOctets();
+                // log.info("Salt is: "+new String(salt));
+                byte[] raSecret = pbeSecret!=null ? pbeSecret.getBytes() : new byte[0];
+                byte[] basekey = new byte[raSecret.length + salt.length];
+                System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
+                for (int i = 0; i < salt.length; i++) {
+                    basekey[raSecret.length + i] = salt[i];
                 }
-                // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7
-                String macOid = macAlg.getAlgorithm().getId();
-                Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
-                SecretKey key = new SecretKeySpec(basekey, macOid);
-                mac.init(key);
-                mac.reset();
-                mac.update(protectedBytes, 0, protectedBytes.length);
-                byte[] out = mac.doFinal();
-                // My out should now be the same as the protection bits
-                byte[] pb = protection.getBytes();
-                boolean ret = Arrays.equals(out, pb);
-                assertTrue(ret);
-            } catch (NoSuchProviderException e) {
-                throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+                // Construct the base key according to rfc4210, section 5.1.3.1
+                try {
+                    MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+                    for (int i = 0; i < iterationCount; i++) {
+                        basekey = dig.digest(basekey);
+                        dig.reset();
+                    }
+                    // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7
+                    String macOid = macAlg.getAlgorithm().getId();
+                    Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
+                    SecretKey key = new SecretKeySpec(basekey, macOid);
+                    mac.init(key);
+                    mac.reset();
+                    mac.update(protectedBytes, 0, protectedBytes.length);
+                    byte[] out = mac.doFinal();
+                    // My out should now be the same as the protection bits
+                    byte[] pb = protection.getBytes();
+                    boolean ret = Arrays.equals(out, pb);
+                    assertTrue(ret);
+                } catch (NoSuchProviderException e) {
+                    throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+                }
+            } else {
+                CmpPbmac1Verifyer pbmac1Verifyer = new CmpPbmac1Verifyer(respObject);
+                log.debug("Protection type is: " + pbmac1Verifyer.getProtectionAlg().getId());
+                log.debug("Iteration count is: " + pbmac1Verifyer.getIterationCount());
+                log.debug("Prf type is: " + pbmac1Verifyer.getPrfOid());
+                log.debug("Mac type is: " + pbmac1Verifyer.getMacOid());
+                assertTrue("Mac should be valid", pbmac1Verifyer.verify(pbeSecret));
             }
         }
 
@@ -1228,8 +1399,8 @@ public abstract class CmpTestCase extends CaTestCase {
             pkiStatusInfo = null;
             fail("Unsuported exptag '"+exptag+"'");
         }
-        log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + pkiStatusInfo.getStatusString().getStringAt(0).getString() + "'.");
-        assertEquals(failMsg, pkiStatusInfo.getStatusString().getStringAt(0).getString());
+        log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + pkiStatusInfo.getStatusString().getStringAtUTF8(0).getString() + "'.");
+        assertEquals(failMsg, pkiStatusInfo.getStatusString().getStringAtUTF8(0).getString());
     }
 
     public static void checkCmpPKIErrorMessage(byte[] pkiMessageBytes, String sender, X500Name recipient, int expectedErrorCode, String errorMsg) throws IOException {
@@ -1251,11 +1422,11 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals("Unexpected status.", 2, pkiStatusInfo.getStatus().intValue());
         final PKIFreeText pkiFreeText = pkiStatusInfo.getStatusString();
         if (log.isDebugEnabled() && pkiFreeText!=null) {
-            log.debug("Response error message: " + pkiFreeText.getStringAt(0).getString());
+            log.debug("Response error message: " + pkiFreeText.getStringAtUTF8(0).getString());
         }
         assertEquals("Return wrong error code.", expectedErrorCode, pkiStatusInfo.getFailInfo().intValue());
         if (errorMsg != null) {
-            assertEquals(errorMsg, pkiFreeText.getStringAt(0).getString());
+            assertEquals(errorMsg, pkiFreeText.getStringAtUTF8(0).getString());
         }
     }
 

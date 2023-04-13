@@ -13,6 +13,7 @@
 package org.ejbca.core.model.approval.profile;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.profiles.ProfileBase;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -136,15 +138,15 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         getType();
         ApprovalProfile clone;
         try {
-            clone = (ApprovalProfile) getType().newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            clone = (ApprovalProfile) getType().getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw new IllegalStateException("Could not instansiate class of type " + getType().getCanonicalName());
         }
         clone.setProfileName(getProfileName());
         clone.setProfileId(getProfileId());
 
         // We need to make a deep copy of the hashmap here
-        LinkedHashMap<Object, Object> dataMap = new LinkedHashMap<>(data.size());
+        LinkedHashMap<Object, Object> dataMap = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR));
         for (final Entry<Object, Object> entry : data.entrySet()) {
             Object value = entry.getValue();
             if (value instanceof ArrayList<?>) {
@@ -467,7 +469,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     }
 
     @Override
-    public boolean isApprovalAuthorized(Collection<Approval> approvalsPerformed, Approval approval) throws AuthenticationFailedException {
+    public boolean isApprovalAuthorized(Collection<Approval> approvalsPerformed, Approval approval, 
+            List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException {
         ApprovalStep previousStep = getFirstStep();
         ApprovalStep relevantStep = getStep(approval.getStepId());
         while(previousStep != null) {
@@ -483,7 +486,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
                 if(approvalPartition == null) {
                     return false;
                 }
-                return canApprovePartition(approval.getAdmin(), approvalPartition);
+                return canApprove(rolesTokenIsMemberOf, approvalPartition);
 
             }
         }
@@ -499,10 +502,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         PARTITION_LOOP: for (ApprovalPartition partition : approvalStep.getPartitions().values()) {
             for (Approval approval : approvalsPerformed) {
                 if (approval.getStepId() == approvalStep.getStepIdentifier() && partition.getPartitionIdentifier() == approval.getPartitionId()) {
-                    //While we already have checked the credentials of all partitions, doing so is cheap and a good double check.
-                    if (canApprovePartition(approval.getAdmin(), partition)) {
-                        continue PARTITION_LOOP;
-                    }
+                    continue PARTITION_LOOP;
                 }
             }
             //If we've gotten to the bottom of a partition without satisfying it's conditions, we're done

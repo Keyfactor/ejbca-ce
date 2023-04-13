@@ -19,8 +19,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Translates field types from EndEntityProfile to subject DN field names

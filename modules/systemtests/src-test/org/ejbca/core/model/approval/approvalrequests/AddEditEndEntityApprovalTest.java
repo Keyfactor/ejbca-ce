@@ -24,7 +24,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -34,6 +33,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,10 +71,19 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
     }
+    
+    private String getLongDn() {
+        StringBuilder username = new StringBuilder("test01extendedInfoUser"); // 22 chars
+        for(int i=0; i<36; i++) {
+            username.append("reallylong"); // 36 * 10
+        }
+        return username.toString(); // 382 chars
+    }
 
     @Test
     public void test01testEndEntityExtendedInformation() throws Exception {
         String username = "test01extendedInfoUser";
+        String userdn = getLongDn();
 
         // make sure that the end entity we are testing with does not already exist
         if(endEntityAccessSession.findUser(internalAdmin, username) != null) {
@@ -83,7 +93,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
         try {
 
             // Add an end entity through executing an AddEndEntityApprovalRequest
-            EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caid, null, null, new EndEntityType(
+            EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + userdn, caid, null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, null);
             userdata.setPassword("foo123");
@@ -105,8 +115,8 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
 
             // Edit the end entity through executing an EditEndEntityApprovalRequest
             EndEntityInformation editUserdata = userdata;
-            assertEquals("CN=" + username, userdata.getDN());
-            editUserdata.setDN("CN=" + username + ", C=SE");
+            assertEquals("CN=" + userdn, userdata.getDN());
+            editUserdata.setDN("CN=" + userdn + ", C=SE");
             EditEndEntityApprovalRequest editAr = new EditEndEntityApprovalRequest(editUserdata, true, userdata, internalAdmin, null, caid,
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null, /* validation results */ null);
             editAr.execute(endEntityManagementSession, 4712, null);
@@ -114,7 +124,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             // Verify the the end entity has been edited
             executeUser = endEntityAccessSession.findUser(internalAdmin, username);
             assertNotNull("Somehow, the test end entity just disappeared", executeUser);
-            assertEquals("CN=" + username + ",C=SE", executeUser.getDN());
+            assertEquals("CN=" + userdn + ",C=SE", executeUser.getDN());
 
             // Verify that the end entity contains the approval request ID of the AddEndEntityApprovalRequest and the EditEndEntityApprovalRequest
             ext = executeUser.getExtendedInformation();

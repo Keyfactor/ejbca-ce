@@ -18,17 +18,30 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.GeneralSubtree;
+import org.bouncycastle.asn1.x509.NameConstraints;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
+import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -41,12 +54,16 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * CA is a base class that should be inherited by all CA types
@@ -55,6 +72,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     private static final long serialVersionUID = -8755429830955594642L;
 
+    private static final InternalResources intres = InternalResources.getInstance();
+    
     /** Log4j instance */
     private static Logger log = Logger.getLogger(CABase.class);
     /** Internal localization of logs and errors */
@@ -62,10 +81,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     // protected fields.
     private static final String FINISHUSER = "finishuser";
 
-    /**
-     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
-     */
-    @Deprecated
     private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS = "doEnforceUniquePublicKeys";
     private static final String DO_ENFORCE_KEY_RENEWAL = "doEnforceKeyRenewal";
     private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
@@ -111,14 +126,18 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
         setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
-        
+        setAllowChangingRevocationReason(cainfo.isAllowChangingRevocationReason());
+        setAllowInvalidityDate(cainfo.isAllowInvalidityDate());
+
         List<Integer> extendedservicetypes = new ArrayList<>();
-        for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
-            createExtendedCAService(next);
-            if (log.isDebugEnabled()) {
-                log.debug("Adding extended service to CA '"+cainfo.getName()+"': "+next.getType()+", "+next.getImplClass());
+        if (cainfo.getExtendedCAServiceInfos() != null) {
+            for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
+                createExtendedCAService(next);
+                if (log.isDebugEnabled()) {
+                    log.debug("Adding extended service to CA '"+cainfo.getName()+"': "+next.getType()+", "+next.getImplClass());
+                }
+                extendedservicetypes.add(next.getType());
             }
-            extendedservicetypes.add(next.getType());
         }
         data.put(EXTENDEDCASERVICES, extendedservicetypes);
         setApprovals(cainfo.getApprovals());
@@ -136,6 +155,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         data.put(CRLPERIOD, cainfo.getCRLPeriod());
         data.put(DELTACRLPERIOD, cainfo.getDeltaCRLPeriod());
         data.put(GENERATECRLUPONREVOCATION, cainfo.isGenerateCrlUponRevocation());
+        data.put(ALLOWCHANGINGREVOCATIONREASON, cainfo.isAllowChangingRevocationReason());
+        data.put(ALLOWINVALIDITYDATE, cainfo.isAllowInvalidityDate());
         data.put(CRLISSUEINTERVAL, cainfo.getCRLIssueInterval());
         data.put(CRLOVERLAPTIME, cainfo.getCRLOverlapTime());
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
@@ -222,6 +243,26 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     }
 
     @Override
+    public boolean getAllowChangingRevocationReason() {
+        return getBoolean(ALLOWCHANGINGREVOCATIONREASON, false);
+    }
+
+    @Override
+    public void setAllowChangingRevocationReason(boolean allow) {
+        data.put(ALLOWCHANGINGREVOCATIONREASON, allow);
+    }
+
+    @Override
+    public boolean getAllowInvalidityDate() {
+        return getBoolean(ALLOWINVALIDITYDATE, false);
+    }
+
+    @Override
+    public void setAllowInvalidityDate(boolean allow) {
+        data.put(ALLOWINVALIDITYDATE, allow);
+    }
+
+    @Override
     public long getCRLIssueInterval() {
         return (long) data.get(CRLISSUEINTERVAL);
     }
@@ -274,7 +315,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         if (service == null) {
             final String msg = "Extended CA service is null for service request: "+request.getClass().getName();
             log.error(msg);
-            throw new IllegalExtendedCAServiceRequestException();
+            throw new IllegalExtendedCAServiceRequestException(msg);
         }
         // Enrich request with CA in order for the service to be able to use CA keys and certificates
         service.setCA(this);
@@ -456,6 +497,158 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
             OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException {
         return generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, null,
                 cceConfig);
+    }
+    
+    /**
+     * Checks that the given SubjectDN / SAN satisfies the Name Constraints of the given issuer (if there are any).
+     * This method checks the Name Constraints in the given issuer only. A complete implementation of
+     * name constraints should check the whole certificate chain.
+     * 
+     * @param subjectDNName Subject DN to check. Optional.
+     * @param subjectAltName Subject Alternative Name to check. Optional.
+     * @throws IllegalNameException if the name(s) didn't pass naming constraints 
+     */
+    public static void checkNameConstraints(final X509Certificate issuer, final X500Name subjectDNName, final GeneralNames subjectAltName) throws IllegalNameException {
+        final byte[] ncbytes = issuer.getExtensionValue(Extension.nameConstraints.getId());
+        final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
+        final ASN1Sequence ncseq = (ncbytes != null ? ASN1Sequence.getInstance(ncstr.getOctets()) : null);
+        final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
+        if (nc != null) {
+            if (subjectDNName != null) {
+                // Skip check for root CAs
+                final X500Name issuerDNName = X500Name.getInstance(issuer.getSubjectX500Principal().getEncoded());
+                if (issuerDNName.equals(subjectDNName)) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Skipping test for Root CA: " + subjectDNName);
+                    }
+                    return;
+                }
+            }
+                  
+            final PKIXNameConstraintValidator validator = new PKIXNameConstraintValidator();
+            
+            GeneralSubtree[] permitted = nc.getPermittedSubtrees();
+            GeneralSubtree[] excluded = nc.getExcludedSubtrees();
+                        
+            if (permitted != null) {
+                
+                GeneralSubtree[] permittedFormatted = new GeneralSubtree[permitted.length];
+                
+                for (int i = 0; i < permitted.length; i++) {
+                    GeneralSubtree subtree = permitted[i];
+                    log.trace("Permitted subtree: " + subtree.getBase());
+                    log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
+                    
+                    if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
+                        permittedFormatted[i] = subtree;
+                    } else {
+                        String uri = subtree.getBase().getName().toString();
+                        String host = extractHostFromURL(uri);
+                        permittedFormatted[i] = new GeneralSubtree(
+                                    new GeneralName(GeneralName.uniformResourceIdentifier, host));
+                    }
+                }
+            
+                validator.intersectPermittedSubtree(permittedFormatted);
+            }
+        
+            if (excluded != null) {
+                for (GeneralSubtree subtree : excluded) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Excluded subtree: " + subtree.getBase());
+                        log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
+                    }
+                    if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
+                        validator.addExcludedSubtree(subtree);
+                    } else {
+                        String uri = subtree.getBase().getName().toString();
+                        String host = extractHostFromURL(uri);
+                        validator.addExcludedSubtree(new GeneralSubtree(
+                                    new GeneralName(GeneralName.uniformResourceIdentifier, host)));
+                    }
+                }
+            }
+
+            if (subjectDNName != null) {
+                GeneralName dngn = new GeneralName(subjectDNName);
+                try {
+                    validator.checkPermitted(dngn);
+                    validator.checkExcluded(dngn);
+                } catch (PKIXNameConstraintValidatorException e) {
+                    final String dnStr = subjectDNName.toString();
+                    final boolean isLdapOrder = CertTools.dnHasMultipleComponents(dnStr) && !CertTools.isDNReversed(dnStr);
+                    if (isLdapOrder) {
+                        final String msg = intres.getLocalizedMessage("nameconstraints.x500dnorderrequired");
+                        throw new IllegalNameException(msg);
+                    } else {
+                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectdn", subjectDNName);
+                        throw new IllegalNameException(msg, e);
+                    }
+                }
+            }
+            
+            if (subjectAltName != null) {
+                for (GeneralName sangn : subjectAltName.getNames()) {
+                    try {
+                        validator.checkPermitted(sangn);
+                        if (sangn.getTagNo() == 2 && isAllDNSNamesExcluded(excluded)) {
+                            final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
+                                    NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
+                            throw new IllegalNameException(msg);
+                        }
+                        validator.checkExcluded(sangn);
+                    } catch (PKIXNameConstraintValidatorException e) {
+                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
+                                NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
+                        throw new IllegalNameException(msg, e);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Check if we should exclude all dns names
+    private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
+        if (Objects.isNull(excluded)) {
+            return false;
+        }
+        
+        for (int i = 0; i < excluded.length; i++) {
+            if (excluded[i].getBase().toString().equals("2: ")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Refers private method from org.bouncycastle.asn1.x509.PKIXNameConstraintValidator.
+     * It is used here to extract host from name constraint in CA. Bouncy Castle extracts host
+     * from the URIs in subjectDN or subjectAlternativeName.
+     * 
+     * @param url
+     * @return
+     */
+    private static String extractHostFromURL(String url) {
+        // see RFC 1738
+        // remove ':' after protocol, e.g. https:
+        String sub = url.substring(url.indexOf(':') + 1);
+        // extract host from Common Internet Scheme Syntax, e.g. https://
+        if (sub.indexOf("//") != -1) {
+            sub = sub.substring(sub.indexOf("//") + 2);
+        }
+        // first remove port, e.g. https://test.com:21
+        if (sub.lastIndexOf(':') != -1) {
+            sub = sub.substring(0, sub.lastIndexOf(':'));
+        }
+        // remove user and password, e.g. https://john:password@test.com
+        sub = sub.substring(sub.indexOf(':') + 1);
+        sub = sub.substring(sub.indexOf('@') + 1);
+        // remove local parts, e.g. https://test.com/bla
+        if (sub.indexOf('/') != -1) {
+            sub = sub.substring(0, sub.indexOf('/'));
+        }
+        return sub;
     }
 
 }

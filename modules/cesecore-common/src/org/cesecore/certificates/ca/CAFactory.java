@@ -7,14 +7,12 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.ca.ssh.SshCaInfo;
 
 
 /**
  * Constructs instances of CA implementations. Depending on which implementations are available
  * in the current build, the appropriate implementation of the CA interface is returned.
- * @version $Id$
  */
 public enum CAFactory {
     INSTANCE;
@@ -22,8 +20,9 @@ public enum CAFactory {
     private static final String CA_TYPE_X509 = "X509CA";
     private static final String CA_TYPE_X509_EXT = "X509CA_EXTERNAL";
     private static final String CA_TYPE_CVC_EAC = "CVC_EAC";
-    private static final String CA_TYPE_SSH = SshCa.CA_TYPE;
-
+    private static final String CA_TYPE_SSH = "SSHCA";
+    private static final String CA_TYPE_CITS = "ECA";
+    private static final String CA_TYPE_PROXY = "KeyfactorEnrollmentProxyCA";
 
     private static final Logger log = Logger.getLogger(CAFactory.class);
 
@@ -46,8 +45,8 @@ public enum CAFactory {
             final String caimpl = "org.cesecore.certificates.ca.X509CAImpl";
             try {
                 Class<?> clazz = Class.forName(caimpl);
-                caImplMap.put("X509CA", (CACommon)clazz.newInstance());
-            } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
+                caImplMap.put("X509CA", (CACommon) clazz.getDeclaredConstructor().newInstance());
+            } catch (IllegalAccessException | ClassNotFoundException | InstantiationException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 Logger.getLogger(CAFactory.class).info("Could not construct org.cesecore.certificates.ca.X509CAImpl implementation for developers: ", e);
             }
             // If no CA implementations were found, log error
@@ -105,12 +104,46 @@ public enum CAFactory {
         log.error("SSH CA implementation not found");
         return null;
     }
-
+    
     public CACommon getSshCaImpl(SshCaInfo caInfo) {
         if (caImplMap.containsKey(CA_TYPE_SSH)) {
             return createCaByImpl(CA_TYPE_SSH, SshCaInfo.class, caInfo);
         }
         log.error("SSH CA implementation not found");
+        return null;
+    }
+    
+    public CACommon getCitsCaImpl(final HashMap<Object, Object> data, final int caId, final String subjectDn, final String name, final int status,
+            final Date updateTime, final Date expireTime) {
+        if (caImplMap.containsKey(CA_TYPE_CITS)) {
+            return createCaByImpl(CA_TYPE_CITS, data, caId, subjectDn.replaceFirst(CAInfo.CITS_SUBJECTDN_PREFIX, ""), name, status, updateTime, expireTime);
+        }
+        log.error("C-ITS CA implementation not found");
+        return null;
+    }
+    
+    public CACommon getCitsCaImpl(CitsCaInfo caInfo) {
+        if (caImplMap.containsKey(CA_TYPE_CITS)) {
+            return createCaByImpl(CA_TYPE_CITS, CitsCaInfo.class, caInfo);
+        }
+        log.error("C-ITS CA implementation not found");
+        return null;
+    }
+
+    public CACommon getProxyCa(final CAInfo caInfo)  {
+        if (caImplMap.containsKey(CA_TYPE_PROXY)) {
+            return createCaByImpl(CA_TYPE_PROXY, CAInfo.class, caInfo);
+        }
+        log.error("PROXYCA implementation not found");
+        return null;
+    }
+
+    public CACommon getProxyCa(final HashMap<Object, Object> data, final int caId, final String subjectDn, final String name, final int status,
+                                  final Date updateTime, final Date expireTime)  {
+        if (caImplMap.containsKey(CA_TYPE_PROXY)) {
+            return createCaByImpl(CA_TYPE_PROXY, data, caId, subjectDn, name, status, updateTime, expireTime);
+        }
+        log.error("PROXYCA implementation not found");
         return null;
     }
 

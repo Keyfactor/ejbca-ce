@@ -12,8 +12,8 @@
  *************************************************************************/  
 package org.cesecore.certificates.certificatetransparency;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 
 /**

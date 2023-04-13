@@ -28,6 +28,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.ExtendedKey
 import org.cesecore.certificates.certificate.certextensions.standard.FreshestCrl;
 import org.cesecore.certificates.certificate.certextensions.standard.IssuerAltNames;
 import org.cesecore.certificates.certificate.certextensions.standard.KeyUsage;
+import org.cesecore.certificates.certificate.certextensions.standard.MsSecurityObjectSid;
 import org.cesecore.certificates.certificate.certextensions.standard.MsTemplate;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.OcspNoCheck;
@@ -40,7 +41,8 @@ import org.cesecore.certificates.certificate.certextensions.standard.SubjectDire
 import org.cesecore.certificates.certificate.certextensions.standard.SubjectKeyIdentifier;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Class parsing the modules/ejbca-common/src/certextensions.properties file 
@@ -79,6 +81,7 @@ public class CertificateExtensionFactory {
 		standardCertificateExtensions.put(Extension.nameConstraints.getId(), NameConstraint.class.getName());
 		standardCertificateExtensions.put(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId(), OcspNoCheck.class.getName());
 		standardCertificateExtensions.put(CertTools.OID_MSTEMPLATE, MsTemplate.class.getName());
+		standardCertificateExtensions.put(CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT, MsSecurityObjectSid.class.getName());
 		standardCertificateExtensions.put(SeisCardNumber.OID_CARDNUMBER, SeisCardNumber.class.getName());
 		standardCertificateExtensions.put(Extension.privateKeyUsagePeriod.getId(), PrivateKeyUsagePeriod.class.getName());
 		standardCertificateExtensions.put(CabForumOrganizationIdentifier.OID, CabForumOrganizationIdentifier.class.getName());
@@ -111,7 +114,7 @@ public class CertificateExtensionFactory {
 		if (classPath != null) {
 			try {
 				final Class<?> implClass = Class.forName(classPath);
-				ret = (StandardCertificateExtension)implClass.newInstance();					
+				ret = (StandardCertificateExtension) implClass.getDeclaredConstructor().newInstance();					
 				ret.init(certProf);                    
 			} catch (ReflectiveOperationException e) {
 				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);

@@ -74,8 +74,4 @@ public class Log4jDeviceErrorHandler implements ErrorHandler {
 		errorHandler.setLogger(arg0);
 	}
 
-	@Override
-	public void activateOptions() {
-		errorHandler.activateOptions();
-	}
 }

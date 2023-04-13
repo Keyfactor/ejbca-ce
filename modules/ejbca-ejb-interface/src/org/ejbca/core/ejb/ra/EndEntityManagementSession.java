@@ -63,6 +63,7 @@ public interface EndEntityManagementSession {
      * @throws EndEntityExistsException if an end entity by the specified username already exists
      * @deprecated use {@link #addUser(AuthenticationToken, EndEntityInformation, boolean)} instead.
      */
+    @Deprecated
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
     		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int caid)
     		throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
@@ -416,6 +417,7 @@ public interface EndEntityManagementSession {
      * @param admin
      * @param certserno
      * @param revocationdate after this the the certificate is not valid
+     * @param invalidityDate after this the the certificate is regarded as  invalid
      * @param issuerdn
      * @param reason
      * @param checkPermission if true and if 'revocationdate' is not null then the certificate profile must allow back dating otherwise a {@link RevokeBackDateNotAllowedForProfileException} is thrown.
@@ -427,7 +429,7 @@ public interface EndEntityManagementSession {
      * @throws AlreadyRevokedException
      * @throws RevokeBackDateNotAllowedForProfileException
      */
-    void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkPermission)
+    void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, Date invalidityDate, String issuerdn, int reason, boolean checkPermission)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException,
             RevokeBackDateNotAllowedForProfileException;
 
@@ -492,6 +494,8 @@ public interface EndEntityManagementSession {
      *            certificate on hold.
      * @param approvalRequestID the ID of the approval request submitted to revoke the certificate
      * @param lastApprovingAdmin the last administrator to have approved the request
+     * @param revocationDate the date for revocation.
+     * @param invalidityDate the date the certificate was regarded as  invalid
      * @throws AlreadyRevokedException if the certificate was already revoked
      * @throws NoSuchEndEntityException
      * @throws ApprovalException if an approval already exists for this request.
@@ -499,7 +503,7 @@ public interface EndEntityManagementSession {
      * @throws AlreadyRevokedException
      */
     void revokeCertAfterApproval(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason, int approvalRequestID,
-            AuthenticationToken lastApprovingAdmin)
+            AuthenticationToken lastApprovingAdmin, Date revocationDate, Date invalidityDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
     
     /**
@@ -592,6 +596,10 @@ public interface EndEntityManagementSession {
      * remote. User data may contain a counter with nr of requests before used
      * should be set to generated. In this case this counter will be decreased,
      * and if it reaches 0 status will be generated.
+     * <p>
+     * Note that the database update is suppressed in case there were no modifications
+     * beside the modification time and the password hash. Also, transaction conflicts
+     * in UserData are resolved.
      *
      * @throws NoSuchEndEntityException if the user does not exist.
      */

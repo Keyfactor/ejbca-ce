@@ -29,8 +29,6 @@ import org.ejbca.util.query.Query;
 
 /**
  * Local interface for ApprovalSession.
- * 
- * @version $Id$
  */
 @Local
 public interface ApprovalSessionLocal extends ApprovalSession {
@@ -43,8 +41,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      * @param approvalData the ApprovalData object referring to the approval request
      * @param expired should be set to true if the notification is due to expiration of the approval request
      */
-    void sendApprovalNotifications(ApprovalRequest approvalRequest, ApprovalProfile approvalProfile,
-            ApprovalData approvalData, boolean expired);
+    void sendApprovalNotifications(ApprovalRequest approvalRequest, ApprovalProfile approvalProfile, ApprovalData approvalData, boolean expired);
 
 	/**
 	 * Encode a Collection of Approval and set it in ApprovalData object.

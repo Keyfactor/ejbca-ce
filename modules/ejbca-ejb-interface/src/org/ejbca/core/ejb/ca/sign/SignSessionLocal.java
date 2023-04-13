@@ -18,8 +18,14 @@ import java.util.Date;
 
 import javax.ejb.Local;
 
+import org.bouncycastle.its.ETSISignedDataBuilder;
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificate.ca.its.ECA;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -35,12 +41,14 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Local interface for RSASignSession.
@@ -234,4 +242,36 @@ public interface SignSessionLocal extends SignSession {
      byte[] signPayload(byte[] data, final int signingCaId)
              throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException;
 
+     /**
+      * Creates EC or enrollment credential.
+      * 
+      * @param admin
+      * @param certificateBuilder - populated TBSCertificateBuilder as per requestedSubjectAttributes
+      * @param certifcateId - requested certifcateId as per requestedSubjectAttributes
+      * @param verificationKey - of enrolling ITS-S in request publicKeys object
+      * @param eca
+      * @param endEntity - will be used later for persistence and certificateCreateSession 
+      * @return
+      * @throws AuthorizationDeniedException
+      * @throws CryptoTokenOfflineException
+     * @throws CertificateCreateException
+      */
+     ITSCertificate createEnrollCredential(AuthenticationToken admin, ToBeSignedCertificate.Builder certificateBuilder,
+             CertificateId certifcateId, PublicVerificationKey verificationKey, 
+             ECA eca, EndEntityInformation endEntity) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException;
+
+     /**
+      * Signs data as per IEEE 1609.2 section 5.3.1 by a crypto-token corresponding to an ECA.
+      *  
+      * @param data
+      * @param eca
+      * @return
+      * @throws CryptoTokenOfflineException
+      * @throws SignRequestSignatureException
+      */
+     byte[] signItsPayload(byte[] data, ECA eca)
+            throws CryptoTokenOfflineException, SignRequestSignatureException;
+
+    byte[] signItsPayload(ETSISignedDataBuilder signedDataBuilder, ECA eca) 
+            throws CryptoTokenOfflineException, SignRequestSignatureException;
 }

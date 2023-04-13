@@ -148,6 +148,14 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
                 ? StringUtils.EMPTY
                 : StringUtils.trim((String) data.get(API_KEY_KEY));
     }
+    
+    public String getApiKeyForConfigdump() {
+        return "placeholder";
+    }
+    
+    public void setApiKeyForConfigdump(String apiKey) {
+        data.put(API_KEY_KEY, apiKey);
+    }
 
     /**
      * Creates a JSON payload to send to the Google Safe Browsing Lookup API v4.

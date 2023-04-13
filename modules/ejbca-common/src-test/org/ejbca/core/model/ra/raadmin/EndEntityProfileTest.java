@@ -28,9 +28,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.SecConst;
 import org.junit.Test;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Unit tests for the EndEntityProfile class.

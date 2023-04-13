@@ -34,7 +34,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
  *   RevokationDate 
  *   Reason (One of the REVOKATION_REASON constants)
  *
- * @version $Id$
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)

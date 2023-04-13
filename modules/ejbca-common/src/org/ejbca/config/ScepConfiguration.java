@@ -15,6 +15,7 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -36,6 +37,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private static final long serialVersionUID = -2051789798029184421L;
 
     private static final Logger log = Logger.getLogger(ScepConfiguration.class);
+    
+    // Caches the Intune secrets.
+    private Map<String,String> decryptedIntuneAadAppKey = new HashMap<>();
     
     public enum Mode {
         CA("CA"), RA("RA");
@@ -430,13 +434,18 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     }
 
     public void setIntuneAadAppKey(final String alias, final String value) {
+        // Put the clear text value into the cache, or it will be not available until the cache is reloaded. 
+        decryptedIntuneAadAppKey.put(alias, value);
         String key = alias + "." + AAD_APP_KEY;
         setValue(key, getEncryptedValue(value), alias);
     }
     
     public String getIntuneAadAppKey(final String alias) {
-        String key = alias + "." + AAD_APP_KEY;
-        return getDecryptedValue(getValue(key, alias));
+        if (decryptedIntuneAadAppKey.get(alias) == null || decryptedIntuneAadAppKey.get(alias).length() == 0) {
+            String key = alias + "." + AAD_APP_KEY;
+            decryptedIntuneAadAppKey.put(alias, getDecryptedValue(getValue(key, alias)));
+        }
+        return decryptedIntuneAadAppKey.get(alias);
     }
 
     public String getIntuneAadAppKeyBinding(final String alias) {
@@ -738,8 +747,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         aliases.add(cloneAlias);
         data.put(ALIAS_LIST, aliases);
     }
-    
-    
     
     /**
      * @return the configuration as a regular Properties object

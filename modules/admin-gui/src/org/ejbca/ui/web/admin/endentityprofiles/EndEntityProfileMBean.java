@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentityprofiles;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,13 +29,11 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.Part;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -50,7 +46,6 @@ import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrg
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -61,24 +56,24 @@ import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
-import org.ejbca.util.HttpTools;
-import org.ejbca.util.PrinterManager;
 import org.ejbca.util.mail.MailSender;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  *
  * JSF MBean backing end entity profile page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EndEntityProfileMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EndEntityProfileMBean.class);
 
     public static final String PARAMETER_PROFILE_ID = "id";
-    private static final int MAX_TEMPLATE_FILESIZE = 2*1024*1024;
-
+    
     /** Minimum and maximum options to show for password length restriction */
     private static final int PASSWORD_LIMIT_MIN = 4;
     private static final int PASSWORD_LIMIT_MAX = 16;
@@ -95,7 +90,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private final EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
     private EndEntityProfile profiledata;
     private List<UserNotification> userNotifications;
-    private String[] printerNames = null;
     private Integer profileId;
     private String profileName;
     private boolean viewOnly;
@@ -108,8 +102,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private List<NameComponentGuiWrapper> subjectDnComponentList = null;
     private List<NameComponentGuiWrapper> subjectAltNameComponentList;
     private List<NameComponentGuiWrapper> sshFieldList = null;
-
-    private Part templateFileUpload;
 
     public EndEntityProfileMBean() {
         super(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
@@ -135,11 +127,47 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             this.dnsField = dnsField;
             lastUsedValidationString = getValidationString();
         }
+        
+        public boolean isDomainOrListOfDomains() {
+            final String value = getValue();
+            return value != null && value.length() > 0 && !value.contains("@");
+        }
+        
+        public boolean isMixedListOfDomainsAndEmails() {
+            final String[] values = getValue().split(";");
+            if (values.length > 1) {
+                boolean isDomain = false;
+                boolean isEmail = false;
+                for (String value : values ) {
+                    if (value.contains("@")) {
+                        isEmail = true;
+                    } else {
+                        isDomain = true;
+                    }
+                    if (isEmail & isDomain) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        public boolean isListOfEmails() {
+            final String[] values = getValue().split(";");
+            if (values.length > 1) {
+                for (String value : values ) {
+                    if (!value.contains("@") | !value.contains(".")) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
 
         public boolean isEmailField() {
             return emailField;
         }
-
 
         public boolean isDnsField() {
             return dnsField;
@@ -304,6 +332,22 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public int getEndEntityProfileId() {
         return profileId;
+    }
+    
+    public boolean isSshProfile() {
+        return profiledata.getProfileType()==EndEntityProfile.PROFILE_TYPE_SSH;
+    }
+    
+    public String getEndEntityProfileType() {
+        return profiledata.getProfileType()==EndEntityProfile.PROFILE_TYPE_SSH ? "SSH" : "Default";
+    }
+    
+    public void setEndEntityProfileTypeDefault() {
+        profiledata.setProfileType(EndEntityProfile.PROFILE_TYPE_DEFAULT);
+    }
+    
+    public void setEndEntityProfileTypeSsh() {
+        profiledata.setProfileType(EndEntityProfile.PROFILE_TYPE_SSH);
     }
 
     // PASSWORD, USERNAME AND EMAIL
@@ -645,6 +689,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         sshFieldList = null; // reload state from profile
     }
 
+    public List<SelectItem> getSshVerifyRequiredOptions() {
+        final List<SelectItem> options = new ArrayList<>();
+        options.add(new SelectItem(true, ejbcaWebBean.getText("BOOL_TRUE")));
+        options.add(new SelectItem(false, ejbcaWebBean.getText("BOOL_FALSE")));
+        return options;
+    }
+
     // OTHER SUBJECT ATTRIBUTES
 
     public List<SelectItem> getSubjectAltNameTypes() {
@@ -775,10 +826,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
         final TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
         final TreeMap<String, Integer> sshcertificateprofilenames = ejbcaWebBean.getAuthorizedSshCertificateProfileNames();
+        final TreeMap<String, Integer> itscertificateprofilenames = ejbcaWebBean.getAuthorizedItsCertificateProfileNames();
         final TreeMap<String, Integer> mergedMap = new TreeMap<>();
         mergedMap.putAll(eecertificateprofilenames);
         mergedMap.putAll(subcacertificateprofilenames);
         mergedMap.putAll(sshcertificateprofilenames);
+        mergedMap.putAll(itscertificateprofilenames);
         for (final Entry<String,Integer> entry : mergedMap.entrySet()) {
             final int certProfileId = entry.getValue(); // map is inverted
             final String certProfileName = entry.getKey();
@@ -938,6 +991,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public String getValidityTimeExample() {
         return ejbcaWebBean.getText("OR").toLowerCase() + " " + ejbcaWebBean.getText("DAYS").toLowerCase() + ":"
                 + ejbcaWebBean.getText("HOURS").toLowerCase() + ":" + ejbcaWebBean.getText("MINUTES").toLowerCase();
+    }
+    
+    public boolean getAllowMergeDn() {
+        return profiledata.getAllowMergeDn();
+    }
+    
+    public void setAllowMergeDn(boolean allowMergeDn) {
+        profiledata.setAllowMergeDn(allowMergeDn);
     }
 
     public boolean isUseCardNumber() {
@@ -1161,118 +1222,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setSendNotificationRequired(isRequired);
     }
 
-    public boolean isUsePrintUserData() {
-        return profiledata.getUsePrinting();
-    }
-
-    public void setUsePrintUserData(boolean use) {
-        profiledata.setUsePrinting(use);
-    }
-
-    public boolean isPrintUserDataDefault() {
-        return profiledata.getPrintingDefault();
-    }
-
-    public void setPrintUserDataDefault(boolean printDefault) {
-        profiledata.setPrintingDefault(printDefault);
-    }
-
-    public boolean isPrintUserDataRequired() {
-        return profiledata.getPrintingRequired();
-    }
-
-    public void setPrintUserDataRequired(boolean printRequired) {
-        profiledata.setPrintingRequired(printRequired);
-    }
-
-    public List<SelectItem> getPrinters() {
-        if (printerNames == null) {
-            printerNames = PrinterManager.listPrinters();
-        }
-        final List<SelectItem> printersReturned = new ArrayList<>();
-        if (printerNames.length == 0) {
-            printersReturned.add(new SelectItem(null, ejbcaWebBean.getText("ERRORNOPRINTERFOUND")));
-        } else {
-            for (final String printerName : printerNames) {
-                printersReturned.add(new SelectItem(printerName, printerName));
-            }
-        }
-        return printersReturned;
-    }
-
-    public String getCurrentPrinter() {
-        return profiledata.getPrinterName();
-    }
-
-    public void setCurrentPrinter(final String printerName) {
-        profiledata.setPrinterName(StringUtils.defaultString(printerName));
-    }
-
-    public List<SelectItem> getNumberOfCopies() {
-        final List<SelectItem> numberOfCopiesReturned = new ArrayList<>();
-        for (int copyInt = 0; copyInt < 5; copyInt++) {
-            numberOfCopiesReturned.add(new SelectItem(copyInt, String.valueOf(copyInt)));
-        }
-        return numberOfCopiesReturned;
-    }
-
-    public int getCurrentNumberCopies() {
-        return profiledata.getPrintedCopies();
-    }
-
-    public void setCurrentNumberCopies(int numberOfCopies) {
-        profiledata.setPrintedCopies(numberOfCopies);
-    }
-
-    public String getCurrentTemplate() {
-        final String currentTemplate = profiledata.getPrinterSVGFileName();
-        if (StringUtils.isEmpty(currentTemplate)) {
-            return ejbcaWebBean.getText("NOTEMPLATEUPLOADED");
-        } else {
-            return currentTemplate;
-        }
-    }
-
-    public Part getTemplateFileUpload() {
-        return templateFileUpload;
-    }
-
-    public void setTemplateFileUpload(final Part templateFileUpload) {
-        this.templateFileUpload = templateFileUpload;
-    }
-
-    public void uploadTemplate() {
-        log.trace(">uploadTemplate");
-        if (templateFileUpload == null) {
-            log.debug("Template file was null");
-            addErrorMessage("YOUMUSTSELECT");
-            return;
-        }
-        byte[] contents = null;
-        if (templateFileUpload.getSize() > MAX_TEMPLATE_FILESIZE) {
-            addErrorMessage("TEMPLATEUPLOADFAILED");
-            return;
-        }
-        try {
-            contents = IOUtils.toByteArray(templateFileUpload.getInputStream(), templateFileUpload.getSize());
-        } catch (IOException e) {
-            log.info("Caught exception when trying to get template file upload", e);
-        }
-        final String filename = HttpTools.getUploadFilename(templateFileUpload);
-        if (contents == null || contents.length == 0 || StringUtils.isEmpty(filename)) {
-            log.info("No template file uploaded, or empty file.");
-            addErrorMessage("TEMPLATEUPLOADFAILED");
-            return;
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Uploaded template of " + contents.length + " bytes");
-        }
-        final String contentsString = new String(contents, StandardCharsets.UTF_8);
-        profiledata.setPrinterSVGData(contentsString);
-        profiledata.setPrinterSVGFileName(filename);
-        log.trace("<uploadTemplate");
-    }
-
     /**
      * Performs validation for fields that cannot be validated using JSF validators or required attributes.
      */
@@ -1283,11 +1232,24 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (profiledata.isEmailUsed() && !profiledata.isEmailModifiable() && StringUtils.isEmpty(profiledata.getEmailDomain())) {
             editerrors.add(ejbcaWebBean.getText("EMAILEMPTYNONMODIFIABLE"));
         }
+        
+        // Password strength
+        if (profiledata.useAutoGeneratedPasswd() && (profiledata.getAutoGenPwdStrength() < profiledata.getMinPwdStrength())) {
+            editerrors.add(ejbcaWebBean.getText("AUTOGENPWTOOWEAK"));
+        }
+        
         // Subject DN, SAN and Subject Directory Attributes
         validateNameComponents(getSubjectDnComponentList());
         validateNameComponents(getSubjectAltNameComponentList());
         validateNameComponents(getSubjectDirectoryAttributeComponentList());
         validateUseCnForDnsName(getSubjectAltNameComponentList(), getSubjectDnComponentList());
+        
+        // Ssh fields
+        if(profiledata.isProfileTypeSsh()) {
+            validateNameComponents(getSshFieldList());
+            validateSshCriticalOptions();
+        }
+        
         // Available Certificate Profiles
         final List<Integer> availableCertProfs = profiledata.getAvailableCertificateProfileIds();
         if (!availableCertProfs.contains(profiledata.getDefaultCertificateProfile())) {
@@ -1307,12 +1269,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (!ejbcaWebBean.getGlobalConfiguration().getEnableKeyRecovery()) {
             profiledata.setKeyRecoverableUsed(false);
             profiledata.setKeyRecoverableRequired(false);
-        }
-        // Printing
-        if (profiledata.getUsePrinting()) {
-            if (StringUtils.isEmpty(profiledata.getPrinterName())) {
-                editerrors.add(ejbcaWebBean.getText("MUSTSELECTPRINTER"));
-            }
         }
         // Validity time
         final String startTime = profiledata.getValidityStartTime();
@@ -1363,6 +1319,17 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             validateFieldRegex(profiledata.getUsernameDefaultValidation(), "Username");
         }
     }
+    
+    private void validateSshCriticalOptions() {
+        if(StringUtils.isBlank(profiledata.getSshForceCommand()) && !profiledata.isSshForceCommandModifiable()) {
+            editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP);
+        }
+        
+        if(StringUtils.isBlank(profiledata.getSshSourceAddress()) && !profiledata.isSshSourceAddressModifiable()) {
+            editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP);
+        }
+        
+    }
 
     private void validateNameComponents(final List<NameComponentGuiWrapper> list) {
         for (final NameComponentGuiWrapper component : list) {
@@ -1375,6 +1342,21 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
                 } else {
                     editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + name);
                 }
+            }
+            // SAN e-mail with list of domains and e-mails = invalid 
+            if (component.isEmailField() && component.isMixedListOfDomainsAndEmails() && !component.isModifiable()) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHLISTMUSTNOTINCLUDEDOMAINSANDEMAILS"));
+            }
+            // SAN e-mail with domain (domain.de) or list of domains (domain1.de;domain2.de;...) + non-modifiable = invalid 
+            if (component.isEmailField() && component.isDomainOrListOfDomains() && !component.isModifiable()) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHDOMAINONLYMUSTBEMODIFIABLE"));
+            }
+            // SAN e-mail with list of e-mails and size > 1 (m@domain1.de;m@domain2.de;...) + modifiable = invalid
+            if (component.isEmailField() && component.isListOfEmails() && component.isModifiable()) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHLISTOFEMAILSMUSTBEUNMODIFIABLE"));
+            }
+            if (component.isEmailField() && !component.isRequired() && !component.isModifiable() && StringTools.isValidEmail(component.getValue())) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHEMAILMUSTBEMODIFIABLEOROPTIONAL"));
             }
             if (component.isUseValidation()) {
                 validateFieldRegex(component.getValidationString(), name);
@@ -1442,10 +1424,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (!profiledata.isSendNotificationUsed()) {
             profiledata.setSendNotificationRequired(false);
             profiledata.setSendNotificationDefault(false);
-        }
-        if (!profiledata.getUsePrinting()) {
-            profiledata.setPrintingRequired(false);
-            profiledata.setPrintingDefault(false);
         }
     }
 

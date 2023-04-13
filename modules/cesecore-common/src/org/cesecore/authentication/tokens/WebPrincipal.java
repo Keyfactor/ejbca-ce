@@ -28,7 +28,7 @@ public class WebPrincipal implements Principal, Serializable {
     final String clientIPAddress;
     
     /**
-     * @param moduleName Arbitrary identifier of the page or module, e.g. "AutoEnrollServlet"
+     * @param moduleName Arbitrary identifier of the page or module, e.g. CmpServlet
      * @param clientIPAddress Remote IP address
      */
     public WebPrincipal(final String moduleName, final String clientIPAddress) {

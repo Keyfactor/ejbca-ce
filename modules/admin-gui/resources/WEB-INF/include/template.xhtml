@@ -88,6 +88,12 @@
           <h:outputLink id="raEdituserdatasources" value="#{adminMenuBean.adminWebUrl}ra/edituserdatasources/userdatasourcespage.xhtml" rendered="#{adminMenuBean.authorizedToEditUserDataSources}"><h:outputText value="#{web.text.NAV_USERDATASOURCES}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>
+      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSystemFunctionsHeader}">
+        <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_VAFUNCTIONS}"/></h:panelGroup>
+        <h:panelGroup layout="block" styleClass="section-content">
+          <h:outputLink id="vaOcspResonders" value="#{adminMenuBean.adminWebUrl}keybind/ocspresponders.xhtml" rendered="#{adminMenuBean.authorizedViewInternalKeyBindings}"><h:outputText value="#{web.text.NAV_OCSPRESPONDERS}"/></h:outputLink>
+      </h:panelGroup>
+      </h:panelGroup>
       <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSupervisionFunctionsHeader}">
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_SUPERVISIONFUNCTIONS}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
@@ -124,9 +130,9 @@
         <h:panelGroup layout="block" styleClass="misc-section-content">
           <h:outputLink value="#{adminMenuBean.adminWebUrl}mypreferences.xhtml"><h:outputText value="#{web.text.NAV_MYPREFERENCES}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb" rel="noopener noreferer" rendered="#{adminMenuBean.authorizedToViewRaWeb}"><h:outputText value="#{web.text.RAWEB}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}" rendered="#{adminMenuBean.authorizedToViewPublicWeb}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}" rendered="#{adminMenuBean.authorizedToViewPublicWeb and !adminMenuBean.publicWebHidden}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getHelpBaseURI() }/index.html" target="_ejbcaDocWindow" rel="noopener noreferer" rendered="#{adminMenuBean.helpEnabled}"><h:outputText value="#{web.text.DOCUMENTATION}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top" rendered="#{adminMenuBean.logoutAvailable}"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>
     </h:panelGroup>
@@ -150,7 +156,7 @@
         <h:panelGroup layout="block" id="footerBlock" styleClass="footerBlock">
             <ui:insert name="footer">
                 <h:panelGroup layout="block" id="footerInner" styleClass="footerInner">
-                    <h:outputText value="© 2002–2021 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB."/>
+                    <h:outputText value="© 2002–2023. EJBCA® is a registered trademark."/>
                 </h:panelGroup>
             </ui:insert>
         </h:panelGroup>

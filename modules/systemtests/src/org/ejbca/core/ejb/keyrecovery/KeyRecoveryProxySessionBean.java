@@ -13,6 +13,8 @@
 package org.ejbca.core.ejb.keyrecovery;
 
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -22,15 +24,15 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.util.KeyPairWrapper;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.keys.KeyPairWrapper;
+
 /**
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyRecoveryProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -99,19 +101,34 @@ public class KeyRecoveryProxySessionBean implements KeyRecoveryProxySessionRemot
     }
 
     @Override
-    public boolean addKeyRecoveryDataInternal(AuthenticationToken admin, CertificateWrapper certificate, String username, KeyPairWrapper keypair,
+    public boolean addKeyRecoveryDataInternal(AuthenticationToken admin, CertificateWrapper caCertificate, CertificateWrapper certificate, String username, KeyPairWrapper keypair,
             int cryptoTokenId, String keyAlias) {
-        return keyRecoverySession.addKeyRecoveryDataInternal(admin, certificate, username, keypair, cryptoTokenId, keyAlias);
+        return keyRecoverySession.addKeyRecoveryDataInternal(admin, caCertificate, certificate, username, keypair, cryptoTokenId, keyAlias);
     }
 
     @Override
-    public KeyRecoveryInformation recoverKeysInternal(AuthenticationToken admin, String username, int cryptoTokenId, String keyAlias) {
-        return keyRecoverySession.recoverKeysInternal(admin, username, cryptoTokenId, keyAlias);
+    public KeyRecoveryInformation recoverKeysInternal(AuthenticationToken admin, String username, int cryptoTokenId, String keyAlias, final X509Certificate caCertificate ) {
+        return keyRecoverySession.recoverKeysInternal(admin, username, cryptoTokenId, keyAlias, caCertificate);
     }
 
     @Override
     public boolean markAsRecoverableInternal(AuthenticationToken admin, CertificateWrapper certificate, String username) {
         return keyRecoverySession.markAsRecoverableInternal(admin, certificate, username);
+    }
+
+    @Override
+    public List<KeyRecoveryData> findByUserMark(String usermark) {
+        return keyRecoverySession.findByUserMark(usermark);
+    }
+
+    @Override
+    public KeyRecoveryData findByPK(KeyRecoveryDataPK pk) {
+        return keyRecoverySession.findByPK(pk);
+    }
+
+    @Override
+    public List<KeyRecoveryData> findByUsername(String username) {
+        return keyRecoverySession.findByUsername(username);
     }
 
 }

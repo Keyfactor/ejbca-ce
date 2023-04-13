@@ -17,8 +17,9 @@
         <path refid="lib.commons-logging.classpath"/>
         <path refid="lib.commons-codec.classpath"/>
         <path refid="lib.commons-config.classpath"/>
-        <path refid="lib.commons-collections.classpath"/>
+        <path refid="lib.commons-collections4.classpath"/>
         <path location="${mod.cesecore-common.lib}"/>
+    	<path location="${mod.x509-common-util.lib}"/>
     </path>
 
     <!-- The buildservicemanifest needs additional classes in order to run. 

@@ -20,8 +20,8 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 @Local
 public interface CAAdminSessionLocal extends CAAdminSession {
@@ -48,22 +48,7 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * @return an error message or an empty String if all are ok.
      */
     String healthCheck();
-
-    /**
-     * Regenerates the CMS certificate for a CA.
-     */
-    void renewAndRevokeCmsCertificate(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException,
-            CAOfflineException, CertificateRevokeException;
-    
-//    /**
-//     * Checks if at least one CA references a key validator.
-//     * @param keyValidatorId
-//     * @return true if there are no references.
-//     * 
-//     * @throws AuthorizationDeniedException if not authorized.
-//     */
-//    boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException;
-//    
+  
     /** 
      * This method returns a set containing IDs of all authorized key validators. This set will be the sum of the following:
      * 
@@ -84,4 +69,8 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * </ul>
      */
     void publishCA(AuthenticationToken admin, int caId) throws AuthorizationDeniedException;
+    
+    public byte[] makeRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, String nextSignKeyAlias) 
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    
 }

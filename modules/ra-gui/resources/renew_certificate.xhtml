@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions">
+<ui:debug />
+<ui:remove>
+	<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     -->
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+	<f:metadata>
+		<f:event type="preRenderView" listener="#{raRenewBean.initialize}"/>
+	</f:metadata>
+	<ui:define name="content">
+		<h:panelGroup layout="block" class="header" id="title">
+			<h1>
+			    <h:outputText value="#{msg.renewcertificate_page_title}" />
+			</h1>
+		</h:panelGroup>
+
+		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.certificateInRequest}">
+			<h:panelGroup layout="block" id="renewContentBody"
+				styleClass="content-body">
+
+				<h:panelGroup layout="block" id="renewCertExisting" styleClass="internal-frame">
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="textCurrentSubjectDn"
+							value="#{msg.renewcertificate_page_subject_dn}" />
+						<h:outputText id="textCurrentSubjectDn" value="#{raRenewBean.currentSubjectDn}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="textCurrentExpirationDate"
+							value="#{msg.renewcertificate_page_expiration_date}" />
+						<h:outputText id="textCurrentExpirationDate" value="#{raRenewBean.currentExpirationDate}" />
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" id="continueButtonGroup"
+					styleClass="navigation-button-group"
+					rendered="#{raRenewBean.continueButtonShown}">
+					<h:commandButton id="continueButton" value="#{msg.renewcertificate_page_continue}"
+						styleClass="pure-button ra-button"
+						action="#{raRenewBean.checkAndShowDetails}">
+						<f:ajax execute="@form" render=":renewForm" />
+					</h:commandButton>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" id="renewCertNew" styleClass="internal-frame" rendered="#{raRenewBean.newDetailsShown}">
+					<h2>
+						<h:outputText value="#{msg.enroll_confirm_request}" />
+					</h2>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="textCaName"
+							value="#{msg.renewcertificate_page_ca_name}" />
+						<h:outputText id="textCaName" value="#{raRenewBean.caName}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="textEndEntityProfile"
+							value="#{msg.renewcertificate_page_end_entity_profile}" />
+						<h:outputText id="textEndEntityProfile" value="#{raRenewBean.endEntityProfileName}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="textCertificateProfile"
+							value="#{msg.renewcertificate_page_certificate_profile}" />
+						<h:outputText id="textCertificateProfile" value="#{raRenewBean.certificateProfileName}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="textUsername"
+							value="#{msg.renewcertificate_page_username}" />
+						<h:outputText id="textUsername" value="#{raRenewBean.username}" />
+					</h:panelGroup>
+					<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
+								  rendered="#{!raRenewBean.keyAlgorithmPreSet}">
+						<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
+						<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast" value="#{raRenewBean.selectedAlgorithm}">
+							<f:selectItems value="#{raRenewBean.availableAlgorithmSelectItems}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<f:event type="postValidate" listener="#{raRenewBean.validatePassword}"/>
+					<h:panelGroup id="enteredRequestEnrollmentCode" layout="block"
+								  rendered="#{!raRenewBean.notificationConfigured}"
+								  styleClass="pure-control-group">
+						<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password} *" />
+						<h:inputSecret id="enrollmentCode" value="#{raRenewBean.enrollmentCode}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+							<f:validator validatorId="extendedRequiredValidator"/>
+							<f:attribute name="_required" value="true"/>
+						</h:inputSecret>
+						<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="validationErrorMessage showErrorMessage"/>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{!raRenewBean.notificationConfigured}">
+						<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password} *" />
+						<h:inputSecret id="passwordConfirmField" binding="#{raRenewBean.confirmPasswordComponent}" value="#{raRenewBean.confirmPassword}"
+									   styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+							<f:validator validatorId="extendedRequiredValidator"/>
+							<f:attribute name="_required" value="true"/>
+						</h:inputSecret>
+						<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
+					</h:panelGroup>
+				    <h:panelGroup layout="block" id="navigationButtonGroup"
+						styleClass="navigation-button-group"
+						rendered="#{raRenewBean.requestRenewalButtonShown}">
+						<h:commandButton id="renewButton" value="#{msg.renewcertificate_page_confirm_request_p12}"
+							styleClass="pure-button ra-button executeActionButton"
+							action="#{raRenewBean.renewCertificate}" />
+				    </h:panelGroup>
+				</h:panelGroup>
+              				
+				<h:panelGroup layout="block" id="requestIdBlock" styleClass="internal-frame-black" rendered="#{raRenewBean.newApprovalRequestId != null}">
+					<!-- copied from enrollmakenewrequest.xhtml -->
+					<h:panelGroup layout="block" styleClass="keygeneration-button-group">
+						<h:outputText value="#{msg.enroll_request_was_successfully_sent}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="keygeneration-button-group">
+						<h:outputText value="#{msg.enroll_request_id}:&nbsp;" />
+						<h:outputText value="#{raRenewBean.newApprovalRequestId}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="keygeneration-button-group">
+						<h:outputLink value="enrollwithrequestid.xhtml" id="useRequestIdLink" styleClass="jsAutoFocusFirst">
+							<h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}&nbsp;&gt;&gt;" />
+							<f:param name="#{enrollMakeNewRequestBean.paramRequestId}" value="#{raRenewBean.newApprovalRequestId}" />
+						</h:outputLink>
+					</h:panelGroup>
+				</h:panelGroup>
+              
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

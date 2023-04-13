@@ -43,12 +43,8 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
@@ -60,6 +56,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -114,6 +116,8 @@ public class CmpRAUnidTest extends CmpTestCase {
         CryptoProviderTools.installBCProvider();
         // We must instantiate this after provider is installed as we set SN handling there 
         SUBJECT_DN = new X500Name("C=SE,SN=" + SUBJECT_SN + ",CN=unid-fnr");
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+
     }
 
     public CmpRAUnidTest() throws Exception {
@@ -164,6 +168,7 @@ public class CmpRAUnidTest extends CmpTestCase {
                 log.error("Could not create end entity profile.", e);
             }
         }
+        
 
     }
 
@@ -242,13 +247,13 @@ public class CmpRAUnidTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             if (body.getContent() instanceof ErrorMsgContent) {
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
                 log.error(errMsg);
                 fail("CMP ErrorMsg received: " + errMsg);
                 unid = null;
             } else {
                 checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
-                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
                 final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, SUBJECT_DN, cacert, resp, reqId);
                 final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
                 unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
@@ -270,7 +275,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(encodePKIMessage(req1), 200, configAlias);
         checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
-                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpPKIConfirmMessage(SUBJECT_DN, cacert, resp);
 
     }
@@ -308,13 +313,13 @@ public class CmpRAUnidTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             if (body.getContent() instanceof ErrorMsgContent) {
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
                 log.error(errMsg);
                 fail("CMP ErrorMsg received: " + errMsg);
                 unid = null;
             } else {
                 checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
-                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
                 final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, SUBJECT_DN, cacert, resp, reqId);
                 final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
                 unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
@@ -337,7 +342,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(encodePKIMessage(req1), 200, configAlias);
         checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
-                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpPKIConfirmMessage(SUBJECT_DN, cacert, resp);
 
     }

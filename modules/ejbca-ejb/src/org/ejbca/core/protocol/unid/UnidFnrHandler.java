@@ -25,11 +25,14 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.CeSecoreNameStyle;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
 
 /**
  * FNR is the Norwegian equivalent of a SSN or personal number, i.e, a unique numerical identifier for a Norwegian national. Norwegian regulation 
@@ -61,34 +64,68 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		if ( unidPrefix==null ) {
 			return req;
 		}
-        final List<ASN1ObjectIdentifier> asn1ObjectIdentifiers = Arrays.asList(dn.getAttributeTypes());
-		X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
-		boolean changed = false;
-		for (final ASN1ObjectIdentifier asn1ObjectIdentifier : asn1ObjectIdentifiers) {
-			if (asn1ObjectIdentifier.equals(CeSecoreNameStyle.SERIALNUMBER) ) {
-			    RDN[] rdns = dn.getRDNs(asn1ObjectIdentifier);
-			    String value = rdns[0].getFirst().getValue().toString();
-				final String newSerial = storeUnidFrnAndGetNewSerialNr(value, unidPrefix);
-				if ( newSerial!=null ) {
-					nameBuilder.addRDN(asn1ObjectIdentifier, newSerial);
-					changed = true;
-				}
-			} else {
-			    nameBuilder.addRDN(dn.getRDNs(asn1ObjectIdentifier)[0].getFirst());
-			}
-		}
-        if (changed) {
+		X500Name modifiedDN = getModifiedX500Name(unidPrefix, dn);
+	
+        if (modifiedDN != null) {
             if (req instanceof ICrmfRequestMessage) {
-                req = new CrmfRequestDnAdapter(req, nameBuilder.build());
+                return new CrmfRequestDnAdapter(req, modifiedDN);
             } else if (req instanceof PKCS10RequestMessage) {
-                req = new Pkcs10RequestDnAdapter(req, nameBuilder.build());
+                return new Pkcs10RequestDnAdapter(req, modifiedDN);
             } else {
                 //SCEP messages won't find their way here
                 throw new IllegalStateException("Unknown message type encountered.");
             }
+        } else {
+            return req;
         }
-		return req;
 	}
+	
+    @Override
+    public EndEntityInformation processEndEntityInformation(final EndEntityInformation endEntityInformation, final String certificateProfileName) {
+        //Create a safe copy to work on
+        EndEntityInformation result = new EndEntityInformation(endEntityInformation);
+        final String unidPrefix = getPrefixFromCertProfileName(certificateProfileName);
+        if ( unidPrefix==null ) {
+            LOG.debug("Certificate profile " + certificateProfileName + " was not named correctly for UnidFNR operations.");
+            return result;
+        } else {
+            X500Name modifiedDN = getModifiedX500Name(unidPrefix, CertTools.stringToBcX500Name(endEntityInformation.getDN()));
+            if(modifiedDN != null) {
+                result.setDN(modifiedDN.toString());
+            } 
+            return result;       
+        }
+    }
+    
+    /**
+     * Modifies the DN by replacing serialNumber vales with the UnidFNR equivalents
+     * 
+     * @param dn the DN to examine
+     * @return the modified DN or null if no changes were made
+     */
+    private X500Name getModifiedX500Name(final String unidPrefix, final X500Name dn) {
+        final List<ASN1ObjectIdentifier> asn1ObjectIdentifiers = Arrays.asList(dn.getAttributeTypes());
+        X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
+        boolean changed = false;
+        for (final ASN1ObjectIdentifier asn1ObjectIdentifier : asn1ObjectIdentifiers) {
+            if (asn1ObjectIdentifier.equals(CeSecoreNameStyle.SERIALNUMBER) ) {
+                RDN[] rdns = dn.getRDNs(asn1ObjectIdentifier);
+                String value = rdns[0].getFirst().getValue().toString();
+                final String newSerial = storeUnidFrnAndGetNewSerialNr(value, unidPrefix);
+                if ( newSerial!=null ) {
+                    nameBuilder.addRDN(asn1ObjectIdentifier, newSerial);
+                    changed = true;
+                }
+            } else {
+                nameBuilder.addRDN(dn.getRDNs(asn1ObjectIdentifier)[0].getFirst());
+            }
+        }
+        if (changed) {
+            return nameBuilder.build();
+        } else {
+            return null;
+        }
+    }
 	
 	private static boolean hasOnlyDecimalDigits(String s, int first, int last) {
 		return hasOnlyDecimalDigits(s.substring(first, last));
@@ -149,5 +186,6 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
     public String getReadableName() {
         return "Norwegian FNR to Unid Converter";
     }
+
 	
 }

@@ -17,9 +17,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -33,6 +35,8 @@ import org.ejbca.ui.web.configuration.exception.AdminExistsException;
  * Session scoped and will cache the user preferences.
  *
  */
+@Named("myPreferencesMBean")
+@SessionScoped
 public class MyPreferencesMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 2L;

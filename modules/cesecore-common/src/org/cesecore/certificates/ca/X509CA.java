@@ -15,14 +15,16 @@ package org.cesecore.certificates.ca;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * CA operations used for X509 implementations specifically.
@@ -181,5 +183,8 @@ public interface X509CA extends CA {
 
     void setRequestPreProcessor(final String preProcessorClass);
 
+    Map<String, List<String>> getAlternateCertificateChains();
+    
+    void setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains);
 
 }

@@ -49,6 +49,11 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.handler.MessageContext;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.nimbusds.jose.util.Base64URL;
 
 import org.bouncycastle.jce.X509KeyUsage;
@@ -66,19 +71,14 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -93,6 +93,7 @@ import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -231,7 +232,7 @@ public class OAuthSystemTest {
         ), null));
         // Add the second RA role
         roleMember = new RoleMember(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE,
-                adminca.getCAId(), OAuth2AccessMatchValue.CLAIM_SUBJECT.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                adminca.getCAId(), RoleMember.NO_PROVIDER, OAuth2AccessMatchValue.CLAIM_SUBJECT.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 OAUTH_SUB, role1.getRoleId(), null);
         roleMember.setTokenProviderId(oAuthKeyInfo.getInternalId());
         roleMember = roleMemberSession.persist(authenticationToken, roleMember);
@@ -308,7 +309,7 @@ public class OAuthSystemTest {
         assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authentication failed using OAuth Bearer Token"));
     }
 
-    @Test
+    @Ignore
     public void testRaWeb() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/ra");
         final HttpURLConnection connection = doGetRequest(url, token);

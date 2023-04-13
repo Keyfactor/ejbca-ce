@@ -16,20 +16,21 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+import com.keyfactor.util.StringTools;
+
 /**
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;

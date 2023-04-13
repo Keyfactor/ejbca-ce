@@ -4,6 +4,7 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:composite="http://xmlns.jcp.org/jsf/composite"
     xmlns:component="http://xmlns.jcp.org/jsf/composite/component">
     <ui:remove>
@@ -63,11 +64,11 @@
             </h:panelGroup>
 
             <h:outputLabel for="email" value="#{msg.component_eedetails_field_email}"
-                           rendered="#{not cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityBean.emailUsed}"
+                           rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityDetails.emailEnabled}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="email"
                           value="#{cc.attrs.raEndEntityDetails.email}"
-                          rendered="#{not cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityBean.emailUsed and not empty cc.attrs.raEndEntityDetails.email}"
+                          rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup id="newEmail"
                           rendered="#{cc.attrs.editMode}"
@@ -272,9 +273,16 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>-->
             <h:outputLabel for="notification" value="#{msg.component_eedetails_field_notification}" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
+            <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled and (not cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
                 value="#{msg['component_eedetails_field_notification_'.concat(cc.attrs.raEndEntityDetails.sendNotification)]}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                    rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.sendNotificationEnabled and not cc.attrs.approvalRequestMode}">
+                <h:selectBooleanCheckbox id="notificationcheckbox" value="#{cc.attrs.raEndEntityBean.sendNotification}"
+                     disabled="#{cc.attrs.raEndEntityDetails.sendNotificationDisabled}"/>
+            </h:panelGroup>
+
             <h:outputLabel for="certserialoverride" value="#{msg.component_eedetails_field_certserialoverride}"
                 rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -282,12 +290,17 @@
                 rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword}"
-                rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated and not empty cc.attrs.raEndEntityDetails.endEntityInformation.password}"
+                rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword_true}"
-                rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated and not empty cc.attrs.raEndEntityDetails.endEntityInformation.password}"
+            <h:outputText id="cleartextpassword" value="#{cc.attrs.raEndEntityDetails.clearPasswordViewMode ? msg.component_eedetails_field_notification_true : msg.component_eedetails_field_notification_false}"
+                rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed and ((not cc.attrs.editMode) or cc.attrs.approvalRequestMode)}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-
+            <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+            	  rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed and cc.attrs.editMode}">
+            	<h:selectBooleanCheckbox id="cleartextpasswordcheckbox" value="#{cc.attrs.raEndEntityDetails.clearPassword}"
+                	disabled="#{cc.attrs.raEndEntityDetails.clearPasswordRequired}"/>
+            </h:panelGroup>
+		
             <h:outputLabel for="logins" value="#{msg.component_eedetails_field_logins}"
                 rendered="#{cc.attrs.raEndEntityDetails.loginsMaxEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -315,19 +328,56 @@
                 rendered="#{cc.attrs.raEndEntityDetails.cardNumberEnabled and not empty cc.attrs.raEndEntityDetails.cardNumber}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
-            <h:outputLabel for="nameconstraintspermitted" value="#{msg.component_eedetails_field_nameconstraintspermitted}"
-                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
+            <h:outputLabel for="nameConstraintsPermitted" value="#{msg.component_eedetails_field_nameconstraintspermitted}"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled and 
+                					not cc.attrs.raEndEntityDetails.nameConstraintsPermittedRequired}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="nameconstraintspermitted" value="#{cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
-                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputLabel for="nameconstraintsexcluded" value="#{msg.component_eedetails_field_nameconstraintsexcluded}"
-                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
+            <h:outputLabel for="nameConstraintsPermitted" value="#{msg.component_eedetails_field_nameconstraintspermitted} *"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled and 
+                					cc.attrs.raEndEntityDetails.nameConstraintsPermittedRequired}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="nameconstraintsexcluded" value="#{cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
-                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
+            <h:outputText id="nameConstraintsPermitted" value="#{cc.attrs.raEndEntityDetails.getNameConstraintsPermittedViewOnly()}"
+                rendered="#{(cc.attrs.approvalRequestMode or !cc.attrs.editMode) and 
+                						cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled 
+                						and not empty cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-
+            <h:outputText id="nameConstraintsPermittedNone" value="None"
+                rendered="#{(cc.attrs.approvalRequestMode or !cc.attrs.editMode) and 
+                						cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled 
+                						and empty cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:inputTextarea id="newNameConstraintPermitted" rows="4" cols="38"
+						value="#{cc.attrs.raEndEntityBean.nameConstraintsPermitted}"
+             rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled}"
+             styleClass="editNameConstraints #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+             	<f:ajax event="change" />
+             </h:inputTextarea>
+             
+            <h:outputLabel for="nameConstraintsExcluded" value="#{msg.component_eedetails_field_nameconstraintsexcluded}"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and 
+                						not cc.attrs.raEndEntityDetails.nameConstraintsExcludedRequired}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="nameConstraintsExcluded" value="#{msg.component_eedetails_field_nameconstraintsexcluded} *"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and 
+                						cc.attrs.raEndEntityDetails.nameConstraintsExcludedRequired}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="nameConstraintsExcluded" value="#{cc.attrs.raEndEntityDetails.getNameConstraintsExcludedViewOnly()}"
+                rendered="#{(cc.attrs.approvalRequestMode or !cc.attrs.editMode) and 
+                						cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled 
+                						and not empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="nameConstraintsExcludedNone" value="None"
+                rendered="#{(cc.attrs.approvalRequestMode or !cc.attrs.editMode) and 
+                						cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled 
+                						and empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:inputTextarea id="newNameConstraintExcluded" rows="4" cols="38"
+						value="#{cc.attrs.raEndEntityBean.nameConstraintsExcluded}"
+             rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled}"
+             styleClass="editNameConstraints #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+             	<f:ajax event="change" />
+             </h:inputTextarea>
+              
             <h:outputLabel for="allowedrequests" value="#{msg.component_eedetails_field_allowedrequests}"
                 rendered="#{cc.attrs.raEndEntityDetails.allowedRequestsEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -344,10 +394,61 @@
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:outputLabel for="subjectdn" rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
+            <h:outputLabel for="subjectdn"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_subjectdn}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectdn" rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn}"
+            <h:outputText id="subjectdn"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
                 value="#{cc.attrs.raEndEntityDetails.subjectDnUnescapedValue}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshkeyid"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_keyid}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshkeyid"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshKeyId}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshprincipals"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_principals}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshprincipals"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshPrincipalsPretty}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshcomment"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_comment}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshcomment"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshComment}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshforcecommand"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_forcecommand}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshforcecommand"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshForceCommand}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshsourceaddress"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_sourceaddress}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshsourceaddress"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshSourceAddress}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshverifyrequired"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_verifyrequired}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshverifyrequired"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredString}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances
             		and cc.attrs.approvalRequestMode}"
@@ -371,14 +472,20 @@
 
             <h:panelGroup id="subjectDistinguishNames"
                 styleClass="subjects"
-                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}">
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectdn}"/>
-                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectDistinguishNames.fieldInstances}" msgPrefix="#{'subject_dn_'}" />
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectDistinguishNames.fieldInstances}"
+                    msgPrefix="#{'subject_dn_'}"
+                    dnEmailFieldName="#{cc.attrs.raEndEntityBean.dnEmailFieldName}"
+                    eeEmail="#{cc.attrs.raEndEntityDetails.email}"/>
             </h:panelGroup>
 
-            <h:outputLabel for="subjectan" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
+            <h:outputLabel for="subjectan"
+                rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectan" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}"
+            <h:outputText id="subjectan"
+                rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
                 value="#{cc.attrs.raEndEntityDetails.subjectAn}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances and cc.attrs.approvalRequestMode}"
@@ -401,10 +508,115 @@
 
             <h:panelGroup id="subjectAlternativeNames"
                 styleClass="subjects"
-                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}">
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and not cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.raEndEntityBean.anySubjectAlternativeName}" value="#{msg.component_eedetails_header_subjectan}"/>
-                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectAlternativeNames.fieldInstances}" msgPrefix="#{'subject_alternative_name_'}" />
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectAlternativeNames.fieldInstances}"
+                    msgPrefix="#{'subject_alternative_name_'}"
+                    dnEmailFieldName="#{cc.attrs.raEndEntityBean.dnEmailFieldName}"
+                    eeEmail="#{cc.attrs.raEndEntityDetails.email}"/>
+            </h:panelGroup>
+
+            <h:panelGroup id="editableSshAttributes"
+                styleClass="subjects"
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
+                <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+                <h:outputLabel for="keyidinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    value="#{msg.component_eedetails_header_ssh_keyid}"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="keyidinput"
+                        value="#{cc.attrs.raEndEntityBean.sshKeyId}"/>
+                </h:panelGroup>
+                <h:outputLabel for="commentinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    value="#{msg.component_eedetails_header_ssh_comment}"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="commentinput"
+                        value="#{cc.attrs.raEndEntityBean.sshComment}"/>
+                </h:panelGroup>
+                <ui:repeat id="sshPrincipal"
+                    value="#{cc.attrs.raEndEntityBean.sshPrincipals}"
+                    var="instance"
+                    varStatus="loop">
+                    <h:outputLabel for="sshPrincipalNonModifiableField"
+                        value="#{msg.enroll_ssh_principal} "
+                        styleClass="pure-u-lg-1-3 row-even"
+                        rendered="#{!instance.required}" />
+                    <h:outputLabel for="sshPrincipalField"
+                        value="#{msg.enroll_ssh_principal} *"
+                        styleClass="pure-u-lg-1-3 row-even"
+                        rendered="#{instance.required}" />
+                    <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                        <h:inputText id="sshPrincipalField" value="#{instance.value}" 
+                            styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+                            rendered="#{instance.modifiable}">
+                            <f:validator validatorId="extendedRegexValidator" />
+                            <f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
+                            <f:validator validatorId="extendedRequiredValidator"/>
+                            <f:attribute name="_required" value="#{instance.required}"/>
+                            <f:attribute name="_label" value="#{instance.name}"/>
+                            <f:ajax event="keyup" execute="@this"
+                                render=":requestInfoForm:requestPreviewOuterPanel sshPrincipalFieldMessage"/>
+                        </h:inputText>
+                            <h:outputText id="sshPrincipalFieldNonModifiableField" value="#{instance.value}" 
+                                rendered="#{!instance.modifiable}"/>
+                        <h:message for="sshPrincipalField" id="sshPrincipalFieldMessage" styleClass="sshPrincipalErrorMessage" 
+                            errorClass="sshPrincipalErrorMessage showErrorMessage"/>
+                    </h:panelGroup>
+                </ui:repeat>
+                <h:outputLabel for="forcecommandinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{not cc.attrs.raEndEntityDetails.sshForceCommandRequired}"
+                    value="#{msg.component_eedetails_header_ssh_forcecommand}"/>
+                <h:outputLabel for="forcecommandinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{cc.attrs.raEndEntityDetails.sshForceCommandRequired}"
+                    value="#{msg.component_eedetails_header_ssh_forcecommand} *"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="forcecommandinput"
+                        value="#{cc.attrs.raEndEntityBean.sshForceCommand}"
+                        rendered="#{cc.attrs.raEndEntityDetails.sshForceCommandModifiable}"/>
+                    <h:outputText id="forcecommandtext"
+                        rendered="#{not cc.attrs.raEndEntityDetails.sshForceCommandModifiable}"
+                        value="#{cc.attrs.raEndEntityDetails.sshForceCommand}"/>
+                </h:panelGroup>
+                <h:outputLabel for="sourceaddressinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{not cc.attrs.raEndEntityDetails.sshSourceAddressRequired}"
+                    value="#{msg.component_eedetails_header_ssh_sourceaddress}"/>
+                <h:outputLabel for="sourceaddressinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{cc.attrs.raEndEntityDetails.sshSourceAddressRequired}"
+                    value="#{msg.component_eedetails_header_ssh_sourceaddress} *"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:inputText id="sourceaddressinput"
+                        value="#{cc.attrs.raEndEntityBean.sshSourceAddress}"
+                        rendered="#{cc.attrs.raEndEntityDetails.sshSourceAddressModifiable}"/>
+                    <h:outputText id="sourceaddresstext"
+                        rendered="#{not cc.attrs.raEndEntityDetails.sshSourceAddressModifiable}"
+                        value="#{cc.attrs.raEndEntityDetails.sshSourceAddress}"/>
+                </h:panelGroup>
+                <h:outputLabel for="verifyrequiredinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{not cc.attrs.raEndEntityDetails.sshVerifyRequiredRequired}"
+                    value="#{msg.component_eedetails_header_ssh_verifyrequired}"/>
+                <h:outputLabel for="verifyrequiredinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredRequired}"
+                    value="#{msg.component_eedetails_header_ssh_verifyrequired} *"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:selectOneMenu id="verifyrequiredinput"
+									value="#{cc.attrs.raEndEntityBean.sshVerifyRequired}"
+                                    rendered="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredModifiable}"
+									requiredMessage="#{msg.enroll_ssh_option_required}"
+									required="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredRequired}">
+                        <f:selectItems id="sshVerifyRequiredSelectList" value="#{cc.attrs.raEndEntityBean.sshVerifyRequiredOptions}"/>
+                    </h:selectOneMenu>
+                    <h:outputText id="verifyrequiredtext"
+                        rendered="#{not cc.attrs.raEndEntityDetails.sshVerifyRequiredModifiable}"
+                        value="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredString}"/>
+                </h:panelGroup>
             </h:panelGroup>
 
             <h:outputLabel for="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
@@ -435,7 +647,104 @@
                 rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}">
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.raEndEntityBean.anySubjectDirectoryAttribute}" value="#{msg.component_eedetails_header_subjectda}"/>
-                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectDirectoryAttributes.fieldInstances}" msgPrefix="#{'subject_directory_attributes_'}" />
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectDirectoryAttributes.fieldInstances}"
+                    msgPrefix="#{'subject_directory_attributes_'}"
+                    dnEmailFieldName="#{cc.attrs.raEndEntityBean.dnEmailFieldName}"
+                    eeEmail="#{cc.attrs.raEndEntityDetails.email}"/>
+            </h:panelGroup>
+            <h:outputLabel value="#{msg.component_eedetails_field_keyrecoverable}" styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"/>
+			<h:selectBooleanCheckbox id="eeKeyRecoverable"
+				    rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}" 
+				    value="#{cc.attrs.raEndEntityBean.keyRecoverable}"/>
+			<h:outputText styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" 
+								value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_yes : msg.component_eedetails_field_keyrecoverable_no }"
+			                   rendered="#{cc.attrs.approvalRequestMode or not cc.attrs.editMode}"/>
+			<h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+            <h:outputLabel for="editCertificateExtensionDataField" value="#{msg.enroll_cert_extension_data}" 
+                rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.extensionDataConfigured and not cc.attrs.approvalRequestMode}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:inputTextarea id="editCertificateExtensionDataField" value="#{cc.attrs.raEndEntityBean.extensionData}" 
+                rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.extensionDataConfigured and not cc.attrs.approvalRequestMode}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                <f:validator validatorId="oidValidator"/>
+                <f:attribute name="beginsWith" value="true"/>
+            </h:inputTextarea>
+            <h:message for="editCertificateExtensionDataField" id="editCertificateExtensionDataFieldMessage" styleClass="showErrorMessage"/>
+            <h:outputLabel for="viewCertificateExtensionDataField" value="#{msg.enroll_cert_extension_data}" 
+                rendered="#{cc.attrs.raEndEntityDetails.extensionDataConfigured and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="viewCertificateExtensionDataField" value="#{cc.attrs.raEndEntityDetails.extensionData}" 
+                rendered="#{cc.attrs.raEndEntityDetails.extensionDataConfigured and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
+            <!-- PSD2 NCAName -->
+            <h:outputLabel for="viewPsd2NCANameField" value="#{msg.enroll_psd2_ncaname}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputText id="viewPsd2NCANameField" value="#{cc.attrs.raEndEntityDetails.psd2NcaName}"
+                          rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputLabel for="editPsd2NCANameField" value="#{msg.enroll_psd2_ncaname}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:inputText id="editPsd2NCANameField" value="#{cc.attrs.raEndEntityBean.psd2NcaName}" />
+            </h:panelGroup>
+            <!-- PSD2 NCAId -->
+            <h:outputLabel for="viewPsd2NCAIdField" value="#{msg.enroll_psd2_ncaid}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputText id="viewPsd2NCAIdField" value="#{cc.attrs.raEndEntityDetails.psd2NcaId}"
+                          rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputLabel for="editPsd2NCAIdField" value="#{msg.enroll_psd2_ncaid}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:inputText id="editPsd2NCAIdField" value="#{cc.attrs.raEndEntityBean.psd2NcaId}" />
+            </h:panelGroup>
+            <!-- PSD2 PSP roles -->
+            <h:outputLabel for="viewPsd2PspRoleField" value="#{msg.enroll_psd2_psp_roles}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:selectManyListbox id="viewPsd2PspRoleField" value="#{cc.attrs.raEndEntityDetails.selectedPsd2PspRoles}" disabled="true">
+                    <f:selectItems value="#{cc.attrs.raEndEntityDetails.availablePsd2PspRoles}"/>
+                </h:selectManyListbox>
+            </h:panelGroup>
+            <h:outputLabel for="editPsd2PspRoleField" value="#{msg.enroll_psd2_psp_roles}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:selectManyListbox id="editPsd2PspRoleField" value="#{cc.attrs.raEndEntityBean.selectedPsd2PspRoles}">
+                    <f:selectItems value="#{cc.attrs.raEndEntityDetails.availablePsd2PspRoles}"/>
+                </h:selectManyListbox>
+            </h:panelGroup>
+            <!-- CA/B Forum Organization Identifier -->
+            <h:outputLabel for="viewCabfOrganizationIdentifierField" value="#{msg.enroll_cabf_organizationidentifier}"
+                           rendered="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifierEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputText id="viewCabfOrganizationIdentifierField" value="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifier}"
+                          rendered="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifierEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputLabel for="editCabfOrganizationIdentifierField" value="#{msg.enroll_cabf_organizationidentifier}"
+                           rendered="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifierEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifierEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:inputText id="editCabfOrganizationIdentifierField" value="#{cc.attrs.raEndEntityBean.cabfOrganizationIdentifier}"
+                             pt:pattern="#{cc.attrs.raEndEntityBean.cabfOrganizationIdentifierRegex}"
+                             pt:title="#{msg.enroll_cabf_organizationidentifier_format}"
+                             disabled="#{not cc.attrs.raEndEntityBean.cabfOrganizationIdentifierModifiable}">
+                    <f:validator validatorId="extendedRegexValidator" />
+                    <f:attribute name="pattern" value="#{cc.attrs.raEndEntityBean.cabfOrganizationIdentifierRegex}"/>
+                    <f:attribute name="_label" value="#{msg.enroll_cabf_organizationidentifier}"/>
+                </h:inputText>
+                <h:message for="editCabfOrganizationIdentifierField" id="cabfOrganizationIdentifierMessage" styleClass="validationErrorMessage showErrorMessage"/>
             </h:panelGroup>
 
             <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
@@ -458,7 +767,6 @@
             <h:outputText id="revokeEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds}"
                           rendered="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds != ''}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
@@ -474,6 +782,9 @@
                 <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
                                  rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+                <h:commandButton action ="#{raEndEntityBean.backToSearch}" value="#{msg.search_ees_page_cdclose_command}"
+                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                 rendered="#{raEndEntityBean.viewEndEntityMode}" />
             </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />

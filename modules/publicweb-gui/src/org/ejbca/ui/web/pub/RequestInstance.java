@@ -25,6 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileCountLimitExceededException;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -32,7 +33,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
-import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
@@ -50,14 +50,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSession;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.FileTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -81,6 +74,15 @@ import org.ejbca.ui.web.CertificateRequestResponse;
 import org.ejbca.ui.web.CertificateResponseType;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
+
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  *
@@ -555,6 +557,11 @@ public class RequestInstance {
 		            debug.printDebugInfo();
 		        }
 		    }
+		} catch (FileCountLimitExceededException e) {
+		    iErrorMessage = "File count upload limit exceeded.";
+		    if (log.isDebugEnabled()) {
+                log.debug(iErrorMessage, e);
+            }
 		} catch (Exception e) {
 			Throwable e1 = e.getCause();
 			if (e1 instanceof CryptoTokenOfflineException) {
@@ -646,6 +653,8 @@ public class RequestInstance {
             diskFileItemFactory.setSizeThreshold(9999);
             ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
 			upload.setSizeMax(REQUEST_MAX_SIZE);
+			// Upload consists of 7 DiskFileItems, 1 is the data stream. 
+			upload.setFileCountMax(10);
             List<FileItem> items = upload.parseRequest(request);
 			Iterator<FileItem> iter = items.iterator();
 			while (iter.hasNext()) {

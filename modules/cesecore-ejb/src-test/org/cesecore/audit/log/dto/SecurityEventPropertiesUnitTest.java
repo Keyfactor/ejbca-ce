@@ -12,29 +12,54 @@
  *************************************************************************/
 package org.cesecore.audit.log.dto;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
-import org.cesecore.util.TestLogAppenderResource;
-import org.junit.Rule;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 /**
  * Unit test for SecurityEventProperties.
  *
- * @version $Id$
  */
 public class SecurityEventPropertiesUnitTest {
+    
+    private static final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+    private static final PrintStream originalSystemOut = System.out;
+    private static final InputStream originalSystemIn = System.in;
+    
+    @BeforeClass
+    public static void beforeClass() {
+        System.setProperty("log4j1.compatibility", "true");
+        System.setOut(new PrintStream(outStream));
+    }
+    
+    @After
+    public void tearDown() {
+        // Write log/console outputs to System.err
+        System.err.println(outStream.toString());
+        outStream.reset();
+        // Restore original System.in
+        System.setIn(originalSystemIn);
+        // Reset expectations
+    }
 
-    @Rule
-    public TestLogAppenderResource testLog = new TestLogAppenderResource(Logger.getLogger(SecurityEventProperties.class));
-
+    @AfterClass
+    public static void afterClass() {
+        // Restore original System.out
+        System.setOut(originalSystemOut);
+    }
+    
     @Test
     public void shouldMapCertSignKey() {
         // given
@@ -195,7 +220,11 @@ public class SecurityEventPropertiesUnitTest {
         final Map<String, Object> resultMap = securityEventProperties.toMap();
         // then
         assertEquals("Resulting map has unexpected number of elements.", 0, resultMap.keySet().size());
-        assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - Got an entry with null key, excluding from the result map."));
+        
+        final String consoleOutput = outStream.toString();
+        assertTrue("Event log is missing. It was " + consoleOutput, consoleOutput.contains("WARN"));
+        assertTrue("Event log is missing. It was " + consoleOutput, consoleOutput.contains("Got an entry with null key, excluding from the result map."));
+
     }
 
     @Test
@@ -214,7 +243,12 @@ public class SecurityEventPropertiesUnitTest {
         final Map<String, Object> resultMap = securityEventProperties.toMap();
         // then
         assertEquals("Resulting map has unexpected number of elements.", 1, resultMap.keySet().size());
-        assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - The standalone property [msg] was overridden by property in custom map."));
+        
+        final String consoleOutput = outStream.toString();
+
+        assertTrue("Event log is missing. It was " + consoleOutput, consoleOutput.contains("WARN"));
+        assertTrue("Event log is missing. It was " + consoleOutput, consoleOutput.contains("The standalone property [msg] was overridden by property in custom map."));
+        
         assertEquals("msg was not mapped from customMap.", customValue, resultMap.get(SecurityEventProperties.MSG));
     }
 

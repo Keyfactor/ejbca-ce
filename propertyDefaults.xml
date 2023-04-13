@@ -5,21 +5,6 @@
     </description>
 
 	<!-- Validate basic build requirements before we do anything else. -->
-	<fail message="Java 7+ is required to build EJBCA, but it does not work yet with Java 9+. Your java version is ${java.version}. Override with -Doverride.java.version=true">
-		<condition>
-			<and>
-				<not>
-				<isset property="override.java.version" />
-			    </not>
-			    <or>
-				    <equals arg1="${ant.java.version}" arg2="1.5"/>
-				    <equals arg1="${ant.java.version}" arg2="1.6"/>
-                    <equals arg1="${ant.java.version}" arg2="1.9"/>
-                    <equals arg1="${ant.java.version}" arg2="9"/>
-			    </or>
-		    </and>
-		</condition>
-	</fail>
 	<fail message="Apache Ant 1.8+ is required to build EJBCA">
 	     <condition><not><antversion atleast="1.8" /></not></condition>
 	</fail>
@@ -72,11 +57,8 @@
     <property file="${ejbca.home}/conf/mail.properties" />
     <property file="${ejbca.home}/conf/ocsp.properties" />
     <property file="${ejbca.home}/conf/web.properties" />
-    <property file="${ejbca.home}/conf/cmptcp.properties" />
     <property file="${ejbca.home}/conf/jaxws.properties" />
-    <property file="${ejbca.home}/conf/externalra.properties" />
     <property file="${ejbca.home}/conf/scepra.properties" />
-    <property file="${ejbca.home}/conf/externalra-gui.properties" />
     <property file="${ejbca.home}/conf/va.properties" />
     <property file="${ejbca.home}/conf/va-publisher.properties" />
     <property file="${ejbca.home}/conf/systemtests.properties" />
@@ -162,16 +144,11 @@
 	<!-- By default, we connect directly to EJBCA in the CMP tests, but it is also
 	     possible override those variables to connect via the CMP proxy -->
 	<property name="httpCmpProxyURL" value="http://${target.hostname}:${target.port.http}/ejbca/publicweb/cmp"/>
-	<property name="tcpCmpProxyIP" value="${target.hostname}"/>
-	<property name="tcpCmpProxyPort" value="5587"/>
 	<condition property="doc.war.enabled">
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
 	<condition property="renew.war.enabled">
 		<equals arg1="true" arg2="${web.renewalenabled}" casesensitive="false" trim="true" />
-	</condition>
-	<condition property="cmptcpservices.enabled">
-		<istrue value="${cmp.tcp.enabled}"/>
 	</condition>
 
 	<property name="ocsp.enabled" value="true" />
@@ -203,10 +180,6 @@
 	<condition property="ocsp-database.valid.connection.sql" value="select 1 from sysibm.sysdummy1"><contains string="${ocsp-database.driver}" substring="db2"/></condition>
 	<condition property="ocsp-database.valid.connection.sql" value="select 1 from dual"><contains string="${ocsp-database.driver}" substring="oracle"/></condition>
 	<property name="ocsp-database.valid.connection.sql" value="select 1" /> <!-- all other databases -->
-
-	<condition property="externalra-database.valid.connection.sql" value="select 1 from sysibm.sysdummy1"><contains string="${externalra-database.driver}" substring="db2"/></condition>
-	<condition property="externalra-database.valid.connection.sql" value="select 1 from dual"><contains string="${externalra-database.driver}" substring="oracle"/></condition>
-	<property name="externalra-database.valid.connection.sql" value="select 1" /> <!-- all other databases -->
 
 	<property name="unidfnr.enabled" value="false" /> <!-- by default unidfnr is not enabled, but can be in ocsp.properties -->
 	
@@ -245,11 +218,7 @@ httpserver.external.fqdn = ${httpserver.external.fqdn}
 web.contentencoding      = ${web.contentencoding}
 web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
-cmp.tcp.enabled                 = ${cmp.tcp.enabled}
-cmp.tcp.portno                  = ${cmp.tcp.portno}
-cmp.tcp.logdir                  = ${cmp.tcp.logdir}
-cmp.tcp.conffile                = ${cmp.tcp.conffile}
-unidfnr.enabled                 = ${unidfnr.enabled}
+unidfnr.enabled          = ${unidfnr.enabled}
 
       </echo>
     </target>

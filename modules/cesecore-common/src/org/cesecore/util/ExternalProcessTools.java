@@ -25,11 +25,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Tools to handle calls with <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html">Java Process API</a>.

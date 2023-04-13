@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
@@ -38,16 +38,17 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRoleMemberTokenTypeInfo;
+
+import com.keyfactor.util.StringTools;
 
 
 /**
  * Backing bean for the (Add) Role Member page
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaRoleMemberBean implements Serializable {
 
@@ -57,19 +58,15 @@ public class RaRoleMemberBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value="#{raAccessBean}")
-    private RaAccessBean raAccessBean;
-    public void setRaAccessBean(final RaAccessBean raAccessBean) { this.raAccessBean = raAccessBean; }
-
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
-    @ManagedProperty(value="#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
-    @ManagedProperty(value="#{raRoleMembersBean}")
+    @Inject
     private RaRoleMembersBean raRoleMembersBean;
     public void setRaRoleMembersBean(final RaRoleMembersBean raRoleMembersBean) { this.raRoleMembersBean = raRoleMembersBean; }
 
@@ -126,7 +123,7 @@ public class RaRoleMemberBean implements Serializable {
                 roleMember = null;
             }
         } else {
-            roleMember = new RoleMember("", RoleMember.NO_ISSUER, 0, 0, "", 0, "");
+            roleMember = new RoleMember("", RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, 0, 0, "", 0, "");
             // Default values
             if (StringUtils.isEmpty(tokenType)) {
                 tokenType = "CertificateAuthenticationToken";
@@ -334,7 +331,7 @@ public class RaRoleMemberBean implements Serializable {
             caId = RoleMember.NO_ISSUER;
         }
         if (!tokenTypeInfo.isIssuedByOauthProvider()) {
-            caId = RoleMember.NO_PROVIDER;
+            providerId = RoleMember.NO_PROVIDER;
         }
                
         if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) &&

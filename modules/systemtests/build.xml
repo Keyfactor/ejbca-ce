@@ -28,10 +28,10 @@
 	     and in the case of JBoss 6 it pulls in apache cxf that does not work with client certificates, at least the same way as sun ws does -->
 	<path id="systemtests.classpath.nojee">
 		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.commons-io.classpath" />
 		<path refid="lib.ctlog.classpath"/>
 		<path refid="lib.guava.classpath"/>
 		<path refid="lib.servlet.classpath"/>
-		<path refid="lib.mail.classpath"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.utils.classpath"/>
@@ -40,6 +40,7 @@
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
 		<path location="${mod.ejbca-common.lib}" />
+		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<!-- Use by ? -->
 		<path refid="lib.commons-logging.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
@@ -65,27 +66,37 @@
 		<pathelement location="${mod.systemtest-ejb.lib}"/>
 		<pathelement location="${mod.systemtests.path}/resources"/>
 		<path location="${mod.ejbca-common.path}/build-test"/>
+		<path location="${mod.acme-common.jar}"/>
 	</path>
 
 	<path id="systemtests.classpath">
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
+		<path refid="lib.javax.activaton.classpath"/>
+		<path refid="lib.javax.mail.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/>
+		<path refid="lib.javax.xml.soap-api.classpath"/>
         <path refid="systemtests.classpath.nojee"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.json-smart.classpath"/>
+		<path location="${mod.p11ng.lib}" />
+		<path refid="lib.jackson2.classpath"/>
+		<pathelement location="${mod.ejbca-rest-common.lib}"/>
+		<path refid="lib.resteasy-jaxrs.classpath"/>
 	</path>
 
 	<path id="common.classpath">
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.hc.classpath"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.ejbca-common.lib}"/>
         <path refid="lib.bouncycastle.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
-
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 
 	<path id="interfaces.classpath">
@@ -109,19 +120,15 @@
 		<path refid="lib.log4j.classpath" />
 		<path refid="lib.commons-lang.classpath" />
 		<path refid="lib.commons-config.classpath" />
-		<path refid="lib.commons-collections.classpath" />
+		<path refid="lib.commons-collections4.classpath" />
 		<path refid="lib.commons-logging.classpath" />
-		<path refid="lib.commons-io.classpath" />
 		<path refid="lib.servlet.classpath" />
 		<path refid="lib.ldap.classpath" />
-		<path refid="lib.mail.classpath" />
-		<path refid="lib.batik.classpath" />
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.ejbca-common-web.classpath" />
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
 		<pathelement location="${mod.ejbca-common.lib}"/>
 		<path location="${mod.ejbca-entity.lib}" />
-		<path refid="lib.quickserver.classpath" />
 		<path location="${systemtests.build.interface.dir}" />
 		<path location="${systemtests.build.common.dir}" />
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
@@ -169,6 +176,7 @@
             <include name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
 			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
 			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>
+			<include name="org/ejbca/ui/web/rest/api/resource/RestResourceSystemTestBase.java"/>
 		<!-- ECA-9129: Not included normally - doing so breaks the build unless this class is enabled in cesecore.properties
 			<include name="com/widget/WidgetCustomExtension.java"/> -->
 		</javac>
@@ -184,7 +192,8 @@
             <exclude name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
             <exclude name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
 			<exclude name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
-			<exclude name="com/widget/WidgetCustomExtension.java"/>	
+			<exclude name="com/widget/WidgetCustomExtension.java"/>
+			<exclude name="org/ejbca/ui/web/rest/api/resource/RestResourceSystemTestBase.java"/>	
 		</javac>
 	</target>
 
@@ -298,8 +307,6 @@
 				<path refid="${runone-internal.classpath}" />
 			</classpath>
 			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
-			<sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
-			<sysproperty key="tcpCmpProxyPort" value="${tcpCmpProxyPort}"/>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="${tests.jvmargs.endorsed}"/>
 			<jvmarg value="${remoteDebugJvmArgs}"/>
@@ -318,18 +325,13 @@
 	<!-- =================================
           Run most system tests
          ================================= -->
-	<target name="run" depends="build, assert-appserverrunning, runws" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test, use -Dtest.includep11=true to include P11 tests">
+	<target name="run" depends="build, assert-appserverrunning, runws" description="Run all system tests, set -Dmysql.lib=... to enable Cmp Unid test, use -Dtest.includep11=true to include P11 tests">
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 		<mkdir dir="${systemtests.dir}/p12"/>
 		<!-- Workaround for tests using BatchMakeP12 -->
 		<mkdir dir="${systemtests.build.test.dir}/conf"/>
 		<!-- Workaround for tests TestCertificateProfile -->
-		<copy todir="${systemtests.build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" failonerror="false"/>
-		<!-- Workaround for tests TestCertificateProfile -->
-		<echo message="Checking if the CMP TCP listener is listening on port ${tcpCmpProxyIP}:${tcpCmpProxyPort}... (will result in additional tests being run)"/>
-		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
-			<socket server="${tcpCmpProxyIP}" port="${tcpCmpProxyPort}"/>
-		</waitfor>
+		<copy todir="${systemtests.build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" failonerror="false"/>		
 		<!-- needed by the cesecore tests -->
 		<copy todir="${systemtests.build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 		<!-- The CMP unid test requires the mysql.lib property to be set -->
@@ -386,9 +388,6 @@
 					<exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />-->
 					<exclude name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
-					<!-- Tests that require the CMP TCP listener -->
-					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
-					<exclude name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
 					<!-- Tests that require unique index in the database to work -->
 					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRARequestCustomSerialNoTest.class" />
@@ -396,13 +395,6 @@
 					<exclude name="**/protocol/ws/*" />
 					<!-- Exclude profiling test, since we want to run it later -->
 					<exclude name="org/ejbca/core/ejb/ProfilingTest.class" />
-				</fileset>
-			</batchtest>
-			<!-- Tests that require the CMP TCP listener -->
-			<batchtest fork="yes" todir="${reports.dir}" unless="cmptcplistener.notrunning">
-				<fileset dir="${systemtests.build.test.dir}">
-					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
-					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
 				</fileset>
 			</batchtest>
 			<!-- Run the profiling test last to get stats of all the previous tests -->
@@ -443,15 +435,8 @@
 
 	<target name="runcmp" depends="build, assert-appserverrunning" description="Run CMP system tests">
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
-		<echo message="Checking if the CMP TCP listener is listening on port ${tcpCmpProxyIP}:${tcpCmpProxyPort}..."/>
-		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
-			<socket server="${tcpCmpProxyIP}" port="${tcpCmpProxyPort}"/>
-		</waitfor>
-		<fail if="cmptcplistener.notrunning" message="This test requires a running CMP TCP listener"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
-			<sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
-			<sysproperty key="tcpCmpProxyPort" value="${tcpCmpProxyPort}"/>
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="systemtests.classpath" />
@@ -459,11 +444,10 @@
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="${tests.jvmargs.endorsed}"/>
 			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}" unless="cmptcplistener.notrunning">
+			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestTest.class" />
-					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 				</fileset>
 			</batchtest>

@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
@@ -19,12 +22,10 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResu
 
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import static org.ejbca.ui.web.rest.api.config.JsonDateSerializer.DATE_FORMAT_ISO8601;
+import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestUtil.parseDateFromStringValue;
 
 /**
  * JSON input for a certificate search containing multiple search criteria and output limitation.
@@ -37,8 +38,9 @@ import static org.ejbca.ui.web.rest.api.config.JsonDateSerializer.DATE_FORMAT_IS
  *
  * @version $Id: SearchCertificatesRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
-public class SearchCertificatesRestRequest {
+public class SearchCertificatesRestRequest implements SearchCertificateCriteriaRequest {
 
+    @ApiModelProperty(value = "Maximum number of results", example = "10")
     @ValidSearchCertificateMaxNumberOfResults
     private Integer maxNumberOfResults;
     @ApiModelProperty(value = "A List of search criteria." )
@@ -54,6 +56,7 @@ public class SearchCertificatesRestRequest {
         this.maxNumberOfResults = maxNumberOfResults;
     }
 
+    @Override
     public List<SearchCertificateCriteriaRestRequest> getCriteria() {
         return criteria;
     }
@@ -209,18 +212,19 @@ public class SearchCertificatesRestRequest {
                         }
                         break;
                     }
+                    case UPDATE_TIME: {
+                        final long updateTimeLong = parseDateFromStringValue(criteriaValue).getTime();
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER) {
+                            raCertificateSearchRequest.setUpdatedAfter(updateTimeLong);
+                        }
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE) {
+                            raCertificateSearchRequest.setUpdatedBefore(updateTimeLong);
+                        }
+                        break;
+                    }
                 }
             }
             return raCertificateSearchRequest;
-        }
-    }
-
-    private static Date parseDateFromStringValue(final String dateString) throws RestException {
-        try {
-            return DATE_FORMAT_ISO8601.parse(dateString);
-        }
-        catch (ParseException pEx) {
-            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Cannot handle the request", pEx);
         }
     }
 

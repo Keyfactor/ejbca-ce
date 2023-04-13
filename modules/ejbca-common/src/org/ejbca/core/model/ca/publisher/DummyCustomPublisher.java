@@ -19,11 +19,12 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
+
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 
 /**
@@ -79,7 +80,7 @@ public class DummyCustomPublisher implements ICustomPublisher, Serializable {
 	}
 
     @Override
-    public boolean willPublishCertificate(int status, int revocationReason) {
+    public boolean willPublishCertificate(int status, long revocationDate) {
         return true;
     }
     
