@@ -3,8 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:t="http://myfaces.apache.org/tomahawk">
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -197,7 +196,7 @@
 
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REPLACE_PUBLICKEY} "
                           rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fileForm }"/>
-            <t:inputFileUpload id="editedOAuthKeyFile"
+            <h:inputFile id="editedOAuthKeyFile"
                                rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fileForm }"
                                value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeyFile}"
                                title="#{web.text.OAUTHKEYCONFIGURATION_NEW_PUBLICKEYFILE}"/>

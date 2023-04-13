@@ -55,6 +55,7 @@ import org.bouncycastle.asn1.isara.IsaraObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
 import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.rosstandart.RosstandartObjectIdentifiers;
 import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
@@ -290,7 +291,7 @@ public class JackNJI11ProviderTest {
         
         {
             // Encrypt key pair, will only use the public key and should therefore always work (BC provider)
-            byte[] encrypted = encryptKeys(cryptoToken, RSA_TEST_KEY_1, toEncrypt);
+            byte[] encrypted = encryptKeys(cryptoToken, RSA_TEST_KEY_1, toEncrypt, new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption));
             assertNotNull("Encrypting a key pair with the public key must return encrypted data", encrypted);
             // Verify at least something about the encrypted data
             CMSEnvelopedData ed = new CMSEnvelopedData(encrypted);
@@ -311,7 +312,7 @@ public class JackNJI11ProviderTest {
 
         {
             // Do the same but with a key that has SIGN_ENCRYPT
-            byte[] encrypted = encryptKeys(cryptoToken, RSA_TEST_KEY_2, toEncrypt);
+            byte[] encrypted = encryptKeys(cryptoToken, RSA_TEST_KEY_2, toEncrypt, new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption));
             assertNotNull("Encrypting a key pair with the public key must return encrypted data", encrypted);
             // Verify at least something about the encrypted data
             CMSEnvelopedData ed = new CMSEnvelopedData(encrypted);
@@ -325,6 +326,25 @@ public class JackNJI11ProviderTest {
             assertTrue("Decrypted public key should be equal to input", ArrayUtils.isEquals(toEncrypt.getPublic().getEncoded(), decrypted.getPublic().getEncoded()));
             assertTrue("Decrypted private key should be equal to input", ArrayUtils.isEquals(toEncrypt.getPrivate().getEncoded(), decrypted.getPrivate().getEncoded()));
         }
+        
+        {
+            // Do the same but with RSAEA_OAEP instead of RSAEncryption
+            byte[] encrypted = encryptKeys(cryptoToken, RSA_TEST_KEY_2, toEncrypt, 
+                    new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, new RSAESOAEPparams()));
+            assertNotNull("Encrypting a key pair with the public key must return encrypted data", encrypted);
+            // Verify at least something about the encrypted data
+            CMSEnvelopedData ed = new CMSEnvelopedData(encrypted);
+            RecipientInformationStore recipients = ed.getRecipientInfos();
+            RecipientInformation recipient = recipients.getRecipients().iterator().next();
+            assertEquals("Encryption algorithms should be RSA-OAEP", "1.2.840.113549.1.1.7", recipient.getKeyEncryptionAlgOID());
+
+            // Decrypt it, this will use the private key and the JACKNJI11Provider 
+            final KeyPair decrypted = decryptKeys(cryptoToken, RSA_TEST_KEY_2, encrypted);
+            assertNotNull("Decrypting a key pair must result in a KeyPair", decrypted);
+            assertTrue("Decrypted public key should be equal to input", ArrayUtils.isEquals(toEncrypt.getPublic().getEncoded(), decrypted.getPublic().getEncoded()));
+            assertTrue("Decrypted private key should be equal to input", ArrayUtils.isEquals(toEncrypt.getPrivate().getEncoded(), decrypted.getPrivate().getEncoded()));
+        }
+
     }
 
     private void signWithProvider(final String algorithm, final String keyAlias , final String provider) throws Exception {
@@ -451,7 +471,7 @@ public class JackNJI11ProviderTest {
      * Not so important to run the exact same code, what we test here is that using a symmestric AES key in BC, 
      * wrapping it with an RSA key in the HSM works with the BC code. 
      */
-    private byte[] encryptKeys(final CryptoToken cryptoToken, final String alias, final KeyPair keypair) throws CryptoTokenOfflineException {
+    private byte[] encryptKeys(final CryptoToken cryptoToken, final String alias, final KeyPair keypair, AlgorithmIdentifier keyEncryptAlg) throws CryptoTokenOfflineException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream os = new ObjectOutputStream(baos);
@@ -461,7 +481,7 @@ public class JackNJI11ProviderTest {
             // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
             final PublicKey pk = cryptoToken.getPublicKey(alias);
             byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
-            edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
+            edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, keyEncryptAlg, pk));
             JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
             ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), jceCMSContentEncryptorBuilder.build());
             return ed.getEncoded();
