@@ -22,11 +22,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
+import org.cesecore.keys.util.CvcKeyTools;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -41,6 +37,12 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.keys.KeyTools;
 
 
 /**
@@ -128,6 +130,11 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 						sequence = RandomStringUtils.randomNumeric(5);
 						getPrintStream().println("No sequence given, using random 5 number sequence: "+sequence);
 					}
+					if (country == null) {
+					    throw new ErrorAdminCommandException("Missing country (\"C=...\") in Subject DN");
+					} else if (mnemonic == null) {
+					    throw new ErrorAdminCommandException("Missing mnemonic (\"CN=...\") in Subject DN");
+					}
 					//CAReferenceField caRef = new CAReferenceField(country,mnemonic,sequence);
 					CAReferenceField caRef = null; // Don't create a caRef in the self signed request
 					// We are making a self signed request, so holder ref is same as ca ref
@@ -156,7 +163,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 						// Test to verify it yourself first
 						if (authCert != null) {
 							getPrintStream().println("Verifying the request before sending it...");
-							PublicKey pk = KeyTools.getECPublicKeyWithParams(authCert.getCertificateBody().getPublicKey(), keySpec);
+							PublicKey pk = CvcKeyTools.getECPublicKeyWithParams(authCert.getCertificateBody().getPublicKey(), keySpec);
 							authRequest.verify(pk);							
 						}
 						der = authRequest.getDEREncoded();						
@@ -197,7 +204,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				fos.write(cvcert.getDEREncoded());
 				fos.close();
 				getPrintStream().println("Wrote binary certificate to: "+basefilename+".cvcert");
-				getPrintStream().println("You can look at the certificate with the command cvcwscli.sh cvcprint "+basefilename+".cvcert");
+				getPrintStream().println("You can look at the certificate with the command ./ejbcaClientToolBox.sh CvcWsRaCli cvcprint "+basefilename+".cvcert");
 			}catch(AuthorizationDeniedException_Exception e){
 				getPrintStream().println("Error : " + e.getMessage());
 			}catch(UserDoesntFullfillEndEntityProfile_Exception e){
@@ -214,7 +221,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	}
 
 	protected void usage() {
-		getPrintStream().println("Command used to make a CVC request. A user must exist, add one with 'ejbcawsracli.sh edituser'.");
+		getPrintStream().println("Command used to make a CVC request. A user must exist, add one with './ejbcaClientToolBox.sh EjbcaWsRaCli edituser'.");
 		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <signatureAlg> <keyspec (1024|1536|2048|curve)> <genreq true|false> <basefilename> [<auth-sign-key>] [<auth-sign-cert>]\n\n");
 		getPrintStream().println("SignatureAlg is used when generating a request and can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1, SHA1WithECDSA, SHA224WithECDSA, SHA256WithECDSA");
 		getPrintStream().println("Keyspec is used when generating a request and is 1024, 1536, 2048, etc. for RSA keys and the name of a named curve for ECDSA, see User Guide for supported curves.");

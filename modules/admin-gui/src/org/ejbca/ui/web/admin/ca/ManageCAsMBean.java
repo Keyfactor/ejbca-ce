@@ -12,6 +12,32 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.ZipInputStream;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -36,11 +62,11 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.SecureZipUnpacker;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -53,33 +79,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
-import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.ZipInputStream;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
 
 /**
  * 
@@ -87,7 +90,7 @@ import java.util.zip.ZipInputStream;
  *
  * 
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     protected static final Logger log = Logger.getLogger(ManageCAsMBean.class);
@@ -103,6 +106,10 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
+    private RoleDataSessionLocal roleDataSession;
+    @EJB
+    private RoleMemberDataSessionLocal roleMemberDataSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
@@ -110,9 +117,8 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
-    private CADataHandler cadatahandler;
     private Map<Integer, String> caidtonamemap;
-    private Part certificateBundle;
+    private transient Part certificateBundle;
 
     public void setCertificateBundle(final Part certificateBundle) {
         this.certificateBundle = certificateBundle;
@@ -250,7 +256,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         } catch (ServletException e) {
             throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
         }
-        cadatahandler = caBean.getCADataHandler();
         caidtonamemap = caSession.getCAIdToNameMap();
     }
 
@@ -391,7 +396,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                     endEntityProfileSession.getEndEntityProfileId(entry.getValue()));
             if (casInProfile.entrySet().stream().anyMatch(e -> (e.getValue() == selectedCaId))) {
                 endEntityProfileList.add(endEntityProfileSession.getEndEntityProfileName(entry.getKey()));
-                continue;
             }
         }
         return endEntityProfileList;
@@ -440,7 +444,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String deleteCA() {
         try {
-            if (!cadatahandler.removeCA(selectedCaId)) {
+            if (!removeCA(selectedCaId)) {
                 addErrorMessage("COULDNTDELETECA");
                 final List<String> certificateProfilesUsedByCa = certificateProfilesUsedByCa(selectedCaId);
                 if (!certificateProfilesUsedByCa.isEmpty()) {
@@ -462,6 +466,36 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage(e.getMessage());
         }
         return EditCaUtil.MANAGE_CA_NAV;
+    }
+    
+    private boolean removeCA(final int caId) throws AuthorizationDeniedException{     
+        final boolean caIdIsPresent = endEntityManagementSession.checkForCAId(caId) ||
+                certificateProfileSessionLocal.existsCAIdInCertificateProfiles(caId) ||
+                endEntityProfileSession.existsCAInEndEntityProfiles(caId) ||
+                isCaIdInUseByRoleOrRoleMember(caId);   
+        if (!caIdIsPresent) {
+            caSession.removeCA(getEjbcaWebBean().getAdminObject(), caId);
+        }
+        return !caIdIsPresent;
+    }
+    
+    private boolean isCaIdInUseByRoleOrRoleMember(final int caId) {
+        for (final Role role : roleDataSession.getAllRoles()) {
+            if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caId))) {
+                return true;
+            }
+            for (final RoleMember roleMember : roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId())) {
+                if (roleMember.getTokenIssuerId()==caId) {
+                    // Do more expensive checks if it is a potential match
+                    final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(
+                            roleMember.getTokenType()).getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+                    if (accessMatchValue.isIssuedByCa()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public String renameCA() {
@@ -486,8 +520,18 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String createAuthCertSignRequest() {
         if (selectedCaId != 0) {
+            
+            int selectedCaType;
+            try {
+                selectedCaType = caSession.getCAInfo(getAdmin(), selectedCaId).getCAType();
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Admin is not authorized to get ca type!", e);
+            }
+            
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaType", selectedCaType);
+
             return EditCaUtil.SIGN_CERT_REQ_NAV;
         } else {
             addErrorMessage("SELECTCAFIRST");

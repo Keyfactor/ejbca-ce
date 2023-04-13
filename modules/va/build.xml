@@ -16,10 +16,8 @@
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-lang.classpath"/><!-- Dependency of commons-config -->
 		<path refid="lib.commons-logging.classpath"/><!-- Dependency of commons-config -->
-		<path refid="lib.commons-collections.classpath"/><!-- Dependency of commons-config -->
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
-		<path refid="lib.mail.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 	</path>
 
@@ -31,12 +29,14 @@
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 	
 	<path id="test.classpath">
 		<path refid="compile-ejbca.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
 		<path location="${build-va-publisher.dir}"/>
 		<path location="${va.build-test.dir}"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>

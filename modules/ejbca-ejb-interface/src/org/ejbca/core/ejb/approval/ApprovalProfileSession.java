@@ -27,7 +27,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
  * TODO: Generate a separate session beans specifically for performing CRUD operations on ProfileData objects, agnostic of their end purpose. This 
  *       bean is sufficient for now though.
  * 
- * @version $Id$
  */
 public interface ApprovalProfileSession {
 

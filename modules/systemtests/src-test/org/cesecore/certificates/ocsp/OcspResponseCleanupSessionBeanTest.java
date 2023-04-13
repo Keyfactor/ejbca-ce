@@ -76,7 +76,7 @@ public class OcspResponseCleanupSessionBeanTest {
 
         // Assert starting conditions.
         List<OcspResponseData> responses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuth);
-        assertEquals(5, responses.size());
+        assertEquals(8, responses.size());
 
         // Start the job and stop it after it runs.
         // Every 5 seconds.
@@ -86,11 +86,13 @@ public class OcspResponseCleanupSessionBeanTest {
 
         // Assert only latest responses are left.
         responses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuth);
-        assertEquals(2, responses.size());
+        assertEquals(4, responses.size());
 
         List<String> responseIds = responses.stream().map(r -> r.getId()).collect(Collectors.toList());
         assertTrue("Response id (test-id-3) should be found", responseIds.contains("test-id-3"));
         assertTrue("Response id (test-id-5) should be found", responseIds.contains("test-id-5"));
+        assertTrue("Response id (test-id-7) should be found", responseIds.contains("test-id-7"));
+        assertTrue("Response id (test-id-8) should be found", responseIds.contains("test-id-8"));
 
         log.trace(">testOldResponsesDeletedByJob");
     }
@@ -134,7 +136,7 @@ public class OcspResponseCleanupSessionBeanTest {
         ocspCleanup.stop();
 
         // Assert only latest responses are left.
-        assertEquals(2, ocspDataSessionRemote.findOcspDataByCaId(certificateAuth).size());
+        assertEquals(4, ocspDataSessionRemote.findOcspDataByCaId(certificateAuth).size());
 
         gc.setOcspCleanupScheduleUnit(prevUnit);
         gc.setOcspCleanupSchedule(prevSchedule);
@@ -189,11 +191,18 @@ public class OcspResponseCleanupSessionBeanTest {
         OcspResponseData responseD = new OcspResponseData("test-id-4", certificateAuth, "test-sn-2", hourAgo, future, new byte[0]);
         OcspResponseData responseE = new OcspResponseData("test-id-5", certificateAuth, "test-sn-2", now, hourAgo, new byte[0]);
 
+        OcspResponseData responseF = new OcspResponseData("test-id-6", certificateAuth, "test-sn-3", hourAgo, future, new byte[0]);
+        OcspResponseData responseG = new OcspResponseData("test-id-7", certificateAuth, "test-sn-3", now, hourAgo, new byte[0]);
+        OcspResponseData responseH = new OcspResponseData("test-id-8", certificateAuth, "test-sn-3", future, future, new byte[0]);
+
         ocspDataProxySessionRemote.storeOcspData(responseA);
         ocspDataProxySessionRemote.storeOcspData(responseB);
         ocspDataProxySessionRemote.storeOcspData(responseC);
         ocspDataProxySessionRemote.storeOcspData(responseD);
         ocspDataProxySessionRemote.storeOcspData(responseE);
+        ocspDataProxySessionRemote.storeOcspData(responseF);
+        ocspDataProxySessionRemote.storeOcspData(responseG);
+        ocspDataProxySessionRemote.storeOcspData(responseH);
         log.trace("<persistOcspResponses");
     }
 

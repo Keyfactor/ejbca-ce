@@ -220,19 +220,6 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Default: not set
 #cluster.nodeid=
 
-#------------------- ECDSA implicitlyCA settings -------------
-# Sets pre-defined EC curve parameters for the implicitlyCA facility.
-# See the User's Guide for more information about the implicitlyCA facility.
-# Setting these parameters are not necessary when using regular named curves. 
-# if you don't know what this means, you can safely ignore these settings.
-#
-# Default values that you can experiment with:
-# ecdsa.implicitlyca.q=883423532389192164791648750360308885314476597252960362792450860609699839
-# ecdsa.implicitlyca.a=7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc
-# ecdsa.implicitlyca.b=6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a
-# ecdsa.implicitlyca.g=020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf
-# ecdsa.implicitlyca.n=883423532389192164791648750360308884807550341691627752275345424702807307
-
 #------------------- PKCS#11 -------------------------------------
 # Configuration of PKCS#11 tokens.
 #
@@ -245,16 +232,6 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Caching the references to PKCS#11 objects can make a big performance difference.
 # Default: true
 #cryptotoken.keystorecache=true
-
-# Setting the PKCS#11 attribute CKA_MODIFYABLE to FALSE after a key is generated.
-#
-# This is only done if the file '$EJBCA_HOME/dist/ext/cesecore-p11.jar' has been
-# deployed to the 'java.ext.dirs' classpath (https://docs.oracle.com/javase/tutorial/ext/basics/install.html).
-# If true and if the jar is not deployed then a warning will be written to the
-# log each time a key (all key types even none p11) is generated.
-# If the key is not a PKCS#11 key then nothing is done.
-# Default: false
-#pkcs11.makeKeyUnmodifiableAfterGeneration=true
 
 # ------------------- Authentication Key Binding settings -------------------
 # Configuration of available cipher suites for outgoing SSL/TLS connections
@@ -330,12 +307,6 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # In order to enable 100% uptime, i.e. old versions running in parallell with new versions
 # we need some configuration option to force old behavior in new versions, until we have upgrade
 # all nodes and can set the system to use new (improved) behavior.
-
-# When upgrading a 100% up-time cluster, all nodes should be deployed with db.keepjbossserialization=true.
-# For upgrades from EJBCA version 4.0 to later versions.
-# Once all nodes are running > 4.0, set to false to increase efficiency and portability.
-# Default: false
-#db.keepjbossserialization=true
 
 # Option if we should keep internal CA keystores in the CAData table to be compatible with CeSecore 1.1/EJBCA 5.0.
 # Default to false in defaultvalues.properties, true if no value is present there. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,

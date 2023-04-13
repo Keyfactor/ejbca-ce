@@ -48,19 +48,7 @@
   <fail message="The property &quot;ca.doPermitExtractablePrivateKeys&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.doPermitExtractablePrivateKeys" />
   <fail message="The property &quot;intresources.preferredlanguage&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.intresources.preferredlanguage" />
   <fail message="The property &quot;intresources.secondarylanguage&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.intresources.secondarylanguage" />
-  
-  <condition property="using-moved-ecdsaimplicitlyca-properties">
-      <or>
-          <isset property="ejbca-properties-file.ecdsa.implicitlyca.q" />
-          <isset property="ejbca-properties-file.ecdsa.implicitlyca.a" />
-          <isset property="ejbca-properties-file.ecdsa.implicitlyca.b" />
-          <isset property="ejbca-properties-file.ecdsa.implicitlyca.g" />
-          <isset property="ejbca-properties-file.ecdsa.implicitlyca.n" />
-      </or>
-  </condition>
-  
-  <fail message="The properties &quot;ecdsa.implicitlyca.*&quot; have been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="using-moved-ecdsaimplicitlyca-properties" />
-  
+    
   <!--==============================================================================-->
   <!-- Removed ant targets should be put in here with informative failure messages. -->
   <!--==============================================================================-->

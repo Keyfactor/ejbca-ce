@@ -91,6 +91,10 @@
             <id name="authorizationId"><column name="authorizationId" column-definition="VARCHAR(254)"/></id>
             <basic fetch="EAGER" name="orderId"><column name="orderId" column-definition="VARCHAR(254)" nullable="true"/></basic>
             <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(254)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="identifier"><column name="identifier" column-definition="VARCHAR(254)"/></basic>
+            <basic fetch="EAGER" name="identifierType"><column name="identifierType" column-definition="VARCHAR(20)"/></basic>
+            <basic fetch="EAGER" name="expires"><column name="expires" column-definition="BIGINT"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="VARCHAR(20)"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(1M)"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
@@ -108,6 +112,7 @@
             <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(254)" nullable="false"/></basic>
             <basic fetch="EAGER" name="notBefore"><column name="notBefore" column-definition="BIGINT" nullable="true"/></basic>
             <basic fetch="EAGER" name="expireDate"><column name="expireDate" column-definition="BIGINT" nullable="false"/></basic>
+            <basic fetch="EAGER" name="invalidityDate"><column name="invalidityDate" column-definition="BIGINT" nullable="true"/></basic>
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="INTEGER" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
@@ -143,6 +148,7 @@
             <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(254)" nullable="false"/></basic>
             <basic fetch="EAGER" name="notBefore"><column name="notBefore" column-definition="BIGINT" nullable="true"/></basic>
             <basic fetch="EAGER" name="expireDate"><column name="expireDate" column-definition="BIGINT" nullable="false"/></basic>
+            <basic fetch="EAGER" name="invalidityDate"><column name="invalidityDate" column-definition="BIGINT" nullable="true"/></basic>
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="INTEGER" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
@@ -331,7 +337,7 @@
             <basic fetch="EAGER" name="requestdate"><column name="requestDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="expiredate"><column name="expireDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="remainingapprovals"><column name="remainingApprovals" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="VARCHAR(254)"/></basic>
+            <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="VARCHAR(400)"/></basic>
             <basic fetch="EAGER" name="email"><column name="email" column-definition="VARCHAR(254)"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
@@ -424,6 +430,7 @@
             <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="INTEGER" nullable="false"/></basic>
+            <basic fetch="EAGER" name="hardTokenIssuerId"><column name="hardTokenIssuerId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="zzzExtendedInformationData"><column name="extendedInformationData" column-definition="CLOB"/><lob/></basic>
             <basic fetch="EAGER" name="keyStorePassword"><column name="keyStorePassword" column-definition="VARCHAR(254)"/></basic>
             <basic fetch="EAGER" name="cardNumber"><column name="cardNumber" column-definition="VARCHAR(254)"/></basic>

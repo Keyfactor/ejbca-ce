@@ -27,35 +27,47 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
+import javax.inject.Named;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.util.FileTools;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.SecureXMLDecoder;
-import org.cesecore.util.StringTools;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * JSF MBean backing the certificate profiles pages.
  *  
  */
-// Declarations in faces-config.xml
-//@javax.faces.bean.RequestScoped
-//@javax.faces.bean.ManagedBean(name="certProfilesBean")
+@Named("certProfilesBean")
+@SessionScoped
 public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfilesBean.class);
@@ -65,35 +77,22 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     @Deprecated
     private static final String LEGACY_FIXED_MARKER = "(FIXED)";
 
-    public class CertificateProfileItem {
-        private final int id;
-        private final String name;
-        private final boolean fixed;
-        private final boolean missingCa;
-
-        public CertificateProfileItem(final int id, final String name, final boolean fixed, final boolean missingCa) {
-            this.id = id;
-            this.name = name;
-            this.fixed = fixed;
-            this.missingCa = missingCa;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public boolean isFixed() {
-            return fixed;
-        }
-
-        public boolean isMissingCa() {
-            return missingCa;
-        }
-    }
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
+    private ServiceSessionLocal serviceSession;
 
     private Integer selectedCertProfileId = null;
     private boolean renameInProgress = false;
@@ -101,6 +100,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private boolean addFromTemplateInProgress = false;
     private String certProfileName = "";
     private ListDataModel<CertificateProfileItem> certificateProfileItems = null;
+    private Part uploadFile;
 
     public CertProfilesBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());
@@ -117,7 +117,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public String getSelectedCertProfileName() {
         final Integer profileId = getSelectedCertProfileId();
         if (profileId != null) {
-            return getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileName(profileId.intValue());
+            return certificateProfileSession.getCertificateProfileName(profileId.intValue());
         }
         return null;
     }
@@ -132,7 +132,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public ListDataModel<CertificateProfileItem> getCertificateProfiles() {
         if (certificateProfileItems == null) {
             final List<CertificateProfileItem> items = new ArrayList<>();
-            final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
             final List<Integer> authorizedProfileIds = new ArrayList<>();
 
             //Always include
@@ -140,6 +139,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                     CertificateConstants.CERTTYPE_ENDENTITY));
             authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
                     CertificateConstants.CERTTYPE_SSH));
+            authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
+                    CertificateConstants.CERTTYPE_ITS));
             if (isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
                 //Only root users may use CA profiles
                 authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
@@ -214,12 +215,14 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     
     public void actionExportProfile() {
         selectCurrentRowData();
-        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "profilesexport", "profileType",
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        redirect(getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "profilesexport", "profileType",
                 "cp", "profileId", getSelectedCertProfileId().toString());
     }
 
     public void actionExportProfiles() {
-        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "profilesexport", "profileType",
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        redirect(getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "profilesexport", "profileType",
                 "cp");
     }
     
@@ -251,8 +254,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             } else {
                 try {
                     final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-                    certificateProfile.setAvailableCAs(getEjbcaWebBean().getAuthorizedCAIds());
-                    getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), certProfileName, certificateProfile);
+                    certificateProfile.setAvailableCAs(caSession.getAuthorizedCaIds(getAdmin()));
+                    certificateProfileSession.addCertificateProfile(getAdmin(), certProfileName, certificateProfile);
                     setCertProfileName("");
                 } catch (CertificateProfileExistsException e) {
                     addErrorMessage("CERTIFICATEPROFILEALREADY");
@@ -288,13 +291,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 final List<Integer> authorizedCaIds;
                 if (isCertProfileFixed(getSelectedCertProfileId()) && !isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
                     // Expand ANYCA to the current admin's list of authorized CA Ids
-                    authorizedCaIds = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCaIds(getAdmin());
+                    authorizedCaIds = caSession.getAuthorizedCaIds(getAdmin());
                 } else {
                     // Use null as authorizedCaIds, so we will copy the profile exactly as the template(, including ANY CA for SuperAdmin)
                     authorizedCaIds = null;
                 }
-                getEjbcaWebBean().getEjb().getCertificateProfileSession()
-                        .cloneCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName, authorizedCaIds);
+                certificateProfileSession.cloneCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName, authorizedCaIds);
                 setCertProfileName("");
             } catch (CertificateProfileExistsException e) {
                 addErrorMessage("CERTIFICATEPROFILEALREADY");
@@ -322,8 +324,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public void actionDeleteConfirm() {
         if (canDeleteCertProfile()) {
             try {
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().removeCertificateProfile(getAdmin(), getSelectedCertProfileName());
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().flushProfileCache();
+                certificateProfileSession.removeCertificateProfile(getAdmin(), getSelectedCertProfileName());
+                certificateProfileSession.flushProfileCache();
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to remove certificate profile.");
             }
@@ -354,8 +356,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 return;
             }
             try {
-                getEjbcaWebBean().getEjb().getCertificateProfileSession()
-                        .renameCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName);
+                certificateProfileSession.renameCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName);
                 setCertProfileName("");
             } catch (CertificateProfileExistsException e) {
                 addErrorMessage("CERTIFICATEPROFILEALREADY");
@@ -377,22 +378,21 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     
     /** @return true if there exists a certificate profile with the selected id */
     private boolean selectedProfileExists() {
-        return getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(selectedCertProfileId) != null;
+        return certificateProfileSession.getCertificateProfile(selectedCertProfileId) != null;
     }
 
     private boolean canDeleteCertProfile() {
         boolean ret = true;
         final int certificateProfileId = getSelectedCertProfileId().intValue();
-        final CertificateProfile certProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(certificateProfileId);
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
         final int certProfileType = certProfile.getType();
         // Count number of EEs that reference this CP
         if (certProfileType == CertificateConstants.CERTTYPE_ENDENTITY) {
-            final long numberOfEndEntitiesReferencingCP = getEjbcaWebBean().getEjb().getEndEntityAccessSession().countByCertificateProfileId(certificateProfileId);
+            final long numberOfEndEntitiesReferencingCP = endEntityAccessSession.countByCertificateProfileId(certificateProfileId);
             if (numberOfEndEntitiesReferencingCP > 0) {
                 ret = false;
                 addErrorMessage("CERTPROFILEUSEDINENDENTITIES");
-                final List<String> eeNames = getEjbcaWebBean().getEjb().getEndEntityAccessSession()
-                        .findByCertificateProfileId(certificateProfileId);
+                final List<String> eeNames = endEntityAccessSession.findByCertificateProfileId(certificateProfileId);
                 addNonTranslatedErrorMessage(getEjbcaWebBean().getText("DISPLAYINGFIRSTTENRESULTS") + " "
                         + getAsCommaSeparatedString(eeNames.subList(0, Math.min(eeNames.size(), 10))));
             }
@@ -402,8 +402,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             }
         }
         // Check if certificate profile is in use by any service
-        final List<String> servicesReferencingCP = getEjbcaWebBean().getEjb().getServiceSession()
-                .getServicesUsingCertificateProfile(certificateProfileId);
+        final List<String> servicesReferencingCP = serviceSession.getServicesUsingCertificateProfile(certificateProfileId);
         if (!servicesReferencingCP.isEmpty()) {
             ret = false;
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINSERVICES") + " "
@@ -411,8 +410,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         }
         // Check if certificate profile is in use by any end entity profile
         if (certProfileType == CertificateConstants.CERTTYPE_ENDENTITY || certProfileType == CertificateConstants.CERTTYPE_SUBCA) {
-            final List<String> endEntityProfilesReferencingCP = getEjbcaWebBean().getEjb().getEndEntityProfileSession()
-                    .getEndEntityProfilesUsingCertificateProfile(certificateProfileId);
+            final List<String> endEntityProfilesReferencingCP = endEntityProfileSession.getEndEntityProfilesUsingCertificateProfile(certificateProfileId);
             if (!endEntityProfilesReferencingCP.isEmpty()) {
                 ret = false;
                 addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINENDENTITYPROFILES") + " "
@@ -422,7 +420,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         
         if (certProfileType != CertificateConstants.CERTTYPE_ENDENTITY) {
             // Check if certificate profile is in use by any CA
-            final List<String> casReferencingCP = getEjbcaWebBean().getEjb().getCaAdminSession().getCAsUsingCertificateProfile(certificateProfileId);
+            final List<String> casReferencingCP = caAdminSession.getCAsUsingCertificateProfile(certificateProfileId);
             if (!casReferencingCP.isEmpty()) {
                 ret = false;
                 addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINCAS") + " " + getAsCommaSeparatedString(casReferencingCP));
@@ -453,13 +451,13 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     //----------------------------------------------
     //                Import profiles
     //----------------------------------------------
-    private UploadedFile uploadFile;
 
-    public UploadedFile getUploadFile() {
+
+    public Part getUploadFile() {
         return uploadFile;
     }
 
-    public void setUploadFile(UploadedFile uploadFile) {
+    public void setUploadFile(Part uploadFile) {
         this.uploadFile = uploadFile;
     }
 
@@ -470,7 +468,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             return;
         }
         try {
-            importProfilesFromZip(getUploadFile().getBytes());
+            final byte[] fileBytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
+            importProfilesFromZip(fileBytes);
             certificateProfileItems = null;
         } catch (IOException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
@@ -549,7 +548,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 continue;
             }
 
-            if (getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(profileid) != null) {
+            if (certificateProfileSession.getCertificateProfile(profileid) != null) {
                 log.warn("Certificate profile id '" + profileid + "' already exist in database. Adding with a new profile id instead.");
                 profileid = -1; // means we should create a new id when adding the cert profile
             }
@@ -569,9 +568,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             }
             
             if (profileid == -1) {
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profilename, certificateProfile);
+                certificateProfileSession.addCertificateProfile(getAdmin(), profilename, certificateProfile);
             } else {
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profileid, profilename, certificateProfile);                
+                certificateProfileSession.addCertificateProfile(getAdmin(), profileid, profilename, certificateProfile);                
             }
             importedFiles += filename + ", ";
             log.info("Added Certificate profile: " + profilename);
@@ -636,11 +635,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
             // Make sure CAs in profile exist
             List<Integer> cas = cprofile.getAvailableCAs();
-            ArrayList<Integer> casToRemove = new ArrayList<>();
+            List<Integer> casToRemove = new ArrayList<>();
             for (Integer currentCA : cas) {
                 // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
                 if (currentCA != CertificateProfile.ANYCA) {
-                    if(!getEjbcaWebBean().getEjb().getCaSession().existsCa(currentCA)) {
+                    if(!caSession.existsCa(currentCA)) {
                         casToRemove.add(currentCA);
                     }
                 }
@@ -657,11 +656,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             cprofile.setAvailableCAs(cas);
             // Remove and warn about unknown publishers
             List<Integer> publishers = cprofile.getPublisherList();
-            ArrayList<Integer> allToRemove = new ArrayList<>();
+            List<Integer> allToRemove = new ArrayList<>();
             for (Integer publisher : publishers) {
                 BasePublisher pub = null;
                 try {
-                    pub = getEjbcaWebBean().getEjb().getPublisherSession().getPublisher(publisher);
+                    pub = publisherSession.getPublisher(publisher);
                 } catch (Exception e) {
                     log.warn("Warning: There was an error loading publisher with id " + publisher + ". Use debug logging to see stack trace: "
                             + e.getMessage());
@@ -713,10 +712,40 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             return true;
         }
         // Check if the profiles already exist
-        if (getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileId(profilename) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+        if (certificateProfileSession.getCertificateProfileId(profilename) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             log.info("Certificate profile '" + profilename + "' already exist in database. IGNORED");
             return true;
         }
         return false;
+    }
+    
+    public class CertificateProfileItem {
+        private final int id;
+        private final String name;
+        private final boolean fixed;
+        private final boolean missingCa;
+
+        public CertificateProfileItem(final int id, final String name, final boolean fixed, final boolean missingCa) {
+            this.id = id;
+            this.name = name;
+            this.fixed = fixed;
+            this.missingCa = missingCa;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isFixed() {
+            return fixed;
+        }
+
+        public boolean isMissingCa() {
+            return missingCa;
+        }
     }
 }

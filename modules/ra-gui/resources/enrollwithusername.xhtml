@@ -30,12 +30,12 @@
 					value="#{msg.enrollwithusername_enrollment_with_username_title}" />
 			</h1>
 		</h:panelGroup>
-		<h:outputText value="#{msg.enroll_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEnroll}"/>
+		<h:outputText value="#{msg.enroll_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEnrollUsingUsername}"/>
 		<h:panelGroup layout="block" id="enrollUseUsernameContentBody"
 			styleClass="content-body">
 			<h:form id="enrollWithUsernameForm"
 				styleClass="pure-form pure-form-aligned"
-				rendered="#{raAccessBean.authorizedToEnroll}">
+				rendered="#{raAccessBean.authorizedToEnrollUsingUsername}">
 
 				<h:panelGroup layout="block" rendered="#{!(enrollWithUsernameBean.finalizeEnrollmentRendered)}">
 					<h2>
@@ -79,22 +79,71 @@
 								<h:outputLabel for="usernameField" value="#{msg.enroll_username}" />
 								<h:outputText id="usernameField" value="#{enrollWithUsernameBean.username}" />
 							</h:panelGroup>
-							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
+							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" 
+									rendered="#{!enrollWithUsernameBean.sshEnrollmentMode and enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
 								<h:outputLabel for="requestKeyAlgorithmField" value="Last Key Algorithm"/>
 								<h:outputText id="requestKeyAlgorithmField" value="#{enrollWithUsernameBean.preSetKeyAlgorithm}"/>
 							</h:panelGroup>
 					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithUsernameBean.sshEnrollmentMode}">
+							<h2>
+								<h:outputText
+									value="#{msg.enroll_upload_ssh_pubkey_placeholder} " />
+							</h2>
+							
+							<h:panelGroup layout="block">
+								<p id="newFileInputContainerSsh" style="display: inline-block;"></p>
+								<script>
+							        ejbca.ra.createFileUploadInput("newFileInput", "newFileInputContainerSsh", function(uploadedText) {
+							            document.getElementById("enrollWithUsernameForm:sshCertificateRequest").value = atob(uploadedText);
+							            document.getElementById("enrollWithUsernameForm:uploadSshPubKeyButton").click();
+							        });
+							    </script>
+						    </h:panelGroup>
+						    <br/>
+						    <br/>
+							
+							<h:inputTextarea id="sshCertificateRequest" styleClass="jsAutoFocusLast" style="line-height: 100%;"
+										value="#{enrollWithUsernameBean.sshPublicKey}" 
+										cols="80" rows="10" validator="#{enrollWithUsernameBean.validateSshPublicKey}">
+								<f:ajax event="keyup" execute="@this"
+                                                render=":globalMessages sshCertificateRequestMessage @form"/>
+                              </h:inputTextarea>                  
+							<h:message for="sshCertificateRequest" id="sshCertificateRequestMessage" styleClass="showErrorMessage"/>
+							<br/>
+							<h:commandButton id="uploadSshPubKeyButton" value="#{msg.enroll_upload_csr}" style="display:none"
+									    action="#{enrollWithUsernameBean.uploadSshPubKey}">
+							    <f:ajax event="change" execute="@form" render=":globalMessages sshCertificateRequestMessage @form"/>
+							</h:commandButton>
+									
+							<h:panelGroup id="requestSshCert" layout="block" styleClass="keygeneration-button-group">
+								<h:commandButton id="generateSshCertificate"
+									value="#{msg.enroll_ssh_pub_key}"
+									action="#{enrollWithUsernameBean.generateSshCertificate}"
+									disabled="#{!enrollWithUsernameBean.validSshPubKey}"
+									styleClass="pure-button ra-button executeActionButton">
+								</h:commandButton>
+							</h:panelGroup>
+					</h:panelGroup>
 
-					<h:panelGroup layout="block" styleClass="internal-frame">
-							<!--Either render the fields for algorithm selection, or render the field for CSR upload/paste -->
-							<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
+					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{!enrollWithUsernameBean.sshEnrollmentMode}">
+					<!--Either render the fields for algorithm selection if no algorithm has been set, or render the field for CSR upload/paste -->
+						<h:panelGroup layout="block"
+							rendered="#{!enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
+							<h:panelGroup id="enteredkeyAlg" layout="block"
+								styleClass="pure-control-group"
 								rendered="#{enrollWithUsernameBean.selectKeyAlgorithmRendered}">
-								<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
-								<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast" value="#{enrollWithUsernameBean.selectedAlgorithm}">
-									<f:selectItems value="#{enrollWithUsernameBean.availableAlgorithmSelectItems}" />
+								<h:outputLabel for="selectAlgorithmOneMenu"
+									value="#{msg.enroll_key_algorithm}" />
+								<h:selectOneMenu id="selectAlgorithmOneMenu"
+									styleClass="jsAutoFocusLast"
+									value="#{enrollWithUsernameBean.selectedAlgorithm}">
+									<f:selectItems
+										value="#{enrollWithUsernameBean.availableAlgorithmSelectItems}" />
 								</h:selectOneMenu>
 							</h:panelGroup>
-
+						</h:panelGroup>
 							<h:panelGroup layout="block"
 								rendered="#{enrollWithUsernameBean.renderGenerateCertificate}" id="uploadCsrOuterPanel" styleClass="pure-control-group">
 								<h:panelGroup layout="block" rendered="#{!enrollWithUsernameBean.uploadCsrDoneRendered}">
@@ -121,15 +170,22 @@
 								</h:panelGroup>
 								    <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithUsernameBean.uploadCsrDoneRendered}">
 									<h:panelGroup layout="block" styleClass="pure-control-group">
-									    <h:outputLabel for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
+									    <h:outputLabel id="uploadedKeyAlgorithm" for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
 									    <h:outputText id="certificateRequestNode" value="#{enrollWithUsernameBean.selectedAlgorithm}"/>
 									</h:panelGroup>
+									<br/>
 									<h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
 									    action="#{enrollWithUsernameBean.uploadCsrChange}" rendered="#{!enrollWithUsernameBean.csrPreSet}">
 									</h:commandButton>
 								    </h:panelGroup>
 							</h:panelGroup>
-							
+						<!-- Render delete Public access role after initial superadmin enrollment-->
+						<h:panelGroup id="deletePublicAccessRole" layout="block" styleClass="pure-control-group"
+									  rendered="#{enrollWithUsernameBean.deletePublicAccessRoleRendered}">
+							<h:outputLabel for="deletePublicRole" value="#{msg.enroll_delete_public_role}"/>
+							<h:selectBooleanCheckbox id="deletePublicRole" value="#{enrollWithUsernameBean.deletePublicAccessRole}" />
+						</h:panelGroup>
+
 							<!-- Render different buttons depending on if we enroll for a server generated keystore or a user generated with CSR-->
 							<h:panelGroup id="requestIdButtons" layout="block" styleClass="keygeneration-button-group">
 								<h:commandButton id="generatePem"
@@ -171,7 +227,7 @@
 								<h:commandButton id="generateKeyStorePem"
 									value="#{msg.enroll_generate_pem}"
 									action="#{enrollWithUsernameBean.generateKeyStorePem}"
-									rendered="#{enrollWithUsernameBean.renderGenerateKeyStorePem}"
+									rendered="#{enrollWithUsernameBean.renderGenerateKeyStorePem  and not enrollWithUsernameBean.keyRecoverable}"
 									styleClass="pure-button ra-button executeActionButton">
 								</h:commandButton>
 							</h:panelGroup>

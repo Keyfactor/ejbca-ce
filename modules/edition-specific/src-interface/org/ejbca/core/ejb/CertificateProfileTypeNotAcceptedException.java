@@ -12,8 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * Thrown when trying to use a certificate or end entity profile of the wrong type

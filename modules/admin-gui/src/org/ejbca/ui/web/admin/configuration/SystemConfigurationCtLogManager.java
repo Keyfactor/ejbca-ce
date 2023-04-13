@@ -1,33 +1,40 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 
 package org.ejbca.ui.web.admin.configuration;
 
 import java.security.cert.CertificateParsingException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.Part;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CtLogManager;
-import org.cesecore.keys.util.KeyTools;
+
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * This class is used to manage CT logs in EJBCA's system configuration. It adds some additional
  * functionality to the CtLogManager, such as loading and saving state from the database, editing of
  * new CT logs, checking whether a CT log is in use before removing it and language awareness.
- * 
- * @version $Id$
+ *
  */
 public class SystemConfigurationCtLogManager extends CtLogManager {
     private static final String EDIT_CT_LOG = "editCTLog";
@@ -38,15 +45,15 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
 
     public class CtLogEditor {
         private String url;
-        private UploadedFile publicKeyFile;
+        private Part publicKeyFile;
         private String label;
         private int timeout = 5000;
         private CTLogInfo ctLogBeingEdited;
         private boolean isAcceptingByExpirationYear;
         private boolean useIntervalAcception;
         private String expirationYearRequired;
-        private Date intervalStart;
-        private Date intervalEnd;
+        private LocalDate intervalStart;
+        private LocalDate intervalEnd;
 
         public String getCtLogUrl() {
             if (StringUtils.isEmpty(url)) {
@@ -55,7 +62,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             return CTLogInfo.fixUrl(url);
         }
 
-        public UploadedFile getPublicKeyFile() {
+        public Part getPublicKeyFile() {
             return publicKeyFile;
         }
 
@@ -71,7 +78,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             this.url = url;
         }
 
-        public void setPublicKeyFile(final UploadedFile publicKeyFile) {
+        public void setPublicKeyFile(final Part publicKeyFile) {
             this.publicKeyFile = publicKeyFile;
         }
 
@@ -116,19 +123,27 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             return expirationYearRequired;
         }
 
-        public Date getIntervalStart() {
+        public LocalDate getIntervalStart() {
             return intervalStart;
         }
+        public Date getIntervalStartAsDate() {
+            return Date.from(intervalStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        }
 
-        public void setIntervalStart(Date intervalStart) {
+        public void setIntervalStart(LocalDate intervalStart) {
             this.intervalStart = intervalStart;
         }
 
-        public Date getIntervalEnd() {
+        public LocalDate getIntervalEnd() {
             return intervalEnd;
         }
+        
 
-        public void setIntervalEnd(Date intervalEnd) {
+        public Date getIntervalEndAsDate() {
+            return Date.from(intervalEnd.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        }
+
+        public void setIntervalEnd(LocalDate intervalEnd) {
             this.intervalEnd = intervalEnd;
         }
 
@@ -146,8 +161,10 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             this.expirationYearRequired = ctLog.getExpirationYearRequired() == null ?
                     String.valueOf(Calendar.getInstance().get(Calendar.YEAR)) : String.valueOf(ctLog.getExpirationYearRequired());
             this.useIntervalAcception = ctLog.getIntervalStart() != null;
-            this.intervalEnd = ctLog.getIntervalEnd();
-            this.intervalStart = ctLog.getIntervalStart();
+            this.intervalEnd = (ctLog.getIntervalEnd() != null ? LocalDate.ofInstant(ctLog.getIntervalEnd().toInstant(), ZoneId.systemDefault())
+                    : null);
+            this.intervalStart = (ctLog.getIntervalStart() != null ? LocalDate.ofInstant(ctLog.getIntervalStart().toInstant(), ZoneId.systemDefault())
+                    : null);
         }
 
         /**
@@ -214,12 +231,12 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         this.ctLogEditor = new CtLogEditor();
     }
 
-    private byte[] getCtLogPublicKey(final UploadedFile upload) {
+    private byte[] getCtLogPublicKey(final Part upload) {
         if (log.isDebugEnabled()) {
             log.debug("Received uploaded public key file: " + upload.getName());
         }
         try {
-            byte[] uploadedFileBytes = upload.getBytes();
+            byte[] uploadedFileBytes = IOUtils.toByteArray(upload.getInputStream(), upload.getSize());    
             return KeyTools.getBytesFromCtLogKey(uploadedFileBytes);
         } catch (final CertificateParsingException e) {
             log.info("Could not parse the public key file.", e);
@@ -349,7 +366,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
                     systemConfigurationHelper.addErrorMessage("CTLOGCONFIGURATION_INTERVAL_REQUIRED");
                     return StringUtils.EMPTY;
                 }
-                if (ctLogEditor.getIntervalStart().after(ctLogEditor.getIntervalEnd())){
+                if (ctLogEditor.getIntervalStart().isAfter(ctLogEditor.getIntervalEnd())){
                     systemConfigurationHelper.addErrorMessage("CTLOGCONFIGURATION_INTERVAL_ERROR");
                     return StringUtils.EMPTY;
                 }
@@ -381,9 +398,9 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         ctLogToUpdate.setExpirationYearRequired(ctLogEditor.getIsAcceptingByExpirationYear() && !ctLogEditor.isUseIntervalAcception()
                 ? Integer.valueOf(ctLogEditor.getExpirationYearRequired()) : null);
         ctLogToUpdate.setIntervalStart(ctLogEditor.isUseIntervalAcception() && ctLogEditor.getIsAcceptingByExpirationYear()
-                ? ctLogEditor.getIntervalStart() : null);
+                ? ctLogEditor.getIntervalStartAsDate() : null);
         ctLogToUpdate.setIntervalEnd(ctLogEditor.isUseIntervalAcception() && ctLogEditor.getIsAcceptingByExpirationYear()
-                ? ctLogEditor.getIntervalEnd() : null);
+                ? ctLogEditor.getIntervalEndAsDate() : null);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
         ctLogEditor.stopEditing();
         return CT_LOG_SAVED;

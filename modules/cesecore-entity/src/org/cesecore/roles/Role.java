@@ -33,7 +33,6 @@ import org.cesecore.util.Named;
  * An administrator can only create new roles under a nameSpace that the administrator belong to, unless the admin
  * belongs to the empty nameSpace. This ensures continued isolation of user groups when adminstrators create new roles.
  * 
- * @version $Id$
  */
 public class Role extends UpgradeableDataHashMap implements Named, Comparable<Role> {
     

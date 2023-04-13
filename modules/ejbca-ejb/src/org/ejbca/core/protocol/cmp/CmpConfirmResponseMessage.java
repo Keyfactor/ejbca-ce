@@ -22,7 +22,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -36,7 +36,8 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * A very simple confirmation message, no protection and a nullbody
@@ -120,10 +121,17 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 		final PKIBody myPKIBody = new PKIBody(19, DERNull.INSTANCE);
 		PKIMessage myPKIMessage = null;
 
-		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
+		final boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ;
+		final boolean pbmac1Protected = (getPbmac1PrfAlg() != null) && (getPbmac1MacAlg() != null) && (getPbmac1KeyId() != null)
+				&& (getPbmac1Key() != null);
+		if (pbeProtected) {
 		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(getPbeDigestAlg())));
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
+		} else if(pbmac1Protected) {
+			myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+			responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, getPbmac1KeyId(),
+					getPbmac1Key(), getPbmac1MacAlg(), getPbmac1IterationCount(), getPbmac1DkLen(), getPbmac1PrfAlg()));
 		} else {
 			if ((signCertChain != null) && (signCertChain.size() > 0) && (signKey != null)) {
 				try {

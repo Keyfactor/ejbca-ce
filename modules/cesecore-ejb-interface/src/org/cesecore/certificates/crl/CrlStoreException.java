@@ -14,7 +14,7 @@ package org.cesecore.certificates.crl;
 
 import javax.ejb.ApplicationException;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 
 /**

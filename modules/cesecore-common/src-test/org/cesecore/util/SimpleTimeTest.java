@@ -152,4 +152,17 @@ public class SimpleTimeTest {
             }
         }
     }
+    
+    @Test
+    public void testItsValidityFormat() throws Exception {
+        assertEquals(SimpleTime.parseItsValidity("1y"), SimpleTime.SECONDS_PER_YEAR_IEEE);
+        assertEquals(SimpleTime.parseItsValidity("2sh"), 2 * SimpleTime.SECONDS_PER_SIXTY_HOUR_IEEE);
+        assertEquals(SimpleTime.parseItsValidity(" 4h"), 4 * SimpleTime.SECONDS_PER_HOUR_IEEE);
+        assertEquals(SimpleTime.parseItsValidity("6h "), 6 * SimpleTime.SECONDS_PER_HOUR_IEEE);
+        
+        assertEquals(SimpleTime.parseItsValidity("2 y 2sh"), 63545904L);
+        assertEquals(SimpleTime.parseItsValidity("450sh 120 h"), 452 * SimpleTime.SECONDS_PER_SIXTY_HOUR_IEEE);
+        assertEquals(SimpleTime.parseItsValidity("2y   2h"), 63121104L);
+        
+    }
 }

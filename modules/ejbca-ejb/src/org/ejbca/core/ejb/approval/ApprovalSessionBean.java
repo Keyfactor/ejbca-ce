@@ -39,7 +39,6 @@ import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -53,9 +52,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ValueExtractor;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -94,6 +91,11 @@ import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.QueryWrapper;
 
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+
 /**
  * Keeps track of approval requests and their approval or rejects.
  */
@@ -125,6 +127,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private RoleMemberSessionLocal roleMemberSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     

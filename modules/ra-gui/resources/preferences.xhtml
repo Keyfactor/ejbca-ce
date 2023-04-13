@@ -24,9 +24,6 @@
      version: $Id$
      -->
 </ui:remove>
-<f:metadata>
-	<f:param name="skipLoginRedirect" value="true"/>
-</f:metadata>
 <ui:composition template="/WEB-INF/include/template.xhtml">
 	<ui:define name="content">
 		<h:panelGroup layout="block" class="header" id="title">
@@ -35,8 +32,8 @@
 			</h1>
 		</h:panelGroup>
 
-		<h:form id="preferencesForm" styleClass="pure-form pure-form-aligned">
-			<h:panelGroup layout="block" id="preferenceContentBody"
+		<h:form id="preferencesForm" styleClass="pure-form pure-form-aligned" rendered="#{!raAuthenticationBean.publicUser}">
+		<h:panelGroup layout="block" id="preferenceContentBody"
 				styleClass="content-body">
 
 				<h:panelGroup layout="block" styleClass="internal-frame">

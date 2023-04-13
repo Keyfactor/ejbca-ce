@@ -44,10 +44,11 @@
 		<path refid="lib.ejbca-common.classpath"/>
         <path refid="lib.xstream.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
+		<path location="${mod.ejbca-ejb.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
-        <path location="${mod.cli-util.lib}"/>
+		<path refid="lib.keyfactor-cli-commons.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -61,7 +62,7 @@
 	
 	<path id="compile-cli.classpath">
 		<path refid="cli.classpath"/>
-		<path refid="lib.javaxejb.classpath"/>
+		<path refid="lib.jee.classpath"/>
 	</path>
 	
 	<path id="jdbc-jars.classpath">
@@ -70,7 +71,6 @@
 
 	<path id="test.classpath-nojdbc">
 		<path refid="compile-test.classpath"/>
-		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
 		<path location="${ejbca-entity.build-test.dir}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path refid="lib.junit.classpath"/>
@@ -88,17 +88,16 @@
         <path refid="compile.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
-		<path location="${mod.cli-util.lib}"/>
+		<path refid="lib.keyfactor-cli-commons.classpath"/>
         <path refid="lib.ejbca-common-web.classpath"/>
         <path refid="lib.jacknji.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
-        <path refid="lib.javaxejb.classpath"/>
+        <path refid="lib.jee.classpath"/>
 	    <path refid="lib.resteasy-jaxrs.classpath"/>
 	</path>
 
 	<path id="generate.classpath">
 		<path refid="compile.classpath"/>
-		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
 		<path location="${ejbca-entity.build-test.dir}"/>
 		<path location="${ejbca-entity.build.dir}"/>
 	</path>
@@ -274,6 +273,7 @@
     	</pathconvert>
     	<copy todir="${mod.ejbca-db-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${cli.classpath.property}"/>
+    		<fileset dir="${ejbca.home}/lib/hibernate" includes="jboss-logging-*.jar"/>
     	</copy>
     	<pathconvert property="ejbca-db-cli.dependencies" pathsep=" ">
     	    <path>

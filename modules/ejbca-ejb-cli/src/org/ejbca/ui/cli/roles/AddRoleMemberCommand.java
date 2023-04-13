@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.roles;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -37,13 +37,14 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Adds a role member.
@@ -210,7 +211,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             throws AuthorizationDeniedException {
         return roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), roleMember.getRoleId()).stream()
                 .anyMatch(existingMember -> existingMember.isSameAs(roleMember));
-    }  
+    }
     
     @Override
     public String getCommandDescription() {

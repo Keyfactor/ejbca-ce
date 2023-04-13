@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -31,12 +35,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -49,9 +48,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * This will test that different PBE shared secrets can be used to authenticate 
@@ -109,6 +111,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(this.configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(this.configAlias, "-;-");
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
     }
     
     /** Remove CAs and restore configuration that was used by the tests. */
@@ -270,7 +274,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200, this.configAlias);
-            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, subjectDN, caCertificate, resp, reqId);
 
             assertTrue("Failed to create user " + USERNAME, this.endEntityManagementSession.existsUser(USERNAME));
@@ -284,7 +289,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req1);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, this.configAlias);
-            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false,
+                    pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
 
             // Now revoke the bastard using the CMPv1 reason code!
@@ -295,7 +301,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, this.configAlias);
-            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false,
+                    pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
             int reason = this.certificateStoreSession.getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);

@@ -19,11 +19,12 @@ import java.util.List;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * Provides find methods for EndEntityInformation objects. 
@@ -42,6 +43,16 @@ public interface EndEntityAccessSession {
      * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
      */
     EndEntityInformation findUser(AuthenticationToken admin, String username) throws AuthorizationDeniedException;
+    
+    /**
+     * Finds a user by username for the creation of a certificate.
+     * 
+     * @param admin the administrator performing the action
+     * @return EndEntityInformation or null if the user is not found.
+     * 
+     * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
+     */
+    EndEntityInformation findUserWithoutViewEndEntityAccessRule(AuthenticationToken admin, String username) throws AuthorizationDeniedException;
 
     /**
      * Find users by their subject and issuer DN.
@@ -112,6 +123,22 @@ public interface EndEntityAccessSession {
       */
      Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
              String endentityprofilestring, int numberofrows, String endentityAccessRule) throws IllegalQueryException;
+
+     /**
+      * This method executes an optimized query on the ra user data.
+      * The difference with the query method is that it does not pass CA authorization and EEP authorization
+      * strings to the query down to the database. Instead it applies those constraints later on the returned
+      * results from db. This way the performance would be improved.
+      * Note that it is only used in case the subjectDN or serialNumber are used for querying the users.
+      * 
+      * @param admin
+      * @param query
+      * @param numberOfRows
+      * @param endentityAccessRule
+      * @return
+      * @throws IllegalQueryException
+      */
+     Collection<EndEntityInformation> queryOptimized(AuthenticationToken admin, Query query, int numberOfRows, String endentityAccessRule) throws IllegalQueryException;
      
      /**
       * Retrieves a collection of certificates as byte array generated for a user.

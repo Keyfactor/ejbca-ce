@@ -101,6 +101,10 @@ public final class TimeUnitFormat {
 
         return result;
     }
+    
+    public long parseSeconds(String formattedString) throws NumberFormatException {
+        return parseMillis(formattedString);
+    }
 
     /**
      * Formats the given period in milliseconds to a readable string.   
@@ -146,7 +150,7 @@ public final class TimeUnitFormat {
         long hundredNano = 0l;
         for (int i=7; i>=0; i--) {
             hundredNano <<= 8;
-            byte winByte = new Integer(bytes[i]).byteValue();
+            byte winByte = Integer.valueOf(bytes[i]).byteValue();
             hundredNano += 0xff & winByte;
         }
         return Math.abs(hundredNano/10000);

@@ -17,7 +17,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 
-import org.cesecore.util.CertTools;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * 

@@ -20,8 +20,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Dummy Approval Request used for testing and demonstration purposes.

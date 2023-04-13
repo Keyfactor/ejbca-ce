@@ -26,20 +26,28 @@ public interface AcmeAuthorizationDataSession {
      * @param authorizationId the ID of the authorization
      * @return the sought authorization, or null if none exists
      */
-    AcmeAuthorization getAcmeAuthorization(final String authorizationId);
+    AcmeAuthorization getAcmeAuthorization(String authorizationId);
 
     /**
      *
      * @param orderId the ID of the order
      * @return list of sought authorizations, or null if none exists
      */
-    List<AcmeAuthorization> getAcmeAuthorizationsByOrderId(final String orderId);
+    List<AcmeAuthorization> getAcmeAuthorizationsByOrderId(String orderId);
 
     /**
      *
      * @param accountId the ID of the account
      * @return list of sought authorizations, or null if none exists
      */
-    List<AcmeAuthorization> getAcmeAuthorizationsByAccountId(final String accountId);
+    List<AcmeAuthorization> getAcmeAuthorizationsByAccountId(String accountId);
+    
+    /**
+    *
+    * @param accountId the ID of the account
+    * @param identifiers the list of ACME identifiers
+    * @return list of sought pre-authorizations, or null if none exists
+    */
+   List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers);
 
 }

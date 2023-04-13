@@ -102,11 +102,6 @@
 	<!-- Audit log: Export bar -->
 	<h:panelGroup>
 		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResults}" styleClass="commandLinkAudit" value="⬇ #{web.text.AUDIT_DOWNLOAD}"/>
-		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResultsCms}" styleClass="commandLinkAudit" value="⬇ #{web.text.AUDIT_DOWNLOADASCMS}"/>
-		<h:outputLabel for="signedByCa" value="#{web.text.AUDIT_DOWNLOADASCMSCA} : "/>
-		<h:selectOneMenu disabled="#{empty auditor.results}" id="signedByCa" value="#{auditor.cmsSigningCa}">
-			<f:selectItems value="#{auditor.cmsSigningCas}" />
-		</h:selectOneMenu>
 	</h:panelGroup>
 	<br/>
 	<!-- Audit log: Navigation bar -->
@@ -140,7 +135,7 @@
 					<h:commandButton action="#{auditor.reorderDescByTime}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{auditLogEntry.timeStamp}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm:ssZZ" /></h:outputText>
+			<h:outputText value="#{auditor.timeStampFormatted(auditLogEntry.timeStamp)}">/></h:outputText>
 		</h:column>
 		<h:column>
 			<f:facet name="header">

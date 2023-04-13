@@ -1,0 +1,2 @@
+"Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
+"PrimeFaces";				    "primefaces-12.0.0";                            "MIT";					"LICENSE-MIT";  		        "https://primefaces.github.io/";         							"PrimeFaces library used for UX sugar.";

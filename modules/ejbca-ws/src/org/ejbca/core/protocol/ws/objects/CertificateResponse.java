@@ -15,14 +15,19 @@ package org.ejbca.core.protocol.ws.objects;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
+import javax.xml.bind.annotation.XmlType;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * Holds certificate WS response data 
  *
- * @version $Id$
  */
+@XmlType(name = "certificateResponse", propOrder = {
+         "responseType",
+         "data"
+ })
 public class CertificateResponse  {
 	
 	private String responseType;

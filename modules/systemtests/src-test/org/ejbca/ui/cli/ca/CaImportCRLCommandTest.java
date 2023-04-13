@@ -37,7 +37,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
@@ -47,6 +46,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.keyfactor.util.CertTools;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -55,8 +56,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * System test class for CaImportCRLCommand
- * 
- * @version $Id$
+ *
  */
 public class CaImportCRLCommandTest {
 
@@ -160,7 +160,7 @@ public class CaImportCRLCommandTest {
             info = certStoreSession.getCertificateInfo(fingerprint);
             assertEquals("Cert should not be revoked", info.getStatus(), CertificateConstants.CERT_ACTIVE);
             // Now revoke the certificate, create a new CRL and import it, nothing should happen still
-            internalCertStoreSession.setRevokeStatus(admin, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertStoreSession.setRevokeStatus(admin, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             caCreateCrlCommand.execute(CACREATECRL_ARGS);
             caGetCrlCommand.execute(CAGETCRL_ARGS);
             caImportCrlCommand.execute(CAIMPORTCRL_STRICT_ARGS);
@@ -170,7 +170,7 @@ public class CaImportCRLCommandTest {
             assertEquals("Cert should be revoked", info.getStatus(), CertificateConstants.CERT_REVOKED);
             assertEquals("Revocation reasonn should be on hold", info.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             // Now unrevoke the certificate and import the CRL, it should be revoked again
-            internalCertStoreSession.setRevokeStatus(admin, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
+            internalCertStoreSession.setRevokeStatus(admin, cert, new Date(), null, RevokedCertInfo.NOT_REVOKED);
             info = certStoreSession.getCertificateInfo(fingerprint);
             assertEquals("Cert should not be revoked", info.getStatus(), CertificateConstants.CERT_ACTIVE);
             // Strict will do it

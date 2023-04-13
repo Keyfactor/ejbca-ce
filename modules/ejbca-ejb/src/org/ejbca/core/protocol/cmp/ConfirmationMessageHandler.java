@@ -20,7 +20,9 @@ import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -31,14 +33,15 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Message handler for certificate request confirmation message.
@@ -123,12 +126,21 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 LOG.error("Exception during CMP response protection: ", e);
             }
         }
-        // We don't need to check the shared secret in client mode (= the EndEntiy password) because PBE protection is only supported in RA mode
-        CmpPbeVerifyer verifyer = new CmpPbeVerifyer(cmpRequestMessage.getMessage());
-        String owfAlg = verifyer.getOwfOid();
-        String macAlg = verifyer.getMacOid();
-        int iterationCount = verifyer.getIterationCount();
-        cmpResponseMessage.setPbeParameters(keyId, sharedSecret, owfAlg, macAlg, iterationCount);
+        final ASN1ObjectIdentifier protectionAlg = cmpRequestMessage.getMessage().getHeader().getProtectionAlg().getAlgorithm();
+        if (protectionAlg.equals(PKCSObjectIdentifiers.id_PBMAC1)) {
+            CmpPbmac1Verifyer verifyer = new CmpPbmac1Verifyer(cmpRequestMessage.getMessage());
+            final String prfAlg = verifyer.getPrfOid();
+            final String macAlg = verifyer.getMacOid();
+            final int iterationCount = verifyer.getIterationCount();
+            final int dkLen = verifyer.getDkLen();
+            cmpResponseMessage.setPbmac1Parameters(keyId, sharedSecret, prfAlg, macAlg, iterationCount, dkLen);
+        } else {
+            CmpPbeVerifyer verifyer = new CmpPbeVerifyer(cmpRequestMessage.getMessage());
+            String owfAlg = verifyer.getOwfOid();
+            String macAlg = verifyer.getMacOid();
+            int iterationCount = verifyer.getIterationCount();
+            cmpResponseMessage.setPbeParameters(keyId, sharedSecret, owfAlg, macAlg, iterationCount);
+        }
 	}
 	
 	private void signResponse(CmpConfirmResponseMessage cresp, BaseCmpMessage cmpRequestMessage) {
@@ -158,29 +170,38 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             } else if (LOG.isDebugEnabled()) {
                 LOG.debug("CMP Confirm message header has no protection alg, using default alg in response.");
             }
-        } catch (CADoesntExistsException | CryptoTokenOfflineException e) {
-            LOG.error("Exception during CMP response signing: " + e.getMessage(), e);            
+        } catch (CADoesntExistsException e) {
+            LOG.error("Exception during CMP response signing: " + e.getMessage());            
+        }
+        catch (CryptoTokenOfflineException e) {
+            LOG.error("Exception during CMP response signing: " + e.getMessage(), e);
         }
     }
-    
+	
 	private X509CAInfo getCAInfo(final String caDn) throws CADoesntExistsException {
-	    CAInfo caInfo = null;
-	    if (caDn == null) {
-	        final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-	        caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-	    } else {
-	        final String caDnNormalized = CertTools.stringToBCDNString(caDn);
-	        caInfo = caSession.getCAInfoInternal(caDnNormalized.hashCode(), null, true);
-	        if(caInfo == null) {
-	            final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-	            LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
-	                    " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ").");
-	            caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-	        }
-	    }
-	    if (!(caInfo instanceof X509CAInfo)) {
-	        throw new CADoesntExistsException("Incorrect CA type.");
-	    }
-	    return (X509CAInfo) caInfo;
-	}
+        CAInfo caInfo = null;
+        final String caDnDefault;
+        
+        caInfo = caSession.getCAInfoInternal(CertTools.stringToBCDNString(caDn).hashCode(), null, true);
+        
+        // Null caInfo, try with the default ca from cmp alias
+        if (caInfo == null) {
+            final String cmpDefaultCA = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
+            
+            if (cmpDefaultCA.equals("")) {
+                LOG.error("No CMP Default CA exists in Alias");
+                throw new CADoesntExistsException("No CMP DefaultCA exists");
+            } else {
+                caDnDefault = CertTools.stringToBCDNString(cmpDefaultCA);
+                caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
+                LOG.info("Could not find Recipient CA with DN '" + CertTools.stringToBCDNString(caDn) + "'."
+                        + " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ").");
+            }
+        }
+        if (!(caInfo instanceof X509CAInfo)) {
+            throw new CADoesntExistsException("Incorrect CA type.");
+        }
+        return (X509CAInfo) caInfo;
+    }
+    
 }

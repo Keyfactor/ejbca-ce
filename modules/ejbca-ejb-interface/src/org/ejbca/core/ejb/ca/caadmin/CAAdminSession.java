@@ -22,7 +22,6 @@ import java.util.Set;
 import javax.ejb.EJBException;
 
 import org.bouncycastle.operator.OperatorCreationException;
-import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -40,19 +39,21 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * Administrates and manages CAs in EJBCA system.
@@ -124,6 +125,24 @@ public interface CAAdminSession {
                          String nextKeyAlias) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
 
     /**
+     * Receives a cross certificate chain for a CA
+     *
+     * @param authenticationToken The administrator performing the action
+     * @param caInfo              CAInfo of the certificate,
+     * @param responsemessage     X509ResponseMessage with the certificate issued to this CA
+     * @param caCertificateChain             an optional collection with the CA certificate(s), or null. If
+     *                            given the complete chain (except this CAs own certificate must
+     *                            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates.
+     * @throws AuthorizationDeniedException if the administrators isn't authorized
+     * @throws CertPathValidatorException   An exception indicating one of a variety of problems encountered when
+     *                                      validating a certification path.
+     * @throws EjbcaException               specific application exceptions thrown by EJBCA
+     * @throws CesecoreException            specific application exceptions thrown by EJBCA
+     */
+    void updateCrossCaCertificateChain(AuthenticationToken authenticationToken, CAInfo caInfo,
+            Collection<?> caCertificateChain) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
+
+    /**
      * Receives a certificate response from an external CA and sets the newly
      * created CAs status to active.
      *
@@ -168,7 +187,7 @@ public interface CAAdminSession {
      *
      * @param authenticationToken The administrator performing the action
      * @param caName              CA name.
-     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link com.keyfactor.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws AuthorizationDeniedException if the administrators isn't authorized
      * @throws CAExistsException            if the CA already exists
      * @throws IllegalCryptoTokenException  the certificate chain is incomplete
@@ -178,13 +197,29 @@ public interface CAAdminSession {
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
 
     /**
+     * Add an external CA's certificate and other custom CA attributes as a CA.
+     *
+     * @param authenticationToken The administrator performing the action
+     * @param caName              CA name.
+     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link com.keyfactor.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param caInfo              contains other custom CA fields including CA type in simplified format
+     * @throws AuthorizationDeniedException if the administrators isn't authorized
+     * @throws CAExistsException            if the CA already exists
+     * @throws IllegalCryptoTokenException  the certificate chain is incomplete
+     * @throws CertificateImportException   in the case the certificate was already imported or the provided certificates could not be used.
+     */
+    void importExternalCA(AuthenticationToken authenticationToken, String caName, 
+            Collection<CertificateWrapper> wrappedCerts, CAInfo caInfo)
+            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
+
+    /**
      * Update an existing external CA's certificate chain.
      * <p>
      * We allow the same leaf CA certificate to be re-imported in the case where the chain has changed.
      *
      * @param authenticationToken The administrator performing the action
      * @param caId                The caId (DN.hashCode()) of the CA
-     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link com.keyfactor.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws AuthorizationDeniedException       if the administrators isn't authorized
      * @throws CertificateImportException         in the case the certificate was already imported or the provided certificates could not be used.
      * @throws CmsCertificatePathMissingException An exception thrown when someone tries to activate the CMS Service for a CA that does not have a CMS certificate path
@@ -687,4 +722,37 @@ public interface CAAdminSession {
      */
     void customLog(AuthenticationToken authenticationToken, String type, String caName, String username, String certificateSn, String msg, EventType event)
             throws AuthorizationDeniedException, CADoesntExistsException;
+    
+    /**
+     * 
+     * @param administrator
+     * @param caid
+     * @param caChainBytes - for support in later releases
+     * @param signKeyAlias - current signing key which is used to sign the certificate request
+     * @param verificationKeyAlias - sign or verification key to be certified, if null a new key pair will be generated
+     * @param encryptKeyAlias - encryption key to be certified, if null a new key pair will be generated
+     * @return
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenOfflineException
+     */
+    public byte[] makeCitsRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, 
+            String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias) 
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    
+    public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
+            byte[] signedCertificate) throws CADoesntExistsException, EjbcaException;
+    
+    /**
+     * 
+     * @param admin                                    the authentication token.
+     * @param caname                                   name to be given to the CA
+     * @param certificate                              bytes of certificate in OER encoded format
+     * @throws AuthorizationDeniedException
+     * @throws CAExistsException
+     * @throws CertificateImportException
+     * @throws IllegalCryptoTokenException
+     */
+    void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
+            throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException;
 }

@@ -24,12 +24,13 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.math.ec.ECPoint;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * Default ECC key validator using the Bouncy Castle BCECPublicKey implementation 
@@ -47,7 +48,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     private static final Logger log = Logger.getLogger(EccKeyValidator.class);
 
     /** The key validator type. */
-    private static final String TYPE_IDENTIFIER = "ECC_KEY_VALIDATOR";
+    protected static final String TYPE_IDENTIFIER = "ECC_KEY_VALIDATOR";
 
     protected static final String CURVES = "ecCurves";
 

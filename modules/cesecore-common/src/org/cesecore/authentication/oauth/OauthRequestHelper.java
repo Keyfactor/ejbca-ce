@@ -17,11 +17,11 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 import com.google.common.base.Preconditions;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.keybind.KeyBindingNotFoundException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyAndCertFinder;
 
 /**

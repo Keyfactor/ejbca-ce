@@ -51,7 +51,7 @@ public class PerformanceTest {
                     this.random.wait();
                 } catch (InterruptedException e) {
                     // should never ever happen
-                    throw new Error(e);
+                    throw new IllegalStateException(e);
                 }
             }
             this.isSomeThreadUsingRandom = true;
@@ -214,16 +214,18 @@ public class PerformanceTest {
         for (int i = 0; i < numberOfThreads; i++) {
             threads[i].start();
         }
-        new Thread(statistic).start(); // NOPMD this is a standalone test, not run in jee app
+        final Thread statisticThread = new Thread(statistic); // NOPMD this is a standalone test, not run in jee app
+        statisticThread.start();
         printStream.println("Test client started, tail info and error files in this directory for output.");
         printStream.println("Statistic will be written to standard output each " + this.STATISTIC_UPDATE_PERIOD_IN_SECONDS + " second.");
         printStream.println("The test was started at " + new Date());
         printStream.format("%d threads will be started and %d number of tests will be performed. Each thread will wait between 0 and %d milliseconds between each test.%n", numberOfThreads, numberOfTests, waitTime);
-        synchronized (this) {
-            wait();
+        for (int i = 0; i < numberOfThreads; i++) {
+            threads[i].join();
         }
+        statisticThread.join();
         printStream.format("Test exited with %d number of failures.%n", statistic.getNrOfFailures());
-        System.exit(statistic.getNrOfFailures());
+        System.exit(statistic.getNrOfFailures() == 0 ? 0 : 1); // Exit code 0 = success. Other numbers = failure
     }
 
     private class Statistic implements Runnable { // NOPMD this is a standalone test, not run in jee app
@@ -390,7 +392,7 @@ public class PerformanceTest {
                     try {
                         wait(PerformanceTest.this.STATISTIC_UPDATE_PERIOD_IN_SECONDS * 1000);
                     } catch (InterruptedException e) {
-                        // do nothing
+                        throw new IllegalStateException("Thread was interreupted before test was finished", e);
                     }
                 }
                 final long endTime = new Date().getTime();
@@ -406,6 +408,11 @@ public class PerformanceTest {
     }
 
     public class Log {
+        public static final String ERROR_LOG_FILENAME = "error.log";
+        public static final String INFO_LOG_FILENAME = "info.log";
+        public static final String ALL_LOG_FILENAME = "all.log";
+        public static final String RESULT_OBJECT_FILENAME = "result.ser";
+
         private final PrintWriter errorPrinter;
         private final PrintWriter infoPrinter;
         private final PrintWriter allPrinter;
@@ -414,10 +421,10 @@ public class PerformanceTest {
 
         public Log() {
             try {
-                this.errorPrinter = new PrintWriter(new FileWriter("error.log"));
-                this.infoPrinter = new PrintWriter(new FileWriter("info.log"));
-                this.allPrinter = new PrintWriter(new FileWriter("all.log"));
-                this.resultObject = new ObjectOutputStream(new FileOutputStream("result.log", true));
+                this.errorPrinter = new PrintWriter(new FileWriter(ERROR_LOG_FILENAME));
+                this.infoPrinter = new PrintWriter(new FileWriter(INFO_LOG_FILENAME));
+                this.allPrinter = new PrintWriter(new FileWriter(ALL_LOG_FILENAME));
+                this.resultObject = new ObjectOutputStream(new FileOutputStream(RESULT_OBJECT_FILENAME, true));
                 this.thread = new LogThread();
                 final Thread t = new Thread(this.thread); // NOPMD this is a standalone test, not run in jee app
                 t.setPriority(Thread.MIN_PRIORITY);
@@ -562,7 +569,7 @@ public class PerformanceTest {
     public static class NrOfThreadsAndNrOfTests {
 
         private final int threads;
-        private final int tests;
+        private       int tests;
 
         public NrOfThreadsAndNrOfTests(final String _s) {
             if (_s == null) {
@@ -585,9 +592,8 @@ public class PerformanceTest {
             return threads;
         }
 
-        public int getTests() {
-            return tests;
-        }
+        public void setTests(final int tests) { this.tests = tests; }
+        public int getTests() { return tests; }
 
     }
 }
