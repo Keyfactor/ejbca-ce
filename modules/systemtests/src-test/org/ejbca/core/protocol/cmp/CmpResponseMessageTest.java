@@ -16,10 +16,12 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -29,42 +31,50 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
+import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * This class tests attributes of the CMP response message such as the CA 
  * certificate(s) returned in the caPubs field. 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@RunWith(CryptoTokenTestRunner.class)
+@RunWith(Parameterized.class)
 public class CmpResponseMessageTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CmpResponseMessageTest.class);
 
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return CryptoTokenRunner.defaultRunners;
+    }
+    
     private static final String user = "CmpTestUser";
     private static final String userPwd = "foo123";
     
-    private final X509Certificate caCertificate;
-    private final CA ca;
-    private final CmpConfiguration cmpConfiguration;
+    private X509Certificate caCertificate;
+    private X509CAInfo ca;
+    private CmpConfiguration cmpConfiguration;
     private static final String cmpAlias = "CmpResponseMessageTestConfAlias";
     
     private final byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -73,20 +83,28 @@ public class CmpResponseMessageTest extends CmpTestCase {
     private String userDnString;
     private X500Name userDn;
     
-    KeyPair keys;
-    PKIMessage msg; 
-    PKIMessage req;
+    private KeyPair keys;
+    private PKIMessage msg; 
+    private PKIMessage req;
     
-    ByteArrayOutputStream bao;
-    ASN1OutputStream out;
+    private ByteArrayOutputStream bao;
+    private ASN1OutputStream out;
     
     private final String tlsRootCaDN = "CN=Tls-Root-CA";
     private final String tlsSubCaDN = "CN=Tls-Sub-CA";
     private X509CA tls509RootCa;
     private X509CA tls509SubCa;
     
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    private CryptoTokenRunner cryptoTokenRunner;
+    
+    @Rule
+    public TestName testName = new TestName();
+    
+    public CmpResponseMessageTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+        this.cryptoTokenRunner = cryptoTokenRunner;
+        
+    }
+
      
     @BeforeClass
     public static void beforeClass() {
@@ -109,54 +127,58 @@ public class CmpResponseMessageTest extends CmpTestCase {
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
 
-        log.debug("Test CA subject DN: " + ca.getSubjectDN());
-        log.debug("Test CA ID: " + ca.getCAId());
-        
-        this.cmpConfiguration.addAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-        
-        if (endEntityManagementSession.existsUser(user)) {
-            endEntityManagementSession.revokeAndDeleteUser(ADMIN, user, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        if (cryptoTokenRunner.canRun()) {
+            super.setUp();
+            ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
+            caCertificate = (X509Certificate) ca.getCertificateChain().get(0);
+            cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+
+            log.debug("Test CA subject DN: " + ca.getSubjectDN());
+            log.debug("Test CA ID: " + ca.getCAId());
+
+
+            this.cmpConfiguration.addAlias(cmpAlias);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+            if (endEntityManagementSession.existsUser(user)) {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, user, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            }
+
+            userDnString = "C=SE,O=PrimeKey Solutions AB,CN=" + user + "-" + System.currentTimeMillis();
+            userDn = new X500Name(userDnString);
+            createUser(user, userDnString, userPwd, ca.getCAId());
+
+            keys = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+            msg = genCertReq(ca.getSubjectDN(), userDn, keys, caCertificate, nonce, transid, false, null, null, null, null, null, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+
+            // Using the CMP RA Authentication secret
+            req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
+            assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
+
+            // The CMP message byte out stream to be send to the CA.
+            bao = new ByteArrayOutputStream();
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
+            out.writeObject(req);
         }
-        
-        userDnString = "C=SE,O=PrimeKey Solutions AB,CN=" + user + "-" + System.currentTimeMillis();
-        userDn = new X500Name(userDnString);
-        createUser(user, userDnString, userPwd, ca.getCAId());
-        
-        keys = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        msg = genCertReq(ca.getSubjectDN(), userDn, keys, caCertificate, nonce, transid, false, null, null, null, null, null, null);
-        assertNotNull("Generating CrmfRequest failed.", msg);
-        
-        // Using the CMP RA Authentication secret 
-        req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
-        assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
-        
-        // The CMP message byte out stream to be send to the CA.
-        bao = new ByteArrayOutputStream();
-        out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
-        out.writeObject(req);
     }
     
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
-        cryptoTokenRule.cleanUp();
-        this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-        
-        if (endEntityManagementSession.existsUser(user)) {
-            endEntityManagementSession.revokeAndDeleteUser(ADMIN, user, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        if (cryptoTokenRunner.canRun()) {
+            super.tearDown();
+            cryptoTokenRunner.cleanUp();
+            this.cmpConfiguration.removeAlias(cmpAlias);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+            if (endEntityManagementSession.existsUser(user)) {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, user, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            }
         }
     }
     
-    public CmpResponseMessageTest() throws Exception {
-        ca = cryptoTokenRule.createX509Ca();
-        caCertificate = (X509Certificate) ca.getCACertificate();
-        cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-    }
-
     @Override
     public String getRoleName() {
         return getClass().getSimpleName();

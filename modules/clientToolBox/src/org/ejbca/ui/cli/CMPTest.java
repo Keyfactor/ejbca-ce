@@ -44,6 +44,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -96,15 +97,15 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.client.CMPSendHTTP;
-import org.ejbca.core.protocol.cmp.client.CMPSendTCP;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Used to stress test the CMP interface.
@@ -298,46 +299,9 @@ class CMPTest extends ClientToolBox {
         }
         
         private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws Exception {
-            if ( StressTest.this.isHttp ) {
                 return sendCmpHttp(message);
-            }
-            return sendCmpTcp(message, sessionData.getSocket());
-        }
+           }
         
-        private byte[] sendCmpTcp(final byte[] message, final Socket socket) {
-            try {
-                final CMPSendTCP send = new CMPSendTCP( message, socket, false );
-                if ( send.version!=10 ) {
-                    StressTest.this.performanceTest.getLog().error("Wrong version. Is "+send.version+" should be 10.");
-                }
-                if ( send.msgType!=5 ) {
-                    StressTest.this.performanceTest.getLog().error("Wrong message type. Is "+send.msgType+" should be 5.");
-                }
-                if ( send.response==null || send.response.length<=send.headerLength ) {
-                    StressTest.this.performanceTest.getLog().error("Nothing received from host.");
-                }
-                if ( send.response!=null && send.response.length!=send.bytesRead ) {
-                    StressTest.this.performanceTest.getLog().error("Only "+send.bytesRead+" has been read when "+send.response.length+" should have been read." );
-                }
-                if ( (send.flags&0x01)>0 ) {
-                    socket.close();
-                    StressTest.this.performanceTest.getLog().error("Closing socket on request from host.");
-                }
-                final byte[] result = new byte[send.response.length];
-                System.arraycopy(send.response, send.headerLength, result, 0, result.length-send.headerLength);
-                return result;
-                // could be replaced by this in java6:
-                // return Arrays.copyOfRange(send.response, send.headerLength, send.response.length);
-            } catch( IOException e ) {
-                StressTest.this.performanceTest.getLog().error("Error when sending message to TCP port. Closing socket.", e);
-                try {
-                    socket.close();
-                } catch (IOException e1) {
-                    StressTest.this.performanceTest.getLog().error("Error when closing socket.", e);
-                }
-                return null;
-            }
-        }
         @SuppressWarnings("synthetic-access")
         private byte[] sendCmpHttp(final byte[] message) throws Exception {
             final CMPSendHTTP send = CMPSendHTTP.sendMessage(message, StressTest.this.hostName, StressTest.this.port, StressTest.this.urlPath, false);
@@ -434,7 +398,7 @@ class CMPTest extends ClientToolBox {
                 if (this.isSign) {
                     // Verify the signature
                     byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
-                    final DERBitString bs = respObject.getProtection();
+                    final ASN1BitString bs = respObject.getProtection();
                     final Signature sig;
                     try {
                         sig = Signature.getInstance(id);
@@ -484,7 +448,7 @@ class CMPTest extends ClientToolBox {
                     mac.init(key);
                     mac.reset();
                     final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
-                    final DERBitString protection = respObject.getProtection();
+                    final ASN1BitString protection = respObject.getProtection();
                     mac.update(protectedBytes, 0, protectedBytes.length);
                     byte[] out = mac.doFinal();
                     // My out should now be the same as the protection bits
@@ -885,7 +849,7 @@ class CMPTest extends ClientToolBox {
         final String urlPath;
         final String resultFilePrefix;
         if ( args.length < 3 ) {
-            System.out.println(args[0]+" <host name> <CA certificate file name> [<'m:n' m # of threads, n # of tests>] [<wait time (ms) between each thread is started>] [<alias>] [<port>] [<protocol, http default, write tcp if you want socket.>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
+            System.out.println(args[0]+" <host name> <CA certificate file name> [<'m:n' m # of threads, n # of tests>] [<wait time (ms) between each thread is started>] [<alias>] [<port>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
             System.out.println("Requirements for the 'CMP Alias':");
             System.out.println("\t'Operational Mode' must be 'RA Mode'.");
             System.out.println("\t'RA Verify Proof-of-Possession' must be 'Allow'");
@@ -903,9 +867,9 @@ class CMPTest extends ClientToolBox {
         waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
         alias = args.length>5 ? args[5].trim():null;
         port = args.length>6 ? Integer.parseInt(args[6].trim()):8080;
-        isHttp = args.length>7 ? args[7].toLowerCase().indexOf("tcp")<0 : true;
-        urlPath = args.length>8 && args[8].toLowerCase().indexOf("null")<0 ? args[8].trim():"/ejbca/publicweb/cmp";
-        resultFilePrefix = args.length>9 ? args[9].trim() : null;
+        isHttp = true;
+        urlPath = args.length>7 && args[7].toLowerCase().indexOf("null")<0 ? args[7].trim():"/ejbca/publicweb/cmp";
+        resultFilePrefix = args.length>8 ? args[8].trim() : null;
 
         try {
             if ( !certFile.canRead() ) {

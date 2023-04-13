@@ -45,7 +45,7 @@ public class MockedThrowAwayRevocationPublisher implements ICustomPublisher, Ful
     }
 
     @Override
-    public boolean willPublishCertificate(int status, int revocationReason) {
+    public boolean willPublishCertificate(int status, long revocationDate) {
         return true;
     }
 

@@ -44,18 +44,19 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.KeyGenParams;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -121,7 +122,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 caSession.removeCA(alwaysAllowToken, testcvcca.getCAId());
             }
     	} finally {
-    		// Be sure to to this, even if the above fails
+    		// Be sure to do this, even if the above fails
     	    super.tearDownRemoveRole();
     	}
     }

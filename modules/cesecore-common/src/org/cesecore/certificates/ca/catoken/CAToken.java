@@ -26,9 +26,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * The CAToken is keeps references to the CA's key aliases and the CryptoToken where the keys are stored.
@@ -444,6 +445,100 @@ public class CAToken extends UpgradeableDataHashMap {
         setNextCertSignKey(newCertSignKeyLabel);
         setNextKeySequence(newKeySequence);
         return newCertSignKeyLabel;
+    }
+    
+    public boolean generateNextKeysEcaToken() {
+        final Properties caTokenProperties = getProperties();
+        if(caTokenProperties.containsKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT)) {
+            // new keys for re-keying is already generated
+            return false;
+        }
+        // Generate a new key sequence
+        final String currentKeySequence = getKeySequence();
+        final String newKeySequence = StringTools.incrementKeySequence(getKeySequenceFormat(), currentKeySequence);
+        log.info("Current key sequence: " + currentKeySequence + "  New key sequence: " + newKeySequence);
+        
+        // Generate a key alias based on the new key sequence
+        final String currentCertSignKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        final String newCertSignKeyLabel = StringUtils.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
+        final String currentDefaultKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_DEFAULT);
+        final String newDefaultKeyLabel = StringUtils.removeEnd(currentDefaultKeyLabel, currentKeySequence) + newKeySequence;
+        log.info("Current sign key alias: " + currentCertSignKeyLabel + "  New sign key alias: " + newCertSignKeyLabel);
+        log.info("Current default key alias: " + currentDefaultKeyLabel + "  New default key alias: " + newDefaultKeyLabel);
+
+        // Store the new values in the properties of this token
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT, newCertSignKeyLabel);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT, newDefaultKeyLabel);
+        caTokenProperties.setProperty(CATokenConstants.NEXT_SEQUENCE_PROPERTY, newKeySequence);
+        setCATokenPropertyData(storeProperties(caTokenProperties));
+        //this.keyStrings = new PurposeMapping(caTokenProperties);
+        return true;
+    }
+    
+    public String getNextEcaSignKeyAlias() {
+        final Properties caTokenProperties = getProperties();
+        
+        if(!caTokenProperties.containsKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT)) {
+            return keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        } else {
+            return keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+        }
+    }
+    
+    public String getNextEcaDefaultKeyAlias() {
+        final Properties caTokenProperties = getProperties();
+        
+        if(!caTokenProperties.containsKey(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT)) {
+            return keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_DEFAULT);
+        } else {
+            return keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_DEFAULT_NEXT);
+        }
+    }
+    
+    public void activateNextKeysEcaToken() {
+        // TODO: may need update to support external import similar to activateNextSignKey
+        final Properties caTokenProperties = getProperties();
+        
+        if(!caTokenProperties.containsKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT)) {
+            // initial certificate upload, no need for update
+            return;
+        }
+        
+        // update verification key
+        final String currentCertSignKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        final String nextCertSignKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+                
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, currentCertSignKeyLabel);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, nextCertSignKeyLabel);
+        caTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT);
+        
+        if (log.isDebugEnabled()) {
+            log.debug("CERTSIGN_NEXT: " + nextCertSignKeyLabel);
+            log.debug("CERTSIGN:      " + currentCertSignKeyLabel);
+        }
+        
+        // update encryption key
+        final String currentDefaultKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_DEFAULT);
+        final String nextDefaultKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_DEFAULT_NEXT);
+        
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_PREVIOUS, currentDefaultKeyLabel);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, nextDefaultKeyLabel);
+        caTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT);
+        
+        if (log.isDebugEnabled()) {
+            log.debug("DEFAULT_NEXT: " + nextDefaultKeyLabel);
+            log.debug("DEFAULT:      " + currentDefaultKeyLabel);
+        }
+        
+        // update key sequence
+        final String nextKeySequence = caTokenProperties.getProperty(CATokenConstants.NEXT_SEQUENCE_PROPERTY);
+        final String currentKeySequence = getKeySequence();
+        
+        caTokenProperties.setProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY, currentKeySequence);
+        setKeySequence(nextKeySequence);
+        caTokenProperties.remove(CATokenConstants.NEXT_SEQUENCE_PROPERTY);
+        
+        setCATokenPropertyData(storeProperties(caTokenProperties));
     }
 
     /** Next sign key becomes current. Current becomes previous. Same goes for KeySequence. CRL sign key is updated if it is the same as cert sign key */

@@ -33,7 +33,6 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -43,6 +42,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Tests the Name Change CA Renewal {@link CAAdminSession.renewCANewSubjectDn}

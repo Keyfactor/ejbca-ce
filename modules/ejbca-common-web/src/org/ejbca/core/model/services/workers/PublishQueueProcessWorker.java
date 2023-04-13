@@ -32,13 +32,15 @@ import java.util.Map;
  * Class processing the publisher queue. Can only run on instance in one VM on
  * one node. See method docs below for information about algorithms used.
  * 
- * @version $Id$
  */
 public class PublishQueueProcessWorker extends EmailSendingWorker {
 
     private static final Logger log = Logger.getLogger(PublishQueueProcessWorker.class);
 
     public static final String PROP_PUBLISHER_IDS = "publisherids";
+    public static final String PROP_MAX_WORKER_JOBS = "maxWorkerJobs";
+    
+    public static final long DEFAULT_QUEUE_WORKER_JOBS = 20000L;
 
     /**
      * Semaphore making sure not two identical services run at the same time.
@@ -46,6 +48,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * services for every publisher.
      */
     private static HashMap<String, Boolean> runmap = new HashMap<String, Boolean>();
+
 
     @Override
     public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
@@ -75,7 +78,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * Checks if there are any publishing jobs in the publisher queue that should be
      * published.
      * 
-     * @see org.ejbca.core.model.services.IWorker#work()
+     * @see org.ejbca.core.model.services.IWorker#work(Map<Class<?>, Object>)
      */
     @Override
     public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) {
@@ -98,6 +101,15 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     runmap.put(this.serviceName, Boolean.TRUE);
                 }
                 Object o = properties.get(PROP_PUBLISHER_IDS);
+                
+                
+                final long maxNumberOfEntriesToCheck;
+                if (properties.containsKey(PROP_MAX_WORKER_JOBS)) {
+                    maxNumberOfEntriesToCheck = Long.valueOf(properties.getProperty(PROP_MAX_WORKER_JOBS));
+                } else {
+                    maxNumberOfEntriesToCheck = DEFAULT_QUEUE_WORKER_JOBS;
+                }
+                
                 if (o != null) {
                     String idstr = (String) o;
                     if (log.isDebugEnabled()) {
@@ -112,8 +124,8 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     for (int i = 0; i < ids.length; i++) {
                         int publisherId = Integer.valueOf(ids[i]);
                         // Get everything from the queue for this publisher id
-                        BasePublisher publisher = publisherSession.getPublisher(publisherId);                  
-                        publishingResult.append(publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisher));
+                        BasePublisher publisher = publisherSession.getPublisher(publisherId);
+                        publishingResult.append(publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisher, maxNumberOfEntriesToCheck));
                     }
                 } else {
                     log.debug("No publisher IDs configured for worker.");

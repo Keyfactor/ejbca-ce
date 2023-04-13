@@ -23,7 +23,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -31,6 +30,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

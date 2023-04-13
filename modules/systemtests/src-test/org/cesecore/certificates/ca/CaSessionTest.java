@@ -21,17 +21,20 @@ import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -41,7 +44,6 @@ import static org.junit.Assert.fail;
 /**
  * Tests the CA session bean using soft CA tokens.
  * 
- * @version $Id$
  */
 public class CaSessionTest extends RoleUsingTestCase {
 
@@ -57,8 +59,9 @@ public class CaSessionTest extends RoleUsingTestCase {
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
         CryptoProviderTools.installBCProvider();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
         testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
-        testBase = new CaSessionTestBase(testx509ca, null);            
+        testBase = new CaSessionTestBase(testx509ca, null);             
     }
     
     @AfterClass

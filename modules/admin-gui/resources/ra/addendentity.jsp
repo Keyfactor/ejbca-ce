@@ -10,8 +10,8 @@
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator, org.cesecore.certificates.endentity.EndEntityConstants,
                  org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, javax.ejb.CreateException, java.io.Serializable, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, 
-                 org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils,
-                 org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants,
+                 org.ejbca.core.model.SecConst,com.keyfactor.util.StringTools,com.keyfactor.util.certificate.DnComponents,org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils,
+                 org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,com.keyfactor.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants,
                  org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.standard.QcStatement, org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier, org.cesecore.certificates.certificate.certextensions.CertificateExtensionException, org.cesecore.certificates.ca.IllegalNameException, org.ejbca.util.HTMLTools" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
@@ -795,7 +795,7 @@ function isKeyRecoveryPossible(){
      <% }else{ %>
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=false;
      <%}
-       if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE)){ %>
+       if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE) || profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0)){ %>
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=true;
    <% }else{ %>  
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=false;
@@ -988,9 +988,9 @@ function checkallfields(){
                     if(!checkfieldforgender("document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>", "<%= ejbcawebbean.getText("ONLYMORFINGENDERFIELD") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype)) %>"))
                         illegalfields++;
                 <%  if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
-                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>.value="") {
+                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>.value=="") {
                             alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
-                            illegalfield++;
+                            illegalfields++;
                         }
             <%      }
                 } else { %>
@@ -1789,7 +1789,8 @@ function checkallfields(){
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>"/>
                 <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
                 <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>"/><br />
-                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/></p>
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/><br />
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP3\") %>"/></p>
             </td>
             <td>
                 <textarea name="<%=TEXTAREA_NC_PERMITTED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"></textarea>
@@ -1802,7 +1803,10 @@ function checkallfields(){
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>"/>
                 <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
-                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>"/></p>
+
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP1\") %>"/></p>
+                <br/>
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP2\") %>"/></p>
             </td>
             <td>
                 <textarea name="<%=TEXTAREA_NC_EXCLUDED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"></textarea>

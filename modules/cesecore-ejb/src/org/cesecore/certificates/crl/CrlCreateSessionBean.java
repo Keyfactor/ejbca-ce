@@ -14,6 +14,7 @@ package org.cesecore.certificates.crl;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -43,11 +44,12 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Business class for CRL actions, i.e. running CRLs. 
@@ -77,10 +79,19 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     	// Install BouncyCastle provider if not available
     	CryptoProviderTools.installBCProviderIfNotAvailable();
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
+    @Override
+    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber,
+            int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+        return generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, basecrlnumber, nextCrlNumber, null);
+    }
+ 
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
     @Override
-    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber,
+            int nextCrlNumber, final Date validFrom) throws CryptoTokenOfflineException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">createCRL(Collection)");
     	}
@@ -134,7 +145,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			}
     			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber, latestCaCertForPartition);       
     		} else {
-    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForPartition);
+    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForPartition, validFrom);
     		}
     		if (crl != null) {
     			// Store CRL in the database, this can still fail so the whole thing is rolled back

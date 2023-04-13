@@ -23,7 +23,9 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevReqContent;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.cmp.CMPException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -31,14 +33,17 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
+import org.ejbca.core.protocol.cmp.CmpPbmac1Verifyer;
+import org.ejbca.core.protocol.cmp.CmpMessageProtectionVerifyer;
 import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Checks the authentication of the PKIMessage.
@@ -64,7 +69,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     
     private String password = null;
     private String errorMessage = null;
-    private CmpPbeVerifyer verifyer = null;
+    private CmpMessageProtectionVerifyer verifyer = null;
         
     public HMACAuthenticationModule(AuthenticationToken authenticationToken, String globalSharedSecret, String confAlias, CmpConfiguration cmpConfiguration, 
             CAInfo caInfo, EndEntityAccessSession endEntityAccessSession) {
@@ -91,7 +96,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         return this.errorMessage;
     }
     
-    public CmpPbeVerifyer getCmpPbeVerifyer() {
+    public CmpMessageProtectionVerifyer getPasswordBasedProtectionVerifyer() {
         return this.verifyer;
     }
     
@@ -117,7 +122,11 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             return false;
         }
         try {
-            verifyer = new CmpPbeVerifyer(pkiMessage);
+            if (pkiMessage.getHeader().getProtectionAlg().getAlgorithm().equals(PKCSObjectIdentifiers.id_PBMAC1)) {
+                verifyer = new CmpPbmac1Verifyer(pkiMessage);
+            } else {
+                verifyer = new CmpPbeVerifyer(pkiMessage);
+            }
         } catch (InvalidCmpProtectionException e) {
             this.errorMessage = e.getMessage();
             return false;
@@ -146,7 +155,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Verifying message using Global Shared secret");
                     }
-                    if (performPbeVerification(globalSharedSecret, "cmp.errorauthmessage", "Global auth secret")) {
+                    if (performPasswordBasedProtectionVerification(globalSharedSecret, "cmp.errorauthmessage", "Global auth secret")) {
                         return true;
                     }
                 }
@@ -157,7 +166,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Verify message using 'CMP RA Authentication Secret' from CA '" + caInfo.getName() + "'.");
                         }
-                        if (performPbeVerification(authSecret, "cmp.errorauthmessage", "Auth secret for CA=" + caInfo.getName())) {
+                        if (performPasswordBasedProtectionVerification(authSecret, "cmp.errorauthmessage", "Auth secret for CA=" + caInfo.getName())) {
                             return true;
                         }
                     } else {
@@ -191,7 +200,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                             final List<EndEntityInformation> endEntityInformations;
                             final String extractedUsername = getUsernameByDnComponent(subjectDN);
                             if (StringUtils.isNotBlank(extractedUsername)) {
-                                endEntityInformation = this.endEntityAccessSession.findUser(authenticationToken, username);
+                                endEntityInformation = this.endEntityAccessSession.findUser(authenticationToken, extractedUsername);
                             }
                             if (endEntityInformation == null) {
                                 final X500Name issuer = certTemplate.getIssuer();
@@ -239,11 +248,11 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     }
                     return false;
                 }
-                if (performPbeVerification(eepassword, "cmp.errorauthmessage", endEntityInformation.getUsername())) {
+                if (performPasswordBasedProtectionVerification(eepassword, "cmp.errorauthmessage", endEntityInformation.getUsername())) {
                     return true;
                 }
             }
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | CMPException e) {
             // We don't want to explain in detail to the client why the configured key on the CA was invalid
             this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
             LOG.info(this.errorMessage, e);
@@ -257,9 +266,10 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      * Saves last error message on failure to validate.
      * Saves raAuthenticationSecret on successful validation (to be used later when creating response protection)
      * @return true if the validation was successful.
+     * @throws CMPException
      */
-    private boolean performPbeVerification(final String raAuthenticationSecret, final String errorMessageKey, final String errorMessageParameter)
-            throws InvalidKeyException, NoSuchAlgorithmException {
+    private boolean performPasswordBasedProtectionVerification(final String raAuthenticationSecret, final String errorMessageKey,
+            final String errorMessageParameter) throws InvalidKeyException, NoSuchAlgorithmException, CMPException {
         if (verifyer.verify(raAuthenticationSecret)) {
             this.password = raAuthenticationSecret;
             return true;

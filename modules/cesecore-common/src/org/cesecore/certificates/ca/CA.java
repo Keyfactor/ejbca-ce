@@ -42,9 +42,10 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Common methods for unrestricted X509 and CVC CA implementations.
@@ -62,6 +63,14 @@ public interface CA extends CACommon {
     boolean getGenerateCrlUponRevocation();
 
     void setGenerateCrlUponRevocation(boolean generate);
+
+    boolean getAllowChangingRevocationReason();
+
+    void setAllowChangingRevocationReason(boolean allow);
+
+    boolean getAllowInvalidityDate();
+
+    void setAllowInvalidityDate(boolean allow);
 
     long getCRLIssueInterval();
 
@@ -115,7 +124,7 @@ public interface CA extends CACommon {
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException,
             CertificateException, OperatorCreationException;
 
-    HashMap<?, ?> getExtendedCAServiceData(int type);
+    HashMap<?,?> getExtendedCAServiceData(int type);
 
     void setExtendedCAServiceData(int type, HashMap<?, ?> serviceData);
 
@@ -217,8 +226,12 @@ public interface CA extends CACommon {
            OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException;
 
    X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) throws Exception;
+   
+   X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert, final Date validFrom) throws Exception;
 
-   X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) throws Exception;
+   default X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) throws Exception {
+      throw new UnsupportedOperationException("This operation is not supported in this CA type!"); 
+   }
 
    /**
     * Create a signed PKCS#7 / CMS message.

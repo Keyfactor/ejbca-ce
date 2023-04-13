@@ -13,10 +13,30 @@
 
 package org.ejbca.core.ejb.ra;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -36,12 +56,12 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -58,28 +78,13 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
@@ -144,22 +149,29 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if (cainfo.isUseUserStorage() && username != null) {
+            endEntityManagementSession.initializeEndEntityTransaction(username);
+        }
         if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
                 try {
-                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     requestMessage = extendedUserDataHandler.processRequestMessage(requestMessage, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
                     userdata.setDN(requestMessage.getRequestX500Name().toString());
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
                 }
 
             }
         }
         
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+        boolean isClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
-        addOrEditUser(admin, userdata, false, true);
+        addOrEditUser(admin, userdata, isClearPwd, true);
         // Process request
         try {
             
@@ -192,18 +204,31 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if (cainfo.isUseUserStorage() && userdata.getUsername() != null) {
+            endEntityManagementSession.initializeEndEntityTransaction(userdata.getUsername());
+        }
         if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
                 try {
-                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     req = extendedUserDataHandler.processRequestMessage(req, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
                     userdata.setDN(req.getRequestX500Name().toString());
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
                 }
 
             }
+        }
+        
+        if(req instanceof SshRequestMessage) {
+            CertificateProfile cerificateProfile = 
+                    certificateProfileSession.getCertificateProfile(userdata.getCertificateProfileId());
+            if(cerificateProfile!=null) {
+                // otherwise, properly logged exception will thrown later
+                ((SshRequestMessage) req).populateEndEntityData(userdata, cerificateProfile);
+            }            
         }
         
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
@@ -220,6 +245,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         }
         return retval;
     }
+    
+    
 
     /**
      * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
@@ -259,7 +286,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     log.debug("New end entity '" + username + "', adding userdata. New status '" + userdata.getStatus() + "'.");
                 }
                 // addUserfromWS also checks useUserStorage internally, so don't duplicate the check
-                endEntityManagementSession.addUserFromWS(admin, userdata, clearpwd);
+                endEntityManagementSession.addUser(admin, userdata, clearpwd);
             }
         } catch (WaitingForApprovalException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically

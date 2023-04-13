@@ -114,7 +114,9 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 	@Override
     public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		final PKIHeaderBuilder myPKIHeaderBuilder = CmpMessageHelper.createPKIHeaderBuilder(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
-		boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ;
+		final boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ;
+		final boolean pbmac1Protected = (getPbmac1PrfAlg() != null) && (getPbmac1MacAlg() != null) && (getPbmac1KeyId() != null)
+				&& (getPbmac1Key() != null);
 		if(pbeProtected) {
 		    myPKIHeaderBuilder.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
 		}
@@ -136,8 +138,12 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 			myPKIBody = new PKIBody(23, myErrorContent); // 23 = error						
 		}
 		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
-		if ( pbeProtected ) {
-			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
+		if (pbeProtected) {
+			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(),
+					getPbeIterationCount());
+		} else if (pbmac1Protected) {
+			responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, getPbmac1KeyId(),
+					getPbmac1Key(), getPbmac1MacAlg(), getPbmac1IterationCount(), getPbmac1DkLen(), getPbmac1PrfAlg()));
 		} else {
 			responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);			
 		}

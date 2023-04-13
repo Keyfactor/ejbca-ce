@@ -22,7 +22,6 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -38,6 +37,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+
+import com.keyfactor.CesecoreException;
 
 /**
  */

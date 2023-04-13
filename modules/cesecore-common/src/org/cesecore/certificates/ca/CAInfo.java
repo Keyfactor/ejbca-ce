@@ -27,11 +27,12 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateWrapper;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * Holds non sensitive information about a CA.
@@ -42,6 +43,11 @@ public abstract class CAInfo implements Serializable {
     public static final int CATYPE_X509 = 1;
     public static final int CATYPE_CVC = 2;
     public static final int CATYPE_SSH = 3;
+    public static final int CATYPE_CITS = 4;
+    public static final int CATYPE_PROXY = 5;
+
+    // Used to indicate CITS certificateId in database in subjectDN column
+    public static final String CITS_SUBJECTDN_PREFIX = "cits:";
 
     /**
      * Constants indicating that the CA is selfsigned.
@@ -89,6 +95,8 @@ public abstract class CAInfo implements Serializable {
     /** Default value 0 = disabled */
     protected long deltacrlperiod = 0;
     protected boolean generateCrlUponRevocation = false;
+    protected boolean allowChangingRevocationReason = false;
+    protected boolean allowInvalidityDate = false;
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
     protected boolean keepExpiredCertsOnCRL = false;
@@ -145,8 +153,13 @@ public abstract class CAInfo implements Serializable {
         return subjectdn;
     }
 
-    public void setSubjectDN(final String subjectDn) {
-        this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
+    public void setSubjectDN(String subjectDn) {
+        subjectDn = StringTools.strip(subjectDn);
+        if(subjectDn.startsWith(CITS_SUBJECTDN_PREFIX)) {
+            this.subjectdn = subjectDn;
+        } else {
+            this.subjectdn = CertTools.stringToBCDNString(subjectDn);
+        }
     }
 
     /**
@@ -154,7 +167,7 @@ public abstract class CAInfo implements Serializable {
      */
     public String getLatestSubjectDN() {
         final Collection<Certificate> certs = getCertificateChain();
-        final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
+        final Certificate cacert = certs!=null && !certs.isEmpty() ? certs.iterator().next(): null;
         return cacert != null ? CertTools.getSubjectDN(cacert) : null;
     }
 
@@ -201,6 +214,12 @@ public abstract class CAInfo implements Serializable {
         }
         if (catype == CAInfo.CATYPE_SSH) {
             return SshCa.CA_TYPE;
+        }
+        if (catype == CAInfo.CATYPE_CITS) {
+            return "CITS";
+        }
+        if (catype == CAInfo.CATYPE_PROXY) {
+            return "KeyfactorEnrollmentProxyCA";
         }
         return String.valueOf(catype);
     }
@@ -352,6 +371,22 @@ public abstract class CAInfo implements Serializable {
 
     public void setGenerateCrlUponRevocation(boolean generate) {
         generateCrlUponRevocation = generate;
+    }
+
+    public boolean isAllowChangingRevocationReason() {
+        return allowChangingRevocationReason;
+    }
+
+    public void setAllowChangingRevocationReason(boolean allow) {
+        this.allowChangingRevocationReason = allow;
+    }
+
+    public boolean isAllowInvalidityDate() {
+        return allowInvalidityDate;
+    }
+
+    public void setAllowInvalidityDate(boolean allowInvalidityDate) {
+        this.allowInvalidityDate = allowInvalidityDate;
     }
 
     public long getCRLIssueInterval() {

@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
@@ -27,19 +30,27 @@ import io.swagger.annotations.ApiModelProperty;
 @ValidAddEndEntityRestRequest
 public class AddEndEntityRestRequest {
 
+    @ApiModelProperty(value = "Username", example = "JohnDoe")
 	private String username;
+    @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
+    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
     private String subjectDn;
+    @ApiModelProperty(value = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
     private String subjectAltName;
+    @ApiModelProperty(value = "Email", example = "john.doe@example.com")
     private String email;
     private List<ExtendedInformationRestRequestComponent> extensionData;
+    private List<ExtendedInformationRestRequestComponent> customData;
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
     private String caName;
+    @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
     private String certificateProfileName;
+    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    @ApiModelProperty(value = "Token type property",
-            allowableValues = "USERGENERATED, P12, JKS, PEM"
-    )
+    @ApiModelProperty(value = "Token type property", allowableValues = "USERGENERATED, P12, JKS, PEM", example = "P12")
     private String token;
+    @ApiModelProperty(value = "Account Binding ID", example = "1234567890")
     private String accountBindingId;
     
     /** default constructor needed for serialization */
@@ -52,6 +63,7 @@ public class AddEndEntityRestRequest {
         private String subjectAltName;
         private String email;
         private List<ExtendedInformationRestRequestComponent> extensionData;
+        private List<ExtendedInformationRestRequestComponent> customData;
         private String caName;
         private String certificateProfileName;
         private String endEntityProfileName;
@@ -105,6 +117,11 @@ public class AddEndEntityRestRequest {
             return this;
         }
 
+        public Builder customData(List<ExtendedInformationRestRequestComponent> customData) {
+            this.customData = customData;
+            return this;
+        }
+
         public Builder token(String token) {
             this.token = token;
             return this;
@@ -130,6 +147,7 @@ public class AddEndEntityRestRequest {
         this.subjectAltName = builder.subjectAltName;
         this.email = builder.email;
         this.extensionData = builder.extensionData;
+        this.customData = builder.customData;
         this.token = builder.token;
         this.accountBindingId = builder.accountBindingId;
     }
@@ -145,34 +163,46 @@ public class AddEndEntityRestRequest {
 
     public static class AddEndEntityRestRequestConverter {
 
-        public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest, Integer caId,
-        		Integer endEntityProfileId, Integer certificateProfileId) throws RestException {
-            final ExtendedInformation extendedInfo;
+        public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest) throws RestException {
+            final ExtendedInformation extendedInfo = new ExtendedInformation();
             if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
-                extendedInfo = new ExtendedInformation();
                 if (addEndEntityRestRequest.getAccountBindingId() != null) {
                     extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
                 }
                 if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
                     addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-                        extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
+                        // Dynamic Custom extensions are added with OID and data
+                        // See org.cesecore.certificates.endentity.ExtendedInformation
+                        extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
                     });
                 }
-            } else {
-                extendedInfo = null;
+                if (addEndEntityRestRequest.getCustomData() != null && !addEndEntityRestRequest.getCustomData().isEmpty()) {
+                    addEndEntityRestRequest.getCustomData().forEach((extendedInformation) -> {
+                        // There are two different types of custom data ExtendedInformation
+                        // Custom Data starting with customdata_ (like validity) and pure string fields (like certificate serial number and other things)
+                        // We require the API caller to add the customdata_ before the actual variable, where that is needed, for example customdata_STARTTIME
+                        // See org.cesecore.certificates.endentity.ExtendedInformation
+                        extendedInfo.setStringKeyData(extendedInformation.getName(), extendedInformation.getValue());                            
+                    });
+                }
             }
+            extendedInfo.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
+            extendedInfo.setCustomData(ExtendedInformation.CA_NAME, addEndEntityRestRequest.getCaName());
+            extendedInfo.setCustomData(ExtendedInformation.CERTIFICATE_PROFILE_NAME, addEndEntityRestRequest.getCertificateProfileName());
+            extendedInfo.setCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME, addEndEntityRestRequest.getEndEntityProfileName());
+            
             final Date now = new Date();
             final int tokenType = TokenType.resolveEndEntityTokenByName(addEndEntityRestRequest.getToken()).getTokenValue();
             final EndEntityInformation eeInformation = new EndEntityInformation(
                     addEndEntityRestRequest.getUsername(), 
                     addEndEntityRestRequest.getSubjectDn(), 
-                    caId, 
+                    Integer.MIN_VALUE,  
                     addEndEntityRestRequest.getSubjectAltName(), 
                     addEndEntityRestRequest.getEmail(),
                     EndEntityConstants.STATUS_NEW, 
                     EndEntityTypes.ENDUSER.toEndEntityType(), 
-                    endEntityProfileId, 
-                    certificateProfileId, 
+                    Integer.MIN_VALUE, 
+                    Integer.MIN_VALUE, 
                     now,
                     now,
                     tokenType,
@@ -228,6 +258,14 @@ public class AddEndEntityRestRequest {
 
 	public void setExtensionData(List<ExtendedInformationRestRequestComponent> extensionData) {
 		this.extensionData = extensionData;
+	}
+
+	public List<ExtendedInformationRestRequestComponent> getCustomData() {
+	    return customData;
+	}
+
+	public void setCustomData(List<ExtendedInformationRestRequestComponent> customData) {
+	    this.customData = customData;
 	}
 
 	public String getCaName() {

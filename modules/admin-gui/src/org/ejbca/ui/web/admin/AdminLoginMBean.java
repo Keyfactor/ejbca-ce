@@ -22,15 +22,15 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationNotProvidedException;
@@ -42,15 +42,16 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 /**
  * Bean used to display a login page.
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -310,6 +311,9 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         }
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oauthKeyInfo.isAudienceCheckDisabled()) {
             scope += " " + oauthKeyInfo.getAudience();
+        }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID) ||oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_GENERIC)){
+            scope += " " + oauthKeyInfo.getScope();
         }
         uriBuilder
                 .queryParam("scope", scope)

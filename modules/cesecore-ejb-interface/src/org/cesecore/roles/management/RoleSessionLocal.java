@@ -52,4 +52,8 @@ public interface RoleSessionLocal extends RoleSession {
 
     /** @throws AuthorizationDeniedException if changing this role would affect the access granted to the specified authenticationToken. */
     void assertNonImportantRoleMembership(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+
+    /** return true, if changing this role would affect the access granted to the specified authenticationToken, otherwise false. 
+     * It should only to be used from Configdump as the database transaction will proceed normally. */
+    boolean assertNonImportantRoleMembershipUnsafe(AuthenticationToken authenticationToken, int roleId);
 }

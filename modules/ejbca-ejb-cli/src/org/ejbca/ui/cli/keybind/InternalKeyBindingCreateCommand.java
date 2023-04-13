@@ -27,7 +27,6 @@ import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -36,6 +35,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * See getDescription().
@@ -138,7 +139,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
             log.error("ERROR: CryptoToken  " + parameters.get(CRYPTO_TOKEN_KEY) + " was offline.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InternalKeyBindingNameInUseException e) {
-            log.error("ERROR: Keybinding of name " + name + " already exists,");
+            log.error("ERROR: Keybinding of name " + name + " already exists.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InvalidAlgorithmException e) {
             log.error("ERROR: " + signatureAlgorithm + " was not a valid algorithm.");

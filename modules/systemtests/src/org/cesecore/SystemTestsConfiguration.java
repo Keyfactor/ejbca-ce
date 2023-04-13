@@ -19,7 +19,8 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * Helper class for running the system tests on a system where the default
@@ -46,6 +47,7 @@ public abstract class SystemTestsConfiguration {
     public static final String TARGET_SERVERCERT_CA = "target.servercert.ca";
     // Used by tests that spawn servers
     public static final String TESTSERVERS_BINDADDRESS = "testservers.bindaddress";
+    public static final String TESTSERVERS_IPV6BINDADDRESS = "testservers.ipv6bindaddress";
     public static final String TESTSERVERS_HOSTNAME = "testservers.hostname";
 
     private static final String[] COMMON_PKCS11_PATHS = {
@@ -116,6 +118,10 @@ public abstract class SystemTestsConfiguration {
      */
     public static String getTestServersBindAddress() {
         return StringUtils.trim(getProperties().getProperty(TESTSERVERS_BINDADDRESS, "127.0.0.1"));
+    }
+    
+    public static String getTestServersIPv6BindAddress() {
+        return StringUtils.trim(getProperties().getProperty(TESTSERVERS_IPV6BINDADDRESS, "0:0:0:0:0:0:0:1"));
     }
 
     /** Hostname of that EJBCA should connect to, to reach servers spawned by tests. */

@@ -66,8 +66,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -78,9 +76,6 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.cesecore.util.ValidityDate;
@@ -90,6 +85,12 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * 
@@ -232,7 +233,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test04OcspUnknown() throws Exception {
-        loadUserCert(caid);
+        loadUserCert(this.caid);
         super.test04OcspUnknown();
     }
 

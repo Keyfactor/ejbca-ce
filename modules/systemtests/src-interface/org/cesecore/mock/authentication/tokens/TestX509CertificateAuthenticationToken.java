@@ -28,7 +28,8 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Acts like X509CertificateAuthenticationToken, but without the JVM-only check. 

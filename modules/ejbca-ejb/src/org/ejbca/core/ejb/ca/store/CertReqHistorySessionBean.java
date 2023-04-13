@@ -33,9 +33,10 @@ import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Stores and manages CertReqHistory entries in the database.

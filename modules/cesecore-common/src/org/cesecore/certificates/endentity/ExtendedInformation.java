@@ -19,9 +19,11 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,9 +35,10 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * The model representation of Extended Information about a user. It's used for non-searchable data about a user,
@@ -71,6 +74,14 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * extension such as the extension value.
      */
     public static final String EXTENSIONDATA = "extensiondata_";
+    
+    /**
+     * SSH certificate data e.g. critical and extensions can be stored here
+     */
+    public static final String CUSTOM_SSH_DATA = "customsshdata_";
+    
+    public static final String SSH_CERTIFICATE_CRITICAL_OPTIONS = "ssh_critical_options";
+    public static final String SSH_CERTIFICATE_EXTENSIONS = "ssh_extensions";
 
     /**
      * Identifier for Custom data holding a end time when the users certificate should be valid extInfo.setCustomData(EndEntityProfile.STARTTIME, "");
@@ -99,7 +110,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
     public static final int DEFAULT_REMAININGLOGINATTEMPTS = -1;
-
+    
+    public static final String MARKER_FROM_REST_RESOURCE = "__zzz_marker_rest_";
+    public static final String CA_NAME = "__zzz_ca_name";
+    public static final String CERTIFICATE_PROFILE_NAME = "__zzz_cp_name";
+    public static final String END_ENTITY_PROFILE_NAME = "__zzz_eep_name";
+    
     /** Map key for certificate serial number */
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
@@ -631,6 +647,18 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         data.put(CUSTOMDATA + key, value);
     }
 
+    /**
+     * Special method used to set string fields directly, should be used with care, use the specific methods for fields in first hand.
+     * When retrieving values, the specific methods are used which may convert the string into a BigInteger for example as in 
+     * getCertificateSerialNumber, the string data better match that, or there will be trouble
+     *
+     * @param key key to store the data with
+     * @param value the string representation of the data
+     */
+    public void setStringKeyData(String key, String value) {
+        data.put(key, value);
+    }
+
     /** Function required by XMLEncoder to do a proper serialization. */
     public void setData(Object hmData) {
         loadData(hmData);
@@ -804,6 +832,54 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         List<Integer> ids = obj==null? new ArrayList<>() : obj;
         ids.add(requestId);
         data.put(REVOKE_EE_APPROVAL_REQUEST_IDS, ids);
+    }
+    
+    public void setSshCustomData(String key, Object sshCertificateDataObject) {
+        data.put(CUSTOM_SSH_DATA + key, sshCertificateDataObject);
+    }
+    
+    public Object getSshCustomData(String key) {
+        return data.get(CUSTOM_SSH_DATA + key);
+    }
+    
+    public Object removeSshCustomData(String key) {
+        return data.remove(CUSTOM_SSH_DATA + key);
+    }
+    
+    public Map<String, String> getSshCriticalOptions() {
+        Object entry = data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_CRITICAL_OPTIONS);
+        if(entry!=null) {
+            return (Map<String, String>) data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_CRITICAL_OPTIONS);
+        } else {
+            return new HashMap<String, String>();
+        }
+    }
+
+    public void setSshCriticalOptions(Map<String, String> criticalOptions) {
+        setSshCustomData(SSH_CERTIFICATE_CRITICAL_OPTIONS, criticalOptions);
+    }
+    
+    public Map<String, byte[]>  getSshExtensions() {
+        Object extensions = data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_EXTENSIONS);
+        if(extensions!=null) {
+            Map<String, byte[]> sshExtensionData = new HashMap<>();
+            for(Map.Entry<String,String> entry: ((Map<String, String>) extensions).entrySet()) {
+                sshExtensionData.put(entry.getKey(), Base64.decode(entry.getValue()));
+            }
+            return sshExtensionData;
+        } else {
+            return new HashMap<String, byte[]>();
+        }
+    }
+
+    public void setSshExtensions(Map<String, byte[]> sshExtensions) {
+        if(sshExtensions!=null) {
+            Map<String, String> sshExtensionData = new HashMap<>();
+            for(Map.Entry<String, byte[]> entry: sshExtensions.entrySet()) {
+                sshExtensionData.put(entry.getKey(), Base64.toBase64String(entry.getValue()));
+            }
+            setSshCustomData(SSH_CERTIFICATE_EXTENSIONS, sshExtensionData);
+        }
     }
 
 }

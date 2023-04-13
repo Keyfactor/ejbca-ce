@@ -14,8 +14,7 @@
 package org.ejbca.ui.cli;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.StringTools;
+import org.cesecore.config.ConfigurationHolder;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -23,6 +22,10 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * Implements the password encryption mechanism
@@ -58,8 +61,7 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
     public CommandResult execute(ParameterContainer parameters) {
 
         final boolean readKey = parameters.get(ENCRYPT_KEY) != null;
-        log.info("Please note that this encryption does not provide absolute security. "
-                + "If 'password.encryption.key' property haven't been customized it doesn't provide more security than just preventing accidental viewing.");
+        log.info("Please note that this encryption will provide no security but obfuscation unless the 'password.encryption.key' property has been set in cesecore.prperties or the --key flag is used.");
         char[] encryptionKey = null;
         if (readKey) {
             log.info("Enter encryption key: ");
@@ -72,9 +74,10 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
         final String enc;
 
         if (readKey) {
-            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey);
+            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
         } else {
-            enc = StringTools.pbeEncryptStringWithSha256Aes192(s);
+            char[] encryptionKeyFromConfiguration = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKeyFromConfiguration, StringConfigurationCache.INSTANCE.useLegacyEncryption());
         }
 
         log.info(enc);

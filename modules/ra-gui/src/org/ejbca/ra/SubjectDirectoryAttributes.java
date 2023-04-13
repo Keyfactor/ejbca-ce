@@ -12,15 +12,15 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Contains Subject Directory attributes
- * @version $Id$
  *
  */
 public class SubjectDirectoryAttributes extends RaAbstractDn{
@@ -39,7 +39,7 @@ public class SubjectDirectoryAttributes extends RaAbstractDn{
     }
 
     @Override
-    protected ArrayList<String> getAbstractDnFields() {
+    protected List<String> getAbstractDnFields() {
         return DnComponents.getDirAttrFields();
     }
 

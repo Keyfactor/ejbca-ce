@@ -24,15 +24,19 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /** Tests the external process tools static helper class.
  */
@@ -147,7 +151,7 @@ public class ExternalProcessToolsTest {
             if (log.isDebugEnabled()) {
                 log.debug("Out A:1: " + out);
             }
-            assertTrue("The exit code must be 0.", new Integer(0).equals(ExternalProcessTools.extractExitCode(out)));
+            assertTrue("The exit code must be 0.", Integer.valueOf(0).equals(ExternalProcessTools.extractExitCode(out)));
             cnt = count(out, ExternalProcessTools.STDOUT_PREFIX);
             assertTrue( cnt + " line(s) must have been logged to STDOUT.", cnt == 3);
             cnt = count(out, ExternalProcessTools.ERROUT_PREFIX);
@@ -166,7 +170,7 @@ public class ExternalProcessToolsTest {
             if (log.isDebugEnabled()) {
                 log.debug("Out A:2: " + out);
             }
-            assertTrue("The exit code must be 0.", new Integer(0).equals(ExternalProcessTools.extractExitCode(out)));
+            assertTrue("The exit code must be 0.", Integer.valueOf(0).equals(ExternalProcessTools.extractExitCode(out)));
             cnt = count(out, ExternalProcessTools.STDOUT_PREFIX);
             assertTrue(cnt + " line(s) must have been logged to STDOUT.", cnt == 0);
             cnt = count(out, ExternalProcessTools.ERROUT_PREFIX);
@@ -186,7 +190,7 @@ public class ExternalProcessToolsTest {
             if (log.isDebugEnabled()) {
                 log.debug("Out A:3: " + out, e);
             }
-            assertTrue("The exit code must be 0.", new Integer(0).equals(ExternalProcessTools.extractExitCode(out)));
+            assertTrue("The exit code must be 0.", Integer.valueOf(0).equals(ExternalProcessTools.extractExitCode(out)));
             cnt = count(out, ExternalProcessTools.STDOUT_PREFIX);
             // Re-factoring required: cnt should be 1 here, but STDOUT logging is lost.
             assertTrue(cnt + " line(s) must have been logged to STDOUT.", cnt == 0);
@@ -205,7 +209,7 @@ public class ExternalProcessToolsTest {
             if (log.isDebugEnabled()) {
                 log.debug("Out A:4: " + out, e);
             }
-            assertTrue("The exit code must be 0.", new Integer(0).equals(ExternalProcessTools.extractExitCode(out)));
+            assertTrue("The exit code must be 0.", Integer.valueOf(0).equals(ExternalProcessTools.extractExitCode(out)));
             cnt = count(out, ExternalProcessTools.STDOUT_PREFIX);
             assertTrue(cnt + " line(s) must have been logged to STDOUT.", cnt == 0);
             cnt = count(out, ExternalProcessTools.ERROUT_PREFIX);
@@ -243,7 +247,7 @@ public class ExternalProcessToolsTest {
                 arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
                 out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
                         this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
-                assertTrue("The exit code must be " + exitCode + ".", new Integer(0).equals(ExternalProcessTools.extractExitCode(out)));
+                assertTrue("The exit code must be " + exitCode + ".", Integer.valueOf(0).equals(ExternalProcessTools.extractExitCode(out)));
                 cnt = count(out, ExternalProcessTools.STDOUT_PREFIX);
                 assertTrue("At least " + cnt + " line(s) must have been logged to STDOUT.", cnt > 3);
                 cnt = count(out, ExternalProcessTools.ERROUT_PREFIX);

@@ -24,6 +24,7 @@ import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.Key;
 import java.security.MessageDigest;
+import java.security.MessageDigestSpi;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -32,6 +33,8 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
+import java.security.interfaces.RSAKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.HashMap;
 
@@ -51,11 +54,15 @@ import org.apache.http.entity.StringEntity;
 import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.signers.PlainDSAEncoding;
 import org.bouncycastle.crypto.signers.StandardDSAEncoding;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.BigIntegers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Provider for signing and decrypting with Azure Key Vault REST API.
@@ -73,9 +80,16 @@ public class AzureProvider extends Provider {
         put("Signature.SHA256WITHRSAANDMGF1" , AzureSignature.SHA256withRSAandMGF1.class.getName());
         put("Signature.SHA384WITHRSAANDMGF1" , AzureSignature.SHA384withRSAandMGF1.class.getName());
         put("Signature.SHA512WITHRSAANDMGF1" , AzureSignature.SHA512withRSAandMGF1.class.getName());
+        put("Signature.SHA256withRSASSA-PSS" , AzureSignature.SHA256withRSAandMGF1.class.getName());
+        put("Signature.SHA384withRSASSA-PSS" , AzureSignature.SHA384withRSAandMGF1.class.getName());
+        put("Signature.SHA512withRSASSA-PSS" , AzureSignature.SHA512withRSAandMGF1.class.getName());
         put("Signature.SHA256WITHECDSA" , AzureSignature.SHA256WithECDSA.class.getName());
         put("Signature.SHA384WITHECDSA" , AzureSignature.SHA384WithECDSA.class.getName());
         put("Signature.SHA512WITHECDSA" , AzureSignature.SHA512WithECDSA.class.getName());
+        put("MessageDigest.SHA256" , AzureMessageDigest.class.getName());
+        put("MessageDigest.SHA384" , AzureMessageDigest.class.getName());
+        put("MessageDigest.SHA512" , AzureMessageDigest.class.getName());
+        put("AlgorithmParameters.PSS" , AzureAlgorithmParameters.class.getName());
         // Encryption with RSA can be done to support key recovery and SCEP
         put("Cipher.RSA" , AzureCipher.RSA.class.getName());
     }
@@ -97,6 +111,7 @@ public class AzureProvider extends Provider {
 
         @Override
         protected void engineInitVerify(PublicKey publicKey) throws InvalidKeyException {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
@@ -137,7 +152,7 @@ public class AzureProvider extends Provider {
                     throw new SignatureException("BC provider not installed, fatal error: ", e);
                 }
                 final HashMap<String, String> map = new HashMap<>();
-                // Signature algorithms, https://docs.microsoft.com/en-us/rest/api/keyvault/sign/sign#jsonwebkeysignaturealgorithm
+                // Signature algorithms, https://docs.microsoft.com/en-us/rest/api/keyvault/keys/sign/sign#jsonwebkeysignaturealgorithm
                 // Supported/tested
                 // RS256 is SHA256WithRSA (PKCS#1 v1.5)
                 // RS384 is SHA384WithRSA (PKCS#1 v1.5)
@@ -145,10 +160,10 @@ public class AzureProvider extends Provider {
                 // ES256 is SHA256WithECDSA with curve P-256 from NIST
                 // ES384 is SHA384WithECDSA with curve P-384 from NIST
                 // ES512 is SHA512WithECDSA with curve P-521 from NIST
-                // Not supported/tested yet
                 // PS256 is SHA256WithRSAAndMGF1 (RSA-PSS)
                 // PS384 is SHA384WithRSAAndMGF1 (RSA-PSS)
                 // PS512 is SHA512WithRSAAndMGF1 (RSA-PSS)
+                // Not supported/tested yet
                 // ES256K is SHA256WithECDSA with curve P-256K from NIST
                 map.put("alg", azureSignAlg);
                 map.put("value", Base64.encodeBase64URLSafeString(signInput));
@@ -215,16 +230,24 @@ public class AzureProvider extends Provider {
 
         @Override
         protected boolean engineVerify(byte[] sigBytes) throws SignatureException {
-            return false;
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         protected void engineSetParameter(String param, Object value) throws InvalidParameterException {
+            // Super method is deprecated. Use engineSetParameter(AlgorithmParameterSpec params)
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        @Override
+        protected void engineSetParameter(AlgorithmParameterSpec params) throws InvalidAlgorithmParameterException {
+            // This method is called when signing with RSA-PSS (MGF1) algorithms
+            // but we can ignore the params here because Azure Key Vault handles/creates them itself
         }
 
         @Override
         protected Object engineGetParameter(String param) throws InvalidParameterException {
-            return null;
+            throw new UnsupportedOperationException("Not supported yet.");
         }
         
         public static final class SHA256WithRSA extends AzureSignature {
@@ -464,6 +487,41 @@ public class AzureProvider extends Provider {
         }
     }
 
+    public static class AzureMessageDigest extends MessageDigestSpi {
+        // While this MessageDigiest "implementation" doesn't do anything currently, it's required
+        // in order for MGF1 Algorithms to work since BC performs a sanity check before
+        // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)
+        public AzureMessageDigest() {
+            super();
+        }
+        
+        @Override
+        protected void engineUpdate(byte input) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        protected void engineUpdate(byte[] input, int offset, int len) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        protected byte[] engineDigest() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        protected void engineReset() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+    public static class AzureAlgorithmParameters extends PSS {
+        // Fall back on BC PSS parameter configuration. 
+        public AzureAlgorithmParameters() {
+            super();
+        }
+    }
+
     /** PrivateKey to be used for Azure Key Vault signing and decryption. 
      * An Azure key vault private key is identified by a URL, example for a private key sign alias 'signKey':
      * https://ejbca-keyvault.vault.azure.net/keys/signKey
@@ -474,7 +532,30 @@ public class AzureProvider extends Provider {
         private String keyAlg;
         private AzureCryptoToken cryptoToken;
 
-        public KeyVaultPrivateKey(String keyURL, String keyAlg, AzureCryptoToken cryptoToken) {
+        /** Instance methods to create different implementations depending on keyAlg.
+         * 
+         * @param keyURL The Azure Key Vault URL for the key
+         * @param keyAlg Key algorithm to be returned by Key.getAlgorithm, typically RSA or EC
+         * @param cryptoToken The AzureCryptoToken this key is used on, used by the provider in order to perform REST API calls
+         * @param publicKey the public key in order to get parameters from, only used if keyAlg is RSA for the public key modulus to get keySize, can be left null otherwise
+         * @return PrivateKey that is either a KeyVaultPrivateKey or a KeyVaultPrivateRSAKey
+         * @throws RuntimException if keyAlg is RSA but publicKey is not an RSAPublicKey 
+         */
+        public static PrivateKey getInstance(String keyURL, String keyAlg, AzureCryptoToken cryptoToken, PublicKey publicKey) {
+            if ("RSA".equals(keyAlg)) {
+                // We only need special treatment for RSA private keys because OpenJDK make a bitLength check 
+                // on the RSA private key in the TLS implementation
+                // SignatureScheme.getSignerOfPreferableAlgorithm->KeyUtil.getKeySize
+                if (publicKey instanceof RSAPublicKey) {
+                    return new KeyVaultPrivateRSAKey(keyURL, cryptoToken, ((RSAPublicKey)publicKey).getModulus());
+                } else {
+                    throw new RuntimeException("Public key parameter must be an RSA public key when creating RSA private keys, but was " + publicKey.getAlgorithm());
+                }
+            }
+            return new KeyVaultPrivateKey(keyURL, keyAlg, cryptoToken);
+        }
+
+        private KeyVaultPrivateKey(String keyURL, String keyAlg, AzureCryptoToken cryptoToken) {
             this.keyURL = keyURL;
             this.keyAlg = keyAlg;
             this.cryptoToken = cryptoToken;
@@ -508,6 +589,20 @@ public class AzureProvider extends Provider {
             return getKeyURL() + ":" + getAlgorithm() + ":" + getCryptoToken().getTokenName();
         }
     }
+    
+    public static class KeyVaultPrivateRSAKey extends KeyVaultPrivateKey implements RSAKey {
+        private static final long serialVersionUID = 1L;
+        private BigInteger modulus;
 
+        private KeyVaultPrivateRSAKey(String keyURL, AzureCryptoToken cryptoToken, BigInteger modulus) {
+            super(keyURL, "RSA", cryptoToken);
+            this.modulus = modulus;
+        }
 
+        @Override
+        public BigInteger getModulus() {
+            return modulus;
+        }
+    }
+    
 }

@@ -24,9 +24,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -34,8 +34,9 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.util.StringTools;
+import org.cesecore.roles.Role;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -58,13 +59,14 @@ import org.ejbca.ra.ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject;
 import org.ejbca.ra.ApprovalRequestGUIInfo.RequestDataRow;
 import org.ejbca.util.KeyValuePair;
 
+import com.keyfactor.util.StringTools;
+
 /**
  * Backing bean for Manage Request page (for individual requests).
  *
  * @see RaManageRequestsBean
- * @version $Id$
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaManageRequestBean implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -73,18 +75,18 @@ public class RaManageRequestBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value="#{raAccessBean}")
+    @Inject
     private RaAccessBean raAccessBean;
     public void setRaAccessBean(final RaAccessBean raAccessBean) { this.raAccessBean = raAccessBean; }
 
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
-    @ManagedProperty(value="#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
-
+    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }   
+    
     private ApprovalRequestGUIInfo requestInfo;
     private RaApprovalRequestInfo requestData;
     private CertificateProfile certificateProfile;
@@ -94,9 +96,9 @@ public class RaManageRequestBean implements Serializable {
     private List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
     private Set<Integer> partitionsAuthorizedToApprove = null;
     private boolean isValidationWarningApproved;
+    private String idParam;
+    private String aidParam;
 
-    public String idParam;
-    public String aidParam;
 
     public String getIdParam() { return idParam; }
     public void setIdParam(final String value) { idParam = value; }
@@ -108,14 +110,14 @@ public class RaManageRequestBean implements Serializable {
         if (requestData == null) {
             throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
         }
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean, raMasterApiProxyBean);
     }
     private void loadRequestByApprovalId(final int approvalId) {
         requestData = raMasterApiProxyBean.getApprovalRequestByRequestHash(raAuthenticationBean.getAuthenticationToken(), approvalId);
         if (requestData == null) {
             throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
         }
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean, raMasterApiProxyBean);
     }
 
     public void initializeRequestInfo() {
@@ -243,22 +245,39 @@ public class RaManageRequestBean implements Serializable {
             final ApprovalStep step = requestInfo.request.getNextApprovalStep();
             final ApprovalProfile approvalProfile = requestInfo.request.getApprovalProfile();
             if (step != null) {
+                List<Role> roles = raMasterApiProxyBean.getRolesAuthenticationTokenIsMemberOf(raAuthenticationBean.getAuthenticationToken());
                 for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
-                    try {
-                        if (approvalProfile.canViewPartition(raAuthenticationBean.getAuthenticationToken(), approvalPartition)) {
-                            ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partitionGuiObject =
-                                    new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepIdentifier(),
-                                    approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition),
-                                    getPartitionApproval(approvalPartition.getPartitionIdentifier(), step.getStepIdentifier()));
-                            authorizedPartitions.add(partitionGuiObject);
+                    boolean canApprove = false;
+                    boolean canView = false;
+                    if (approvalProfile.canAnyoneApprovePartition(approvalPartition)) {
+                        canApprove = true;
+                    }
+                    if (approvalProfile.canAnyoneViewPartition(approvalPartition)) {
+                        canView = true;
+                    }
+                    if (canApprove == false) {
+                        List<Integer> roleIdsWhichCanApprove = approvalProfile.getAllowedRoleIds(approvalPartition);
+                        List<Integer> roleIdsWhichCanView = approvalProfile.getAllowedRoleIdsForViewingPartition(approvalPartition);
+                        for (Role role: roles) {
+                            if (roleIdsWhichCanApprove.contains(role.getRoleId())) {
+                                canApprove = true;
+                                break;
+                            }
+                            if (roleIdsWhichCanView.contains(role.getRoleId())) {
+                                canView = true;
+                            }
                         }
-                        if (approvalProfile.canApprovePartition(raAuthenticationBean.getAuthenticationToken(), approvalPartition)) {
-                            partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
-                        }
-                    } catch (AuthenticationFailedException e) {
-                        //We shouldn't have gotten here in the UI with an invalid token
-                        throw new IllegalStateException("Trying to perform an approval with an invalid authentication token: "
-                                + raAuthenticationBean.getAuthenticationToken(), e);
+                    }
+                    if (canApprove || canView) {
+                        ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partitionGuiObject =
+                                new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepIdentifier(),
+                                approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition),
+                                getPartitionApproval(approvalPartition.getPartitionIdentifier(), step.getStepIdentifier()));
+                        authorizedPartitions.add(partitionGuiObject);
+                    }
+
+                    if (canApprove) {
+                        partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
                     }
                 }
             }
@@ -487,6 +506,9 @@ public class RaManageRequestBean implements Serializable {
                 } catch (SelfApprovalException e) {
                     raLocaleBean.addMessageError("view_request_page_error_self_approval");
                     logException("approve", e);
+                } catch (EndEntityExistsException e) {
+                    raLocaleBean.addMessageError("view_request_page_error_username_in_use");
+                    logException("approve", e);
                 }
             }
         }
@@ -522,6 +544,9 @@ public class RaManageRequestBean implements Serializable {
                 } catch (SelfApprovalException e) {
                     raLocaleBean.addMessageError("view_request_page_error_self_approval");
                     logException("reject", e);
+                } catch (EndEntityExistsException e) {
+                    raLocaleBean.addMessageError("view_request_page_error_username_in_use");
+                    logException("approve", e);
                 }
             }
         }
@@ -586,7 +611,7 @@ public class RaManageRequestBean implements Serializable {
             return;
         }
         requestData = newReqData;
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean, raMasterApiProxyBean);
         editing = false;
     }
 
@@ -596,7 +621,7 @@ public class RaManageRequestBean implements Serializable {
         }
         // Restore everything
         requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId());
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean, raMasterApiProxyBean);
         editing = false;
     }
 

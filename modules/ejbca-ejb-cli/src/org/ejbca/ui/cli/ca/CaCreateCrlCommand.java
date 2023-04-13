@@ -13,10 +13,13 @@
 
 package org.ejbca.ui.cli.ca;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -24,10 +27,11 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
+import com.keyfactor.util.CryptoProviderTools;
+
 /**
  * Issues a new CRL from the CA.
  *
- * @version $Id$
  */
 public class CaCreateCrlCommand extends BaseCaAdminCommand {
 
@@ -35,12 +39,15 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
 
     private static final String CA_NAME_KEY = "--caname";
     private static final String DELTA_KEY = "-delta";
+    private static final String UPDATE_DATE = "--updateDate";
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "If no caname is given, CRLs will be created for all the CAs where it is neccessary."));
         registerParameter(new Parameter(DELTA_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
                 "Set if a Delta CRL is desired"));
+        registerParameter(new Parameter(UPDATE_DATE, "yyyyMMddHHmmss", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Set a custom update date (start date) for issuing CRLs for the future. Do not use with Delta CRLs."));
     }
 
     @Override
@@ -52,8 +59,26 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
     public CommandResult execute(ParameterContainer parameters) {
         String caName = parameters.get(CA_NAME_KEY);
         boolean deltaCrl = parameters.get(DELTA_KEY) != null;
+        final String updateDate = parameters.get(UPDATE_DATE);
+        Date udate = null;
+        if (updateDate != null) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+            try {
+                udate = format.parse(updateDate);
+            } catch (ParseException e) {
+                log.error("Date format of '" + updateDate + "' was not valid.");
+                return CommandResult.CLI_FAILURE;
+            }
+
+        }
+        //Delta CRLs and future updates don't mix. 
+        if(deltaCrl && udate != null) {
+            log.error("Do not use delta CRLs with custom validFrom times.");
+            return CommandResult.CLI_FAILURE;
+        }
+        
         if (caName == null) {
-            createCRL(null, deltaCrl);
+            createCRL(null, deltaCrl, udate);
         } else {
             CryptoProviderTools.installBCProvider();
             // createCRL prints info about crl generation
@@ -62,7 +87,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
                 if(caInfo == null) {
                     throw new CADoesntExistsException();
                 }
-                createCRL(caInfo.getSubjectDN(), deltaCrl);
+                createCRL(caInfo.getSubjectDN(), deltaCrl, udate);
             } catch (CADoesntExistsException e) {
                 log.error("No CA named " + caName + " exists.");
                 return CommandResult.FUNCTIONAL_FAILURE;

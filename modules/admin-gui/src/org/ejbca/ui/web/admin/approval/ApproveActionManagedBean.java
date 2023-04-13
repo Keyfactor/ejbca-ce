@@ -24,16 +24,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
-import org.apache.myfaces.renderkit.html.util.AddResource;
-import org.apache.myfaces.renderkit.html.util.AddResourceFactory;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -46,13 +43,14 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -75,13 +73,14 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+import org.primefaces.PrimeFaces;
 
 /**
  * Session scoped bean for displaying information about an approval request.
  *
  */
 @ViewScoped
-@ManagedBean(name="approvalActionManagedBean")
+@Named("approvalActionManagedBean")
 public class ApproveActionManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1940920496104779323L;
     private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);
@@ -121,7 +120,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     private RoleSessionLocal roleSession;
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
-
+    @EJB
+    private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -276,7 +276,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     } catch (ApprovalRequestExpiredException e) {
                         addErrorMessage("APPROVALREQUESTEXPIRED");
                         closeWindow = false;
-                    } catch (ApprovalRequestExecutionException e) {
+                    } catch (ApprovalRequestExecutionException | EndEntityExistsException e) {
                         addErrorMessage("ERROREXECUTINGREQUEST");
                         closeWindow = false;
                     } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
@@ -326,13 +326,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
 
     private void closeWindow() {
-        //Hack for closing the window after saving
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        //Add the Javascript to the rendered page's header for immediate execution
-        AddResource addResource = AddResourceFactory.getInstance(facesContext);
-        //Think of a better solution and you're free to implement it.
-        addResource.addInlineScriptAtPosition(facesContext, AddResource.HEADER_BEGIN, "window.close();");
-        //I'm so, so sorry. I have dishonored my dojo.
+        PrimeFaces.current().executeScript("window.close();");
     }
 
     public void setUniqueId(int uniqueId) {
@@ -423,22 +417,18 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             if (approvalProfile != null) {
                 ApprovalStep step = approvalProfile.getFirstStep();
                 ApprovalStep currentStep = getCurrentStep();
+                List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
                 while (step != null) {
                     if (currentStep != null && step.equals(currentStep)) {
                         break;
                     }
                     for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
-                        try {
-                            if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
-                                authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
-                                        approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                        approvalPartition.getPartitionIdentifier(),
-                                        approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(),
-                                        getPartitionProperties(approvalPartition)));
-                            }
-                        } catch (AuthenticationFailedException e) {
-                            //We shouldn't have gotten here in the UI with an invalid token
-                            throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+                        if (approvalDataVOView.getApprovalProfile().canView(rolesTokenIsMemberOf, approvalPartition)) {
+                            authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
+                                    approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
+                                    approvalPartition.getPartitionIdentifier(),
+                                    approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(),
+                                    getPartitionProperties(approvalPartition)));
                         }
                     }
                     step = approvalDataVOView.getApprovalProfile().getStep(step.getNextStep());
@@ -462,24 +452,20 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalDataVOView.getApprovalProfile().getProfileId());
             if (getCurrentStep() != null) {
                 final ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
+                List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
                 for (Integer approvalPartitionId : getCurrentStep().getPartitions().keySet()) {
                     ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
                     if (approvalPartition != null) {
-                        try {
-                            if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
-                                final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition
-                                        .getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
-                                authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
-                                        approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                        approvalPartition.getPartitionIdentifier(), nameProperty != null ? nameProperty.getValueAsString() : "-",
-                                        getPartitionProperties(approvalPartition)));
-                            }
-                            if (approvalDataVOView.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
-                                partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
-                            }
-                        } catch (AuthenticationFailedException e) {
-                            //We shouldn't have gotten here in the UI with an invalid token
-                            throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+                        if (approvalProfile.canView(roles, approvalPartition)) {
+                            final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition
+                                    .getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
+                            authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
+                                    approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
+                                    approvalPartition.getPartitionIdentifier(), nameProperty != null ? nameProperty.getValueAsString() : "-",
+                                    getPartitionProperties(approvalPartition)));
+                        }
+                        if (approvalProfile.canApprove(roles, approvalPartition)) {
+                            partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
                         }
                     }
                 }
@@ -567,14 +553,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     for (final Role role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            try {
-                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-                                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                            } catch (AuthorizationDeniedException e) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
-                                }
-                            }
+                            roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
+                                    new ArrayList<>()));
                         }
                     }
                     if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
@@ -697,12 +677,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             if (role.getRoleId() == roleToUpdate.getIdentifier()
                     && (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                             || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION))) {
-                try {
-                    final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(alwaysAllowToken, role.getRoleId());
-                    roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                } catch (AuthorizationDeniedException e) {
-                    throw new IllegalStateException(e);
-                }
+                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), new ArrayList<>()));
             }
         }
         return roleRepresentations;

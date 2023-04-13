@@ -5,11 +5,10 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.config.GlobalConfiguration, java.math.BigInteger,
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
-                 org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
+                 org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper,com.keyfactor.util.certificate.DnComponents,
                  org.cesecore.certificates.endentity.ExtendedInformation, org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, 
                  org.apache.commons.lang.StringUtils, org.ejbca.core.model.ra.ExtendedInformationFields,
-                 org.cesecore.certificates.crl.RevokedCertInfo, org.ejbca.core.model.authorization.AccessRulesConstants,
-                 org.cesecore.util.CertTools" %>
+                 org.cesecore.certificates.crl.RevokedCertInfo, org.ejbca.core.model.authorization.AccessRulesConstants,com.keyfactor.util.CertTools" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -438,9 +437,10 @@
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
         <%= ejbcawebbean.getText("ALLOWEDREQUESTS") %> 
       </td>
-      <td><% if (counter != null)
-                  out.write(counter);
-             else out.write("&nbsp;"); %>
+      <td>
+          <% if (counter != null) { %>
+          <c:out value="<%= counter %>"/>
+             <% } else out.write("&nbsp;"); %>
       </td>
     </tr>
     <% } %>

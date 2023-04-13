@@ -6,7 +6,7 @@
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
     xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-  	xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:p="http://java.sun.com/jsf/html">
+  	xmlns:p="http://java.sun.com/jsf/html">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -53,7 +53,7 @@
 				<h:panelGroup>
 					<h:inputText id="msaeForestRoot" disabled="#{autoenrollmentConfigMBean.viewOnly}"
 								 value="#{msAutoEnrollmentSettings.msaeForestRoot}" size="45"
-								 title="#{web.text.MSAE_FOREST_ROOT}">
+								 title="#{web.text.FORMAT_DOMAINNAME}">
 						<f:converter converterId="trimConverter"/>
 					</h:inputText>
 				</h:panelGroup>	            
@@ -66,7 +66,7 @@
 				<h:panelGroup>
 					<h:inputText id="msaeDomain" disabled="#{autoenrollmentConfigMBean.viewOnly}"
 								 value="#{msAutoEnrollmentSettings.msaeDomain}" size="45"
-								 title="#{web.text.DOMAINNAME}">
+								 title="#{web.text.FORMAT_DOMAINNAME}">
 						<f:converter converterId="trimConverter"/>
 					</h:inputText>
 				</h:panelGroup>
@@ -105,12 +105,12 @@
 				<h:panelGroup>
 					<h:panelGroup>
 						<br/>
-						<t:inputFileUpload id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}"/>
+						<h:inputFile id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}"/>
 						<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKeyTabFile}"/>
 						<br/>
 					</h:panelGroup>
 					<h:panelGroup rendered="#{msAutoEnrollmentSettings.keyTabUploaded}">
-						<h:outputLabel value="#{web.text.MSAE_KEYTAB_TITLE_UPLOADED}"/>
+						<h:outputLabel value="#{web.text.MSAE_KEYTAB_TITLE_UPLOADED} "/>
 						<h:commandLink value="#{msAutoEnrollmentSettings.keyTabFilename}" action="#{msAutoEnrollmentSettings.downloadKeyTabFile}"/>
 						<br/>
 					</h:panelGroup>
@@ -124,12 +124,12 @@
 				<h:panelGroup>
 					<h:panelGroup>
 						<br/>
-						<t:inputFileUpload id="msaeKrb5ConfFile" value="#{msAutoEnrollmentSettings.krb5ConfFile}"/>
+						<h:inputFile id="msaeKrb5ConfFile" value="#{msAutoEnrollmentSettings.krb5ConfFile}"/>
 						<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKrb5ConfFile}"/>
 						<br/>
 					</h:panelGroup>
 					<h:panelGroup rendered="#{msAutoEnrollmentSettings.krb5ConfFileUploaded}">
-						<h:outputLabel value="#{web.text.MSAE_KRB5_CONF_TITLE_UPLOADED}"/>
+						<h:outputLabel value="#{web.text.MSAE_KRB5_CONF_TITLE_UPLOADED} "/>
 						<h:commandLink value="#{msAutoEnrollmentSettings.krb5ConfFilename}" action="#{msAutoEnrollmentSettings.downloadKrb5ConfFile}"/>
 						<br/>
 					</h:panelGroup>
@@ -149,6 +149,18 @@
 					<h:outputLabel for="msaeIsUseSSL" value="#{web.text.USE}" />
 				</h:panelGroup>
 	
+				<!-- isFollowLdapReferral -->
+				<h:panelGroup>
+					<h:outputLabel value="#{web.text.MSAE_FOLLOW_LDAP_REFERRAL}" styleClass="titles"/> <br/>
+					<h:outputText value="#{web.text.MSAE_FOLLOW_LDAP_REFERRAL_HELP}" styleClass="help"/>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="msaeFollowLdapReferral" disabled="#{autoenrollmentConfigMBean.viewOnly}"
+											 value="#{msAutoEnrollmentSettings.followLdapReferral}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="msaeFollowLdapReferral" value="#{web.text.USE}" />
+				</h:panelGroup>
+
 				<!-- Authentication Key Binding -->
 				<h:panelGroup>
 					<h:outputLabel value="#{web.text.MSAE_AKB}" styleClass="titles"/> <br/>
@@ -172,6 +184,30 @@
 								 title="#{web.text.FORMAT_INTEGER}">
 					</h:inputText>
 				</h:panelGroup>
+				
+				<!-- ldapReadTimeout -->
+				<h:panelGroup>
+					<h:outputLabel value="#{web.text.MSAE_LDAP_READ_TIMEOUT}" styleClass="titles"/> <br/>
+					<h:outputText value="#{web.text.MSAE_LDAP_READ_TIMEOUT_HELP}" styleClass="help"/>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="msaeLdapReadTimeout" disabled="#{autoenrollmentConfigMBean.viewOnly}"
+								 value="#{msAutoEnrollmentSettings.ldapReadTimeout}" size="5"
+								 title="#{web.text.FORMAT_MILLISECONDS}">
+					</h:inputText>
+				</h:panelGroup>
+				
+				<!-- ldapConnectTimeout -->
+				<h:panelGroup>
+					<h:outputLabel value="#{web.text.MSAE_LDAP_CONNECT_TIMEOUT}" styleClass="titles"/> <br/>
+					<h:outputText value="#{web.text.MSAE_LDAP_CONNECT_TIMEOUT_HELP}" styleClass="help"/>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="msaeLdapConnectTimeout" disabled="#{autoenrollmentConfigMBean.viewOnly}"
+								 value="#{msAutoEnrollmentSettings.ldapConnectTimeout}" size="5"
+								 title="#{web.text.FORMAT_MILLISECONDS}">
+					</h:inputText>
+				</h:panelGroup>
 	
 				<!-- adLoginDN -->
 				<h:panelGroup>
@@ -181,7 +217,7 @@
 				<h:panelGroup>
 					<h:inputText id="msaeAdLoginDN" disabled="#{autoenrollmentConfigMBean.viewOnly}"
 								 value="#{msAutoEnrollmentSettings.adLoginDN}" size="45"
-								 title="#{web.text.DOMAINNAME}">
+								 title="#{web.text.FORMAT_DN_UPN}">
 						<f:converter converterId="trimConverter"/>
 					</h:inputText>
 				</h:panelGroup>
@@ -221,7 +257,8 @@
 				<h:panelGroup>
 					<br/>
 					<h:commandButton id="msaeAdTestConnection" value="#{web.text.TEST_CONNECTION}"
-									 action="#{msAutoEnrollmentSettings.testAdConnection}">
+									 action="#{msAutoEnrollmentSettings.testAdConnection}"
+									 onclick="setTimeout('document.getElementById(\'' + this.id + '\').disabled=true;', 50);" >
 					 </h:commandButton>
 				</h:panelGroup>
             </h:panelGrid>

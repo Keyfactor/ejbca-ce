@@ -13,6 +13,10 @@
 package org.ejbca.core.ejb.authentication.web;
 
 import java.io.IOException;
+
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import java.security.Key;
 import java.security.cert.X509Certificate;
@@ -31,7 +35,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -56,10 +60,6 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.KeyBindingNotFoundException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -67,6 +67,10 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConstants;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
@@ -98,10 +102,12 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoToken;
 
     private boolean allowBlankAudience = false;
-
-    private OauthRequestHelper oauthRequestHelper; 
 
     public WebAuthenticationProviderSessionBean() { }
 
@@ -322,6 +328,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     return null;
                 }
                 String redirectUrl = getBaseUrl();
+                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
+                        internalKeyBindings, certificateStoreSession, cryptoToken));
                 oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
             }
         } catch (ParseException e) {

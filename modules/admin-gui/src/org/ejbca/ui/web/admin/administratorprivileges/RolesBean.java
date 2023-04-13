@@ -23,10 +23,10 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -52,7 +52,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * 
  */
 @ViewScoped
-@ManagedBean
+@Named
 public class RolesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RolesBean.class);

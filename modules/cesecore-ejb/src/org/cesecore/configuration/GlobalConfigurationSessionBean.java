@@ -269,7 +269,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
 
         public void updateConfiguration(final ConfigurationBase conf, final String configId) {
-            caches.get(configId).updateConfiguration(conf);
+            if (caches.get(configId) != null) {
+                caches.get(configId).updateConfiguration(conf);
+            }
         }
 
         public void clearCache(final String configId) {

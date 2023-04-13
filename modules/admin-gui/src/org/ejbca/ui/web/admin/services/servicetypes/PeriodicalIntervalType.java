@@ -37,11 +37,13 @@ public class PeriodicalIntervalType extends IntervalType {
 	public static final String DEFAULT_UNIT = PeriodicalInterval.UNIT_MINUTES;
 	public static final String DEFAULT_VALUE = "5";
 	
+	private static final String PERIODICALINTERVAL_SUB_PAGE = "periodicalinterval.xhtml";
+	
     private String unit;
     private String value;
 	
 	public PeriodicalIntervalType() {
-		super(ServiceTypeUtil.PERIODICALINTERVAL_SUB_PAGE, NAME, true);
+		super(PERIODICALINTERVAL_SUB_PAGE, NAME, true);
 		this.unit = DEFAULT_UNIT;
 		this.value = DEFAULT_VALUE;
 	}

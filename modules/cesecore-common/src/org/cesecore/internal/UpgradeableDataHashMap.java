@@ -43,12 +43,13 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      *
      */
 	private static final long serialVersionUID = -1766329888474901945L;
-
     // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
     protected LinkedHashMap<Object, Object> data;
     private boolean upgraded = false;
     public static final String VERSION = "version";
 
+    protected static final float MAP_LOAD_FACTOR = 0.75f; // expected initial capacity/loadFactor, avoiding the unnecessary resize while copy
+    
 	/**
      * Creates a new UpgradeableDataHashMap object.
      */
@@ -223,7 +224,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      */
     protected boolean getBoolean(final String key, final boolean defaultValue) {
         final Object object = data.get(key);
-        if (object == null || !(object instanceof Boolean)) {
+        if (!(object instanceof Boolean)) {
             return defaultValue;
         }
         return (Boolean) object;
@@ -239,7 +240,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      */
     protected String getString(final String key, final String defaultValue) {
         final Object object = data.get(key);
-        if (object == null || !(object instanceof String)) {
+        if (!(object instanceof String)) {
             return defaultValue;
         }
         return (String) object;
@@ -255,7 +256,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      */
     protected LinkedHashMap<Object, Object> getClonedData() {
         // We need to make a deep copy of the hashmap here
-        LinkedHashMap<Object, Object> clonedData = new LinkedHashMap<>(data.size());
+        LinkedHashMap<Object, Object> clonedData = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR));
         for (final Entry<Object,Object> entry : data.entrySet()) {
                 Object value = entry.getValue();
                 if (value instanceof ArrayList<?>) {

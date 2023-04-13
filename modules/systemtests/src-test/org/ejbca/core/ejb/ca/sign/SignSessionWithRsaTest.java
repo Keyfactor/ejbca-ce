@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -25,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -88,19 +96,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.RFC4683Tools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -135,12 +134,15 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RFC4683Tools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Test class for tests based on an RSA
@@ -272,9 +274,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
     @Test
     public void testSignSession() throws Exception {
-        createReverseEndEntity();
-        CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         try {
+            createReverseEndEntity();
+            CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
             // user that we know exists...
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate.", cert);
@@ -512,21 +514,11 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         }
 
-        int rsareversecaid = inforsareverse.getCAId();
-        if (!endEntityManagementSession.existsUser(RSA_REVERSE_USERNAME)) {
-            endEntityManagementSession.addUser(internalAdmin, RSA_REVERSE_USERNAME, "foo123", "C=SE,O=AnaTom,CN=" + RSA_REVERSE_USERNAME, null,
-                    "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, rsareversecaid);
-            log.debug("created user: " + RSA_REVERSE_USERNAME + ", foo123, C=SE, O=AnaTom, CN=" + RSA_REVERSE_USERNAME);
-        } else {
-            log.info("User " + RSA_REVERSE_USERNAME + " already exists, resetting status.");
-            EndEntityInformation userData = new EndEntityInformation("foorev", "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
-                    rsareversecaid, null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
-            userData.setPassword("foo123");
-            endEntityManagementSession.changeUser(internalAdmin, userData, false);
-            log.debug("Reset status to NEW");
-        }
+        final EndEntityInformation userData = new EndEntityInformation(RSA_REVERSE_USERNAME, "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
+                inforsareverse.getCAId(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
+        userData.setPassword("foo123");
+        endEntityManagementSession.addUser(internalAdmin, userData, false);
     }
 
     /**
@@ -555,7 +547,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.XMPPADDR);
         profile.addField(DnComponents.SRVNAME);
         profile.addField(DnComponents.SUBJECTIDENTIFICATIONMETHOD);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName, profile);
         try {
             int eeprofile = endEntityProfileSession.getEndEntityProfileId(multipleAltNameEndEntityProfileName);
@@ -685,7 +677,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.XMPPADDR);
         profile.addField(DnComponents.SRVNAME);
         profile.addField(DnComponents.FASCN);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName, profile);
         try {
             int eeprofile = endEntityProfileSession.getEndEntityProfileId(multipleAltNameEndEntityProfileName);
@@ -796,8 +788,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, qcCertProfileName, profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(qcCertProfileName);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
@@ -956,9 +948,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        profile.setUse(EndEntityProfile.CARDNUMBER, 0, true);
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
+        profile.setCardNumberUsed(true);
         endEntityProfileSession.addEndEntityProfile(internalAdmin, validityOverrideProfileName, profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(validityOverrideProfileName);
         // Change a user that we know...
@@ -1109,24 +1101,23 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
    @Test
     public void testDnOrder() throws Exception {
-        log.trace(">test22DnOrder()");
+        log.trace(">testDnOrder()");
         final String profileName = "TESTDNORDER";
         final String endEntityName = "TESTDNORDER";
-        // Create a good certificate profile (good enough), using QC statement
+        // Create a standard certificate profile (good enough)
         certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfileSession.addCertificateProfile(internalAdmin, profileName, certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId(profileName);
 
-        // Create a good end entity profile (good enough), allowing multiple UPN
-        // names
+        // Create a good end entity profile (good enough)
         endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
         KeyPair anotherKey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
@@ -1160,8 +1151,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
             endEntityManagementSession.deleteUser(internalAdmin, endEntityName);
+            internalCertStoreSession.removeCertificatesByUsername(endEntityName);
         }
-        log.trace("<test22DnOrder()");
+        log.trace("<testDnOrder()");
     }
 
     @Test
@@ -1257,8 +1249,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, testName, profile);
         try {
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(testName);
@@ -1322,8 +1314,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
         List<String> issuedFingerprints = new ArrayList<String>();
         try {
@@ -1531,9 +1523,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
-        profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
-        profile.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
+        profile.setAvailableCAs(Collections.singleton(rsacaid));
+        profile.setAllowedRequestsUsed(true);
+        profile.setAllowedRequests(3);
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTREQUESTCOUNTER", profile);
         pid = endEntityProfileSession.getEndEntityProfileId("TESTREQUESTCOUNTER");
         // Change already existing user
@@ -1621,8 +1613,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTDNOVERRIDE", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTDNOVERRIDE");
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
@@ -1669,8 +1661,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityManagementSession.deleteUser(internalAdmin, dnOverrideEndEntityName);
         }
     }
-
-
+    
     @Test
     public void testsignSessionDSAWithRSACA() throws Exception {
         log.trace(">test23SignSessionDSAWithRSACA()");

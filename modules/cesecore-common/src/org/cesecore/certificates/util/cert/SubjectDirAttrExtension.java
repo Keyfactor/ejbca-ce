@@ -36,7 +36,8 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * A class for reading values from SubjectDirectoryAttributes extension.

@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
@@ -41,7 +44,7 @@ public class SearchEndEntityCriteriaRestRequest {
     private String property;
 
     @ApiModelProperty(value = "A search value. This could be string value, an appropriate string name of End Entity Profile or Certificate Profile or CA",
-            example = "'username', 'MyEndEntityProfile'")
+            example = "exampleUsername")
     private String value;
 
     @ApiModelProperty(value = "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",

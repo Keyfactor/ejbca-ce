@@ -21,6 +21,7 @@ import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,26 +32,26 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
+
+import com.keyfactor.util.CertTools;
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ImportCrlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -90,9 +91,9 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         }
         
         X509CRL lastCrlOfSameType = getLastCrlOfSameType(x509crl, isDeltaCrl, issuerDn, crlPartitionIndex);
-        if(lastCrlOfSameType!=null && !x509crl.getThisUpdate().after(lastCrlOfSameType.getThisUpdate())) {
-            log.info((isDeltaCrl?"Delta":"Full") + " CRL number " + downloadedCrlNumber + " for CA '" + cainfo.getName() + 
-                    "' is not newer than last known " + (isDeltaCrl?"delta":"full") + " CRL. Ignoring download.");
+        if (lastCrlOfSameType != null && !x509crl.getThisUpdate().after(lastCrlOfSameType.getThisUpdate())) {
+            log.info((isDeltaCrl ? "Delta" : "Full") + " CRL number " + downloadedCrlNumber + " for CA '" + cainfo.getName() +
+                    "' is not newer than last known " + (isDeltaCrl ? "delta" : "full") + " CRL. Ignoring download.");
             return;
         }
         
@@ -119,6 +120,15 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
             for (final X509CRLEntry crlEntry : crlEntries) {
                 final Date revocationDate = crlEntry.getRevocationDate();
                 final BigInteger serialNumber = crlEntry.getSerialNumber();
+                Date invalidityDate = null;
+                ASN1GeneralizedTime asn1GeneralizedTime = CrlExtensions.extractInvalidityDate(crlEntry);
+                if (asn1GeneralizedTime != null) {
+                    try {
+                        invalidityDate = asn1GeneralizedTime.getDate();
+                    } catch (ParseException e) {
+                        log.info("Failed to parse invalidityDate for crl entry with serial number " + serialNumber);
+                    }
+                }
                 final int reasonCode = CrlExtensions.extractReasonCode(crlEntry);
                 if (crlEntry.getCertificateIssuer()!=null) {
                     final String entryIssuerDn = CertTools.stringToBCDNString(crlEntry.getCertificateIssuer().getName());
@@ -130,17 +140,13 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                 final CertificateDataWrapper cdw = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
                 if(isLimitedCertificate(issuerDn, serialNumber, cdw)) {
                     // Store as much as possible about what we know about the certificate and its status (which is limited) in the database
-                    certStoreSession.updateLimitedCertificateDataStatus(authenticationToken, cainfo.getCAId(), issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
+                    certStoreSession.updateLimitedCertificateDataStatus(authenticationToken, cainfo.getCAId(), issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint, invalidityDate);
                 } else {
                     final String serialHex = serialNumber.toString(16).toUpperCase();
-                    if (isCertAlreadyRevoked(reasonCode, cdw)) {
-                        log.info("Certificate '" + serialHex + "' is already revoked");
-                        continue;
-                    }
                     log.info("Revoking '" + serialHex + "' " + "(" + serialNumber.toString() + ")");
                     try {
                         //log.info("Reason code: " + reason);
-                        endentityManagementSession.revokeCert(authenticationToken, serialNumber, crlEntry.getRevocationDate(), issuerDn, reasonCode, false);
+                        endentityManagementSession.revokeCert(authenticationToken, serialNumber, crlEntry.getRevocationDate(), invalidityDate, issuerDn, reasonCode, false);
                     } catch (AlreadyRevokedException e) {
                         log.warn("Failed to revoke '" + serialHex + "'. (Status might be 'Archived'.) Error message was: " + e.getMessage());
                     } catch (ApprovalException | RevokeBackDateNotAllowedForProfileException | NoSuchEndEntityException | WaitingForApprovalException e) {
@@ -161,20 +167,6 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         // Last of all, store the CRL if there were no errors during creation of database entries
         crlStoreSession.storeCRL(authenticationToken, x509crl.getEncoded(), caFingerprint, newCrlNumber, issuerDn, crlPartitionIndex, x509crl.getThisUpdate(), x509crl.getNextUpdate(), isDeltaCrl?1:-1);
     
-    }
-    
-    private boolean isCertAlreadyRevoked(final int revocationReason, final CertificateDataWrapper cdw) {
-        if(cdw != null) {
-            final CertificateData certData = cdw.getCertificateData();
-            if(certData.getStatus()==CertificateConstants.CERT_REVOKED) {
-                final int storedRevocationReason = certData.getRevocationReason();
-                if(storedRevocationReason==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
-                    return revocationReason==storedRevocationReason;
-                }
-                return true;
-            }
-        }
-        return false;
     }
     
     private void verifyCrlIssuer(final X509CRL crl, final String issuerDN, final X509Certificate cacert) throws CrlImportException {

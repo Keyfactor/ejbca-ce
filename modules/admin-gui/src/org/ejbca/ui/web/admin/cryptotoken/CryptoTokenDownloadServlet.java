@@ -26,11 +26,12 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.cainterface.BaseAdminServlet;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Servlet for download of CryptoToken related files, such as the the public key as PEM for a key pair.

@@ -21,10 +21,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -146,37 +145,50 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return null;
     }
-
+    
     @Override
-    public boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException {
-        if(approvalPartition != null) {
-            @SuppressWarnings("unchecked")
-            List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
-            for (RoleInformation role : roles) {
-                if (log.isTraceEnabled()) {
-                    log.trace("Checking if authenticationToken '"+authenticationToken+"' matches role "+role.getName());
-                }
-                if (role.equals(ANYBODY)) {
-                    return true;
-                } else {
-                    // Check if authenticationToken matches any of the AccessUserAspects that existed in the Role when the ApprovalProfile was saved.
-                    for (final AccessUserAspect accessUserAspect : role.getAccessUserAspects()) {
-                        if (authenticationToken.matches(accessUserAspect)) {
-                            return true;
-                        }
-                    }
+    public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+        boolean canApprove = false;
+        if (approvalPartition != null) {
+            if (canAnyoneApprovePartition(approvalPartition)) {
+                return true;
+            }
+            List<Integer> roleIdsWhichCanApprove = getAllowedRoleIds(approvalPartition);
+            for (Role role: rolesTokenIsMemberOf) {
+                if (roleIdsWhichCanApprove.contains(role.getRoleId())) {
+                    canApprove = true;
+                    break;
                 }
             }
         } else {
             if (log.isTraceEnabled()) {
-                log.trace("Approval partition is null, canApprovePartition returns false for authenticationToken "+authenticationToken);
+                log.trace("Approval partition is null.");
             }
-            return false;
         }
-        if (log.isDebugEnabled()) {
-            log.debug("Administrator '"+authenticationToken+"' does not belong to a role that can approve partition "+approvalPartition.getPartitionIdentifier());
+        return canApprove;
+    }
+    
+    @Override
+    public boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+        boolean canView = false;
+        if (approvalPartition != null) {
+            if (canAnyoneApprovePartition(approvalPartition) || canAnyoneViewPartition(approvalPartition)) {
+                return true;
+            }
+            List<Integer> roleIdsWhichCanView = getAllowedRoleIdsForViewingPartition(approvalPartition);
+            List<Integer> roleIdsWhichCanApprove = getAllowedRoleIds(approvalPartition);
+            for (Role role: rolesTokenIsMemberOf) {
+                if (roleIdsWhichCanView.contains(role.getRoleId()) || roleIdsWhichCanApprove.contains(role.getRoleId())) {
+                    canView = true;
+                    break;
+                }
+            }
+        } else {
+            if (log.isTraceEnabled()) {
+                log.trace("Approval partition is null.");
+            }
         }
-        return false;
+        return canView;
     }
 
     @Override
@@ -190,10 +202,25 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return false;
     }
+    
+    @Override
+    public boolean canAnyoneViewPartition(final ApprovalPartition approvalPartition) {
+        @SuppressWarnings("unchecked")
+        final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_VIEW_RIGHTS).getValues();
+        for (final RoleInformation role : roles) {
+            if (role.equals(ANYBODY)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition) {
         final List<String> ret = new ArrayList<>();
+        if (approvalPartition == null) {
+            return ret;
+        }
         @SuppressWarnings("unchecked")
         final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
         for (final RoleInformation role : roles) {
@@ -201,26 +228,33 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return ret;
     }
-
+    
     @Override
-    public boolean canViewPartition(AuthenticationToken authenticationToken, ApprovalPartition approvalPartition)
-            throws AuthenticationFailedException {
-        boolean result = false;
-        @SuppressWarnings("unchecked")
-        List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_VIEW_RIGHTS).getValues();
-        for (RoleInformation role : roles) {
-            if (role.equals(ANYBODY)) {
-                result = true;
-            } else {
-                // Check if authenticationToken matches any of the AccessUserAspects that existed in the Role when the ApprovalProfile was saved.
-                for (final AccessUserAspect accessUserAspect : role.getAccessUserAspects()) {
-                    if (authenticationToken.matches(accessUserAspect)) {
-                        result = true;
-                    }
-                }
-            }
+    public List<Integer> getAllowedRoleIds(final ApprovalPartition approvalPartition) {
+        final List<Integer> ret = new ArrayList<>();
+        if (approvalPartition == null) {
+            return ret;
         }
-        return result || canApprovePartition(authenticationToken, approvalPartition);
+        @SuppressWarnings("unchecked")
+        final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
+        for (final RoleInformation role : roles) {
+            ret.add(role.getIdentifier());
+        }
+        return ret;
+    }
+    
+    @Override
+    public List<Integer> getAllowedRoleIdsForViewingPartition(final ApprovalPartition approvalPartition) {
+        final List<Integer> ret = new ArrayList<>();
+        if (approvalPartition == null) {
+            return ret;
+        }
+        @SuppressWarnings("unchecked")
+        final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_VIEW_RIGHTS).getValues();
+        for (final RoleInformation role : roles) {
+            ret.add(role.getIdentifier());
+        }
+        return ret;
     }
 
     @Override

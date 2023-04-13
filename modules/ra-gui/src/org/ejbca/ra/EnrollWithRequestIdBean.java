@@ -14,10 +14,10 @@ package org.ejbca.ra;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
@@ -33,22 +33,19 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.cesecore.ErrorCode;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -61,12 +58,10 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -85,10 +80,17 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
 /**
  * Managed bean that backs up the enrollwithrequestid.xhtml page
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EnrollWithRequestIdBean implements Serializable {
 
@@ -99,15 +101,17 @@ public class EnrollWithRequestIdBean implements Serializable {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    @EJB
+    private RoleSessionLocal roleSession;
 
-    @ManagedProperty(value = "#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
 
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
 
-    @ManagedProperty(value = "#{raLocaleBean}")
+    @Inject
     protected RaLocaleBean raLocaleBean;
 
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
@@ -125,6 +129,9 @@ public class EnrollWithRequestIdBean implements Serializable {
     protected IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private boolean isCsrChanged;
     private boolean isKeyRecovery;
+    private boolean statusAllowsEnrollment;
+    private boolean deletePublicAccessRole = true;
+    private boolean deletePublicAccessRoleRendered;
 
     @PostConstruct
     protected void postConstruct() {
@@ -172,14 +179,15 @@ public class EnrollWithRequestIdBean implements Serializable {
                 } else {
                     requestUsername = raApprovalRequestInfo.getEditableData().getUsername();
                 }
-                endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), requestUsername);
-                if (endEntityInformation == null) {
+                final EndEntityInformation eei = raMasterApiProxyBean.searchUserWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), requestUsername);
+                if (eei == null) {
                     log.error("Could not find endEntity for the username='" + requestUsername + "'");
-                }else if(endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED){
+                } else if (eei.getStatus() == EndEntityConstants.STATUS_GENERATED) {
                     raLocaleBean.addMessageInfo("enrollwithrequestid_enrollment_with_request_id_has_already_been_finalized", Integer.parseInt(requestId));
-                }else{
+                } else {
                     raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_has_been_approved", Integer.parseInt(requestId));
                 }
+                setEndEntityInformation(eei);
                 break;
             case ApprovalDataVO.STATUS_EXPIRED:
             case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
@@ -196,8 +204,8 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isFinalizeEnrollmentRendered() {
-        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation != null &&
-                (endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW || endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY);
+        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) &&
+                statusAllowsEnrollment;
     }
 
     public void generateCertificatePem() {
@@ -205,7 +213,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         if (generatedToken != null) {
             try {
                 Certificate certificate = CertTools.getCertfromByteArray(generatedToken, Certificate.class);
-                byte[] pemToDownload = CertTools.getPemFromCertificateChain(Arrays.asList(certificate));
+                byte[] pemToDownload = CertTools.getPemFromCertificateChain(List.of(certificate));
                 downloadToken(pemToDownload, "application/octet-stream", ".pem");
             } catch (CertificateParsingException | CertificateEncodingException e) {
                 log.info(e);
@@ -306,6 +314,15 @@ public class EnrollWithRequestIdBean implements Serializable {
             getEndEntityInformation().getExtendedInformation().setCertificateRequest(binaryReqBytes);
         }
         generateCertificateAfterCheck();
+        if (generatedToken != null && isDeletePublicAccessRoleRendered() && isDeletePublicAccessRole()) {
+            try {
+                final AlwaysAllowLocalAuthenticationToken adminToken = new AlwaysAllowLocalAuthenticationToken("DeleteRoleAfterSuperadminEnrollment");
+                roleSession.deleteRoleIdempotent(adminToken, null, AuthorizationSystemSession.PUBLIC_ACCESS_ROLE);
+            } catch (AuthorizationDeniedException e) {
+                raLocaleBean.addMessageError("enrolle_failed_delete_role");
+                log.error("Not authorized to create CA: " + e.getMessage());
+            }
+        }
     }
 
     public void generateKeyStoreJks() {
@@ -436,7 +453,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         }
         
         try {
-            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeyStoreWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
             log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
                     endEntityInformation.getUsername());
             try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
@@ -468,7 +485,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isRenderGenerateCertificate(){
-        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
+        if (isUserGeneratedToken()) {
             // If CSR is already uploaded, load its key algorithm and display it to end user
             if (isCsrPreSet() && !isCsrChanged) {
                 selectKeyAlgorithmFromCsr();
@@ -476,6 +493,13 @@ public class EnrollWithRequestIdBean implements Serializable {
             return true;
         }
         return false;
+    }
+
+    /**
+     * @return true if token is generated by user
+     */
+    public boolean isUserGeneratedToken(){
+        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN;
     }
 
     public boolean isRenderGenerateKeyStoreJks(){
@@ -495,10 +519,14 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isRenderGenerateKeyStorePkcs12(){
-        if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
             return false;
         }
-        EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
+            return false;
+        }
+        EndEntityProfile endEntityProfile = holder.getValue();
         if (endEntityProfile == null) {
             return false;
         }
@@ -508,6 +536,10 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     public boolean isRenderGenerateKeyStoreBcfks() {
         if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
+            return false;
+        }
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
             return false;
         }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
@@ -520,6 +552,10 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     public boolean isRenderGenerateKeyStorePem(){
         if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+            return false;
+        }
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
             return false;
         }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
@@ -557,30 +593,20 @@ public class EnrollWithRequestIdBean implements Serializable {
         return endEntityInformation.getExtendedInformation() != null && endEntityInformation.getExtendedInformation().getCertificateRequest() != null;
     }
 
-    private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
+    protected final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
         if (token == null) {
             return;
         }
-        //Download the token
-        FacesContext fc = FacesContext.getCurrentInstance();
-        ExternalContext ec = fc.getExternalContext();
-        ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
-        ec.setResponseContentType(responseContentType);
-        ec.setResponseContentLength(token.length);
+        // Download the token
         String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
         if(fileName == null){
             fileName = "certificatetoken";
         }
-
-        final String filename = StringTools.stripFilename(fileName + fileExtension);
-        ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
-        try (final OutputStream output = ec.getResponseOutputStream()) {
-            output.write(token);
-            output.flush();
-            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
+        try {
+            DownloadHelper.sendFile(token, responseContentType, fileName + fileExtension);
         } catch (IOException e) {
-            log.info("Token " + filename + " could not be downloaded", e);
-            raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
+            log.info("Token " + fileName + " could not be downloaded", e);
+            raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", fileName);
         }
     }
 
@@ -617,53 +643,31 @@ public class EnrollWithRequestIdBean implements Serializable {
     protected void selectKeyAlgorithmFromCsr() {
         if (endEntityInformation.getExtendedInformation() != null) {
             try {
-                PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedInformation().getCertificateRequest());
-                final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
-                final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
-                final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+                final RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+                if (certRequest == null) {
+                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
+                }
+                final String keySpecification = AlgorithmTools.getKeySpecification(certRequest.getRequestPublicKey());
+                final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certRequest.getRequestPublicKey());
                 selectedAlgorithm = keyAlgorithm + " " + keySpecification; // Save for later use
-            } catch (IOException e) {
-                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
             } catch (InvalidKeyException | NoSuchAlgorithmException e) {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+            } catch (NoSuchProviderException e) {
+                throw new IllegalStateException(e);
             }
         }
     }
 
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        selectedAlgorithm = null;
-        final String valueStr = value.toString();
-        if (valueStr != null && valueStr.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
-            log.info("CSR uploaded was too large: "+valueStr.length());
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
-        }
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
-        if (pkcs10CertificateRequest == null) {
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
-        }
-
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile
-        final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
+        RaCsrTools.validateCsr(value, this, raLocaleBean, getCertificateProfile(), requestId, false);
         try {
-            final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
-            // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
-            final CertificateProfile certificateProfile = getCertificateProfile();
-            if (certificateProfile != null) {
-                if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
-                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Ignoring algorithm validation on CSR because we can not find a Certificate Profile for request with ID: " + requestId);
-                }
-            }
-            selectedAlgorithm = keyAlgorithm + " " + keySpecification; // Save for later use
-            // For yet unknown reasons, the setter is never when invoked during AJAX request
-            certificateRequest = value.toString();
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+            RaCsrTools.validetaNumberOfFieldsInSubjectDn(authorizedEndEntityProfiles.get(getEndEntityInformation().getEndEntityProfileId()),
+                    getCertificateRequest(), raLocaleBean, requestId, false);
+        } catch (ValidatorException e) {
+            setSelectedAlgorithm(null);
+            certificateRequest = null;
+            throw e;
         }
     }
 
@@ -721,7 +725,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                             continue;
                         }
                         final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                        if (availableBitLengths.contains(bitLength)) {
                             ecChoices.add(ecNamedCurve);
                         }
                     }
@@ -739,13 +743,13 @@ public class EnrollWithRequestIdBean implements Serializable {
                                     + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                 }
             }
-            for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-                if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+            for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
+                if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
                     for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                         final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                         final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                            availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
+                        if (availableBitLengths.contains(bitLength)) {
+                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
                                     CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
                         } else {
                             if (log.isTraceEnabled()) {
@@ -763,6 +767,32 @@ public class EnrollWithRequestIdBean implements Serializable {
         return availableAlgorithmSelectItems;
     }
 
+    public boolean canEndEntityEnroll(final EndEntityInformation endEntity) {
+        // raMasterApiProxyBean.isAllowedToEnrollByStatus is not available if the CA runs an
+        // older version than 7.10.0, so only call it if needed.
+        if (endEntity == null) {
+            return false;
+        }
+        int status = endEntity.getStatus();
+        if (status == EndEntityConstants.STATUS_NEW || status == EndEntityConstants.STATUS_FAILED ||
+            status == EndEntityConstants.STATUS_INPROCESS || status == EndEntityConstants.STATUS_KEYRECOVERY) {
+            return true;
+        } else {
+            if (raMasterApiProxyBean.canEndEntityEnroll(raAuthenticationBean.getAuthenticationToken(), endEntity.getUsername())) {
+                return true;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Wrong End Entity status for the username='" + endEntity.getUsername() + "', "+endEntity.getStatus());
+                }
+                return false;
+            }
+        }
+    }
+    
+    public boolean isKeyRecoverable() {
+        return getEndEntityInformation().getKeyRecoverable();
+    }
+
     //-----------------------------------------------------------------
     //Getters/setters
 
@@ -774,6 +804,11 @@ public class EnrollWithRequestIdBean implements Serializable {
     /** @param endEntityInformation EEI to be set*/
     public void setEndEntityInformation(EndEntityInformation endEntityInformation) {
         this.endEntityInformation = endEntityInformation;
+        statusAllowsEnrollment = canEndEntityEnroll(endEntityInformation);
+    }
+
+    public boolean isStatusAllowsEnrollment() {
+        return statusAllowsEnrollment;
     }
 
      /** @return the requestId */
@@ -819,6 +854,9 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public String getPreSetKeyAlgorithm() {
+        if (endEntityInformation.getExtendedInformation() == null) {
+            return null;
+        }
         final String subType = endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmSubType(); // can be null, but that's ok
         return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() + (subType != null ? (" " + subType) : "");
     }
@@ -857,5 +895,21 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
         }
         return result;
+    }
+
+    public boolean isDeletePublicAccessRole() {
+        return deletePublicAccessRole;
+    }
+
+    public void setDeletePublicAccessRole(boolean deletePublicAccessRole) {
+        this.deletePublicAccessRole = deletePublicAccessRole;
+    }
+
+    public boolean isDeletePublicAccessRoleRendered(){
+        return deletePublicAccessRoleRendered;
+    }
+
+    public void setDeletePublicAccessRoleRendered(boolean deletePublicAccessRoleRendered) {
+        this.deletePublicAccessRoleRendered = deletePublicAccessRoleRendered;
     }
 }

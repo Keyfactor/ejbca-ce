@@ -24,6 +24,7 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -33,9 +34,11 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 
 import java.io.IOException;
 import java.security.KeyPair;
@@ -49,8 +52,6 @@ import java.util.Map;
 
 /**
  * Holder of "external" (e.g. non-CA signing key) OCSP InternalKeyBinding properties.
- * 
- * @version $Id$
  */
 public class OcspKeyBinding extends InternalKeyBindingBase {
   
@@ -106,6 +107,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
     public static final String PROPERTY_MAX_AGE = "maxAge";
     public static final String PROPERTY_ENABLE_NONCE = "enableNonce";
+    public static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
     public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
     public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
     
@@ -121,6 +123,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         addProperty(new DynamicUiProperty<>(PROPERTY_UNTIL_NEXT_UPDATE, 0L));
         addProperty(new DynamicUiProperty<>(PROPERTY_MAX_AGE, 0L));
         addProperty(new DynamicUiProperty<>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED, Boolean.TRUE));
+
     }
 
     
@@ -218,6 +222,18 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
      *  */
     public void setNonceEnabled(boolean enabled) {
         setProperty(PROPERTY_ENABLE_NONCE, enabled);
+    }
+    
+    /** @return true if the revocation reason to be omitted if specified */
+    public boolean isOmitReasonCodeEnabled() {
+        if(getProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED) == null) {
+            setNonceEnabled(true);
+        }
+        return (Boolean) getProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED).getValue();
+    }
+
+    public void setOmitReasonCodeEnabled(boolean enabled) {
+        setProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED, enabled);
     }
     
     /** Helper method to check if the OCSP Archive CutOff extension is enabled. Used by Configdump */
@@ -336,7 +352,14 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
 
         final PKCS10CertificationRequestBuilder pkcs10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(subjectDn,
                 keyPair.getPublic()).addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extensionsGenerator.generate());
-        final ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithm).setProvider(providerName).build(keyPair.getPrivate());
+        final String prov;
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(providerName)) {
+            // Ability to use the PQC provider
+            prov = CryptoProviderTools.getProviderNameFromAlg(signatureAlgorithm);
+        } else {
+            prov = providerName;
+        }
+        final ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithm).setProvider(prov).build(keyPair.getPrivate());
         final PKCS10CertificationRequest csr = pkcs10CertificationRequestBuilder.build(contentSigner);
         return csr.getEncoded();
     }

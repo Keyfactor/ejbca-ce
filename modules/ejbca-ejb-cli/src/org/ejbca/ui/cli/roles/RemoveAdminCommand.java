@@ -37,7 +37,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Removes an admin
- * @version $Id$
  */
 public class RemoveAdminCommand extends BaseRolesCommand {
 

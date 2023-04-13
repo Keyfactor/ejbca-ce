@@ -30,10 +30,10 @@
 					value="#{msg.enrollwithrequestid_enrollment_with_request_id_title}" />
 			</h1>
 		</h:panelGroup>
-		<h:outputText value="#{msg.enroll_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEnroll}"/>
+		<h:outputText value="#{msg.enroll_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEnrollUsingApprovalRequestId}"/>
 		<h:panelGroup layout="block" id="enrollUseRequestIdContentBody"
 			styleClass="content-body"
-			rendered="#{raAccessBean.authorizedToEnroll}">
+			rendered="#{raAccessBean.authorizedToEnrollUsingApprovalRequestId}">
 			<h:form id="enrollWithRequestIdForm"
 				styleClass="pure-form pure-form-aligned">
 				
@@ -185,7 +185,7 @@
 								<h:commandButton id="generateKeyStorePem"
 									value="#{msg.enroll_generate_pem}"
 									action="#{enrollWithRequestIdBean.generateKeyStorePem}"
-									rendered="#{enrollWithRequestIdBean.renderGenerateKeyStorePem}"
+									rendered="#{enrollWithRequestIdBean.renderGenerateKeyStorePem and not enrollWithRequestIdBean.keyRecoverable}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
 							</h:panelGroup>

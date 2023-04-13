@@ -12,29 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
-import org.cesecore.certificates.certificate.ssh.SshCertificateType;
-import org.cesecore.certificates.certificate.ssh.SshExtension;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.internal.InternalResources;
-import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.ValidityDate;
-
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -52,6 +29,32 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
+import org.cesecore.certificate.ca.its.ITSCertificateType;
+import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
+import org.cesecore.certificates.certificate.ssh.SshCertificateType;
+import org.cesecore.certificates.certificate.ssh.SshExtension;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.internal.InternalResources;
+import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
  */
@@ -61,7 +64,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 48.0;
+    public static final float LATEST_VERSION = (float) 50.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -69,6 +72,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
     public static final String SERVERPROFILENAME = "SERVER";
     public static final String SSHPROFILENAME = "SSH";
+    public static final String ITSPROFILENAME = "ITS";
 
     public static final List<String> FIXED_PROFILENAMES = new ArrayList<>();
     static {
@@ -78,6 +82,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(OCSPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(SERVERPROFILENAME);
         FIXED_PROFILENAMES.add(SSHPROFILENAME);
+        FIXED_PROFILENAMES.add(ITSPROFILENAME);
     }
 
     /**
@@ -106,6 +111,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int CVC_ACCESS_DG3 = 1;
     public static final int CVC_ACCESS_DG4 = 2;
     public static final int CVC_ACCESS_DG3DG4 = 3;
+    public static final int CVC_ACCESS_RFU1 = 0x04;
+    public static final int CVC_ACCESS_RFU2 = 0x08;
+    public static final int CVC_ACCESS_RFU3 = 0x10;
+    public static final int CVC_ACCESS_RFU4 = 0x20;
     // For signature terminals (defined in version 2.10 of the EAC specification)
     public static final int CVC_ACCESS_SIGN = 16;
     public static final int CVC_ACCESS_QUALSIGN = 32;
@@ -214,6 +223,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String KEYUSAGECRITICAL = "keyusagecritical";
     protected static final String KEYUSAGE = "keyusage";
     protected static final String USESUBJECTKEYIDENTIFIER = "usesubjectkeyidentifier";
+    protected static final String USETRUNCATEDSUBJECTKEYIDENTIFIER = "usetruncatedsubjectkeyidentifier";
     protected static final String SUBJECTKEYIDENTIFIERCRITICAL = "subjectkeyidentifiercritical";
     protected static final String USEAUTHORITYKEYIDENTIFIER = "useauthoritykeyidentifier";
     protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
@@ -250,6 +260,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USELDAPDNORDER = "useldapdnorder";
     protected static final String USEMICROSOFTTEMPLATE = "usemicrosofttemplate";
     protected static final String MICROSOFTTEMPLATE = "microsofttemplate";
+    /**Microsoft szOID_NTDS_CA_SECURITY_EXT for ADCS vuln. CVE-2022-26931 */
+    protected static final String USE_MS_OBJECTSID_SECURITY_EXTENSION = "usemsobjectsidextension";
     protected static final String USECARDNUMBER = "usecardnumber";
     protected static final String USEQCSTATEMENT = "useqcstatement";
     protected static final String USEPKIXQCSYNTAXV2 = "usepkixqcsyntaxv2";
@@ -345,11 +357,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String OVERRIDABLEEXTENSIONOIDS = "overridableextensionoids";
     protected static final String NONOVERRIDABLEEXTENSIONOIDS = "nonoverridableextensionoids";
 
-    //SSH Certificate specific values
+    // SSH Certificate specific values
     protected static final String SSH_CERTIFICATE_TYPE = "sshcertificatetype";
     protected static final String SSH_EXTENSIONS = "sshextensions";
     protected static final String SSH_ALLOW_EXTERNAL_EXTENSIONS = "allowExternalSshExtensions";
     protected static final String SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED = "requireExternalSshExtensionsDefined";
+
+    // ITS Certificate specific values
+    protected static final String ITS_CERTIFICATE_TYPE = "itscertificatetype";
+    protected static final String ITS_APP_PERMISSIONS = "itsapplicationpermissions";
+    protected static final String ITS_CERT_ISSUNG_PERMISSIONS = "itscertissuingpermissions";
 
 
     /**
@@ -378,6 +395,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
         useStandardCertificateExtensions.put(USEOCSPNOCHECK, OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
         useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
+        useStandardCertificateExtensions.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT);
         useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
         useStandardCertificateExtensions.put(USECABFORGANIZATIONIDENTIFIER, CabForumOrganizationIdentifier.OID);
     }
@@ -497,6 +515,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setUseMicrosoftTemplate(false);
         setMicrosoftTemplate("");
+        setUseMsObjectSidSecurityExtension(true);
         setUseCardNumber(false);
 
         setUseCNPostfix(false);
@@ -966,9 +985,23 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseSubjectKeyIdentifier() {
         return (Boolean) data.get(USESUBJECTKEYIDENTIFIER);
     }
-
+    
     public void setUseSubjectKeyIdentifier(boolean usesubjectkeyidentifier) {
         data.put(USESUBJECTKEYIDENTIFIER, usesubjectkeyidentifier);
+    }
+
+    /**
+     * If the truncated version (method 2 in RFC5280) of key identifier should be used.
+     * It is uncommon, only few known (EV charging as of march 2023) used method 2
+     * @return true if truncated method should be used, default false if not set to true explicitly
+     */
+    public boolean getUseTruncatedSubjectKeyIdentifier() {
+        Object d = data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER);
+        return d != null && (Boolean) d;
+    }
+
+    public void setUseTruncatedSubjectKeyIdentifier(boolean usetruncatedsubjectkeyidentifier) {
+        data.put(USETRUNCATEDSUBJECTKEYIDENTIFIER, usetruncatedsubjectkeyidentifier);
     }
 
     public boolean getSubjectKeyIdentifierCritical() {
@@ -1278,6 +1311,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return  doSelectedEcRequirebitLenths()
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)
+                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_NTRU)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
@@ -1395,7 +1429,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns the chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
      * algorithm used to sign the CA certificate).
      *
-     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      * @return JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used to
      *         sign the CA certificate).
      */
@@ -1411,7 +1445,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param signAlg
      *            JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
      *            to sign the CA certificate).
-     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      */
     public void setSignatureAlgorithm(String signAlg) {
         data.put(SIGNATUREALGORITHM, signAlg);
@@ -1606,6 +1640,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setUseMicrosoftTemplate(boolean use) {
         data.put(USEMICROSOFTTEMPLATE, use);
+    }
+    
+    public boolean getUseMsObjectSidSecurityExtension() {
+        return (Boolean) data.get(USE_MS_OBJECTSID_SECURITY_EXTENSION);
+    }
+
+    public void setUseMsObjectSidSecurityExtension(boolean use) {
+        data.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, use);
     }
 
     public String getMicrosoftTemplate() {
@@ -2948,6 +2990,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CTMAXRETRIES, numRetries);
     }
 
+    /** SSH Getters & Setters */
     public SshCertificateType getSshCertificateType() {
         data.putIfAbsent(SSH_CERTIFICATE_TYPE, SshCertificateType.USER);
         return (SshCertificateType) data.get(SSH_CERTIFICATE_TYPE);
@@ -3007,6 +3050,62 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED, allow);
     }
 
+    /** ITS Getters & Setters */
+    public ITSCertificateType getItsCertificateType() {
+        data.putIfAbsent(ITS_CERTIFICATE_TYPE, ITSCertificateType.EXPLICIT);
+        return (ITSCertificateType) data.get(ITS_CERTIFICATE_TYPE);
+    }
+
+    public void setItsCertificateType(final ITSCertificateType certificateType) {
+        data.put(ITS_CERTIFICATE_TYPE, certificateType);
+    }
+
+    /**
+     * Get a list of List of appPermission PsIds indicating which ITS application permissions the profile should allow.
+     *
+     * @return a list of List of appPermission PsIds, never null.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Integer> getItsApplicationPermissions() {
+        return data.get(ITS_APP_PERMISSIONS) == null
+                ? Collections.emptyList()
+                : (List<Integer>) data.get(ITS_APP_PERMISSIONS);
+    }
+
+    /**
+     * Saves the CertificateProfile's list of ITS appPermissions the cert profile is applicable to.
+     *
+     * @param applicationPermissions List of appPermission PsIds (Integer)
+     * @see ITSApplicationIds
+     */
+
+    public void setItsApplicationPermissions(List<Integer> applicationPermissions) {
+        data.put(ITS_APP_PERMISSIONS, applicationPermissions);
+    }
+
+    /**
+     * Get a list of List of certIssuingPermissions PsIds indicating which ITS certificate issuing permissions the profile should allow.
+     *
+     * @return a list of List of certIssuingPermission PsIds, never null.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Integer> getItsCertIssuingPermissions() {
+        return data.get(ITS_CERT_ISSUNG_PERMISSIONS) == null
+                ? Collections.emptyList()
+                : (List<Integer>) data.get(ITS_CERT_ISSUNG_PERMISSIONS);
+    }
+
+    /**
+     * Saves the CertificateProfile's list of ITS certIssuingPermissions the cert profile is applicable to.
+     *
+     * @param certIssuingPermissions List of certIssuingPermissions PsIds (Integer)
+     * @see ITSApplicationIds
+     */
+
+    public void setItsCertIssuingPermissions(List<Integer> certIssuingPermissions) {
+        data.put(ITS_CERT_ISSUNG_PERMISSIONS, certIssuingPermissions);
+    }
+
     /**
      * Usage only intended for post upgrade!
      * Removes CT data prior to EJBCA 6.10.1 from certificate profile.
@@ -3059,7 +3158,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // Verify that the key algorithm is compliant with the certificate profile
         if (!getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
             if(log.isDebugEnabled()) {
-                log.debug("List of available algorithms " + getAvailableKeyAlgorithmsAsList() + " does not contain the on of the public key: " + keyAlgorithm);
+                log.debug("Algorithm " + keyAlgorithm + " is not among the list of available algorithms: " + getAvailableKeyAlgorithmsAsList());
             }
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
         }
@@ -3088,6 +3187,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (keyLength == -1) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", publicKey.getClass().getName()));
         }
+        // This can look a bit illogical from a configuration perspective, it checks if the requested key length/strength is
+        // in in interval. I.e. if you select 2048 and 4096 for RSA keys in a certificate profile, but does not select 3072
+        // 3072 is still allowed because it is within the interval configured in the certificate profile
         if ((keyLength < (getMinimumAvailableBitLength() - 1)) || (keyLength > (getMaximumAvailableBitLength()))) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", keyLength));
         }
@@ -3108,7 +3210,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);
         // We need to make a deep copy of the hashmap here
-        clone.data = new LinkedHashMap<>(data.size());
+        clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR));
         for (final Entry<Object,Object> entry : data.entrySet()) {
                 Object value = entry.getValue();
                 if (value instanceof ArrayList<?>) {
@@ -3163,6 +3265,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if (data.get(USEMICROSOFTTEMPLATE) == null) {
                 setUseMicrosoftTemplate(false);
                 setMicrosoftTemplate("");
+            }
+            
+            if (data.get(USE_MS_OBJECTSID_SECURITY_EXTENSION) == null) {
+                setUseMsObjectSidSecurityExtension(true);
             }
 
             if (data.get(USECNPOSTFIX) == null) {
@@ -3433,9 +3539,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setQCCountriesString("");
             }
             
+            // v50 truncated subject key identifier
+            if (data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER) == null) {
+                setUseTruncatedSubjectKeyIdentifier(false);
+            }
+            
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
+    }
+    
+    /**
+     * Determine if the certificate profile supports Elliptic Curve Cryptography (ECC).
+     *
+     * @param certificateProfile the certificate profile to check.
+     * @return true if the certificate profile supports a key algorithm which utilises ECC, false otherwise.
+     */
+    public boolean isEccCapable() {
+        return getAvailableKeyAlgorithmsAsList().contains("ECDSA")
+                || getAvailableKeyAlgorithmsAsList().contains("ECGOST3410")
+                || getAvailableKeyAlgorithmsAsList().contains("DSTU4145");
     }
 
 }

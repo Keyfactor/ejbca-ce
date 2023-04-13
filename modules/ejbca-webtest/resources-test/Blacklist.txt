@@ -1,8 +1,0 @@
-# Sample block list file. Created 2019-03-01
-bank        # If domain component blocking is enabled, then this will block "bank.com", "bank.example.com" but NOT "memorybank.com"
-
-example.com # With base domain blocking one can block a domain including subdomains.
-net         # ...or entire TLDs (Top Level Domains)
-
-evil.example.edu           # It is possile to block a specific subdomain only
-xn--rvare-jua.example.com  # This is an IDN domain "rövare.example.com"

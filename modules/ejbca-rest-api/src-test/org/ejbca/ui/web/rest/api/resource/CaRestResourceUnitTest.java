@@ -10,7 +10,12 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
-import static org.easymock.EasyMock.*;
+import static org.easymock.EasyMock.anyInt;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
@@ -35,10 +40,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
@@ -49,6 +51,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
+import org.ejbca.ui.web.rest.api.resource.swagger.CaRestResourceSwagger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -56,6 +59,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * A unit test class for CaRestResource to test its content.
@@ -73,7 +80,7 @@ public class CaRestResourceUnitTest {
 
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
-    private static class CaRestResourceWithoutSecurity extends CaRestResource {
+    private static class CaRestResourceWithoutSecurity extends CaRestResourceSwagger {
         @Override
         protected AuthenticationToken getAdmin(final HttpServletRequest requestContext, final boolean allowNonAdmins) {
             return authenticationToken;

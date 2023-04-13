@@ -16,6 +16,10 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 
@@ -42,9 +46,30 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  *   ei.add(new ExtendedInformationWS (ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
  *   user.setExtendedInformation(ei);
  *</pre>
- * 
- * @version $Id$
+ *  namespace = "server",
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "userDataVOWS", propOrder = {
+    "username",
+    "password",
+    "clearPwd",
+    "subjectDN",
+    "caName",
+    "subjectAltName",
+    "email",
+    "status",
+    "tokenType",
+    "sendNotification",
+    "keyRecoverable",
+    "endEntityProfileName",
+    "certificateProfileName",
+    "hardTokenIssuerName",
+    "startTime",
+    "endTime",
+    "certificateSerialNumber",
+    "extendedInformation",
+    "cardNumber"
+})
 public class UserDataVOWS implements Serializable{
 	
 	private static final long serialVersionUID = 7557071186257332026L;
@@ -52,6 +77,7 @@ public class UserDataVOWS implements Serializable{
 	public static final String TOKEN_TYPE_JKS           = "JKS";
 	public static final String TOKEN_TYPE_PEM           = "PEM";
 	public static final String TOKEN_TYPE_P12           = "P12";
+    public static final String TOKEN_TYPE_BCFKS         = "BCFKS";
 		
     private String username = null;
     private String password = null;

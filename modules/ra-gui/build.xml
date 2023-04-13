@@ -22,11 +22,9 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.jsf.classpath"/>
-		<path refid="lib.tomahawk.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.commons-fileupload.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.jee.classpath"/>
@@ -41,7 +39,6 @@
 	
     <target name="build" description="Build the RA WAR" depends="compile">
         <war destfile="${mod.ra-gui.war}" webxml="${ra-gui.resources.dir}/WEB-INF/web.xml" basedir="${ra-gui.build.dir}" excludes="WEB-INF/web.xml">
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
         	<fileset dir="${ra-gui.resources.dir}"/>
         </war>
     </target>

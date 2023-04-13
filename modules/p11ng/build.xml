@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="p11ng" default="build">
+
+	<dirname property="p11ng.dir" file="${ant.file.p11ng}"/>
+
+	<dirname property="cesecore-common.dir" file="${p11ng.dir}/../cesecore-common/" />
+	
+	<import file="../build-helpers.xml"/>
+	
+	<property name="p11ng.build.dir" location="${p11ng.dir}/build-p11ng"/>
+	<property name="p11ng.build-test.dir" location="${p11ng.dir}/build-test"/>
+	<property name="p11ng.src.dir" location="${p11ng.dir}/src"/>
+	<property name="p11ng.src.test.dir" location="${p11ng.dir}/src-test"/>
+
+	<path id="compile.classpath">
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-lang.classpath"/><!-- Dependency of commons-config -->
+		<path refid="lib.commons-logging.classpath"/><!-- Dependency of commons-config -->
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.jacknji.classpath"/>
+		<path location="${mod.x509-common-util.lib}"/>
+	</path>
+	
+	<path id="test.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path refid="lib.jee-client.classpath"/>
+		<path location="${p11ng.build.dir}"/>
+		<path location="${p11ng.build-test.dir}"/>
+		<path refid="lib.easymock.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.slf4jlog4j.classpath"/>
+		<path refid="lib.slf4japi.classpath"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/> 
+    </path>
+	
+    <target name="clean" description="Clean up this module">
+		<delete dir="${p11ng.build-test.dir}" />
+		<delete dir="${p11ng.build.dir}" />
+	 	<delete file="${mod.p11ng.lib}" />
+    </target>
+	
+    <condition property="src.exists">
+    	<available file="${p11ng.src.dir}" />
+    </condition>
+
+	<target name="build" depends="compile">
+		<jar destfile="${mod.p11ng.lib}" basedir="${p11ng.build.dir}"/>
+	</target>
+	
+	<target name="compile">
+		<mkdir dir="${p11ng.build.dir}" />
+		<javac srcdir="${p11ng.src.dir}" destdir="${p11ng.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" 
+			target="${java.target.version}" classpathref="compile.classpath"/>
+	</target>
+	
+    <target name="tests-compile" depends="compile">
+    	<mkdir dir="${p11ng.build-test.dir}" />		
+    	<copy file="${log4j.test.file}" tofile="${p11ng.build-test.dir}/log4j.xml" failonerror="true"/>
+    	<copy todir="${p11ng.build-test.dir}" failonerror="true">
+            <fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+		    <fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
+		</copy>
+		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
+		<copy file="${systemtests.properties.file}" todir="${p11ng.build-test.dir}" failonerror="false"/>
+    	<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
+    	<copy file="${jndi.properties.file}" tofile="${p11ng.build-test.dir}/jndi.properties" failonerror="false"/>
+		<copy file="${jboss-ejb-client.properties}" todir="${p11ng.build-test.dir}" failonerror="true"/>
+    	<javac srcdir="${p11ng.src.test.dir}" destdir="${p11ng.build-test.dir}" debug="on" includeantruntime="no"
+    	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
+			<sourcepath location="${mod.systemtests.path}/src-test/"/>
+    	</javac>
+    </target>
+	
+	<target name="test" depends="tests-compile">
+	    <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${p11ng.dir}">
+			<classpath>
+	        	<path refid="test.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${p11ng.build-test.dir}" includes="**/*Test.class" />
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+		</junit>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<!-- =================================
+          Run a single test specified with -Dtest.runone=TestName
+         ================================= -->
+	<target name="runone" depends="tests-compile">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=TestName . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+			<classpath>
+        		<path refid="test.classpath"/>
+				<path location="${p11ng.build-test.dir}" />
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${p11ng.build-test.dir}" includes="**/${test.runone}.class"/>
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+		</junit>
+	</target>
+</project>

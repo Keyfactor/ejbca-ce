@@ -46,9 +46,6 @@ import org.cesecore.certificates.certificate.certextensions.standard.SubjectDire
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
@@ -62,6 +59,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.KeyTools;
 
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -330,9 +331,18 @@ public class EjbcaRestHelperUnitTest {
         log.info("request:***" + request + "***");
         return request;
     }
-
+    
     @Test
-    public void shouldConvertToCorrectEndEntityInformation() throws Exception {
+    public void shouldConvertToCorrectEndEntityInformationWithoutEmail() throws Exception {
+        shouldConvertToCorrectEndEntityInformation(null);
+    }
+    
+    @Test
+    public void shouldConvertToCorrectEndEntityInformationWithEmail() throws Exception {
+        shouldConvertToCorrectEndEntityInformation("random@random.rand");
+    }
+
+    public void shouldConvertToCorrectEndEntityInformation(String email) throws Exception {
         // given
         String endEntityProfileName = "eep1";
         int endEntityProfileId = 7;
@@ -372,14 +382,19 @@ public class EjbcaRestHelperUnitTest {
         replay(certificateProfileSessionBean);
         replay(endEntityProfileSessionBean);
         replay(endEntityProfile);
-
-        EnrollPkcs10CertificateRequest request = new EnrollPkcs10CertificateRequest.Builder()
+        
+        EnrollPkcs10CertificateRequest.Builder builder = new EnrollPkcs10CertificateRequest.Builder()
                 .certificateRequest(csr)
                 .certificateProfileName(certificateProfileName)
                 .endEntityProfileName(endEntityProfileName)
                 .certificateAuthorityName(certificateAuthorityName)
-                .username(username)
-                .build();
+                .username(username);
+
+        if(email!=null) {
+            builder.email(email);
+        }
+        
+        EnrollPkcs10CertificateRequest request = builder.build();
 
         // when
         EndEntityInformation endEntityInformation = testClass.convertToEndEntityInformation(authenticationToken, request);
@@ -393,6 +408,8 @@ public class EjbcaRestHelperUnitTest {
 
         assertEquals("End entiy DN got incorrectly parsed pkcs10 certificate request",
                 "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", endEntityInformation.getDN());
+        
+        assertEquals("Email was not set during conversion.", email,endEntityInformation.getEmail());
 
         EasyMock.verify();
     }

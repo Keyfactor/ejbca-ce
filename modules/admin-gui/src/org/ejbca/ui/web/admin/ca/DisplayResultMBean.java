@@ -16,14 +16,15 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -35,15 +36,12 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * JSF MBean backing the displayresult xhtml page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class DisplayResultMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(DisplayResultMBean.class);
-    
-    private CAInterfaceBean caBean;
-
 
     private GlobalConfiguration globalconfiguration;
     private String headline;
@@ -52,7 +50,6 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
 
     private String resultString = null;
     private int filemode;
-    private String filePath;
 
     private String pemlink = null;
     private String binarylink =  null;
@@ -78,8 +75,9 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
         
         filemode = (Integer) requestMap.get("filemode");
         caName = (String) requestMap.get("caname");
-        caBean = (CAInterfaceBean) requestMap.get(SESSION.CA_INTERFACE_BEAN);
-        filePath = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getCaPath();
+        final CAInterfaceBean caBean = (CAInterfaceBean) requestMap.get(SESSION.CA_INTERFACE_BEAN);
+        final int caType = (Integer) requestMap.get("caType");
+        final String filePath = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getCaPath();
 
         if (filemode == EditCaUtil.CERTGENMODE) {
             try {
@@ -89,7 +87,7 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
             }
         } else {
             try {
-                resultString = caBean.getRequestDataAsString();
+                resultString = caBean.getRequestDataAsString(caType);
             } catch (Exception e) {
                 if (e.getMessage() == null) {
                     // For some reason e doesn't provide a message for example in CVC certificate parser case
@@ -99,17 +97,8 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
                 }
             }
         }
-
-        if (filemode == EditCaUtil.CERTGENMODE) {
-            pemlink = filePath + "/editcas/cacertreq?cmd=cert";
-            binarylink = filePath + "/editcas/cacertreq?cmd=cert&format=binary";
-            pkcs7link = filePath + "/editcas/cacertreq?cmd=certpkcs7";
-        } else {
-            pemlink = filePath + "/editcas/cacertreq?cmd=certreq";
-            binarylink = filePath + "/editcas/cacertreq?cmd=certreq&format=binary";
-            pkcs7link = StringUtils.EMPTY;
-        }
-
+        
+        initializeDownloadLinks(caType, filePath);
         headline = getEjbcaWebBean().getText(headlines[filemode]);
     }
 
@@ -139,5 +128,25 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
     
     public boolean isRenderPkcs7Link() {
         return filemode == EditCaUtil.CERTGENMODE;
+    }
+    
+    public boolean isRenderPemLink() {
+        return pemlink!=null;
+    }
+    
+    private void initializeDownloadLinks(final int caType, final String filePath) {
+        if (filemode == EditCaUtil.CERTGENMODE) {
+            pemlink = filePath + "/editcas/cacertreq?cmd=cert";
+            binarylink = filePath + "/editcas/cacertreq?cmd=cert&format=binary";
+            pkcs7link = filePath + "/editcas/cacertreq?cmd=certpkcs7";
+        } else {
+            if (caType != CAInfo.CATYPE_CITS) {
+                pemlink = filePath + "/editcas/cacertreq?cmd=certreq&caType=" + caType;
+                binarylink = filePath + "/editcas/cacertreq?cmd=certreq&format=binary&caType=" + caType;
+            } else {
+                binarylink = filePath + "/editcas/cacertreq?cmd=itsecacsr&caname=" + caName + "&caType=" + caType;
+            }
+            pkcs7link = StringUtils.EMPTY;
+        }
     }
 }

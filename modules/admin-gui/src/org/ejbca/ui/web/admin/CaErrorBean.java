@@ -19,24 +19,25 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.application.ViewExpiredException;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 
 /**
  * Bean used to display a summary of unexpected errors and debug log the cause.
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class CaErrorBean extends BaseManagedBean implements Serializable {
 

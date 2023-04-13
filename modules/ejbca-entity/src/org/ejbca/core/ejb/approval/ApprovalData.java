@@ -32,10 +32,11 @@ import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.Base64;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
+
+import com.keyfactor.util.Base64;
 
 /**
  * Representation of approval request data used to control request and their approvals.

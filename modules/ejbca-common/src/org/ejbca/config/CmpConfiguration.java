@@ -65,7 +65,10 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RESPONSEPROTECTION      = "responseprotection";
     public static final String CONFIG_RACANAME                = "ra.caname";
     public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
+    /** @deprecated since 7.11.0, but remains to allows 100% uptime during upgrades. Use CONFIG_VENDORCAIDS instead */
+    @Deprecated
     public static final String CONFIG_VENDORCA                = "vendorca";
+    public static final String CONFIG_VENDORCAIDS             = "vendorcaids";
     public static final String CONFIG_RESPONSE_CAPUBS_CA       = "response.capubsca";
     public static final String CONFIG_RESPONSE_CAPUBS_ISSUING_CA = "response.capubsissuingca";
     public static final String CONFIG_RESPONSE_EXTRACERTS_CA   = "response.extracertsca";
@@ -74,6 +77,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_ALLOWAUTOMATICKEYUPDATE = "allowautomatickeyupdate";
     public static final String CONFIG_ALLOWUPDATEWITHSAMEKEY  = "allowupdatewithsamekey";
     public static final String CONFIG_ALLOWSERVERGENERATEDKEYS  = "allowservergenkeys";
+    public static final String CONFIG_EXTENDEDVALIDATION  = "extendedvalidation";
     /** @deprecated since 7.4.0, value is instead set per CA. Only remains for upgrades. */
     @Deprecated
     public static final String CONFIG_CERTREQHANDLER_CLASS    = "certreqhandler.class";
@@ -86,7 +90,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> CMP_BOOLEAN_KEYS = Arrays.asList(CONFIG_VENDORCERTIFICATEMODE, CONFIG_ALLOWRAVERIFYPOPO, CONFIG_RA_ALLOWCUSTOMCERTSERNO,
-                                                        CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY, CONFIG_ALLOWSERVERGENERATEDKEYS);
+                                                        CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY, CONFIG_ALLOWSERVERGENERATEDKEYS,
+                                                        CONFIG_EXTENDEDVALIDATION);
        
     private final String ALIAS_LIST = "aliaslist";
     public static final String CMP_CONFIGURATION_ID = "1";
@@ -101,7 +106,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_OPERATION_MODE = "client";
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
     private static final String DEFAULT_VENDOR_MODE = "false";
-    private static final String DEFAULT_VENDOR_CA = "";
+    private static final String DEFAULT_VENDOR_CA_IDS = "";
     private static final String DEFAULT_RESPONSE_CAPUBS_CA = "";
     private static final String DEFAULT_RESPONSE_CAPUBS_ISSUING_CA = "true";
     private static final String DEFAULT_RESPONSE_EXTRACERTS_CA = "";
@@ -124,6 +129,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_OMITVERIFICATIONSINEEC = "false";
     private static final String DEFAULT_RACERT_PATH = "";
     private static final String DEFAULT_CERTREQHANDLER = ""; //"org.ejbca.core.protocol.unid.UnidFnrHandler";
+    private static final String DEFAULT_EXTENDEDVALIDATION = "false";
 
     
     /** Creates a new instance of CmpConfiguration */
@@ -164,7 +170,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_AUTHENTICATIONPARAMETERS, DEFAULT_CLIENT_AUTHENTICATION_PARAMS);
             data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
             data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_MODE);
-            data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+            data.put(alias + CONFIG_VENDORCAIDS, DEFAULT_VENDOR_CA_IDS);
             data.put(alias + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
             data.put(alias + CONFIG_RESPONSE_CAPUBS_ISSUING_CA, DEFAULT_RESPONSE_CAPUBS_ISSUING_CA);
             data.put(alias + CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
@@ -185,6 +191,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);       
             data.put(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY, DEFAULT_KUR_ALLOW_SAME_KEY);
             data.put(alias + CONFIG_CERTREQHANDLER_CLASS, DEFAULT_CERTREQHANDLER);
+            data.put(alias + CONFIG_EXTENDEDVALIDATION, DEFAULT_EXTENDEDVALIDATION);
         }
     }
     
@@ -199,7 +206,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_AUTHENTICATIONPARAMETERS);
         keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
         keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
-        keys.add(alias + CONFIG_VENDORCA);
+        keys.add(alias + CONFIG_VENDORCAIDS);
         keys.add(alias + CONFIG_RESPONSE_CAPUBS_CA);
         keys.add(alias + CONFIG_RESPONSE_EXTRACERTS_CA);
         keys.add(alias + CONFIG_ALLOWRAVERIFYPOPO);
@@ -220,6 +227,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY);
         keys.add(alias + CONFIG_CERTREQHANDLER_CLASS);
         keys.add(alias + CONFIG_ALLOWSERVERGENERATEDKEYS);
+        keys.add(alias + CONFIG_EXTENDEDVALIDATION);
         return keys;
     }
 
@@ -369,22 +377,44 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     }
     
     
+    /**
+     * @param alias the CMP configuration alias
+     * @return the boolean status of whether Vendor Certificate Mode is activated
+     */
     public boolean getVendorMode(String alias) {
         String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
+
+    /**
+     * Sets the Vendor Certificate Mode to true or false
+     * @param alias the CMP configuration alias
+     * @param vendormode boolean value of Vendor Certificate Mode
+     */
     public void setVendorMode(String alias, boolean vendormode) {
         String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
         setValue(key, Boolean.toString(vendormode), alias);
     }
     
-    public String getVendorCA(String alias) {
-        String key = alias + "." + CONFIG_VENDORCA;
+    /**
+     * Gets the semicolon separated list of CA IDs for accepted vendor certificates
+     * @param alias
+     * @return the semicolon separated list of CA IDs
+     */
+    public String getVendorCaIds(String alias) {
+        String key = alias + "." + CONFIG_VENDORCAIDS;
         return getValue(key, alias);
     }
-    public void setVendorCA(String alias, String vendorCA) {
-        String key = alias + "." + CONFIG_VENDORCA;
+    
+    /**
+     * Sets the semicolon separated list of CA IDs, to add or remove vendor CAs.
+     * There are no checks performed, if the CAs for the IDs exist.
+     * @param alias the CMP configuration alias
+     * @param vendorCA the semicolon separated list of CA IDs
+     */
+    public void setVendorCaIds(String alias, String vendorCA) {
+        String key = alias + "." + CONFIG_VENDORCAIDS;
         setValue(key, vendorCA, alias);
     }
     
@@ -627,7 +657,17 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         setValue(key, Boolean.toString(allowSameKey), alias);
     }
-    
+
+    public boolean getUseExtendedValidation(String alias) {
+        String key = alias + "." + CONFIG_EXTENDEDVALIDATION;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+    public void setUseExtendedValidation(String alias, boolean use) {
+        String key = alias + "." + CONFIG_EXTENDEDVALIDATION;
+        setValue(key, Boolean.toString(use), alias);
+    }
+
     /**
      * @deprecated as of 7.4.0 this has setting is set per CA and is universal for all incoming PKCS#10 requests. Only remains for upgrades.
      */

@@ -13,19 +13,15 @@
 package org.cesecore.keys.validation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * Reads in the implementations of the Validator interface.  
- * 
- * @version $Id$
- *
  */
 public enum ValidatorFactory {
     INSTANCE;
@@ -40,13 +36,13 @@ public enum ValidatorFactory {
         }
     }
     
-    public Collection<Validator> getAllImplementations() {
-        return identifierToImplementationMap.values();
+    public List<Validator> getAllImplementations() {
+        return new ArrayList<>(identifierToImplementationMap.values());
     }
     
-    public Collection<Validator> getAllImplementations(final List<Class<?>> excludeClasses) {
+    public List<Validator> getAllImplementations(final List<Class<?>> excludeClasses) {
         if (CollectionUtils.isNotEmpty(excludeClasses)) {
-            final Collection<Validator> result = new ArrayList<>();
+            final List<Validator> result = new ArrayList<>();
             for (Validator validator : getAllImplementations()) {
                 if (!excludeClasses.contains(validator.getClass())) {
                     result.add(validator);

@@ -23,10 +23,10 @@ import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -44,7 +44,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * JavaServer Faces Managed Bean for editing CMP alias.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EditCmpConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -53,14 +53,17 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
-            "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF");
+            "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF", "VID", "PID");
     
     @EJB
     private CaSessionLocal caSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
+
+    private TreeMap<Integer, String> caIdToNameMap;
+    private TreeMap<String, Integer> caNameToIdMap;
     
-    @ManagedProperty(value="#{cmpConfigMBean}")
+    @Inject
     private CmpConfigMBean cmpConfigMBean;
 
     @PostConstruct
@@ -68,6 +71,8 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         getEjbcaWebBean().clearCmpConfigClone();
         cmpConfiguration = getEjbcaWebBean().getCmpConfigForEdit(getSelectedCmpAlias());
         initAuthModule();
+        caIdToNameMap = (TreeMap<Integer, String>) caSession.getAuthorizedCaIdsToNames(getAdmin());
+        caNameToIdMap = (TreeMap<String, Integer>) caSession.getAuthorizedCaNamesToIds(getAdmin());
     }
     
     public EditCmpConfigMBean() {
@@ -142,8 +147,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     
     public List<SelectItem> getCaNameSelectItems() {
         final List<SelectItem> selectItems = new ArrayList<>();
-        Map<String, Integer> caNameMap = getEjbcaWebBean().getCANames();
-        for (String ca : caNameMap.keySet()) {
+        for (String ca : caNameToIdMap.keySet()) {
             selectItems.add(new SelectItem(ca));
         }
         return selectItems;
@@ -171,9 +175,8 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     
     public List<SelectItem> getVendorCaSelectItems() {
         final List<SelectItem> selectItems = new ArrayList<>();
-        final TreeMap<String, Integer> caOptions = getEjbcaWebBean().getCAOptions();
-        for (String ca : caOptions.keySet()) {
-            selectItems.add(new SelectItem(ca));
+        for (Integer caId : caIdToNameMap.keySet()) {
+            selectItems.add(new SelectItem(caIdToNameMap.get(caId)));
         }
         return selectItems;
     }
@@ -445,7 +448,17 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
   
     public String getVendorCa() {
-        return cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+        final String vendorCas = cmpConfiguration.getVendorCaIds(getSelectedCmpAlias());
+        if (StringUtils.isEmpty(vendorCas)) {
+            return "";
+        }
+        final String[] vendorCaIds = vendorCas.split(";");
+        final ArrayList<String> vendorCaNames = new ArrayList<>();
+        for (String caId: vendorCaIds) {
+            String caName = caIdToNameMap.get(Integer.parseInt(caId));
+            vendorCaNames.add(caName);
+        }
+        return StringUtils.join(vendorCaNames, ";");
     }
     
     public void setSelectedVendorCa(final String selectedVendorCa) {
@@ -453,27 +466,35 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
 
     public String getSelectedVendorCa() {
-        return selectedVendorCa == null ? String.valueOf(getVendorCaSelectItems().get(0).getValue()) : selectedVendorCa;
+        if (selectedVendorCa != null) {
+            return selectedVendorCa;
+        } else if (getVendorCaSelectItems().size() != 0) {
+            return String.valueOf(getVendorCaSelectItems().get(0).getValue());
+        } else {
+            return null;
+        }
     }
 
-    public void actionAddVendorCa() {
-        final String currentVendorCas = cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+    public void actionAddVendorCa() throws AuthorizationDeniedException {
+        final String currentVendorCas = cmpConfiguration.getVendorCaIds(getSelectedCmpAlias());
         List<String> currentVendorCaList = new ArrayList<>();
         if (StringUtils.isNotBlank(currentVendorCas)) {
-            currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";"))); 
+            currentVendorCaList = new ArrayList<>(Arrays.asList(currentVendorCas.split(";"))); 
         }
-        if (!currentVendorCaList.contains(getSelectedVendorCa())) {
-            currentVendorCaList.add(getSelectedVendorCa());
+        final Integer selectedVendorCaId = caNameToIdMap.get(getSelectedVendorCa());
+        if (!currentVendorCaList.contains(selectedVendorCaId.toString())) {
+            currentVendorCaList.add(selectedVendorCaId.toString());
         }
-        cmpConfiguration.setVendorCA(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
+        cmpConfiguration.setVendorCaIds(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
     }
     
-    public void actionRemoveVendorCa() {
-        final String currentVendorCas = cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+    public void actionRemoveVendorCa() throws AuthorizationDeniedException {
+        final String currentVendorCas = cmpConfiguration.getVendorCaIds(getSelectedCmpAlias());
         if (StringUtils.isNotBlank(currentVendorCas)) {
             final List<String> currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";")));
-            if (currentVendorCaList.remove(getSelectedVendorCa())) {
-                cmpConfiguration.setVendorCA(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
+            final Integer selectedVendorCaId = caNameToIdMap.get(getSelectedVendorCa());
+            if (currentVendorCaList.remove(selectedVendorCaId.toString())) {
+                cmpConfiguration.setVendorCaIds(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
             }
         }
     }
@@ -715,5 +736,17 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     
     public void setOmitVerificationsInEec(final boolean omit) {
         cmpConfiguration.setOmitVerificationsInECC(getSelectedCmpAlias(), omit);
+    }
+
+    public boolean isUseExtendedValidation() {
+        return cmpConfiguration.getUseExtendedValidation(getSelectedCmpAlias());
+    }
+
+    public void setUseExtendedValidation(boolean use) {
+        cmpConfiguration.setUseExtendedValidation(getSelectedCmpAlias(), use);
+    }
+
+    public boolean isShowExtendedConfiguration(){
+        return getEjbcaWebBean().isRunningEnterprise() ;
     }
 }

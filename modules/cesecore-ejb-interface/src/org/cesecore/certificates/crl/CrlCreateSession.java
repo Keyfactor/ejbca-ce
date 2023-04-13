@@ -13,18 +13,19 @@
 package org.cesecore.certificates.crl;
 
 import java.util.Collection;
+import java.util.Date;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Interface for CrlCreateSession, a session bean for generating CRLs and deltaCRLs.
  * Authorization for generating CRLs are handled by the fact that you need to be authorized to the CA. 
  * Authorization checks are thus done in CaSessionBean when this session retrieves the CA for CRL generation.
  * 
- * @version $Id$
  */
 public interface CrlCreateSession {
 
@@ -43,6 +44,24 @@ public interface CrlCreateSession {
      * @throws CryptoTokenOfflineException 
      */
     byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber)
+            throws CryptoTokenOfflineException, AuthorizationDeniedException;
+    
+    /**
+     * Requests for a CRL to be created with the passed (revoked) certificates. 
+     * Generates the CRL and stores it in the database.
+     *
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
+     * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
+     * @param certs collection of RevokedCertInfo object.
+     * @param basecrlnumber the CRL number of the Base CRL to generate a deltaCRL, -1 to generate a full CRL
+     * @param nextCrlNumber the CRL number.
+     * @param validFrom a date from which this CRL is to be valid
+     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
+     * @throws AuthorizationDeniedException 
+     * @throws CryptoTokenOfflineException 
+     */
+    byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber, final Date validFrom)
             throws CryptoTokenOfflineException, AuthorizationDeniedException;
 
 }

@@ -42,10 +42,8 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevocationReasons;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
@@ -55,6 +53,8 @@ import org.easymock.TestSubject;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Unit test for MultiGroupPublisher.
@@ -83,8 +83,9 @@ public class MultiGroupPublisherUnitTest {
     private static final class MockPublishRevokedOnlyPublisher extends BasePublisher {
         private static final long serialVersionUID = 1L;
         @Override
-        public boolean willPublishCertificate(int status, int revocationReason) {
-            return (status == CertificateConstants.CERT_REVOKED || revocationReason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+        public boolean willPublishCertificate(int status, long revocationDate) {
+            final long initialRevocationDate = -1L;
+            return (status == CertificateConstants.CERT_REVOKED || (status == CertificateConstants.CERT_ACTIVE && revocationDate != initialRevocationDate));
         }
         @Override
         public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp,
@@ -184,7 +185,7 @@ public class MultiGroupPublisherUnitTest {
         }
         replay(publisherSession);
         // Run and verify
-        assertEquals("Wrong result from willPublishCertificate", expectedWillPublishResult, publisher.willPublishCertificate(certData.getStatus(), certData.getRevocationReason()));
+        assertEquals("Wrong result from willPublishCertificate", expectedWillPublishResult, publisher.willPublishCertificate(certData.getStatus(), certData.getRevocationDate()));
         assertEquals("Wrong result from storeCertificate", true, publisher.storeCertificate(admin, certData, b64CertData, EE_PASSWORD, EE_DN, extinfo));
         verify(publisherSession);
     }

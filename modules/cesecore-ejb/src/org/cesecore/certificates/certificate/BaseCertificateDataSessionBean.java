@@ -27,73 +27,15 @@ import org.cesecore.util.ValueExtractor;
 
 /**
  * Contains common function for CertificateDataSessionBean and NoConflictCertificateDataSessionBean.
- * 
- * @version $Id$
  */
 public abstract class BaseCertificateDataSessionBean {
 
     private static final Logger log = Logger.getLogger(CertificateDataSessionBean.class);
     
-    /** Returns the name of the table in the database. Either "CertificateData" or "NoConflictCertificateData" */
-    protected abstract String getTableName();
-    
     /** Returns the entity manager to use. */
     protected abstract EntityManager getEntityManager();
     
-    /**
-     * Returns a list with information about revoked certificates. Depending on the table, the result can
-     * either contain at most one entry per certificate, or it may contain duplicates.
-     */
-    protected Collection<RevokedCertInfo> getRevokedCertInfosInternal(final String issuerDN, final int crlPartitionIndex, final long lastbasecrldate, final boolean forceGetAll) {
-        final String tableName = getTableName();
-        final String crlPartitionExpression;
-        final String ordering;
-        final Query query;
-        if (crlPartitionIndex != 0) {
-            crlPartitionExpression = " AND crlPartitionIndex = :crlPartitionIndex";
-        } else {
-            crlPartitionExpression = " AND (crlPartitionIndex = :crlPartitionIndex OR crlPartitionIndex IS NULL)";
-        }
-        if (CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered()) {
-            ordering = " ORDER BY revocationDate ASC";
-        } else {
-            ordering = "";
-        }
-        if (lastbasecrldate > 0) {
-            // Delta CRL
-            query = getEntityManager().createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
-                            + crlPartitionExpression + ordering,
-                    "RevokedCertInfoSubset");
-            query.setParameter("revocationDate", lastbasecrldate);
-            query.setParameter("status1", CertificateConstants.CERT_REVOKED);
-            query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
-            query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
-        } else if (forceGetAll) {
-            // Base CRL
-            query = getEntityManager().createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
-                            + "a.issuerDN=:issuerDN AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
-                            + crlPartitionExpression + ordering,
-                    "RevokedCertInfoSubset");
-            query.setParameter("status1", CertificateConstants.CERT_REVOKED);
-            query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
-            query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
-        } else {
-            // Base CRL
-            query = getEntityManager().createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.status=:status" + crlPartitionExpression + ordering,
-                    "RevokedCertInfoSubset");
-            query.setParameter("status", CertificateConstants.CERT_REVOKED);
-        }
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        return getRevokedCertInfosInternal(query);
-    }
-    
-    private Collection<RevokedCertInfo> getRevokedCertInfosInternal(final Query query) {
+    protected Collection<RevokedCertInfo> getRevokedCertInfosInternal(final Query query, final boolean allowInvalidityDate) {
         final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
         query.setMaxResults(maxResults);
         int firstResult = 0;
@@ -118,7 +60,12 @@ public abstract class BaseCertificateDataSessionBean {
                 if (revocationReason == -1) {
                     revocationReason = RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
                 }
-                revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
+                if (allowInvalidityDate) {
+                    final Long invalidityDate = ValueExtractor.extractLongValue(current[5]) == -1L ? null : ValueExtractor.extractLongValue(current[5]);
+                    revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate, invalidityDate));
+                } else {
+                    revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
+                }
             }
             firstResult += maxResults;
         }

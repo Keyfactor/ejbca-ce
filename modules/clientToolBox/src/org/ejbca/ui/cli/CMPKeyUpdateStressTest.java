@@ -49,6 +49,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -97,14 +98,15 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.client.CMPSendHTTP;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Used to stress test the CMP interface.
@@ -388,7 +390,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			if (this.isSign) {
 				// Verify the signature
 				byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
-				final DERBitString bs = respObject.getProtection();
+				final ASN1BitString bs = respObject.getProtection();
 				final Signature sig;
 				try {
 					sig = Signature.getInstance(id);
@@ -435,7 +437,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				mac.init(key);
 				mac.reset();
 				final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
-				final DERBitString protection = respObject.getProtection();
+				final ASN1BitString protection = respObject.getProtection();
 				mac.update(protectedBytes, 0, protectedBytes.length);
 				byte[] out = mac.doFinal();
 				// My out should now be the same as the protection bits
@@ -596,7 +598,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				this.performanceTest.getLog().error("Cert body tag not 19. It was " + body.getType());
 
 				final PKIStatusInfo err = (PKIStatusInfo) body.getContent();
-				this.performanceTest.getLog().error(err.getStatusString().getStringAt(0).getString());
+				this.performanceTest.getLog().error(err.getStatusString().getStringAtUTF8(0).getString());
 
 				return false;
 			}

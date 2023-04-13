@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -24,21 +26,21 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 
-import static org.junit.Assert.assertNotNull;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * Utility methods for creating CAs and CryptoTokens for tests. Both soft and PKCS#11 tokens.
  * <p>
  * PKCS#11 tokens will be created with the properties defined in systemtests.properties, if present.
  * Otherwise defaults will be used (see systemtest.properties.sample or {@link SystemTestsConfiguration}) 
- *
- * @version $Id$
  */
 public class CryptoTokenTestUtils {
 
@@ -48,7 +50,6 @@ public class CryptoTokenTestUtils {
             CryptoTokenTestUtils.class.getSimpleName()));
 
     public static final char[] SOFT_TOKEN_PIN = "foo123".toCharArray();
-    private static final String PKCS11_TOKEN_PIN = "userpin1";
 
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -59,7 +60,7 @@ public class CryptoTokenTestUtils {
     
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy) throws Exception {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        X509CA x509ca = CaTestUtils.createTestX509CA(dN, SOFT_TOKEN_PIN, false, signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
+        X509CA x509ca = CaTestUtils.createTestX509CA(dN, SOFT_TOKEN_PIN, SoftCryptoToken.class.getName(), signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
                 + X509KeyUsage.cRLSign);
         // Remove any lingering test CA before starting the tests
         CAInfo oldCaInfo = caSession.getCAInfo(authenticationToken, x509ca.getCAId());
@@ -72,25 +73,39 @@ public class CryptoTokenTestUtils {
     }
 
     /** Create CryptoToken and generate CA's keys */
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, null, true, false, tokenName, signKeySpec);
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, String tokenName, String signKeySpec, String encKeySpec,
+            final String signingKeyName, final String encryptionKeyName) {
+        return createCryptoTokenForCA(authenticationToken, null, true, false, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
     }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec);
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, String tokenName, String signKeySpec,
+            String encKeySpec, final String signingKeyName, final String encryptionKeyName) {
+        return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
+    }
+    
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
+            String tokenName, String signKeySpec, String encKeySpec, final String signingKeyName, final String encryptionKeyName) {
+       
+        final String cryptoTokenImplementation;
+        if (pkcs11) {         
+            cryptoTokenImplementation = PKCS11CryptoToken.class.getName();
+        } else {
+
+            cryptoTokenImplementation = SoftCryptoToken.class.getName();
+        }     
+        return createCryptoTokenForCA(authenticationToken, pin, generateKeys, cryptoTokenImplementation, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
+
     }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
-            String tokenName, String signKeySpec) {
-        return createCryptoTokenForCAInternal(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec);
-    }
-
-    private static int createCryptoTokenForCAInternal(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
-            String tokenName, String signKeySpec) {
-        if (authenticationToken == null) {
-            authenticationToken = alwaysAllowToken;
-        }
-
+    /**
+     * Creates a simple crypto token, no frills. 
+     * 
+     * @param pin the pin of the slot
+     * @param cryptoTokenImplementation the implemenation name, i.e org.cesecore.keys.token.SoftCryptoToken
+     * @param tokenName the name of the crypto token
+     * @return the crypto token ID
+     */
+    public static int createCryptoToken(char[] pin, String cryptoTokenImplementation, String tokenName) {
         // Generate full name of cryptotoken including class/method name etc.
         final String callingClassName = Thread.currentThread().getStackTrace()[4].getClassName();
         final String callingClassSimpleName = callingClassName.substring(callingClassName.lastIndexOf('.') + 1);
@@ -102,46 +117,67 @@ public class CryptoTokenTestUtils {
             final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(fullTokenName);
             if (oldCryptoTokenId == null)
                 break;
-            removeCryptoToken(authenticationToken, oldCryptoTokenId);
+            removeCryptoToken(alwaysAllowToken, oldCryptoTokenId);
         }
 
         // Set up properties
         final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
-        if (pin == null) {
-            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
-        }
-        String cryptoTokenClassName = SoftCryptoToken.class.getName();
-        if (pkcs11) {
+        if (cryptoTokenImplementation.equals(SoftCryptoToken.class.getName())) {
+            // For CA export tests
+            cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+        } else {
+            //It's either a PKCS#11 token or a P11NG token
             if (SystemTestsConfiguration.getPkcs11Library() == null) {
                 throw new IllegalStateException("No crypto library found.");
             }
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, SystemTestsConfiguration.getPkcs11Library());
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, SystemTestsConfiguration.getPkcs11SlotValue("1"));
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, SystemTestsConfiguration.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey()).getKey());
-            cryptoTokenClassName = PKCS11CryptoToken.class.getName();
+            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE,
+                    SystemTestsConfiguration.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey()).getKey());
+        }
+
+        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
+        if (pin == null) {
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
         } else {
-            // For CA export tests
-            cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, String.valueOf(pin));
         }
 
         // Create the cryptotoken
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName,
+            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, fullTokenName, cryptoTokenImplementation,
                     cryptoTokenProperties, null, pin);
-            if (genenrateKeys) {
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder(signKeySpec).build());
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
+        } catch (CryptoTokenOfflineException | CryptoTokenAuthenticationFailedException | CryptoTokenNameInUseException | AuthorizationDeniedException
+                | NoSuchSlotException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return cryptoTokenId;
+    }
+    
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, final char[] pin, final boolean generateKeys,
+            final String cryptoTokenImplementation, final String tokenName, final String signKeySpec, final String encKeySpec,
+            final String signingKeyName, final String encryptionKeyName) {
+        if (authenticationToken == null) {
+            authenticationToken = alwaysAllowToken;
+        }
+        int cryptoTokenId = createCryptoToken(pin, cryptoTokenImplementation, tokenName);
+        try {
+            if (generateKeys) {
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, signingKeyName,
+                        KeyGenParams.builder(signKeySpec).build());
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, encryptionKeyName,
+                        KeyGenParams.builder(encKeySpec).build());
             }
-        } catch (Exception e) {
+        } catch (AuthorizationDeniedException | InvalidKeyException | CryptoTokenOfflineException | InvalidAlgorithmParameterException e) {
             // Cleanup token if we failed during the key creation stage
             try {
                 removeCryptoToken(null, cryptoTokenId);
-            } catch (Exception e2) {
-                log.error("", e2);
+            } catch (Exception e1) {
+                log.error("", e1);
             }
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
         return cryptoTokenId;
     }
@@ -160,35 +196,7 @@ public class CryptoTokenTestUtils {
         return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), props, null,
                 SOFT_TOKEN_PIN);
     }
-    
-    public static int createPKCS11Token(AuthenticationToken authenticationToken, String cryptoTokenName, boolean useAutoActivationPin)
-            throws NoSuchSlotException, AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            CryptoTokenNameInUseException {
-        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        // Remove any old CryptoToken created by this setup
-        final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
-        if (oldCryptoTokenId != null) {
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, oldCryptoTokenId.intValue());
-        }
-        Properties prop = new Properties();
-        String hsmlib = SystemTestsConfiguration.getPkcs11Library();
-        assertNotNull(hsmlib);
-        prop.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, hsmlib);
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, SystemTestsConfiguration.getPkcs11SlotValue("1"));
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, SystemTestsConfiguration.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey())
-                .getKey());
-        prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "True");
-        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(PKCS11CryptoToken.class.getName(), prop, null, 111, "P11 CryptoToken");
-        Properties cryptoTokenProperties = cryptoToken.getProperties();
-        final char[] p11pin = SystemTestsConfiguration.getPkcs11SlotPin(PKCS11_TOKEN_PIN);
-        if (useAutoActivationPin) {
-            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, new String(p11pin));
-        }
-        cryptoToken.setProperties(cryptoTokenProperties);
-        return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), null, null,
-                p11pin);
-    }
+
 
     /** Remove the cryptoToken, if the crypto token with the given ID does not exist, nothing happens */
     public static void removeCryptoToken(AuthenticationToken authenticationToken, final int cryptoTokenId) {

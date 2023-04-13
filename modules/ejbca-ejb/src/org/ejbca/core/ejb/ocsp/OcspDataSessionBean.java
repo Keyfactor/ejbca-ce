@@ -161,6 +161,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
 
         final Query query = this.entityManager.createNamedQuery(OcspResponseData.DELETE_OLD_OCSP_DATA_BY_CAID);
         query.setParameter("caId", caId);
+        query.setParameter("cutoffTime", getCleanupCutoffTime());
 
         final int rowsDeleted = query.executeUpdate();
         if (log.isTraceEnabled()) {
@@ -176,6 +177,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         log.trace(">deleteOldOcspData");
 
         final Query query = this.entityManager.createNamedQuery(OcspResponseData.DELETE_OLD_OCSP_DATA);
+        query.setParameter("cutoffTime", getCleanupCutoffTime());
 
         final int rowsDeleted = query.executeUpdate();
         if (log.isTraceEnabled()) {
@@ -194,4 +196,15 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         return query.getResultList().isEmpty() ? null : query.getResultList().get(0);
     }
 
+    /**
+     * Cutoff time for old OCSP response data cleanup.
+     *
+     * @return the difference in milliseconds, between time at beginning of current second and midnight, January 1, 1970 UTC.
+    */
+    private long getCleanupCutoffTime() {
+        long currentTimeMillis = System.currentTimeMillis();
+        // OCSP response data is stored without millisecond values, therefore to avoid deletion of responses generated
+        // after start of the cleanup job, we need to process records that were saved till beginning of current second.
+        return currentTimeMillis - currentTimeMillis % 1000;
+    }
 }

@@ -24,6 +24,13 @@ public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
     /** cache time of the overall cache, seeing if we need to re-read aliases */
     long lastUpdate = 0;
 
+    public KeyAliasesCache() {}
+
+    public KeyAliasesCache(KeyAliasesCache clone) {
+        this.cache.putAll(clone.cache);
+        this.nameToIdMap.putAll(clone.nameToIdMap);
+    }
+    
     @Override
     public PublicKey getEntry(final Integer id) {
         if (id == null) {

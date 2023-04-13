@@ -40,8 +40,18 @@
         <property name="jboss.conf.dir" value="${jboss.server.home.dir}/configuration"/>
 	    <property name="jboss.deploy.dir" value="${jboss.server.home.dir}/deployments"/>
 	    <property name="jboss.farm.dir" value="${jboss.deploy.dir}"/> <!-- TODO -->
-	    <property name="keystore.file" value="configuration/keystore/keystore.jks"/>
-	    <property name="truststore.file" value="configuration/keystore/truststore.jks"/>
+
+		<condition property="httpsserver.tokentype" value="P12" else="JKS">
+			<equals arg1="${httpsserver.tokentype}" arg2="P12" />
+		</condition>
+		<condition property="tokenfile.extension" value=".p12" else=".jks">
+			<equals arg1="${httpsserver.tokentype}" arg2="P12" />
+		</condition>
+
+		<property name="localkeystore.filename" value="tomcat${tokenfile.extension}"/>
+		<property name="localtruststore.filename" value="truststore${tokenfile.extension}"/>
+		<property name="keystore.file" value="configuration/keystore/keystore${tokenfile.extension}"/>
+		<property name="truststore.file" value="configuration/keystore/truststore${tokenfile.extension}"/>
     </target>
 
     <target name="set-paths" depends="set-paths-jboss7"/>
@@ -65,20 +75,20 @@
 
       <target name="jee:deploytruststore" depends="set-paths">
 		<!-- copy the truststore file to the server -->
-		<available file="${ejbca.home}/p12/truststore.jks" property="truststore.file.present"/>
-		<fail message="Missing JKS truststorestore file in '${basedir}/p12/truststore.jks'" unless="truststore.file.present"/>
+		<available file="${ejbca.home}/p12/${localtruststore.filename}" property="truststore.file.present"/>
+		<fail message="Missing JKS truststorestore file in '${basedir}/p12/${localtruststore.filename}'" unless="truststore.file.present"/>
 
-		<copy file="${ejbca.home}/p12/truststore.jks" tofile="${jboss.server.home.dir}/${truststore.file}" overwrite="true"/>
+		<copy file="${ejbca.home}/p12/${localtruststore.filename}" tofile="${jboss.server.home.dir}/${truststore.file}" overwrite="true"/>
 		<chmod file="${jboss.server.home.dir}/${truststore.file}" perm="600"/>
 	   </target>
 
         <target name="jee:keystore" depends="jee:check">
             <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
             <!-- copy the keystore file to the server -->
-            <available file="p12/tomcat.jks" property="keystore.file.present"/>
-            <fail message="Missing JKS keystore file in '${basedir}/p12/tomcat.jks'" unless="keystore.file.present"/>
+            <available file="p12/${localkeystore.filename}" property="keystore.file.present"/>
+            <fail message="Missing JKS keystore file in '${basedir}/p12/${localkeystore.filename}'" unless="keystore.file.present"/>
 
-            <copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}" overwrite="true"/>
+            <copy file="p12/${localkeystore.filename}" tofile="${jboss.server.home.dir}/${keystore.file}" overwrite="true"/>
             <chmod file="${jboss.server.home.dir}/${keystore.file}" perm="600"/>
 
             <!-- Also deploy the truststore -->
@@ -95,11 +105,6 @@
 	<target name="jee:deploy-scep-war" depends="jee:check">
 		<chmod dir="dist" includes="scepraserver.war" perm="600"/>
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/scepraserver.war"/>
-	</target>
-
-	<target name="jee:deploy-externalragui-war" depends="jee:check">
-		<chmod dir="dist/externalra-gui" includes="externalra-gui.war" perm="600"/>
-		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/externalra-gui/externalra-gui.war"/>
 	</target>
 
 </project>

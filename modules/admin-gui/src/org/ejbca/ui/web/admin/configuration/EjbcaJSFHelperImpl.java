@@ -12,8 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -26,19 +28,23 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
  * Class used to integrate the old jsp framework with the new JSF one.
  * Contains methods for such things as language, themes ext
  * 
- * @version $Id$
  */
+@Named("web")
+@SessionScoped
 public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
 
-	private static final Logger log = Logger.getLogger(EjbcaJSFHelperImpl.class);
+	private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(EjbcaJSFHelperImpl.class);
 		
-	private org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource text = null;
+	private EjbcaJSFLanguageResource text = null;
 	private EjbcaJSFImageResource image = null;
 	private EjbcaWebBean ejbcawebbean;
     private Boolean legacyInternetExplorer = null;
@@ -138,7 +144,7 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
                  ejbcawebbean = SessionBeans.getEjbcaWebBean(session);
                  ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), AccessRulesConstants.ROLE_ADMINISTRATOR);
              } catch (Exception e) {
-                 log.error(e);
+                 log.error("Failed to initialize EjbcaWebBean", e);
              }
          }
          return ejbcawebbean;
@@ -153,7 +159,7 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
                  ejbcawebbean = SessionBeans.getEjbcaWebBean(session);
                  ejbcawebbean.initialize_errorpage((HttpServletRequest) ctx.getExternalContext().getRequest());
              } catch (Exception e) {
-                 log.error(e);
+                 log.error("Failed to initialize EjbcaWebBean for error page", e);
              }
          }
          return ejbcawebbean;

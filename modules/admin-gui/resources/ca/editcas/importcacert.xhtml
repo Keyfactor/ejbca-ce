@@ -4,7 +4,7 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:t="http://myfaces.apache.org/tomahawk">
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 <ui:remove>
 	<!--
 	/*************************************************************************
@@ -51,16 +51,137 @@
 					<h:panelGroup>
 						<h:inputText id="textfieldimportcaname" value="#{importCaCertMBean.importCaCertName}"
 							title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255">
+							<f:ajax />
 						</h:inputText>
 					</h:panelGroup>
-
+					
+					<h:panelGroup rendered="#{importCaCertMBean.proxyCaAvailable}">
+						<h:outputLabel for="textfieldkeyfactorenrollca"
+							value="#{web.text.IMPORTCA_KEYFACTOR_CA}" style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{importCaCertMBean.proxyCaAvailable}">
+					<h:commandButton
+							id="catypeproxy"
+							styleClass="selectButton largeSelectButton #{importCaCertMBean.keyFactorCa?'selected':''}"
+							action="#{importCaCertMBean.toggleKeyFactorCa}"
+							value="#{importCaCertMBean.keyFactorCa?web.text.ENABLED:web.text.DISABLED}">
+						<f:ajax listener="#{importCaCertMBean.renderKeyFactorFields()}" render="@form" />
+					</h:commandButton>
+					</h:panelGroup>					
+					
+					<!-- ==================================================================== Proxy CA specific ============================================================================ -->
+					
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:outputLabel for="textFieldUpstreamUrl" value="#{web.text.UPSTREAM_URL}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:inputText id="textFieldUpstreamUrl" name="upstreamUrl" size="45" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.upstreamUrl}" title="#{web.text.UPSTREAM_URL}">
+								<f:ajax />
+								<!--<f:validator
+										validatorId="org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator"
+										disabled="#{not importCaCertMBean.caInfoDto.caTypeCVC}" />-->
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:outputLabel for="textFieldUsername" value="#{web.text.UPSTREAM_USERNAME}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:inputText id="textFieldUsername" name="username" size="25" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.username}" title="#{web.text.UPSTREAM_USERNAME}">
+								<f:ajax />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:outputLabel for="textFieldPassword" value="#{web.text.UPSTREAM_PASSWORD}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:inputText id="textFieldPassword" name="password" size="25" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.password}" title="#{web.text.UPSTREAM_PASSWORD}">
+								<f:ajax />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:outputLabel for="headersTitle" value="#{web.text.UPSTREAM_HEADERS}" style="font-weight: bold;" />
+						</h:panelGroup>
+		
+						<h:panelGroup id="headersTitle" rendered="#{importCaCertMBean.keyFactorCa}"/>
+						<c:forEach items="#{importCaCertMBean.caInfoDto.headers}" var="header" varStatus="loopStatus">
+							<h:panelGroup id="wrapperHeaderKey-#{loopStatus.index}" rendered="#{importCaCertMBean.keyFactorCa}">
+								<h:selectBooleanCheckbox
+										id="removeHeaderCheckBox-#{loopStatus.index}"
+										value="#{header.left}">
+									<f:ajax />
+								</h:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup id="wrapperHeaderValue-#{loopStatus.index}" rendered="#{importCaCertMBean.keyFactorCa}">
+								<h:inputText id="textFieldHeaderKey-#{loopStatus.index}" name="textFieldHeaderKey-#{status.index}" size="25" maxlength="225"
+											 value="#{header.middle}" title="#{web.text.HEADER_FIELD_KEY}">
+									<f:ajax />
+								</h:inputText>
+								<h:outputText id="headerSeparator-#{loopStatus.index}" value=" : "/>
+								<h:inputText id="textFieldHeaderValue-#{loopStatus.index}" name="textFieldHeaderValue-#{status.index}" size="25" maxlength="225"
+											 value="#{header.right}" title="#{web.text.HEADER_FIELD_VALUE}">
+									<f:ajax />
+								</h:inputText>
+							</h:panelGroup>
+						</c:forEach>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:commandButton id="removeHeaderButton"
+											 value="#{web.text.REMOVE}"
+											 action="#{importCaCertMBean.removeHeader}"
+											 rendered="#{importCaCertMBean.hasAnyHeader}">
+								<f:ajax render="@form" />
+							</h:commandButton>
+							&nbsp;
+						</h:panelGroup>
+						<h:panelGroup id="addHeaderTitle" rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:commandButton id="addHeaderButton"
+											 value="#{web.text.ADD}"
+											 action="#{importCaCertMBean.addBlankHeader}">
+								<f:ajax render="@form" />
+							</h:commandButton>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:outputLabel for="textFieldCertificateAuthority" value="#{web.text.CERTIFICATE_AUTHORITY}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:inputText id="textFieldCertificateAuthority" name="certificateAuthority" size="25" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.upstreamCa}" title="#{web.text.CERTIFICATE_AUTHORITY}">
+								<f:ajax />
+							</h:inputText>
+							<br/>
+							<h:outputText styleClass="smallHelp" value="#{web.text.UPSTREAM_CA_HELP}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}"> 
+							<h:outputLabel for="textFieldTemplate" value="#{web.text.TEMPLATE}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:inputText id="textFieldTemplate" name="certificateAuthority" size="25" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.upstreamTemplate}" title="#{web.text.TEMPLATE}">
+								<f:ajax />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:outputLabel for="textAreaSans" value="#{web.text.SANS}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:inputTextarea id="textAreaSans" rows="4" cols="38" value="#{importCaCertMBean.caInfoDto.sansJson}">
+								<f:ajax />
+							</h:inputTextarea>
+							<br/>
+							<h:outputText styleClass="smallHelp" value="#{web.text.SANS_HELP}" />
+						</h:panelGroup>
+				
+					<!-- ==================================================================== Proxy CA specific ============================================================================ -->
+					
 					<h:panelGroup>
 						<h:outputLabel for="filerecievefile"
 							value="#{web.text.IMPORTCA_CERTIFICATEFILE}"
 							style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup>
-						<t:inputFileUpload 
+						<h:inputFile 
 							id="filerecievefile" value="#{importCaCertMBean.uploadedFile}" required="true" 
 							label="File containing full CA certificate chain in PEM format"/>
 					</h:panelGroup>
@@ -77,7 +198,7 @@
 						<h:button id="buttoncancel"
 							value="#{web.text.CANCEL}" outcome="managecas.xhtml?faces-redirect=true"/>
 					</h:panelGroup>
-
+					
 				</h:panelGrid>
 			</h:form>
 		</ui:define>

@@ -19,7 +19,7 @@
   <body>
     <div id="header">
 		<div id="banner">
-			<a href="../"><img src="../images/banner_ejbca-public.png" alt="EJBCA" /></a>
+			<a href="../"><img src="../images/keyfactor-ejbca-logo.png" alt="EJBCA" /></a>
 		</div>
     </div>
     <c:if test="${hidemenu != 'true'}">
@@ -117,3 +117,4 @@
     <div class="main hidemenu">
       <div class="content hidemenu">
     </c:if>
+      <p class="errormessage">The  EJBCA Public Web has been deprecated and will be removed in an upcoming version of EJBCA. Please move your workflows to the EJBCA RA UI</p>

@@ -12,16 +12,16 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.Date;
 
 import org.cesecore.util.CompressedCollection;
 import org.cesecore.util.ValidityDate;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * @version $Id$
@@ -119,6 +119,38 @@ public class RevokedCertInfoTest {
         
         res = RevokedCertInfo.mergeByDateAndStatus(a, b, date("2017-12-31"));
         assertEquals("REMOVEFROMCRL should be removed when Base CRL is more recent than revocation date.", 0, res.size());
+    }
+
+    @Test
+    public void testCanRevocationReasonBeChanged() {
+        final Date today = new Date();
+
+        assertTrue("New reason can only be KEY_COMPROMISE.",
+                   RevokedCertInfo.canRevocationReasonBeChanged(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, today,
+                                                                RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, today.getTime(), true, true));
+
+        assertFalse("New reason can only be KEY_COMPROMISE.",
+                    RevokedCertInfo.canRevocationReasonBeChanged(RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, today,
+                                                                 RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, today.getTime(), true, true));
+
+        assertFalse("Only permanently revoked certificate can have revocation reason change.",
+                    RevokedCertInfo.canRevocationReasonBeChanged(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, today,
+                                                                 RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, today.getTime(), true, true));
+
+        assertFalse("Only backdating is allowed.",
+                   RevokedCertInfo.canRevocationReasonBeChanged(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, today,
+                                                                RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, today.getTime() - 1000, true, true));
+        assertTrue("New Date can be null.",
+                    RevokedCertInfo.canRevocationReasonBeChanged(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null,
+                                                                 RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, today.getTime(), true, true));
+
+        assertFalse("Revocation can only be change if allowed on CA level.",
+                   RevokedCertInfo.canRevocationReasonBeChanged(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, today,
+                                                                RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, today.getTime(), false, true));
+
+        assertFalse("Revocation change is available for x509 only.",
+                   RevokedCertInfo.canRevocationReasonBeChanged(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, today,
+                                                                RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, today.getTime(), true, false));
     }
     
 }

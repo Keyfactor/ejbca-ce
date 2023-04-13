@@ -19,6 +19,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -51,9 +52,10 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.LookAheadObjectInputStream;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Entity Bean for database persisted configurations
@@ -86,7 +88,8 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             Properties.class,
             RaCssInfo.class,
             MSAutoEnrollmentSettingsTemplate.class,
-            RaStyleInfo.class));	
+            RaStyleInfo.class,
+            Date.class));	
 
     static {
         for (String customClassName : CesecoreConfiguration.getCustomClassWhitelist().split(",")) {

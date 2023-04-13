@@ -34,8 +34,9 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SecureXMLDecoder;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Representation of a CA instance.
@@ -78,7 +79,8 @@ public class CAData extends ProtectedData implements Serializable {
 	        final Certificate cacert = ca.getCACertificate();
 	        setExpireTime(CertTools.getNotAfter(cacert).getTime());  
 	        ca.setExpireTime(CertTools.getNotAfter(cacert)); 
-	    }  
+	    }
+	    
 	    // Set status, because it can occur in the ca object as well, but we think the one passed as argument here is what
 	    // is desired primarily, so make sure we set that
 	    ca.setStatus(status);        
@@ -149,6 +151,12 @@ public class CAData extends ProtectedData implements Serializable {
         case CAInfo.CATYPE_SSH:
             ca = (CACommon) CAFactory.INSTANCE.getSshCaImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
             break;
+        case CAInfo.CATYPE_CITS:
+            ca = (CACommon) CAFactory.INSTANCE.getCitsCaImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
+            break;
+		case CAInfo.CATYPE_PROXY:
+			ca = (CACommon) CAFactory.INSTANCE.getProxyCa(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));
+			break;
         
         }
         return ca;

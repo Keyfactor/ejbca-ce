@@ -15,17 +15,31 @@ package org.ejbca.core.protocol.cmp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.cesecore.util.Base64;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Base class for CMP request messages.
@@ -43,16 +57,24 @@ public abstract class BaseCmpMessage implements Serializable {
 	private transient GeneralName sender = null;	// GeneralName is not Serializable
 	private byte[] senderBytes = null;
 	private String protectionType = null;
+	// pbe parameters
 	private String pbeDigestAlg = null;
 	private String pbeMacAlg = null;
-	private int pbeIterationCount = 1024;
+	private int pbeIterationCount = CmpMessageHelper.DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT;
 	private String pbeKeyId = null;
 	private String pbeKey = null;
+	// pbmac1 parameters
+	private String pbmac1PrfAlg = null;
+	private String pbmac1MacAlg = null;
+	private int pbmac1IterationCount = CmpMessageHelper.DEFAULT_PBMAC1_ITERATION_COUNT;
+	private String pbmac1KeyId = null;
+	private String pbmac1Key = null;
+	private int pbmac1DkLen = CmpMessageHelper.DEFAULT_PBMAC1_DERIVED_KEY_LENGTH;
 
-	private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
+	private List<Certificate> additionalCaCertificates = new ArrayList<>();
 	private boolean includeCaCert = true; // True because backward compatibility.
 	
-	private List<Certificate> additionalExtraCerts = new ArrayList<Certificate>();
+	private List<Certificate> additionalExtraCerts = new ArrayList<>();
 	
 	/** @return the ASN.1 encoded octets as a bas64 encoded String or null if no such data is available */
 	protected String getBase64FromAsn1OctetString(final ASN1OctetString asn1OctetString) {
@@ -68,7 +90,7 @@ public abstract class BaseCmpMessage implements Serializable {
     private byte[] getByteArrayFromAsn1Encodable(final ASN1Encodable asn1Encodable) throws IllegalStateException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            new ASN1OutputStream(baos).writeObject(asn1Encodable);
+            ASN1OutputStream.create(baos).writeObject(asn1Encodable);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -152,6 +174,33 @@ public abstract class BaseCmpMessage implements Serializable {
 	public int getPbeIterationCount() {
 		return pbeIterationCount;
 	}
+	public String getPbmac1PrfAlg() {
+		return pbmac1PrfAlg;
+	}
+	public String getPbmac1Key() {
+		return pbmac1Key;
+	}
+	public String getPbmac1KeyId() {
+		return pbmac1KeyId;
+	}
+	public String getPbmac1MacAlg() {
+		return pbmac1MacAlg;
+	}
+	public int getPbmac1IterationCount() {
+		return pbmac1IterationCount;
+	}
+	public int getPbmac1DkLen() {
+		return pbmac1DkLen;
+	}
+	public void setPbmac1Parameters(final String keyId, final String key, final String prfAlg, final String macAlg, final int iterationCount,
+			final int dkLen) {
+		this.pbmac1KeyId = keyId;
+		this.pbmac1Key = key;
+		this.pbmac1PrfAlg = prfAlg;
+		this.pbmac1MacAlg = macAlg;
+		this.pbmac1IterationCount = iterationCount;
+		this.pbmac1DkLen = dkLen;
+	}
 
 	/**
      * Gets the list of additional CA certificates
@@ -211,4 +260,30 @@ public abstract class BaseCmpMessage implements Serializable {
     public void setAdditionalExtraCertsCertificates(final List<Certificate> certificates) {
         this.additionalExtraCerts = certificates;
     }
+
+    protected PublicKey getPublicKey(final SubjectPublicKeyInfo subjectPKInfo, final String provider)
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+        // If there is no public key here, but only an empty bit string, it means we have called for server generated keys
+        // i.e. no public key to see here...
+        if (subjectPKInfo.getPublicKeyData().equals(DERNull.INSTANCE)) {
+            return null;
+        }
+        try {
+            final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
+            final AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithm();
+            final String prov;
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+                // Ability to use the PQC provider
+                prov = CryptoProviderTools.getProviderNameFromAlg(keyAlg.getAlgorithm().getId());
+            } else {
+                prov = provider;
+            }
+            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), prov).generatePublic(xspec);
+        } catch (InvalidKeySpecException | IOException e) {
+            final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
+            newe.initCause(e);
+            throw newe;
+        }
+    }
+    
 }

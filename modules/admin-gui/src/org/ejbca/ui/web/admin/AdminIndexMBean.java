@@ -21,15 +21,14 @@ import java.util.Date;
 import java.util.List;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -40,7 +39,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  *  JSF Managed Bean or the index page in the Admin GUI.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class AdminIndexMBean extends CheckAdmin implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -88,7 +87,7 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
         final Collection<Integer> caIds = caSession.getAuthorizedCaIds(getAdmin());
         for (final Integer caId : caIds) {
             final CAInfo cainfo = caSession.getCAInfoInternal(caId);
-            if (cainfo == null || cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
+            if (cainfo == null || cainfo.getStatus() == CAConstants.CA_EXTERNAL || cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
                 continue;
             }
             final String caName = cainfo.getName();
@@ -108,12 +107,17 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
             boolean crlStatus = true;
             final Date now = new Date();
             // TODO GUI support for Partitioned CRLs (ECA-7961)
-            final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
-            if ((crlinfo != null) && (now.after(crlinfo.getExpireDate()))) {
+            
+            final Date crlNextUpdate = crlStoreSession.getCrlExpireDate(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+            
+            
+            if (crlNextUpdate != null && now.after(crlNextUpdate)) {
                 crlStatus = false;
             }
-            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
-            if ((deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate()))) {
+            
+            final Date deltaCrlNextUpdate = crlStoreSession.getCrlExpireDate(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
+            
+            if (deltaCrlNextUpdate != null && now.after(deltaCrlNextUpdate)) {
                 crlStatus = false;
             }
             ret.add(new CaCrlStatusInfo(caName, caService, crlStatus));

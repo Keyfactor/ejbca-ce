@@ -15,8 +15,8 @@ package org.ejbca.ui.web.admin;
 import java.io.Serializable;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -35,7 +35,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * @version $Id$
  */
 @RequestScoped
-@ManagedBean
+@Named
 public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     private static final long serialVersionUID = 1L;
@@ -221,6 +221,10 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     public boolean isAuthorizedToViewPublicWeb() {
         return getEjbcaErrorWebBean().isRunningBuildWithCA();
     }
+
+    public boolean isPublicWebHidden() {
+        return getEjbcaWebBean().getGlobalConfiguration().getHidePublicWeb();
+    }
     
     public boolean isAuthorizedToViewRaWeb() {
         return getEjbcaErrorWebBean().isRunningBuildWithRAWeb();
@@ -228,6 +232,10 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     public boolean isHelpEnabled() {
         return EjbcaJSFHelper.getBean().getEjbcaWebBean().isHelpEnabled();
+    }
+    
+    public boolean isLogoutAvailable() {
+        return EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getUseSessionTimeout();
     }
     
     public String getHeadBannerUrl() {
@@ -243,7 +251,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public String getLogoUrl() {
-        return getEjbcaWebBean().getImagePath("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png");
+        return getEjbcaWebBean().getImagePath(getEjbcaWebBean().getEditionFolder() + "/keyfactor-"+ InternalConfiguration.getAppNameLower() +"-logo.png");
     }
     
     /** 

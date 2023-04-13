@@ -13,10 +13,15 @@
 
 package org.ejbca.core.ejb.upgrade;
 
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -50,7 +55,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.apache.commons.configuration.Configuration;
+
+import org.apache.commons.configuration2.Configuration;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -109,17 +116,16 @@ import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -149,6 +155,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StringTools;
+
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
  * releases.
@@ -157,6 +169,9 @@ import org.ejbca.util.JDBCUtil;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote {
+
+    private static final int PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE = 1000;
+    private static final String MSSQL = "mssql";
 
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
@@ -350,7 +365,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.8.1");
+                setLastPostUpgradedToVersion("7.11.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -597,6 +612,28 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("7.8.1");
         }
+        if (isLesserThan(oldVersion, "7.10.0")) {
+            try {
+                upgradeSession.migrateDatabase7100();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("7.10.0");
+        }
+        if (isLesserThan(oldVersion, "7.11.0")) {
+            try {
+                upgradeSession.migrateDatabase7110();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
+        if (isLesserThan(oldVersion, "8.0.0")) {
+            try {
+                upgradeSession.migrateDatabase800();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -650,6 +687,19 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.8.1");
         }
+        if (isLesserThan(oldVersion, "7.10.0")) {
+            if (!postMigrateDatabase710()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.10.0");
+        }
+        if (isLesserThan(oldVersion, "7.11.0")) {
+            if (!postMigrateDatabase7110()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.11.0");
+        }
+        
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -689,7 +739,141 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Post upgrade to 7.8.1 complete.");
         return true;
     }
-
+    
+    /**
+     * Copies the fields 
+     * 
+     *  identifier, 
+     *  identifierType, 
+     *  status and
+     *  expires 
+     *  
+     *  from the AcmeAuthorizationData rawData into the separate DB columns for indexing.
+     */
+    @SuppressWarnings("unchecked")
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    private boolean postMigrateDatabase710() {
+        log.info("Starting post upgrade to 7.10.0");
+        
+        List<String> accountIds;
+        try {
+            final Query query = entityManager.createQuery("SELECT a.accountId FROM AcmeAccountData a");
+            accountIds = (List<String>) query.getResultList();
+        } catch (Exception e) {
+            log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+            return false;
+        }
+        
+        // two steps to upgrade all authorizations associated with an ACME account:
+        // 1. upgrade authorizations of 'normal' orders (have an orderId), or processed pre-authorizations (get an orderId during processing)
+        // 2. upgrade pre-authorization which still do not have an orderId.
+        
+        if (accountIds != null && accountIds.size() > 0) {
+            for (String accountId : accountIds) {
+                log.info("Upgrade authorizations for ACME account '" + accountId + "'.");
+                // step 1:
+                final List<String> orderIds;
+                try {
+                    final Query query = entityManager.createQuery("SELECT o.orderId FROM AcmeOrderData o WHERE o.accountId = :accountId");
+                    query.setParameter("accountId", accountId);
+                    orderIds = (List<String>) query.getResultList();
+                } catch (Exception e) {
+                    log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+                    return false;
+                }
+                
+                if (orderIds != null && orderIds.size() > 0) {
+                    for (String orderId : orderIds) {
+                        List<String> rawDatas;
+                        try {
+                            Query query = entityManager.createQuery("SELECT a.rawData FROM AcmeAuthorizationData a WHERE a.accountId = :accountId and a.orderId = :orderId");
+                            query.setParameter("accountId", accountId);
+                            query.setParameter("orderId", orderId);
+                            rawDatas = (List<String>) query.getResultList();
+                            for (String rawData : rawDatas) {
+                                upgradeAcmeAuthorization(null, rawData);
+                            }
+                        } catch (Exception e) {
+                            log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+                            return false;
+                        }
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No ACME orders for account with ID '" + accountId + " found'");
+                    }
+                }
+                
+                // step 2: pre-authorization which still do not have an orderId.
+                final List<String> preAuthorizationIds;
+                try {
+                    final Query query = entityManager.createQuery("SELECT a.authorizationId FROM AcmeAuthorizationData a WHERE a.accountId = :accountId and a.orderId is null");
+                    query.setParameter("accountId", accountId);
+                    preAuthorizationIds = (List<String>) query.getResultList();
+                } catch (Exception e) {
+                    log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+                    return false;
+                }
+                
+                if (preAuthorizationIds != null && preAuthorizationIds.size() > 0) {
+                    for (String preAuthorizationId : preAuthorizationIds) {
+                        try {
+                            final Query query = entityManager.createQuery("SELECT a.rawData FROM AcmeAuthorizationData a WHERE a.authorizationId = :authorizationId");
+                            query.setParameter("authorizationId", preAuthorizationId);
+                            final String rawData = (String) query.getSingleResult();
+                            
+                            upgradeAcmeAuthorization(preAuthorizationId, rawData);
+                        } catch (Exception e) {
+                            log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+                            return false;
+                        }
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No ACME pre-authorizations for account with ID '" + accountId + " found'");
+                    }
+                }
+            }
+        } else {
+            log.info("No ACME accounts or certificates found in the system. No upgrade for ACME authorizations required.");
+        }
+        
+        log.info("Post upgrade to 7.10.0 complete.");
+        return true;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void upgradeAcmeAuthorization(String authorizationId, final String rawData) {
+        try (final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(rawData.getBytes(StandardCharsets.UTF_8)));) {
+            final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap((Map<?, ?>) decoder.readObject());
+            final String identifier = (String) dataMap.get("acmeIdentifierValue");
+            final String identifierType = (String) dataMap.get("acmeIdentifierType");
+            final String status = (String) dataMap.get("status");
+            final Long expires = (Long) dataMap.get("expires");
+            if (authorizationId == null) {
+                authorizationId = (String) dataMap.get("authorizationId");
+            }
+            
+            final Query query = entityManager.createQuery("UPDATE AcmeAuthorizationData a SET a.identifier = :identifier, a.identifierType = :identifierType, a.status = :status, a.expires = :expires WHERE a.authorizationId = :authorizationId");
+            query.setParameter("identifier", identifier);
+            query.setParameter("identifierType", identifierType);
+            query.setParameter("status", status);
+            query.setParameter("expires", expires);
+            query.setParameter("authorizationId", authorizationId);
+            int rowsUpdated = query.executeUpdate();
+            if (rowsUpdated == 1) {
+                log.trace("Upgraded ACME authorization with ID '" + authorizationId + "', status='" + status + "', identifier='" + identifier + "'.");
+            } else {
+                // Should never happen.
+                throw new IOException("Found '" + rowsUpdated + " for ACME authorizations with ID '" + authorizationId + "'.");
+            }
+        } catch (Exception e) {
+            final String msg = "Failed to upgrade AcmeAuthorizationData in database: " + e.getMessage();
+            log.error(msg + ". Data:\n" + rawData);
+            throw new IllegalStateException(msg, e);
+        }
+    }
+    
     private boolean postMigrateDatabase780() {
         // post upgrade is only allowed when all OAuth providers have audience values.
         OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
@@ -697,7 +881,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         boolean missingAudienceFound = false;
         for (OAuthKeyInfo oAuthKeyInfo : oAuthConfiguration.getOauthKeys().values()) {
             if (!oAuthKeyInfo.isAudienceCheckDisabled() && (oAuthKeyInfo.getAudience() == null || oAuthKeyInfo.getAudience().trim().isEmpty())) {
-                log.info("OAuth configuration " + oAuthKeyInfo.getLabel()
+                log.error("OAuth configuration " + oAuthKeyInfo.getLabel()
                         + " has an empty Audience value.  This is less secure and should be set."
                         + "  Go to \"System Configuration / Trusted OAuth Providers\" and configure Audience for "
                         + oAuthKeyInfo.getLabel() + " or de-select Enable Audience Check (not recommended).");
@@ -711,7 +895,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.8.1");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.11.0");
     }
 
     /**
@@ -873,14 +1057,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         Map<Integer, String> publisherNames = publisherSession.getPublisherIdToNameMap();
         BasePublisherConverter publisherFactory;
         try {
-            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").newInstance();
-        } catch (InstantiationException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        } catch (IllegalAccessException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        } catch (ClassNotFoundException e) {
+            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             //Shouldn't happen since we've already checked that we're running Enterprise
             throw new IllegalStateException(e);
         }
@@ -1346,6 +1524,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Upgrade to EJBCA 6.10.1. 
      * Upgrading System configuration and certificate profiles with CT log label system
      */
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6101() throws UpgradeFailedException {
@@ -1556,6 +1735,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * setting was global previously, it should be fair to add each extension to every OCSP key binding.
      */
     private void importOcspExtensions() {
+        @SuppressWarnings("deprecation")
         final List<String> ocspExtensionOids = OcspConfiguration.getExtensionOids();
         if (ocspExtensionOids.isEmpty()) {
             log.debug("No OCSP extensions for import were found in ocsp.properties");
@@ -1583,7 +1763,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         List<X509Certificate> trustedCerts = new ArrayList<>();
         Certificate cacert = null;
         boolean isUnidFnrEnabled = OcspConfiguration.isUnidEnabled();
+        @SuppressWarnings("deprecation")
         String trustDir = OcspConfiguration.getUnidTrustDir();
+        @SuppressWarnings("deprecation")
         String cacertfile = OcspConfiguration.getUnidCaCert();
         if (StringUtils.isEmpty(trustDir)) {
             // This installation is probably not using UnidFnr at all.
@@ -1697,14 +1879,72 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-            upgradeSession.fixPartitionedCrls();
+
+            // Counting the number of non normal CRLData rows
+            final Query query = entityManager.createQuery("SELECT count(*) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
+            final long countOfRowsToBeNormalized = (long) query.getSingleResult();            
+            
+            final long startDataNormalization = System.currentTimeMillis();
+            
+            // Check whether it is an MSSQL database. If yes, don't normalize in chunks
+            final String dbType = DatabaseConfiguration.getDatabaseName();
+            if (MSSQL.equals(dbType)) {
+                upgradeSession.fixPartitionedCrls(0, true);
+            } else {
+                // Normalization for non-MSSQL databases is done in chunks in case number of rows are huge in CRLData table.
+                // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
+                // See ECA-10712 for more info.
+                for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
+                    upgradeSession.fixPartitionedCrls(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE, false);
+                    
+                }
+                // Do fix the remaining if any
+                final Query normalizeData = entityManager.createQuery(
+                        "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
+                log.debug("Executing SQL query: " + normalizeData);
+                normalizeData.executeUpdate();
+                log.info("Successfully normalized " + countOfRowsToBeNormalized + " rows in CRLData. Completed in "
+                        + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+            }
+            
             fixPartitionedCrlIndexes();
         } catch (AuthorizationDeniedException | UpgradeFailedException e) {
             log.error(e);
             return false;
         }
         log.info("Post upgrade to 7.4.0 complete.");
+
         return true;  
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean postMigrateDatabase7110() {
+        log.info("Starting post upgrade to 7.11.0");
+        try {
+            // CMP
+            log.debug("Removing CMP vendor names that have been converted to the new ID format");
+            final CmpConfiguration cmpConfiguration =
+                    (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            final LinkedHashMap<Object, Object> cmpRawData = cmpConfiguration.getRawData();
+            for (final String cmpAlias : cmpConfiguration.getAliasList()) {
+                cmpRawData.remove(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA);
+            }
+            globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
+            // EST
+            log.debug("Removing EST vendor names that have been converted to the new ID format");
+            final EstConfiguration estConfiguration =
+                    (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            final LinkedHashMap<Object, Object> estRawData = estConfiguration.getRawData();
+            for (final String estAlias : estConfiguration.getAliasList()) {
+                estRawData.remove(estAlias + "." + EstConfiguration.CONFIG_VENDORCA);
+            }
+            globalConfigurationSession.saveConfiguration(authenticationToken, estConfiguration);
+        } catch (Exception e) {
+            log.error(e);
+            return false;
+        }
+        log.info("Post upgrade to 7.11.0 complete.");
+        return true;
     }
     
     private boolean postMigrateDatabase6101() {
@@ -1926,15 +2166,26 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public void fixPartitionedCrls() throws UpgradeFailedException {
+    public void fixPartitionedCrls(final int limit, final boolean isMSSQL) throws UpgradeFailedException {
         try {
-            final long startDataNormalization = System.currentTimeMillis();
-            final Query normalizeData = entityManager.createQuery(
-                    "UPDATE CRLData a SET a.crlPartitionIndex=-1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
-            log.debug("Executing SQL query: " + normalizeData);
-            final int rowCount = normalizeData.executeUpdate();
-            log.info("Successfully normalized " + rowCount + " rows in CRLData. Completed in "
-                    + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+            // Do the whole normalization at once in the case of MSSQL
+            if (isMSSQL) {
+                final long startDataNormalization = System.currentTimeMillis();
+                final Query normalizeData = entityManager.createQuery(
+                        "UPDATE CRLData a SET a.crlPartitionIndex=-1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
+                log.debug("Executing SQL query: " + normalizeData);
+                final int rowCount = normalizeData.executeUpdate();
+                log.info("Successfully normalized " + rowCount + " rows in CRLData. Completed in "
+                        + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+                // If not MSSQL normalize only a set amount at a time
+            } else {
+                final Query normalizeData = entityManager.createNativeQuery(
+                        "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0  LIMIT :limit");
+                normalizeData.setParameter("limit", limit);
+                log.debug("Executing SQL query: " + normalizeData);
+                normalizeData.executeUpdate();
+            }
+
         } catch (RuntimeException e) {
             log.error("An error occurred when updating data in database table 'CRLData': " + e);
             log.error("You can update the data manually using the following SQL query and then run the post-upgrade again.");
@@ -2195,6 +2446,125 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
+    /**
+     * Adds new access rules added in 7.10.0
+     *
+     * @throws UpgradeFailedException if upgrade fails
+     */
+    @Override
+    public void migrateDatabase7100() throws UpgradeFailedException {
+        final String ruleCreateCert = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+        final String ruleKeyRecovery = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY);
+        final String ruleUsePassword = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_USEUSERNAME);
+        final String ruleUseApprovalRequestId = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID);
+        try {
+            log.debug("migrateDatabase7100: Checking if roles need added access rules added in 7.10.0");
+            for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
+                final LinkedHashMap<String, Boolean> access = role.getAccessRules();
+                if (Boolean.TRUE.equals(access.get(ruleCreateCert)) || Boolean.TRUE.equals(access.get(ruleKeyRecovery))) {
+                    // Users that can create or recover certs should still be able to do so.
+                    log.info("Adding new access rules to '" + role.getRoleNameFull() + "'");
+                    access.put(ruleUsePassword, true);
+                    access.put(ruleUseApprovalRequestId, true);
+                    AccessRulesHelper.minimizeAccessRules(access);
+                    roleSession.persistRole(authenticationToken, role);
+                }
+            }
+        } catch (AuthorizationDeniedException | RoleExistsException e) {
+            log.error("An error occurred when updating roles for 7.10.0: " + e, e);
+            throw new UpgradeFailedException(e);
+        }
+    }
+
+    @Override
+    public void migrateDatabase7110() throws UpgradeFailedException {
+        log.debug("migrateDatabase7110: Converting vendor CAs previously stored using names to use IDs instead");
+        final HashMap<Integer, String> caIdToNameMap = (HashMap<Integer, String>) caSession.getCAIdToNameMap();
+        // CMP
+        final CmpConfiguration cmpConfiguration =
+                (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        for (final String cmpAlias : cmpConfiguration.getAliasList()) {
+            log.debug("Converting vendor CA list for CMP alias: " + cmpAlias);
+            @SuppressWarnings("deprecation")
+            final String cmpVendorCaNameString = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAlias);
+            if (StringUtils.isEmpty(cmpVendorCaNameString)) {
+                continue;
+            }
+            final String[] cmpVendorCaNames = cmpVendorCaNameString.split(";");
+            final ArrayList<String> cmpVendorCaIds = new ArrayList<>();
+            for (String cmpVendorName : cmpVendorCaNames) {
+                boolean cmpVendorCaFound = false;
+                for (final Integer caId : caIdToNameMap.keySet()) {
+                    final String currentCmpVendorCaName = caIdToNameMap.get(caId);
+                    if (StringUtils.equals(cmpVendorName.trim(), currentCmpVendorCaName.trim())) {
+                        cmpVendorCaIds.add(caId.toString());
+                        cmpVendorCaFound = true;
+                        break;
+                    }
+                }
+                if (!cmpVendorCaFound) {
+                    log.debug("CMP vendor with name: " + cmpVendorName + " was not found, it will be removed");
+                }
+            }
+            cmpConfiguration.setVendorCaIds(cmpAlias, StringUtils.join(cmpVendorCaIds, ";"));
+        }
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+        // EST
+        EstConfiguration estConfiguration =
+                (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+        for (final String estAlias : estConfiguration.getAliasList()) {
+            log.debug("Converting vendor CA list for EST alias: " + estAlias);
+            @SuppressWarnings("deprecation")
+            final String estVendorCaNamesString = estConfiguration.getValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCA, estAlias);
+            if (StringUtils.isEmpty(estVendorCaNamesString)) {
+                continue;
+            }
+            final String[] estVendorCaNames = estVendorCaNamesString.split(";");
+            final ArrayList<String> estVendorCaIds = new ArrayList<>();
+            for (String estVendorName : estVendorCaNames) {
+                boolean estVendorCaFound = false;
+                for (final Integer caId : caIdToNameMap.keySet()) {
+                    final String currentEstVendorCaName = caIdToNameMap.get(caId);
+                    if (StringUtils.equals(estVendorName.trim(), currentEstVendorCaName.trim())) {
+                        estVendorCaIds.add(caId.toString());
+                        estVendorCaFound = true;
+                        break;
+                    }
+                }
+                if (!estVendorCaFound) {
+                    log.debug("EST vendor with name: " + estVendorName + " was not found, it will be removed");
+                }
+            }
+            estConfiguration.setVendorCaIds(estAlias, StringUtils.join(estVendorCaIds, ";"));
+        }
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, estConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+    }
+
+    @Override
+    public void migrateDatabase800() throws UpgradeFailedException {
+        log.debug(">migrateDatabase800");
+        // New extended key usage ECA-11201
+        final AvailableExtendedKeyUsagesConfiguration config =
+                (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
+        if (!config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36")) {
+            config.addExtKeyUsage("1.3.6.1.5.5.7.3.36", "EKU_DOCUMENT_SIGNING_RFC9336");
+        }
+        log.debug("Added RFC9336 Extended Key USage to availabe key usages list");
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, config);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+    }
+    
     /**
      * Checks if the column cAId column exists in AdminGroupData
      *

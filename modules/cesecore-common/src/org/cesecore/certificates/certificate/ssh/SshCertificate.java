@@ -16,7 +16,9 @@ import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Base interface for SSH certificates
@@ -29,6 +31,7 @@ public interface SshCertificate {
     String CERTIFICATE_TYPE = "SSH";
     String CRITICAL_OPTION_FORCE_COMMAND = "force-command";
     String CRITICAL_OPTION_SOURCE_ADDRESS = "source-address";
+    String CRITICAL_OPTION_VERIFY_REQUIRED = "verify-required";
 
     /**
      * Encodes the certificte body of this certificate, minus the signature
@@ -66,7 +69,7 @@ public interface SshCertificate {
     byte[] getSignature();
 
     String getComment();
-
+    
     long getSerialNumber();
 
     String getSerialNumberAsString();
@@ -94,5 +97,19 @@ public interface SshCertificate {
      * @throws SshKeyException if the public key could not be read
      */
     void init(byte[] encodedCertificate) throws CertificateEncodingException, SshKeyException;
+    
+    String getKeyId();
+    
+    List<String> getPrincipals();
+    
+    Date getValidAfter(); 
+    
+    Date getValidBefore(); 
+    
+    Map<String, String> getCriticalOptions();
+    
+    Map<String, byte[]> getExtensions();
+    
+    String getSignatureAlgorithm();
 
 }

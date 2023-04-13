@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -37,6 +38,12 @@ public class RaRequestPreview {
     private String validity = "";
     private List<String> keyUsages = new ArrayList<>();
     private List<String> extendedKeyUsages = new ArrayList<>();
+    
+    // SSH certificate fields
+    private boolean sshCertificatePreview; 
+    private String sshExtensions = "";
+    private String sshPrincipals = "";
+    private String sshCertificateType = "";
 
     private boolean more = false;
     private int styleRowCallCounter = 0;
@@ -50,17 +57,26 @@ public class RaRequestPreview {
             return;
         }
         validity = certificateProfile.getEncodedValidity();
-        keyUsages.clear();
-        final boolean[] keyUsageArray = certificateProfile.getKeyUsage();
-        for (int i=0; i<keyUsageArray.length; i++) {
-            if (keyUsageArray[i]) {
-                keyUsages.add(String.valueOf(i));
+        if(certificateProfile.getType()==CertificateConstants.CERTTYPE_SSH) {
+            sshCertificatePreview = true;
+            sshCertificateType = certificateProfile.getSshCertificateType().getLabel();
+            StringBuilder sb = new StringBuilder();
+            certificateProfile.getSshExtensions().forEach(x -> sb.append(x + ", "));
+            sshExtensions = sb.toString();
+        } else {
+            sshCertificatePreview = false;
+            keyUsages.clear();
+            final boolean[] keyUsageArray = certificateProfile.getKeyUsage();
+            for (int i=0; i<keyUsageArray.length; i++) {
+                if (keyUsageArray[i]) {
+                    keyUsages.add(String.valueOf(i));
+                }
             }
-        }
-        extendedKeyUsages.clear();
-        final List<String> extendedKeyUsages = certificateProfile.getExtendedKeyUsageOids();
-        if (extendedKeyUsages != null) {
-            this.extendedKeyUsages.addAll(extendedKeyUsages);
+            extendedKeyUsages.clear();
+            final List<String> extendedKeyUsages = certificateProfile.getExtendedKeyUsageOids();
+            if (extendedKeyUsages != null && certificateProfile.getUseExtendedKeyUsage()) {
+                this.extendedKeyUsages.addAll(extendedKeyUsages);
+            }
         }
     }
     
@@ -239,5 +255,27 @@ public class RaRequestPreview {
         this.extendedKeyUsages = extendedKeyUsages;
     }
     
+    public boolean isSshCertificatePreview() {
+        return sshCertificatePreview;
+    }
+
+    public String getSshExtensions() {
+        return sshExtensions;
+    }
+
+    public String getSshPrincipals() {
+        return sshPrincipals;
+    }
+
+    public String getSshCertificateType() {
+        return sshCertificateType;
+    }
+    
+    public void updateSshPrincipals(List<String> principals) {
+        StringBuilder sb = new StringBuilder();
+        principals.forEach(x -> sb.append(x + ", "));
+        sshPrincipals = sb.toString();
+    }
+
     
 }

@@ -101,6 +101,10 @@
             <id name="authorizationId"><column name="authorizationId" column-definition="TEXT"/></id>
             <basic fetch="EAGER" name="orderId"><column name="orderId" column-definition="TEXT" nullable="true"/></basic>
             <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="TEXT" nullable="false"/></basic>
+            <basic fetch="EAGER" name="identifier"><column name="identifier" column-definition="TEXT"/></basic>
+            <basic fetch="EAGER" name="identifierType"><column name="identifierType" column-definition="TEXT"/></basic>
+            <basic fetch="EAGER" name="expires"><column name="expires" column-definition="INT8"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
@@ -117,6 +121,7 @@
             <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="TEXT" nullable="false"/></basic>
             <basic fetch="EAGER" name="notBefore"><column name="notBefore" column-definition="INT8" nullable="true"/></basic>
             <basic fetch="EAGER" name="expireDate"><column name="expireDate" column-definition="INT8" nullable="false"/></basic>
+            <basic fetch="EAGER" name="invalidityDate"><column name="invalidityDate" column-definition="INT8" nullable="true"/></basic>
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="INT4" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
@@ -151,6 +156,7 @@
             <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="TEXT" nullable="false"/></basic>
             <basic fetch="EAGER" name="notBefore"><column name="notBefore" column-definition="INT8" nullable="true"/></basic>
             <basic fetch="EAGER" name="expireDate"><column name="expireDate" column-definition="INT8" nullable="false"/></basic>
+            <basic fetch="EAGER" name="invalidityDate"><column name="invalidityDate" column-definition="INT8" nullable="true"/></basic>
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="INT4" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
@@ -432,6 +438,7 @@
             <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="INT4" nullable="false"/></basic>
+            <basic fetch="EAGER" name="hardTokenIssuerId"><column name="hardTokenIssuerId" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="zzzExtendedInformationData"><column name="extendedInformationData" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="keyStorePassword"><column name="keyStorePassword" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="cardNumber"><column name="cardNumber" column-definition="TEXT"/></basic>

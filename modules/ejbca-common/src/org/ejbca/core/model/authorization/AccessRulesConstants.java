@@ -52,7 +52,9 @@ public abstract class AccessRulesConstants {
 
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
     public static final String REGULAR_ACTIVATECA                         = StandardRules.CAFUNCTIONALITY.resource()+"/activate_ca";
-    public static final String REGULAR_VIEWCERTIFICATE                    = StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate";    
+    public static final String REGULAR_VIEWCERTIFICATE                    = StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate";
+    public static final String REGULAR_USEAPPROVALREQUESTID               = StandardRules.CAFUNCTIONALITY.resource()+"/use_approval_request_id";
+    public static final String REGULAR_USEUSERNAME                        = StandardRules.CAFUNCTIONALITY.resource()+"/use_username";
     public static final String REGULAR_APPROVECAACTION                    = StandardRules.CAFUNCTIONALITY.resource()+"/approve_caaction";
     public static final String REGULAR_CREATECRL                          = StandardRules.CREATECRL.resource();    
     public static final String REGULAR_CREATECERTIFICATE                  = StandardRules.CREATECERT.resource();
@@ -115,6 +117,8 @@ public abstract class AccessRulesConstants {
                                                            StandardRules.APPROVALPROFILEEDIT.resource(),
                                                            StandardRules.APPROVALPROFILEVIEW.resource(),
                                                            REGULAR_CREATECERTIFICATE,
+                                                           REGULAR_USEAPPROVALREQUESTID,
+                                                           REGULAR_USEUSERNAME,
                                                            REGULAR_EDITPUBLISHER,
                                                            REGULAR_VIEWPUBLISHER,
                                                            REGULAR_EDITVALIDATOR,
@@ -133,6 +137,7 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_VIEWENDENTITYHISTORY,
                                                            REGULAR_APPROVEENDENTITY,
                                                            REGULAR_VIEWAPPROVALS,
+                                                           REGULAR_KEYRECOVERY,
                                                            StandardRules.SYSTEMFUNCTIONALITY.resource(),
                                                            SERVICES_EDIT,
                                                            SERVICES_VIEW,

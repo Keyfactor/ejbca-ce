@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,12 +29,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Servlet used to distribute CA certificates <br>
@@ -57,18 +64,25 @@ public class CACertServlet extends BaseAdminServlet {
     private static final String COMMAND_IECACERT = "iecacert";
     private static final String COMMAND_CACERT = "cacert";
     private static final String COMMAND_JKSTRUSTSTORE = "jkscert";
+    private static final String COMMAND_CA_ALT_CHAIN = "cacertaltchain";
 
     private static final String LEVEL_PROPERTY = "level";
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String JKSPASSWORD_PROPERTY = "password";
+    
+    private static final String CROSS_CHAIN_ROOT_PROPERTY = "root";
 
     @EJB
     private SignSessionLocal signSession;
+    @EJB
+    private CaSessionLocal caSessionBean;
+    @EJB
+    private CertificateStoreSessionLocal certStoreSessionBean;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-    	if (signSession==null) {
+    	if (signSession==null || caSessionBean==null) {
     		log.error("Local EJB injection failed.");
     	}
     }
@@ -93,7 +107,7 @@ public class CACertServlet extends BaseAdminServlet {
         log.debug("Got request from " + req.getRemoteAddr());
         final String command = req.getParameter(COMMAND_PROPERTY_NAME);
         final String lev = req.getParameter(LEVEL_PROPERTY);
-        final List<String> validCommands = Arrays.asList(COMMAND_NSCACERT, COMMAND_IECACERT, COMMAND_JKSTRUSTSTORE, COMMAND_CACERT);
+        final List<String> validCommands = Arrays.asList(COMMAND_NSCACERT, COMMAND_IECACERT, COMMAND_JKSTRUSTSTORE, COMMAND_CACERT, COMMAND_CA_ALT_CHAIN);
         if (StringUtils.isNotBlank(issuerDn) && StringUtils.isNumeric(lev)
                 && validCommands.stream().anyMatch(validCommand -> validCommand.equalsIgnoreCase(command))) {
             final int level = Integer.parseInt(lev);
@@ -137,6 +151,34 @@ public class CACertServlet extends BaseAdminServlet {
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());
                     log.debug("Sent CA cert to client, len="+out.length()+".");
+                } else if (command.equalsIgnoreCase(COMMAND_CA_ALT_CHAIN)) {
+                    final String crossChainRoot = req.getParameter(CROSS_CHAIN_ROOT_PROPERTY);
+                    if (StringUtils.isEmpty(crossChainRoot)) {
+                        throw new IllegalArgumentException("Cross CA certificate root is not set.");
+                    }
+                    AuthenticationToken admin = getAuthenticationToken(req);
+                    CAInfo caInfo = (X509CAInfo) caSessionBean.getCAInfo(admin, issuerDn.hashCode());
+                    if(caInfo==null || !(caInfo instanceof X509CAInfo)) {
+                        throw new IllegalArgumentException("Invalid CA subjectDn.");
+                    }
+                    List<String> crossChainFingerPrints = ((X509CAInfo) caInfo).getAlternateCertificateChains().get(crossChainRoot);
+                    if(crossChainFingerPrints==null) {
+                        throw new IllegalArgumentException("Cross CA certificate root is invalid.");
+                    }
+                    List<Certificate> certChain = new ArrayList<>();
+                    for(String fp: crossChainFingerPrints) {
+                        Certificate cert = certStoreSessionBean.findCertificateByFingerprint(fp);
+                        if(cert==null) {
+                            throw new IllegalArgumentException("Cross CA certificate chain construction failed.");
+                        }
+                        certChain.add(cert);
+                    }
+                    byte[] out = CertTools.getPemFromCertificateChain(certChain);
+                    res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename + ".cacert.pem") + "\"");
+                    res.setContentType("application/octet-stream");
+                    res.setContentLength(out.length);
+                    res.getOutputStream().write(out);
+                    log.debug("Sent CA cross cert to client, len="+out+".");
                 } else if (command.equalsIgnoreCase(COMMAND_JKSTRUSTSTORE)) {
                     final String jksPassword = StringUtils.trim(req.getParameter(JKSPASSWORD_PROPERTY));
                     int passwordRequiredLength = 6;
@@ -154,7 +196,8 @@ public class CACertServlet extends BaseAdminServlet {
                     }
                 } else {
                     res.setContentType("text/plain");
-                    res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT+" || "+COMMAND_JKSTRUSTSTORE);
+                    res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "
+                            +COMMAND_IECACERT+" || "+COMMAND_CACERT+" || "+COMMAND_JKSTRUSTSTORE + " || " + COMMAND_CA_ALT_CHAIN);
                 }
             } catch (Exception e) {
                 log.error("Error getting CA certificates: ", e);

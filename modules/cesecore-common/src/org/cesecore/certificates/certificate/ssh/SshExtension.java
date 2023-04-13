@@ -18,7 +18,7 @@ package org.cesecore.certificates.certificate.ssh;
  * @version $Id$
  */
 public enum SshExtension {
-    NO_PRESENCE_REQUIRED("no-presence-required", new byte[0]),
+    NO_TOUCH_REQUIRED("no-touch-required", new byte[0]),
     PERMIT_X11_FORWARDING("permit-X11-forwarding", new byte[0]),
     PERMIT_AGENT_FORWARDING("permit-agent-forwarding", new byte[0]),
     PERMIT_PORT_FORWARDING("permit-port-forwarding", new byte[0]),
@@ -39,6 +39,15 @@ public enum SshExtension {
 
     public byte[] getValue() {
         return value;
+    }
+    
+    public static SshExtension findbyLabel(final String label) {
+        for(SshExtension sshExtension : SshExtension.values()) {
+            if(sshExtension.getLabel().equalsIgnoreCase(label)) {
+                return sshExtension;
+            }
+        }
+        return null;
     }
 
 }

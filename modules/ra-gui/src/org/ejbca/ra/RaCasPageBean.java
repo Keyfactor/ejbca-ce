@@ -25,9 +25,9 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
@@ -35,16 +35,16 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Backing bean for Certificate and CRLs download page.
  *
- * @version $Id$
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaCasPageBean implements Serializable {
 
@@ -121,13 +121,9 @@ public class RaCasPageBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
-
-    @ManagedProperty(value="#{raLocaleBean}")
-    private RaLocaleBean raLocaleBean;
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
     private List<CaAndCrl> casAndCrlItems = null;
     private boolean atLeastOneCrlLinkPresent = false;
@@ -167,7 +163,7 @@ public class RaCasPageBean implements Serializable {
                         caAndCrl.x509 = true;
                         final int numberOfPartitions = caInfo.getAllCrlPartitionIndexes() == null ? 1 : caInfo.getAllCrlPartitionIndexes().getMaximumInteger();
                         for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
-                            final CRLInfo currentCrlInfo = crlSession.getLastCRLInfo(subjectDn, currentPartitionIndex, false);
+                            final CRLInfo currentCrlInfo = crlSession.getLastCRLInfoLightWeight(subjectDn, currentPartitionIndex, false);
                             if (currentCrlInfo != null) {
                                 atLeastOneCrlLinkPresent = true;
                                 String crlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64(((X509Certificate)caCertificate)); 
@@ -178,7 +174,7 @@ public class RaCasPageBean implements Serializable {
                             }
                         }
 
-                        final CRLInfo crlInfoDelta = crlSession.getLastCRLInfo(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
+                        final CRLInfo crlInfoDelta = crlSession.getLastCRLInfoLightWeight(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
                         if (crlInfoDelta!=null) {
                             caAndCrl.deltaCrlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate) + "&delta=";
                         }

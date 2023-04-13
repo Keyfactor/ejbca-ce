@@ -35,7 +35,6 @@ import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.validation.ValidationResult;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -49,10 +48,11 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
+import com.keyfactor.util.CertTools;
+
 /**
  * Approval Request created when trying to add an end entity.
- *
- * @version $Id$
+ * 
  */
 public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndEntityApprovalRequest {
 
@@ -80,7 +80,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
 
 
 	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID,
-	        final AuthenticationToken lastApprovingAdmin) throws ApprovalRequestExecutionException {
+	        final AuthenticationToken lastApprovingAdmin) throws ApprovalRequestExecutionException, EndEntityExistsException {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
 
 		// Add the ID of the approval request to the end entity as extended information.
@@ -93,8 +93,6 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
 
 		try{
 			endEntityManagementSession.addUserAfterApproval(getRequestAdmin(), userdata, clearpwd, lastApprovingAdmin);
-		} catch (EndEntityExistsException e) {
-			throw new ApprovalRequestExecutionException("Error, user already exist", e);
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization denied :" + e.getMessage(), e);
 		} catch (EndEntityProfileValidationException e) {

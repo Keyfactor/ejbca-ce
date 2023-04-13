@@ -21,19 +21,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 
-@ManagedBean
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+
+@Named
 @SessionScoped
 public class InitExistingPkiMBean extends BaseManagedBean implements Serializable {
 

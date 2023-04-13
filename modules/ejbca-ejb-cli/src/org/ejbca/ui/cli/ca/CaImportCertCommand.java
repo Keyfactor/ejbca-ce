@@ -40,11 +40,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -65,6 +61,11 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
 
 /**
  * Imports a certificate file to the database.
@@ -346,7 +347,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                     crlPartitionIndex, null, new Date().getTime(), null);
             if (status == CertificateConstants.CERT_REVOKED) {
                 try {
-                    endEntityManagementSession.revokeCert(getAuthenticationToken(), CertTools.getSerialNumber(certificate), revocationTime, CertTools.getIssuerDN(certificate),
+                    endEntityManagementSession.revokeCert(getAuthenticationToken(), CertTools.getSerialNumber(certificate), revocationTime, /*invalidityDate*/null, CertTools.getIssuerDN(certificate),
                             revocationReason.getDatabaseValue(), false);
                 } catch (ApprovalException e) {
                     log.error(e.getMessage());

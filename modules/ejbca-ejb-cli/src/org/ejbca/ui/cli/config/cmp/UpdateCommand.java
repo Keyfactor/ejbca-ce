@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -32,10 +33,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-/**
- * @version $Id$
- *
- */
+import com.keyfactor.util.CertTools;
+
 public class UpdateCommand extends BaseCmpConfigCommand {
 
     private static final String ALIAS_KEY = "--alias";
@@ -76,7 +75,28 @@ public class UpdateCommand extends BaseCmpConfigCommand {
 
         key = alias + "." + key;
         log.info("Configuration was: " + key + "=" + getCmpConfiguration().getValue(key, alias));
-        getCmpConfiguration().setValue(key, value, alias);
+        //Check before updating defaultCA 
+        if (key.equals(alias + ".defaultca")){
+            String defaultCa;
+                if (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(value)){
+                    try {
+                        defaultCa = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), value).getSubjectDN();
+                    } catch (AuthorizationDeniedException e) {
+                        log.error("Permission to update CMP Default CA denied");
+                        throw new IllegalStateException(e);
+                    }
+                    getCmpConfiguration().setValue(key, defaultCa, alias);
+               }else if ( EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(CertTools.getCommonNameFromSubjectDn(value))){
+                    defaultCa = value;
+                    getCmpConfiguration().setValue(key, defaultCa, alias);
+                    
+               }else {
+                    log.error("CMP default CA name does not exist");
+        }
+        }else {
+            getCmpConfiguration().setValue(key, value, alias);
+        }
+    
         try {
             getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration());
             log.info("Configuration updated: " + key + "=" + getCmpConfiguration().getValue(key, alias));
@@ -86,7 +106,6 @@ public class UpdateCommand extends BaseCmpConfigCommand {
             log.info("Failed to update configuration: " + e.getLocalizedMessage());
             return CommandResult.AUTHORIZATION_FAILURE;
         }
-
     }
 
     @Override
@@ -137,7 +156,13 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         sb.append("    " + CmpConfiguration.CONFIG_RACANAME + " - possible values: ProfileDefault | " + existingCas + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + " - possible values: signature | pbe" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE + " - possible values: true | false" + "\n");
-        sb.append("    " + CmpConfiguration.CONFIG_VENDORCA + " - possible values: the name of the external CA. Several CAs can be specified by separating them with ';'" + "\n");
+        StringBuilder vendorCaOptions = new StringBuilder();
+        for (CAInfo caOption:
+                EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaInfos(getAuthenticationToken())) {
+            vendorCaOptions.append((vendorCaOptions.length() == 0 ? "" : divider) + caOption.getCAId() + " (" + caOption.getName() + ")");
+        }
+        sb.append("    " + CmpConfiguration.CONFIG_VENDORCAIDS
+                + " - possible values (available CA IDs, several CAs can be specified by separating them with ';'): " + vendorCaOptions + "\n");
         sb.append("    "
                 + CmpConfiguration.CONFIG_RACERT_PATH
                 + " - possible values: the path to the catalogue where the certificate that will be used to authenticate NestedMessageContent are stored."

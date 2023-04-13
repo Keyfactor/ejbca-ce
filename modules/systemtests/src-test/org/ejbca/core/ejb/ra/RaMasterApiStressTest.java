@@ -43,14 +43,10 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
@@ -60,6 +56,11 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Will create heaps of end entities and certificates by calling the RaMasterApi
@@ -93,7 +94,7 @@ public class RaMasterApiStressTest extends CaTestCase {
         //We want to make database transactions expensive. This means that we need to stuff a few thousand entries into the RoleMemberData table
         int roleId = roleSession.getRole(alwaysAllowToken, null, getRoleName()).getRoleId();
         for(int i = 0; i < NUMBER_OF_ROLE_MEMBERS; i++) {
-            roleMemberDataProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(),
+            roleMemberDataProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(), RoleMember.NO_PROVIDER,
                     X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     USERNAME_PREFIX + i, roleId, null));
         }

@@ -12,7 +12,7 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificateprofile;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 
 /**

@@ -12,6 +12,26 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.integrated;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Properties;
+import java.util.Random;
+
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
@@ -68,32 +88,23 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
-import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -101,69 +112,78 @@ import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchProviderException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Random;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  */
-@RunWith(CryptoTokenTestRunner.class)
+@RunWith(Parameterized.class)
 public class IntegratedOcspResponseTest {
 
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return CryptoTokenRunner.defaultRunners;
+    }
+    
+    private static final String PKIX_OCSP_NONCE = "123456789";
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-            CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(GlobalConfigurationSessionRemote.class);
     private OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorSessionRemote.class);
     private OcspDataSessionRemote ocspDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(OcspDataSessionRemote.class);
-    private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-            OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private X509Certificate caCertificate;
     private X509Certificate ocspCertificate;
-    private CA testx509ca;
+    private X509CAInfo testx509ca;
     private String originalDefaultResponder;
 
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal Admin"));
-    
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
+    @Rule
+    public TestName testName = new TestName();
 
+    private CryptoTokenRunner cryptoTokenRunner;
+
+    public IntegratedOcspResponseTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+        this.cryptoTokenRunner = cryptoTokenRunner;
+       
+    }
+    
     @Before
     public void setUp() throws Exception {
-        testx509ca = cryptoTokenRule.createX509Ca(); 
-        caCertificate = (X509Certificate) testx509ca.getCACertificate();
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
+        testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
+        caCertificate = (X509Certificate) testx509ca.getCertificateChain().get(0);
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com",
                 EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
@@ -178,7 +198,7 @@ public class IntegratedOcspResponseTest {
 
     @After
     public void tearDown() throws AuthorizationDeniedException {
-        cryptoTokenRule.cleanUp();
+        cryptoTokenRunner.cleanUp();
         if (ocspCertificate != null) {
             internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
         }
@@ -188,129 +208,129 @@ public class IntegratedOcspResponseTest {
 
     @Test
     public void testOcspPreProducedResponseDoNotStoreStatusUnknown() throws Exception {
-        final X509CAInfo x509caInfo = (X509CAInfo) testx509ca.getCAInfo();
-        final BigInteger UNKNOWN_SERIAL_NUMBER = new BigInteger("1111111111111");
+        final BigInteger unknownSerialNumber = BigInteger.valueOf(1111111111111L);
         // Enable OCSP pre production, store responses on demand and make sure the response has nextUpdate set.
         final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("3600");
-        x509caInfo.setDoPreProduceOcspResponses(true);
-        x509caInfo.setDoStoreOcspResponsesOnDemand(true);
+        testx509ca.setDoPreProduceOcspResponses(true);
+        testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
-            caSession.editCA(internalAdmin, x509caInfo);
+            caSession.editCA(internalAdmin, testx509ca);
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             // Prepare OCSP request
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "",
+                    configuration);
             final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             final OCSPReqBuilder gen = new OCSPReqBuilder();
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, UNKNOWN_SERIAL_NUMBER));
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, unknownSerialNumber));
             OCSPReq ocspRequest = gen.build();
             // Send OCSP Request for unknown serialNr
-            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            byte[] responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             // Verify return status was 'Unknown'
             final OCSPResp ocspResponse = new OCSPResp(responseBytes);
             final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) ocspResponse.getResponseObject();
             final SingleResp[] singleResponses = basicOcspResponse.getResponses();
             assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
             // Make sure the response wasn't stored
-            OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(x509caInfo.getCAId(), UNKNOWN_SERIAL_NUMBER.toString());
+            OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(testx509ca.getCAId(), unknownSerialNumber.toString());
             assertNull("Response with status 'Unknown' was (wrongly) stored", ocspResponseData);
         } finally {
             setOcspDefaultNextUpdateTime(originalNextUpdateTime);
         }
     }
-    
+
     @Test
     public void testOcspPreProducedResponseOnDemandUseCannedResponse() throws Exception {
-        final X509CAInfo x509caInfo = (X509CAInfo) testx509ca.getCAInfo();
         // Enable OCSP pre production, store responses on demand and make sure the response has nextUpdate set.
         final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("3600");
-        x509caInfo.setDoPreProduceOcspResponses(true);
-        x509caInfo.setDoStoreOcspResponsesOnDemand(true);
+        testx509ca.setDoPreProduceOcspResponses(true);
+        testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
-            caSession.editCA(internalAdmin, x509caInfo);
+            caSession.editCA(internalAdmin, testx509ca);
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-            
+
             // Prepare OCSP request
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             final OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
             OCSPReq ocspRequest = gen.build();
-            
+
             // Send two OCSP requests for the same CertId
-            byte[] firstOcspResponseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            byte[] firstOcspResponseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             OCSPResp firstOcspResponse = new OCSPResp(firstOcspResponseBytes);
             // Required sleep here since producedAt is the only thing which could distingiushing the two responses.
             Thread.sleep(1000);
-            byte[] secondResponseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            byte[] secondResponseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             OCSPResp secondOcspResponse = new OCSPResp(secondResponseBytes);
-            
+
             // Verify response objects. First response should have been stored and used as reply to the second request.
             assertNotNull("OCSP responder replied null", firstOcspResponseBytes);
             assertNotNull("OCSP responder replied null", secondResponseBytes);
-            long firstResponseProducedAt = ((BasicOCSPResp)firstOcspResponse.getResponseObject()).getProducedAt().getTime();
-            long secondResponseProducedAt = ((BasicOCSPResp)secondOcspResponse.getResponseObject()).getProducedAt().getTime();
+            long firstResponseProducedAt = ((BasicOCSPResp) firstOcspResponse.getResponseObject()).getProducedAt().getTime();
+            long secondResponseProducedAt = ((BasicOCSPResp) secondOcspResponse.getResponseObject()).getProducedAt().getTime();
             assertEquals("Stored response was not used for the second request", firstResponseProducedAt, secondResponseProducedAt);
         } finally {
             setOcspDefaultNextUpdateTime(originalNextUpdateTime);
         }
     }
-    
+
     @Test
     public void testOcspPreProducedResponseInvalidated() throws Exception {
-        final X509CAInfo x509caInfo = (X509CAInfo) testx509ca.getCAInfo();
         // Enable OCSP pre production and make sure the response expires after 1 second.
         final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("1");
-        x509caInfo.setDoPreProduceOcspResponses(true);
-        x509caInfo.setDoStoreOcspResponsesOnDemand(true);
+        testx509ca.setDoPreProduceOcspResponses(true);
+        testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
-            caSession.editCA(internalAdmin, x509caInfo);
+            caSession.editCA(internalAdmin, testx509ca);
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-            
+
             // Prepare OCSP request
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             final OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
             OCSPReq ocspRequest = gen.build();
-        
+
             // Send two OCSP requests for the same CertId
-            byte[] firstOcspResponseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            byte[] firstOcspResponseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             OCSPResp firstOcspResponse = new OCSPResp(firstOcspResponseBytes);
             // Make sure the first response expire (by nextUpdate)
             Thread.sleep(1500);
-            byte[] secondResponseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            byte[] secondResponseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             OCSPResp secondOcspResponse = new OCSPResp(secondResponseBytes);
-            
+
             // Verify response objects. First response should have been stored but expired by the time the second request
             // occurs, hence a new response should be generated for the second request rather than using the stored one.
             assertNotNull("OCSP responder replied null", firstOcspResponseBytes);
             assertNotNull("OCSP responder replied null", secondResponseBytes);
-            long firstResponseProducedAt = ((BasicOCSPResp)firstOcspResponse.getResponseObject()).getProducedAt().getTime();
-            long secondResponseProducedAt = ((BasicOCSPResp)secondOcspResponse.getResponseObject()).getProducedAt().getTime();
+            long firstResponseProducedAt = ((BasicOCSPResp) firstOcspResponse.getResponseObject()).getProducedAt().getTime();
+            long secondResponseProducedAt = ((BasicOCSPResp) secondOcspResponse.getResponseObject()).getProducedAt().getTime();
             assertNotEquals("Expired OCSP response was returned", firstResponseProducedAt, secondResponseProducedAt);
         } finally {
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, originalNextUpdateTime);
         }
     }
-    
+
     /** After renewing a CA with a new key pair, the new CA certificate should be used to sign requests */
     @Test
     public void testOcspSignerIssuerRenewal() throws Exception {
-        final X509CA testx509caRenew = cryptoTokenRule.createX509Ca(); 
-        final X509Certificate caCertificateRenew = (X509Certificate) testx509caRenew.getCACertificate();
-        final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal", testx509ca.getCAId(), null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+        final X509Certificate caCertificateRenew = (X509Certificate) testx509ca.getCertificateChain().get(0);
+        final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal",
+                testx509ca.getCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
@@ -321,10 +341,12 @@ public class IntegratedOcspResponseTest {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenew, OCSPResp.SUCCESSFUL);
             // Try the same thing after CA has been renewed
-            caAdminSession.renewCA(internalAdmin, testx509caRenew.getCAId(), true, null, false);
-            final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(internalAdmin, testx509caRenew.getCAId()).getCertificateChain().iterator().next();
+            caAdminSession.renewCA(internalAdmin, testx509ca.getCAId(), true, null, false);
+            final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(internalAdmin, testx509ca.getCAId())
+                    .getCertificateChain().iterator().next();
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-            assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenewed, OCSPResp.SUCCESSFUL));
+            assertEquals("Status is not null (good)", null,
+                    testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenewed, OCSPResp.SUCCESSFUL));
             /*
              * If we query for EE certificate with the previous issuer cert, the responder will think it is from an unknown CA,
              * since we do the lookup of the issuer from the combination of issuerName and keyHash.
@@ -336,28 +358,33 @@ public class IntegratedOcspResponseTest {
             internalCertificateStoreSession.removeCertificate(eeCertificate.getSerialNumber());
         }
     }
-    
+
     private String setOcspDefaultResponderReference(final String dn) throws AuthorizationDeniedException {
-        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         final String originalDefaultResponder = configuration.getOcspDefaultResponderReference();
         configuration.setOcspDefaultResponderReference(dn);
         globalConfigurationSession.saveConfiguration(internalAdmin, configuration);
         return originalDefaultResponder;
     }
-    
+
     private String setOcspDefaultNextUpdateTime(final String nextUpdateInSeconds) {
         final String originalConfigurationValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, nextUpdateInSeconds);
         return originalConfigurationValue;
     }
-    
-    private CertificateStatus testOcspSignerIssuerRenewalInternal(X509Certificate eeCertificate, X509Certificate caCertificate, int expectedStatus) throws Exception {
-        OCSPReq ocspReq = new OCSPReqBuilder().addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, eeCertificate.getSerialNumber())).build();
+
+    private CertificateStatus testOcspSignerIssuerRenewalInternal(X509Certificate eeCertificate, X509Certificate caCertificate, int expectedStatus)
+            throws Exception {
+        OCSPReq ocspReq = new OCSPReqBuilder()
+                .addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, eeCertificate.getSerialNumber())).build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspReq.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false).getOcspResponse();
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(ocspReq.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         OCSPResp response = new OCSPResp(responseBytes);
         if (expectedStatus == OCSPResp.UNAUTHORIZED) {
@@ -366,13 +393,15 @@ public class IntegratedOcspResponseTest {
         }
         assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", eeCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
+        assertEquals("Response cert did not match up with request cert", eeCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
         return singleResponses[0].getCertStatus();
     }
-    
+
     /**
      * Tests creating an OCSP response using the root CA cert.
      * Tests using both SHA1, SHA256 and SHA224 CertID. SHA1 and SHA256 should work, while SHA224 should give an error.
@@ -384,7 +413,8 @@ public class IntegratedOcspResponseTest {
 
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
-        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
@@ -393,89 +423,93 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        
+
         // Use a nonce with more than 32 bytes to see if we reject it. We should not allow too long nonces due to the possibility of using 
         // this as a chosen-prefix attack on hash collisions.
         // https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
         // https://www.rfc-editor.org/rfc/rfc8954.txt
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[33]));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[33]).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq reqnonce = gen.build();
-        
-        byte[] errResponseBytes = ocspResponseGeneratorSession.getOcspResponse(reqnonce.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+
+        byte[] errResponseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(reqnonce.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", errResponseBytes);
         OCSPResp errResponse = new OCSPResp(errResponseBytes);
-        assertEquals("Response status not 1 (malformed request see RFC8954) when sending 33 bytes nonce.", OCSPRespBuilder.MALFORMED_REQUEST, errResponse.getStatus());
+        assertEquals("Response status not 1 (malformed request see RFC8954) when sending 33 bytes nonce.", OCSPRespBuilder.MALFORMED_REQUEST,
+                errResponse.getStatus());
 
         // Go on now with a nonce that is too short (0 bytes)
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("".getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         reqnonce = gen.build();
-        
-        errResponseBytes = ocspResponseGeneratorSession.getOcspResponse(reqnonce.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+
+        errResponseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(reqnonce.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", errResponseBytes);
         errResponse = new OCSPResp(errResponseBytes);
-        assertEquals("Response status not 1 (malformed request see RFC8954) when sending 0 byte nonce.", OCSPRespBuilder.MALFORMED_REQUEST, errResponse.getStatus());
+        assertEquals("Response status not 1 (malformed request see RFC8954) when sending 0 byte nonce.", OCSPRespBuilder.MALFORMED_REQUEST,
+                errResponse.getStatus());
 
         // Go on now with a nonce that is not too long, exactly 1 byte
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[1]));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[1]).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
         // Go on now with a nonce that is not too long, exactly 32 bytes
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[32]));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[32]).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.",
-                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(), singleResponses[0].getCertID()
-                .getSerialNumber());
+        assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
-        
+
         // Do the same test but using SHA256 as hash algorithm for CertID
         gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), caCertificate, caCertificate.getSerialNumber()));
+        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
+                caCertificate, caCertificate.getSerialNumber()));
         extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", 0, response.getStatus());
         basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.",
-                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
         singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(), singleResponses[0].getCertID()
-                .getSerialNumber());
+        assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
 
         // Do the same test but using SHA224 as hash algorithm for CertID to see that we get an error back
         gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha224)), caCertificate, caCertificate.getSerialNumber()));
+        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha224)),
+                caCertificate, caCertificate.getSerialNumber()));
         extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         response = new OCSPResp(responseBytes);
         // Response status 1 means malformed request
@@ -484,7 +518,7 @@ public class IntegratedOcspResponseTest {
         assertNull("No response object for this unsigned error response.", basicOcspResponse);
 
     }
-    
+
     /**
      * Tests with nonexistingisrevoked
      */
@@ -493,76 +527,75 @@ public class IntegratedOcspResponseTest {
         String originalValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
         try {
-        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        BigInteger randomSerialNumber = new BigInteger("9");
-        // An OCSP request
-        OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, randomSerialNumber));
-        Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
-        gen.setRequestExtensions(new Extensions(extensions));
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+            BigInteger randomSerialNumber = BigInteger.valueOf(9);
+            // An OCSP request
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, randomSerialNumber));
+            Extension[] extensions = new Extension[1];
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
+            gen.setRequestExtensions(new Extensions(extensions));
 
-        OCSPReq req = gen.build();
+            OCSPReq req = gen.build();
 
-        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
 
             // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-        // Create the audit logger for this transaction.
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+            // Create the audit logger for this transaction.
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
-                    auditLogger, transactionLogger, false, false).getOcspResponse();
+                    auditLogger, transactionLogger, false, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
 
             OCSPResp response = new OCSPResp(responseBytes);
             assertEquals("Response status not zero.", response.getStatus(), 0);
             BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-            assertTrue("OCSP response was not signed correctly.",
-                    basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+            assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
             SingleResp[] singleResponses = basicOcspResponse.getResponses();
 
             assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-            assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID()
-                    .getSerialNumber());
+            assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID().getSerialNumber());
 
             responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
-                    auditLogger, transactionLogger, false, false).getOcspResponse();
+                    auditLogger, transactionLogger, false, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
 
             response = new OCSPResp(responseBytes);
             assertEquals("Response status not zero.", response.getStatus(), 0);
             basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-            assertTrue("OCSP response was not signed correctly.",
-                    basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+            assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
             singleResponses = basicOcspResponse.getResponses();
 
             assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-            assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID()
-                    .getSerialNumber());
+            assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID().getSerialNumber());
 
             // Assert that status is revoked
             CertificateStatus status = singleResponses[0].getCertStatus();
             assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
-            
+
             // Set ocsp.nonexistingisgood=true, veryify that answer comes out okay.
             String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD);
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
             try {
                 responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
-                        auditLogger, transactionLogger, false, false).getOcspResponse();
+                        auditLogger, transactionLogger, false, false, false).getOcspResponse();
                 assertNotNull("OCSP responder replied null", responseBytes);
 
                 response = new OCSPResp(responseBytes);
                 assertEquals("Response status not zero.", response.getStatus(), 0);
                 basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-                assertTrue("OCSP response was not signed correctly.",
-                        basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+                assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                        new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
                 singleResponses = basicOcspResponse.getResponses();
 
                 assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-                assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID()
-                        .getSerialNumber());
+                assertEquals("Response cert did not match up with request cert", randomSerialNumber,
+                        singleResponses[0].getCertID().getSerialNumber());
                 assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
             } finally {
                 cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, originalNoneExistingIsGood);
@@ -585,22 +618,22 @@ public class IntegratedOcspResponseTest {
             // An OCSP request
             OCSPReqBuilder gen = new OCSPReqBuilder();
             //Add a "random" serial number
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, new BigInteger("9")));
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, BigInteger.valueOf(9)));
             Extension[] extensions = new Extension[1];
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
             OCSPReq req = gen.build();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-            byte[] responseBytes = ocspResponseGeneratorSession
-                    .getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"), auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
+                    auditLogger, transactionLogger, false, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             OCSPResp response = new OCSPResp(responseBytes);
             assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
-            assertNull("Response should not have contained a response object.", response.getResponseObject());             
+            assertNull("Response should not have contained a response object.", response.getResponseObject());
         } finally {
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED, originalValue);
         }
@@ -614,27 +647,28 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "",configuration);
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.",
-                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
-                .getSerialNumber());
+        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
     }
 
@@ -663,30 +697,33 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
 
         // Now revoke the ocspCertificate
-        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), expectedRevocationReason);
+        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), null, expectedRevocationReason);
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertRevokedOcspResponse(shouldHaveRevocationReason, expectedRevocationReason, responseBytes);
-        
+
         // Do the same test but using SHA256 as hash algorithm for CertID
         gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), caCertificate, ocspCertificate.getSerialNumber()));
+        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
+                caCertificate, ocspCertificate.getSerialNumber()));
         extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertRevokedOcspResponse(shouldHaveRevocationReason, expectedRevocationReason, responseBytes);
     }
 
@@ -697,20 +734,16 @@ public class IntegratedOcspResponseTest {
         final OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.",
-                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
         final SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
-                .getSerialNumber());
+        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
         final Object status = singleResponses[0].getCertStatus();
         assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
         final RevokedStatus rev = (RevokedStatus) status;
-        assertEquals("Wrong reason code presence", shouldHaveRevocationReason, rev.hasRevocationReason());
-        if (shouldHaveRevocationReason) {
-            int reason = rev.getRevocationReason();
-            assertEquals("Wrong revocation reason", reason, expectedRevocationReason);
-        }
+        assertEquals("Wrong revocation reason", rev.getRevocationReason(), expectedRevocationReason);
     }
 
     @Test
@@ -721,7 +754,7 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
@@ -730,41 +763,44 @@ public class IntegratedOcspResponseTest {
         internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
-                auditLogger, transactionLogger, false, false).getOcspResponse();
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"), auditLogger, transactionLogger, false, false, false)
+                .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.",
-                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
 
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
-                .getSerialNumber());
+        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
 
         // Set that an unknown CA is "good", and redo the test (cache is reloaded automatically)
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "true");
 
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"), auditLogger,
-                transactionLogger, false, false).getOcspResponse();
+        responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"), auditLogger, transactionLogger, false, false, false)
+                .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
         response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.",
-                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
         singleResponses = basicOcspResponse.getResponses();
 
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
-                .getSerialNumber());
+        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
 
         // Assert that status is null, i.e. "good"
         assertNull(singleResponses[0].getCertStatus());
@@ -796,25 +832,26 @@ public class IntegratedOcspResponseTest {
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
             Extension[] extensions = new Extension[1];
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
             OCSPReq req = gen.build();
             byte[] responseBytes;
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             // Initial assert that status is null, i.e. "good"
             assertNull("Test could not run because initial ocsp response failed.",
                     ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
             // Erase the cert. It should still exist in the cache.
             caSession.removeCA(internalAdmin, testx509ca.getCAId());
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             // Initial assert that status is null, i.e. "good"
             assertNull("Test could not run because cache changed before the entire test could run.",
                     ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
@@ -822,8 +859,8 @@ public class IntegratedOcspResponseTest {
             // to wait that long, make it 8 seconds. We have set the timer to 2 seconds above.
             Thread.sleep(8 * 1000);
             // Since the CA is gone, expect an unauthorized response
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                    .getOcspResponse();
+            responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             OCSPResp response = new OCSPResp(responseBytes);
             assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", OCSPRespBuilder.UNAUTHORIZED, response.getStatus());
@@ -850,52 +887,54 @@ public class IntegratedOcspResponseTest {
      * @throws OperatorCreationException 
      */
     @Test
-    public void testGetOcspResponseWithCertificateFromUnknownCa() throws OCSPException, AuthorizationDeniedException, IOException,
-            MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, NoSuchProviderException, CertificateEncodingException,
-            OperatorCreationException {
+    public void testGetOcspResponseWithCertificateFromUnknownCa()
+            throws OCSPException, AuthorizationDeniedException, IOException, MalformedRequestException, CADoesntExistsException,
+            IllegalCryptoTokenException, NoSuchProviderException, CertificateEncodingException, OperatorCreationException {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not SUCCESSFUL.", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.",
-                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
-                .getSerialNumber());
+        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
         assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
 
     }
 
     @Test
-    public void testGetOcspResponseWithIncorrectDefaultResponder() throws OCSPException, AuthorizationDeniedException, IOException,
-            MalformedRequestException, CertificateEncodingException {
+    public void testGetOcspResponseWithIncorrectDefaultResponder()
+            throws OCSPException, AuthorizationDeniedException, IOException, MalformedRequestException, CertificateEncodingException {
         // Set a fake value
-        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         configuration.setOcspDefaultResponderReference("CN=FancyPants");
         globalConfigurationSession.saveConfiguration(internalAdmin, configuration);
-        
+
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
@@ -903,8 +942,8 @@ public class IntegratedOcspResponseTest {
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
-                .getOcspResponse();
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
         //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
         assertNotNull("OCSP responder replied null", responseBytes);
         OCSPResp response = new OCSPResp(responseBytes);
@@ -920,8 +959,8 @@ public class IntegratedOcspResponseTest {
      * @throws InvalidAlgorithmException 
      */
     @Test
-    public void testOcspSigningCacheDoesntAddUnsignedCa() throws CAExistsException, IllegalCryptoTokenException, AuthorizationDeniedException,
-            CADoesntExistsException, InvalidAlgorithmException {
+    public void testOcspSigningCacheDoesntAddUnsignedCa()
+            throws CAExistsException, IllegalCryptoTokenException, AuthorizationDeniedException, CADoesntExistsException, InvalidAlgorithmException {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
         int cryptoTokenId = 0;
@@ -929,8 +968,10 @@ public class IntegratedOcspResponseTest {
             try {
                 cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(internalAdmin, "testOcspSigningCacheDoesntAddUnsignedCa",
                         SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
-                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("RSA1024").build());
-                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
+                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
+                        KeyGenParams.builder("RSA1024").build());
+                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS,
+                        KeyGenParams.builder("RSA1024").build());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -947,8 +988,9 @@ public class IntegratedOcspResponseTest {
 
             // Create an inactive OSCP CA Service.
 
-            X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
+            X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL",
+                    CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d",
+                    CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
                     null, catoken);
             cainfo.setDescription("TESTSIGNEDBYEXTERNAL");
             try {
@@ -995,9 +1037,9 @@ public class IntegratedOcspResponseTest {
             externalCa.setCAToken(token);
             externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
             caSession.addCA(internalAdmin, externalCa);
-            certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(externalCaCertificate), externalCaName, "1234", CertificateConstants.CERT_ACTIVE,
-                    CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
+            certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(externalCaCertificate), externalCaName, "1234",
+                    CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
+                    EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             try {
                 final String externalUsername = "testStandAloneOcspResponseExternalUser";
@@ -1015,8 +1057,8 @@ public class IntegratedOcspResponseTest {
                 final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(certificateKeyPair.getPublic().getEncoded());
                 X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCaSubjectDn, false),
                         new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(externalSubjectDn, false), pkinfo);
-                final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
-                        BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
+                final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA")
+                        .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
                 final X509CertificateHolder certHolder = certbuilder.build(signer);
                 X509Certificate importedCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(importedCertificate), externalUsername, "1234",
@@ -1029,15 +1071,18 @@ public class IntegratedOcspResponseTest {
                     gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) externalCaCertificate,
                             importedCertificate.getSerialNumber()));
                     Extension[] extensions = new Extension[1];
-                    extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+                    extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
                     gen.setRequestExtensions(new Extensions(extensions));
                     OCSPReq ocspRequest = gen.build();
                     final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-                    final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-                    TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+                    final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                            .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                    TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "",
+                            configuration);
                     AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
-                    byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger,
-                            transactionLogger, false, false).getOcspResponse();
+                    byte[] responseBytes = ocspResponseGeneratorSession
+                            .getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false)
+                            .getOcspResponse();
                     assertNotNull("OCSP responder replied null", responseBytes);
 
                     OCSPResp response = new OCSPResp(responseBytes);
@@ -1045,11 +1090,11 @@ public class IntegratedOcspResponseTest {
                     final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
                     assertNotNull("Signed request generated null-response.", basicOcspResponse);
                     assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder()
-                            .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(testx509ca.getCACertificate().getPublicKey())));
+                            .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(testx509ca.getCertificateChain().get(0).getPublicKey())));
                     final SingleResp[] singleResponses = basicOcspResponse.getResponses();
                     assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-                    assertEquals("Response cert did not match up with request cert", importedCertificate.getSerialNumber(), singleResponses[0]
-                            .getCertID().getSerialNumber());
+                    assertEquals("Response cert did not match up with request cert", importedCertificate.getSerialNumber(),
+                            singleResponses[0].getCertID().getSerialNumber());
                     assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
                 } finally {
                     internalCertificateStoreSession.removeCertificate(importedCertificate);
@@ -1065,13 +1110,14 @@ public class IntegratedOcspResponseTest {
             globalConfigurationSession.saveConfiguration(internalAdmin, restoredOcspConfiguration);
         }
     }
-    
+
     /**
      * Tests enabling and disabling nonces when expecting a reply from a CA
      */
     @Test
     public void testDisableNonceGlobally() throws Exception {
-        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         boolean originalNonceEnabledValue = globalOcspConfiguration.getNonceEnabled();
         //First test with NONCE enabled
         globalOcspConfiguration.setNonceEnabled(true);
@@ -1080,36 +1126,37 @@ public class IntegratedOcspResponseTest {
         try {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             // An OCSP request
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
             Extension[] extensions = new Extension[1];
-            ASN1OctetString nonce = new DEROctetString("123456789".getBytes());
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce);
+            ASN1OctetString nonce = new DEROctetString(PKIX_OCSP_NONCE.getBytes());
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce.getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
             OCSPReq req = gen.build();
             byte[] responseBytes = ocspResponseGeneratorSession
-                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false).getOcspResponse();
+                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             OCSPResp response = new OCSPResp(responseBytes);
             assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
             BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
             Extension retrievedNonce = basicOcspResponse.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
             assertNotNull("No nonce was received in spite of being globally enabled and in the request", retrievedNonce);
-            assertEquals("Correct nonce was not retrieved", nonce, retrievedNonce.getExtnValue());
+            assertEquals("Correct nonce was not retrieved", nonce, retrievedNonce.getParsedValue());
             //First test with NONCE disabled
             globalOcspConfiguration.setNonceEnabled(false);
             globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             responseBytes = ocspResponseGeneratorSession
-                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false).getOcspResponse();
+                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             response = new OCSPResp(responseBytes);
             assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
-            basicOcspResponse = (BasicOCSPResp) response.getResponseObject();        
+            basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
             retrievedNonce = basicOcspResponse.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
             assertNull("Nonce was received in spite of being globally disabled.", retrievedNonce);
         } finally {

@@ -29,8 +29,10 @@ public class MailActionType extends ActionType {
 	private static final long serialVersionUID = 5340503998099975329L;
     public static final String NAME = "MAILNOTIFICATIONACTION";
 
+    private static final String MAILACTION_SUB_PAGE = "mailaction.xhtml";
+    
 	public MailActionType(){
-		super(ServiceTypeUtil.MAILACTION_SUB_PAGE, NAME, true);
+		super(MAILACTION_SUB_PAGE, NAME, true);
 	}
 	
 	private String senderAddress = "";

@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -31,12 +32,13 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.crypto.CryptoTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /** Handles and maintains the CA-part of the Key Recovery functionality
  * 
@@ -62,7 +64,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 		data = new LinkedHashMap<Object, Object>();
 		data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());
 		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE));
-		data.put(VERSION, new Float(LATEST_VERSION));
+		data.put(VERSION, Float.valueOf(LATEST_VERSION));
 		setStatus(serviceinfo.getStatus());
 	}
 
@@ -121,7 +123,8 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	                log.warn("Error creating subjectKeyId for key recovery, cryptoToken: " + cryptoToken.getId() + ", keyAlias: " + keyAlias, e);
 	            }
 				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
-						CryptoTools.encryptKeys(cryptoToken, keyAlias, serviceReq.getKeyPair()), cryptoToken.getId(), keyAlias, keyId);
+                        CryptoTools.encryptKeys((X509Certificate) getCa().getCACertificate(), cryptoToken, keyAlias, serviceReq.getKeyPair()),
+                        cryptoToken.getId(), keyAlias, keyId);
 			} catch(Exception e) {
 				throw new IllegalExtendedCAServiceRequestException(e);
 			}
@@ -137,9 +140,11 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 				    KeyPair keys = null;
 				    try {
 				        if (log.isDebugEnabled()) {
-				            log.debug("Trying to decrypt using alias '"+keyAlias+"' from crypto token "+cryptoToken.getId());
+				            log.debug("Trying to decrypt using alias '"+keyAlias+"' from crypto token " +cryptoToken.getId());
 				        }
-				        keys = CryptoTools.decryptKeys(cryptoToken, keyAlias, serviceReq.getKeyData());
+                        keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), (X509Certificate) getCa().getCACertificate(),
+                                cryptoToken.getPrivateKey(keyAlias), serviceReq.getKeyData());
+			
 				    } catch (Exception e) { // NOPMD: we have to catch wide here, using the wrong key to decrypt can result in several different errors
 				        if (log.isDebugEnabled()) {
 				            log.debug("Decryption with alias '"+keyAlias+"' failed, trying defaultAlias: ", e);
@@ -149,7 +154,9 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	                        if (log.isDebugEnabled()) {
 	                            log.debug("Trying to decrypt using default alias '"+defaultAlias+"' from crypto token "+cryptoToken.getId());
 	                        }
-	                        keys = CryptoTools.decryptKeys(cryptoToken, defaultAlias, serviceReq.getKeyData());
+	                        keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), (X509Certificate) getCa().getCACertificate(),
+	                                cryptoToken.getPrivateKey(defaultAlias), serviceReq.getKeyData());
+                   
 				        } else {
 				            // Just re-throw if we have nothing to test here
 				            throw e;
@@ -187,9 +194,9 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	@Override
 	public void upgrade() {
 		if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
-			String msg = intres.getLocalizedMessage("caservice.upgrade", new Float(getVersion()));
+			String msg = intres.getLocalizedMessage("caservice.upgrade", Float.valueOf(getVersion()));
 			log.info(msg);
-			data.put(VERSION, new Float(LATEST_VERSION));
+			data.put(VERSION, Float.valueOf(LATEST_VERSION));
 		}  		
 	}
 

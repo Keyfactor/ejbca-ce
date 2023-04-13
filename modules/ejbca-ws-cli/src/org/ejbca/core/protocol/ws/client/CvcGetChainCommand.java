@@ -16,7 +16,6 @@ package org.ejbca.core.protocol.ws.client;
 import java.io.FileOutputStream;
 import java.util.List;
 
-import org.cesecore.util.Base64;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.cvc.CVCObject;
@@ -25,6 +24,8 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+
+import com.keyfactor.util.Base64;
 
 
 /**
@@ -83,7 +84,7 @@ public class CvcGetChainCommand extends EJBCAWSRABaseCommand implements IAdminCo
 					fos.write(cvcert.getDEREncoded());
 					fos.close();
 					getPrintStream().println("Wrote binary certificate to: "+basefilename+i+".cvcert");
-					getPrintStream().println("You can look at the certificate with the command cvcwscli.sh cvcprint "+basefilename+i+".cvcert");					
+					getPrintStream().println("You can look at the certificate with the command ./ejbcaClientToolBox.sh CvcWsRaCli cvcprint "+basefilename+i+".cvcert");					
 					i++;
 				}
 			}catch(AuthorizationDeniedException_Exception e){

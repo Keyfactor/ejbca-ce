@@ -65,6 +65,8 @@ public abstract class ClientToolBox {
                 new JdbcTool(),
                 new UrlGenerator(),
                 new RESTTest(),
+                new SerObjectAnalyzer(),
+                new SerObjectMerger(),
         };
         for ( int i=0; args.length>0 && i<toolBox.length; i++) {
             if ( toolBox[i].executeIfSelected(args) ) {

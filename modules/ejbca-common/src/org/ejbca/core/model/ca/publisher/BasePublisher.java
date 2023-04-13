@@ -201,7 +201,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * 
      * @return true if the certificate should be published.
      */
-    public abstract boolean willPublishCertificate(int status, int revocationReason);
+    public abstract boolean willPublishCertificate(int status, long revocationDate);
      
     /**
      * Publishes a certificate to a certificate store. If status is not active for the certificate, the publisher may choose

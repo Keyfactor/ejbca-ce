@@ -35,12 +35,11 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.util.encoders.Base64;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -64,8 +63,10 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
+
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
 
 /**
  * Handles management of key validators.
@@ -384,6 +385,15 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
+    
+    @Override
+    public Map<String, Integer> getKeyValidatorNameToIdMap() {
+        final HashMap<String, Integer> result = new HashMap<>();
+        for (ProfileData data : findAllProfiles(Validator.TYPE_NAME)) {
+            result.put(data.getProfileName(), data.getId());
+        }
+        return result;
+    }
 
     @Override
     public List<ValidationResult> validateDnsNames(final AuthenticationToken authenticationToken, final IssuancePhase phase,
@@ -671,6 +681,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             }
         }
         return result;
+    }
+    
+    @Override
+    public long getNumberOfValidators() {
+        return profileSession.getNumberOfProfileByType(Validator.TYPE_NAME);
     }
 
     @Override

@@ -16,23 +16,30 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.util.StringTools;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+import com.keyfactor.util.StringTools;
+
 /**
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class EstConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigSession;
 
     private String selectedAlias;
     private String newAlias;
@@ -46,9 +53,14 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
     public EstConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
     }
+    
+    public EstConfiguration getEstConfiguration() {
+        getEjbcaWebBean().reloadEstConfiguration();
+        return (EstConfiguration) globalConfigSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+    } 
 
     public List<SelectItem> getEstConfigAliasesSeletItemList() {
-        List<String> aliasList = getEjbcaWebBean().getEstConfiguration().getSortedAliasList();
+        List<String> aliasList = getEstConfiguration().getSortedAliasList();
         final List<SelectItem> ret = new ArrayList<>();
         for (String alias : aliasList) {
             ret.add(new SelectItem(alias));
@@ -61,7 +73,7 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
             if (!StringTools.checkFieldForLegalChars(newAlias)) {
                 addErrorMessage("ONLYCHARACTERS");
             } else {
-                if (getEjbcaWebBean().getEstConfiguration().aliasExists(newAlias)) {
+                if (getEstConfiguration().aliasExists(newAlias)) {
                     addErrorMessage("ESTALIASEXISTS");
                 } else {
                     getEjbcaWebBean().addEstAlias(newAlias);
@@ -76,7 +88,7 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
             if (!StringTools.checkFieldForLegalChars(newAlias)) {
                 addErrorMessage("ONLYCHARACTERS");
             } else {
-                if (getEjbcaWebBean().getEstConfiguration().aliasExists(newAlias)) {
+                if (getEstConfiguration().aliasExists(newAlias)) {
                     addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
                 } else {
                     getEjbcaWebBean().renameEstAlias(selectedAlias, newAlias);
@@ -92,7 +104,7 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
             if (!StringTools.checkFieldForLegalChars(newAlias)) {
                 addErrorMessage("ONLYCHARACTERS");
             } else {
-                if (getEjbcaWebBean().getEstConfiguration().aliasExists(newAlias)) {
+                if (getEstConfiguration().aliasExists(newAlias)) {
                     addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
                 } else {
                     getEjbcaWebBean().cloneEstAlias(selectedAlias, newAlias);
@@ -105,7 +117,7 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
     public void deleteEstAlias() throws AuthorizationDeniedException {
         if (StringUtils.isNotEmpty(selectedAlias)) {
             getEjbcaWebBean().removeEstAlias(selectedAlias);
-            if (getEjbcaWebBean().getEstConfiguration().aliasExists(selectedAlias)) {
+            if (getEstConfiguration().aliasExists(selectedAlias)) {
                 addErrorMessage("ESTCOULDNOTDELETEALIAS");
             }
         }

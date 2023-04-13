@@ -25,7 +25,6 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -41,7 +40,10 @@ import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Run stress tests with ClientToolBax command SCEPTest
@@ -49,6 +51,9 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SCEPCommandTest {
+
+    @Rule
+    public Timeout testTimeout = new Timeout(15_000); // per test case
 
     private final SCEPTest command  = new SCEPTest();
     private static String httpReqPath;

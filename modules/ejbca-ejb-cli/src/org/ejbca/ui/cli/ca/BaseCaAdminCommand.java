@@ -24,6 +24,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -43,13 +44,14 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * Base for CA commands, contains common functions for CA operations
@@ -133,14 +135,15 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         log.trace("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     }
 
-    protected void createCRL(final String issuerdn, final boolean deltaCRL) {
+    protected void createCRL(final String issuerdn, final boolean deltaCRL, final Date validFrom) {
         log.trace(">createCRL()");
         try {
             if (issuerdn != null) {
                 CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
                         issuerdn.hashCode());
                 if (!deltaCRL) {
-                    EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).forceCRL(getAuthenticationToken(), cainfo.getCAId());
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).forceCRL(getAuthenticationToken(), cainfo.getCAId(),
+                            CertificateConstants.NO_CRL_PARTITION, validFrom);
                     int number = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, CertificateConstants.NO_CRL_PARTITION, false);
                     log.info("CRL with number " + number + " generated.");
                 } else {

@@ -12,6 +12,52 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.certprof;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
+import org.cesecore.certificate.ca.its.ITSCertificateType;
+import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAFactory;
+import org.cesecore.certificates.ca.CvcCABase;
+import org.cesecore.certificates.ca.ssh.SshCa;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
+import org.cesecore.certificates.certificate.ssh.SshCertificateType;
+import org.cesecore.certificates.certificate.ssh.SshExtension;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.util.SimpleTime;
+import org.cesecore.util.ValidityDate;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.cvc.AccessRightAuthTerm;
+import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
+import javax.annotation.PostConstruct;
+import javax.faces.context.FacesContext;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -30,53 +76,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.annotation.PostConstruct;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CAFactory;
-import org.cesecore.certificates.ca.CvcCABase;
-import org.cesecore.certificates.ca.ssh.SshCa;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
-import org.cesecore.certificates.certificate.ssh.SshCertificateType;
-import org.cesecore.certificates.certificate.ssh.SshExtension;
-import org.cesecore.certificates.certificateprofile.CertificatePolicy;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
-import org.cesecore.certificates.certificatetransparency.CTLogInfo;
-import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
-import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
-import org.cesecore.util.ValidityDate;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.approval.ApprovalProfileSession;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.cvc.AccessRightAuthTerm;
-import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
-
 /**
  * JSF MBean backing the certificate profile pages.
  *
  */
-// Declarations in faces-config.xml
-//@javax.faces.bean.ViewScoped
-//@javax.faces.bean.ManagedBean(name="certProfileBean")
+@Named("certProfileBean")
+@ViewScoped
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
@@ -344,7 +349,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public boolean isTypeRootCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
     public boolean isTypeSshAvailable() { return CAFactory.INSTANCE.existsCaType(SshCa.CA_TYPE); }
-
+    public boolean isTypeItsAvailable() { return CAFactory.INSTANCE.existsCaType(ECA.CA_TYPE); }
 
     public boolean isTypeEndEntity() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_ENDENTITY; }
 
@@ -352,6 +357,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public boolean isTypeRootCa() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_ROOTCA; }
     public boolean isTypeSsh() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_SSH; }
+    public boolean isTypeIts() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_ITS; }
 
     public void setTypeEndEntity() {
         getCertificateProfile().setType(CertificateConstants.CERTTYPE_ENDENTITY);
@@ -381,6 +387,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_SSH);
     }
 
+    public void setTypeIts() {
+        getCertificateProfile().setType(CertificateConstants.CERTTYPE_ITS);
+        getCertificateProfile().setDefaultEncodedValidity(CertificateProfileConstants.CERTPROFILE_FIXED_ITS);
+        getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ITS);
+        getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ITS);
+    }
+
     public boolean isUniqueCertificateSerialNumberIndex() {
         return getEjbcaWebBean().getEjb().getCertificateCreateSession().isUniqueCertificateSerialNumberIndex();
     }
@@ -389,13 +402,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableKeyAlgorithmsAvailable() {
         final List<SelectItem> ret = new ArrayList<>();
         for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
-            ret.add(new SelectItem(current));
+            if (!WebConfiguration.isPQCEnabled() && AlgorithmTools.isPQC(current)) {
+                // Don't show this algorithm in the UI
+            } else {
+                ret.add(new SelectItem(current));
+            }
         }
         return ret;
     }
 
     public int getAvailableKeyAlgorithmsSize() {
-        return AlgorithmTools.getAvailableKeyAlgorithms().size();
+        return getAvailableKeyAlgorithmsAvailable().size();
     }
 
     // SelectItem<String,String>
@@ -438,6 +455,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSTU);
         }
+        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
+            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_NTRU);
+        }
         final List<SelectItem> ret = new ArrayList<>();
         if (availableBitLengths.size() > 0 && certificateProfile.isKeyAlgorithmsRequireKeySizes()) {
             for (final Integer current : availableBitLengths) {
@@ -446,20 +466,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         } else {
             ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOALGORITHMWITHSELECTABLEKEYSIZE")));
         }
-        return ret;
-    }
-
-    public List<SelectItem> getAvailableApprovalProfiles() {
-        List<SelectItem> ret = new ArrayList<>();
-        ApprovalProfileSession approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
-        Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
-        Set<Entry<Integer, String>> entries = approvalProfiles.entrySet();
-        for(Entry<Integer, String> entry : entries) {
-            ret.add(new SelectItem(entry.getKey(), entry.getValue()));
-        }
-        // Sort list by name
-        ret.sort((a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
-        ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));
         return ret;
     }
 
@@ -503,6 +509,32 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         for(SshExtension sshExtension : SshExtension.values()) {
             ret.add(new SelectItem(sshExtension.getLabel(), sshExtension.getLabel()));
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getItsCertificateTypes() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(ITSCertificateType itsCertificateType : ITSCertificateType.values()) {
+            ret.add(new SelectItem(itsCertificateType, itsCertificateType.getLabel()));
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getItsAppPermissionsAvailable() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(ITSApplicationIds itsAppPermission : ITSApplicationIds.values()) {
+            ret.add(new SelectItem(itsAppPermission.getPsId(), itsAppPermission.getApplicationName()));
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getItsCertIssuingPermissionsAvailable() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(ITSApplicationIds certIssuingAppPermission : ITSApplicationIds.values()) {
+            if(certIssuingAppPermission.isAddToCertIssuePermissions()) {
+                ret.add(new SelectItem(certIssuingAppPermission.getPsId(), certIssuingAppPermission.getApplicationName()));
+            }
         }
         return ret;
     }
@@ -1209,11 +1241,27 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public boolean isCvcAccessRightSign() { return isCvcAccessRight(CertificateProfile.CVC_ACCESS_SIGN); }
 
+    public boolean isCvcAccessRightRfu1() { return isCvcAccessRight(CertificateProfile.CVC_ACCESS_RFU1); }
+
+    public boolean isCvcAccessRightRfu2() { return isCvcAccessRight(CertificateProfile.CVC_ACCESS_RFU2); }
+
+    public boolean isCvcAccessRightRfu3() { return isCvcAccessRight(CertificateProfile.CVC_ACCESS_RFU3); }
+
+    public boolean isCvcAccessRightRfu4() { return isCvcAccessRight(CertificateProfile.CVC_ACCESS_RFU4); }
+
     public boolean isCvcAccessRightQualSign() { return isCvcAccessRight(CertificateProfile.CVC_ACCESS_QUALSIGN); }
 
     public void setCvcAccessRightDg3(final boolean enabled) { setCvcAccessRight(CertificateProfile.CVC_ACCESS_DG3, enabled); }
 
     public void setCvcAccessRightDg4(final boolean enabled) { setCvcAccessRight(CertificateProfile.CVC_ACCESS_DG4, enabled); }
+
+    public void setCvcAccessRightRfu1(final boolean enabled) { setCvcAccessRight(CertificateProfile.CVC_ACCESS_RFU1, enabled); }
+
+    public void setCvcAccessRightRfu2(final boolean enabled) { setCvcAccessRight(CertificateProfile.CVC_ACCESS_RFU2, enabled); }
+
+    public void setCvcAccessRightRfu3(final boolean enabled) { setCvcAccessRight(CertificateProfile.CVC_ACCESS_RFU3, enabled); }
+
+    public void setCvcAccessRightRfu4(final boolean enabled) { setCvcAccessRight(CertificateProfile.CVC_ACCESS_RFU4, enabled); }
 
     public void setCvcAccessRightSign(final boolean enabled) { setCvcAccessRight(CertificateProfile.CVC_ACCESS_SIGN, enabled); }
 

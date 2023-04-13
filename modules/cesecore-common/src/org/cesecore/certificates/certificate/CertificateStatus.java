@@ -22,28 +22,42 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /** Simple class encapsulating the certificate status information needed when making revocation checks.
  * 
- * @version $Id$
  */
 public class CertificateStatus implements Serializable {
 
     private static final long serialVersionUID = 1515679904853388419L;
 	
-    public final static CertificateStatus REVOKED = new CertificateStatus("REVOKED", -1L, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-    public final static CertificateStatus OK = new CertificateStatus("OK", -1L, RevokedCertInfo.NOT_REVOKED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-    public final static CertificateStatus NOT_AVAILABLE = new CertificateStatus("NOT_AVAILABLE", -1L, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+    public static final CertificateStatus REVOKED = new CertificateStatus("REVOKED", -1L, -1L, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+    public static final CertificateStatus OK = new CertificateStatus("OK", -1L, -1L, RevokedCertInfo.NOT_REVOKED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+    public static final CertificateStatus NOT_AVAILABLE = new CertificateStatus("NOT_AVAILABLE", -1L, -1L, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 
     private final String name;
     public final Date revocationDate;
+    public final Date invalidityDate;
     /** @see RevocationReasons */
     public final int revocationReason;
     public final int certificateProfileId;
+    
+    // relevant as expired certificate OCSP responses are not stored
+    private long expirationDate;
+    
+    
+    public CertificateStatus(String name, long date, Long invalidityDate, int reason, int certProfileId ) {
+        this.name = name;
+        this.revocationDate = new Date(date);
+        this.revocationReason = reason;
+        this.invalidityDate = new Date(invalidityDate);
+        this.certificateProfileId = certProfileId;
+    }
     
     public CertificateStatus(String name, long date, int reason, int certProfileId ) {
         this.name = name;
         this.revocationDate = new Date(date);
         this.revocationReason = reason;
         this.certificateProfileId = certProfileId;
+        this.invalidityDate = null;
     }
+
     
     @Override
     public String toString() {
@@ -66,5 +80,13 @@ public class CertificateStatus implements Serializable {
     
     public boolean isRevoked() {
         return revocationReason != RevokedCertInfo.NOT_REVOKED && revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
+    }
+
+    public long getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(long expirationDate) {
+        this.expirationDate = expirationDate;
     }
 }

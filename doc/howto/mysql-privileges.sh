@@ -21,7 +21,7 @@ SQLFILE=${SQLFILE:-"mysql-database-privileges.sql"}
 
 echo "Accessing database \"$SQLDATABASE\" as user \"$SQLROOTUSER\" to read table metadata, the database will not be modified."
 echo "Granting/restricting privileges for user \"$SQLUSER@$SQLHOST\". Writing output to \"$SQLFILE\"."
-COMMAND=`echo "show tables" | mysql -u $SQLROOTUSER -p $SQLDATABASE | grep -v Tables_in_ejbca`
+COMMAND=`echo "show tables" | mysql -u $SQLROOTUSER -p $SQLDATABASE | grep -v Tables_in_$SQLDATABASE`
 echo "revoke ALL PRIVILEGES, GRANT OPTION from '$SQLUSER'@'$SQLHOST';" > $SQLFILE
 for table in $COMMAND; do echo "grant SELECT,INSERT,UPDATE,DELETE,INDEX on $SQLDATABASE.$table to '$SQLUSER'@'$SQLHOST';"; done >> $SQLFILE
 for table in $COMMAND; do echo "revoke ALL on $SQLDATABASE.$table from '$SQLUSER'@'$SQLHOST';" | grep -i AuditRecordData; done >> $SQLFILE

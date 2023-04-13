@@ -15,7 +15,9 @@ package org.ejbca.core.model.ra;
 
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.cesecore.ErrorCode;
+
+import com.keyfactor.ErrorCode;
+
 import org.cesecore.NonSensitiveException;
 
 /**

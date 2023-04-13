@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -22,12 +26,13 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * @version $Id$
@@ -73,5 +78,17 @@ public class CaCreateCrlCommandTest {
         assertFalse("No CRL was produced", crlStoreSession.getLastCRLInfo(CA_DN, CertificateConstants.NO_CRL_PARTITION, false).equals(oldCrl));
     }
 
+    @Test
+    public void testFutureValidityTime() throws ParseException {
+        final String dateAsString = "25000101070000";
+        final SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        CRLInfo oldCrl = crlStoreSession.getLastCRLInfo(CA_DN, CertificateConstants.NO_CRL_PARTITION, false);
+        String[] args = new String[] { CA_NAME, "--updateDate="+dateAsString};
+        command.execute(args);
+        CRLInfo newCrl = crlStoreSession.getLastCRLInfo(CA_DN, CertificateConstants.NO_CRL_PARTITION, false);
+        assertFalse("No CRL was produced", newCrl.equals(oldCrl));
+        assertEquals("CRL was not given desired future date.", format.parse(dateAsString), newCrl.getCreateDate());
+    }
+    
     // TODO Add test of Partitioned CRLs (ECA-7961)
 }

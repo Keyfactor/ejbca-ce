@@ -116,7 +116,7 @@
 
 				<!-- Authentication Type - this hides and shows the dependent controls below -->
 				<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-					<h:outputLabel for="currentCryptoTokenAuthenticationType" value="Azure Authentication Type"/>
+					<h:outputLabel for="currentCryptoTokenAuthenticationType" value="#{web.text.CRYPTOTOKEN_KEYVAULT_AUTH} "/>
                     <h:outputText id="currentCryptoTokenAuthenticationTypeHelp" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
 				</h:panelGroup>
                 <h:panelGroup
@@ -172,45 +172,6 @@
                     </h:panelGroup>
                 </h:panelGroup>
 				
-				<!-- Secret 1 -->
-				<h:panelGroup id="currentCryptoTokenSecret1LabelGroup">
-					<h:outputLabel 
-						id="currentCryptoTokenSecret1Label"
-						for="currentCryptoTokenSecret1"
-						value="#{web.text.CRYPTOTOKEN_PIN}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
-								    and cryptoTokenMBean.currentCryptoToken.requiresSecret}" />
-				</h:panelGroup>
-				<h:panelGroup id="currentCryptoTokenSecret1ValueGroup">
-					<h:panelGroup
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-								    and cryptoTokenMBean.currentCryptoToken.requiresSecret}">
-						<h:inputSecret id="currentCryptoTokenSecret1"
-							value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20"
-							autocomplete="off" title="#{web.text.CRYPTOTOKEN_PIN}"/>
-						<h:panelGroup styleClass="help">
-							<h:outputText value=" #{web.text.CRYPTOTOKEN_PIN_NOTICE}"
-								rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" />
-						</h:panelGroup>
-					</h:panelGroup>
-				</h:panelGroup>
-				
-				<!-- Secret 2 -->
-				<h:panelGroup id="currentCryptoTokenSecret2LabelGroup">
-					<h:outputLabel for="currentCryptoTokenSecret2"
-						id="currentCryptoTokenSecret2Label"
-						value="#{web.text.CRYPTOTOKEN_PIN_REPEAT}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-									and cryptoTokenMBean.currentCryptoToken.requiresSecret}" />
-				</h:panelGroup>
-				<h:panelGroup id="currentCryptoTokenSecret2ValueGroup">
-					<h:inputSecret id="currentCryptoTokenSecret2"
-						value="#{cryptoTokenMBean.currentCryptoToken.secret2}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
-									and cryptoTokenMBean.currentCryptoToken.requiresSecret}" size="20"
-						autocomplete="off" title="#{web.text.CRYPTOTOKEN_PIN}" />
-				</h:panelGroup>
-
 				<!-- Key Binding -->
                 <h:panelGroup id="currentCryptoTokenKeyVaultKeyBindingPanelGroup"
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
@@ -449,6 +410,45 @@
                         value="#{cryptoTokenMBean.currentCryptoToken.keyVaultName}"
                         rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
                 </h:panelGroup>
+
+                <!-- Secret 1 -->
+                <h:panelGroup id="currentCryptoTokenSecret1LabelGroup">
+                    <h:outputLabel 
+                        id="currentCryptoTokenSecret1Label"
+                        for="currentCryptoTokenSecret1"
+                        value="#{web.text.CRYPTOTOKEN_PIN}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
+                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret}" />
+                </h:panelGroup>
+                <h:panelGroup id="currentCryptoTokenSecret1ValueGroup">
+                    <h:panelGroup
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
+                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret}">
+                        <h:inputSecret id="currentCryptoTokenSecret1"
+                            value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20"
+                            autocomplete="off" title="#{web.text.CRYPTOTOKEN_PIN}"/>
+                        <h:panelGroup styleClass="help">
+                            <h:outputText value=" #{web.text.CRYPTOTOKEN_PIN_NOTICE}"
+                                rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" />
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+                
+                <!-- Secret 2 -->
+                <h:panelGroup id="currentCryptoTokenSecret2LabelGroup">
+                    <h:outputLabel for="currentCryptoTokenSecret2"
+                        id="currentCryptoTokenSecret2Label"
+                        value="#{web.text.CRYPTOTOKEN_PIN_REPEAT}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
+                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret}" />
+                </h:panelGroup>
+                <h:panelGroup id="currentCryptoTokenSecret2ValueGroup">
+                    <h:inputSecret id="currentCryptoTokenSecret2"
+                        value="#{cryptoTokenMBean.currentCryptoToken.secret2}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
+                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret}" size="20"
+                        autocomplete="off" title="#{web.text.CRYPTOTOKEN_PIN}" />
+                </h:panelGroup>
 				
 				<h:panelGroup />
 				<h:panelGroup styleClass="margin-top">
@@ -600,21 +600,21 @@
 					action="#{cryptoTokenMBean.removeSelectedKeyPairs}"
 					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"
 					onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REMS}')" />
-				<h:inputText value="#{cryptoTokenMBean.newKeyPairAlias}"
+				<h:inputText id="genNewKeyPairAlias" value="#{cryptoTokenMBean.newKeyPairAlias}"
 					rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" size="30"
 					title="#{web.text.FORMAT_ALIAS}">
 					<f:validator validatorId="legalCharsValidator" />
 				</h:inputText>
-				<h:selectOneMenu value="#{cryptoTokenMBean.newKeyPairSpec}"
+				<h:selectOneMenu id="genNewKeyPairSpec" value="#{cryptoTokenMBean.newKeyPairSpec}"
 					rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
 					<f:selectItems value="#{cryptoTokenMBean.availableKeySpecs}" />
 				</h:selectOneMenu>
-				<h:selectOneMenu value="#{cryptoTokenMBean.keyUsage}" 
+				<h:selectOneMenu id="genNewKeyPairUsage" value="#{cryptoTokenMBean.keyUsage}" 
 					disabled="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"
 					rendered="#{cryptoTokenMBean.allowedToKeyGeneration and cryptoTokenMBean.currentCryptoToken.showP11NGCryptoToken}">
 					<f:selectItems value="#{cryptoTokenMBean.availableKeyUsages}"/>
 				</h:selectOneMenu>
-				<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_GENNEW}"
+				<h:commandButton id="genNewKeyPairButton" value="#{web.text.CRYPTOTOKEN_KPM_GENNEW}"
 					action="#{cryptoTokenMBean.generateNewKeyPair}"
 					disabled="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"
 					rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" />

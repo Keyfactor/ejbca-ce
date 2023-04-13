@@ -24,8 +24,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
  * Local interface for CertificateDataSession.
- * 
- * @version $Id$
  */
 @Local
 public interface CertificateDataSessionLocal extends CertificateDataSession {
@@ -80,8 +78,20 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
      */
     List<String> findSerialNrByIssuerWithLimitAndOffset(String issuerDN, int limit, int offset);
     
+    /**
+     * 
+     * @param issuerDN of the issing CA to find entries for
+     * @param expireDate earliest expireDate of the certificate, can be past or future 
+     * @param limit maximum number of results
+     * @param offset starting offset. E.g. if previous 'limit' was 100. Next results will be available at 'offset' 100
+     * @return the query results as a List<String>
+     */
+    List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, 
+                                                        long expireDate, int limit, int offset);
+
+    
     /** @return return the query results as a Collection<RevokedCertInfo>. */
-    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, int crlPartitionIndex, long lastbasecrldate);
+    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean allowInvalidityDate);
     
     /** @return return the query results as a List. */
     List<CertificateData> findByExpireDateWithLimit(long expireDate, int maxNumberOfResults);
@@ -115,6 +125,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     /** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
     List<Certificate> findActiveCertificatesByType(Collection<Integer> certificateTypes);
     
+    /** @return a List<Certificate> of active CA certificates of status SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION. 
+     * Only to be used with certificateTypes= {CertificateConstants.CERTTYPE_ROOTCA, CertificateConstants.CERTTYPE_SUBCA}*/
+    List<Certificate> findActiveCaCertificatesByType(Collection<Integer> certificateTypes);
     
     /**
      * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types for the given
@@ -151,7 +164,6 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
      */
     List<Object[]> findExpirationInfo(Collection<String> cas, Collection<Integer> certificateProfiles,
             long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
-
     
     
 }

@@ -12,13 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @version $Id$
@@ -102,9 +104,10 @@ public interface PublishingCrlSession {
     /**
      * Method that forces generation of a CRL for a certain CA. This method generates the CRL for a specific CRL partition only.
      * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
+     * @param validFrom Date from which this CRL should be valid
      * @see #forceCRL(AuthenticationToken, int)
      */
-    boolean forceCRL(AuthenticationToken admin, int caid, int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
+    boolean forceCRL(AuthenticationToken admin, int caid, int crlPartitionIndex, final Date validFrom) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
             CAOfflineException;
 
     /**

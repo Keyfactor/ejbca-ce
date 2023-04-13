@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,6 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -44,6 +44,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 import org.ejbca.util.cert.OID;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * See getDescription().
@@ -57,6 +59,8 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
     private static final String NEXTKEYPAIR_KEY = "--nextkeypair";
     private static final String ADDTRUST_KEY = "--addtrust";
     private static final String REMOVETRUST_KEY = "--removetrust";
+    private static final String ADD_SIGN_ON_BEHALF_CA = "--addsignonbehalf";
+    private static final String REMOVE_SIGN_ON_BEHALF_CA = "--removesignonbehalf";
     private static final String OCSP_EXTENSIONS = "--ocsp-extensions";
     private static final String ARCHIVE_CUTOFF = "--archive-cutoff";
     private static final String ETSI_ARCHIVE_CUTOFF = "--etsi-archive-cutoff";
@@ -85,6 +89,23 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 ParameterMode.ARGUMENT,
                 "Removes trust entries to the given keybinding. Trust entries can be of the form <CAName[;CertificateSerialNumber]> where the serialnumber is in hex and optional. "
                         + "Multiple trust entries can be added by separating them with a ',' i.e. <CA1[;CertificateSerialNumber],CA2[;CertificateSerialNumber]>"));
+        registerParameter(new Parameter(
+                ADD_SIGN_ON_BEHALF_CA,
+                "SignOnBehalfEntry",
+                MandatoryMode.OPTIONAL,
+                StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Adds CAs to a list for which OCSP responses will be signed by the given OCSP keybinding. Trust entries can be of the form <CAName>. "
+                        + "Multiple entries can be added by separating them with a ',' i.e. <CA1,CA2>"));
+        registerParameter(new Parameter(
+                REMOVE_SIGN_ON_BEHALF_CA,
+                "SignOnBehalfEntry",
+                MandatoryMode.OPTIONAL,
+                StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Removes CAs from a list for which OCSP responses will be signed by the given OCSP keybinding.  Trust entries can be of the form <CAName>. "
+                        + "Multiple entries can be added by separating them with a ',' i.e. <CA1,CA2>"));
+        
         registerParameter(new Parameter(
                 OCSP_EXTENSIONS,
                 "OCSP Extensions",
@@ -126,6 +147,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession
                 .getInternalKeyBinding(getAdmin(), internalKeyBindingId.intValue());
+        final Collection<String> unboundOnBehalfCas = internalKeyBindingMgmtSession.getAllCaWithoutOcspKeyBinding().values();
 
         // Ensure archive cutoff with a retention period and ETSI archive cutoff is not being used at the same time
         if (parameters.get(ARCHIVE_CUTOFF) != null && parameters.get(ETSI_ARCHIVE_CUTOFF) != null) {
@@ -140,7 +162,50 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
         for (String propertyName : typesAndProperties.get(internalKeyBinding.getImplementationAlias()).keySet()) {
             if (parameters.containsKey("-"+propertyName)) {
-                propertyMap.put(propertyName, parameters.get("-"+propertyName));
+                // Special treatment for case sensitive ResponderID
+                if (propertyName.equals("responderidtype")) {
+                    final String responderIdType = parameters.get("-"+propertyName).toUpperCase();
+                    if (!responderIdType.equals("NAME") && !responderIdType.equals("KEYHASH")) {
+                        getLogger().info("Invalid responder id type. Must be either KEYHASH or NAME");
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    }
+                    propertyMap.put(propertyName, responderIdType);
+                } else {
+                    propertyMap.put(propertyName, parameters.get("-"+propertyName));
+                }
+
+            }
+        }
+        List<InternalKeyBindingTrustEntry> removeSignOnBehalfList = new ArrayList<InternalKeyBindingTrustEntry>();
+        List<InternalKeyBindingTrustEntry> addSignOnBehalfList = new ArrayList<InternalKeyBindingTrustEntry>();
+        if(internalKeyBinding.getImplementationAlias().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            // Extract remove sign on behalf entries
+            final String removeSignOnBehalfArguments = parameters.get(REMOVE_SIGN_ON_BEHALF_CA);
+            if (removeSignOnBehalfArguments != null) {
+                for (String signOnBehalfEntry : removeSignOnBehalfArguments.split(SEPARATOR)) {
+                    final CAInfo caInfo = caSession.getCAInfo(getAdmin(), signOnBehalfEntry);
+                    if (caInfo == null) {
+                        getLogger().info(" Ignoring sign on behalf entry with unknown CA: " + signOnBehalfEntry);
+                    } else {
+                        removeSignOnBehalfList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
+                    }
+                }
+            }
+            // Extract add sign on behalf entries
+            final String addSignOnBehalftArguments = parameters.get(ADD_SIGN_ON_BEHALF_CA);
+            if (addSignOnBehalftArguments != null) {
+                for (String signOnBehalfEntry : addSignOnBehalftArguments.split(SEPARATOR)) {
+                    if(!unboundOnBehalfCas.contains(signOnBehalfEntry)) {
+                        getLogger().info(" Ignoring sign on behalf entry with already OCSP key bound CA: " + signOnBehalfEntry);
+                        continue;
+                    }
+                    final CAInfo caInfo = caSession.getCAInfo(getAdmin(), signOnBehalfEntry);
+                    if (caInfo == null) {
+                        getLogger().info(" Ignoring sign on behalf entry with unknown CA: " + signOnBehalfEntry);
+                    } else {
+                        addSignOnBehalfList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
+                    }
+                }
             }
         }
         // Extract remove trust entries
@@ -218,6 +283,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
 
             }
         }
+       
         // Extract nextKeyPair
         final String nextKeyPairAlias = parameters.get(NEXTKEYPAIR_KEY);
         boolean modified = false;
@@ -248,8 +314,29 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 }
             }
         }
+        // Perform sign on behalf changes
+        List<InternalKeyBindingTrustEntry> internalKeyBindingTrustEntries = internalKeyBinding.getSignOcspResponseOnBehalf();
+        for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : removeSignOnBehalfList) {
+            if (!internalKeyBindingTrustEntries.remove(internalKeyBindingTrustEntry)) {
+                getLogger().info(" Unable to remove non-existing sign on behalf entry: " + internalKeyBindingTrustEntry.toString());
+            } else {
+                getLogger().info(" Removed sign on behalf entry: " + internalKeyBindingTrustEntry.toString());
+                modified = true;
+            }
+        }
+        for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : addSignOnBehalfList) {
+            if (internalKeyBindingTrustEntries.contains(internalKeyBindingTrustEntry)) {
+                getLogger().info(" Unable to add existing sign on behalf entry: " + internalKeyBindingTrustEntry.toString());
+            } else {
+                internalKeyBindingTrustEntries.add(internalKeyBindingTrustEntry);
+                getLogger().info(" Added sign on behalf entry: " + internalKeyBindingTrustEntry.toString());
+                modified = true;
+            }
+        }
+        internalKeyBinding.setSignOcspResponseOnBehalf(internalKeyBindingTrustEntries);
+        
         // Perform trust changes
-        final List<InternalKeyBindingTrustEntry> internalKeyBindingTrustEntries = internalKeyBinding.getTrustedCertificateReferences();
+        internalKeyBindingTrustEntries = internalKeyBinding.getTrustedCertificateReferences();
         for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : removeTrustList) {
             if (!internalKeyBindingTrustEntries.remove(internalKeyBindingTrustEntry)) {
                 getLogger().info(" Unable to remove non-existing trustEntry: " + internalKeyBindingTrustEntry.toString());
@@ -268,6 +355,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
             }
         }
         internalKeyBinding.setTrustedCertificateReferences(internalKeyBindingTrustEntries);
+        
         // Perform property changes
         Map<String, Serializable> validatedProperties = validateProperties(internalKeyBinding.getImplementationAlias(), propertyMap);
         if (validatedProperties == null) {

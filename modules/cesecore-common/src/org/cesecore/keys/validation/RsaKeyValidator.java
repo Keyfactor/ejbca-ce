@@ -28,13 +28,14 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.math.Primes;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Default RSA key validator.
@@ -73,7 +74,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
     public static final int CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR = 752;
 
     /** The key validator type. */
-    private static final String TYPE_IDENTIFIER = "RSA_KEY_VALIDATOR";
+    protected static final String TYPE_IDENTIFIER = "RSA_KEY_VALIDATOR";
 
     protected static final String BIT_LENGTHS = "bitLengths";
 
@@ -524,7 +525,11 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @param value the string value for PublicKeyModulusMin
      */
     public void setPublicKeyModulusMinAsString(String value) {
-        setPublicKeyModulusMin(new BigInteger(value));
+        if(StringUtils.isEmpty(value)) {
+            setPublicKeyModulusMin(null);
+        } else {
+            setPublicKeyModulusMin(new BigInteger(value));
+        }
     }
 
     public BigInteger getPublicKeyModulusMax() {
@@ -566,7 +571,11 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @param value the string value for PublicKeyModulusMax
      */
     public void setPublicKeyModulusMaxAsString(String value) {
-        setPublicKeyModulusMax(new BigInteger(value));
+        if(StringUtils.isEmpty(value)) {
+            setPublicKeyModulusMax(null);
+        } else {
+            setPublicKeyModulusMax(new BigInteger(value));
+        }
     }
 
     @Override

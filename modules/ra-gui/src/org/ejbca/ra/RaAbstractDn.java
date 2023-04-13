@@ -15,16 +15,18 @@ package org.ejbca.ra;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.util.CeSecoreNameStyle;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Represents two APIs: list (needed for JSF) and map
@@ -37,6 +39,7 @@ public abstract class RaAbstractDn {
     
     private final Collection<EndEntityProfile.FieldInstance> requiredFieldInstances = new ArrayList<>();
     private final Collection<EndEntityProfile.FieldInstance> optionalFieldInstances = new ArrayList<>();
+    private final Collection<EndEntityProfile.FieldInstance> fullListOfInstances = new ArrayList<>();
 
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
     protected String value;
@@ -51,7 +54,7 @@ public abstract class RaAbstractDn {
     /**
      * @return one of the DnComponents.getDnProfileFields, DnComponents.getAltNameFields() or DnComponents.getDirAttrFields
      */
-    protected abstract ArrayList<String> getAbstractDnFields();
+    protected abstract List<String> getAbstractDnFields();
     
     /**
      * Intended to be used for Subject DN: ;
@@ -84,6 +87,7 @@ public abstract class RaAbstractDn {
                 } else {
                     optionalFieldInstances.add(fieldInstance);
                 }
+                fullListOfInstances.add(fieldInstance);
                 fieldInstancesMap.get(key).put(fieldInstance.getNumber(), fieldInstance);
             }
         }
@@ -110,7 +114,7 @@ public abstract class RaAbstractDn {
         Collection<EndEntityProfile.FieldInstance> allFieldInstances = new ArrayList<>();
         allFieldInstances.addAll(requiredFieldInstances);
         allFieldInstances.addAll(optionalFieldInstances);
-        
+
         return allFieldInstances;
     }
 
@@ -126,9 +130,6 @@ public abstract class RaAbstractDn {
      */
     public void update() {
         StringBuilder dn = new StringBuilder();
-        Collection<EndEntityProfile.FieldInstance> fullListOfInstances = new ArrayList<>();
-        fullListOfInstances.addAll(requiredFieldInstances);
-        fullListOfInstances.addAll(optionalFieldInstances);
         
         for (EndEntityProfile.FieldInstance fieldInstance : fullListOfInstances) {
             if (fieldInstance != null) {
@@ -159,7 +160,7 @@ public abstract class RaAbstractDn {
      * @see RaAbstractDn.update()
      */
     public String getValue() {
-        if(value == null){
+        if (value == null) {
             update();
         }
         return value;

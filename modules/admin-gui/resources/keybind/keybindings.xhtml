@@ -4,8 +4,7 @@
 	  xmlns:f="http://xmlns.jcp.org/jsf/core"
 	  xmlns:h="http://xmlns.jcp.org/jsf/html"
 	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	  xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-	  xmlns:t="http://myfaces.apache.org/tomahawk">
+	  xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 <ui:remove>
 	<!--
   /*************************************************************************
@@ -24,33 +23,20 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
-	<ui:param name="resourceBean" value="#{internalKeyBindingMBean}" />
+	<ui:param name="resourceBean" value="#{remoteAuthenticationMBean}" />
 	<ui:define name="content">
 
-		<h:outputText value="" rendered="#{internalKeyBindingMBean.pageLoadResetTrigger}"/>
+		<h:outputText value="" rendered="#{remoteAuthenticationMBean.pageLoadResetTrigger}"/>
 		<h1>
-			<h:outputText value="#{web.text.INTERNALKEYBINDINGS}"/>
-			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Internal_Key_Bindings_Overview.html')}" escape="false"/>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_TYPE_REMOTE}"/>
+			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Remote_Authenticators_Overview.html')}" escape="false"/>
 		</h1>
-		<h:panelGroup class="tabLinks">
-			<c:forEach items="#{internalKeyBindingMBean.availableKeyBindingTypes}" var="type">
-		<span>
-			<h:outputLink value="keybindings.xhtml?type=#{type}"
-						  styleClass="tabLink#{type eq internalKeyBindingMBean.selectedInternalKeyBindingType}">
-				<h:outputText value="#{web.text[type]}"/>
-			</h:outputLink>
-		</span>
-			</c:forEach>
-		</h:panelGroup>
 		<br/>
 		<h:panelGroup styleClass="section-label-span">
-			<h:outputText rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}"
-						  value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_DESCRIPTION}"/>
-			<h:outputText rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'AuthenticationKeyBinding'}"
-						  value="#{web.text.INTERNALKEYBINDING_AUTHENTICATIONKEYBINDING_DESCRIPTION}"/>
+			<h:outputText  value="#{web.text.INTERNALKEYBINDING_AUTHENTICATIONKEYBINDING_DESCRIPTION}"/>
 		</h:panelGroup>
 		<h:form id="internalkeybindings">
-			<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingGuiList}" var="guiInfo"
+			<h:dataTable value="#{remoteAuthenticationMBean.internalKeyBindingGuiList}" var="guiInfo"
 						 styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 				<h:column>
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_NAME}"/></f:facet>
@@ -63,7 +49,7 @@
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATEISSUER}"/></f:facet>
 					<h:outputLink value="/ejbca/adminweb/viewcertificate.xhtml" rendered="#{guiInfo.certificateBound}">
 						<f:param name="certsernoparameter" value="#{guiInfo.caCertificateSerialNumber},#{guiInfo.caCertificateIssuerDn}"/>
-						<f:param name="returnTo" value="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding' ? '2' : '3'}"/>
+						<f:param name="returnTo" value="3"/>
 						<h:outputText value="#{guiInfo.certificateInternalCaName}" rendered="#{guiInfo.issuedByInternalCa}"/>
 						<h:outputText value="#{guiInfo.certificateIssuerDn}" rendered="#{!guiInfo.issuedByInternalCa}"/>
 					</h:outputLink>
@@ -73,7 +59,7 @@
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATESERIAL}"/></f:facet>
 					<h:outputLink value="/ejbca/adminweb/viewcertificate.xhtml" rendered="#{guiInfo.certificateBound}">
 						<f:param name="certsernoparameter" value="#{guiInfo.certificateSerialNumber},#{guiInfo.certificateIssuerDn}"/>
-						<f:param name="returnTo" value="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding' ? '2' : '3'}"/>
+						<f:param name="returnTo" value="3"/>
 						<h:outputText style="font-family: monospace; text-align: right;" value="#{guiInfo.certificateSerialNumber}"/>
 					</h:outputLink>
 					<h:outputText value="#{web.text.INTERNALKEYBINDING_NOT_PRESENT}" rendered="#{!guiInfo.certificateBound}"/>
@@ -100,220 +86,58 @@
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_OPERATIONAL_STATUS}"/></f:facet>
 					<h:graphicImage height="16" width="16" url="#{guiInfo.operationalStatus}" />
 				</h:column>
-				<h:column rendered="#{!internalKeyBindingMBean.forbiddenToEdit}">
+				<h:column rendered="#{!remoteAuthenticationMBean.forbiddenToEdit}">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/>
 					</f:facet>
-					<h:commandButton rendered="#{guiInfo.status ne 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{internalKeyBindingMBean.commandDisable}"
-									 value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-					<h:commandButton rendered="#{guiInfo.status eq 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{internalKeyBindingMBean.commandEnable}"
-									 value="#{web.text.INTERNALKEYBINDING_ENABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_ENABLE_FULL}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-					<h:commandButton action="#{internalKeyBindingMBean.commandDelete}"
+					<h:commandButton rendered="#{guiInfo.status ne 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{remoteAuthenticationMBean.commandDisable}"
+									 value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}" disabled="#{remoteAuthenticationMBean.forbiddenToEdit}"/>
+					<h:commandButton rendered="#{guiInfo.status eq 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{remoteAuthenticationMBean.commandEnable}"
+									 value="#{web.text.INTERNALKEYBINDING_ENABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_ENABLE_FULL}" disabled="#{remoteAuthenticationMBean.forbiddenToEdit}"/>
+					<h:commandButton action="#{remoteAuthenticationMBean.commandDelete}"
 									 value="#{web.text.INTERNALKEYBINDING_DELETE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DELETE_FULL}"
-									 onclick="return confirm('#{web.text.INTERNALKEYBINDING_CONF_DELETE}')" disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
+									 onclick="return confirm('#{web.text.INTERNALKEYBINDING_CONF_DELETE}')" disabled="#{remoteAuthenticationMBean.forbiddenToEdit}"/>
 					<h:commandButton rendered="#{!guiInfo.nextKeyAliasAvailable and guiInfo.authorizedToGenerateKeys}"
-									 action="#{internalKeyBindingMBean.commandGenerateNewKey}"
+									 action="#{remoteAuthenticationMBean.commandGenerateNewKey}"
 									 value="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_SHORT}" title="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_FULL}"
-									 disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-					<h:commandButton rendered="#{guiInfo.authorizedToCryptoToken}" action="#{internalKeyBindingMBean.commandGenerateRequest}"
+									 disabled="#{remoteAuthenticationMBean.forbiddenToEdit}"/>
+					<h:commandButton rendered="#{guiInfo.authorizedToCryptoToken}" action="#{remoteAuthenticationMBean.commandGenerateRequest}"
 									 value="#{web.text.INTERNALKEYBINDING_GETCSR_SHORT}" title="#{web.text.INTERNALKEYBINDING_GETCSR_FULL}"
-									 disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-					<h:commandButton action="#{internalKeyBindingMBean.commandReloadCertificate}"
+									 disabled="#{remoteAuthenticationMBean.forbiddenToEdit}"/>
+					<h:commandButton action="#{remoteAuthenticationMBean.commandReloadCertificate}"
 									 value="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_FULL}"
-									 disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-					<h:commandButton rendered="#{guiInfo.issuedByInternalCa}" action="#{internalKeyBindingMBean.commandRenewCertificate}"
+									 disabled="#{remoteAuthenticationMBean.forbiddenToEdit}"/>
+					<h:commandButton rendered="#{guiInfo.issuedByInternalCa}" action="#{remoteAuthenticationMBean.commandRenewCertificate}"
 									 value="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_FULL}"
-									 disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
+									 disabled="#{remoteAuthenticationMBean.forbiddenToEdit}"/>
 				</h:column>
 			</h:dataTable>
 			<br/>
 			<h:outputLink
-					value="keybinding.xhtml?internalKeyBindingId=0&amp;type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}" rendered="#{internalKeyBindingMBean.allowedToEdit}">
+					value="keybinding.xhtml?internalKeyBindingId=0" rendered="#{remoteAuthenticationMBean.allowedToEdit}">
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_CREATENEW}"/>
 			</h:outputLink>
 		</h:form>
-		<h:form id="uploadCertificate" enctype="multipart/form-data" rendered="#{not empty internalKeyBindingMBean.uploadTargets and internalKeyBindingMBean.allowedToEdit}">
-			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_UPLOADHEADER}"/></h3>
+		<h:form id="uploadCertificate" enctype="multipart/form-data" rendered="#{not empty remoteAuthenticationMBean.uploadTargets and remoteAuthenticationMBean.allowedToEdit}">
+			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_REMOTE_UPLOADHEADER}"/></h3>
 			<h:panelGrid columns="3">
 				<h:panelGroup>
-					<h:outputLabel for="certificateUploadTarget" value="#{web.text.INTERNALKEYBINDING_UPLOAD_TARGET} #{internalKeyBindingMBean.selectedInternalKeyBindingType}: "/>
-					<h:selectOneMenu id="certificateUploadTarget" value="#{internalKeyBindingMBean.uploadTarget}">
-						<f:selectItems value="#{internalKeyBindingMBean.uploadTargets}"/>
+					<h:outputLabel for="certificateUploadTarget" value="#{web.text.INTERNALKEYBINDING_REMOTE_UPLOAD_TARGET}: "/>
+					<h:selectOneMenu id="certificateUploadTarget" value="#{remoteAuthenticationMBean.uploadTarget}">
+						<f:selectItems value="#{remoteAuthenticationMBean.uploadTargets}"/>
 					</h:selectOneMenu>
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:outputLabel for="certificateUploadInput" value="#{web.text.INTERNALKEYBINDING_UPLOAD_CERTIFICATE}: "/>
-					<t:inputFileUpload id="certificateUploadInput" value="#{internalKeyBindingMBean.uploadToTargetFile}"/>
+					<h:inputFile id="certificateUploadInput" value="#{remoteAuthenticationMBean.uploadToTargetFile}">
+						<f:validator validatorId="keyBindingFileUploadValidator"/>
+					</h:inputFile>
 				</h:panelGroup>
-				<h:commandButton action="#{internalKeyBindingMBean.uploadToTarget}" value="#{web.text.INTERNALKEYBINDING_UPLOAD}"/>
-			</h:panelGrid>
-		</h:form>
-		<h:form id="defaultResponder" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULTRESPONDER}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
-					<f:selectItems value="#{internalKeyBindingMBean.defaultResponderTargets}"/>
-				</h:selectOneMenu>
-				<h:commandButton action="#{internalKeyBindingMBean.saveDefaultResponder}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
-			</h:panelGrid>
-		</h:form>
-		<h:form id="enableNonce" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLED_NONCE_CA}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_NONCE_CA}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="globallyEnableNonce" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" value="#{internalKeyBindingMBean.globallyEnableNonce}"/>
-					<h:outputLabel for="globallyEnableNonce" value="#{web.text.USE}"/>
-				</h:panelGroup>
-				<h:commandButton action="#{internalKeyBindingMBean.saveNonceEnabled}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
+				<h:commandButton action="#{remoteAuthenticationMBean.uploadToTarget}" value="#{web.text.INTERNALKEYBINDING_UPLOAD}"/>
 			</h:panelGrid>
 		</h:form>
 
-		<h:form id="responderId" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULT_RESPONDERIDTYPE}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULT_RESPONDERIDTYPE}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:selectOneMenu id="defaultResponderId" value="#{internalKeyBindingMBean.responderIdType}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
-					<f:selectItems value="#{internalKeyBindingMBean.responderIdTargets}"/>
-				</h:selectOneMenu>
-				<h:commandButton action="#{internalKeyBindingMBean.saveResponderIdType}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
-			</h:panelGrid>
-		</h:form>
-
-		<h:form id="enableOcspSigningCacheUpdate" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="globallyEnableOcspSigningCacheUpdate" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" value="#{internalKeyBindingMBean.globallyEnableOcspSigningCacheUpdate}"/>
-					<h:outputLabel for="globallyEnableOcspSigningCacheUpdate" value="#{web.text.USE}"/>
-				</h:panelGroup>
-				<h:commandButton action="#{internalKeyBindingMBean.saveEnableOcspSigningCacheUpdate}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
-			</h:panelGrid>
-		</h:form>
-
-
-		<h:form id="enableCacheForUnknownStatus" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="globallyEnableOcspBrowserCacheUnknownStatus"
-											 disabled="#{internalKeyBindingMBean.forbiddenToEdit}"
-											 value="#{internalKeyBindingMBean.cacheHeaderUnauthorizedResponses}"
-					/>
-					<h:outputLabel for="globallyEnableOcspSigningCacheUpdate" value="#{web.text.USE}"/>
-				</h:panelGroup>
-				<h:commandButton action="#{internalKeyBindingMBean.saveEnableExplicitNoCacheUnauthorizedResponses}"
-								 rendered="#{internalKeyBindingMBean.allowedToEdit}"
-								 value="#{web.text.INTERNALKEYBINDING_SAVE}"
-				/>
-			</h:panelGrid>
-		</h:form>
-
-		<!-- Settings for OCSP audit and transaction logging -->
-		<h:form id="ocspLoggingSettings" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
-			<h3>
-				<h:outputText value="#{web.text.OCSP_LOGGING_HEADER}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid id="ocspLoggingSettings" columns="2" cellspacing="3">
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="enableOcspTransactionLogging"
-											 value="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"
-											 disabled="#{not internalKeyBindingMBean.inEditMode}">
-						<f:ajax render="ocspLoggingSettings"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel for="enableOcspTransactionLogging" value="#{web.text.OCSP_LOGGING_ENABLE_TRANSACTION_LOGGING}"/>
-				</h:panelGroup>
-				<div/>
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_PATTERN}"
-							   rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
-				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
-					<h:inputText value="#{internalKeyBindingMBean.ocspTransactionLogPattern}"
-								 disabled="#{not internalKeyBindingMBean.inEditMode}" size="80"/>
-					<br/>
-					<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_PATTERN_HINT}" styleClass="smallHelp"/>
-				</h:panelGroup>
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_VALUES}" rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
-				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
-					<h:inputTextarea value="#{internalKeyBindingMBean.ocspTransactionLogValues}"
-									 disabled="#{not internalKeyBindingMBean.inEditMode}" rows="5" cols="80" />
-					<br/>
-					<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_VALUES_HINT}" styleClass="smallHelp"/>
-				</h:panelGroup>
-				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
-				<h:panelGroup id="testTransactionLogging" rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
-					<h:commandButton value="#{web.text.OCSP_LOGGING_TEST_TRANSACTION_LOGGING}"
-									 action="#{internalKeyBindingMBean.commandTestOcspTransactionLogging}">
-						<f:ajax render="testTransactionLogging" execute="@form"/>
-					</h:commandButton>
-					<br/>
-					<h:outputText value="#{internalKeyBindingMBean.ocspTransactionLogMessage}"
-								  rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
-				</h:panelGroup>
-
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="enableOcspAuditLogging"
-											 value="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"
-											 disabled="#{not internalKeyBindingMBean.inEditMode}">
-						<f:ajax render="ocspLoggingSettings"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel for="enableOcspAuditLogging" value="#{web.text.OCSP_LOGGING_ENABLE_AUDIT_LOGGING}"/>
-				</h:panelGroup>
-				<div/>
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_PATTERN}" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"/>
-				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}">
-					<h:inputText value="#{internalKeyBindingMBean.ocspAuditLogPattern}"
-								 disabled="#{not internalKeyBindingMBean.inEditMode}" size="80" />
-					<br/>
-					<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_PATTERN_HINT}" styleClass="smallHelp"/>
-				</h:panelGroup>
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_VALUES}" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"/>
-				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}">
-					<h:inputTextarea value="#{internalKeyBindingMBean.ocspAuditLogValues}"
-									 disabled="#{not internalKeyBindingMBean.inEditMode}" rows="5" cols="80" />
-					<br/>
-					<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_VALUES_HINT}" styleClass="smallHelp"/>
-				</h:panelGroup>
-				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"/>
-				<h:panelGroup id="testAuditLogging" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}">
-					<h:commandButton value="#{web.text.OCSP_LOGGING_TEST_AUDIT_LOGGING}"
-									 action="#{internalKeyBindingMBean.commandTestOcspAuditLogging}">
-						<f:ajax render="testAuditLogging" execute="@form"/>
-					</h:commandButton>
-					<br/>
-					<h:outputText value="#{internalKeyBindingMBean.ocspAuditLogMessage}"
-								  rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"/>
-				</h:panelGroup>
-
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT}" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled or internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
-				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled or internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
-					<h:inputText value="#{internalKeyBindingMBean.ocspLoggingDateFormat}"
-								 disabled="#{not internalKeyBindingMBean.inEditMode}" size="80" />
-					<br/>
-					<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT_HINT}" styleClass="smallHelp"/>
-				</h:panelGroup>
-			</h:panelGrid>
-			<h:commandButton value="#{web.text.OCSP_LOGGING_SAVE}" action="#{internalKeyBindingMBean.saveOcspLoggingConfiguration}"/>
-		</h:form>
-
+		
 	</ui:define>
 </ui:composition>
 </html>

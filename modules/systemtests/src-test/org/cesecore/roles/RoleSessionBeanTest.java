@@ -597,7 +597,7 @@ public class RoleSessionBeanTest {
     private RoleMember addRoleMemberToRole(final String nameSpace, final String roleName, final String subjectDn) throws AuthorizationDeniedException {
         final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
         return roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                subjectDn.hashCode(), X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(),
+                subjectDn.hashCode(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), subjectDn, role.getRoleId(), null));
         
     }

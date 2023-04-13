@@ -13,129 +13,6 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSProcessableByteArray;
-import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
-import org.bouncycastle.util.CollectionStore;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
-import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.enums.ModuleTypes;
-import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.CertificateGenerationParams;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.IllegalValidityException;
-import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.ca.SignRequestException;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.certificate.BaseCertificateData;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.CertificateWrapper;
-import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
-import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
-import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
-import org.cesecore.certificates.certificate.request.FailInfo;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
-import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.certificates.certificate.request.X509ResponseMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.certificatetransparency.CTLogException;
-import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
-import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.util.PublicKeyWrapper;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
-import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.protocol.ws.common.CertificateHelper;
-import org.ejbca.core.protocol.ws.objects.CertificateResponse;
-import org.ejbca.cvc.AlgorithmUtil;
-import org.ejbca.cvc.CAReferenceField;
-import org.ejbca.cvc.CVCAuthenticatedRequest;
-import org.ejbca.cvc.CVCObject;
-import org.ejbca.cvc.CVCPublicKey;
-import org.ejbca.cvc.CVCertificate;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.CertificateParser;
-import org.ejbca.cvc.HolderReferenceField;
-import org.ejbca.cvc.PublicKeyEC;
-import org.ejbca.cvc.exception.ConstructionException;
-import org.ejbca.cvc.exception.ParseException;
-import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -160,6 +37,145 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.its.ETSISignedData;
+import org.bouncycastle.its.ETSISignedDataBuilder;
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.its.jcajce.JcaITSContentSigner;
+import org.bouncycastle.its.operator.ITSContentSigner;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Psid;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.util.CollectionStore;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.BaseCertificateData;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.CTLogException;
+import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.util.CvcKeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
+import org.cesecore.util.ECAUtils;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.scep.ScepRequestMessage;
+import org.ejbca.core.protocol.ws.common.CertificateHelper;
+import org.ejbca.core.protocol.ws.objects.CertificateResponse;
+import org.ejbca.cvc.AlgorithmUtil;
+import org.ejbca.cvc.CAReferenceField;
+import org.ejbca.cvc.CVCAuthenticatedRequest;
+import org.ejbca.cvc.CVCObject;
+import org.ejbca.cvc.CVCPublicKey;
+import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.CertificateParser;
+import org.ejbca.cvc.HolderReferenceField;
+import org.ejbca.cvc.PublicKeyEC;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
+import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Creates and signs certificates.
@@ -236,7 +252,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (cainfo != null) {
             return cainfo.getCertificateChain();
         } else {
-            return new ArrayList<Certificate>();
+            return new ArrayList<>();
         }
     }
 
@@ -407,7 +423,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throws AuthorizationDeniedException, NoSuchEndEntityException, CertificateCreateException, CertificateRevokeException,
             InvalidAlgorithmException, ApprovalException, WaitingForApprovalException {
         final String username = req.getUsername();
-        EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
+        final EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
+        endEntityManagementSession.initializeEndEntityTransaction(username);
         if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
         }
@@ -478,6 +495,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     } else {
                         endEntityInformation = suppliedUserData;
                     }
+                    
                     // We need to make sure we use the users registered CA here
                     if (endEntityInformation.getCAId() != ca.getCAId()) {
                         final String failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()),
@@ -504,6 +522,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                         postCreateCertificate(admin, endEntityInformation, ca,
                                 new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false, certGenParams);
+                        // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
+                        if (ca.isUseUserStorage()) {
+                            finishUser(ca, endEntityInformation);
+                        }
                     }
                 } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
@@ -512,11 +534,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     throw new NoSuchEndEntityException(failText, e);
                 }
             }
-            ret.create();
-            // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
-            if (ca.isUseUserStorage() && endEntityInformation != null) {
-                finishUser(ca, endEntityInformation);
-            }
+            ret.create();         
         } catch (CustomCertificateSerialNumberException e) {
             cleanUserCertDataSN(endEntityInformation);
             throw e;
@@ -615,6 +633,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return cert;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Collection<CertificateWrapper> createCardVerifiableCertificateWS(final AuthenticationToken authenticationToken, final String username,
             String password, final String cvcreq)
@@ -868,7 +887,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     // Do the magic adding of parameters, if they don't exist in the public key.
                     final Certificate cvcaCertificate = caCertificates.get(caCertificates.size() - 1);
                     try {
-                        publicKey = KeyTools.getECPublicKeyWithParams(publicKey, cvcaCertificate.getPublicKey());
+                        publicKey = CvcKeyTools.getECPublicKeyWithParams(publicKey, cvcaCertificate.getPublicKey());
                     } catch (InvalidKeySpecException e) {
                         String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(certificate), e.getMessage());
                         log.warn(msg, e);
@@ -1132,7 +1151,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // See if we can get issuerDN directly from request
         if (req.getIssuerDN() != null) {
             final String dn = certificateStoreSession.getCADnFromRequest(req);
-            final String keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            final String keySequence; 
+            
+            if(req instanceof ScepRequestMessage) {
+                keySequence = new BigInteger(req.getCASequence()).toString(16).toUpperCase(); // BigInteger string to uppercase for scep case
+            } else {
+                keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            }
+            
             if (log.isDebugEnabled()) {
                 log.debug(">getCAFromRequest, dn: " + dn + ": " + keySequence);
             }
@@ -1193,7 +1219,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throws CADoesntExistsException, AuthorizationDeniedException {
         // See if we can get username and password directly from request
         final String username = req.getUsername();
-        final EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
+        final EndEntityInformation data = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(admin, username);
         if (data == null) {
             throw new CADoesntExistsException("Could not find username, and hence no CA for user '" + username + "'.");
         }
@@ -1224,6 +1250,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         
         if (!ca.getCAInfo().getFinishUser()) {
             cleanSerialnumberAndCsrFromUserData(data);
+            endEntityManagementSession.suppressUnwantedUserDataChanges(data.getUsername());
             return;
         }
         
@@ -1450,6 +1477,91 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (CMSException | CertificateEncodingException | IOException | OperatorCreationException e) {
             log.debug("Given payload could not be signed.", e);
             throw new SignRequestSignatureException("Given payload could not be signed.", e);
+        }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public byte[] signItsPayload(final byte[] data, final ECA eca)
+            throws CryptoTokenOfflineException, SignRequestSignatureException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to sign ITS payload from CA with ID " + eca.getCAId());
+        }
+        
+        final CAToken catoken = eca.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+        final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (privateKey == null) {
+            throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
+        }
+
+        final ITSCertificate ecaCertificate = eca.getItsCACertificate();
+        if(ecaCertificate==null) {
+            throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
+        }
+
+        try {
+            // Psid is same for EC enroll and authorization validation
+            ETSISignedDataBuilder signedDataBuilder = ETSISignedDataBuilder.builder(
+                            new Psid(ITSApplicationIds.SECURED_CERT_REQUEST_SERVICE.getPsId()));
+            signedDataBuilder.setUnsecuredData(data);
+            JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
+                    .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
+            HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
+            ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
+
+            return etsiSignedData.getEncoded();
+        } catch ( Exception e) {
+            // high level catch block
+            log.debug("ITS payload could not be signed.", e);
+            throw new SignRequestSignatureException("ITS payload could not be signed.", e);
+        }
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public ITSCertificate createEnrollCredential(AuthenticationToken admin, Builder certificateBuilder, 
+            CertificateId certifcateId, PublicVerificationKey verificationKey, 
+            ECA eca, EndEntityInformation endEntity)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to generate EC from CA with ID " + eca.getCAId());
+        }
+
+        return certificateCreateSession.createItsCertificate(admin, endEntity, eca, certificateBuilder, certifcateId, verificationKey);
+    }
+
+    @Override
+    public byte[] signItsPayload(ETSISignedDataBuilder signedDataBuilder, ECA eca) 
+                    throws CryptoTokenOfflineException, SignRequestSignatureException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to sign ITS payload from CA with ID " + eca.getCAId());
+        }
+        
+        final CAToken catoken = eca.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+        final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (privateKey == null) {
+            throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
+        }
+
+        final ITSCertificate ecaCertificate = eca.getItsCACertificate();
+        if(ecaCertificate==null) {
+            throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
+        }
+
+        try {
+            // Psid is same for EC enroll and authorization validation
+            ITSContentSigner dataSigner = eca.getITSContentSigner(privateKey, ecaCertificate); 
+
+            HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
+            ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
+
+            return etsiSignedData.getEncoded();
+        } catch ( Exception e) {
+            // high level catch block
+            log.debug("ITS payload could not be signed.", e);
+            throw new SignRequestSignatureException("ITS payload could not be signed.", e);
         }
     }
 }

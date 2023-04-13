@@ -25,9 +25,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -40,7 +38,11 @@ import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.FileTools;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -54,6 +56,9 @@ import java.util.Collections;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CmpTestCommandTest {
     private final CMPTest command = new CMPTest();
+
+    @Rule
+    public Timeout testTimeout = new Timeout(90_000); // per test case
 
     private static final String CERTIFICATE_PROFILE_NAME = "CmpTestCommandTestCP";
     private static final String END_ENTITY_PROFILE_NAME = "CmpTestCommandTestEEP";

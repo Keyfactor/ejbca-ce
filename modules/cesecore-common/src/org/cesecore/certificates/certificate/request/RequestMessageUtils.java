@@ -36,16 +36,17 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.FileTools;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Utility class to gather a few functions
@@ -67,7 +68,7 @@ public abstract class RequestMessageUtils {
 			// instead of a P10, it will create a PKCS10RequestMessage, but not fill it
 			if (ret == null || ((PKCS10RequestMessage)ret).getCertificationRequest() == null) {
 	            log.debug("Can not parse PKCS10 request, trying CVC instead: P10 is parsed to null");
-	            ret = genCVCRequestMessage(request);			    
+	            ret = genCVCRequestMessage(request);
 			}
 		} catch (IllegalArgumentException | IOException e) {
 		    if (log.isDebugEnabled()) {
@@ -80,7 +81,7 @@ public abstract class RequestMessageUtils {
 	                log.debug("Can not parse CVC request, this is no request that we know, returning null: "+ e1.getMessage());
 	            }
 	            ret = null;
-	        }			
+	        }
 		}
 		return ret;
 	}

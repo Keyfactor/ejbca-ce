@@ -12,11 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.util.List;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -27,7 +30,10 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
+
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * @version $Id$
@@ -39,12 +45,27 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    
+
     @Override
     public void deferLocalForTest() {
         raMasterApiProxyBean.deferLocalForTest();
     }
-    
+
+    @Override
+    public void enableFunctionTracingForTest() {
+        raMasterApiProxyBean.enableFunctionTracingForTest();
+    }
+
+    @Override
+    public List<String> getFunctionTraceForTest() {
+        return raMasterApiProxyBean.getFunctionTraceForTest();
+    }
+
+    @Override
+    public void restoreFunctionTracingAfterTest() {
+        raMasterApiProxyBean.restoreFunctionTracingAfterTest();
+    }
+
     @Override
     public byte[] cmpDispatch(byte[] pkiMessageBytes, String cmpConfigurationAlias)
             throws NoSuchAliasException {
@@ -68,5 +89,36 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         return raMasterApiProxyBean.addUser(authenticationToken, endEntity, clearpwd);
     }
+
+    @Override
+    public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+            throws AuthorizationDeniedException, EjbcaException {
+        return raMasterApiProxyBean.createCertificate(authenticationToken, endEntityInformation);
+    }
+
+    @Override
+    public byte[] enrollAndIssueSshCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
+            SshRequestMessage sshRequestMessage) throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
+        return raMasterApiProxyBean.enrollAndIssueSshCertificate(authenticationToken, endEntity,
+                sshRequestMessage);
+    }
+    
+    @Override
+    public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken,
+            RaCertificateSearchRequest raCertificateSearchRequest) {
+        return raMasterApiProxyBean.searchForCertificates(authenticationToken, raCertificateSearchRequest);
+    }
+    
+    @Override
+    public List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, 
+            String fingerprint, String rootSubjectDnHash) {
+        return raMasterApiProxyBean.searchForCertificateChainWithPreferredRoot(authenticationToken, fingerprint, rootSubjectDnHash);
+    }
+    
+    @Override
+    public RaAuthorizationResult getAuthorization(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        return raMasterApiProxyBean.getAuthorization(authenticationToken);
+    }
+        
 
 }

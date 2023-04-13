@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 
@@ -24,10 +27,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.Part;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
@@ -38,11 +43,11 @@ import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.OAuthProviderUIHelper;
+import org.ejbca.util.oauth.OAuthTools;
 
+import com.keyfactor.util.CertTools;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -100,7 +105,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private String audience;
         private boolean audienceCheckDisabled = false;
         private String scope;
-        private UploadedFile publicKeyFile;
+        private Part publicKeyFile;
         
         // if null, use client secret
         private Integer keyBinding = null;
@@ -137,7 +142,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.url = url;
         }
         
-        public UploadedFile getPublicKeyFile() {
+        public Part getPublicKeyFile() {
             return publicKeyFile;
         }
 
@@ -153,7 +158,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.keyIdentifier = keyIdentifier;
         }
 
-        public void setPublicKeyFile(final UploadedFile publicKeyFile) {
+        public void setPublicKeyFile(final Part publicKeyFile) {
             this.publicKeyFile = publicKeyFile;
         }
 
@@ -316,6 +321,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.oauthKeyBeingEdited = oauthKey;
             this.defaultKeyLabel = defaultKeyLabel;
             this.keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
+            this.publicKeyUrl = oauthKey.getPublicKeyUrl();
             
             this.logoutUrl = oauthKey.getLogoutUrl();
             this.tokenUrl = oauthKey.getTokenUrl();
@@ -460,12 +466,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         return Arrays.asList(PublicKeyUploadInFormOf.values());
     }
 
-    private byte[] getUploadedBytes(final UploadedFile upload) {
+    private byte[] getUploadedBytes(final Part upload) {
         if (log.isDebugEnabled()) {
             log.debug("Received uploaded public key file: " + upload.getName());
         }
         try {
-            return upload.getBytes();
+            return IOUtils.toByteArray(upload.getInputStream(), upload.getSize());    
         } catch (final Exception e) {
             log.info("Failed to add OAuth Key.", e);
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_GENERICADDERROR", e.getLocalizedMessage());
@@ -495,13 +501,13 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
         byte[] inputKeyBytes = oauthKeyEditor.getPublicKeyValue().getBytes(StandardCharsets.US_ASCII);
         try {
-            inputKeyBytes = org.cesecore.util.Base64.decode(inputKeyBytes);
+            inputKeyBytes = com.keyfactor.util.Base64.decode(inputKeyBytes);
         } catch (RuntimeException e) {
             log.info("New key is not in Base64 format. Assuming it is PEM or JWK format.");
         }
         final byte[] parsedPublicKey;
         try {
-            parsedPublicKey = KeyTools.getBytesFromOauthKey(inputKeyBytes);
+            parsedPublicKey = OAuthTools.getBytesFromOauthKey(inputKeyBytes);
         } catch (CertificateParsingException e) {
             log.info("Could not parse public key from certificate string " + oauthKeyEditor.getPublicKeyValue());
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYSTRING");
@@ -541,7 +547,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_FAILEDKEYURL", oauthKeyEditor.getPublicKeyUrl());
             return StringUtils.EMPTY;
         }
-        oauthKeyEditor.setPublicKeyUrl(null);
+        // oauthKeyEditor.setPublicKeyUrl(null);
         return null;
     }
 
@@ -557,7 +563,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
         final byte[] newOauthKeyPublicKey;
         try {
-            newOauthKeyPublicKey = KeyTools.getBytesFromOauthKey(uploadedFileBytes);
+            newOauthKeyPublicKey = OAuthTools.getBytesFromOauthKey(uploadedFileBytes);
         } catch (CertificateParsingException exception) {
             log.info("Could not parse the certificate file.", exception);
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYFILE", oauthKeyEditor.getPublicKeyFile().getName(), exception.getMessage());
@@ -578,7 +584,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         String keyIdentifier = oauthKeyEditor.getKeyIdentifier();
         if (StringUtils.isBlank(keyIdentifier)) {
             // If the upload was a JWK, we can extract the Key ID from it.
-            keyIdentifier = KeyTools.getKeyIdFromJwkKey(newOauthKeyPublicKey);
+            keyIdentifier = OAuthTools.getKeyIdFromJwkKey(newOauthKeyPublicKey);
             if (!validateInputNotEmpty(keyIdentifier, "OAUTHKEYTAB_KEYIDENTIFIER_EMPTY")) {
                 return null;
             }
@@ -663,6 +669,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
         newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
+        if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
+            newOauthKey.setPublicKeyUrl(oauthKeyEditor.getPublicKeyUrl());
+        }
         if (oauthKeyEditor.getKeyBinding() != null) {
             newOauthKey.setKeyBinding(oauthKeyEditor.getKeyBinding());
         }
@@ -835,7 +844,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
         oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
-
+        if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
+            oauthKeyToUpdate.setPublicKeyUrl(oauthKeyEditor.getPublicKeyUrl());
+        }
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;

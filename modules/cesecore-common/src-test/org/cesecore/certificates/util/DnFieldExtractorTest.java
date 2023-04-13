@@ -21,6 +21,8 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
+import com.keyfactor.util.certificate.DnComponents;
+
 
 /**
  * Tests the DNFieldExtractor class.
@@ -31,13 +33,13 @@ public class DnFieldExtractorTest {
     public void test01CheckDnFields() throws Exception {
     	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
-    	String dn = "name=tomas,street=a street, role=Test Role, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,L=Stockholm,dc=PrimeKey,DC=com,description=Test DN";
+    	String dn = "name=tomas,street=a street, role=Test Role, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,L=Stockholm,dc=PrimeKey,DC=com,description=Test DN,vid=FFF1,pid=8000";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
         if (DnComponents.enterpriseMappingsExist()) {
-            assertEquals(32, i.size());
+            assertEquals(34, i.size());
         } else {
-            assertEquals(28, i.size());
+            assertEquals(30, i.size());
         }
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
@@ -79,6 +81,10 @@ public class DnFieldExtractorTest {
     	assertEquals("CN=Tomas Gustavsson", fieldstr);
     	fieldstr = extractor.getFieldString(DNFieldExtractor.DC);
     	assertEquals("DC=PrimeKey,DC=com", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.VID);
+        assertEquals("VID=FFF1", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.PID);
+        assertEquals("PID=8000", fieldstr);
     	boolean illegal = extractor.isIllegal();
     	assertFalse(illegal);
     	boolean other = extractor.existsOther();

@@ -25,8 +25,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectedData;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * Used as base class for NoConflictCertificateData and CertificateData to group the common logic for those entites
@@ -108,6 +109,10 @@ public abstract class BaseCertificateData extends ProtectedData {
     /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate expires. */
     public abstract long getExpireDate();
     
+    /** @returns invalidity date, the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate was considered invalid. */
+     
+    public abstract Long getInvalidityDate();
+    
     /**
      * Set to revocation reason if status == CERT_REVOKED
      *
@@ -170,7 +175,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract int getRowVersion();
     
     /**
-     * @return certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like org.cesecore.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
+     * @return certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
      */
     public abstract String getCertificateRequest();
     
@@ -199,6 +204,13 @@ public abstract class BaseCertificateData extends ProtectedData {
      * @param expireDate expire date
      */
     public abstract void setExpireDate(long expireDate);
+    
+    /**
+     * Set to date from when revoked certificate should be counted as invalid. Format == Date.getTime()
+     *
+     * @param invalidityDate revocation date
+     */
+    public abstract void setInvalidityDate(Long invalidityDate);
     
     /**
      * Set to date when revocation occurred if status == CERT_REVOKED. Format == Date.getTime()
@@ -292,7 +304,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract void setCaFingerprint(String cafp);
     
     /**
-     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like org.cesecore.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
+     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
      */
     public abstract void setCertificateRequest(String certificateRequest);
     
@@ -308,7 +320,7 @@ public abstract class BaseCertificateData extends ProtectedData {
             setExpireDate(expireDate.getTime());
         }
     }
-    
+
     /**
      * date the certificate was revoked
      *
@@ -322,6 +334,19 @@ public abstract class BaseCertificateData extends ProtectedData {
         }
     }
 
+    /**
+     * date from when the certificate was considered invalid
+     *
+     * @param invalidityDate invalidity date
+     */
+    public void setInvalidityDate(Date invalidityDate) {
+        if (invalidityDate == null) {
+            setInvalidityDate(-1L);
+        } else {
+            setInvalidityDate(invalidityDate.getTime());
+        }       
+    }
+    
     /**
      * return the current class name
      *  

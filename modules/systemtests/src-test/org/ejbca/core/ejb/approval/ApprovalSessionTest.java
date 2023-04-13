@@ -13,6 +13,13 @@
 
 package org.ejbca.core.ejb.approval;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -42,19 +49,13 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
@@ -80,12 +81,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Test of approvals.
@@ -240,19 +241,19 @@ public class ApprovalSessionTest extends CaTestCase {
                 StandardRules.CAACCESSBASE.resource()
         ), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1, role.getRoleId(), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername2, role.getRoleId(), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername3, role.getRoleId(), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), reqadminusername, role.getRoleId(), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                "CN=externalCert,C=SE".hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
+                "CN=externalCert,C=SE".hashCode(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(externalcert), role.getRoleId(), null));
 
         admincert1 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername1)).iterator().next();
@@ -461,8 +462,8 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalSessionRemote.addApprovalRequest(cliReqAuthToken, eeApprovalRequest);
         // Use the authentication token
         endEntityManagementSession.addUser(intadmin, userdata, false);
-        endEntityManagementSession.changeUser(cliReqAuthToken, userdata, false);
-        approvalExecutionSessionRemote.approve(intadmin, approvalId, createApprovalLongExpirationPeriod("ap1test"));
+        endEntityManagementSession.changeUser(intadmin, userdata, false);
+        approvalExecutionSessionRemote.approve(cliReqAuthToken, approvalId, createApprovalLongExpirationPeriod("ap1test"));
 
         final int actualStatus = approvalSessionRemote.isApproved(approvalId);
         assertEquals(ApprovalDataVO.STATUS_APPROVED, actualStatus);

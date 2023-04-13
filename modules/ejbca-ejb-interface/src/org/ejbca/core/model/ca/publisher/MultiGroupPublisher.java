@@ -119,7 +119,7 @@ public class MultiGroupPublisher extends BasePublisher {
 
 
     @Override
-    public boolean willPublishCertificate(int status, int revocationReason) {
+    public boolean willPublishCertificate(int status, long revocationDate) {
         log.trace(">willPublishCertificate");
         // We don't know exactly which publishers storeCertificate will use,
         // so we just check the "first" one in each group. ("first" means lowest ID)
@@ -129,7 +129,7 @@ public class MultiGroupPublisher extends BasePublisher {
             }
             final int publisherId = group.first();
             final BasePublisher publisher = getPublisher(publisherId);
-            if (publisher.willPublishCertificate(status, revocationReason)) {
+            if (publisher.willPublishCertificate(status, revocationDate)) {
                 log.trace("<willPublishCertificate: true");
                 return true;
             }
@@ -155,7 +155,7 @@ public class MultiGroupPublisher extends BasePublisher {
         log.trace(">storeCertificate");
         final List<Integer> publisherIdsToUse = new ArrayList<>();
         for (final BasePublisher publisher : getPublishersToUse(false)) {
-            final boolean willPublish = publisher.willPublishCertificate(certificateData.getStatus(), certificateData.getRevocationReason());
+            final boolean willPublish = publisher.willPublishCertificate(certificateData.getStatus(), certificateData.getRevocationDate());
             if (willPublish) {
                 publisherIdsToUse.add(publisher.getPublisherId());
             }
@@ -258,7 +258,7 @@ public class MultiGroupPublisher extends BasePublisher {
         log.trace(">upgrade");
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // Does nothing currently
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, Float.valueOf(LATEST_VERSION));
         }
         log.trace("<upgrade");
     }

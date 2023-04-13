@@ -39,8 +39,7 @@ public class ProtocolConfigTest {
     
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST)
-            ;
+    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolConfigTest"));
     
     private static String httpReqPath;
@@ -74,10 +73,10 @@ public class ProtocolConfigTest {
      */
     @Test
     public void testOcsp() throws AuthorizationDeniedException, IOException {
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfig.setProtocolStatus(AvailableProtocols.OCSP.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protcolConfig);
+        protocolConfig.setProtocolStatus(AvailableProtocols.OCSP.getName(), false);
+        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
         
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.OCSP.getName()));
         assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
@@ -92,10 +91,10 @@ public class ProtocolConfigTest {
      */
     @Test
     public void testScep() throws AuthorizationDeniedException, IOException {
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfig.setProtocolStatus(AvailableProtocols.SCEP.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protcolConfig);
+        protocolConfig.setProtocolStatus(AvailableProtocols.SCEP.getName(), false);
+        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.SCEP.getName()));
         assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
@@ -110,10 +109,10 @@ public class ProtocolConfigTest {
      */
     @Test
     public void testPublicWeb() throws AuthorizationDeniedException, IOException {
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfig.setProtocolStatus(AvailableProtocols.PUBLIC_WEB.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protcolConfig);
+        protocolConfig.setProtocolStatus(AvailableProtocols.PUBLIC_WEB.getName(), false);
+        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.PUBLIC_WEB.getName()));
         assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
@@ -128,10 +127,10 @@ public class ProtocolConfigTest {
      */
     @Test
     public void testRaWeb() throws AuthorizationDeniedException, IOException {
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfig.setProtocolStatus(AvailableProtocols.RA_WEB.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protcolConfig);
+        protocolConfig.setProtocolStatus(AvailableProtocols.RA_WEB.getName(), false);
+        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.RA_WEB.getName()));
         assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
@@ -146,10 +145,10 @@ public class ProtocolConfigTest {
      */
     @Test
     public void testCmp() throws AuthorizationDeniedException, IOException {
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfig.setProtocolStatus(AvailableProtocols.CMP.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protcolConfig);
+        protocolConfig.setProtocolStatus(AvailableProtocols.CMP.getName(), false);
+        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.CMP.getName()));
         assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
@@ -164,10 +163,10 @@ public class ProtocolConfigTest {
      */
     @Test
     public void testEst() throws AuthorizationDeniedException, IOException {
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfig.setProtocolStatus(AvailableProtocols.EST.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protcolConfig);
+        protocolConfig.setProtocolStatus(AvailableProtocols.EST.getName(), false);
+        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.EST.getName()));
         
@@ -188,10 +187,10 @@ public class ProtocolConfigTest {
      */
     @Test
     public void testWebDist() throws AuthorizationDeniedException, IOException {
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfig.setProtocolStatus(AvailableProtocols.WEB_DIST.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protcolConfig);
+        protocolConfig.setProtocolStatus(AvailableProtocols.WEB_DIST.getName(), false);
+        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.WEB_DIST.getName()));
         assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
@@ -208,10 +207,10 @@ public class ProtocolConfigTest {
         EjbcaException_Exception expectedException = null;
         EjbcaWSTest wsTest = new EjbcaWSTest();
         
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfig.setProtocolStatus(AvailableProtocols.WS.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protcolConfig);
+        protocolConfig.setProtocolStatus(AvailableProtocols.WS.getName(), false);
+        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
         
         try {
             EjbcaWSTest.beforeClass();

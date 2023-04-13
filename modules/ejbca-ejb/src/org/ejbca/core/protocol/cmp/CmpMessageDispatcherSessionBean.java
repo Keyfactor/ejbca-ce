@@ -23,7 +23,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIBody;
@@ -66,6 +66,7 @@ import org.ejbca.core.protocol.NoSuchAliasException;
  * - 5.3.18 Certificate Confirmation - accept or reject by client - will return a PKI Confirmation Content (-> PKIConfirmContent)
  * - 5.3.3 Certificate Request / Response (-> CertRepMessage)
  * - 5.3.5 Key Update Request / Response (-> CertRepMessage)
+ * - 5.3.3 CertificationRequest (PKCS10)
  * 
  *  Responses of type 'CertRepMessage' may contain additional CA certificates in its 'caPubs' field 
  *  which can be configured in the CMP configuration ({@link CmpConfiguration#getResponseCaPubsCA(String)}.
@@ -157,6 +158,12 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         certificateRequestSession);
                 cmpMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(cmpConfigurationAlias),
                         cmpConfiguration.getAllowRAVerifyPOPO(cmpConfigurationAlias),
+                        cmpConfiguration.getExtractUsernameComponent(cmpConfigurationAlias));
+                break;
+            case PKIBody.TYPE_P10_CERT_REQ:
+                handler = new P10CrMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession,
+                        certificateRequestSession);
+                cmpMessage = new P10CrCertificationRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(cmpConfigurationAlias),
                         cmpConfiguration.getExtractUsernameComponent(cmpConfigurationAlias));
                 break;
             case PKIBody.TYPE_KEY_UPDATE_REQ:                    
@@ -287,7 +294,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
      * @return the list of CA certificates in the order, the CA IDs were given.
      */
     private List<Certificate> getCaCertificates(final AuthenticationToken admin, final String caListString) {
-        final List<Certificate> result = new ArrayList<Certificate>();
+        final List<Certificate> result = new ArrayList<>();
         CAInfo cainfo = null;
         Certificate cacert;
         if (StringUtils.isNotBlank(caListString)) {
@@ -302,7 +309,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     if (cainfo != null && CollectionUtils.isNotEmpty(cainfo.getCertificateChain())) {
                         cacert = (X509Certificate) cainfo.getCertificateChain().get(0);
                         if (!result.contains(cacert)) {
-                            result.add((X509Certificate) cacert);
+                            result.add(cacert);
                         }
                     } else { // Should never happen.
                         log.info("Cannot find CA: " + ca); 

@@ -36,6 +36,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private static final Logger log = Logger.getLogger(InternalKeyBindingBase.class);
     public static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
     public static final String PROP_TRUSTED_CERTIFICATE_REFERENCES = "trustedCertificateReferences";
+    public static final String PROP_SIGN_RESPONSE_ON_BEHALF = "signOcspResponseOnBehalf";
     public static final String PROP_SIGNATURE_ALGORITHM = "signatureAlgorithm";
     public static final String PROP_OCSP_EXTENSION = "ocspExtensions";
     public static final String BASECLASS_PREFIX = "BASECLASS_";
@@ -49,8 +50,9 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private int cryptoTokenId;
     private String keyPairAlias;
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
+    private List<InternalKeyBindingTrustEntry> signOcspResponseOnBehalf;
     private List<String> ocspExtensions;
-    private String signatureAlgorithm;
+    private String signatureAlgorithm;    
     
     private final LinkedHashMap<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new LinkedHashMap<>();
     
@@ -147,7 +149,12 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     @Override
     public String getKeyPairAlias() { return keyPairAlias; }
     @Override
-    public void setKeyPairAlias(final String keyPairAlias) { this.keyPairAlias = keyPairAlias; }
+    public void setKeyPairAlias(final String keyPairAlias) { 
+        if(keyPairAlias == null) {
+            throw new IllegalArgumentException("Keybinding key pair alias may not be null.");
+        }
+        this.keyPairAlias = keyPairAlias; 
+    }
 
     @Override
     public String getNextKeyPairAlias() {
@@ -166,13 +173,13 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     }
 
     private static final SimpleDateFormat DATE_FORMAT_MS = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-    private static final Pattern DATE_FORMAT_PATTERN = Pattern.compile("_\\d{8}\\d{6}$");
-    private static final Pattern DATE_FORMAT_PATTERN_MS = Pattern.compile("_\\d{8}\\d{9}$");
+    private static final Pattern DATE_FORMAT_PATTERN = Pattern.compile("[_-]\\d{8}\\d{6}$");
+    private static final Pattern DATE_FORMAT_PATTERN_MS = Pattern.compile("[_-]\\d{8}\\d{9}$");
     
     /** Replace existing postfix or generate add a new one (using current time with millisecond granularity). */
     private String getNewAlias(final String oldAlias) {
         final Matcher matcherMs = DATE_FORMAT_PATTERN_MS.matcher(oldAlias);
-        final String newPostFix = "_" + DATE_FORMAT_MS.format(new Date());
+        final String newPostFix = "-" + DATE_FORMAT_MS.format(new Date());
         // Check if the key alias postfix is in EJBCA 6.2.4+ format
         if (matcherMs.find()) {
             // Replace postfix in millisecond format
@@ -215,6 +222,21 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         final ArrayList<InternalKeyBindingTrustEntry> arrayList = new ArrayList<>(trustedCertificateReferences.size());
         arrayList.addAll(trustedCertificateReferences);
         putDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, arrayList);
+    }
+    
+    public List<InternalKeyBindingTrustEntry> getSignOcspResponseOnBehalf() {
+        if(signOcspResponseOnBehalf == null) {
+            this.signOcspResponseOnBehalf = getDataInternal(PROP_SIGN_RESPONSE_ON_BEHALF, new ArrayList<InternalKeyBindingTrustEntry>());
+        }
+        return new ArrayList<>(signOcspResponseOnBehalf);
+    }
+
+    public void setSignOcspResponseOnBehalf(final List<InternalKeyBindingTrustEntry> signOcspResponseOnBehalf) {
+        this.signOcspResponseOnBehalf = signOcspResponseOnBehalf;
+        // Always save it as an ArrayList that we know is Serializable
+        final ArrayList<InternalKeyBindingTrustEntry> arrayList = new ArrayList<>(signOcspResponseOnBehalf.size());
+        arrayList.addAll(signOcspResponseOnBehalf);
+        putDataInternal(PROP_SIGN_RESPONSE_ON_BEHALF, arrayList);
     }
 
     @Override
