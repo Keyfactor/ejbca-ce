@@ -212,50 +212,54 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Before
     public void setUp() throws Exception {
         assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
-        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
-        originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
-        //Make sure timers don't run while we debug
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
-        //Create an independent cryptotoken
-        cryptoTokenId = cryptoTokenRunner.createCryptoToken("StandaloneOcspResponseGeneratorTestCryptoToken");
-        internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        String signerDN = "CN=ocspTestSigner";
-        caCertificate = (X509Certificate) x509ca.getCertificateChain().get(0);
-        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
-        
-        x509CaSignBehalf = cryptoTokenRunner.createX509Ca("CN=x509CaSignBehalf", "x509CaSignBehalf"); 
-        caSignBehalfCertificate = (X509Certificate) x509CaSignBehalf.getCertificateChain().get(0);
-        
-        userSignBehalfCertificate = OcspTestUtils.createUserCertificate(authenticationToken, x509CaSignBehalf.getCAId(), 
-                                "testUserSignBehalfCertificate", "CN=testUserSignBehalfCertificate");
-        
-        KeyPair caKeyPair = KeyTools.genKeys("2048", "RSA");
-        externalCaInfo = OcspTestUtils.createExternalCa(authenticationToken, caKeyPair, "CN=testOcspExtCa", "testOcspExtCa", 86400);
-        externalCaUserCert = (X509Certificate) OcspTestUtils.createCertByExternalCa(caKeyPair, "CN=testOcspExtCaUser", 3600);
-        
-        List<InternalKeyBindingTrustEntry> signOnBehalfEntry = new ArrayList<>();
-        signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(x509CaSignBehalf.getCAId(), null, "behalf entry1"));
-        signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(externalCaInfo.getCAId(), null, "behalf entry external"));
-        OcspTestUtils.addSignOnBehalfEntries(authenticationToken, internalKeyBindingId, signOnBehalfEntry);
-        
+
+        if (cryptoTokenRunner.canRun()) {
+            x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
+            originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
+            //Make sure timers don't run while we debug
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
+            //Create an independent cryptotoken
+            cryptoTokenId = cryptoTokenRunner.createCryptoToken("StandaloneOcspResponseGeneratorTestCryptoToken");
+            internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                                                                          TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            String signerDN = "CN=ocspTestSigner";
+            caCertificate = (X509Certificate) x509ca.getCertificateChain().get(0);
+            ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
+
+            x509CaSignBehalf = cryptoTokenRunner.createX509Ca("CN=x509CaSignBehalf", "x509CaSignBehalf");
+            caSignBehalfCertificate = (X509Certificate) x509CaSignBehalf.getCertificateChain().get(0);
+
+            userSignBehalfCertificate = OcspTestUtils.createUserCertificate(authenticationToken, x509CaSignBehalf.getCAId(),
+                                                                            "testUserSignBehalfCertificate", "CN=testUserSignBehalfCertificate");
+
+            KeyPair caKeyPair = KeyTools.genKeys("2048", "RSA");
+            externalCaInfo = OcspTestUtils.createExternalCa(authenticationToken, caKeyPair, "CN=testOcspExtCa", "testOcspExtCa", 86400);
+            externalCaUserCert = (X509Certificate) OcspTestUtils.createCertByExternalCa(caKeyPair, "CN=testOcspExtCaUser", 3600);
+
+            List<InternalKeyBindingTrustEntry> signOnBehalfEntry = new ArrayList<>();
+            signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(x509CaSignBehalf.getCAId(), null, "behalf entry1"));
+            signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(externalCaInfo.getCAId(), null, "behalf entry external"));
+            OcspTestUtils.addSignOnBehalfEntries(authenticationToken, internalKeyBindingId, signOnBehalfEntry);
+        }
     }
 
     @After
     public void tearDown() throws Exception {
-        cryptoTokenRunner.cleanUp();
-        try {
-            internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
-            internalCertificateStoreSession.removeCertificate(userSignBehalfCertificate);
-        } catch (Exception e) {
-            //Ignore any failures.
+        if (cryptoTokenRunner.canRun()) {
+            cryptoTokenRunner.cleanUp();
+            try {
+                internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
+                internalCertificateStoreSession.removeCertificate(userSignBehalfCertificate);
+            } catch (Exception e) {
+                //Ignore any failures.
+            }
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
+            // Make sure default responder is restored
+            setOcspDefaultResponderReference(originalDefaultResponder);
+            caSession.removeCA(authenticationToken, externalCaInfo.getCAId());
         }
-        internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
-        // Make sure default responder is restored
-        setOcspDefaultResponderReference(originalDefaultResponder);
-        caSession.removeCA(authenticationToken, externalCaInfo.getCAId());
     }
 
     /**

@@ -77,38 +77,6 @@
         <filter-name>ProxiedAuthenticationFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    <!-- Tomahawk filter for file uploads. Should be replaced by h:inputFile pattern when we can use JSF2.2. -->
-    <filter>
-        <filter-name>extensionsFilter</filter-name>
-        <filter-class>org.apache.myfaces.webapp.filter.ExtensionsFilter</filter-class>
-        <init-param>
-            <description>Maximum size of uploads</description>
-            <param-name>uploadMaxFileSize</param-name>
-            <param-value>50m</param-value>
-        </init-param>
-        <init-param>
-            <description>Maximum size of uploads before using disk</description>
-            <param-name>uploadThresholdSize</param-name>
-            <param-value>1m</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>extensionsFilter</filter-name>
-        <url-pattern>*.jsf</url-pattern>
-        <!-- The following JSF pages in the AdminGUI are still using <t:inputFileUpload>. They should be converted to use <h:inputFile> instead (ECA-3658) -->
-        <url-pattern>/sysconfig/acmealiasconfiguration.xhtml</url-pattern>
-        <url-pattern>/sysconfig/editctlog.xhtml</url-pattern>
-        <url-pattern>/sysconfig/editoauthkey.xhtml</url-pattern>
-        <url-pattern>/sysconfig/systemconfiguration.xhtml</url-pattern>
-        <url-pattern>/sysconfig/editautoenrollmentconfiguration.xhtml</url-pattern>
-        <url-pattern>/ca/editcas/importca.xhtml</url-pattern>
-        <url-pattern>/ca/editcas/editcapage.xhtml</url-pattern>
-        <url-pattern>/ca/editcas/recievefile.xhtml</url-pattern>
-        <url-pattern>/ca/editcas/importcacert.xhtml</url-pattern>
-        <url-pattern>/ca/editvalidators/editvalidator.xhtml</url-pattern>
-        <url-pattern>/ca/cafunctions.xhtml</url-pattern>
-        <url-pattern>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</url-pattern>
-    </filter-mapping>
 
 	<filter>
 		<filter-name>ContentSecurityPolicyFilter</filter-name>
