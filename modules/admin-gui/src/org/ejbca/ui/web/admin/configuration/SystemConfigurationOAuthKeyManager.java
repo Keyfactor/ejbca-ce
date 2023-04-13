@@ -27,10 +27,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.Part;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
@@ -103,7 +105,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private String audience;
         private boolean audienceCheckDisabled = false;
         private String scope;
-        private UploadedFile publicKeyFile;
+        private Part publicKeyFile;
         
         // if null, use client secret
         private Integer keyBinding = null;
@@ -140,7 +142,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.url = url;
         }
         
-        public UploadedFile getPublicKeyFile() {
+        public Part getPublicKeyFile() {
             return publicKeyFile;
         }
 
@@ -156,7 +158,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.keyIdentifier = keyIdentifier;
         }
 
-        public void setPublicKeyFile(final UploadedFile publicKeyFile) {
+        public void setPublicKeyFile(final Part publicKeyFile) {
             this.publicKeyFile = publicKeyFile;
         }
 
@@ -464,12 +466,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         return Arrays.asList(PublicKeyUploadInFormOf.values());
     }
 
-    private byte[] getUploadedBytes(final UploadedFile upload) {
+    private byte[] getUploadedBytes(final Part upload) {
         if (log.isDebugEnabled()) {
             log.debug("Received uploaded public key file: " + upload.getName());
         }
         try {
-            return upload.getBytes();
+            return IOUtils.toByteArray(upload.getInputStream(), upload.getSize());    
         } catch (final Exception e) {
             log.info("Failed to add OAuth Key.", e);
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_GENERICADDERROR", e.getLocalizedMessage());
