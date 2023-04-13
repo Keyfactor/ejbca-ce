@@ -59,13 +59,34 @@
 				<!-- Search by SN -->
 				<h:outputText value="#{web.text.ORIFCERTIFICATSERIAL}" />
 				<h:inputText
-					value="#{searchEndEntitiesMBean.searchBySn}" immediate="true" />
-				<h:commandButton id="findWithUserNameButton"
+					value="#{searchEndEntitiesMBean.searchBySerialNumber}" immediate="true" />
+				<h:commandButton id="findWithSerialNumberButton"
 					value="#{web.text.SEARCH}"
 					action="#{searchEndEntitiesMBean.performSearchBySerialNumber()}">
 					<f:ajax execute="@form" event="click" render=":results" />
 				</h:commandButton>
-				
+				<!-- Search by status -->
+				<h:outputText value="#{web.text.ORWITHSTATUS}" />
+				<h:selectOneMenu value="#{searchEndEntitiesMBean.searchByStatusCode}" immediate="true">
+					<f:selectItems value="#{searchEndEntitiesMBean.availableStatuses}" />
+				</h:selectOneMenu>
+				<h:commandButton id="findByStatusButton"
+					value="#{web.text.SEARCH}"
+					action="#{searchEndEntitiesMBean.performSearchByStatus()}">
+					<f:ajax execute="@form" event="click" render=":results" />
+				</h:commandButton>
+				<!-- Search by expiry date  -->
+				<h:outputText value="#{web.text.ORLISTEXPIRING}" />
+				<h:panelGroup>
+					<h:inputText
+						value="#{searchEndEntitiesMBean.searchByExpiryDays}" immediate="true" size="5" />
+					<h:outputText value="#{web.text.DAYS}" />
+				</h:panelGroup>
+				<h:commandButton id="findByExpiryButton"
+					value="#{web.text.SEARCH}"
+					action="#{searchEndEntitiesMBean.performSearchByExpiry()}">
+					<f:ajax execute="@form" event="click" render=":results" />
+				</h:commandButton>
 
 			</h:panelGrid>
 		</h:form>
