@@ -16,19 +16,20 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.security.Principal;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSessionEvent;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -38,17 +39,18 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
+import com.keyfactor.util.CertTools;
+
 /**
  * JSF Managed Bean for handling authentication of clients.
  *
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class RaAuthenticationBean implements Serializable {
 
@@ -57,7 +59,7 @@ public class RaAuthenticationBean implements Serializable {
 
     // JavaServlet Specification 2.5 Section 7.1.1: "...The name of the session tracking cookie must be JSESSIONID".
     private static final String SESSIONCOOKIENAME = "JSESSIONID";
-
+    
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     @EJB
@@ -67,6 +69,7 @@ public class RaAuthenticationBean implements Serializable {
 
     private RaAuthenticationHelper raAuthenticationHelper = null;
     private AuthenticationToken authenticationToken = null;
+    private X509Certificate x509Certificate = null;
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken() {
@@ -75,6 +78,18 @@ public class RaAuthenticationBean implements Serializable {
         }
         authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
+    }
+    /** @return any X509Certificate the client has provided */
+    public X509Certificate getX509CertificateFromRequest() {
+        if (raAuthenticationHelper==null) {
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
+        }
+        x509Certificate = raAuthenticationHelper.getX509CertificateFromRequest(getHttpServletRequest());
+        return x509Certificate;
+    }
+
+    public boolean isCertificateInRequest() {
+        return getX509CertificateFromRequest() != null;
     }
 
     public void resetAuthentication(){
@@ -90,13 +105,15 @@ public class RaAuthenticationBean implements Serializable {
     }
     
     public boolean isPublicUser() {
-        final AuthenticationToken authToken = getAuthenticationToken();
-        return authToken instanceof PublicAccessAuthenticationToken;
+        return getAuthenticationToken() instanceof PublicAccessAuthenticationToken;
     }
 
     public boolean isOauthUser() {
-        final AuthenticationToken authToken = getAuthenticationToken();
-        return authToken instanceof OAuth2AuthenticationToken;
+        return getAuthenticationToken() instanceof OAuth2AuthenticationToken;
+    }
+
+    public boolean isClientCertificateUser() {
+        return getAuthenticationToken() instanceof X509CertificateAuthenticationToken;
     }
 
     public String getUserDisplayName() {
@@ -172,5 +189,9 @@ public class RaAuthenticationBean implements Serializable {
                 WebConfiguration.getPublicHttpsPort()
         ) + "ra/";
         return baseUrl + "logout.xhtml";
+    }
+
+    public String getUserRemoteAddr() {
+        return getHttpServletRequest().getRemoteAddr();
     }
 }

@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.common.exception;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 /**
  * Thrown when trying to delete an item when references to it exist.

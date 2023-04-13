@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -35,7 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
@@ -76,16 +77,11 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -96,6 +92,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Tests Key validator session.
@@ -191,7 +193,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             removeCertificateProfileIfExist(TEST_CP_NAME);
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
         } finally {
-            // Be sure to to this, even if the above fails
+            // Be sure to do this, even if the above fails
             tearDownRemoveRole();
         }
         log.trace("<tearDown()");
@@ -691,7 +693,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         int id = 0; // id of the Validator we will add
         try {
             // See if we have to remove the old validator first
-            @SuppressWarnings("unchecked")
             final Map<String, Integer> nameMap = MapUtils.invertMap(keyValidatorProxySession.getKeyValidatorIdToNameMap());
             if (nameMap.containsKey(name)) {
                 final int idtoremove = nameMap.get(name);
@@ -745,7 +746,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         int id = 0; // id of the Validator we will add
         int id1 = 0;
         // See if we have to remove the old validator first
-        @SuppressWarnings("unchecked")
         final Map<String, Integer> nameMap = MapUtils.invertMap(keyValidatorProxySession.getKeyValidatorIdToNameMap());
         if (nameMap.containsKey(name)) {
             final int idtoremove = nameMap.get(name);
@@ -857,7 +857,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         assertEquals("RsaKeyValidator with CAB forum settings must have public key modulus do not allow power of prime value.",
                 keyValidator.isPublicKeyModulusDontAllowPowerOfPrime(), RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_DONT_ALLOW_POWER_OF_PRIME);
         assertEquals("RsaKeyValidator with CAB forum settings must have min factor value.", keyValidator.getPublicKeyModulusMinFactor(),
-                new Integer(RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR));
+                Integer.valueOf(RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR));
         assertNull("RsaKeyValidator with CAB forum settings must have public key modulus min value.", keyValidator.getPublicKeyModulusMin());
         assertNull("RsaKeyValidator with CAB forum settings must have public key modulus max value.", keyValidator.getPublicKeyModulusMax());
     }
@@ -1004,8 +1004,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     // Code duplication: see org.cesecore.keys.validation.KeyValidatorTestUtil
     public static KeyValidator createKeyValidator(final Class<? extends KeyValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
-            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
-        KeyValidator result = type.newInstance();
+            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        KeyValidator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);
@@ -1046,12 +1046,17 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
      * @return the concrete key validator instance.
      * @throws IllegalAccessException Illegal access exception
      * @throws InstantiationException Instantiation exception
+     * @throws SecurityException 
+     * @throws NoSuchMethodException 
+     * @throws InvocationTargetException 
+     * @throws IllegalArgumentException 
      */
     // Code duplication: Re-factor.
     private static CertificateValidator createCertificateValidator(Class<? extends CertificateValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
-            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
-        CertificateValidator result = type.newInstance();
+            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, NoSuchMethodException, SecurityException {
+        CertificateValidator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);

@@ -23,23 +23,23 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.Application;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
-import org.cesecore.ErrorCode;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * JSF Managed Bean for handling localization of clients.
  * 
- * @version $Id$
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class RaLocaleBean implements Serializable {
 
@@ -55,7 +55,7 @@ public class RaLocaleBean implements Serializable {
     @EJB
     private AdminPreferenceSessionLocal adminPreferenceSession;
     
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     
     public void setRaAuthenticationBean(RaAuthenticationBean raAuthenticationBean) {

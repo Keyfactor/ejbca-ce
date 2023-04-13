@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -64,6 +65,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
+import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
@@ -77,6 +79,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     private static final ReentrantLock executorServiceLock = new ReentrantLock(false);
     private static final AtomicInteger beanInstanceCount = new AtomicInteger(0);
     private static volatile ExecutorService executorService = null;
+    private static final String TIMEOUT_MESSAGE_INDICATOR = "timed out";
+    
+    private static final long MAX_JOBS_PER_QUEUE_WORKER = 200000L;
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -93,6 +98,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
+    
     /** not injected but created in ejbCreate, since it is ourself */
     private PublisherQueueSessionLocal publisherQueueSession;
 
@@ -301,18 +309,23 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(final AuthenticationToken admin, final BasePublisher publisher) {
+    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(final AuthenticationToken admin, final BasePublisher publisher,
+            final long maxNumberOfJobs) {   
+        if (maxNumberOfJobs > MAX_JOBS_PER_QUEUE_WORKER || maxNumberOfJobs <= 0) {
+            log.warn("Number of maxmimum jobs for the queue worker must be between 1 and " + MAX_JOBS_PER_QUEUE_WORKER + ". Using the default of "
+                    + PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS + " instead.");
+        }
         final PublishingResult result = new PublishingResult();
         PublishingResult intermediateResult;
         // Repeat this process as long as we actually manage to publish something
         // this is because when publishing starts to work we want to publish everything in one go, if possible.
-        // However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
-        int totalcount = 0;
+        // However, we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
+        int totalCount = 0;
         do {
             intermediateResult = publisherQueueSession.doChunk(admin, publisher);
             result.append(intermediateResult);
-            totalcount += intermediateResult.getSuccesses();
-        } while ((intermediateResult.getSuccesses() > 0) && (totalcount < 20000));
+            totalCount += intermediateResult.getSuccesses();
+        } while ((intermediateResult.getSuccesses() > 0) && (totalCount < maxNumberOfJobs));
         return result;
     }
 
@@ -363,6 +376,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 userDataDN = voldata.getUserDN();
             }
             boolean published = false;
+            boolean connectionTimedOut = false;
 
             try {
                 if (publishType == PublisherConst.PUBLISH_TYPE_CERT) {
@@ -395,7 +409,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         log.debug("Publishing CRL");
                     }
 
-                    CRLData crlData = CRLData.findByFingerprint(entityManager, fingerprint);
+                    CRLData crlData = crlStoreSession.findByFingerprint(fingerprint);
 
                     if (crlData == null) {
                         throw new FinderException();
@@ -437,8 +451,13 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 // Publisher session have already logged this error nicely to
                 // getLogSession().log
                 log.debug(e.getMessage());
-                // We failed to publish, update failcount so we can break early if nothing succeeds but everything fails.
+                // We failed to publish, update failcount, so we can break early if nothing succeeds but everything fails.
                 result.addFailure(fingerprint, e.getMessage());
+                // We will want to break out early on timeout exceptions, to avoid delaying
+                // Publish Queue Process Service from moving on to the next publisher.
+                if (e.getMessage() != null && e.getMessage().contains(TIMEOUT_MESSAGE_INDICATOR)){
+                    connectionTimedOut = true;
+                }
             }
             if (published) {
                 if (publisher.getKeepPublishedInQueue()) {
@@ -454,6 +473,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 int tryCount = pqd.getTryCounter() + 1;
                 updateData(pqd.getPk(), pqd.getPublishStatus(), tryCount);
                 result.addFailure(fingerprint);
+            }
+            // Break out of the loop immediately if a connection timed out.
+            // Publisher is not available for now, so we don't want to get stuck here for up to 99 timeouts.
+            if (connectionTimedOut){
+                if (log.isDebugEnabled()) {
+                    log.debug("Connection timed out. Breaking out of publisher loop.");
+                }
+                break;
             }
             // If we don't manage to publish anything, but fails on all the
             // first ten ones we expect that this publisher is dead for now. We
@@ -593,7 +620,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 Object publisherResult;
                 try {
                     final long maxTimeToWait = Math.max(1000L, deadline - System.currentTimeMillis());
-                    publisherResult = new Boolean(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
+                    publisherResult = Boolean.valueOf(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
                 } catch (Exception e) {
                     publisherResult = getAsPublisherException(e);
                 }

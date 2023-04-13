@@ -24,8 +24,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIHeader;
@@ -39,13 +39,13 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * 
  * @version $Id$
  */
-public class CmpPbeVerifyer {
+public class CmpPbeVerifyer implements CmpMessageProtectionVerifyer {
 	private static final Logger LOG = Logger.getLogger(CmpPbeVerifyer.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     private byte[] protectedBytes = null;
-    private DERBitString protection = null;
+    private ASN1BitString protection = null;
 	private AlgorithmIdentifier pAlg = null;
 	private String errMsg = null;
 	private String owfOid = null;
@@ -91,7 +91,7 @@ public class CmpPbeVerifyer {
         }           
 		salt = pp.getSalt().getOctets();
 	}
-	
+
 	/**
 	 * 
 	 * @param raAuthenticationSecret the HMAC PBE password that should be used to verify the CMP message protection
@@ -157,6 +157,10 @@ public class CmpPbeVerifyer {
 	
 	public String getLastUsedRaSecret() {
 		return lastUsedRaSecret;
+	}
+
+	public ASN1ObjectIdentifier getProtectionAlg() {
+		return pAlg.getAlgorithm();
 	}
 	
 }

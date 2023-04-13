@@ -40,18 +40,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
@@ -97,6 +99,7 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -107,7 +110,6 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.ErrorCode;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -137,26 +139,29 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation according to the X509 standard.
@@ -194,6 +199,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String CRLPARTITIONS = "crlpartitions";
     protected static final String SUSPENDEDCRLPARTITIONS = "suspendedcrlpartitions";
     protected static final String REQUESTPREPROCESSOR = "requestpreprocessor";
+    protected static final String ALTERNATECHAINS = "alternatechains";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -297,6 +303,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCrlOverlapTime(getCRLOverlapTime())
                 .setDeltaCrlPeriod(getDeltaCRLPeriod())
                 .setGenerateCrlUponRevocation(getGenerateCrlUponRevocation())
+                .setAllowChangingRevocationReason(getAllowChangingRevocationReason())
+                .setAllowInvalidityDate(getAllowInvalidityDate())
                 .setCrlPublishers(getCRLPublishers())
                 .setValidators(getValidators())
                 .setUseAuthorityKeyIdentifier(getUseAuthorityKeyIdentifier())
@@ -335,6 +343,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
                 .setRequestPreProcessor(getRequestPreProcessor())
                 .setMsCaCompatible(isMsCaCompatible())
+                .setAlternateCertificateChains(getAlternateCertificateChains())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
@@ -790,9 +799,23 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public void setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand) {
         data.put(DO_STORE_OCSP_ON_DEMAND, doStoreOcspResponsesOnDemand);
     }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, List<String>> getAlternateCertificateChains() {
+        if (data.containsKey(ALTERNATECHAINS)) {
+            return (Map<String, List<String>>) data.get(ALTERNATECHAINS);
+        }
+        return null;
+    }
+
+    @Override
+    public void setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains) {
+        data.put(ALTERNATECHAINS, alternateCertificateChains);
+    }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#updateCA(org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
+     * @see org.cesecore.certificates.ca.X509CA#updateCA(com.keyfactor.util.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
      */
     @Override
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
@@ -827,6 +850,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setMsCaCompatible(info.isMsCaCompatible());
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
+        setAlternateCertificateChains(info.getAlternateCertificateChains());
     }
 
     /* (non-Javadoc)
@@ -841,7 +865,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createPKCS7(org.cesecore.keys.token.CryptoToken, java.security.cert.X509Certificate, boolean)
+     * @see org.cesecore.certificates.ca.X509CA#createPKCS7(om.keyfactor.util.keys.token.CryptoToken, java.security.cert.X509Certificate, boolean)
      */
     @Override
     public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
@@ -920,7 +944,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createPKCS7Rollover(org.cesecore.keys.token.CryptoToken)
+     * @see org.cesecore.certificates.ca.X509CA#createPKCS7Rollover(om.keyfactor.util.keys.token.CryptoToken)
      */
     @Override
     public byte[] createPKCS7Rollover(CryptoToken cryptoToken) throws SignRequestSignatureException {
@@ -993,7 +1017,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createRequest(org.cesecore.keys.token.CryptoToken, java.util.Collection, java.lang.String, java.security.cert.Certificate, int, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
+     * @see org.cesecore.certificates.ca.X509CA#createRequest(om.keyfactor.util.keys.token.CryptoToken, java.util.Collection, java.lang.String, java.security.cert.Certificate, int, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
      */
     @Override
     public byte[] createRequest(final CryptoToken cryptoToken, final Collection<ASN1Encodable> attributes, final String signAlg, final Certificate cacert,
@@ -1032,7 +1056,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createAuthCertSignRequest(org.cesecore.keys.token.CryptoToken, byte[])
+     * @see org.cesecore.certificates.ca.X509CA#createAuthCertSignRequest(om.keyfactor.util.keys.token.CryptoToken, byte[])
      */
     @Override
     public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, final byte[] request) throws CryptoTokenOfflineException {
@@ -1080,7 +1104,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createOrRemoveLinkCertificateDuringCANameChange(org.cesecore.keys.token.CryptoToken, boolean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration, java.security.cert.Certificate)
+     * @see org.cesecore.certificates.ca.X509CA#createOrRemoveLinkCertificateDuringCANameChange(om.keyfactor.util.keys.token.CryptoToken, boolean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration, java.security.cert.Certificate)
      */
     @Override
     public void createOrRemoveLinkCertificateDuringCANameChange(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile,
@@ -1089,7 +1113,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createOrRemoveLinkCertificate(org.cesecore.keys.token.CryptoToken, boolean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration, java.security.cert.Certificate)
+     * @see org.cesecore.certificates.ca.X509CA#createOrRemoveLinkCertificate(om.keyfactor.util.keys.token.CryptoToken, boolean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration, java.security.cert.Certificate)
      */
     @Override
     public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile,
@@ -1099,7 +1123,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateCertificate(org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.certificate.request.RequestMessage, java.security.PublicKey, int, java.util.Date, java.util.Date, org.cesecore.certificates.certificateprofile.CertificateProfile, org.bouncycastle.asn1.x509.Extensions, java.lang.String, org.cesecore.certificates.ca.CertificateGenerationParams, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
+     * @see org.cesecore.certificates.ca.X509CA#generateCertificate(om.keyfactor.util.keys.token.CryptoToken, org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.certificate.request.RequestMessage, java.security.PublicKey, int, java.util.Date, java.util.Date, org.cesecore.certificates.certificateprofile.CertificateProfile, org.bouncycastle.asn1.x509.Extensions, java.lang.String, org.cesecore.certificates.ca.CertificateGenerationParams, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
      */
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
@@ -1138,7 +1162,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
      * @throws IllegalKeyException if selected public key (check providedRequestMessage, providedPublicKey, subject) is not allowed with certProfile
      */
-    private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
+    protected Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
                                             final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
@@ -1309,7 +1333,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
         }
 
-        SubjectPublicKeyInfo pkinfo = verifyAndCorrectSubjectPublicKeyInfo(publicKey);
+        SubjectPublicKeyInfo pkinfo = verifyAndCorrectSubjectPublicKeyInfo(publicKey, providedRequestMessage);
         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo);
 
         // Only created and used if Certificate Transparency is enabled
@@ -1328,7 +1352,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (altName != null && altName.length() > 0) {
                 altNameGNs = CertTools.getGeneralNamesFromAltName(altName);
             }
-            CertTools.checkNameConstraints(cacert, subjectDNName, altNameGNs);
+            CABase.checkNameConstraints(cacert, subjectDNName, altNameGNs);
         }
 
         // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!
@@ -1516,7 +1540,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 }
             }
         }
+
         if (!requestOids.isEmpty()) {
+            log.debug("No match found for requested OIDs: " + requestOids);
             // All requested OIDs must match a CCE configuration
             throw new CertificateCreateException(ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR,
                     "Request contained custom certificate extensions which couldn't match any configuration");
@@ -1562,7 +1588,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     if (presignKey == null) {
                         throw new CertificateCreateException("No pre-sign key exist usable with algorithm " + sigAlg + ", PRESIGN_CERTIFICATE_VALIDATION is not possible with this CA.");
                     }
-                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(presignKey), X509CAImpl.SIGN_BUFFER_SIZE);
+                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(CryptoProviderTools.getProviderNameFromAlg(sigAlg)).build(presignKey), X509CAImpl.SIGN_BUFFER_SIZE);
                     // Since this certificate may be written to file through the validator we want to ensure it's not a real certificate
                     // We do that by signing with a hard coded fake key, and set authorityKeyIdentifier accordingly, so the cert can
                     // not be verified even accidentally by someone
@@ -1616,8 +1642,15 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                  *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID
                  *  and should not have any other key usages (see RFC 6962, section 3.1)
                  */
+                final String prov;
+                if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+                    // Ability to use the PQC provider
+                    prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+                } else {
+                    prov = provider;
+                }
                 final ContentSigner signer = new BufferingContentSigner(
-                        new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
+                        new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
                 // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
@@ -1693,7 +1726,13 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (log.isTraceEnabled()) {
             log.trace(">certgen.generate");
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
+        final String prov;
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+            prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+        } else {
+            prov = provider;
+        }
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate cert;
         try {
@@ -1810,11 +1849,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * When the parameters are inherited, the parameters field SHALL contain
      * implictlyCA, which is the ASN.1 value NULL.
      * 
-     * @param publicKey to verify that it has the proper aÁlgorithmIdentifier.parameters
+     * EC Point encoding can be either non-compressed, the normal case (MUST in RFC3279) or compressed (MAY in RFC3279)
+     * 
+     * @param publicKey to verify that it has the proper ÁlgorithmIdentifier.parameters
+     * @param providedRequestMessage if the public key comes from a CSR (P10, CRMF, etc) if can give information how to encode the public key in the certificate, i.e. compressed EC points 
      * @return SubjectPublicKeyInfo that can be put in a certificate
      * @throws IllegalKeyException if the publicKey is so invalid that it can not be safely fixed, issuance must be aborted
      */
-    private SubjectPublicKeyInfo verifyAndCorrectSubjectPublicKeyInfo(final PublicKey publicKey) throws IllegalKeyException {
+    private SubjectPublicKeyInfo verifyAndCorrectSubjectPublicKeyInfo(final PublicKey publicKey, final RequestMessage providedRequestMessage) throws IllegalKeyException {
         SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
         final AlgorithmIdentifier keyAlgId = pkinfo.getAlgorithm();
         if (keyAlgId == null) {
@@ -1837,29 +1879,52 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             } catch (IOException e) {
                 throw new IllegalKeyException("RSA public key with invalid AlgorithmIdentifier parameters detected, and we are unable to modify it: ", e);
             }                        
-        } else if (keyAlgId.getAlgorithm().equals(X9ObjectIdentifiers.id_ecPublicKey) && (keyAlgId.getParameters() == null)) {
-            throw new IllegalKeyException("EC public key without AlgorithmIdentifier parameters, invalid public key.");                
+        } else if (keyAlgId.getAlgorithm().equals(X9ObjectIdentifiers.id_ecPublicKey)) {
+            if (keyAlgId.getParameters() == null) {
+                throw new IllegalKeyException("EC public key without AlgorithmIdentifier parameters, invalid public key.");
+            }
+            // See if the public key is encoded with compressed point encoding, in that case we should return with the same encoding
+            if (providedRequestMessage != null && providedRequestMessage.getRequestSubjectPublicKeyInfo() != null) {
+                final byte[] encoding = providedRequestMessage.getRequestSubjectPublicKeyInfo().getPublicKeyData().getBytes();
+                // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
+                // You'll never see 0.
+                // In CMP you can request server generated keys by a SubjectPublicKeyInfo with only an AlgorithmIdentifier and empty publicKey BIT STRING
+                if ((encoding != null && encoding.length > 0) && (encoding[0] == 2 || encoding[0] == 3)) {
+                    if (!(publicKey instanceof BCECPublicKey)) {
+                        log.warn("CSR has compressed EC point format, but can not set COMPRESSED as encoding because publicKey is not BCECPublicKey: " + publicKey.getClass().getName());                        
+                    } else {
+                        log.debug("CSR has compressed EC point format, setting COMPRESSED as certificate SubjectPublicKeyInfo encoding");
+                        ((BCECPublicKey)publicKey).setPointFormat("COMPRESSED");
+                        pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+                    }
+                }
+            }
         }
         return pkinfo;
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int)
-     */
+
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
-            IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert);
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            Certificate partitionCaCert) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert, new Date());
+    }
+    
+    @Override
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            Certificate partitionCaCert, final Date validFrom) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert, validFrom);
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateDeltaCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int, int)
-     */
+
     @Override
-    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) throws CryptoTokenOfflineException,
-            IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException,
-            NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, latestCaCertForParition);
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            int basecrlnumber, Certificate latestCaCertForParition) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, latestCaCertForParition,
+                new Date());
     }
 
     @Override
@@ -1922,7 +1987,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             GeneralName generalName = gns[j];
             // Look for DNS name
             if (generalName.getTagNo() == 2) {
-                final String value = DERIA5String.getInstance(generalName.getName()).getString();
+                final String value = ASN1IA5String.getInstance(generalName.getName()).getString();
                 final Matcher matcher = parenthesesRegex.matcher(value);
                 if (matcher.find()) {
                     final String newValue = matcher.replaceAll("(PRIVATE)");
@@ -1956,13 +2021,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @param isDeltaCRL true if we should generate a DeltaCRL
      * @param basecrlnumber caseCRLNumber for a delta CRL, use 0 for full CRLs
      * @param partitionCaCert CA certificate to verify CRL against (mainly used for MS compatible CAs)
+     * @param validFrom When this CRL is valid from
      * @return X509CRLHolder with the generated CRL
      * @throws CryptoTokenOfflineException
      * @throws IOException
      * @throws SignatureException
      */
     private X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, 
-            boolean isDeltaCRL, int basecrlnumber, Certificate partitionCaCert) throws CryptoTokenOfflineException, IOException, SignatureException {
+            boolean isDeltaCRL, int basecrlnumber, Certificate partitionCaCert, final Date validFrom) throws CryptoTokenOfflineException, IOException, SignatureException {
         final String sigAlg = getCAInfo().getCAToken().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
@@ -1991,8 +2057,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         } else {
             issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
         }
-        final Date thisUpdate = new Date();
+        final Date thisUpdate = (validFrom != null ? validFrom : new Date());
         final Date nextUpdate = new Date();
+        nextUpdate.setTime( thisUpdate.getTime() );
         // Set standard nextUpdate time
         long nextUpdateTime = nextUpdate.getTime() + crlPeriod - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
         nextUpdate.setTime(nextUpdateTime);
@@ -2014,7 +2081,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 log.debug("Adding "+certs.size()+" revoked certificates to CRL. Free memory="+Runtime.getRuntime().freeMemory());
             }
             for (final RevokedCertInfo certinfo : certs) {
-                crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason());
+                if (certinfo.getInvalidityDate() != null) {
+                    crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason(), certinfo.getInvalidityDate());
+                } else {
+                    crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason());
+                }
             }
             if (log.isDebugEnabled()) {
                 log.debug("Finished adding "+certs.size()+" revoked certificates to CRL. Free memory="+Runtime.getRuntime().freeMemory());
@@ -2140,7 +2211,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         
         try {
-            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias)), X509CAImpl.SIGN_BUFFER_SIZE);
+            String prov = cryptoToken.getSignProviderName();
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(prov)) {
+                prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
+            }
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(cryptoToken.getPrivateKey(alias)), X509CAImpl.SIGN_BUFFER_SIZE);
             crl = crlgen.build(signer);
         } catch (OperatorCreationException e) {
             // Very fatal error

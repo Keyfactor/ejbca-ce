@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.crl;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Set;
 
 import javax.ejb.Local;
@@ -23,7 +24,8 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.crl.CRLInfo;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @version $Id$
@@ -73,19 +75,35 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
      * 
      * @param admin administrator performing the task
      * @param caid the id of the CA this operation regards
-     * @param crloverlaptime
-     *            A new delta CRL is created if the current one expires within
-     *            the crloverlaptime given in milliseconds
+     * @param crloverlaptime A new delta CRL is created if the current one expires within the crloverlaptime given in milliseconds
+     *       
      * @return true if a Delta CRL was created
      * @throws javax.ejb.EJBException if communication or system error occurs
      */
-    boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
+    boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long crloverlaptime)
+            throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
     /** Internal method, do not use. Needs to be here for transaction management. */
-    String internalCreateCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo)
+    String internalCreateCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo, final Date validFrom)
             throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
-    /** Internal method, do not use. Needs to be here for transaction management. */
+    /**
+     * Generates a new CRL by looking in the database for revoked certificates
+     * and generating a CRL. This method also "archives" certificates when after
+     * they are no longer needed in the CRL.
+     * Generates the CRL and stores it in the database.
+     * <p>
+     * 
+     *  Internal method, do not use. Needs to be here for transaction management. 
+     *
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
+     * @param lastBaseCrlInfo CRLInfo on the last base CRL created by this CA, or null, if no base CRL has been created before
+     * @return fingerprint (primary key) of the generated CRL or null if
+     *            generation failed
+     * @throws AuthorizationDeniedException
+     * @throws javax.ejb.EJBException if a communications- or system error occurs
+     */
     byte[] internalCreateDeltaCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo)
             throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException;
 

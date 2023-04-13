@@ -40,7 +40,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
@@ -64,7 +64,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.SecureXMLDecoder;
@@ -77,6 +76,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
@@ -90,6 +90,8 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
+import com.keyfactor.util.CertTools;
+
 /**
  * Handles management of Publishers.
  */
@@ -101,6 +103,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
+    private static final String PROPERTYKEY_STORECRL = "storeCRL";
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -176,27 +180,27 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             return true;
         }
         final int status = certificateData.getStatus();
-        final int revocationReason = certificateData.getRevocationReason();
+        final long revocationDate = certificateData.getRevocationDate();
         final String username = certificateData.getUsername();
         boolean returnval = true;
         final List<BasePublisher> publishersToTryDirect = new ArrayList<>();
         final List<BasePublisher> publishersToQueuePending = new ArrayList<>();
         final List<BasePublisher> publishersToQueueSuccess = new ArrayList<>();
         for (final Integer id : publisherids) {
-            BasePublisher publ = getPublisherInternal(id, null, true);
-            if (publ != null) {
+            BasePublisher publisher = getPublisherInternal(id, null, true);
+            if (publisher != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
-                if (publ.willPublishCertificate(status, revocationReason)) {
-                    if (publ.getOnlyUseQueue() || publ.getSafeDirectPublishing()) {
-                        if (publ.getUseQueueForCertificates()) {
-                            publishersToQueuePending.add(publ);
+                if (publisher.willPublishCertificate(status, revocationDate)) {
+                    if (publisher.getOnlyUseQueue() || publisher.getSafeDirectPublishing()) {
+                        if (publisher.getUseQueueForCertificates()) {
+                            publishersToQueuePending.add(publisher);
                             // Publishing to the queue directly is not considered a successful write to the publisher (since we don't know that it will be)
                             returnval = false;
                         } else {
                             // NOOP: This publisher is configured to only write to the queue, but not for certificates
                         }
                     } else {
-                        publishersToTryDirect.add(publ);
+                        publishersToTryDirect.add(publisher);
                     }
                 } else {
                     if (log.isDebugEnabled()) {
@@ -305,31 +309,56 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 final String name = getPublisherName(id);
                 // If it should be published directly
                 if (!publ.getOnlyUseQueue()) {
-                    try {
+                    boolean publishCrl = true;
+                    if (isStoreCrlPropertyUsed(publ)) {
+                        final List<CustomPublisherProperty> properties = ((CustomPublisherContainer) publ).getCustomUiPropertyList(admin);
+                        publishCrl = properties.stream()
+                            .filter(property -> property.getName().equals(PROPERTYKEY_STORECRL))
+                            .map(property -> Boolean.valueOf(property.getValue()))
+                            .findFirst()
+                            .orElse(false);
+                    }
+
+                    if (publishCrl) {
                         try {
-                            if (publisherQueueSession.publishCRLNonTransactional(publ, admin, incrl, cafp, number, issuerDn)) {
-                                publishStatus = PublisherConst.STATUS_SUCCESS;
+                            try {
+                                if (publisherQueueSession.publishCRLNonTransactional(publ, admin, incrl, cafp, number, issuerDn)) {
+                                    publishStatus = PublisherConst.STATUS_SUCCESS;
+                                }
+                            } catch (EJBException e) {
+                                final Throwable t = e.getCause();
+                                if (t instanceof PublisherException) {
+                                    throw (PublisherException) t;
+                                } else {
+                                    throw e;
+                                }
                             }
-                        } catch (EJBException e) {
-                            final Throwable t = e.getCause();
-                            if (t instanceof PublisherException) {
-                                throw (PublisherException) t;
+                            final String msg;
+                            final Map<String, Object> details = new LinkedHashMap<>();
+                            EventStatus status;
+                            if (publishStatus == PublisherConst.STATUS_SUCCESS) {
+                                msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
+                                status = EventStatus.SUCCESS;
                             } else {
-                                throw e;
+                                msg = intres.getLocalizedMessage("publisher.store.fail", "CRL", name, publishStatus);
+                                status = EventStatus.FAILURE;
                             }
+                            details.put("msg", msg);
+                            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, status, EjbcaModuleTypes.PUBLISHER,
+                                EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+                        } catch (PublisherException pe) {
+                            final String msg = intres.getLocalizedMessage("publisher.errorstore", name, "CRL");
+                            final Map<String, Object> details = new LinkedHashMap<>();
+                            details.put("msg", msg);
+                            details.put("error", pe.getMessage());
+                            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
+                                EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                         }
-                        final String msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
-                        final Map<String, Object> details = new LinkedHashMap<>();
-                        details.put("msg", msg);
-                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
-                                EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-                    } catch (PublisherException pe) {
-                        final String msg = intres.getLocalizedMessage("publisher.errorstore", name, "CRL");
-                        final Map<String, Object> details = new LinkedHashMap<>();
-                        details.put("msg", msg);
-                        details.put("error", pe.getMessage());
-                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
-                                EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("No CRL published. The VA publisher is not configured to do it.");
+                        }
+                        publishStatus = PublisherConst.STATUS_SUCCESS;
                     }
                 }
                 if (publishStatus != PublisherConst.STATUS_SUCCESS) {
@@ -387,36 +416,35 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             int publishStatus = PublisherConst.STATUS_PENDING;
             BasePublisher publ = getPublisherInternal(id, null, true);
             if (publ != null) {
-                final String name = getPublisherName(id);
-                // If it should be published directly
-                if (!publ.getOnlyUseQueue()) {
-                    try {
-                        
-                        if (isOcspResponsePublisher(publ) && publisherQueueSession
-                                .publishOcspResponsesNonTransactional((CustomPublisherContainer) publ, admin, ocspResponseData)) {
-                            
-                            publishStatus = PublisherConst.STATUS_SUCCESS;
-                            logSuccessPublish(admin, name, publishStatus);
+                if (isOcspResponsePublisher(publ)) {
+                    final String name = getPublisherName(id);
+                    // If it should be published directly
+                    if (!publ.getOnlyUseQueue()) {
+                        try {
+
+                            if (publisherQueueSession.publishOcspResponsesNonTransactional((CustomPublisherContainer) publ, admin, ocspResponseData)) {
+                                publishStatus = PublisherConst.STATUS_SUCCESS;
+                                logSuccessPublish(admin, name, publishStatus);
+                            }
+                        } catch (PublisherException e) {
+                            logFailPublish(admin, name, e);
+                        } catch (AuditRecordStorageException e) {
+                            log.error("Error when loging audit data ", e);
                         }
-                    } catch (PublisherException e) {
-                        logFailPublish(admin, name, e);
-                    } catch (AuditRecordStorageException e) {
-                        log.error("Error when loging audit data ", e);
+                    }
+
+                    if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue()) && publ.getUseQueueForOcspResponses()) {
+                        addOcspResponseQueueData(id, name, publishStatus, ocspResponseData.getId());
+                        if (log.isTraceEnabled()) {
+                            log.trace("<storeOCSPResponse");
+                        }
+                        continue;
+                    }
+
+                    if (publishStatus != PublisherConst.STATUS_SUCCESS) {
+                        return false;
                     }
                 }
-                
-                if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue()) && publ.getUseQueueForOcspResponses()) {
-                    addOcspResponseQueueData(id, name, publishStatus, ocspResponseData.getId());
-                    if (log.isTraceEnabled()) {
-                        log.trace("<storeOCSPResponse");
-                    }
-                    continue;
-                }
-                
-                if (publishStatus != PublisherConst.STATUS_SUCCESS) {
-                    return false;
-                }
-                
             } else {
                 String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
                 log.info(msg);
@@ -466,6 +494,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return (publisher instanceof CustomPublisherContainer) && 
         StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
         StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "EnterpriseValidationAuthorityPublisher");
+    }
+
+
+    private boolean isStoreCrlPropertyUsed(final BasePublisher publisher) {
+        return (publisher instanceof CustomPublisherContainer) && (
+        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
+        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "ValidationAuthorityPublisher"));
     }
     
     

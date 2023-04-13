@@ -18,12 +18,13 @@
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-ejb-interface/dist/cesecore-ejb-interface.jar"/>
+		<path location="${mod.x509-common-util.lib}"/>
 	</path>
 
 	<path id="test.classpath">

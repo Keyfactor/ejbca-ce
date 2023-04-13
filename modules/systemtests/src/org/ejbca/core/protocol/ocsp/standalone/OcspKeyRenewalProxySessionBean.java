@@ -24,8 +24,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Proxy for making certain functions in OcspKeyRenewalSessionBean testable remotely.

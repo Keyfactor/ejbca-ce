@@ -12,25 +12,27 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 import java.util.Arrays;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.keys.token.PKCS11SlotListWrapper;
-import org.cesecore.keys.token.PKCS11SlotListWrapperHelper;
 import org.cesecore.keys.token.PKCS11TestUtils;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.pkcs11.PKCS11SlotListWrapper;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * Tests instantiating the PKCS11SlotListWrapper
@@ -54,7 +56,7 @@ public class Pkcs11WrapperTest {
     public void testInstantiatePkcs11Wrapper() {
         String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
         try {
-            PKCS11SlotListWrapperHelper.getSlotListWrapper(new File(pkcs11Library));
+            Pkcs11SlotLabel.getSlotListWrapper(new File(pkcs11Library));
         } catch (Exception e) {
             log.error("Unknown exception encountered", e);
             fail("Exception was thrown, instantiation failed.");
@@ -63,7 +65,7 @@ public class Pkcs11WrapperTest {
     
     private PKCS11SlotListWrapper getPkcs11Wrapper() {
         final String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
-        return PKCS11SlotListWrapperHelper.getSlotListWrapper(new File(pkcs11Library));
+        return Pkcs11SlotLabel.getSlotListWrapper(new File(pkcs11Library));
     }
 
     /**

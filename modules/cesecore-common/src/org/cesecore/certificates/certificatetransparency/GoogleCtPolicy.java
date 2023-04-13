@@ -106,6 +106,9 @@ public final class GoogleCtPolicy implements Serializable {
         if (other.breakpoints == null ^ breakpoints == null) {
             return false;
         }
+        if (other.breakpoints == null && breakpoints == null) {
+            return true;
+        }
         if (other.breakpoints.size() != breakpoints.size()) {
             return false;
         }

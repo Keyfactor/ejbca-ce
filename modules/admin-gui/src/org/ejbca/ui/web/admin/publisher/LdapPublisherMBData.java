@@ -23,10 +23,12 @@ import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
+import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class keeping the logic and data for ldap publisher used by EditPublisher managed bean.
@@ -66,7 +68,9 @@ public final class LdapPublisherMBData implements Serializable {
     private String crlAttribute;
     private String deltaCrlAttribute;
     private String arlAttribute;
+    private boolean useCustomDnOrder;
     private ArrayList<Integer> useFieldInLdapDN;
+    private String fieldsInLdapDnCustomOrder;
     
     public LdapPublisherMBData(final LdapPublisher ldapPublisher) {
         initializeData(ldapPublisher);
@@ -295,18 +299,35 @@ public final class LdapPublisherMBData implements Serializable {
         this.arlAttribute = ldapPublisherArlAttribute;
     }
 
+    public boolean getUseCustomDnOrder() {
+        return useCustomDnOrder;
+    }
+
+    public void setUseCustomDnOrder(final boolean useCustomDnOrder) {
+        this.useCustomDnOrder = useCustomDnOrder;
+    }
+
     public ArrayList<Integer> getUseFieldInLdapDN() {
         return useFieldInLdapDN;
     }
 
+    /** Sets the certificate/user DN fields to use. This method does NOT support custom ordering  */
     public void setUseFieldInLdapDN(final ArrayList<Integer> ldapPublisherUseFieldsInDN) {
         this.useFieldInLdapDN = ldapPublisherUseFieldsInDN;
     }
-    
+
+    public String getFieldsInLdapDnCustomOrder() {
+        return fieldsInLdapDnCustomOrder;
+    }
+
+    public void setFieldsInLdapDnCustomOrder(final String fieldsInLdapDnCustomOrder) {
+        this.fieldsInLdapDnCustomOrder = fieldsInLdapDnCustomOrder;
+    }
+
     public List<SelectItem> getLdapPublisherLocationFieldsFromCertificateDN() {
         final List<SelectItem> result = new ArrayList<>();
         List<Integer> usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
-        String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);
+        String[] usefieldsindntexts = DnComponents.getDnLanguageTexts().toArray(new String[0]);
         for(int i=0;i < usefieldsindn.size(); i++){ 
             result.add(new SelectItem(usefieldsindn.get(i), EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(usefieldsindntexts[i])));
         }
@@ -340,14 +361,26 @@ public final class LdapPublisherMBData implements Serializable {
         crlAttribute = publisher.getCRLAttribute();
         deltaCrlAttribute = publisher.getDeltaCRLAttribute();
         arlAttribute = publisher.getARLAttribute();
-        useFieldInLdapDN = new ArrayList<Integer>(publisher.getUseFieldInLdapDN());
+        useFieldInLdapDN = new ArrayList<>(publisher.getUseFieldInLdapDN());
+        useCustomDnOrder = publisher.getUseCustomDnOrder();
+        fieldsInLdapDnCustomOrder = buildFieldsInLdapDnCustomOrder(publisher);
 
         securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PLAIN"), ConnectionSecurity.PLAIN);
         securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("STARTTLS"), ConnectionSecurity.STARTTLS);
         securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("SSL"), ConnectionSecurity.SSL);
     }
     
-    public void setLdapPublisherParameters(final LdapPublisher ldapPublisher) {
+    private String buildFieldsInLdapDnCustomOrder(final LdapPublisher publisher) {
+        final StringBuilder sb = new StringBuilder();
+        for (final int fieldId : publisher.getUseFieldInLdapDN()) {
+            if (sb.length() != 0) sb.append(',');
+            final String component = DNFieldExtractor.getFieldComponent(fieldId, DNFieldExtractor.TYPE_SUBJECTDN);
+            sb.append(StringUtils.removeEnd(component, "="));
+        }
+        return sb.toString();
+    }
+
+    public void setLdapPublisherParameters(final LdapPublisher ldapPublisher) throws ParameterException {
         ldapPublisher.setHostnames(hostName);
         ldapPublisher.setPort(port);
         ldapPublisher.setConnectionSecurity(connectionSecurity);
@@ -375,9 +408,29 @@ public final class LdapPublisherMBData implements Serializable {
         ldapPublisher.setCRLAttribute(crlAttribute);
         ldapPublisher.setDeltaCRLAttribute(deltaCrlAttribute);
         ldapPublisher.setARLAttribute(arlAttribute);
-        ldapPublisher.setUseFieldInLdapDN(useFieldInLdapDN);
+        ldapPublisher.setUseCustomDnOrder(useCustomDnOrder);
+        if (useCustomDnOrder) {
+            ldapPublisher.setUseFieldInLdapDN(extractFieldsInLdapDnCustomOrder());
+        } else {
+            ldapPublisher.setUseFieldInLdapDN(useFieldInLdapDN);
+        }
     }
-    
+
+    private List<Integer> extractFieldsInLdapDnCustomOrder() throws ParameterException {
+        final List<Integer> dnFields = new ArrayList<>();
+        if (StringUtils.isBlank(fieldsInLdapDnCustomOrder)) {
+            throw new ParameterException("Empty list of DN components");
+        }
+        for (final String piece : fieldsInLdapDnCustomOrder.split(",")) {
+            final String fieldName = StringUtils.trimToNull(piece);
+            if (fieldName == null) {
+                throw new ParameterException("Invalid list of DN components (DN component was empty)");
+            }
+            final int fieldId = DNFieldExtractor.getDnIdFromComponent(fieldName, DNFieldExtractor.TYPE_SUBJECTDN);
+            dnFields.add(fieldId);
+        }
+        return dnFields;
+    }
     
     /**
      * @return password placeholder instead of real password in order to not send clear text password to browser, 

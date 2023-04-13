@@ -18,6 +18,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionProxyRemote;
@@ -42,4 +43,15 @@ public class AcmeAuthorizationDataSessionProxyBean implements AcmeAuthorizationD
     public void remove(String authorizationId) {
         acmeAuthorizationDataSessionLocal.remove(authorizationId);
     }
+
+    @Override
+    public void persistAcmeAuthorizationData(AcmeAuthorizationData data) {
+        acmeAuthorizationDataSessionLocal.persistAcmeAuthorizationData(data);
+    }
+
+    @Override
+    public AcmeAuthorizationData find(String authorizationId) {
+        return acmeAuthorizationDataSessionLocal.find(authorizationId);
+    }
+    
 }

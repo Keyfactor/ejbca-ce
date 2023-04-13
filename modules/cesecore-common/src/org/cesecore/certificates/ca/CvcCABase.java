@@ -29,7 +29,8 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.CryptoToken;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Base class for CVC CAs. Holds data specific for Certificate and CRL generation 
@@ -135,9 +136,16 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	    log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
         return null;
 	}
-
+	
     @Override
     public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) {
+        String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
+        log.info(msg);
+        return null;
+    }
+
+    @Override
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert, final Date futureDate) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;

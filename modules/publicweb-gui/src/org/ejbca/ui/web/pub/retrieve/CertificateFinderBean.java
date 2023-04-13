@@ -33,12 +33,13 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * This bean performs a number of certificate searches for the public web.
@@ -46,7 +47,6 @@ import org.ejbca.ui.web.CertificateView;
  * To make it easy to use from JSTL pages, most methods take no arguments.
  * The arguments are supplied as member variables instead. <br>
  *
- * @version $Id$
  */
 public class CertificateFinderBean {
 
@@ -87,7 +87,7 @@ public class CertificateFinderBean {
 
 	public boolean existsDeltaCrlForCurrentCA() {
 	    // TODO consider adding Partitioned CRL support (ECA-7961). Not super important since the public web is deprecated.
-	    return ejb.getCrlStoreSession().getLastCRLInfo(getCAInfo().getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true) != null;
+	    return ejb.getCrlStoreSession().getLastCRLInfoLightWeight(getCAInfo().getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true) != null;
 	}
 
 	public void setCurrentCA(Integer currentCA) {

@@ -49,7 +49,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -80,18 +79,21 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.pinning.CertificatePin;
 import org.cesecore.certificates.pinning.TrustEntry;
 import org.cesecore.certificates.pinning.TrustedChain;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Generic Management implementation for InternalKeyBindings.
@@ -184,6 +186,34 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             internalKeyBindingInfos.add(new InternalKeyBindingInfo(internalKeyBindingInstance));
         }
         return internalKeyBindingInfos;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<Integer, String> getAllCaWithoutOcspKeyBinding() {
+        final List<InternalKeyBindingInfo> allOcspKeyBindings = 
+                getAllInternalKeyBindingInfos(OcspKeyBinding.IMPLEMENTATION_ALIAS);
+        List<Integer> internalKeyBoundCas = new ArrayList<Integer>();
+        for(InternalKeyBindingInfo keyBindingInfo: allOcspKeyBindings) {
+            if(keyBindingInfo.getStatus()==null 
+                    || (keyBindingInfo.getStatus()==InternalKeyBindingStatus.DISABLED && 
+                            keyBindingInfo.getCertificateId()!=null) ) {
+                // this allows an Admin to disable an OCspKeyBinding and create new one with signOnBehalf entry
+                // instead of deleting the old entry 
+                // while taking in account for the period before signed CSR is uploaded 
+                continue;
+            }
+            for(InternalKeyBindingTrustEntry signOnBehalfEntry : keyBindingInfo.getSignOcspResponseOnBehalf()) {
+                internalKeyBoundCas.add(signOnBehalfEntry.getCaId());
+            }
+        }
+        
+        final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();        
+        for(Integer internalKeyBoundCa: internalKeyBoundCas) {
+            caIdToNameMap.remove(internalKeyBoundCa);
+        }
+        
+        return caIdToNameMap;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -479,7 +509,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         putDelta("signatureAlgorithm", originalInternalKeyBinding.getSignatureAlgorithm(), internalKeyBinding.getSignatureAlgorithm(), details);
         putDelta("cryptoTokenId", String.valueOf(originalInternalKeyBinding.getCryptoTokenId()), String.valueOf(internalKeyBinding.getCryptoTokenId()), details);
         putDelta("status", originalInternalKeyBinding.getStatus().name(), internalKeyBinding.getStatus().name(), details);
-        putDelta("trustedCertificateReferences", Arrays.toString(originalInternalKeyBinding.getTrustedCertificateReferences().toArray()), Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()), details);
+        putDelta("trustedCertificateReferences", 
+                Arrays.toString(originalInternalKeyBinding.getTrustedCertificateReferences().toArray()), 
+                Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()), details);
+        putDelta("signOcspResponseOnBehalf", 
+                Arrays.toString(originalInternalKeyBinding.getSignOcspResponseOnBehalf().toArray()), 
+                Arrays.toString(internalKeyBinding.getSignOcspResponseOnBehalf().toArray()), details);
         putDelta(originalInternalKeyBinding.getCopyOfProperties(), internalKeyBinding.getCopyOfProperties(), details);
         securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_EDIT, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);

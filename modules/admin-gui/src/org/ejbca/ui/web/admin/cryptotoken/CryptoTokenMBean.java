@@ -22,8 +22,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
@@ -32,41 +30,46 @@ import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.AvailableCryptoToken;
 import org.cesecore.keys.token.AzureAuthenticationType;
 import org.cesecore.keys.token.AzureCryptoToken;
-import org.cesecore.keys.token.BaseCryptoToken;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSession;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.KeyGenParams;
-import org.cesecore.keys.token.KeyGenParams.KeyGenParamsBuilder;
-import org.cesecore.keys.token.KeyGenParams.KeyPairTemplate;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
+
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import java.io.File;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -87,8 +90,8 @@ import java.util.stream.Collectors;
  * Session scoped and will cache the list of tokens and keys.
  *
  */
-@ManagedBean
-@SessionScoped
+@Named
+@ViewScoped
 public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     
     public String localize(String stringId) {
@@ -802,7 +805,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (int caId : caSession.getAllCaIds()) {
             final CAInfo cainfo = caSession.getCAInfoInternal(caId);
             // We may have CAIds that can not be resolved to a real CA, for example CVC CAs on Community
-            if (cainfo != null) {
+            if (cainfo != null && cainfo.getCAToken() != null) {
                 ret.add(cainfo.getCAToken().getCryptoTokenId());
             }
         }
@@ -941,19 +944,29 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final List<String> result = new ArrayList<>();
         final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
                 globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
-        AcmeConfiguration acmeAlias; 
+        AcmeConfiguration acmeAlias;
+        if (globalConfig == null) {
+            return result;
+        }
         for (String acmeAliasId : globalConfig.getAcmeConfigurationIds()) {
-            acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId); 
-            try {
-                if (acmeAlias != null && acmeAlias.isRequireExternalAccountBinding() 
-                        && acmeAlias.getExternalAccountBinding().getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
-                        && (Boolean) acmeAlias.getExternalAccountBinding().getDataMap().get("encryptKey")
-                        && Integer.toString(cryptoTokenId).equals(acmeAlias.getExternalAccountBinding().getDataMap().get("encryptionKeyId"))) {
-                    result.add(acmeAlias.getConfigurationId());
+            acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId);
+            if (acmeAlias != null) {
+                try {
+                    final List<AcmeExternalAccountBinding> eabs = acmeAlias.getExternalAccountBinding();
+                    if (eabs != null) {
+                        for (AcmeExternalAccountBinding eab :eabs) {
+                            final Object encryptKey = eab.getDataMap().get("encryptKey");
+                            if ("ACME_EAB_RFC_COMPLIANT".equals(eab.getAccountBindingTypeIdentifier())
+                                    && encryptKey != null && (Boolean)encryptKey
+                                    && Integer.toString(cryptoTokenId).equals(eab.getDataMap().get("encryptionKeyId"))) {
+                                result.add(acmeAlias.getConfigurationId());
+                            }
+                        }
+                    }
+                } catch (AccountBindingException e) {
+                    log.warn("Could not load ACME EAB '" + acmeAliasId 
+                            + "' to verify if it contains a reference to the crypto token to be deleted.");
                 }
-            } catch (AccountBindingException e) {
-                log.warn("Could not load ACME EAB '" + acmeAliasId 
-                        + "' to verify if it contains a reference to the crypto token to be deleted.");
             }
         }
         return result;
@@ -1097,7 +1110,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_NAME, vaultName);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, vaultClientID);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_AUTHENTICATION_TYPE, getCurrentCryptoToken().getAzureAuthenticationType().toString());
-                properties.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, vaultKeyBinding);
+                if (vaultKeyBinding != null) {
+                    properties.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, vaultKeyBinding);
+                }
             } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = CryptoTokenFactory.AWSKMS_NAME;
                 String region = getCurrentCryptoToken().getAWSKMSRegion().trim();
@@ -1477,7 +1492,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmConstants.KEYALGORITHM_ED448));
-        for (String alg : CesecoreConfiguration.getExtraAlgs()) {
+        if (WebConfiguration.isPQCEnabled()) {
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+        }
+        for (String alg : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
             for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
                 final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
                 final String name = CesecoreConfiguration.getExtraAlgSubAlgName(alg, subalg);

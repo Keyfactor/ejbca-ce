@@ -151,10 +151,10 @@ public class PublisherQueueVolatileInformation extends UpgradeableDataHashMap im
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("publisher.queuedataupgrade", new Float(getVersion()));
+			String msg = intres.getLocalizedMessage("publisher.queuedataupgrade", Float.valueOf(getVersion()));
             log.info(msg);
     		
-    		data.put(VERSION, new Float(LATEST_VERSION));
+    		data.put(VERSION, Float.valueOf(LATEST_VERSION));
     	}
     }
     

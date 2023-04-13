@@ -19,7 +19,8 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.token.CryptoToken;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * ExtendedCAService base class. An implementing class MUST have a constructor taking a ExtendedCAServiceInfo as argument.

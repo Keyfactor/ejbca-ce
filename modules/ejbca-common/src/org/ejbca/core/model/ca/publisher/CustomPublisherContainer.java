@@ -33,7 +33,9 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ExternalScriptsAllowlist;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 
 /**
@@ -123,7 +125,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	            int propertyType = publisher.getPropertyType((String)key);
                 if (propertyType == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD) {
                     //Property is of a type that shouldn't be written in clear text to disk. Encrypt!
-                    value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key));
+                    final char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
+                    value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key), encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
                 } else if ((propertyType == CustomPublisherProperty.UI_TEXTINPUT) && "dataSource".equals((String) key)) {
                     value = properties.getProperty((String) key);
                     validateDataSource(value);
@@ -276,7 +279,7 @@ public class CustomPublisherContainer extends BasePublisher {
 			try{
 				@SuppressWarnings("unchecked")
                 Class<? extends ICustomPublisher> implClass = (Class<? extends ICustomPublisher>) Class.forName( classPath );
-				this.custompublisher =  implClass.newInstance();
+				this.custompublisher =  implClass.getDeclaredConstructor().newInstance();
 				this.custompublisher.init(getProperties());				
             } catch (ClassNotFoundException e) {
                 // Probably means that we have not built in our custom publisher here in EJBCA, or it's an Enterprise only 
@@ -331,8 +334,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	}
 
     @Override
-    public boolean willPublishCertificate(int status, int revocationReason) {
-        return getCustomPublisher().willPublishCertificate(status, revocationReason);
+    public boolean willPublishCertificate(int status, long revocationDate) {
+        return getCustomPublisher().willPublishCertificate(status, revocationDate);
     }
 
     @Override

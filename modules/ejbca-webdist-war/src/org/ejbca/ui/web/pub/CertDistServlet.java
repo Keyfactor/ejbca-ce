@@ -13,37 +13,6 @@
 
 package org.ejbca.ui.web.pub;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.cms.CMSException;
-import org.cesecore.CesecoreException;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.PublicWebPrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.util.HTMLTools;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -62,6 +31,39 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicWebPrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.util.HTMLTools;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Servlet used to distribute certificates and CRLs.<br>

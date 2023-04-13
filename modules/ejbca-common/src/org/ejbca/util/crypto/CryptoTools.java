@@ -17,33 +17,56 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.crmf.EncKeyWithID;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.cert.crmf.CRMFException;
+import org.bouncycastle.cert.crmf.PKIArchiveControl;
+import org.bouncycastle.cert.crmf.jcajce.JcaPKIArchiveControlBuilder;
+import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.Recipient;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientId;
+import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.config.EjbcaConfiguration;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * This utility class contains static utility methods related to cryptographic functions.
@@ -114,24 +137,64 @@ public class CryptoTools {
      * @return encrypted data
      * @throws CryptoTokenOfflineException If crypto token is off-line so encryption key can not be used.
      */
-    public static byte[] encryptKeys(final CryptoToken cryptoToken, final String alias, final KeyPair keypair) throws CryptoTokenOfflineException {
+    public static byte[] encryptKeys(final X509Certificate caCertificate, final CryptoToken cryptoToken, final String alias,
+            final KeyPair endEntityKeyPair) throws CryptoTokenOfflineException {
+        byte[] result = null;
+        switch (cryptoToken.getPublicKey(alias).getAlgorithm()) {
+        case AlgorithmConstants.KEYALGORITHM_RSA:
+            result = encryptKeysWithRsa(cryptoToken.getPublicKey(alias), endEntityKeyPair);
+            break;
+        case AlgorithmConstants.KEYALGORITHM_EC:
+        case AlgorithmConstants.KEYALGORITHM_ECDSA:
+            result = encryptPrivateKeyWithEccDh(caCertificate, cryptoToken, alias, endEntityKeyPair);
+            break;    
+            
+        default:
+            throw new IllegalStateException("Invalid encryption algorithm for key recovery: " + cryptoToken.getPublicKey(alias).getAlgorithm());
+        }
+
+        return result;
+    }
+    
+    private static final byte[] encryptKeysWithRsa(final PublicKey encryptionKey, final KeyPair endEntityKeyPair)
+            throws CryptoTokenOfflineException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream os = new ObjectOutputStream(baos);
-            os.writeObject(keypair);
+            os.writeObject(endEntityKeyPair);
             CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-            CMSEnvelopedData ed;
-            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
-            final PublicKey pk = cryptoToken.getPublicKey(alias);
-            byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
-            edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
-            JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), jceCMSContentEncryptorBuilder.build());
-            log.info("Encrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
+            byte[] keyId = KeyTools.createSubjectKeyId(encryptionKey).getKeyIdentifier();
+            edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, encryptionKey));
+            //We can use BC for the symmetric key since this doesn't happen in the HSM 
+            JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC)
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), jceCMSContentEncryptorBuilder.build());
             return ed.getEncoded();
         } catch (IOException | CMSException e) {
             throw new IllegalStateException("Failed to encrypt keys: " + e.getMessage(), e);
         }
+    }
+    
+    private static final byte[] encryptPrivateKeyWithEccDh(final X509Certificate caCertificate, final CryptoToken cryptoToken, final String alias,
+            final KeyPair endEntityKeyPair) throws CryptoTokenOfflineException {
+        final String providerName = cryptoToken.getEncProviderName();
+        JceKeyAgreeRecipientInfoGenerator keyAgreeRecipientInfoGenerator;
+        try {
+            keyAgreeRecipientInfoGenerator = new JceKeyAgreeRecipientInfoGenerator(CMSAlgorithm.ECCDH_SHA256KDF, cryptoToken.getPrivateKey(alias),
+                   caCertificate.getPublicKey(), CMSAlgorithm.AES256_WRAP).addRecipient(caCertificate).setProvider(providerName);
+            JcaPKIArchiveControlBuilder pkIArchiveControlBuilder = new JcaPKIArchiveControlBuilder(endEntityKeyPair.getPrivate(),
+                    caCertificate.getSubjectX500Principal());
+            pkIArchiveControlBuilder.addRecipientGenerator(keyAgreeRecipientInfoGenerator);
+            //We can use BC for the symmetric key since this doesn't happen in the HSM 
+            PKIArchiveControl pkiArchiveControl = pkIArchiveControlBuilder
+                    .build(new JceCMSContentEncryptorBuilder(new ASN1ObjectIdentifier(CMSEnvelopedDataGenerator.AES256_CBC))
+                            .setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
+            CMSEnvelopedData cmsEnvelopedData = pkiArchiveControl.getEnvelopedData();
+            return cmsEnvelopedData.getEncoded();
+        } catch (CertificateEncodingException | CMSException | IOException | CRMFException e) {
+            throw new IllegalStateException("Failed to encrypt keys: " + e.getMessage(), e);
+        }
+
     }
 
     /**
@@ -175,20 +238,77 @@ public class CryptoTools {
     /**
      * Decryption method used to decrypt a key pair using a CA
      *
-     * @param cryptoToken the crypto token where the decryption key is
-     * @param alias the alias of the key on the crypto token to use for decryption
-     * @param data the data to decrypt
-     * @return a KeyPair
+     * @param provider the provider used to encrypt this keypair, e.g. BouncyCastle 
+     * @param cacCertificate the certificate of the signing CA
+     * @param decryptionKey the decryption key
+     * @param data the encrypted blob of data
+     *
+     * @return the decrypted KeyPair
      * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
      * @throws IOException In case reading/writing data streams failed during decryption, or parsing decrypted data into KeyPair.
+     * @throws NoSuchProviderException if the sought provider was not found
      */
-    public static final KeyPair decryptKeys(final CryptoToken cryptoToken, final String alias, final byte[] data) throws IOException, CryptoTokenOfflineException {
+    public static final KeyPair decryptKeys(final String provider, final X509Certificate cacCertificate, final PrivateKey decryptionKey, final byte[] data) throws IOException, CryptoTokenOfflineException, NoSuchProviderException {
+        KeyPair result;       
+        switch (decryptionKey.getAlgorithm()) {
+        case AlgorithmConstants.KEYALGORITHM_RSA:
+            result = decryptKeysWithRsa(provider, decryptionKey, data);
+            break;
+        case AlgorithmConstants.KEYALGORITHM_EC:
+        case AlgorithmConstants.KEYALGORITHM_ECDSA:
+            final ECPrivateKey privateKey = decryptPrivateKeyWithEccDH(provider, cacCertificate, decryptionKey, data);
+            ECParameterSpec ecParams = privateKey.getParameters();
+            ECPoint q = ecParams.getG().multiply(privateKey.getD());
+
+            ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(q, ecParams);
+            KeyFactory keyFactory;
+            try {
+                keyFactory = KeyFactory.getInstance("EC", provider);
+            } catch (NoSuchAlgorithmException e) {         
+                throw new IllegalStateException("ECDH was not a known algorithm for provider.", e);
+            } 
+            PublicKey publicKey;
+            try {
+                publicKey = keyFactory.generatePublic(publicKeySpec);
+            } catch (InvalidKeySpecException e) {
+                throw new IOException("Could not recreate public key.", e);
+            }
+           
+            result = new KeyPair(publicKey, privateKey);
+            break;    
+            
+        default:
+            throw new IllegalStateException("Invalid encryption algorithm for key recovery: " + decryptionKey.getAlgorithm());
+        }
+        return result;
+
+    }
+    
+    private static final ECPrivateKey decryptPrivateKeyWithEccDH(final String provider, final X509Certificate caCertificate, final PrivateKey decryptionKey, byte[] data) throws IOException {
+        CMSEnvelopedData cmsEnvelopedData;
+        try {
+            cmsEnvelopedData = new CMSEnvelopedData(data);          
+            RecipientInformationStore recipientInformationStore = cmsEnvelopedData.getRecipientInfos();
+            JceKeyAgreeRecipientId recipientId = new JceKeyAgreeRecipientId(caCertificate);
+            RecipientInformation recipientInformation = recipientInformationStore.get(recipientId);
+            Recipient recipient = new JceKeyAgreeEnvelopedRecipient(decryptionKey).setProvider(provider);
+            byte[] content = recipientInformation.getContent(recipient);
+            EncKeyWithID encKeyWithID = EncKeyWithID.getInstance(content);
+            PrivateKeyInfo privateKeyInfo = encKeyWithID.getPrivateKey();
+            return (ECPrivateKey) BouncyCastleProvider.getPrivateKey(privateKeyInfo);            
+        } catch (CMSException e) {
+            throw new IOException("Could not parse encrypted data: " + e.getMessage(), e);
+        }   
+    
+    }
+    
+    private static final KeyPair decryptKeysWithRsa(final String provider, final PrivateKey decryptionKey, final byte[] data) throws CryptoTokenOfflineException, IOException {
         try {
             CMSEnvelopedData ed = new CMSEnvelopedData(data);
             RecipientInformationStore recipients = ed.getRecipientInfos();
             RecipientInformation recipient = recipients.getRecipients().iterator().next();
-            JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
-            rec.setProvider(cryptoToken.getEncProviderName());
+            JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(decryptionKey);
+            rec.setProvider(provider);
             rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
             // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM,
             // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known
@@ -219,7 +339,6 @@ public class CryptoTools {
                 ois.setEnabledInterfaceImplementations(true, "org.bouncycastle"); 
                 // public and private keys contain a lot of BigIntegers and such, but 50 seems to work for all keys I tried (RSA, EC, EdDSA, DSA)
                 ois.setMaxObjects(50);
-                log.info("Decrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
                 return (KeyPair) ois.readObject();                
             }
         } catch (ClassNotFoundException e) {
@@ -245,7 +364,7 @@ public class CryptoTools {
             final RecipientInformationStore recipients = ed.getRecipientInfos();
             final RecipientInformation recipient = recipients.getRecipients().iterator().next();
             final JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
-            rec.setProvider(cryptoToken.getEncProviderName());
+            rec.setProvider(cryptoToken.getEncProviderName()); 
             rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
             // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM,
             // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known

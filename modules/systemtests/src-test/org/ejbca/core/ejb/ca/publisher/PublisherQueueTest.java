@@ -51,14 +51,8 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.common.exception.ReferencesToItemExistException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -77,9 +71,17 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Tests Publisher Queue Data.
@@ -491,7 +493,7 @@ public class PublisherQueueTest {
         publisherQueueInfo.setUsername(testCertificateUsername);
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         try {
-            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, mockPublisher);
+            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, mockPublisher, PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS);
             assertEquals("Wrong number of successes was reported.", 1, result.getSuccesses());
             assertEquals("Wrong number of failures was reported.", 0, result.getFailures());
         } finally {
@@ -538,7 +540,7 @@ public class PublisherQueueTest {
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         try {
             PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken,
-                    mockPublisher);
+                    mockPublisher, PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS);
             assertEquals("Wrong number of successes was reported.", 0, result.getSuccesses());
             assertEquals("Wrong number of failures was reported.", 1, result.getFailures());
         } finally {
@@ -586,7 +588,7 @@ public class PublisherQueueTest {
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         try {
-            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, mockPublisher);
+            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, mockPublisher, PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS);
             assertEquals("Wrong number of successes was reported.", 1, result.getSuccesses());
             assertEquals("Wrong number of failures was reported.", 1, result.getFailures());
         } finally {

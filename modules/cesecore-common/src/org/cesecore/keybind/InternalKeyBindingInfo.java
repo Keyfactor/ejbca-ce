@@ -45,6 +45,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     private final String nextKeyPairAlias;
     private final Map<String, DynamicUiProperty<? extends Serializable>> properties;
     private final List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
+    private final List<InternalKeyBindingTrustEntry> signOcspResponseOnBehalf;
     private final List<String> ocspExtensions;
     private final String signatureAlgorithm;
     private boolean useIssuerNotBeforeAsArchiveCutoff;
@@ -62,6 +63,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         this.properties = internalKeyBinding.getCopyOfProperties();
         this.trustedCertificateReferences = internalKeyBinding.getTrustedCertificateReferences();
+        this.signOcspResponseOnBehalf = internalKeyBinding.getSignOcspResponseOnBehalf();
         this.ocspExtensions = internalKeyBinding.getOcspExtensions();
         this.signatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
         if (internalKeyBinding instanceof OcspKeyBinding) {
@@ -199,6 +201,16 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setTrustedCertificateReferences(List<InternalKeyBindingTrustEntry> trustedCertificateReferences) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public List<InternalKeyBindingTrustEntry> getSignOcspResponseOnBehalf() {
+        return signOcspResponseOnBehalf;
+    }
+
+    @Override
+    public void setSignOcspResponseOnBehalf(List<InternalKeyBindingTrustEntry> signOcspResponseOnBehalf) {
         throw new UnsupportedOperationException();
     }
 

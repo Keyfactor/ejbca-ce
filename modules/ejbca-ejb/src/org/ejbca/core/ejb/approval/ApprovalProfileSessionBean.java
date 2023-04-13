@@ -47,8 +47,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
  * Keeps track of the approval profiles
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalProfileSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -311,5 +309,4 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         }
         return null;
     }
-
 }

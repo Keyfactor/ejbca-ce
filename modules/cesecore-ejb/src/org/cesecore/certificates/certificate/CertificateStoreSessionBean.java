@@ -21,6 +21,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -29,6 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -47,6 +49,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -60,6 +63,10 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAData;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -74,17 +81,16 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
-import org.cesecore.util.StringTools;
+import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.cvc.PublicKeyEC;
 
-/**
- * @version $Id$
- */
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateStoreSessionBean implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
@@ -103,6 +109,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateDataSessionLocal certificateDataSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -218,7 +226,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      * @param incert The certificate to be stored.
      * @param username username of end entity owning the certificate.
      * @param cafp Fingerprint (hex) of the CAs certificate.
-     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like org.cesecore.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
+     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
      * @param status the status from the CertificateConstants.CERT_ constants
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
@@ -316,7 +324,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                             if (cacert != null) {
                                 // We found a root CA certificate, hopefully ?
                                 PublicKey pkwithparams = cacert.getCertificate(this.entityManager).getPublicKey();
-                                ret = KeyTools.getECPublicKeyWithParams(pubk, pkwithparams);
+                                ret = CvcKeyTools.getECPublicKeyWithParams(pubk, pkwithparams);
                             }
                         }
                     }
@@ -394,13 +402,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // This method was only used from CertificateDataTest and it didn't care about the expireDate, so it will only select fingerprints now.
         return certificateDataSession.findFingerprintsByIssuerDN(CertTools.stringToBCDNString(StringTools.strip(issuerdn)));
     }
-
+    
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, int crlPartitionIndex, long lastbasecrldate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean allowInvalidityDate) {
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo()");
         }
-        return certificateDataSession.getRevokedCertInfos(CertTools.stringToBCDNString(StringTools.strip(issuerdn)), crlPartitionIndex, lastbasecrldate);
+        return certificateDataSession.getRevokedCertInfos(CertTools.stringToBCDNString(StringTools.strip(issuerDN)), deltaCrl, crlPartitionIndex, lastBaseCrlDate, allowInvalidityDate);
     }
 
     @Override
@@ -515,7 +523,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(final String issuerDN, final byte subjectKeyId[], final String subjectDN, final String username) {
+    public boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(final String issuerDN, final byte[] subjectKeyId, final String subjectDN, final String username) {
         if (log.isTraceEnabled()) {
             log.trace(">isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(), issuer='" + issuerDN + "'");
         }
@@ -881,6 +889,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
     
     @Override
+    public List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, long expireDate, int limit, int offset) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findSerialNrByIssuerAndExpireDateWithLimitAndOffset()");
+        }
+        final List<String> ret = certificateDataSession.findSerialNrByIssuerAndExpireDateWithLimitAndOffset(issuerDN, expireDate, limit, offset);
+        if (log.isTraceEnabled()) {
+            log.trace("<findSerialNrByIssuerAndExpireDateWithLimitAndOffset()");
+        }
+        return ret;
+    }
+    
+    @Override
     public Collection<Certificate> findCertificatesByIssuerAndSernos(String issuerDN, Collection<BigInteger> sernos) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificateByIssuerAndSernos()");
@@ -1138,18 +1158,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
+    public boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
         if (cdw == null) {
             throw new IllegalArgumentException("Passed certificate data may not be null.");
         }
         final BaseCertificateData certificateData = cdw.getBaseCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
         authorizedToCA(admin, caid);
-        return setRevokeStatusNoAuth(admin, certificateData, revokedDate, reason);
+        return setRevokeStatusNoAuth(admin, certificateData, revokedDate, invalidityDate, reason);
     }
 
     @Override
-    public boolean setRevokeStatusNoAuth(AuthenticationToken admin, BaseCertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException {
+    public boolean setRevokeStatusNoAuth(AuthenticationToken admin, BaseCertificateData certificateData, Date revokeDate, Date invalidityDate, int reason) throws CertificateRevokeException {
         String serialNumber = "unknown";
         try {
             // This will work for X.509
@@ -1161,7 +1181,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final int caid = issuerDn.hashCode();
         final String username = certificateData.getUsername();
         final Date now = new Date();
+        final boolean isX509 = certificateData.getCertificate(entityManager) instanceof X509Certificate;
 
+        // caData should not be null if configured properly
+        boolean allowedOnCa = true;
+        final CAData caData = caSession.findById(caid);
+        if(caData!=null) {
+            final CAInfo caInfo = caData.getCA().getCAInfo();
+            // external CA for CRLReader in VA
+            allowedOnCa = caInfo.isAllowChangingRevocationReason() || caInfo.getStatus() == CAConstants.CA_EXTERNAL;
+        } 
+        
         boolean returnVal = false;
         // A normal revocation
         if ( (certificateData.getStatus()!=CertificateConstants.CERT_REVOKED || certificateData.getRevocationReason()==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) &&
@@ -1172,29 +1202,56 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             }
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(reason);
-
-            final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+                certificateData.setInvalidityDate(invalidityDate);
+            } else {
+                certificateData.setInvalidityDate(-1L);
+            }
+            final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
+        } else if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revokeDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
+            certificateData.setUpdateTime(now.getTime());
+            certificateData.setStatus(CertificateConstants.CERT_REVOKED);
+            certificateData.setRevocationReason(reason);
+            if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+                certificateData.setInvalidityDate(invalidityDate);
+            }
+            if (revokeDate != null) {
+                certificateData.setRevocationDate(revokeDate);
+            }
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+            returnVal = true;
+        } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+            certificateData.setUpdateTime(now.getTime());
+            certificateData.setInvalidityDate(invalidityDate);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), certificateData.getRevocationReason(), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+            returnVal = true;
         } else if (((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL))
                 && (certificateData.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
             // Unrevoke, can only be done when the certificate was previously revoked with reason CertificateHold
             // Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
             int status = CertificateConstants.CERT_ACTIVE;
             certificateData.setStatus(status);
-            certificateData.setRevocationDate(now.getTime());
+            certificateData.setRevocationDate(now.getTime()); // used in CRL getRevokedCertInfos() and Publisher willPublishCertificate() methods to process reactivated certificates
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
 
-            final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), Integer.valueOf(reason), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
         } else {
-            final String msg = INTRES.getLocalizedMessage("store.ignorerevoke", serialNumber, Integer.valueOf(certificateData.getStatus()), Integer.valueOf(reason));
+            final String msg = INTRES.getLocalizedMessage("store.ignorerevoke", serialNumber, certificateData.getStatus(), reason);
             log.info(msg);
             returnVal = false; // we did _not_ change status in the database
         }
@@ -1225,9 +1282,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final int maxRows = 10000;
             int firstResult = 0;
             // Revoking all non revoked certificates.
-
             // Update 10000 records at a time
-            firstResult = 0;
             List<CertificateData> list = findAllNonRevokedCertificates(bcdn, firstResult, maxRows);
             while (list.size() > 0) {
             	for (int i = 0; i<list.size(); i++) {
@@ -1240,7 +1295,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             	firstResult += maxRows;
             	list = findAllNonRevokedCertificates(bcdn, firstResult, maxRows);
             }
-            final String msg = INTRES.getLocalizedMessage("store.revokedallbyca", issuerdn, Integer.valueOf(revoked), Integer.valueOf(reason));
+            final String msg = INTRES.getLocalizedMessage("store.revokedallbyca", issuerdn, revoked, reason);
     		Map<String, Object> details = new LinkedHashMap<>();
     		details.put("msg", msg);
     		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
@@ -1330,6 +1385,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 if (log.isTraceEnabled()) {
                     log.trace("<getStatus() returned " + result + " for cert number " + serno.toString(16));
                 }
+                result.setExpirationDate(data.getExpireDate());
                 return result;
             }
             if (log.isTraceEnabled()) {
@@ -1358,6 +1414,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (log.isTraceEnabled()) {
                 log.trace("<getStatus() returned " + result + " for cert number " + serno.toString(16));
             }
+            result.setExpirationDate(data.getExpireDate());
             return new CertificateStatusHolder(data.getCertificate(entityManager), result);
         }
         if (log.isTraceEnabled()) {
@@ -1468,32 +1525,59 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     public String getCADnFromRequest(final RequestMessage req) {
-        String dn = req.getIssuerDN();
+        String issuerDn = req.getIssuerDN();
         if (log.isDebugEnabled()) {
-            log.debug("Got an issuerDN: " + dn);
+            log.debug("Got an issuerDN: " + issuerDn);
         }
         // If we have issuer and serialNo, we must find the CA certificate, to get the CAs subject name
         // If we don't have a serialNumber, or CA Sequence, we take a chance that it was actually the subjectDN (for example a RootCA)
         final BigInteger sernoBigInt = req.getSerialNo();
         final String sernoString;
+
         if (sernoBigInt == null) {
             sernoString = req.getCASequence();
         } else {
             sernoString = sernoBigInt.toString();
         }
         if (sernoString != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Got a serialNumber: " + sernoString);
-            }
-            final Certificate cert = findCertificateByIssuerAndSerno(dn, sernoString);
-            if (cert != null) {
-                dn = CertTools.getSubjectDN(cert);
+            Optional<String> optionalDn = lookupCACert(issuerDn, sernoBigInt, sernoString);
+            if (optionalDn.isPresent()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Using CA DN: " + optionalDn.get());
+                }
+                return optionalDn.get();
             }
         }
+
+        return issuerDn;
+    }
+
+    private Optional<String> lookupCACert(final String issuerDn, final BigInteger sernoBigInt, final String sernoString) {
         if (log.isDebugEnabled()) {
-            log.debug("Using DN: " + dn);
+            log.debug("Got a serialNumber: " + sernoString);
         }
-        return dn;
+
+        // First lookup cache for potential CA certs.
+        final X509Certificate[] caCert = CaCertificateCache.INSTANCE.findLatestByIssuerDN(HashID.getFromDNString(issuerDn));
+        if (ArrayUtils.isNotEmpty(caCert)) {
+            for (final X509Certificate cert : caCert) {
+                if (cert.getSerialNumber().equals(sernoBigInt)) {
+                    return Optional.of(CertTools.getSubjectDN(cert));
+                }
+            }
+        }
+        
+        // If no cache hit go for db lookup
+        final Certificate cert = findCertificateByIssuerAndSerno(issuerDn, sernoString);
+        if (cert != null) {
+            return Optional.of(CertTools.getSubjectDN(cert));
+        }
+        
+        // No cache or DB hit, return empty 
+        if (log.isDebugEnabled()) {
+            log.debug("Returning empty DN since no cert found in cache or DB!");
+        }
+        return Optional.empty();
     }
 
     //
@@ -1555,7 +1639,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.TRUE);
                 }
             }
-            if (!UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue()) {
+            if (!UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()) {
                 // It was possible to store a second certificate with same serial number. Unique number not working.
                 log.info( INTRES.getLocalizedMessage("createcert.not_unique_certserialnumberindex") );
             }
@@ -1568,7 +1652,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                         " This is expected if DELETE is not granted to the EJBCA database user.", e);
             }
         }
-        return UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()!=null && UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue();
+        return UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()!=null && UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex();
     }
 
 
@@ -1595,18 +1679,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final BigInteger serialNumber,
-            final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException {
+            final Date revocationDate, final int reasonCode, final String caFingerprint, final Date invalidityDate) throws AuthorizationDeniedException {
         // The idea is to set SubjectDN to an empty string. However, since Oracle treats an empty String as NULL,
         // and since CertificateData.SubjectDN has a constraint that it should not be NULL, we are setting it to
         // "CN=limited" instead of an empty string
         updateLimitedCertificateDataStatus(admin, caId, issuerDn, "CN=limited", null, serialNumber,
-                CertificateConstants.CERT_REVOKED, revocationDate, reasonCode, caFingerprint);
+                CertificateConstants.CERT_REVOKED, revocationDate, reasonCode, caFingerprint, invalidityDate);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final String subjectDn, final String username, final BigInteger serialNumber,
-            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException {
+            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint, Date invalidityDate) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
             final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caId);
             throw new AuthorizationDeniedException(msg);
@@ -1628,6 +1712,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 limitedCertificateData.setStatus(status);
                 limitedCertificateData.setRevocationReason(reasonCode);
                 limitedCertificateData.setRevocationDate(revocationDate);
+                limitedCertificateData.setInvalidityDate(invalidityDate);
                 limitedCertificateData.setUpdateTime(System.currentTimeMillis());
                 limitedCertificateData.setCaFingerprint(caFingerprint);
                 log.info("Adding limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
@@ -1638,12 +1723,14 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 deleteLimitedCertificateData(limitedFingerprint);
         	} else {
         	    final CertificateData limitedCertificateData = cdw.getCertificateData();
-        	    if (cdw.getCertificateData().getRevocationDate()!=revocationDate.getTime() || cdw.getCertificateData().getRevocationReason()!=reasonCode) {
+                if (cdw.getCertificateData().getRevocationDate() != revocationDate.getTime() || cdw.getCertificateData().getRevocationReason() != reasonCode
+                        || cdw.getCertificateData().getInvalidityDate() != invalidityDate.getTime()) {
                     // Update the limited entry
                     log.info("Updating limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
                     limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
                     limitedCertificateData.setRevocationReason(reasonCode);
                     limitedCertificateData.setRevocationDate(revocationDate);
+                    limitedCertificateData.setInvalidityDate(invalidityDate);
                     limitedCertificateData.setUpdateTime(System.currentTimeMillis());
                     entityManager.merge(limitedCertificateData);
         	    } else {
@@ -1662,8 +1749,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void reloadCaCertificateCache() {
         log.info("Reloading CA certificate cache.");
-        Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
-                CertificateConstants.CERTTYPE_ROOTCA, null));
+        Collection<Certificate> certs = certificateDataSession.findActiveCaCertificatesByType(Arrays.asList(CertificateConstants.CERTTYPE_SUBCA,
+                        CertificateConstants.CERTTYPE_ROOTCA));
         CaCertificateCache.INSTANCE.loadCertificates(certs);
         log.info("Reloaded CA certificate cache with "+certs.size()+" certificates");
     }
@@ -1718,7 +1805,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             // Schedule a new timer of this type
             final long interval = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
             if (interval > 0) {
-                timerService.createSingleActionTimer(interval, new TimerConfig(Integer.valueOf(TIMERID_CACERTIFICATECACHE), false));
+                timerService.createSingleActionTimer(interval, new TimerConfig(TIMERID_CACERTIFICATECACHE, false));
             }
         }
     }

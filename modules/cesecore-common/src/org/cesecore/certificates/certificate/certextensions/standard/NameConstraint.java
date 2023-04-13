@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -34,7 +35,8 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.util.CeSecoreNameStyle;
+
+import com.keyfactor.util.CeSecoreNameStyle;
 
 /**
  * Extension for Name Constraints.
@@ -44,11 +46,20 @@ import org.cesecore.util.CeSecoreNameStyle;
  * where data is either a regular string or hex-encoded data, depending on the type.
  * Use parseNameConstraintList to convert human-readable strings into encoded strings.
  *
- * @version $Id$
  */
 public class NameConstraint extends StandardCertificateExtension {
 
     private static final long serialVersionUID = 1L;
+    
+    private static final String URI_TEMPLATE_REGEX = "^(?!:\\/\\/)(\\.)?([a-zA-Z0-9]+\\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}?$";
+    private static final String URI_PREFIX = "uri:";
+    private static final String DNS_REGEX = "^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$";
+    
+    private static final String UNIFORM_RESOURCE_IDENTIFIER = "uniformResourceIdentifier";
+    private static final String RFC822_NAME = "rfc822Name";
+    private static final String DIRECTORY_NAME = "directoryName";
+    private static final String DNS_NAME = "dNSName";
+    private static final String IP_ADDRESS = "iPAddress";
 
     @Override
     public void init(CertificateProfile certProf) {
@@ -101,6 +112,7 @@ public class NameConstraint extends StandardCertificateExtension {
             switch (type) {
             case GeneralName.dNSName:
             case GeneralName.rfc822Name:
+            case GeneralName.uniformResourceIdentifier:
                 genname = new GeneralName(type, (String)data);
                 break;
             case GeneralName.directoryName:
@@ -122,19 +134,36 @@ public class NameConstraint extends StandardCertificateExtension {
      */
     private static int getNameConstraintType(String encoded) {
         String typeString = encoded.split(":", 2)[0];
-        if ("iPAddress".equals(typeString)) {
+        if (IP_ADDRESS.equals(typeString)) {
             return GeneralName.iPAddress;
-        }
-        if ("dNSName".equals(typeString)) {
+        } else if (DNS_NAME.equals(typeString)) {
             return GeneralName.dNSName;
-        }
-        if ("directoryName".equals(typeString)) {
+        } else if (DIRECTORY_NAME.equals(typeString)) {
             return GeneralName.directoryName;
-        }
-        if ("rfc822Name".equals(typeString)) {
+        } else if (RFC822_NAME.equals(typeString)) {
             return GeneralName.rfc822Name;
+        } else if (UNIFORM_RESOURCE_IDENTIFIER.equals(typeString)) {
+            return GeneralName.uniformResourceIdentifier;
+        } else {
+            throw new UnsupportedOperationException("Unsupported name constraint type " + typeString);
         }
-        throw new UnsupportedOperationException("Unsupported name constraint type "+typeString);
+    }
+    
+    public static String getNameConstraintFromType(int type) {
+        switch (type) {
+        case GeneralName.iPAddress:
+            return IP_ADDRESS;
+        case GeneralName.dNSName:
+            return DNS_NAME;
+        case GeneralName.directoryName:
+            return DIRECTORY_NAME;
+        case GeneralName.rfc822Name:
+            return RFC822_NAME;
+        case GeneralName.uniformResourceIdentifier:
+            return UNIFORM_RESOURCE_IDENTIFIER;
+        default:
+            throw new UnsupportedOperationException("Unsupported name constraint type " + type);
+        }
     }
 
     /**
@@ -148,6 +177,7 @@ public class NameConstraint extends StandardCertificateExtension {
         case GeneralName.dNSName:
         case GeneralName.directoryName:
         case GeneralName.rfc822Name:
+        case GeneralName.uniformResourceIdentifier:
             return data;
         case GeneralName.iPAddress:
             try {
@@ -171,27 +201,14 @@ public class NameConstraint extends StandardCertificateExtension {
      * @throws CertificateExtensionException if the string can not be parsed.
      */
     public static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
-        if (str.matches("^([0-9]+\\.){3,3}([0-9]+)/[0-9]+$") ||
+        if (str.equals(".")) { // Empty DNS 
+            return "dNSName:";
+        } else if (str.matches("^([0-9]+\\.){3,3}([0-9]+)/[0-9]+$") ||
             str.matches("^[0-9a-fA-F]{0,4}:[0-9a-fA-F]{0,4}:[0-9a-fA-F:]*/[0-9]+$")) {
             // IPv4 or IPv6 address
+         // IPv4 or IPv6 address
             try {
-                String[] pieces = str.split("/", 2);
-                byte[] addr = InetAddress.getByName(pieces[0]).getAddress();
-                byte[] encoded = new byte[2*addr.length]; // will hold address and netmask
-                System.arraycopy(addr, 0, encoded, 0, addr.length);
-
-                // The second half in the encoded form is the netmask
-                int netmask = Integer.parseInt(pieces[1]);
-                if (netmask > 8*addr.length) {
-                    throw new CertificateExtensionException("Netmask is too large: "+str);
-                }
-                for (int i = 0; i < netmask; i++) {
-                    encoded[addr.length + i/8] |= 1 << (7 - i%8);
-                }
-                // Clear host part from IP address
-                for (int i = netmask; i < 8*addr.length; i++) {
-                    encoded[i/8] &= ~(1 << (7 - i%8));
-                }
+                byte[] encoded = extractIPAddress(str);
                 return "iPAddress:"+Hex.encodeHexString(encoded);
             } catch (UnknownHostException e) {
                 throw new CertificateExtensionException("Failed to parse IP address in name constraint: "+str, e);
@@ -199,9 +216,19 @@ public class NameConstraint extends StandardCertificateExtension {
         } else if (str.matches("^([0-9]+\\.){3,3}([0-9]+)$")) {
             // IP address without netmask. This is not a valid DNS name, so catch it here.
             throw new CertificateExtensionException("Name constraint entry with IP address is missing a netmask: "+str+". Use /32 to match only this address.");
-        } else if (str.matches("^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$")) {
+        } else if (str.startsWith(URI_PREFIX)) {
+            String concactedString = str.substring(URI_PREFIX.length());
+            //From RFC 5280: The constraint MUST be specified as a fully qualified domain name and MAY  specify a host 
+            //or a domain. Examples would be "host.example.com" and ".example.com".
+            if (concactedString.matches(URI_TEMPLATE_REGEX)) {
+                return "uniformResourceIdentifier:" + concactedString;
+            } else {
+                throw new CertificateExtensionException(
+                        "Cannot parse URI, should be in format of \"host.example.com\" and \".example.com\"): " + concactedString);
+            }
+        } else if (str.matches(DNS_REGEX)) {
             // DNS name (it can start with a ".", this means "all subdomains")
-            return "dNSName:"+str;
+            return "dNSName:"+str; 
         } else if (str.matches("^[^=,]*@[a-zA-Z0-9_.\\[\\]:-]+$")) {
             String email = str;
             // RFC 822 Name (i.e. e-mail)
@@ -215,8 +242,29 @@ public class NameConstraint extends StandardCertificateExtension {
             // Directory name
             return "directoryName:" + new X500Name(CeSecoreNameStyle.INSTANCE, str).toString();
         } else {
-            throw new CertificateExtensionException("Cannot parse name constraint entry (only DNS Name, RFC 822 Name, Directory Name, IPv4/Netmask and IPv6/Netmask are supported): "+str);
+            throw new CertificateExtensionException("Cannot parse name constraint entry (only DNS Name, URI, RFC 822 Name, Directory Name, IPv4/Netmask and IPv6/Netmask are supported): "+str);
         }
+    }
+
+    private static byte[] extractIPAddress(String str) throws UnknownHostException, CertificateExtensionException {
+        String[] pieces = str.split("/", 2);
+        byte[] addr = InetAddress.getByName(pieces[0]).getAddress();
+        byte[] encoded = new byte[2*addr.length]; // will hold address and netmask
+        System.arraycopy(addr, 0, encoded, 0, addr.length);
+
+        // The second half in the encoded form is the netmask
+        int netmask = Integer.parseInt(pieces[1]);
+        if (netmask > 8*addr.length) {
+            throw new CertificateExtensionException("Netmask is too large: "+str);
+        }
+        for (int i = 0; i < netmask; i++) {
+            encoded[addr.length + i/8] |= 1 << (7 - i%8);
+        }
+        // Clear host part from IP address
+        for (int i = netmask; i < 8*addr.length; i++) {
+            encoded[i/8] &= ~(1 << (7 - i%8));
+        }
+        return encoded;
     }
 
     /**
@@ -250,8 +298,14 @@ public class NameConstraint extends StandardCertificateExtension {
 
         switch (type) {
         case GeneralName.dNSName:
+            if(StringUtils.isBlank((String)data)) {
+                return "."; // All dns names excluded
+            } else {
+                return (String)data;
+            }
         case GeneralName.directoryName:
-            return (String)data; // not changed during encoding
+        case GeneralName.uniformResourceIdentifier:
+            return URI_PREFIX.concat((String) data);
         case GeneralName.iPAddress:
             byte[] bytes = (byte[])data;
             byte[] ip = new byte[bytes.length/2];

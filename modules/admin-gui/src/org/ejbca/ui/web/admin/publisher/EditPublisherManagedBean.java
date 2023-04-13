@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,6 +55,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 
@@ -62,7 +63,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * 
  *
  */
-@ManagedBean(name = "editPublisher")
+@Named("editPublisher")
 @ViewScoped
 public class EditPublisherManagedBean extends BaseManagedBean implements Serializable {
 
@@ -132,7 +133,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private boolean onlyUseQueue;
     private boolean safeDirectPublishing;
 
-    @ManagedProperty(value = "#{listPublishers}")
+    @Inject
     private ListPublishersManagedBean listPublishers;
 
     public ListPublishersManagedBean getListPublishers() {
@@ -479,7 +480,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public String savePublisher() throws AuthorizationDeniedException {
         try {
             prepareForSave();
-        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException e) {
+        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
             addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
         }
@@ -490,7 +491,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
         try {
             prepareForSave();
-        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException e) {
+        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
             addErrorMessage(e.getMessage());
             return;
         }
@@ -510,7 +511,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
                 || StringUtils.contains(selectedPublisherType, "EnterpriseValidationAuthorityPublisher");
     }
     
-    private void prepareForSave() throws PublisherDoesntExistsException, PublisherExistsException, PublisherException {
+    private void prepareForSave() throws PublisherDoesntExistsException, PublisherExistsException, PublisherException, ParameterException {
         //Set General Settings
         setPublisherQueueAndGeneralSettings();
         

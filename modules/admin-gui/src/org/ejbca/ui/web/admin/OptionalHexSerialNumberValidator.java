@@ -18,20 +18,22 @@ import java.math.BigInteger;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Validates hexadecimal serial numbers entered in the Admin GUI by constructing a BigInteger.
  * Like HexSerialNumberValidator, except that this one accepts an empty/null values
  * and that it doesn't support "matchValue" fields.
  * 
- * @version $Id$
  */
+@FacesValidator("optionalHexSerialNumberValidator")
 public class OptionalHexSerialNumberValidator implements Validator<Object> {
 	private static final Logger log = Logger.getLogger(OptionalHexSerialNumberValidator.class);
 

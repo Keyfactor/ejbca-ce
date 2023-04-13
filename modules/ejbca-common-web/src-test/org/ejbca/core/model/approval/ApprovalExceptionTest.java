@@ -15,9 +15,10 @@ package org.ejbca.core.model.approval;
 
 import static org.junit.Assert.assertEquals;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
 import org.junit.Test;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * @version $Id$

@@ -21,9 +21,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 
-/** Session bean to manage approval requests, i.e. add and find.
- * 
- * @version $Id$
+/** 
+ * Session bean to manage approval requests, i.e. add and find.
  */
 public interface ApprovalSession {
 
@@ -178,6 +177,5 @@ public interface ApprovalSession {
      * @return ApprovalDataVO, or null if non-existent
      */
     ApprovalDataVO findApprovalDataByRequestId(int requestId);
-
 
 }

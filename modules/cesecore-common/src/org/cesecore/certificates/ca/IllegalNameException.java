@@ -14,14 +14,13 @@ package org.cesecore.certificates.ca;
 
 import javax.ejb.ApplicationException;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 
 
 /**
  * Error due to an invalid request name for a certificate.
  *
- * @version $Id$
  */
 @ApplicationException(rollback=true) 
 public class IllegalNameException extends CesecoreException {

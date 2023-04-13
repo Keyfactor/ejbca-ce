@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.cesecore.certificates.util.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * Marker interface for SSH Public Keys

@@ -19,14 +19,15 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.namespace.QName;
 
-import org.cesecore.keys.token.p11.P11Slot;
-import org.cesecore.keys.token.p11.P11SlotUser;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.provider.TLSProvider;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.pkcs11.P11Slot;
+import com.keyfactor.util.keys.token.pkcs11.P11SlotUser;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * Base class inherited by all EJBCA RA WS cli commands.

@@ -68,16 +68,15 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
 
 /**
  * A class to check whether a certificate is revoked or not using either OCSP or CRL. 
  * The revocation status will first be obtained using OCSP. If it turned out that that was not possible for 
  * some reason, a CRL will be used instead. If it was not possible to check the CRL for some reason, an 
  * exception will be thrown.
- * 
- * @version $Id$
- *
  */
 public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
 
@@ -190,7 +189,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
             OCSPReq req = null;
             try {
                 req = getOcspRequest(cacert, certSerialnumber, nonce);
-            } catch (CertificateEncodingException | OCSPException e) {
+            } catch (CertificateEncodingException | OCSPException | IOException e) {
                 if(log.isDebugEnabled()) {
                     log.debug("Failed to create OCSP request. " + e.getLocalizedMessage());
                 }
@@ -352,13 +351,14 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * @return OCSPReq
      * @throws CertificateEncodingException
      * @throws OCSPException
+     * @throws IOException 
      */
-    private OCSPReq getOcspRequest(Certificate cacert, BigInteger certSerialnumber, final byte[] nonce) throws CertificateEncodingException, OCSPException {
+    private OCSPReq getOcspRequest(Certificate cacert, BigInteger certSerialnumber, final byte[] nonce) throws CertificateEncodingException, OCSPException, IOException {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) cacert, certSerialnumber));
         
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         return gen.build();
@@ -445,15 +445,15 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
 
         // ------------- Verify the nonce ---------------//
         byte[] noncerep;
-        try {
-            noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
-        } catch (IOException e) {
-            if(log.isDebugEnabled()) {
-                log.debug("Failed to read extension from OCSP response. " + e.getLocalizedMessage());
-            }
+        Extension nonceExt = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce); 
+        if (nonceExt == null) {
+            log.warn("Sent an OCSP request containing a nonce, but the OCSP response does not contain a nonce");
             return null;
         }
-        if(noncerep == null) {
+        // An extensions is wrapped in an octet string, this means that the nonce which is an octet string
+        // is wrapped on another octet string in the extension encoding. Therefore we do getExtnValue().getOctets(), 
+        noncerep = nonceExt.getExtnValue().getOctets();
+        if (noncerep == null || noncerep.length == 0) {
             log.warn("Sent an OCSP request containing a nonce, but the OCSP response does not contain a nonce");
             return null;
         }

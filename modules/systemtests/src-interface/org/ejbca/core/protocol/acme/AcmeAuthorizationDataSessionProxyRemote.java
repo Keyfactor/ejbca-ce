@@ -14,10 +14,10 @@ package org.ejbca.core.protocol.acme;
 
 import javax.ejb.Remote;
 
+import org.ejbca.acme.AcmeAuthorizationData;
+
 /**
  *  Test proxy for AcmeAccountDataSession
- *
- * @version $Id$
  */
 @Remote
 public interface AcmeAuthorizationDataSessionProxyRemote {
@@ -26,13 +26,27 @@ public interface AcmeAuthorizationDataSessionProxyRemote {
      *
      * @return the persisted version of the AcmeAuthorization.
      */
-    String createOrUpdate(final AcmeAuthorization acmeAuthorization);
+    String createOrUpdate(AcmeAuthorization acmeAuthorization);
 
     /**
      * Removes an ACME authorization with the given ID. Fails silently if no such ACME authorization exists.
      *
      * @param authorizationId the ACME authorization ID
      */
-    void remove(final String authorizationId);
+    void remove(String authorizationId);
+    
+    /**
+     * Persists a data object. Used for testing ECA-10060 post upgrade.
+     * 
+     * @param the data object to persist.
+     */
+    void persistAcmeAuthorizationData(AcmeAuthorizationData data);
+    
+    /**
+     * Fetches the data object. Used for testing ECA-10060 post upgrade.
+     * 
+     * @param authorizationId the ACME authorization ID
+     */
+    AcmeAuthorizationData find(String authorizationId);
 
 }

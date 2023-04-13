@@ -45,6 +45,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -80,8 +86,6 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.util.KeyTools;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -350,82 +354,129 @@ public class AzureCryptoToken extends BaseCryptoToken {
             if (log.isDebugEnabled()) {
                 log.debug("Cache is expired or empty, re-reading aliases: " + aliasCache.getAllNames().size());
             }
-            final HttpGet request = new HttpGet(createFullKeyURL(null, getKeyVaultName()) + "?api-version=7.2");
-            try (final CloseableHttpResponse response = azureHttpRequest(request)) {
-                // Connect to Azure Key Vault and get the list of keys there.
-                final InputStream is = response.getEntity().getContent();
-                if (log.isDebugEnabled()) {
-                    log.debug("getAliases response code: " + response.getStatusLine().getStatusCode());
-                }
-                String json = IOUtils.toString(is, StandardCharsets.UTF_8);
-                if (log.isDebugEnabled()) {
-                    log.debug("getAliases JSON response: " + json);
-                }
-                // Standard JSON Simple parsing, examples see https://github.com/fangyidong/json-simple
-                final JSONParser jsonParser = new JSONParser();
-                final JSONObject parse = (JSONObject) jsonParser.parse(json);
-                if (response.getStatusLine().getStatusCode() == 200) {
-                    final JSONArray value = (JSONArray) parse.get("value");
-                    if (value != null) {
-                        // We have some keys, lets re-fill the array
-                        KeyAliasesCache newCache = new KeyAliasesCache();
-                        for (Object o : value) {
-                            final JSONObject o1 = (JSONObject) o;
-                            final String kid = (String) o1.get("kid");
-                            // Return only the key name, which is what is after the last /.
-                            final String alias = StringUtils.substringAfterLast(kid, "/");
-                            if (log.isDebugEnabled()) {
-                                log.debug("Adding alias to cache: '" + alias);
-                            }
-                            // Add a dummy public key, if there is not already a key in the existing cache for this alias, 
-                            // if there is an existing then update with the real one to not break caching behavior
-                            final PublicKey oldKey = aliasCache.getEntry(alias.hashCode());
-                            if (oldKey != null) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Adding alias to cache with existing public key: '" + alias);
-                                }
-                                newCache.updateWith(alias.hashCode(), alias.hashCode(), alias, oldKey);
-                            } else {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Adding alias to cache wit dummy public key: '" + alias);
-                                }
-                                newCache.updateWith(alias.hashCode(), alias.hashCode(), alias, AzureCryptoToken.getDummyCacheKey());
-                            }
-                        }
-                        // Put an expiry time on the cache itself (for the topmost if statement here)
-                        newCache.updateCacheTimeStamp();
-                        // Swap caches after filling the new one
-                        aliasCache = newCache;
-                    } else {
-                        aliasCache.flush();
+            // Get keys have a parameter for max results, where the default value is the max value of 25
+            // This means we have to loop if there are more than this returned, to fetch all keys if there is more than 25
+            // To not have this method go on forever if there are thousands of keys, we limit the looping to 8 rounds, i.e. 200 keys
+            // https://docs.microsoft.com/en-us/rest/api/keyvault/keys/get-keys/get-keys
+            // Resulting URL: https://keyvault-name.vault.azure.net/keys?maxresults=200&api-version=7.2
+            HttpGet request = new HttpGet(createFullKeyURL(null, getKeyVaultName()) + "?api-version=7.2");
+            String nextLink = null;
+            int bar = 8; // don't run more than 8 laps
+            CloseableHttpResponse response = null;
+            try {
+                while (bar-- > 0) { // be sure to decrease every round
+                    if (nextLink != null) {
+                        request = new HttpGet(nextLink);                        
+                    }
+                    try { // To close the response
+                        response = azureHttpRequest(request);
+                        // Connect to Azure Key Vault and get the list of keys there.
+                        final InputStream is = response.getEntity().getContent();
                         if (log.isDebugEnabled()) {
-                            log.debug("No key aliases in key vault");
+                            log.debug("getAliases response code: " + response.getStatusLine().getStatusCode());
                         }
-                    }
-                } else {
-                    // Error response (not HTTP 200)
-                    aliasCache.flush();
-                    status = STATUS_OFFLINE; // make sure the crypto token is off-line for getTokenStatus
-                    String message = "No parseable JSON error response"; // Defualt message if we have no JSON to parse
-                    try {
-                        if (parse != null) {
-                            // Parse out the error message and skip the JSON code
-                            final JSONObject value = (JSONObject) parse.get("error");
+                        String json = IOUtils.toString(is, StandardCharsets.UTF_8);
+                        if (log.isDebugEnabled()) {
+                            log.debug("getAliases JSON response: " + json);
+                        }
+                        // Standard JSON Simple parsing, examples see https://github.com/fangyidong/json-simple
+                        final JSONParser jsonParser = new JSONParser();
+                        final JSONObject parse = (JSONObject) jsonParser.parse(json);
+                        if (response.getStatusLine().getStatusCode() == 200) {
+                            final JSONArray value = (JSONArray) parse.get("value");
                             if (value != null) {
-                                message = (String) value.get("code");
-                                final String logmessage = (String) value.get("message");
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Error code when listing aliases: " + response.getStatusLine().getStatusCode() + ", error message: "
-                                            + logmessage);
+                                // We have some keys, lets re-fill the array so we can add to that
+                                KeyAliasesCache newCache;
+                                if (nextLink == null && aliasCache == null) {
+                                    newCache = new KeyAliasesCache();
+                                } else {
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("A nextLink exists, adding to the already existing aliases.");
+                                    }
+                                    newCache = new KeyAliasesCache(aliasCache);
                                 }
+                                // if this was not the first round, keep the previous key
+                                for (Object o : value) {
+                                    final JSONObject o1 = (JSONObject) o;
+                                    final String kid = (String) o1.get("kid");
+                                    // Return only the key name, which is what is after the last /.
+                                    final String alias = StringUtils.substringAfterLast(kid, "/");
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Adding alias to cache: '" + alias);
+                                    }
+                                    // Add a dummy public key, if there is not already a key in the existing cache for this alias, 
+                                    // if there is an existing then update with the real one to not break caching behavior
+                                    final PublicKey oldKey = aliasCache.getEntry(alias.hashCode());
+                                    if (oldKey != null) {
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("Adding alias to cache with existing public key: '" + alias);
+                                        }
+                                        newCache.updateWith(alias.hashCode(), alias.hashCode(), alias, oldKey);
+                                    } else {
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("Adding alias to cache wit dummy public key: '" + alias);
+                                        }
+                                        newCache.updateWith(alias.hashCode(), alias.hashCode(), alias, AzureCryptoToken.getDummyCacheKey());
+                                    }
+                                }
+                                // Put an expiry time on the cache itself (for the topmost if statement here)
+                                newCache.updateCacheTimeStamp();
+                                // Swap caches after filling the new one
+                                aliasCache = newCache;
+                                // Do we have more keys to list?
+                                final Object nextLinkObj = parse.get("nextLink");
+                                if (nextLinkObj != null) {
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Found a nextLink, there are more entries available (bar=" + bar + "): " + nextLink);
+                                    }
+                                    nextLink = (String) nextLinkObj;
+                                } else {
+                                    nextLink = null;
+                                    bar = 0; // no nextLink, break out of the loop
+                                }
+
+                            } else if (nextLink == null) {
+                                // Flush cache if we don't have any keys, no value and no nextLink
+                                aliasCache.flush();
+                                if (log.isDebugEnabled()) {
+                                    log.debug("No key aliases in key vault");
+                                }
+                                bar = 0; // break out of the while loop 
+                            }
+                        } else {
+                            // Error response (not HTTP 200)
+                            aliasCache.flush();
+                            status = STATUS_OFFLINE; // make sure the crypto token is off-line for getTokenStatus
+                            String message = "No parseable JSON error response"; // Default message if we have no JSON to parse
+                            try {
+                                if (parse != null) {
+                                    // Parse out the error message and skip the JSON code
+                                    final JSONObject value = (JSONObject) parse.get("error");
+                                    if (value != null) {
+                                        message = (String) value.get("code");
+                                        final String logmessage = (String) value.get("message");
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("Error code when listing aliases: " + response.getStatusLine().getStatusCode() + ", error message: "
+                                                    + logmessage);
+                                        }
+                                    }
+                                }
+                            } catch (ClassCastException e) {
+                                // NOPMD: Ignore, message is above
+                            }
+                            throw new CryptoTokenOfflineException(
+                                    "Can not list keys, response code is " + response.getStatusLine().getStatusCode() + ", message: " + message);
+                        }
+                    } finally {
+                        if (response != null) {
+                            try {
+                                response.close();
+                            } catch (IOException e) {
+                                // NOPMD: do nothing
                             }
                         }
-                    } catch (ClassCastException e) {
-                        // NOPMD: Ignore, message is above
                     }
-                    throw new CryptoTokenOfflineException(
-                            "Can not list keys, response code is " + response.getStatusLine().getStatusCode() + ", message: " + message);
-                }
+                } // while
             } catch (IOException | ParseException | CryptoTokenAuthenticationFailedException e) {
                 aliasCache.flush();
                 status = STATUS_OFFLINE; // make sure the crypto token is off-line for getTokenStatus
@@ -527,7 +578,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // {"kty": "RSA-HSM", "key-size": 2048, "attributes": {"enabled": true}}
             // {"kty": "EC-HSM", "crv": "P-256", "attributes": {"enabled": true}}
             final StringBuilder str = new StringBuilder("{\"kty\": ");
-            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
+            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumeric(keySpec);
             // If it is pure numeric, it is an RSA key length
             if (NumberUtils.isNumber(formatCheckedKeySpec)) {
                 String kty = "RSA-HSM";
@@ -660,7 +711,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // This is a URI for Key Vault
             log.debug("getPrivateKey: " + keyurl);
         }
-        return new AzureProvider.KeyVaultPrivateKey(keyurl, pubK.getAlgorithm(), this);
+        return AzureProvider.KeyVaultPrivateKey.getInstance(keyurl, pubK.getAlgorithm(), this, pubK);
     }
 
     @Override

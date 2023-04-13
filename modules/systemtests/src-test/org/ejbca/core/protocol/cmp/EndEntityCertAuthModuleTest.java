@@ -50,7 +50,6 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -61,6 +60,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -70,11 +70,8 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -82,8 +79,6 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -99,6 +94,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -203,7 +206,11 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             CaTestUtils.removeCa(ADMIN, caSession.getCAInfo(ADMIN, subcaid));
             log.debug("Removed CA in beforeClass: " + subcaid);            
         }
-        adminsubca = CaTestUtils.createTestX509SubCAGenKeys(ADMIN, "CN=" + AUTH_PARAM_SUBCA, "foo123".toCharArray(), adminca.getCAId(), "1024");
+        adminsubca = CaTestUtils.createTestX509SubCAGenKeys(ADMIN, "CN=" + AUTH_PARAM_SUBCA, "foo123".toCharArray(), adminca.getCAId(), "1024",
+                "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+
     }
 
     @AfterClass
@@ -483,7 +490,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA1_ALIAS);
             checkCmpResponseGeneral(resp, ca1.getSubjectDN(), testUserDN, ca1.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA1_ALIAS, testUserDN, (X509Certificate) ca1.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -527,7 +534,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA2_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA2_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -572,7 +579,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA3_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -617,7 +624,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA3_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -662,7 +669,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA3_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -709,7 +716,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA3_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -765,7 +772,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, RA1_ALIAS);
         checkCmpResponseGeneral(resp, ca1.getSubjectDN(), testUserDN, ca1.getCACertificate(), 
                 msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
-                false, null, null);
+                false, null, null, false);
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
         PKIMessage respObject = null;
         try {
@@ -777,7 +784,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
 
@@ -811,7 +818,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, RA2_ALIAS);
         checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                .getTransactionID().getOctets(), false, null, null);
+                .getTransactionID().getOctets(), false, null, null, false);
         asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
         try {
             respObject = PKIMessage.getInstance(asn1InputStream.readObject());
@@ -822,7 +829,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         body = respObject.getBody();
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         err = (ErrorMsgContent) body.getContent();
-        errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
         expectedErrMsg = "'CN=" + RA1_ADMIN + "' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
         log.trace("<test01RA1FailedCRMF");
@@ -870,7 +877,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, RA1_ALIAS);
             checkCmpResponseGeneral(resp, ca1.getSubjectDN(), new X500Name(userDN), ca1.getCACertificate(), 
                     msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
-                    false, null, null);
+                    false, null, null, false);
             ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
             PKIMessage respObject;
             try {
@@ -882,7 +889,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
             assertEquals(expectedErrMsg, errMsg);
 
@@ -900,7 +907,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, RA1_ALIAS);
             checkCmpResponseGeneral(resp, ca1.getSubjectDN(), new X500Name(userDN), ca1.getCACertificate(), 
                     msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
-                    false, null, null);
+                    false, null, null, false);
             asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
             try {
                 respObject = PKIMessage.getInstance(asn1InputStream.readObject());
@@ -927,7 +934,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, RA1_ALIAS);
             checkCmpResponseGeneral(resp, ca1.getSubjectDN(), new X500Name(userDN), ca1.getCACertificate(), 
                     msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
-                    true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+                    true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             int revStatus = checkRevokeStatus(ca1.getSubjectDN(), CertTools.getSerialNumber(cert));
             assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
@@ -976,7 +983,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, RA2_ALIAS);
             checkCmpResponseGeneral(resp, ca1.getSubjectDN(), new X500Name(userDN), ca1.getCACertificate(), 
                     msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
-                    false, null, null);
+                    false, null, null, false);
             ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
             final PKIMessage respObject;
             try {
@@ -988,7 +995,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             PKIBody body = respObject.getBody();
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
             String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
             assertEquals(expectedErrMsg, errMsg);
 

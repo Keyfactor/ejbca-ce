@@ -34,7 +34,8 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Hold information needed to create OCSP responses without database lookups.
@@ -75,9 +76,16 @@ public enum OcspSigningCache {
     }
 
     public void stagingAdd(OcspSigningCacheEntry ocspSigningCacheEntry) {
-        List<CertificateID> certIDs = ocspSigningCacheEntry.getCertificateID();
-        for (CertificateID certID : certIDs) {
+        for (CertificateID certID : ocspSigningCacheEntry.getCertificateID()) {
             staging.put(getCacheIdFromCertificateID(certID), ocspSigningCacheEntry);            
+        }
+        for (CertificateID certID : ocspSigningCacheEntry.getSignedBehalfOfCaIds()) {
+            // override cache only if no OCSP key binding present or the entry is a placeholder
+            int cacheId = getCacheIdFromCertificateID(certID);
+            if(!staging.containsKey(cacheId) || staging.get(cacheId).isPlaceholder() 
+                            || staging.get(cacheId).getOcspKeyBinding()==null ) {
+                staging.put(cacheId, ocspSigningCacheEntry);
+            }      
         }
     }
 
