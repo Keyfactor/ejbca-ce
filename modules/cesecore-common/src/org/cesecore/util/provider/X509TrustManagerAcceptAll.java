@@ -18,7 +18,8 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * This trust manager may be used used by a client that does not bother to verify the TLS certificate chain of the server.

@@ -52,9 +52,10 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.LookAheadObjectInputStream;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Entity Bean for database persisted configurations

@@ -17,11 +17,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.DateNotValidException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 import org.ejbca.core.protocol.ws.client.gen.RevokeBackDateNotAllowedForProfileException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
@@ -29,6 +27,8 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+
+import com.keyfactor.util.CertTools;
 
 
 /**
@@ -86,9 +86,6 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 				getPrintStream().println("The revocation request has been sent for approval.");
 			} catch (ApprovalException_Exception e) {
 				getPrintStream().println("This revocation has already been requested.");
-			} catch (DateNotValidException_Exception e) {
-				getPrintStream().println(e.getMessage());
-				getPrintStream().println(justRevoke);
 			} catch (RevokeBackDateNotAllowedForProfileException_Exception e) {
 				getPrintStream().println(e.getMessage());
 				getPrintStream().println(justRevoke);

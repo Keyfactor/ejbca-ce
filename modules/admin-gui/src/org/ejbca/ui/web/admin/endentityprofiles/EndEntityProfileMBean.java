@@ -46,8 +46,6 @@ import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrg
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -59,6 +57,9 @@ import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.mail.MailSender;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  *
@@ -686,6 +687,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
         }
         sshFieldList = null; // reload state from profile
+    }
+
+    public List<SelectItem> getSshVerifyRequiredOptions() {
+        final List<SelectItem> options = new ArrayList<>();
+        options.add(new SelectItem(true, ejbcaWebBean.getText("BOOL_TRUE")));
+        options.add(new SelectItem(false, ejbcaWebBean.getText("BOOL_FALSE")));
+        return options;
     }
 
     // OTHER SUBJECT ATTRIBUTES

@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.integrated;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -20,6 +27,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
@@ -80,32 +88,23 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
-import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -113,23 +112,33 @@ import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  */
-@RunWith(CryptoTokenTestRunner.class)
+@RunWith(Parameterized.class)
 public class IntegratedOcspResponseTest {
 
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return CryptoTokenRunner.defaultRunners;
+    }
+    
     private static final String PKIX_OCSP_NONCE = "123456789";
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -152,20 +161,29 @@ public class IntegratedOcspResponseTest {
 
     private X509Certificate caCertificate;
     private X509Certificate ocspCertificate;
-    private CA testx509ca;
+    private X509CAInfo testx509ca;
     private String originalDefaultResponder;
 
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal Admin"));
 
-    @ClassRule
-    public static final CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
+    @Rule
+    public TestName testName = new TestName();
 
+    private CryptoTokenRunner cryptoTokenRunner;
+
+    public IntegratedOcspResponseTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+        this.cryptoTokenRunner = cryptoTokenRunner;
+       
+    }
+    
     @Before
     public void setUp() throws Exception {
-        testx509ca = cryptoTokenRule.createX509Ca();
-        caCertificate = (X509Certificate) testx509ca.getCACertificate();
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
+        testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
+        caCertificate = (X509Certificate) testx509ca.getCertificateChain().get(0);
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com",
                 EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
@@ -180,7 +198,7 @@ public class IntegratedOcspResponseTest {
 
     @After
     public void tearDown() throws AuthorizationDeniedException {
-        cryptoTokenRule.cleanUp();
+        cryptoTokenRunner.cleanUp();
         if (ocspCertificate != null) {
             internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
         }
@@ -190,14 +208,13 @@ public class IntegratedOcspResponseTest {
 
     @Test
     public void testOcspPreProducedResponseDoNotStoreStatusUnknown() throws Exception {
-        final X509CAInfo x509caInfo = (X509CAInfo) testx509ca.getCAInfo();
         final BigInteger unknownSerialNumber = BigInteger.valueOf(1111111111111L);
         // Enable OCSP pre production, store responses on demand and make sure the response has nextUpdate set.
         final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("3600");
-        x509caInfo.setDoPreProduceOcspResponses(true);
-        x509caInfo.setDoStoreOcspResponsesOnDemand(true);
+        testx509ca.setDoPreProduceOcspResponses(true);
+        testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
-            caSession.editCA(internalAdmin, x509caInfo);
+            caSession.editCA(internalAdmin, testx509ca);
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             // Prepare OCSP request
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -218,7 +235,7 @@ public class IntegratedOcspResponseTest {
             final SingleResp[] singleResponses = basicOcspResponse.getResponses();
             assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
             // Make sure the response wasn't stored
-            OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(x509caInfo.getCAId(), unknownSerialNumber.toString());
+            OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(testx509ca.getCAId(), unknownSerialNumber.toString());
             assertNull("Response with status 'Unknown' was (wrongly) stored", ocspResponseData);
         } finally {
             setOcspDefaultNextUpdateTime(originalNextUpdateTime);
@@ -227,13 +244,12 @@ public class IntegratedOcspResponseTest {
 
     @Test
     public void testOcspPreProducedResponseOnDemandUseCannedResponse() throws Exception {
-        final X509CAInfo x509caInfo = (X509CAInfo) testx509ca.getCAInfo();
         // Enable OCSP pre production, store responses on demand and make sure the response has nextUpdate set.
         final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("3600");
-        x509caInfo.setDoPreProduceOcspResponses(true);
-        x509caInfo.setDoStoreOcspResponsesOnDemand(true);
+        testx509ca.setDoPreProduceOcspResponses(true);
+        testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
-            caSession.editCA(internalAdmin, x509caInfo);
+            caSession.editCA(internalAdmin, testx509ca);
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
             // Prepare OCSP request
@@ -269,13 +285,12 @@ public class IntegratedOcspResponseTest {
 
     @Test
     public void testOcspPreProducedResponseInvalidated() throws Exception {
-        final X509CAInfo x509caInfo = (X509CAInfo) testx509ca.getCAInfo();
         // Enable OCSP pre production and make sure the response expires after 1 second.
         final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("1");
-        x509caInfo.setDoPreProduceOcspResponses(true);
-        x509caInfo.setDoStoreOcspResponsesOnDemand(true);
+        testx509ca.setDoPreProduceOcspResponses(true);
+        testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
-            caSession.editCA(internalAdmin, x509caInfo);
+            caSession.editCA(internalAdmin, testx509ca);
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
             // Prepare OCSP request
@@ -313,8 +328,7 @@ public class IntegratedOcspResponseTest {
     /** After renewing a CA with a new key pair, the new CA certificate should be used to sign requests */
     @Test
     public void testOcspSignerIssuerRenewal() throws Exception {
-        final X509CA testx509caRenew = cryptoTokenRule.createX509Ca();
-        final X509Certificate caCertificateRenew = (X509Certificate) testx509caRenew.getCACertificate();
+        final X509Certificate caCertificateRenew = (X509Certificate) testx509ca.getCertificateChain().get(0);
         final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal",
                 testx509ca.getCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
@@ -327,8 +341,8 @@ public class IntegratedOcspResponseTest {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenew, OCSPResp.SUCCESSFUL);
             // Try the same thing after CA has been renewed
-            caAdminSession.renewCA(internalAdmin, testx509caRenew.getCAId(), true, null, false);
-            final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(internalAdmin, testx509caRenew.getCAId())
+            caAdminSession.renewCA(internalAdmin, testx509ca.getCAId(), true, null, false);
+            final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(internalAdmin, testx509ca.getCAId())
                     .getCertificateChain().iterator().next();
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             assertEquals("Status is not null (good)", null,
@@ -689,7 +703,7 @@ public class IntegratedOcspResponseTest {
         OCSPReq req = gen.build();
 
         // Now revoke the ocspCertificate
-        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), expectedRevocationReason);
+        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), null, expectedRevocationReason);
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
@@ -1076,7 +1090,7 @@ public class IntegratedOcspResponseTest {
                     final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
                     assertNotNull("Signed request generated null-response.", basicOcspResponse);
                     assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder()
-                            .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(testx509ca.getCACertificate().getPublicKey())));
+                            .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(testx509ca.getCertificateChain().get(0).getPublicKey())));
                     final SingleResp[] singleResponses = basicOcspResponse.getResponses();
                     assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
                     assertEquals("Response cert did not match up with request cert", importedCertificate.getSerialNumber(),

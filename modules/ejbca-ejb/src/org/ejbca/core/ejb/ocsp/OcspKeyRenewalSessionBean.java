@@ -79,12 +79,8 @@ import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.ClientX509KeyManager;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyRenewalFailedException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -95,6 +91,11 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.BasicMatch;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @version $Id$

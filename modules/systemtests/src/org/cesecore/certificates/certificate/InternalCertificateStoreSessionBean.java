@@ -14,11 +14,14 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -38,14 +41,17 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
+
+import com.keyfactor.util.CertTools;
+
 import org.ejbca.util.JDBCUtil;
 
 /**
@@ -280,17 +286,43 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     public void reloadCaCertificateCache() {
         certStore.reloadCaCertificateCache();
     }
+    
+    private void getCachedCaCertEntries(X509Certificate root, Set<X509Certificate> allCaCerts) {
+        X509Certificate[] subCaCerts = CaCertificateCache.INSTANCE.findLatestByIssuerDN(HashID.getFromDNString(CertTools.getSubjectDN(root)));
+        if (subCaCerts==null) {
+            return;
+        }
+        for (X509Certificate subCa: subCaCerts) {
+            getCachedCaCertEntries(subCa, allCaCerts);
+            allCaCerts.add(subCa);
+        }
+    }
+    
+    @Override
+    public List<CertificateDataWrapper> getCaCertificateCacheEntries() {
+        final Set<X509Certificate> allCaCerts = new HashSet<>();
+        X509Certificate[] rootCerts = CaCertificateCache.INSTANCE.getRootCertificates();
+        for (X509Certificate root: rootCerts) {
+            allCaCerts.add(root);
+            getCachedCaCertEntries(root, allCaCerts);
+        }
+        List<CertificateDataWrapper> certificateWrappers = new ArrayList<>();
+        for (X509Certificate cert: allCaCerts) {
+            certificateWrappers.add(new CertificateDataWrapper(cert, null, null));
+        }
+        return certificateWrappers;
+    }
 
     @Override
     public void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber,
             Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException {
-        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
+        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint, null);
     }
     
     @Override
     public void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username, BigInteger serialNumber,
             int status, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException {
-        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, subjectDn, username, serialNumber, status, revocationDate, reasonCode, caFingerprint);
+        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, subjectDn, username, serialNumber, status, revocationDate, reasonCode, caFingerprint, null);
     }
 
     @Override
@@ -326,7 +358,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
+    public boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
         // authorization is handled by setRevokeStatus(admin, certificate, reason, userDataDN);
         final CertificateDataWrapper cdw = certStore.getCertificateDataByIssuerAndSerno(issuerdn, serno);
         if (cdw == null) {
@@ -334,12 +366,12 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             log.info(msg);
             throw new CertificateRevokeException(msg);
         }
-        return certStore.setRevokeStatus(admin, cdw, revokedDate, reason);
+        return certStore.setRevokeStatus(admin, cdw, revokedDate, invalidityDate, reason);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
+    public boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException {
         // Must be authorized to CA in order to change status is certificates issued by the CA
         if (certificate == null) {
             throw new IllegalArgumentException("Passed certificate may not be null.");
@@ -365,7 +397,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         } else {
             cdw = new CertificateDataWrapper(certificateData, null);
         }
-        return noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
+        return noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, invalidityDate, reason);
     }
 
     @Override

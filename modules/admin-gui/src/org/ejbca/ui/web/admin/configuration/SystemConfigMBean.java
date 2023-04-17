@@ -46,12 +46,13 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -78,13 +79,10 @@ import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureZipUnpacker;
-import org.cesecore.util.StreamSizeLimitExceededException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
@@ -108,6 +106,9 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
 
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StreamSizeLimitExceededException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.nimbusds.jwt.SignedJWT;
 
 /**
@@ -326,7 +327,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private String currentNode = null;
     private boolean excludeActiveCryptoTokensFromClearCaches = true;
     private boolean customCertificateExtensionViewMode = false;
-    private UploadedFile statedumpFile = null;
+    private Part statedumpFile = null;
     private String statedumpDir = null;
     private boolean statedumpLockdownAfterImport = false;
     private SystemConfigurationOAuthKeyManager oauthKeyManager;
@@ -732,11 +733,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         this.statedumpDir = statedumpDir;
     }
 
-    public UploadedFile getStatedumpFile() {
+    public Part getStatedumpFile() {
         return statedumpFile;
     }
 
-    public void setStatedumpFile(final UploadedFile statedumpFile) {
+    public void setStatedumpFile(final Part statedumpFile) {
         this.statedumpFile = statedumpFile;
     }
 
@@ -921,7 +922,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 importStatedump(new File(basedir, statedumpDir), statedumpLockdownAfterImport);
                 super.addNonTranslatedErrorMessage("Statedump imported successfully.");
             } else {
-                byte[] uploadedFileBytes = statedumpFile.getBytes();
+                byte[] uploadedFileBytes =  IOUtils.toByteArray(statedumpFile.getInputStream(), statedumpFile.getSize());      
                 importStatedump(uploadedFileBytes, statedumpLockdownAfterImport);
                 // This value is only used to cross-check the imported statedump against a key ceremony script, to prevent
                 // the wrong statedump from being imported by accident. It has nothing to do with security.
@@ -1348,6 +1349,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
+            if (protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName()) && !isRunningEnterprise()) {
+                available = false;
+            }
             if (protocol.equals(AvailableProtocols.REST_SSH_V1.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
@@ -1592,8 +1596,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private GlobalCustomCssConfiguration globalCustomCssConfiguration = null;
     private ListDataModel<RaStyleInfo> raStyleInfos = null;
     private List<RaStyleInfo> raStyleInfosList;
-    private UploadedFile raCssFile = null;
-    private UploadedFile raLogoFile = null;
+    private Part raCssFile = null;
+    private Part raLogoFile = null;
     private Map<String, RaCssInfo> importedRaCssInfos = null;
     private String archiveName = null;
     private String logoName = null;
@@ -1677,12 +1681,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
         logoName = raLogoFile.getName();
-        logoBytes = raLogoFile.getBytes();
+        logoBytes = IOUtils.toByteArray(raLogoFile.getInputStream(), raLogoFile.getSize());     
         addInfoMessage("LOGOIMPORTSUCCESS", logoName);
     }
 
     private void importCssFromFile() throws IOException {
-        final byte[] fileBuffer = raCssFile.getBytes();
+        final byte[] fileBuffer = IOUtils.toByteArray(raCssFile.getInputStream(), raCssFile.getSize()); 
         if (fileBuffer.length == 0) {
             throw new IllegalArgumentException("Empty input file");
         }
@@ -1699,7 +1703,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 .collect(Collectors.toMap(RaCssInfo::getCssName, Function.identity()));
         if (raCssInfosMap.isEmpty() && raCssFile.getName().endsWith(".css")) {
             // Single file selected (not zip)
-            raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(raCssFile.getBytes(), raCssFile.getName()));
+            raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(fileBuffer, raCssFile.getName()));
             importedFiles.add(raCssFile.getName());
         } else if (raCssInfosMap.isEmpty()) {
             addErrorMessage("CANNOT_PROCESS_ZIP_FILE");
@@ -1722,19 +1726,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         saveCustomCssConfiguration();
     }
 
-    public UploadedFile getRaCssFile() {
+    public Part getRaCssFile() {
         return raCssFile;
     }
 
-    public void setRaCssFile(final UploadedFile raCssFile) {
+    public void setRaCssFile(final Part raCssFile) {
         this.raCssFile = raCssFile;
     }
 
-    public UploadedFile getRaLogoFile() {
+    public Part getRaLogoFile() {
         return raLogoFile;
     }
 
-    public void setRaLogoFile(final UploadedFile raLogoFile) {
+    public void setRaLogoFile(final Part raLogoFile) {
         this.raLogoFile = raLogoFile;
     }
 

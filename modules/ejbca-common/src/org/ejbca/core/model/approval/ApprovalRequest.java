@@ -37,12 +37,13 @@ import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.keys.validation.ValidationResult;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenReferenceRegistry;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.log.Admin;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * Abstract Base class representing one approval request created when an administrator performs an action that requires an approval.

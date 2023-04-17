@@ -29,9 +29,10 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.protocol.crlstore.CRLCache;
 import org.ejbca.util.HTMLTools;
+
+import com.keyfactor.util.StringTools;
 
 /** 
  * Servlet implementing server side of the CRL Store.

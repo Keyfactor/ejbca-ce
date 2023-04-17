@@ -290,12 +290,17 @@
                 rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword}"
-                rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated and not empty cc.attrs.raEndEntityDetails.endEntityInformation.password}"
+                rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword_true}"
-                rendered="#{!cc.attrs.raEndEntityDetails.tokenTypeUserGenerated and not empty cc.attrs.raEndEntityDetails.endEntityInformation.password}"
+            <h:outputText id="cleartextpassword" value="#{cc.attrs.raEndEntityDetails.clearPasswordViewMode ? msg.component_eedetails_field_notification_true : msg.component_eedetails_field_notification_false}"
+                rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed and ((not cc.attrs.editMode) or cc.attrs.approvalRequestMode)}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-
+            <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+            	  rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed and cc.attrs.editMode}">
+            	<h:selectBooleanCheckbox id="cleartextpasswordcheckbox" value="#{cc.attrs.raEndEntityDetails.clearPassword}"
+                	disabled="#{cc.attrs.raEndEntityDetails.clearPasswordRequired}"/>
+            </h:panelGroup>
+		
             <h:outputLabel for="logins" value="#{msg.component_eedetails_field_logins}"
                 rendered="#{cc.attrs.raEndEntityDetails.loginsMaxEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -436,6 +441,14 @@
             <h:outputText id="sshsourceaddress"
                 rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
                 value="#{cc.attrs.raEndEntityDetails.sshSourceAddress}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="sshverifyrequired"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{msg.component_eedetails_header_ssh_verifyrequired}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="sshverifyrequired"
+                rendered="#{(not cc.attrs.editMode or cc.attrs.approvalRequestMode) and not empty cc.attrs.raEndEntityDetails.subjectDn and cc.attrs.raEndEntityDetails.sshTypeEndEntity}"
+                value="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredString}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances
             		and cc.attrs.approvalRequestMode}"
@@ -583,6 +596,26 @@
                     <h:outputText id="sourceaddresstext"
                         rendered="#{not cc.attrs.raEndEntityDetails.sshSourceAddressModifiable}"
                         value="#{cc.attrs.raEndEntityDetails.sshSourceAddress}"/>
+                </h:panelGroup>
+                <h:outputLabel for="verifyrequiredinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{not cc.attrs.raEndEntityDetails.sshVerifyRequiredRequired}"
+                    value="#{msg.component_eedetails_header_ssh_verifyrequired}"/>
+                <h:outputLabel for="verifyrequiredinput"
+                    styleClass="pure-u-lg-1-3 row-even"
+                    rendered="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredRequired}"
+                    value="#{msg.component_eedetails_header_ssh_verifyrequired} *"/>
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                    <h:selectOneMenu id="verifyrequiredinput"
+									value="#{cc.attrs.raEndEntityBean.sshVerifyRequired}"
+                                    rendered="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredModifiable}"
+									requiredMessage="#{msg.enroll_ssh_option_required}"
+									required="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredRequired}">
+                        <f:selectItems id="sshVerifyRequiredSelectList" value="#{cc.attrs.raEndEntityBean.sshVerifyRequiredOptions}"/>
+                    </h:selectOneMenu>
+                    <h:outputText id="verifyrequiredtext"
+                        rendered="#{not cc.attrs.raEndEntityDetails.sshVerifyRequiredModifiable}"
+                        value="#{cc.attrs.raEndEntityDetails.sshVerifyRequiredString}"/>
                 </h:panelGroup>
             </h:panelGroup>
 

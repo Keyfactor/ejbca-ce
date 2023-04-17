@@ -13,11 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -25,8 +20,19 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -35,6 +41,8 @@ import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -51,6 +59,7 @@ import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.OtherName;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.PolicyQualifierId;
 import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
@@ -74,17 +83,10 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -101,7 +103,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.string.StringConfigurationCache;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
@@ -607,8 +612,9 @@ public class CrmfRARequestTest extends CmpTestCase {
     }
     
     /**
-     * Send a CMP request with SubjectAltName containing OIDs that are not defined by Ejbca.
-     * Expected to pass and a certificate containing the unsupported OIDs is returned.
+     * Send a CMP request with SubjectAltName containing one OtherName OID that is supported by EJBCA,
+     * and one OtherName OID that is not supported.
+     * Expected to pass and a certificate containing the supported OID is returned, while the unsupported is dropped
      * 
      * @throws Exception
      */
@@ -659,17 +665,26 @@ public class CrmfRARequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, cacert, resp, reqId);
             fingerprint = CertTools.getFingerprintAsString(cert);
-            
+            // Check those altNames
+            Collection<List<?>> altNames = cert.getSubjectAlternativeNames();
+            assertEquals("We added two altNames, one should be present in the certificate", 1, altNames.size());
+            Iterator<List<?>> i = altNames.iterator();
+            List<?> name1 = i.next();
+            assertEquals("First altName should be an OtherName", 0, name1.get(0));
+            byte[] bytes = (byte[])name1.get(1);
+            ASN1TaggedObject obj = ASN1TaggedObject.getInstance(bytes);
+            OtherName on = OtherName.getInstance(obj.getBaseObject());
+            assertEquals("OID should be UPN", CertTools.UPN_OBJECTID, on.getTypeID().getId());
+            ASN1UTF8String str = ASN1UTF8String.getInstance(on.getValue());
+            assertEquals("Value should be what we set", "boo@bar", str.getString());
         } finally {
             try {
                 endEntityManagementSession.revokeAndDeleteUser(ADMIN, "TestAltNameUser", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
             } catch (NoSuchEndEntityException e) {/*Do nothing*/}
-            
             try{
                 internalCertStoreSession.removeCertificate(fingerprint);
             } catch(Exception e) {/*Do nothing*/}
         }    
-        
     }
     
     @Test
@@ -1065,7 +1080,7 @@ public class CrmfRARequestTest extends CmpTestCase {
     }
     
     @Test
-    public void test09CertificatePoliceOverwrite() throws Exception {
+    public void test09CertificatePolicyOverwrite() throws Exception {
         final String username = "overidetestuser";
         final String sUserDN = "CN=" + username + ", C=SE";
         final X500Name userDN = new X500Name(sUserDN);
@@ -1270,6 +1285,71 @@ public class CrmfRARequestTest extends CmpTestCase {
             }
         }
             
+    }
+
+    /**
+     * Send a CMP request with SubjectAltName containing one IPv4 and one IPv6 address.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testIPv4andIPv6SubjectAltName() throws Exception {
+        // Disable end entity profile checks so we don't have to add another IP address to the EE profile
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
+        gc.setEnableEndEntityProfileLimitations(false);
+        globalConfSession.saveConfiguration(ADMIN, gc);
+
+        String fingerprint = null;
+        try {
+            GeneralNames san = CertTools.getGeneralNamesFromAltName("iPAddress=10.0.0.1,iPAddress=2001:db8::1234:5678");
+            ExtensionsGenerator gen = new ExtensionsGenerator();
+            gen.addExtension(Extension.subjectAlternativeName, false, san);
+            Extensions exts = gen.generate();
+
+            final X500Name userDN = new X500Name("CN=TestIPAltNameUser");
+            final KeyPair keys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
+            final byte[] nonce = CmpMessageHelper.createSenderNonce();
+            final byte[] transid = CmpMessageHelper.createSenderNonce();
+            final int reqId;
+
+            final PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, exts, null, null, null, null, null);
+            final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
+
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            Assert.assertNotNull(req);
+            final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
+            out.writeObject(req);
+            final byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+            // do not check signing if we expect a failure (sFailMessage==null)
+            checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, cacert, resp, reqId);
+            fingerprint = CertTools.getFingerprintAsString(cert);
+            // Check those altNames
+            Collection<List<?>> altNames = cert.getSubjectAlternativeNames();
+            assertEquals("We added two altNames, both should be present in the certificate", 2, altNames.size());
+            Iterator<List<?>> i = altNames.iterator();
+            List<?> name1 = i.next();
+            assertEquals("First altName should be an iPAddress", 7, name1.get(0));
+            assertEquals("IPv4 address was wrong", "10.0.0.1", name1.get(1));
+            List<?> name2 = i.next();
+            assertEquals("Second altName should be an iPAddress", 7, name2.get(0));
+            assertEquals("IPv6 address was wrong", "2001:db8:0:0:0:0:1234:5678", name2.get(1));
+        } finally {
+            gc.setEnableEndEntityProfileLimitations(eelimitation);
+            globalConfSession.saveConfiguration(ADMIN, gc);            
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, "TestIPAltNameUser", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            } catch (NoSuchEndEntityException e) {/*Do nothing*/}
+
+            try{
+                internalCertStoreSession.removeCertificate(fingerprint);
+            } catch(Exception e) {/*Do nothing*/}
+        }    
     }
 
     @Override

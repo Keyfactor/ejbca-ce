@@ -24,8 +24,8 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.util.CertTools;
 
+import com.keyfactor.util.CertTools;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPEntry;

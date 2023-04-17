@@ -14,11 +14,12 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 import java.security.cert.CertificateEncodingException;
 import java.util.Collections;

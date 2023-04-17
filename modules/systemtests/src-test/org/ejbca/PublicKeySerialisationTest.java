@@ -19,11 +19,12 @@ import java.io.StreamCorruptedException;
 
 import javax.ejb.EJBException;
 
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Test to check the deserialisation over JNDI of keys that appeared in BC 1.51

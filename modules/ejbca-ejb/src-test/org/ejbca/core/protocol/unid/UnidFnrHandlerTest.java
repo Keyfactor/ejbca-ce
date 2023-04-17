@@ -35,10 +35,11 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.CeSecoreNameStyle;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.junit.Test;
+
+import com.keyfactor.util.CeSecoreNameStyle;
 
 /**
  * Testing of {@link UnidFnrHandler} .
