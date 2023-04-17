@@ -26,17 +26,18 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.Base64;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -61,6 +62,8 @@ import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileField
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_FIELD_NUMBER;
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS;
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_FIELD_NUMBER;
+import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED;
+import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_FIELD_NUMBER;
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_FIELD_ORDER;
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_PRINCIPAL;
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_PRINCIPAL_FIELD_NUMBER;
@@ -102,7 +105,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private static final float LATEST_VERSION = 17;
+    private static final float LATEST_VERSION = 18;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -213,6 +216,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	DATA_CONSTANTS.put(SSH_PRINCIPAL, SSH_PRINCIPAL_FIELD_NUMBER);
     	DATA_CONSTANTS.put(SSH_CRITICAL_OPTION_FORCE_COMMAND, SSH_CRITICAL_OPTION_FORCE_COMMAND_FIELD_NUMBER);
     	DATA_CONSTANTS.put(SSH_CRITICAL_OPTION_SOURCE_ADDRESS, SSH_CRITICAL_OPTION_SOURCE_ADDRESS_FIELD_NUMBER);
+        DATA_CONSTANTS.put(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, SSH_CRITICAL_OPTION_VERIFY_REQUIRED_FIELD_NUMBER);
     }
 	// The max value in dataConstants (we only want to do this once)
     private static final int DATA_CONSTANTS_MAX_VALUE = Collections.max(DATA_CONSTANTS.values());
@@ -420,6 +424,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         
         setModifyable(SSH_CRITICAL_OPTION_FORCE_COMMAND, 0, true);
         setModifyable(SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0, true);
+        setModifyable(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0, true);
     }
 
     /** Add a field with value="", required=false, use=true, modifyable=true, if the parameter exists, ignored otherwise */
@@ -810,6 +815,31 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         returnval[NUMBER] = i % getBase();
         returnval[FIELDTYPE] = i / getBase();
         return returnval;
+    }
+
+    public boolean getSshVerifyRequired() {
+        final String value = getValue(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0);
+        return StringUtils.equals(value, TRUE) ? true : false;
+    }
+
+    public void setSshVerifyRequired(final boolean value) {
+        setValue(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0, value ? TRUE : FALSE);
+    }
+
+    public boolean isSshVerifyRequiredModifiable() {
+        return isModifyable(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0);
+    }
+
+    public void setSshVerifyRequiredModifiable(final boolean modifiable) {
+        setModifyable(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0, modifiable);
+    }
+    
+    public boolean isSshVerifyRequiredRequired() {
+        return isRequired(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0);
+    }
+
+    public void setSshVerifyRequiredRequired(final boolean required) {
+        setRequired(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0, required);
     }
 
     public String getSshForceCommand() {
@@ -2178,6 +2208,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     getSshForceCommand());
         }
 
+        if (!isSshVerifyRequiredModifiable() && criticalOptions != null && 
+                !criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP) &&
+                getSshVerifyRequired()) {
+            criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
+        }
+
+        if (!isSshVerifyRequiredModifiable() && criticalOptions != null &&
+                criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP) &&
+                !getSshVerifyRequired()) {
+                    criticalOptions.remove(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
+        }
         // TODO: additional extension validation later
                 
     }
@@ -2403,7 +2444,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public Object clone() {
     	final EndEntityProfile clone = new EndEntityProfile(0);
     	// We need to make a deep copy of the hashmap here
-    	clone.data = new LinkedHashMap<>(data.size());
+    	clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR)); 
     	for (final Entry<Object,Object> entry : data.entrySet()) {
     		Object value = entry.getValue();
     		if (value instanceof ArrayList<?>) {

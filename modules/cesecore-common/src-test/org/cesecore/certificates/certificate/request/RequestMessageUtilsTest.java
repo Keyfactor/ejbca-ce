@@ -12,10 +12,11 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.request;
 
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

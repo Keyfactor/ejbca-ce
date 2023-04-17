@@ -29,7 +29,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
@@ -41,6 +40,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 import static org.ejbca.ui.cli.infrastructure.command.CommandResult.SUCCESS;
 import static org.ejbca.ui.cli.infrastructure.command.CommandResult.FUNCTIONAL_FAILURE;

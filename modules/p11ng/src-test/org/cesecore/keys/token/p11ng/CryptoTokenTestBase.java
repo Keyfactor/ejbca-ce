@@ -44,13 +44,15 @@ import javax.crypto.spec.IvParameterSpec;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.commons.p11ng.provider.JackNJI11ProviderTest;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  */
@@ -684,7 +686,7 @@ public abstract class CryptoTokenTestBase {
     private static final CryptoToken createTokenFromClass(final String classpath) {
         try {
             Class<?> implClass = Class.forName(classpath);
-            Object obj = implClass.newInstance();
+            Object obj = implClass.getDeclaredConstructor().newInstance();
             return (CryptoToken) obj;
         } catch (Throwable e) {
             log.error("Error contructing Crypto Token (setting to null). Classpath="+classpath, e);

@@ -20,8 +20,9 @@ import java.security.cert.Certificate;
 import javax.ejb.Remote;
 
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 @Remote
 public interface CAAdminTestSessionRemote {

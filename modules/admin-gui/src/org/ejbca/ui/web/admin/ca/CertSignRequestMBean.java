@@ -21,8 +21,9 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
-import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.apache.commons.io.IOUtils;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -45,7 +46,7 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     private String selectedCaName;
     private int selectedCaId;
     private int selectedCaType;
-    private UploadedFile uploadedFile;
+    private Part uploadedFile;
     
     public CertSignRequestMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
@@ -73,17 +74,17 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
         return getEjbcaWebBean().getText("CANAME") + " : " + selectedCaName;
     }
 
-    public UploadedFile getUploadedFile() {
+    public Part getUploadedFile() {
         return uploadedFile;
     }
 
-    public void setUploadedFile(final UploadedFile uploadedFile) {
+    public void setUploadedFile(final Part uploadedFile) {
         this.uploadedFile = uploadedFile;
     }
     
-    public String signRequest() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
+    public String signRequest() {     
         try {
+            final byte[] fileBuffer = IOUtils.toByteArray(uploadedFile.getInputStream(), uploadedFile.getSize());
             if (caBean.createAuthCertSignRequest(selectedCaId, fileBuffer)) {
                 final Map<String, Object> facesContextRequestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
                 facesContextRequestMap.put("filemode", EditCaUtil.CERTREQGENMODE);

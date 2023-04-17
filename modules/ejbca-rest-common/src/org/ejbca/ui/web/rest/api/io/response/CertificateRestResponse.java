@@ -13,8 +13,10 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.keyfactor.util.CertTools;
+
 import io.swagger.annotations.ApiModelProperty;
-import org.cesecore.util.CertTools;
+
 import org.ejbca.core.model.SecConst;
 
 import java.security.cert.Certificate;

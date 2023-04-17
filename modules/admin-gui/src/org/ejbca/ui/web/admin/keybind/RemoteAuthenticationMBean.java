@@ -35,10 +35,11 @@ import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  *
@@ -151,6 +152,11 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
                 }
             }
             internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData());
+            final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties =
+                    (List<DynamicUiProperty<? extends Serializable>>) getInternalKeyBindingPropertyList().getWrappedData();
+            for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
+                internalKeyBinding.setProperty(property.getName(), property.getValue());
+            }
 
             setCurrentInternalKeybindingId(
                     String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding)));

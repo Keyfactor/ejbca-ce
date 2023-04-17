@@ -14,6 +14,7 @@ package org.ejbca.performance.legacy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -48,13 +49,13 @@ import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.PrivateKeyNotExtractableException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.StringTools;
 
+import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
@@ -355,16 +356,20 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
      * @throws IllegalAccessException if the default constructor for the class specified by jcaProviderClassName was not public
      * @throws InstantiationException if the class specified by jcaProviderClassName was an abstract class, an interface, an array class, a primitive
      *             type, or void; or if it has no nullary constructor; or if the instantiation fails for some other reason.
+     * @throws SecurityException 
+     * @throws NoSuchMethodException if there was no default constructor
+     * @throws InvocationTargetException if the default constructor threw an exception
+     * @throws IllegalArgumentException if there was no default constructor
      * @see {@link #setJCAProvider(Provider)}
      */
     protected void setProviders(String jcaProviderClassName, String jceProviderClassName) throws InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
-        Provider jcaProvider = (Provider) Class.forName(jcaProviderClassName).newInstance();
+            ClassNotFoundException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        Provider jcaProvider = (Provider) Class.forName(jcaProviderClassName).getDeclaredConstructor().newInstance();
         setProvider(jcaProvider);
         this.mJcaProviderName = jcaProvider.getName();
         if (jceProviderClassName != null) {
             try {
-                Provider jceProvider = (Provider) Class.forName(jceProviderClassName).newInstance();
+                Provider jceProvider = (Provider) Class.forName(jceProviderClassName).getDeclaredConstructor().newInstance();
                 setProvider(jceProvider);
                 this.mJceProviderName = jceProvider.getName();
             } catch (Exception e) {

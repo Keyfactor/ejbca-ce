@@ -12,8 +12,8 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 
 /**

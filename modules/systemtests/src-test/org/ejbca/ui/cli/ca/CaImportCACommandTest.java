@@ -27,11 +27,12 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.FileTools;
 
 /**
  * @version $Id$

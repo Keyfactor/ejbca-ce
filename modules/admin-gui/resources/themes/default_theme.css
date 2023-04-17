@@ -1016,6 +1016,12 @@ table#endentityprofile.edit tr td input[name="textfieldpassword"] {
 	margin-bottom: .1em;
 }
 
+.missingEmailConfiguration {
+	display: block;
+	max-width: 250px;
+	word-wrap: break-word;
+}
+
 /* --- Page: RA > Add End-Entity */
 table#addendentity tr td {
 	padding: .15em .3em;

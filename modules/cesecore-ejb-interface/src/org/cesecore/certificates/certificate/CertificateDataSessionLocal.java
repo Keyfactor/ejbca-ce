@@ -24,8 +24,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
  * Local interface for CertificateDataSession.
- * 
- * @version $Id$
  */
 @Local
 public interface CertificateDataSessionLocal extends CertificateDataSession {
@@ -93,7 +91,7 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
 
     
     /** @return return the query results as a Collection<RevokedCertInfo>. */
-    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate);
+    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean allowInvalidityDate);
     
     /** @return return the query results as a List. */
     List<CertificateData> findByExpireDateWithLimit(long expireDate, int maxNumberOfResults);
@@ -127,6 +125,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     /** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
     List<Certificate> findActiveCertificatesByType(Collection<Integer> certificateTypes);
     
+    /** @return a List<Certificate> of active CA certificates of status SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION. 
+     * Only to be used with certificateTypes= {CertificateConstants.CERTTYPE_ROOTCA, CertificateConstants.CERTTYPE_SUBCA}*/
+    List<Certificate> findActiveCaCertificatesByType(Collection<Integer> certificateTypes);
     
     /**
      * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types for the given

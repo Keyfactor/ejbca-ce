@@ -23,11 +23,12 @@ import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class keeping the logic and data for ldap publisher used by EditPublisher managed bean.

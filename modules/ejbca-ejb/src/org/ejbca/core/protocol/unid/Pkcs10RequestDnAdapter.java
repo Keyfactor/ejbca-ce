@@ -28,7 +28,8 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Holder for a modified Pkcs10RequestMessage

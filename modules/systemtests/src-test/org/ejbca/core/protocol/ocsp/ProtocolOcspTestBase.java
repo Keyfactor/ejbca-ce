@@ -80,16 +80,17 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  *
@@ -466,7 +467,7 @@ public abstract class ProtocolOcspTestBase {
 
         X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken,
                 revokedUser, req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), revocationReason);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), null, revocationReason);
 
         @SuppressWarnings("unused")
         X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken,

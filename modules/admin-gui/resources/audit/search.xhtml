@@ -135,7 +135,7 @@
 					<h:commandButton action="#{auditor.reorderDescByTime}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{auditLogEntry.timeStamp}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm:ssZZ" /></h:outputText>
+			<h:outputText value="#{auditor.timeStampFormatted(auditLogEntry.timeStamp)}">/></h:outputText>
 		</h:column>
 		<h:column>
 			<f:facet name="header">

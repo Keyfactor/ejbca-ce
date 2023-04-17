@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -32,7 +31,6 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -46,7 +44,6 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
@@ -95,6 +92,10 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 import org.ejbca.util.query.IllegalQueryException;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -649,15 +650,15 @@ public interface RaMasterApi {
      * Generates a certificate. This variant is used from the Web Service interface.
      * @param authenticationToken authentication token.
      * @param userData end entity information, encoded as a UserDataVOWS (web service value object). Must have been enriched by the WS setUserDataVOWS/enrichUserDataWithRawSubjectDn methods.
-     * @param requestData see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
-     * @param requestType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
-     * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
-     * @param responseType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param requestData see {@link org.ejbca.core.protocol.ws.EjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param requestType see {@link org.ejbca.core.protocol.ws.EjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.EjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param responseType see {@link org.ejbca.core.protocol.ws.EjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null.
      * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
      * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
-     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest
+     * @see org.ejbca.core.protocol.ws.EjbcaWS#certificateRequest
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
     byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userData, final String requestData, final int requestType,
@@ -793,11 +794,11 @@ public interface RaMasterApi {
             throws ApprovalException, WaitingForApprovalException;
 
     /**
-     * @see EndEntityManagementSessionLocal#revokeCert(AuthenticationToken, BigInteger, Date, String, int, boolean)
+     * @see EndEntityManagementSessionLocal#revokeCert(AuthenticationToken, BigInteger, Date, Date, String, int, boolean)
      * @throws CADoesntExistsException in addition to the above throws if the CA (from issuer DN) is not handled by this instance, fail-fast
      * @since RA Master API version 3 (EJBCA 6.12.0)
      */
-    void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
+     void revokeCert(AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException;
 
@@ -931,7 +932,7 @@ public interface RaMasterApi {
      * @param certSNinHex of the certificate to recover
      * @param issuerDN issuer of the certificate
      * @param password new
-     * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.EjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @return KeyStore generated, post recovery
      * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery and enrollment
      * @throws WaitingForApprovalException if operation requires approval (expected to be thrown with approvals enabled). The request ID will be included as a field in this exception.

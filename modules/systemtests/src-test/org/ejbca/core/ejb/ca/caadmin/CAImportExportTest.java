@@ -40,23 +40,24 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -69,6 +70,9 @@ import static org.junit.Assert.fail;
  */
 public class CAImportExportTest  {
     private static Logger log = Logger.getLogger(CAImportExportTest.class);
+    
+    private static final String RSA_1024 = "RSA1024";
+    
     private static CAInfo cainfo = null;
     
     private CAAdminSessionRemote caadminsession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -86,7 +90,7 @@ public class CAImportExportTest  {
     @BeforeClass
     public static void beforeTest() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        KeyPair keys = KeyTools.genKeys(RSA_1024, AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
@@ -104,9 +108,9 @@ public class CAImportExportTest  {
     @Test
 	public void test01ImportExportSHA1withRSA() throws Exception {
 	    log.trace("<test01ImportExport..()");
-	    final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test01", "1024");
+	    final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test01", RSA_1024, RSA_1024, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
 	    try {
-	        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+	        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
 	        subTest(catoken);
 	    } finally {
 	        CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
@@ -118,9 +122,11 @@ public class CAImportExportTest  {
     @Test
 	public void test02ImportExportSHA1withECDSA() throws Exception {
 	    log.trace("<test02ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test02", "prime256v1",  "2048");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test02",
+                "prime256v1", "2048", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA,
+                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(catoken);
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
@@ -132,9 +138,9 @@ public class CAImportExportTest  {
     @Test
 	public void test03ImportExportSHA256withRSA() throws Exception {
 	    log.trace("<test03ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test03", "2048");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test03", "2048", "2048", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(catoken);
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
@@ -146,9 +152,9 @@ public class CAImportExportTest  {
     @Test
 	public void test04ImportExportSHA256withECDSA() throws Exception {
 	    log.trace("<test04ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test04", "prime256v1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test04", "prime256v1", "prime256v1", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
-            final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+            final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(catokeninfo);
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
@@ -164,9 +170,9 @@ public class CAImportExportTest  {
     @Test
 	public void test05ImportExportAccess() throws Exception {
 	    log.trace("<test05ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test05", "prime256v1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test05", "prime256v1", "prime256v1", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTestPublicAccess(catoken, adminTokenNoAuth);
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
@@ -182,9 +188,9 @@ public class CAImportExportTest  {
     @Test
 	public void test06ImportExportSHA1withDSA() throws Exception {
 	    log.trace("<test06ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test06", "DSA1024", "1024");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test06", "DSA1024", RSA_1024, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
-            final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(catokeninfo);
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
@@ -196,9 +202,9 @@ public class CAImportExportTest  {
     @Test
     public void test07ImportWithNewSession() throws Exception {
         log.trace("<test07Import...()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test07", "1024");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test07", RSA_1024, RSA_1024, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
-            CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             byte[] keystorebytes = null;
             String caname = "DummyTestCA";
             String capassword = TEST_PASSWORD;
@@ -231,7 +237,7 @@ public class CAImportExportTest  {
         final String caname = "test08";
         log.trace("<test08ExportWithPassword..()");
         final char[] correctpwd = "correctpwd".toCharArray();
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, correctpwd, true, false, caname, "1024");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, correctpwd, true, false, caname, RSA_1024, RSA_1024, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
             // Make exportable
             CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(internalAdmin, cryptoTokenId);
@@ -239,7 +245,7 @@ public class CAImportExportTest  {
             properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
             cryptoTokenManagementSession.saveCryptoToken(internalAdmin, cryptoTokenId, cryptoTokenInfo.getName(), properties, correctpwd);
             
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             cainfo = getNewCAInfo(caname, catoken);
             caadminsession.createCA(internalAdmin, cainfo);
             
@@ -285,7 +291,8 @@ public class CAImportExportTest  {
         cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
         try {
             // Create CA
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             cainfo = getNewCAInfo(caname, catoken);
             caadminsession.createCA(internalAdmin, cainfo);
             

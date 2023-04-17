@@ -36,7 +36,6 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -67,11 +66,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -79,9 +74,6 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
@@ -105,6 +97,14 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 import javax.security.auth.x500.X500Principal;
@@ -436,7 +436,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         } 
         assertNotNull("Failed to create a test certificate", certificate);
         
-        this.internalCertificateStoreSession.setRevokeStatus(ADMIN, certificate, new Date(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+        this.internalCertificateStoreSession.setRevokeStatus(ADMIN, certificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
         assertTrue("Failed to revoke the test certificate", this.certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));
         
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
@@ -1692,7 +1692,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final Certificate certificate;
         certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
-        endEntityManagementSession.revokeCert(ADMIN, CertTools.getSerialNumber(certificate), new Date(), CertTools.getIssuerDN(certificate),
+        endEntityManagementSession.revokeCert(ADMIN, CertTools.getSerialNumber(certificate), new Date(), null, CertTools.getIssuerDN(certificate),
                 RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, false);
         assertTrue("Failed to revoke the test certificate", certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));      
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
