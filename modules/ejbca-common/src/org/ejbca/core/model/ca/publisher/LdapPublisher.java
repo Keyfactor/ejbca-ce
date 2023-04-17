@@ -38,15 +38,15 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.LdapNameStyle;
 import org.ejbca.util.LdapTools;
 import org.ejbca.util.TCPTool;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPConnection;

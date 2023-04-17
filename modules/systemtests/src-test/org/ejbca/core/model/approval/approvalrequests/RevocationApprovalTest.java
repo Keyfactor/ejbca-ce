@@ -67,10 +67,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -78,11 +75,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -110,6 +103,14 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -211,9 +212,9 @@ public class RevocationApprovalTest extends CaTestCase {
         String caname = RevocationApprovalTest.class.getSimpleName();
         
         // Create new CA
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, caname, "1024");
+        cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, caname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         approvalCAID = createApprovalCA(internalAdmin, caname, ApprovalRequestType.REVOCATION, approvalProfileId, caAdminSession, caSession, catoken);
     }
 
@@ -448,7 +449,7 @@ public class RevocationApprovalTest extends CaTestCase {
             assertNotNull("Test user certificate was not created", usercert);
 
             RevocationApprovalRequest revAr = new RevocationApprovalRequest(CertTools.getSerialNumber(usercert), CertTools.getIssuerDN(usercert), username, 
-                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null, null);
+                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null, null, null);
             revAr.execute(endEntityManagementSession, 4711, null);
             // Verify that the certificate was revokes
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
@@ -556,7 +557,7 @@ public class RevocationApprovalTest extends CaTestCase {
         //Create approval profile and revoke certificate
         ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
         assertNotNull("Could not find approval profile with id: " + approvalProfileId, approvalProfile);
-        revocationSession.revokeCertificate(internalAdmin, usercertTest06, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        revocationSession.revokeCertificate(internalAdmin, usercertTest06, null, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         //Assert revoke date is added and certificate is revoked
         assertNotNull(certificateStoreSession.getCertificateInfo(usercertTest06fp).getRevocationDate());
         assertEquals(CertificateStatus.REVOKED,
@@ -564,7 +565,7 @@ public class RevocationApprovalTest extends CaTestCase {
 
         try {
             //Revoke certificate with new back dated revocation date. Should be possible 
-            endEntityManagementSession.revokeCert(requestingAdmin, usercertTest06.getSerialNumber(), newBackdatedRevocationDate,
+            endEntityManagementSession.revokeCert(requestingAdmin, usercertTest06.getSerialNumber(), newBackdatedRevocationDate, null,
                     usercertTest06.getIssuerDN().toString(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, true);
             fail("WaitingForApprovalException should have been thrown to show that this action is waiting for approval.");
         } catch (ApprovalException e) {
@@ -586,7 +587,7 @@ public class RevocationApprovalTest extends CaTestCase {
 
         try {
             //try change date for revocation to a later date
-            endEntityManagementSession.revokeCert(requestingAdmin, CertTools.getSerialNumber(usercertTest06), newForwardRevocationDate,
+            endEntityManagementSession.revokeCert(requestingAdmin, CertTools.getSerialNumber(usercertTest06), newForwardRevocationDate, null,
                     CertTools.getIssuerDN(usercertTest06), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, true);
         } catch (AlreadyRevokedException e) {
             log.debug(e.getMessage());

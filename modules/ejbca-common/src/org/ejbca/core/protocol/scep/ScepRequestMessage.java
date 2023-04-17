@@ -31,6 +31,9 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -53,6 +56,7 @@ import org.bouncycastle.asn1.cms.RecipientIdentifier;
 import org.bouncycastle.asn1.cms.RecipientInfo;
 import org.bouncycastle.asn1.cms.SignedData;
 import org.bouncycastle.asn1.cms.SignerInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSEnvelopedData;
@@ -74,8 +78,6 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
@@ -192,6 +194,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
      * encrypted with dES_EDE3_CBC it is set to this though. This is only for backwards compatibility issues, as specified in a SCEP draft.
      */
     private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
+    /** preferred key encryption algorithm to use in replies, if applicable.
+     *  Defaults to PKCSObjectIdentifiers.rsaEncryption for SCEP messages. If SCEP request content encryption key is 
+     * encrypted with RSAES_OAEP it is set to this though.
+     */
+    private transient ASN1ObjectIdentifier keyEncAlg = PKCSObjectIdentifiers.rsaEncryption;
 
 	private transient Certificate signercert;
 	
@@ -469,6 +476,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             RecipientInformation recipient = (RecipientInformation) it.next();
             if (log.isDebugEnabled()) {
             	log.debug("Privatekey : " + privateKey.getAlgorithm());
+            }
+            if (recipient.getKeyEncryptionAlgorithm() != null) {
+                keyEncAlg = recipient.getKeyEncryptionAlgorithm().getAlgorithm();
             }
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(privateKey);
             rec.setProvider(jceProvider); // Use the crypto token provides for asymmetric key operations
@@ -863,6 +873,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
      */
     public ASN1ObjectIdentifier getContentEncAlg() {
         return contentEncAlg;
+    }
+    /** Method used to retrieve the key encryption algorithm that was used in the SCEP request
+     * 
+     * @return ASN1ObjectOdentifier, typically PKCSObjectIdentifiers.rsaEncryption or PKCSObjectIdentifiers.id_RSAES_OAEP
+     */
+    public ASN1ObjectIdentifier getKeyEncAlg() {
+        return keyEncAlg;
     }
 
     private static class ScepVerifierProvider implements SignerInformationVerifierProvider {

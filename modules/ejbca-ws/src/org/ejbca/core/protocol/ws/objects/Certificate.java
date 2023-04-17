@@ -14,13 +14,20 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.security.cert.CertificateEncodingException;
 
-import org.cesecore.util.Base64;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
+import com.keyfactor.util.Base64;
 
 /**
  * Holds certificate WS elements
  * 
- * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "certificate", propOrder = {
+    "certificateData"
+})
 public class Certificate extends TokenCertificateResponseWS {
 	
 	private byte[] certificateData = null;

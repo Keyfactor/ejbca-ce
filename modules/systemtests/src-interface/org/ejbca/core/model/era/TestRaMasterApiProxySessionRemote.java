@@ -19,7 +19,6 @@ import javax.ejb.Remote;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -29,6 +28,8 @@ import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
+
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * @version $Id$
@@ -99,15 +100,15 @@ public interface TestRaMasterApiProxySessionRemote {
      * Generates a certificate. This variant is used from the Web Service interface.
      * @param authenticationToken authentication token.
      * @param userdata end entity information, encoded as a UserDataVOWS (web service value object). Must have been enriched by the WS setUserDataVOWS/enrichUserDataWithRawSubjectDn methods.
-     * @param requestData see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
-     * @param requestType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
-     * @param responseType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param requestData see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest EjbcaWS.certificateRequest()}
+     * @param requestType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest EjbcaWS.certificateRequest()}
+     * @param responseType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest EjbcaWS.certificateRequest()}
      * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null. 
      * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
      * @throws ApprovalException if the request requires approval
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
      * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
-     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest
+     * @see org.ejbca.core.protocol.ws.EjbcaWS#certificateRequest
      */
     byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
             final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,

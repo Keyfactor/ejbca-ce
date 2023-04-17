@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.upgrade;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -112,12 +113,8 @@ import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
@@ -153,6 +150,11 @@ import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -1049,14 +1051,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         Map<Integer, String> publisherNames = publisherSession.getPublisherIdToNameMap();
         BasePublisherConverter publisherFactory;
         try {
-            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").newInstance();
-        } catch (InstantiationException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        } catch (IllegalAccessException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        } catch (ClassNotFoundException e) {
+            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             //Shouldn't happen since we've already checked that we're running Enterprise
             throw new IllegalStateException(e);
         }
@@ -1522,6 +1518,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Upgrade to EJBCA 6.10.1. 
      * Upgrading System configuration and certificate profiles with CT log label system
      */
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6101() throws UpgradeFailedException {
@@ -1732,6 +1729,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * setting was global previously, it should be fair to add each extension to every OCSP key binding.
      */
     private void importOcspExtensions() {
+        @SuppressWarnings("deprecation")
         final List<String> ocspExtensionOids = OcspConfiguration.getExtensionOids();
         if (ocspExtensionOids.isEmpty()) {
             log.debug("No OCSP extensions for import were found in ocsp.properties");
@@ -1759,7 +1757,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         List<X509Certificate> trustedCerts = new ArrayList<>();
         Certificate cacert = null;
         boolean isUnidFnrEnabled = OcspConfiguration.isUnidEnabled();
+        @SuppressWarnings("deprecation")
         String trustDir = OcspConfiguration.getUnidTrustDir();
+        @SuppressWarnings("deprecation")
         String cacertfile = OcspConfiguration.getUnidCaCert();
         if (StringUtils.isEmpty(trustDir)) {
             // This installation is probably not using UnidFnr at all.
@@ -1911,6 +1911,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return true;  
     }
 
+    @SuppressWarnings("deprecation")
     private boolean postMigrateDatabase7110() {
         log.info("Starting post upgrade to 7.11.0");
         try {
@@ -2392,6 +2393,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             return !data.keySet().contains(FIELDBOUNDRARY);
         }
 
+        @SuppressWarnings("unchecked")
         static void update(EndEntityProfile eep) {
             LinkedHashMap<Object, Object> data = eep.getRawData();
             LinkedHashMap<Object, Object> upgradedData = new LinkedHashMap<>();
@@ -2477,6 +2479,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         for (final String cmpAlias : cmpConfiguration.getAliasList()) {
             log.debug("Converting vendor CA list for CMP alias: " + cmpAlias);
+            @SuppressWarnings("deprecation")
             final String cmpVendorCaNameString = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAlias);
             if (StringUtils.isEmpty(cmpVendorCaNameString)) {
                 continue;
@@ -2509,6 +2512,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         for (final String estAlias : estConfiguration.getAliasList()) {
             log.debug("Converting vendor CA list for EST alias: " + estAlias);
+            @SuppressWarnings("deprecation")
             final String estVendorCaNamesString = estConfiguration.getValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCA, estAlias);
             if (StringUtils.isEmpty(estVendorCaNamesString)) {
                 continue;

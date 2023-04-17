@@ -56,14 +56,14 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.KeyCreationException;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyCreationException;
 
 /**
  * @version $Id$

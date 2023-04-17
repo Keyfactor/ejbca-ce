@@ -29,7 +29,8 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.CryptoToken;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Base class for CVC CAs. Holds data specific for Certificate and CRL generation 

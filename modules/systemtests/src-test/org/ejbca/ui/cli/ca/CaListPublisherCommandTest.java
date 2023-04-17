@@ -15,10 +15,11 @@ package org.ejbca.ui.cli.ca;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * @version $Id$

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -52,7 +53,6 @@ import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.EventTypes;
@@ -93,7 +93,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -102,12 +101,7 @@ import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.keys.validation.ValidationResult;
 import org.cesecore.roles.member.RoleMemberData;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.PrintableStringNameStyle;
-import org.cesecore.util.RFC4683Tools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -156,6 +150,14 @@ import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.util.dn.DistinguishedName;
 import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
+
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.RFC4683Tools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Manages end entities in the database using UserData Entity Bean.
@@ -1342,11 +1344,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void changeUserInNewTransaction(final UserData newUserData, final boolean isNew) {
-            if (isNew) {
-                entityManager.persist(newUserData);
-            } else {
-                entityManager.merge(newUserData);
+        if (isNew) {
+            entityManager.persist(newUserData);
+        } else {
+            UserData entity = entityManager.find(UserData.class, newUserData.getUsername());
+            try {
+                entityManager.merge(entity);
+                entityManager.flush();
+            } catch (OptimisticLockException e) {
+                log.warn("Entity object in inconsistent state, retry the operation after a while!");
             }
+        }
     }
 
     /**
@@ -1862,7 +1870,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     serialNumber = CertTools.getSerialNumber(certificate);
                 }
                 try {
-                    revokeCert(authenticationToken, serialNumber, null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin, null);
+                    revokeCert(authenticationToken, serialNumber, null, /*invalidityDate*/ null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin, null);
                 } catch (RevokeBackDateNotAllowedForProfileException e) {
                     throw new IllegalStateException("This should not happen since there is no back dating.",e);
                 } catch (CertificateProfileDoesNotExistException e) {
@@ -1914,7 +1922,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, null, issuerDn, reason, false);
+            revokeCert(authenticationToken, certSerNo, null, /*invalidityDate*/null, issuerDn, reason, false);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("This should not happen since there is no back dating.",e);
         }
@@ -1924,11 +1932,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void revokeCertAfterApproval(
             final AuthenticationToken authenticationToken, final BigInteger certSerNo, final String issuerDn,
             final int reason, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin, 
-            final Date revocationDate
+            final Date revocationDate, final Date invalidityDate
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
+            revokeCert(authenticationToken, certSerNo, revocationDate, invalidityDate, issuerDn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("Back dating is not allowed in Certificate Profile",e);
         } catch (CertificateProfileDoesNotExistException e) {
@@ -1938,12 +1946,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void revokeCert(
-            AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn,
+            AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, Date invalidityDate, String issuerDn,
             int reason, boolean checkDate
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
         try {
-            revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, checkDate, null, 0, null, null);
+            revokeCert(authenticationToken, certSerNo, revocationDate, invalidityDate, issuerDn, reason, checkDate, null, 0, null, null);
         } catch (CertificateProfileDoesNotExistException e) {
             throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
         }
@@ -1955,12 +1963,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException {
         BigInteger certificateSn = new BigInteger(certRevocationDto.getCertificateSN(), 16);
-        revokeCert(authenticationToken, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(),
-                null, 0, null, certRevocationDto.getCertificateProfileId());
+        
+        revokeCert(authenticationToken, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getInvalidityDate(), 
+                certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(), null, 0, null, 
+                certRevocationDto.getCertificateProfileId());
     }
 
     private void revokeCert(
-            AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, String issuerDn,
+            AuthenticationToken authenticationToken, BigInteger certSerNo, Date revocationDate, Date invalidityDate, String issuerDn,
             int reason, boolean checkDate, final EndEntityInformation endEntityInformationParam, final int approvalRequestID,
             final AuthenticationToken lastApprovingAdmin, final Integer certificateProfileIdParam
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
@@ -2043,6 +2053,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final String msg = intres.getLocalizedMessage("ra.norevokebackdate", profileName, certSerNo.toString(16), issuerDn);
             throw new RevokeBackDateNotAllowedForProfileException(msg);
         }
+        //Check if revocation includes invalidityDate and is allowed
+        final CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
+        if (invalidityDate != null && !(cainfo.isAllowInvalidityDate())) {
+            final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed", issuerDn, certSerNo.toString(16));
+            log.info(msg);
+            throw new AlreadyRevokedException(msg);
+        }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (!RevokedCertInfo.isRevoked(reason)) {
             if (revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
@@ -2061,13 +2078,29 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 final boolean allowedOnCa = cadata != null ? cadata.getCA().getCAInfo().isAllowChangingRevocationReason() : false;
 
                 final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
-                if (RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509)) {
+                
+                final boolean canChangeRevocationReason = RevokedCertInfo.canRevocationReasonBeChanged(reason, revocationDate, certificateData.getRevocationReason(), certificateData.getRevocationDate(), allowedOnCa, isX509);
+                if (canChangeRevocationReason) {
                     // use the previous revocation date if a new one was not provided
                     if (revocationDate == null){
                         revocationDate = new Date(certificateData.getRevocationDate());
                     }
+                    if (invalidityDate != null && !(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
+                        invalidityDate = new Date(certificateData.getInvalidityDate());
+                        final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
+                        log.info(msg);;
+                        throw new AlreadyRevokedException(msg);
+                    }
                 }
-                else {
+                else if ((invalidityDate != null) && (reason == certificateData.getRevocationReason())) {
+                    revocationDate = new Date(certificateData.getRevocationDate());
+                    if (!cainfo.isAllowInvalidityDate()) {
+                        final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
+                        log.info(msg);;
+                        throw new AlreadyRevokedException(msg);
+                    }
+                }
+                else if (!canChangeRevocationReason){
                     // Revocation reason cannot be changed, find out why and throw appropriate exception
                     if (!RevokedCertInfo.isDateOk(revocationDate, certificateData.getRevocationDate())) {
                         final String msg = intres.getLocalizedMessage("ra.invalidrevocationdate");
@@ -2083,7 +2116,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             // We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
-            CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
             if(cainfo == null) {
                 // If CA does not exist, the certificate is a bit "weird", but things can happen in reality and CAs can disappear
                 // So the CA not existing should not prevent us from revoking the certificate.
@@ -2095,7 +2127,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     certProfile);
             if (approvalProfile != null) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certSerNo, issuerDn, username, reason, authenticationToken, caId,
-                        endEntityProfileId, approvalProfile, revocationDate);
+                        endEntityProfileId, approvalProfile, revocationDate, invalidityDate);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
                     final int requestId = approvalSession.addApprovalRequest(authenticationToken, ar);
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"), requestId);
@@ -2128,7 +2160,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
         // Revoke certificate in database and all publishers
         try {
-            revocationSession.revokeCertificate(authenticationToken, cdw, publishers, revocationDate!=null ? revocationDate : new Date(), reason, certificateSubjectDN);
+            revocationSession.revokeCertificate(authenticationToken, cdw, publishers, revocationDate!=null ? revocationDate : new Date(), invalidityDate, reason, certificateSubjectDN);
         } catch (CertificateRevokeException e) {
             final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerDn, certSerNo.toString(16));
             log.info(msg);
@@ -2264,8 +2296,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                                     ICustomNotificationRecipient plugin;
                                     try {
                                         plugin = (ICustomNotificationRecipient) Thread.currentThread()
-                                                .getContextClassLoader().loadClass(customClassName).newInstance();
-                                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                                                .getContextClassLoader().loadClass(customClassName).getDeclaredConstructor().newInstance();
+                                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                                            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                                         throw new MailException("Custom notification class " + customClassName + " could not be instansiated.", e);
                                     }
                                     recipientEmail = plugin.getRecipientEmails(endEntityInformation);

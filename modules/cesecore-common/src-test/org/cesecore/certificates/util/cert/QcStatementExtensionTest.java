@@ -20,9 +20,10 @@ import java.util.Collection;
 
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  *
