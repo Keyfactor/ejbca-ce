@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.exception;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 /**
  * Exception used in order to catch the error that we're trying to create a certificate that already exists.

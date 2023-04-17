@@ -20,10 +20,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
-import org.cesecore.util.Base64;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.Base64;
 
 /**
  * Unit tests for the OAuthKeyManager class. 

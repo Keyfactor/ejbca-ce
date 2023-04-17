@@ -42,8 +42,9 @@ import org.cesecore.certificates.certificate.ssh.SshPublicKey;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.SshCertificateUtils;
+
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Request message for SSH certificates

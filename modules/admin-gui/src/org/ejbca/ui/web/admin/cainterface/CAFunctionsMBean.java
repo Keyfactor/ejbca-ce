@@ -31,10 +31,11 @@ import javax.ejb.EJB;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
@@ -48,13 +49,14 @@ import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
@@ -77,7 +79,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     private final GlobalConfiguration globalConfiguration;
     List<CAGuiInfo> caGuiInfos = null;
-    private UploadedFile uploadFile;
+    private Part uploadFile;
     List<String> extCaNameList;
     private String crlImportCaName;
 
@@ -251,7 +253,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
-        final TreeMap<String, Integer> caNames = getEjbcaWebBean().getCANames();
+        final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
         final List<String> caNameList = new ArrayList<>(caNames.keySet());
         caNameList.sort(String::compareToIgnoreCase);
         for (final String caName : caNameList) {
@@ -323,7 +325,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("No CRL file uploaded");
             return;
         }
-        final byte[] bytes = uploadFile.getBytes();
+        
+        final byte[] bytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
+
         if (bytes == null || bytes.length == 0) {
             addNonTranslatedErrorMessage("No CRL file uploaded, or file is empty");
             return;
@@ -390,11 +394,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         this.crlImportCaName = crlImportCaName;
     }
 
-    public UploadedFile getUploadFile() {
+    public Part getUploadFile() {
         return uploadFile;
     }
 
-    public void setUploadFile(final UploadedFile uploadFile) {
+    public void setUploadFile(final Part uploadFile) {
         this.uploadFile = uploadFile;
     }
 

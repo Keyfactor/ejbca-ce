@@ -52,7 +52,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.XmlSerializer;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -63,6 +62,8 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * JSF Backing bean for viewing security audit logs.
@@ -524,6 +525,10 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 
 	private String getHttpParameter(String key) {
 		return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
+	}
+
+	public String timeStampFormatted(Long timeStamp) {
+		return ValidityDate.formatAsISO8601ServerTZ(timeStamp, ValidityDate.TIMEZONE_SERVER);
 	}
 	
 	public void reorderAscByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, ORDER_ASC); }

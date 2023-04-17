@@ -20,12 +20,13 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
+
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * Test session bean used to do some nasty manipulation on StandaloneOcspResponseGeneratorSessionBean

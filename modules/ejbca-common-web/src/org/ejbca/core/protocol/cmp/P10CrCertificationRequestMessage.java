@@ -46,8 +46,9 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
 
 public class P10CrCertificationRequestMessage extends BaseCmpMessage implements ICrmfRequestMessage {
     

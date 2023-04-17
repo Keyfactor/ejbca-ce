@@ -22,7 +22,8 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * A class representing a web interface view of a user in the ra user database.

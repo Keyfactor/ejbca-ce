@@ -36,7 +36,6 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.cesecore.certificates.certificate.cvc.CvCertificateUtility;
-import org.cesecore.keys.util.KeyTools;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
@@ -50,7 +49,11 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  *

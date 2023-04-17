@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 
 /**

@@ -16,8 +16,9 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * Class used to generate a java.security.Certificate from a 

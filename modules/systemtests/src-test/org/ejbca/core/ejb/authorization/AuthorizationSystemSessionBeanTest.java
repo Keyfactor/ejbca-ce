@@ -29,18 +29,19 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.era.RaAuthorizationResult;
 import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Test of AuthorizationSystemSessionBean functionality.
@@ -109,7 +110,7 @@ public class AuthorizationSystemSessionBeanTest {
             TestX509CertificateAuthenticationToken authToken = getNestedX509TestToken(roleName);
             // revoke first and then check access to skip cache population
             internalCertificateStoreSession.setRevokeStatus(
-                    new TestAlwaysAllowLocalAuthenticationToken(roleName), authToken.getCertificate(), null, 0);
+                    new TestAlwaysAllowLocalAuthenticationToken(roleName), authToken.getCertificate(), null, null, 0);
             RaAuthorizationResult accessRules = raMasterApiProxyBean.getAuthorization(authToken);
             assertNotNull("accessRules is not fetched.", accessRules);
             assertTrue("accessRules should be empty for revoked certs.", accessRules.getAccessRules().isEmpty());

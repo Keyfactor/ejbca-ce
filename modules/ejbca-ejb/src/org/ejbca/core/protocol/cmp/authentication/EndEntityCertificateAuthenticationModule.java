@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -64,7 +65,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -84,6 +84,8 @@ import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Check the authentication of the PKIMessage by verifying the signature of the administrator who sent the message
@@ -160,7 +162,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     implClass = Class.forName(implClassName);
                     log.debug("CmpVendorModeImpl is available, and used, in this version of EJBCA.");
                 }
-                impl = (CmpVendorMode)implClass.newInstance();
+                impl = (CmpVendorMode) implClass.getDeclaredConstructor().newInstance();
                 impl.setCaSession(caSession);
                 impl.setCmpConfiguration(cmpConfiguration);
             } catch (ClassNotFoundException e) {
@@ -168,11 +170,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 implExists = false;
                 log.info("CMP Vendor mode is not available in the version of EJBCA.");
                 impl = new CmpVendorModeNoopImpl();
-            } catch (InstantiationException e) {
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 log.error("Error intitilizing CmpVendorMode: ", e);
-            } catch (IllegalAccessException e) {
-                log.error("Error intitilizing CmpVendorMode: ", e);
-            }
+            } 
         } else {
             impl = new CmpVendorModeNoopImpl();
         }
