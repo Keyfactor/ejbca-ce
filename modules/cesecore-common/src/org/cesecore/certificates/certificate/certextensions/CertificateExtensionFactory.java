@@ -41,7 +41,8 @@ import org.cesecore.certificates.certificate.certextensions.standard.SubjectDire
 import org.cesecore.certificates.certificate.certextensions.standard.SubjectKeyIdentifier;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Class parsing the modules/ejbca-common/src/certextensions.properties file 
@@ -113,7 +114,7 @@ public class CertificateExtensionFactory {
 		if (classPath != null) {
 			try {
 				final Class<?> implClass = Class.forName(classPath);
-				ret = (StandardCertificateExtension)implClass.newInstance();					
+				ret = (StandardCertificateExtension) implClass.getDeclaredConstructor().newInstance();					
 				ret.init(certProf);                    
 			} catch (ReflectiveOperationException e) {
 				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);

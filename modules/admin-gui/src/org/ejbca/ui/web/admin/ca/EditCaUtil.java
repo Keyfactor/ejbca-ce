@@ -21,7 +21,6 @@ import javax.faces.context.FacesContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.certificate.ca.its.region.CircularRegion;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegionCountryRegions;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegions;
@@ -32,7 +31,6 @@ import org.cesecore.certificate.ca.its.region.RectangularRegions;
 
 /**
  * 
- * @version $Id$
  *
  */
 public final class EditCaUtil {
@@ -66,18 +64,6 @@ public final class EditCaUtil {
                 throw new FacesException("Cannot redirect to " + EditCaUtil.MANAGE_CA_NAV + " due to IO exception.", e);
             }
         }         
-    }
-    
-    public static byte[] getUploadedFileBuffer(final UploadedFile uploadedFile) {
-        byte[] fileBuffer = null;
-        if (uploadedFile != null) {
-            try {
-                fileBuffer = uploadedFile.getBytes();
-            } catch (IOException e) {
-                throw new FacesException("Can not get uploaded file buffer due to IO exception.", e);
-            }
-        }
-        return fileBuffer;
     }
     
     public static List<String> getAllGeographicRegionTypes(){

@@ -64,7 +64,6 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.CustomServiceWorkerProperty;
@@ -74,6 +73,8 @@ import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.scp.publisher.ScpContainer;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * This custom worker reads Certificates and CRLs from a local directory periodically and inserts them into the database. 
@@ -321,7 +322,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
         if (storedCertificate != null) {
             // Certificate already exist, just update status
             try {
-                certificateStoreSession.setRevokeStatus(admin, storedCertificate, new Date(scpObject.getRevocationDate()), scpObject.getRevocationReason());
+                certificateStoreSession.setRevokeStatus(admin, storedCertificate, new Date(scpObject.getRevocationDate()), /*invalidityDate*/null, scpObject.getRevocationReason());
             } catch (CertificateRevokeException e) {
                 log.info("Certificate with issuer " + scpObject.getIssuer() + " and serial number " + scpObject + " was already revoked.", e);
             }
@@ -330,7 +331,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
                 // Information has been redacted, just write the minimum
                 certificateStoreSession.updateLimitedCertificateDataStatus(admin, caId, scpObject.getIssuer(), "CN=limited", scpObject.getUsername(),
                         scpObject.getSerialNumber(), scpObject.getCertificateStatus(), new Date(scpObject.getRevocationDate()),
-                        scpObject.getRevocationReason(), caFingerprint);
+                        scpObject.getRevocationReason(), caFingerprint, null);
             } else {
                 // Certificate doesn't exist, create new entry
                 final int endEntityProfileId = EndEntityConstants.NO_END_ENTITY_PROFILE;

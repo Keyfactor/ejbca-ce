@@ -14,7 +14,7 @@ package org.cesecore.certificates.ca;
 
 import javax.ejb.ApplicationException;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * Error due to an invalid request certificate signature algorithm for a certificate.

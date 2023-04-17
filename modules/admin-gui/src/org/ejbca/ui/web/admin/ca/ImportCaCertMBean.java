@@ -23,21 +23,23 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.kfenroll.ProxyCa;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
 
 /**
  * JSF MBean backing the import ca cert page.
@@ -54,7 +56,7 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     private CAAdminSessionLocal caAdminSession;
 
     private String importCaCertName;
-    private UploadedFile uploadedFile;
+    private Part uploadedFile;
     
     private boolean keyFactorCa;
     private CaInfoDto caInfoDto;
@@ -76,11 +78,11 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
         this.importCaCertName = StringUtils.trim(importCaCertName);
     }
     
-    public UploadedFile getUploadedFile() {
+    public Part getUploadedFile() {
         return uploadedFile;
     }
 
-    public void setUploadedFile(final UploadedFile uploadedFile) {
+    public void setUploadedFile(final Part uploadedFile) {
         this.uploadedFile = uploadedFile;
     }
 
@@ -119,9 +121,9 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
         
     }
     
-    public String importCaCertificate() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
+    public String importCaCertificate() {       
         try {
+            final byte[] fileBuffer = IOUtils.toByteArray(uploadedFile.getInputStream(), uploadedFile.getSize());
             if(uploadedFile.getName().endsWith(".oer")) {
                 caAdminSession.importItsCACertificate(getAdmin(), importCaCertName, fileBuffer);
                 return EditCaUtil.MANAGE_CA_NAV;

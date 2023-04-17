@@ -27,8 +27,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.Base64;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.StringTools;
 
 /**
  * Representation of a certificates key recovery data.

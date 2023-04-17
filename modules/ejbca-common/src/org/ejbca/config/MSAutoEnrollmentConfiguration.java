@@ -40,7 +40,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final Logger log = Logger.getLogger(MSAutoEnrollmentConfiguration.class);
     
     // Aliases 
-    private final String ALIAS_LIST = "aliaslist";
+    private static final String ALIAS_LIST = "aliaslist";
     private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
     
     // MSAE Kerberos
@@ -61,6 +61,8 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String IS_USE_SSL = "isUseSSL";
     private static final String IS_FOLLOW_LDAP_REFERRAL = "isFollowLdapReferral";
     private static final String AD_CONNECTION_PORT = "adConnectionPort";
+    private static final String LDAP_READ_TIMEOUT = "ldapReadTimeout";
+    private static final String LDAP_CONNECT_TIMEOUT = "ldapConnectTimeout";
     private static final String AD_LOGIN_DN = "adLoginDN";
     private static final String AD_LOGIN_PASSWORD = "adLoginPassword";
     private static final String AUTH_KEY_BINDING = "authKeyBinding";
@@ -72,7 +74,11 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
 
-    private static int DEFAULT_AD_CONNECTION_PORT = 389;
+    private static final int DEFAULT_AD_CONNECTION_PORT = 389;
+    
+    private static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds
+    
+    private static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
 
     public MSAutoEnrollmentConfiguration() {
         super();
@@ -89,7 +95,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
      */
     public MSAutoEnrollmentConfiguration(MSAutoEnrollmentConfiguration autoenrollmentConfiguration) {
         super();
-        setAliasList(new LinkedHashSet<String>());
+        setAliasList(new LinkedHashSet<>());
         for(String alias : autoenrollmentConfiguration.getAliasList()) {
             addAlias(alias);
             for(String key : getAllAliasKeys(alias)) {
@@ -260,7 +266,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public boolean isUseSSL(String alias) {
         String key = alias + "." + IS_USE_SSL;
         String value = getValue(key, alias);
-        return StringUtils.equals(value, "true") ? true : false;
+        return StringUtils.equals(value, "true");
     }
 
     public void setIsUseSsl(String alias, final boolean isUseSsl) {
@@ -271,7 +277,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public boolean isFollowLdapReferral(String alias) {
         String key = alias + "." + IS_FOLLOW_LDAP_REFERRAL;
         String value = getValue(key, alias);
-        return StringUtils.equals(value, "true") ? true : false;
+        return StringUtils.equals(value, "true");
     }
 
     public void setFollowLdapReferral(String alias, final boolean followLdapReferral) {
@@ -288,6 +294,28 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public void setAdConnectionPort(String alias, final int port) {
         String key = alias + "." + AD_CONNECTION_PORT;
         setValue(key, String.valueOf(port), alias);
+    }
+    
+    public int getLdapReadTimeout(String alias) {
+        String key = alias + "." + LDAP_READ_TIMEOUT;
+        String value = getValue(key, alias);
+        return value == null ? DEFAULT_LDAP_READ_TIMEOUT : Integer.valueOf(value);
+    }
+
+    public void setLdapReadTimeout(String alias, final int ldapReadTimeout) {
+        String key = alias + "." + LDAP_READ_TIMEOUT;
+        setValue(key, String.valueOf(ldapReadTimeout), alias);
+    }
+    
+    public int getLdapConnectTimeout(String alias) {
+        String key = alias + "." + LDAP_CONNECT_TIMEOUT;
+        String value = getValue(key, alias);
+        return value == null ? DEFAULT_LDAP_CONNECT_TIMEOUT : Integer.valueOf(value);
+    }
+
+    public void setLdapConnectTimeout(String alias, final int ldapConnectTimeout) {
+        String key = alias + "." + LDAP_CONNECT_TIMEOUT;
+        setValue(key, String.valueOf(ldapConnectTimeout), alias);
     }
 
     public String getAdLoginDN(String alias) {

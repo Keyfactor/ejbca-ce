@@ -31,12 +31,13 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Plugin class for SCEP plugins which expect a ResponseMessage in reply

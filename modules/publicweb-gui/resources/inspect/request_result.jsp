@@ -2,7 +2,7 @@
  <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
  
  <%@ include file="header.jsp" %>
-<%@page import="org.apache.commons.fileupload.servlet.ServletFileUpload,org.apache.commons.fileupload.FileItem,java.util.List,java.util.Iterator,java.io.InputStream,org.cesecore.util.FileTools,
+<%@page import="org.apache.commons.fileupload.servlet.ServletFileUpload,org.apache.commons.fileupload.FileItem,java.util.List,java.util.Iterator,java.io.InputStream,com.keyfactor.util.FileTools,
 org.apache.commons.fileupload.disk.DiskFileItemFactory"%>
 
 <jsp:useBean id="dump" class="org.ejbca.ui.web.pub.inspect.CertAndRequestDumpBean" scope="page" />
@@ -15,6 +15,7 @@ org.apache.commons.fileupload.disk.DiskFileItemFactory"%>
               diskFileItemFactory.setSizeThreshold(9999);
               ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
 			  upload.setSizeMax(10000);
+			  upload.setFileCountMax(10);
 			  List<FileItem> items = upload.parseRequest(request);
 			  for(FileItem item : items) {
 				if (!item.isFormField()) {

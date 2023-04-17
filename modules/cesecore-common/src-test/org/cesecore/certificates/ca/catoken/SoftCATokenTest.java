@@ -17,11 +17,12 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoTokenTest;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Tests soft keystore CA tokens.

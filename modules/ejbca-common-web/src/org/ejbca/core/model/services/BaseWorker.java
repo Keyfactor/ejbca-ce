@@ -71,7 +71,7 @@ public abstract class BaseWorker implements IWorker {
 		String actionClassPath = serviceConfiguration.getActionClassPath();
 		if(actionClassPath != null){
 			try {
-				action = (IAction) Thread.currentThread().getContextClassLoader().loadClass(actionClassPath).newInstance();
+				action = (IAction) Thread.currentThread().getContextClassLoader().loadClass(actionClassPath).getDeclaredConstructor().newInstance();
 				action.init(serviceConfiguration.getActionProperties(), serviceName);
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage(ERROR_ACTION_CLASSPATH_MISCONFIG, serviceName);
@@ -84,7 +84,7 @@ public abstract class BaseWorker implements IWorker {
 		String intervalClassPath = serviceConfiguration.getIntervalClassPath();
 		if(intervalClassPath != null){
 			try {
-				interval = (IInterval) Thread.currentThread().getContextClassLoader().loadClass(intervalClassPath).newInstance();
+				interval = (IInterval) Thread.currentThread().getContextClassLoader().loadClass(intervalClassPath).getDeclaredConstructor().newInstance();
 				interval.init(serviceConfiguration.getIntervalProperties(), serviceName);
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage("services.errorintervalclasspath", serviceName);

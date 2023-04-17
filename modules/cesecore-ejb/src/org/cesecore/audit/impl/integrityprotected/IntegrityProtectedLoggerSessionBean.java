@@ -31,8 +31,9 @@ import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.time.TrustedTime;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.QueryResultWrapper;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * An alternative implementation of the SecurityEventsLogger interface. It handles the creation of a signed log for an event.

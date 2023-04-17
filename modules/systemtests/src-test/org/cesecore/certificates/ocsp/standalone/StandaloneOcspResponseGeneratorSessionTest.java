@@ -12,6 +12,34 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.standalone;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.TimeZone;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -66,19 +94,16 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
+import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -86,12 +111,8 @@ import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.NullCryptoToken;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.cesecore.util.ValidityDate;
@@ -103,44 +124,32 @@ import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.TimeZone;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * Functional tests for StandaloneOcspResponseGeneratorSessionBean
  */
-@RunWith(CryptoTokenTestRunner.class)
+@RunWith(Parameterized.class)
 public class StandaloneOcspResponseGeneratorSessionTest {
    
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return CryptoTokenRunner.defaultRunners;
+    }
+    
     private static final String TESTCLASSNAME = StandaloneOcspResponseGeneratorSessionTest.class.getSimpleName();
     private static final Logger log = Logger.getLogger(StandaloneOcspResponseGeneratorSessionTest.class);
  
@@ -166,14 +175,14 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASSNAME);
     
-    private X509CA x509ca;
+    private X509CAInfo x509ca;
     private int internalKeyBindingId;
     private int cryptoTokenId;
     private X509Certificate ocspSigningCertificate;
     private X509Certificate caCertificate;   
     private static String originalDefaultResponder;
     
-    private X509CA x509CaSignBehalf;
+    private X509CAInfo x509CaSignBehalf;
     private X509Certificate caSignBehalfCertificate;   
     private X509Certificate userSignBehalfCertificate; 
     
@@ -189,56 +198,68 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
+    @Rule
+    public TestName testName = new TestName();
 
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    private CryptoTokenRunner cryptoTokenRunner;
+
+    public StandaloneOcspResponseGeneratorSessionTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+        this.cryptoTokenRunner = cryptoTokenRunner;
+       
+    }
    
     @Before
     public void setUp() throws Exception {
-        x509ca = cryptoTokenRule.createX509Ca(); 
-        originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
-        //Make sure timers don't run while we debug
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
-        //Create an independent cryptotoken
-        cryptoTokenId = cryptoTokenRule.createCryptoToken();
-        internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        String signerDN = "CN=ocspTestSigner";
-        caCertificate = (X509Certificate) x509ca.getCACertificate();
-        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
-        
-        x509CaSignBehalf = cryptoTokenRule.createX509Ca("CN=x509CaSignBehalf", "x509CaSignBehalf"); 
-        caSignBehalfCertificate = (X509Certificate) x509CaSignBehalf.getCACertificate();
-        
-        userSignBehalfCertificate = OcspTestUtils.createUserCertificate(authenticationToken, x509CaSignBehalf.getCAId(), 
-                                "testUserSignBehalfCertificate", "CN=testUserSignBehalfCertificate");
-        
-        KeyPair caKeyPair = KeyTools.genKeys("2048", "RSA");
-        externalCaInfo = OcspTestUtils.createExternalCa(authenticationToken, caKeyPair, "CN=testOcspExtCa", "testOcspExtCa", 86400);
-        externalCaUserCert = (X509Certificate) OcspTestUtils.createCertByExternalCa(caKeyPair, "CN=testOcspExtCaUser", 3600);
-        
-        List<InternalKeyBindingTrustEntry> signOnBehalfEntry = new ArrayList<>();
-        signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(x509CaSignBehalf.getCAId(), null, "behalf entry1"));
-        signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(externalCaInfo.getCAId(), null, "behalf entry external"));
-        OcspTestUtils.addSignOnBehalfEntries(authenticationToken, internalKeyBindingId, signOnBehalfEntry);
-        
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
+
+        if (cryptoTokenRunner.canRun()) {
+            x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
+            originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
+            //Make sure timers don't run while we debug
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
+            //Create an independent cryptotoken
+            cryptoTokenId = cryptoTokenRunner.createCryptoToken("StandaloneOcspResponseGeneratorTestCryptoToken");
+            internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                                                                          TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            String signerDN = "CN=ocspTestSigner";
+            caCertificate = (X509Certificate) x509ca.getCertificateChain().get(0);
+            ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
+
+            x509CaSignBehalf = cryptoTokenRunner.createX509Ca("CN=x509CaSignBehalf", "x509CaSignBehalf");
+            caSignBehalfCertificate = (X509Certificate) x509CaSignBehalf.getCertificateChain().get(0);
+
+            userSignBehalfCertificate = OcspTestUtils.createUserCertificate(authenticationToken, x509CaSignBehalf.getCAId(),
+                                                                            "testUserSignBehalfCertificate", "CN=testUserSignBehalfCertificate");
+
+            KeyPair caKeyPair = KeyTools.genKeys("2048", "RSA");
+            externalCaInfo = OcspTestUtils.createExternalCa(authenticationToken, caKeyPair, "CN=testOcspExtCa", "testOcspExtCa", 86400);
+            externalCaUserCert = (X509Certificate) OcspTestUtils.createCertByExternalCa(caKeyPair, "CN=testOcspExtCaUser", 3600);
+
+            List<InternalKeyBindingTrustEntry> signOnBehalfEntry = new ArrayList<>();
+            signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(x509CaSignBehalf.getCAId(), null, "behalf entry1"));
+            signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(externalCaInfo.getCAId(), null, "behalf entry external"));
+            OcspTestUtils.addSignOnBehalfEntries(authenticationToken, internalKeyBindingId, signOnBehalfEntry);
+        }
     }
 
     @After
     public void tearDown() throws Exception {
-        cryptoTokenRule.cleanUp();
-        try {
-            internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
-            internalCertificateStoreSession.removeCertificate(userSignBehalfCertificate);
-        } catch (Exception e) {
-            //Ignore any failures.
+        if (cryptoTokenRunner.canRun()) {
+            cryptoTokenRunner.cleanUp();
+            try {
+                internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
+                internalCertificateStoreSession.removeCertificate(userSignBehalfCertificate);
+            } catch (Exception e) {
+                //Ignore any failures.
+            }
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
+            // Make sure default responder is restored
+            setOcspDefaultResponderReference(originalDefaultResponder);
+            caSession.removeCA(authenticationToken, externalCaInfo.getCAId());
         }
-        internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
-        // Make sure default responder is restored
-        setOcspDefaultResponderReference(originalDefaultResponder);
-        caSession.removeCA(authenticationToken, externalCaInfo.getCAId());
     }
 
     /**
@@ -440,7 +461,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caSignBehalfCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caSignBehalfCertificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
@@ -456,7 +477,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caSignBehalfCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caSignBehalfCertificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
@@ -577,7 +598,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
         //Revoke the responder cert
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, ocspSigningCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, ocspSigningCertificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -724,7 +745,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
         // Revoke the issuer certificate with the specified reason
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caCertificate, new Date(), caRevocationReason);
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, caCertificate, new Date(), null, caRevocationReason);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -1328,8 +1349,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 internalCertificateStoreSession.reloadCaCertificateCache();
                 // Try to send a signed OCSP requests
                 final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
-                        (X509Certificate) x509ca.getCACertificate() , ocspSigningCertificate.getSerialNumber());
-                internalCertificateStoreSession.setRevokeStatus(authenticationToken, ocspAuthenticationCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+                        (X509Certificate) x509ca.getCertificateChain().get(0) , ocspSigningCertificate.getSerialNumber());
+                internalCertificateStoreSession.setRevokeStatus(authenticationToken, ocspAuthenticationCertificate, new Date(), null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
                 final OCSPResp ocspResponseSigned = sendRequest(ocspRequestSigned);
                 assertEquals("We expected an 'UNAUTHORIZED' status code: ", OCSPResp.UNAUTHORIZED, ocspResponseSigned.getStatus());
              //   validateSuccessfulResponse((BasicOCSPResp) ocspResponseSigned.getResponseObject(), ocspSigningCertificate.getPublicKey());

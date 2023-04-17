@@ -26,13 +26,18 @@ import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * Tests CryptoToken management API.
@@ -63,7 +68,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithImpliedRSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaRsa", "1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaRsa", "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "1024");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -74,7 +79,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithExplicitRSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaRsa", "RSA1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaRsa", "RSA1024", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "RSA1024");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -85,7 +90,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithDSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDsa", "DSA1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDsa", "DSA1024", "DSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "DSA1024");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -96,7 +101,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithECDSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaEcdsa", "secp256r1");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaEcdsa", "secp256r1", "secp256r1", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "secp256r1");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -107,7 +112,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithEdDSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaEddsa", "Ed25519");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaEddsa", "Ed25519", "Ed25519", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "Ed25519");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -118,7 +123,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithFalcon() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaFalcon", "FALCON-512");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaFalcon", "FALCON-512", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "FALCON-512");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -129,7 +134,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithDilithium() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDilitium", "DILITHIUM2");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDilitium", "DILITHIUM2", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             subTest(cryptoTokenId, "DILITHIUM2");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
@@ -198,7 +203,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     @Test
     public void testIllegalCAKeyLengthRsa() throws Exception {
         try {
-            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthRsa", "512");
+            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthRsa", "512", "512", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             fail("Shouldn't be able to generate CA keystore keys with 512 bit RSA");
         } catch (RuntimeException e) {
             assertEquals(InvalidKeyException.class.getName(), e.getCause().getClass().getName());
@@ -208,7 +213,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     @Test
     public void testIllegalCAKeyLengthDsa() throws Exception {
         try {
-            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthDsa", "DSA512");
+            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthDsa", "DSA512", "DSA512", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             fail("Shouldn't be able to generate CA keystore keys with 512 bit DSA");
         } catch (RuntimeException e) {
             assertEquals(InvalidKeyException.class.getName(), e.getCause().getClass().getName());
@@ -218,7 +223,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     @Test
     public void testIllegalCAKeyLengthEcdsa() throws Exception {
         try {
-            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthEcdsa", "prime192v1");
+            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthEcdsa", "prime192v1", "prime192v1", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             fail("Shouldn't be able to generate CA keystore keys with 'prime192v1' ECDSA");
         } catch (RuntimeException e) {
             log.debug("", e);
@@ -235,7 +240,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
         final char[] PIN_WRONG = "wrong".toCharArray();
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "modifyPin", "RSA1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "modifyPin", "RSA1024", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             // Note the secondary testing of pin changes is the calls below
             final boolean usesAutoActivation1 = cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_ORG, PIN_SECOND, UPDATE_ONLY);
             assertTrue("Updating soft keystore pin should not remove auto activation", usesAutoActivation1);

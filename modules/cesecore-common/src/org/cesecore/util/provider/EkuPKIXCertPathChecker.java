@@ -26,7 +26,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Validate the EKUs of a leaf certificate.

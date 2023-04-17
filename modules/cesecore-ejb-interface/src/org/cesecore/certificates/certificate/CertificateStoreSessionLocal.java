@@ -168,7 +168,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * 
      * @param subjectKeyId Is the ASN.1 SubjectKeyIdentifier of the public key as a byte array
      * @return null or the certificate which is active, matches the argument and has the latest updateTime
-     * @see org.cesecore.keys.util.KeyTools#createSubjectKeyId(java.security.PublicKey)
+     * @see com.keyfactor.util.keys.KeyTools#createSubjectKeyId(java.security.PublicKey)
      */
     Certificate findMostRecentlyUpdatedActiveCertificate(byte[] subjectKeyId);
 
@@ -213,7 +213,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * Creates a revoked certificate data, for use with OCSP or CRL generation.
      * @see CertificateStoreSessionLocal#updateLimitedCertificateDataStatus(AuthenticationToken, int, String, String, String, BigInteger, int, Date, int, String)
      */
-    void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException;
+    void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint, Date invalidityDate) throws AuthorizationDeniedException;
     
     /**
      * Method for populating the CertificateData table with limited information for example from a CRL, so the OCSP responder can answer if a certificate is revoked.
@@ -234,7 +234,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws AuthorizationDeniedException
      */
     void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final String subjectDn, final String username, final BigInteger serialNumber,
-            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException;
+            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint, Date invalidityDate) throws AuthorizationDeniedException;
     
     /** Reloads the cache containing CA certificates */
     void reloadCaCertificateCache();
@@ -256,7 +256,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws CertificaterevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
-    boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
+    boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
 
     /**
      * Lists certificate datas for a given subject signed by the given issuer.
@@ -288,7 +288,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * 
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      */
-    boolean setRevokeStatusNoAuth(AuthenticationToken admin, BaseCertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException;
+    boolean setRevokeStatusNoAuth(AuthenticationToken admin, BaseCertificateData certificateData, Date revokeDate, Date invalidityDate, int reason) throws CertificateRevokeException;
 
     /**
      * Changes a certificate from CERT_ROLLOVERPENDING to CERT_ACTIVE. If the certificate status is already CERT_ACTIVE, then it does nothing.

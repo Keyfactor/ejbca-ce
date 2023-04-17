@@ -25,7 +25,8 @@ import javax.xml.bind.DatatypeConverter;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Domain class representing a public key blacklist entry.

@@ -38,11 +38,12 @@ import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SshCertificateUtils;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Representation of a certificate and related information.
@@ -143,7 +144,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
      *            parameters. Can be null if RSA or certificate public key contains all parameters.
      * @param username the username in UserData to map the certificate to
      * @param cafp CA certificate fingerprint, can be null
-     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like org.cesecore.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
+     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
      * @param status status of the certificate, active, revoked etcc, i.e. CertificateConstants.CERT_ACTIVE etc
      * @param type the user type the certificate belongs to, i.e. EndEntityTypes.USER_ENDUSER etc
      * @param certprofileid certificate profile id, can be 0 for "no profile"

@@ -38,9 +38,10 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRoleMemberTokenTypeInfo;
+
+import com.keyfactor.util.StringTools;
 
 
 /**

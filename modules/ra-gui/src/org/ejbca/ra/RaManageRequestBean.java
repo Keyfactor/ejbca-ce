@@ -35,7 +35,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.roles.Role;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -59,6 +58,8 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ra.ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject;
 import org.ejbca.ra.ApprovalRequestGUIInfo.RequestDataRow;
 import org.ejbca.util.KeyValuePair;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Backing bean for Manage Request page (for individual requests).

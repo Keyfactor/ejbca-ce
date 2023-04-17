@@ -35,9 +35,10 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Backing bean for Certificate and CRLs download page.

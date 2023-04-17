@@ -33,8 +33,8 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ExternalScriptsAllowlist;
-import org.cesecore.util.StringTools;
 
+import com.keyfactor.util.StringTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 
@@ -279,7 +279,7 @@ public class CustomPublisherContainer extends BasePublisher {
 			try{
 				@SuppressWarnings("unchecked")
                 Class<? extends ICustomPublisher> implClass = (Class<? extends ICustomPublisher>) Class.forName( classPath );
-				this.custompublisher =  implClass.newInstance();
+				this.custompublisher =  implClass.getDeclaredConstructor().newInstance();
 				this.custompublisher.init(getProperties());				
             } catch (ClassNotFoundException e) {
                 // Probably means that we have not built in our custom publisher here in EJBCA, or it's an Enterprise only 

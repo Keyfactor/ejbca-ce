@@ -34,8 +34,9 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SecureXMLDecoder;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Representation of a CA instance.

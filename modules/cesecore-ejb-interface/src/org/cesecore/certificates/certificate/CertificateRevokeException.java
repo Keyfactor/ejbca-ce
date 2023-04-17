@@ -14,7 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import javax.ejb.ApplicationException;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /** Thrown if there is an error revoking a certificate, causes rollback.
  *  

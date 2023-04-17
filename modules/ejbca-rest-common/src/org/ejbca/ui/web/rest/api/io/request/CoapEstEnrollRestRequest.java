@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -24,15 +26,16 @@ public class CoapEstEnrollRestRequest {
     @ApiModelProperty(value = "Certificate Request", example = "MIIDXzCCA...eW1Zro0=")
     private String csr;
 
-    @ApiModelProperty(value = "Certificate", example = "MIIDXzCCA...eW1Zro0=")
-    private String cert;
+    @JsonAlias({"tlsCertificate", "tls_certificate"})
+    @ApiModelProperty(value = "DTLS Certificate", example = "MIIDXzCCA...eW1Zro0=")
+    private String tlsCertificate;
 
     public CoapEstEnrollRestRequest() {
     }
 
-    public CoapEstEnrollRestRequest(String csr, String cert) {
+    public CoapEstEnrollRestRequest(String csr, String tlsCertificate) {
         this.csr = csr;
-        this.cert = cert;
+        this.tlsCertificate = tlsCertificate;
     }
 
     public String getCsr() {
@@ -43,11 +46,11 @@ public class CoapEstEnrollRestRequest {
         this.csr = csr;
     }
 
-    public String getCert() {
-        return cert;
+    public String getTlsCertificate() {
+        return tlsCertificate;
     }
 
-    public void setCert(String cert) {
-        this.cert = cert;
+    public void setTlsCertificate(String tlsCertificate) {
+        this.tlsCertificate = tlsCertificate;
     }
 }

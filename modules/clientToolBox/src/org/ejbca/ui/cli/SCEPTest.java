@@ -26,7 +26,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
@@ -42,14 +41,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1PrintableString;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
@@ -57,8 +60,11 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
 import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
@@ -94,10 +100,6 @@ import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
@@ -106,8 +108,6 @@ import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 /**
  * Used to stress test the SCEP interface.
- *
- * @version $Id$
  */
 class SCEPTest extends ClientToolBox {
 
@@ -127,17 +127,29 @@ class SCEPTest extends ClientToolBox {
 
         private final Random random = new Random();
         private final String caName;
+        private final String digestAlgOid;
+        private final String signatureAlg;
+        private final ASN1ObjectIdentifier encryptionAlgOid;
+        private final AlgorithmIdentifier keyEncryptionAlgId;
 
         StressTest(final String url,
                    final int numberOfThreads,
                    final int numberOfTests,
                    final int waitTime,
                    final String caName,
-                   final String userCNBase
+                   final String userCNBase,
+                   final String digestAlgOid,
+                   final String signatureAlg,
+                   final ASN1ObjectIdentifier encryptionAlgOid,
+                   final AlgorithmIdentifier keyEncryptionAlgId
         ) throws Exception {
             this.url = url;
             this.caName = caName;
-
+            this.digestAlgOid = digestAlgOid;
+            this.signatureAlg = signatureAlg;
+            this.encryptionAlgOid = encryptionAlgOid;
+            this.keyEncryptionAlgId = keyEncryptionAlgId;
+            
             CryptoProviderTools.installBCProviderIfNotAvailable();
 
             final KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
@@ -164,7 +176,7 @@ class SCEPTest extends ClientToolBox {
 
             public boolean doIt() throws Exception {
                 final String mimetype = "application/x-x509-ca-ra-cert-chain";
-                final String reqUrl = StressTest.this.url + "?operation=GetCACertChain&message=" + StressTest.this.caName;
+                final String reqUrl = StressTest.this.url + "?operation=GetCACertChain&message=" + URLEncoder.encode(StressTest.this.caName, "UTF-8");
                 final HttpURLConnection con = (HttpURLConnection) new URL(reqUrl).openConnection();
                 con.setRequestMethod("GET");
                 con.getDoOutput();
@@ -242,12 +254,12 @@ class SCEPTest extends ClientToolBox {
                     transactionId = new String(Base64.encode(digest));
                 }
 
-                // After this continue on with the SCPE requests
+                // After this continue on with the SCEP requests
 
                 // Generate the SCEP GetCert request
                 final ScepRequestGenerator gen = new ScepRequestGenerator();
                 gen.setKeys(StressTest.this.keyPair, BouncyCastleProvider.PROVIDER_NAME);
-                gen.setDigestOid(CMSSignedGenerator.DIGEST_SHA1);
+                
                 final int keyUsagelength = 9;
                 final boolean[] keyUsage = new boolean[keyUsagelength];
                 {
@@ -261,7 +273,7 @@ class SCEPTest extends ClientToolBox {
                             }
                         }
                         X509Certificate senderCertificate = CertTools.genSelfCert(userDN, 24 * 60 * 60 * 1000, null,
-                                StressTest.this.keyPair.getPrivate(), StressTest.this.keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+                                StressTest.this.keyPair.getPrivate(), StressTest.this.keyPair.getPublic(), StressTest.this.signatureAlg,
                                 false);
                         msgBytes = gen.generateCertReq(userDN, "foo123", transactionId, this.sessionData.certchain[0],
                                 generateExtensions(bcKeyUsage), senderCertificate, StressTest.this.keyPair.getPrivate());
@@ -276,27 +288,25 @@ class SCEPTest extends ClientToolBox {
                         return false;
                     }
                     if (!isScepResponseMessageOfType(retMsg, ResponseStatus.PENDING)) {
-                        final boolean okSuccess = checkScepResponse(retMsg, senderNonce, transactionId, false, CMSSignedGenerator.DIGEST_SHA1, true, ResponseStatus.SUCCESS, userDN, keyUsage);
+                        final boolean okSuccess = checkScepResponse(retMsg, senderNonce, transactionId, false, StressTest.this.digestAlgOid, true, ResponseStatus.SUCCESS, userDN, keyUsage);
                         if (!okSuccess) {
                             StressTest.this.performanceTest.getLog().error("Error receiving success response.");
                             return false;
                         }
                         return true;
                     }
-                    final boolean okCertReq = checkScepResponse(retMsg, senderNonce, transactionId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.PENDING, userDN, keyUsage);
+                    final boolean okCertReq = checkScepResponse(retMsg, senderNonce, transactionId, false, StressTest.this.digestAlgOid, false, ResponseStatus.PENDING, userDN, keyUsage);
                     if (!okCertReq) {
                         StressTest.this.performanceTest.getLog().error("Error receiving response to CertReq request.");
                         return false;
                     }
                 }
-                // Send GetCertInitial and wait for a certificate response, you will probably get PENDING reply several times
+                // Send GetCertInitial and wait for a certificate response, if PENDING is returned you will probably get PENDING reply several times
                 for (int keeprunning = 0; keeprunning < 5; keeprunning++) {
                     Thread.sleep(5000); // wait 5 seconds between polls
                     // Generate a SCEP GerCertInitial message
-                    gen.setKeys(StressTest.this.keyPair, BouncyCastleProvider.PROVIDER_NAME);
-                    gen.setDigestOid(CMSSignedGenerator.DIGEST_SHA1);
                     X509Certificate senderCertificate = CertTools.genSelfCert(userDN, 24 * 60 * 60 * 1000, null,
-                            StressTest.this.keyPair.getPrivate(), StressTest.this.keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+                            StressTest.this.keyPair.getPrivate(), StressTest.this.keyPair.getPublic(), StressTest.this.signatureAlg,
                             false);
                     final byte[] msgBytes = gen.generateGetCertInitial(userDN, transactionId, this.sessionData.certchain[0], senderCertificate, StressTest.this.keyPair.getPrivate());
                     // Get some valuable things to verify later on
@@ -310,14 +320,14 @@ class SCEPTest extends ClientToolBox {
                     }
                     if (isScepResponseMessageOfType(retMsg, ResponseStatus.PENDING)) {
                         StressTest.this.performanceTest.getLog().info("Received a PENDING message.");
-                        boolean okPending = checkScepResponse(retMsg, senderNonce, transactionId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.PENDING, userDN, keyUsage);
+                        boolean okPending = checkScepResponse(retMsg, senderNonce, transactionId, false, StressTest.this.digestAlgOid, false, ResponseStatus.PENDING, userDN, keyUsage);
                         if (!okPending) {
                             StressTest.this.performanceTest.getLog().error("Error receiving pending response.");
                             return false;
                         }
                     } else {
                         StressTest.this.performanceTest.getLog().info("Received a SUCCESS message.");
-                        boolean okSuccess = checkScepResponse(retMsg, senderNonce, transactionId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.SUCCESS, userDN, keyUsage);
+                        boolean okSuccess = checkScepResponse(retMsg, senderNonce, transactionId, false, StressTest.this.digestAlgOid, false, ResponseStatus.SUCCESS, userDN, keyUsage);
                         if (!okSuccess) {
                             StressTest.this.performanceTest.getLog().error("Error receiving success response.");
                             return false;
@@ -617,9 +627,9 @@ class SCEPTest extends ClientToolBox {
                     return false;
                 }
                 final String altName = CertTools.getSubjectAlternativeName(usercert);
-                final String expectedAltName = CertTools.getGeneralNamesFromAltName("iPAddress=10.0.0.1, dNSName=foo.bar.com").toString();
-                if (altName == null || !CertTools.getGeneralNamesFromAltName(altName).toString().equals(expectedAltName)) {
-                    StressTest.this.performanceTest.getLog().error("altName should be " + expectedAltName + " but was: " + altName);
+                final String expectedAltName = "dNSName=foo.bar.com, iPAddress=10.0.0.1"; // same as the extension we created in generateExtensions()
+                if (altName == null || !altName.equals(expectedAltName)) {
+                    StressTest.this.performanceTest.getLog().error("altName should be '" + expectedAltName + "' but was: '" + altName + "'.");
                     return false;
                 }
                 if (cacert != null) {
@@ -664,12 +674,12 @@ class SCEPTest extends ClientToolBox {
              * checks that a public and private key matches by signing and verifying a message
              */
             private boolean checkKeys(PrivateKey priv, PublicKey pub) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-                Signature signer = Signature.getInstance("SHA1WithRSA");
+                Signature signer = Signature.getInstance(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
                 signer.initSign(priv);
                 signer.update("PrimeKey".getBytes());
                 byte[] signature = signer.sign();
 
-                Signature signer2 = Signature.getInstance("SHA1WithRSA");
+                Signature signer2 = Signature.getInstance(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
                 signer2.initVerify(pub);
                 signer2.update("PrimeKey".getBytes());
                 return signer2.verify(signature);
@@ -699,6 +709,159 @@ class SCEPTest extends ClientToolBox {
                         new GetCertificate(sessionData, this.userCommonNameBase != null ? this.userCommonNameBase + (++this.nr) : null)};
             }
         }
+        
+        private class ScepRequestGenerator {
+
+            private X509Certificate cacert = null;
+            private String reqdn = null;
+            private KeyPair keys = null;
+            private String signatureProvider = null;
+            private String senderNonce = null;
+
+            void setKeys(KeyPair myKeys, String signatureProvider) {
+                this.keys = myKeys;
+                this.signatureProvider = signatureProvider;
+            }
+
+            /**
+             * Base 64 encode senderNonce
+             */
+            public String getSenderNonce() {
+                return senderNonce;
+            }
+
+            public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, Extensions exts,
+                                          final X509Certificate senderCertificate, final PrivateKey signatureKey) throws OperatorCreationException, CertificateException,
+                    IOException, CMSException {
+                this.cacert = ca;
+                this.reqdn = dn;
+                // Generate keys
+
+                // Create challenge password attribute for PKCS10
+                // Attributes { ATTRIBUTE:IOSet } ::= SET OF Attribute{{ IOSet }}
+                //
+                // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
+                //    type    ATTRIBUTE.&id({IOSet}),
+                //    values  SET SIZE(1..MAX) OF ATTRIBUTE.&Type({IOSet}{\@type})
+                // }
+                ASN1EncodableVector challpwdattr = new ASN1EncodableVector();
+                // Challenge password attribute
+                challpwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
+                ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
+                pwdvalues.add(new DERUTF8String(password));
+                challpwdattr.add(new DERSet(pwdvalues));
+                ASN1EncodableVector extensionattr = new ASN1EncodableVector();
+                extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+                extensionattr.add(new DERSet(exts));
+                // Complete the Attribute section of the request, the set (Attributes) contains two sequences (Attribute)
+                ASN1EncodableVector v = new ASN1EncodableVector();
+                v.add(new DERSequence(challpwdattr));
+                v.add(new DERSequence(extensionattr));
+                DERSet attributes = new DERSet(v);
+                // Create PKCS#10 certificate request
+                final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest(StressTest.this.signatureAlg,
+                        CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
+
+                // wrap message in pkcs#7
+                return wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey);
+            }
+
+            public byte[] generateGetCertInitial(String dn, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
+                                                 final PrivateKey signatureKey) throws IOException, CMSException, CertificateEncodingException {
+                this.cacert = ca;
+                this.reqdn = dn;
+
+                // pkcsGetCertInitial issuerAndSubject ::= { 
+                //      issuer "the certificate authority issuer name" 
+                //      subject "the requester subject name as given in PKCS#10" 
+                //  } 
+                ASN1EncodableVector vec = new ASN1EncodableVector();
+                vec.add(new DERUTF8String(ca.getIssuerDN().getName()));
+                vec.add(new DERUTF8String(dn));
+                DERSequence seq = new DERSequence(vec);
+
+                // wrap message in pkcs#7
+                return wrap(seq.getEncoded(), "20", transactionId, senderCertificate, signatureKey);
+            }
+
+            private CMSEnvelopedData envelope(CMSTypedData envThis) throws CMSException, CertificateEncodingException {
+                CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+                // Envelope the CMS message
+                StressTest.this.performanceTest.getLog().info("Encryption algorithms is " + StressTest.this.encryptionAlgOid);
+                StressTest.this.performanceTest.getLog().info("Key encryption algorithms is " + StressTest.this.keyEncryptionAlgId.getAlgorithm().getId());
+                edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cacert, StressTest.this.keyEncryptionAlgId).setProvider(BouncyCastleProvider.PROVIDER_NAME));
+                JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(StressTest.this.encryptionAlgOid).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                return edGen.generate(envThis, jceCMSContentEncryptorBuilder.build());
+            }
+
+            private CMSSignedData sign(CMSTypedData signThis, String messageType, String transactionId, final X509Certificate senderCertificate,
+                                       final PrivateKey signatureKey) throws CertificateEncodingException, CMSException {
+                CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
+
+                // add authenticated attributes...status, transactionId, sender- and more...
+                Hashtable<ASN1ObjectIdentifier, Attribute> attributes = new Hashtable<ASN1ObjectIdentifier, Attribute>();
+                ASN1ObjectIdentifier oid;
+                Attribute attr;
+                DERSet value;
+
+                // Message type (certreq)
+                oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_messageType);
+                value = new DERSet(new DERPrintableString(messageType));
+                attr = new Attribute(oid, value);
+                attributes.put(attr.getAttrType(), attr);
+
+                // TransactionId
+                oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_transId);
+                value = new DERSet(new DERPrintableString(transactionId));
+                attr = new Attribute(oid, value);
+                attributes.put(attr.getAttrType(), attr);
+
+                // senderNonce
+                byte[] nonce = new byte[16];
+                StressTest.this.random.nextBytes(nonce);
+                senderNonce = new String(Base64.encode(nonce));
+                oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce);
+                StressTest.this.performanceTest.getLog().info("Added senderNonce: " + senderNonce);
+                value = new DERSet(new DEROctetString(nonce));
+                attr = new Attribute(oid, value);
+                attributes.put(attr.getAttrType(), attr);
+
+
+                // Add our signer info and sign the message
+                ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
+                certList.add(senderCertificate);
+                gen1.addCertificates(new CollectionStore<>(CertTools.convertToX509CertificateHolder(certList)));
+
+                try {
+                    StressTest.this.performanceTest.getLog().info("Signature algorithms is " + StressTest.this.signatureAlg);
+                    ContentSigner contentSigner = new JcaContentSignerBuilder(StressTest.this.signatureAlg).setProvider(signatureProvider).build(signatureKey);
+                    JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                    JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+                    builder.setSignedAttributeGenerator(new DefaultSignedAttributeTableGenerator(new AttributeTable(attributes)));
+                    gen1.addSignerInfoGenerator(builder.build(contentSigner, senderCertificate));
+                } catch (OperatorCreationException e) {
+                    throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
+                }
+                // The signed data to be enveloped
+                return gen1.generate(signThis, true);
+            }
+
+            private byte[] wrap(byte[] envBytes, String messageType, String transactionId, final X509Certificate senderCertificate,
+                                final PrivateKey signatureKey) throws CertificateEncodingException, CMSException, IOException {
+                // 
+                // Create inner enveloped data
+                //
+                CMSEnvelopedData ed = envelope(new CMSProcessableByteArray(envBytes));
+                StressTest.this.performanceTest.getLog().info("Enveloped data is " + ed.getEncoded().length + " bytes long");
+                CMSTypedData msg = new CMSProcessableByteArray(ed.getEncoded());
+                //
+                // Create the outer signed data
+                //
+                CMSSignedData s = sign(msg, messageType, transactionId, senderCertificate, signatureKey);
+                return s.getEncoded();
+            }
+        }
+
     }
 
     /* (non-Javadoc)
@@ -712,29 +875,73 @@ class SCEPTest extends ClientToolBox {
         final String caName;
         final String userCNBase;
         if (args.length < 3) {
-            System.out.println(args[0] + " <SCEP url> <CA name> [<number of threads>] [<wait time between each thread is started>] [<user CN to be prepended by >]");
-            System.out.println("SCEP URL extra example: http://127.0.0.1:8080/scepraserver/scep/pkiclient.exe");
-            System.out.println("SCEP URL ca example: http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe");
+            System.out.println(args[0] + " <SCEP url> <CA name> [<number of threads>] [<encryption alg>] [<key encryption alg>] [<wait time between each thread is started>] [<user CN to be prepended by >]");
+            System.out.println("SCEP URL ca example: http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe ManagementCA 1");
+            System.out.println("SCEP URL ca example: http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe ManagementCA 1 AES RSA-OAEP-SHA1");
             System.out.println();
             System.out.println("The test requires that your configured SCEP alias 'noca':");
+            System.out.println("- using RA mode.");
+            System.out.println("- configured RA authentication password 'foo123'.");
             System.out.println("- is a configured to never returns the CA certificate.");
             System.out.println("- references a certificate profile with allowExtensionOverride=true and allow 1024 bit keys.");
             System.out.println("- references an end entity profile with 'Use' 'Batch generation");
+            System.out.println("- RA name generation parameters. set to CN (default)");
+            System.out.println("Algorithm options are DES, DES3, AES-128, AES-256 (default AES-256) and RSA, RSA-OAEP-SHA1, RSA-OAEP-SHA256 (default RSA, not all HSMs support RSA-OAEP-SHA256).");
             System.out.println();
-            System.out.println("NOTE: This test should work for both EJBCA and EXTRA.");
-            System.out.println("Originally it was written for EXTRA. But then it was change to use EJBCA directly also.");
-            System.out.println("After the change it has not been verified that it is still working with EXTRA.");
-            System.out.println("If you got problems with EXTRA you may revert back to the old version which is 8099 in SVN");
             return;
         }
         url = args[1];
         caName = args[2];
         notanot = new NrOfThreadsAndNrOfTests(args.length > 3 ? args[3] : null);
-        waitTime = args.length > 4 ? Integer.parseInt(args[4].trim()) : 0;
-        userCNBase = args.length > 5 ? args[5] : null;
+        ASN1ObjectIdentifier encryptionAlg = SMIMECapability.aES256_CBC;
+        if (args.length > 4) {
+            switch (args[4]) {
+            case "DES":
+                encryptionAlg = SMIMECapability.dES_CBC;
+                break;
+            case "DES3":
+                encryptionAlg = SMIMECapability.dES_EDE3_CBC;
+                break;
+            case "AES-128":
+                encryptionAlg = SMIMECapability.aES128_CBC;
+                break;
+            case "AES-256":
+                encryptionAlg = SMIMECapability.aES256_CBC;
+                break;
+            default:
+                System.out.println("Invalid algorithm option: " + args[4]);
+                return;
+            }
+        }
+        AlgorithmIdentifier keyEncryptionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption);
+        if (args.length > 5) {
+            switch (args[5]) {
+            case "RSA":
+                keyEncryptionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption);
+                break;
+            case "RSA-OAEP-SHA1":
+                final RSAESOAEPparams paramsSHA1 = new RSAESOAEPparams();
+                keyEncryptionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, paramsSHA1);
+                break;
+            case "RSA-OAEP-SHA256":
+                final RSAESOAEPparams paramsSHA256 = new RSAESOAEPparams(
+                        new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE), 
+                        new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE)),
+                        new AlgorithmIdentifier(PKCSObjectIdentifiers.id_pSpecified, new DEROctetString(new byte[0])));
+                keyEncryptionAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, paramsSHA256);
+                break;
+            default:
+                System.out.println("Invalid algorithm option: " + args[5]);
+                return;
+            }
+        }
+        waitTime = args.length > 6 ? Integer.parseInt(args[6].trim()) : 0;
+        userCNBase = args.length > 7 ? args[7] : null;
 
         try {
-            new StressTest(url, notanot.getThreads(), notanot.getTests(), waitTime, caName, userCNBase);
+            new StressTest(url, notanot.getThreads(), notanot.getTests(), waitTime, caName, userCNBase, 
+                    CMSSignedGenerator.DIGEST_SHA256, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, 
+                    encryptionAlg, keyEncryptionAlg);
         } catch (SecurityException e) {
             throw e; // System.exit() called. Not thrown in normal operation but thrown by the custom SecurityManager when clientToolBoxTest is executed. Must not be caught.
         } catch (Exception e) {
@@ -750,178 +957,5 @@ class SCEPTest extends ClientToolBox {
         return "SCEPTest";
     }
 
-    private static class ScepRequestGenerator {
-        private static Logger log = Logger.getLogger(ScepRequestGenerator.class);
-
-        private X509Certificate cacert = null;
-        private String reqdn = null;
-        private KeyPair keys = null;
-        private String signatureProvider = null;
-        private String digestOid = CMSSignedGenerator.DIGEST_SHA1;
-        private String senderNonce = null;
-
-        /**
-         * A good random source for nounces, can take a long time to initialize on vmware
-         */
-        private static SecureRandom randomSource = null;
-
-        public ScepRequestGenerator() {
-            try {
-                if (randomSource == null) {
-                    randomSource = SecureRandom.getInstance("SHA1PRNG");
-                }
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
-        void setKeys(KeyPair myKeys, String signatureProvider) {
-            this.keys = myKeys;
-            this.signatureProvider = signatureProvider;
-        }
-
-        void setDigestOid(String oid) {
-            digestOid = oid;
-        }
-
-        /**
-         * Base 64 encode senderNonce
-         */
-        public String getSenderNonce() {
-            return senderNonce;
-        }
-
-        public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, Extensions exts,
-                                      final X509Certificate senderCertificate, final PrivateKey signatureKey) throws OperatorCreationException, CertificateException,
-                IOException, CMSException {
-            this.cacert = ca;
-            this.reqdn = dn;
-            // Generate keys
-
-            // Create challenge password attribute for PKCS10
-            // Attributes { ATTRIBUTE:IOSet } ::= SET OF Attribute{{ IOSet }}
-            //
-            // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
-            //    type    ATTRIBUTE.&id({IOSet}),
-            //    values  SET SIZE(1..MAX) OF ATTRIBUTE.&Type({IOSet}{\@type})
-            // }
-            ASN1EncodableVector challpwdattr = new ASN1EncodableVector();
-            // Challenge password attribute
-            challpwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
-            ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
-            pwdvalues.add(new DERUTF8String(password));
-            challpwdattr.add(new DERSet(pwdvalues));
-            ASN1EncodableVector extensionattr = new ASN1EncodableVector();
-            extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            extensionattr.add(new DERSet(exts));
-            // Complete the Attribute section of the request, the set (Attributes) contains two sequences (Attribute)
-            ASN1EncodableVector v = new ASN1EncodableVector();
-            v.add(new DERSequence(challpwdattr));
-            v.add(new DERSequence(extensionattr));
-            DERSet attributes = new DERSet(v);
-            // Create PKCS#10 certificate request
-            final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
-                    CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
-
-            // wrap message in pkcs#7
-            return wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey);
-        }
-
-        public byte[] generateGetCertInitial(String dn, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
-                                             final PrivateKey signatureKey) throws IOException, CMSException, CertificateEncodingException {
-            this.cacert = ca;
-            this.reqdn = dn;
-
-            // pkcsGetCertInitial issuerAndSubject ::= { 
-            //      issuer "the certificate authority issuer name" 
-            //      subject "the requester subject name as given in PKCS#10" 
-            //  } 
-            ASN1EncodableVector vec = new ASN1EncodableVector();
-            vec.add(new DERUTF8String(ca.getIssuerDN().getName()));
-            vec.add(new DERUTF8String(dn));
-            DERSequence seq = new DERSequence(vec);
-
-            // wrap message in pkcs#7
-            return wrap(seq.getEncoded(), "20", transactionId, senderCertificate, signatureKey);
-        }
-
-        private CMSEnvelopedData envelope(CMSTypedData envThis) throws CMSException, CertificateEncodingException {
-            CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-            // Envelope the CMS message
-            edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cacert).setProvider(BouncyCastleProvider.PROVIDER_NAME));
-            JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(SMIMECapability.dES_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            return edGen.generate(envThis, jceCMSContentEncryptorBuilder.build());
-        }
-
-        private CMSSignedData sign(CMSTypedData signThis, String messageType, String transactionId, final X509Certificate senderCertificate,
-                                   final PrivateKey signatureKey) throws CertificateEncodingException, CMSException {
-            CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
-
-            // add authenticated attributes...status, transactionId, sender- and more...
-            Hashtable<ASN1ObjectIdentifier, Attribute> attributes = new Hashtable<ASN1ObjectIdentifier, Attribute>();
-            ASN1ObjectIdentifier oid;
-            Attribute attr;
-            DERSet value;
-
-            // Message type (certreq)
-            oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_messageType);
-            value = new DERSet(new DERPrintableString(messageType));
-            attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
-
-            // TransactionId
-            oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_transId);
-            value = new DERSet(new DERPrintableString(transactionId));
-            attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
-
-            // senderNonce
-            byte[] nonce = new byte[16];
-            randomSource.nextBytes(nonce);
-            senderNonce = new String(Base64.encode(nonce));
-            oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce);
-            log.debug("Added senderNonce: " + senderNonce);
-            value = new DERSet(new DEROctetString(nonce));
-            attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
-
-
-            // Add our signer info and sign the message
-            ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
-            certList.add(senderCertificate);
-            gen1.addCertificates(new CollectionStore<>(CertTools.convertToX509CertificateHolder(certList)));
-
-            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestOid, signatureKey.getAlgorithm());
-            try {
-                ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(signatureProvider).build(signatureKey);
-                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-                JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
-                builder.setSignedAttributeGenerator(new DefaultSignedAttributeTableGenerator(new AttributeTable(attributes)));
-                gen1.addSignerInfoGenerator(builder.build(contentSigner, senderCertificate));
-            } catch (OperatorCreationException e) {
-                throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
-            }
-            // The signed data to be enveloped
-            return gen1.generate(signThis, true);
-        }
-
-        private byte[] wrap(byte[] envBytes, String messageType, String transactionId, final X509Certificate senderCertificate,
-                            final PrivateKey signatureKey) throws CertificateEncodingException, CMSException, IOException {
-
-            // 
-            // Create inner enveloped data
-            //
-            CMSEnvelopedData ed = envelope(new CMSProcessableByteArray(envBytes));
-            log.debug("Enveloped data is " + ed.getEncoded().length + " bytes long");
-            CMSTypedData msg = new CMSProcessableByteArray(ed.getEncoded());
-            //
-            // Create the outer signed data
-            //
-            CMSSignedData s = sign(msg, messageType, transactionId, senderCertificate, signatureKey);
-
-            return s.getEncoded();
-
-        }
-    }
 
 }

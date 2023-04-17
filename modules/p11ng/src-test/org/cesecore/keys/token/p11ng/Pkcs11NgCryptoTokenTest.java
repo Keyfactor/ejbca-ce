@@ -10,16 +10,37 @@
 package org.cesecore.keys.token.p11ng;
 
 import java.security.InvalidAlgorithmParameterException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Security;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.commons.p11ng.provider.JackNJI11Provider;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
+import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -59,7 +80,69 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
         token.deactivate();
         doCryptoTokenRSA(token);
     }
-    
+
+    @Test
+    public void testCryptoTokenRSACipher() throws Exception {
+        CryptoToken cryptoToken = createPkcs11NgToken();
+        cryptoToken.deactivate();
+
+        cryptoToken.activate(tokenpin.toCharArray());
+        assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+        try {
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+            cryptoToken.generateKeyPair(KeyGenParams.builder("1024").withKeyPairTemplate(KeyPairTemplate.SIGN_ENCRYPT).build(), 
+                    PKCS11TestUtils.RSA_TEST_KEY_1);
+            //cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_1024, PKCS11TestUtils.RSA_TEST_KEY_1);
+            PrivateKey priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            PublicKey pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            
+            // RSA_PKCS key encryption
+            doCipher(cryptoToken, priv, pub, new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption));
+            
+            // RSAES_OAEP key encryption, default OAEP parameters, SHA1, MGF1
+            final RSAESOAEPparams paramsSHA1 = new RSAESOAEPparams();
+            doCipher(cryptoToken, priv, pub, new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, paramsSHA1));
+
+            // RSAES_OAEP key encryption, custom OAEP parameters, SHA256, MGF1
+            // SoftHSM2 does not support OAEP with SHA256 (my version on April 5 2023), but Thales DPoD does. 
+            // Test disabled as SoftHSM doesn't support it, tested manually on DPoD with clientToolBox SCEPTest
+            // see https://stackoverflow.com/questions/64888751/rsa-oaep-encryption-with-sha-256-fails-while-with-sha-1-is-ok
+//            final RSAESOAEPparams paramsSHA256 = new RSAESOAEPparams(
+//                    new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE), 
+//                    new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE)),
+//                    new AlgorithmIdentifier(PKCSObjectIdentifiers.id_pSpecified, new DEROctetString(new byte[0])));
+//            doCipher(cryptoToken, priv, pub, new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, paramsSHA256));
+        } finally {
+            // Clean up and delete our generated keys
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+        }
+
+//        doCryptoTokenRSA(token);
+    }
+
+    private void doCipher(CryptoToken cryptoToken, PrivateKey priv, PublicKey pub, AlgorithmIdentifier keyEncryptAlg) throws CMSException {
+        // Create an enveloped CMS message, using AES encryption and RSAES_OAEP key wrapping
+        // Symmetric key encryption in BC, public key wrapping also in BC
+        CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator("keyIdentifier".getBytes(), keyEncryptAlg, pub).setProvider(BouncyCastleProvider.PROVIDER_NAME));
+        JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(SMIMECapability.aES256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+        CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray("thisisdata".getBytes()), jceCMSContentEncryptorBuilder.build());
+        
+        // Now try to decrypt the message, unwrapping the symmetric key with the private key that is in the HSM
+        JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(priv);
+        rec.setProvider(cryptoToken.getEncProviderName()); // Use the crypto token provides for asymmetric key operations
+        rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME); // Use BC for the symmetric key operations
+        rec.setMustProduceEncodableUnwrappedKey(true);                              
+
+        RecipientInformationStore recipients = ed.getRecipientInfos();
+        Collection<RecipientInformation> c = recipients.getRecipients();
+        Iterator<RecipientInformation> it = c.iterator();
+        RecipientInformation recipient = (RecipientInformation) it.next();
+        byte [] decBytes = recipient.getContent(rec);
+        assertNotNull("Decryption should result in some bytes", decBytes);
+        assertEquals("Decryption did not yield the correct result", "thisisdata", new String(decBytes));
+    }
+
     @Test
     public void testCryptoTokenECC() throws Exception {
         token = createPkcs11NgToken();

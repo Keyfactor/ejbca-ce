@@ -13,7 +13,8 @@
 package org.ejbca.util.dn;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.DnComponents;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;

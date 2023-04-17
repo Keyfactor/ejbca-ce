@@ -62,13 +62,14 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:
@@ -110,11 +111,11 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void revokeCertificate(final AuthenticationToken admin, final Certificate cert, final Collection<Integer> publishers, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
+    public void revokeCertificate(final AuthenticationToken admin, final Certificate cert, final Collection<Integer> publishers, Date invalidityDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
         final Date revokedate = new Date();
         final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(cert));
         if (cdw != null) { 
-            revokeCertificate(admin, cdw, publishers, revokedate, reason, userDataDN);
+            revokeCertificate(admin, cdw, publishers, revokedate, invalidityDate, reason, userDataDN);
         } else {
             final String msg = intres.getLocalizedMessage("store.errorfindcertserno", CertTools.getSerialNumberAsString(cert));              
             log.info(msg);
@@ -125,16 +126,16 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void revokeCertificateInNewTransaction(final AuthenticationToken admin, final CertificateDataWrapper cdw,
-            final Collection<Integer> publishers, Date revocationDate, final int reason, final String userDataDN)
+            final Collection<Integer> publishers, Date revocationDate, Date invalidityDate, final int reason, final String userDataDN)
             throws CertificateRevokeException, AuthorizationDeniedException {
-        revokeCertificate(admin, cdw, publishers, revocationDate, reason, userDataDN);
+        revokeCertificate(admin, cdw, publishers, revocationDate, invalidityDate, reason, userDataDN);
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void revokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers,
-            Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
-    	final boolean waschanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(cdw, revocationDate, reason), reason);
+            Date revocationDate, Date invalidityDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
+    	final boolean waschanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(cdw, revocationDate, reason), invalidityDate, reason);
     	// Only publish the revocation if it was actually performed
     	if (waschanged) {
     	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
@@ -217,7 +218,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             }
                     
             wasChanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(
-                    cdw, new Date(data.getRevocationDate()), reason), reason);
+                    cdw, new Date(data.getRevocationDate()), reason), new Date(data.getInvalidityDate()), reason);
             
             // Only publish the revocation if it was actually performed
             if (wasChanged) {

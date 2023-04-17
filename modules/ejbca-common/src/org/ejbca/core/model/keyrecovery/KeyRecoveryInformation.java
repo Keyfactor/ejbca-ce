@@ -19,8 +19,8 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 
-import org.cesecore.keys.util.KeyPairWrapper;
-import org.cesecore.util.StringTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.KeyPairWrapper;
 
 
 /**
