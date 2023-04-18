@@ -60,6 +60,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -670,10 +671,13 @@ public class EnrollWithRequestIdBean implements Serializable {
         if (certificateRequestMessage == null) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile
+        //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
         try {
             final String keySpecification = AlgorithmTools.getKeySpecification(certificateRequestMessage.getRequestPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certificateRequestMessage.getRequestPublicKey());
+            if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
+            }
             // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
@@ -765,6 +769,13 @@ public class EnrollWithRequestIdBean implements Serializable {
                     }
                     availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
                                     + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
+                }
+            }
+            if (WebConfiguration.isPQCEnabled()) {
+                for (String algorithm : availableKeyAlgorithms) {
+                    if (AlgorithmTools.isPQC(algorithm)) {
+                        availableAlgorithmSelectItems.add(new SelectItem(algorithm));
+                    }
                 }
             }
             for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
