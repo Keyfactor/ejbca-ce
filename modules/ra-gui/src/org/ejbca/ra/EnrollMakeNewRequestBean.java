@@ -1710,12 +1710,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile
+        //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
         try {
             final PublicKey publicKey = certRequest.getRequestPublicKey();
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-
+            if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
+            }
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
                 raLocaleBean.addMessageError("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification);
@@ -2241,20 +2243,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     }
                 }
                 if (WebConfiguration.isPQCEnabled()) {
-                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_FALCON512)) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON512));
-                    }
-                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_FALCON1024)) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON1024));
-                   }
-                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DILITHIUM2)) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
-                    }
-                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DILITHIUM3)) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
-                    }
-                    if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DILITHIUM5)) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+                    for (String algorithm : availableKeyAlgorithms) {
+                        if (AlgorithmTools.isPQC(algorithm)) {
+                            availableAlgorithmSelectItems.add(new SelectItem(algorithm));
+                        }
                     }
                 }
                 for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {

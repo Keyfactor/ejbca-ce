@@ -17,7 +17,10 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -39,6 +42,8 @@ import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.config.CesecoreConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -49,6 +54,9 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.EnrollMakeNewRequestBean.KeyPairGeneration;
 
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
@@ -216,11 +224,13 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         if (certRequest == null) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-        
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile
+        //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
         try {
             final String keySpecification = AlgorithmTools.getKeySpecification(certRequest.getRequestPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certRequest.getRequestPublicKey());
+            if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
+            }
             // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
