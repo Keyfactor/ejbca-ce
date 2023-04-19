@@ -676,7 +676,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             final String keySpecification = AlgorithmTools.getKeySpecification(certificateRequestMessage.getRequestPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certificateRequestMessage.getRequestPublicKey());
             if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
-                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", getKeyAlgorithmMessageString(keyAlgorithm, keySpecification))));
             }
             // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
             final CertificateProfile certificateProfile = getCertificateProfile();
@@ -697,6 +697,10 @@ public class EnrollWithRequestIdBean implements Serializable {
         } catch (NoSuchProviderException e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+    
+    protected String getKeyAlgorithmMessageString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + "_" + spec;
     }
 
     public boolean isRenderPassword() {

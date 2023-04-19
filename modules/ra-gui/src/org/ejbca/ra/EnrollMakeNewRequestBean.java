@@ -1716,7 +1716,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
             if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
-                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", getKeyAlgorithmMessageString(keyAlgorithm, keySpecification))));
             }
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
@@ -1738,6 +1738,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
             throw new IllegalStateException(e);
         }
     }
+    
+    private String getKeyAlgorithmMessageString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + "_" + spec;
+    }
+
 
     private String extractSignatureFromCsr(final RequestMessage certRequest) {
         if (certRequest instanceof PKCS10RequestMessage) {
