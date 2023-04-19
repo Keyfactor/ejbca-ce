@@ -335,7 +335,6 @@
 	<path id="lib.hc.classpath"><fileset dir="${ejbca.home}/lib" includes="httpcore-*.jar httpclient-*.jar httpmime-*.jar"/></path>
 	<path id="lib.commons-io.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-io-*.jar"/></path>
 	<path id="lib.jsch.classpath"><fileset dir="${ejbca.home}/lib" includes="jsch-*.jar"/></path>
-	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.owaspcsrfguard.classpath"><fileset dir="${ejbca.home}/lib/" includes="csrfguard-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="jldap-*.jar"/></path>
 	<path id="lib.adsddl.classpath"><fileset dir="${ejbca.home}/lib" includes="adsddl-*.jar"/></path>
@@ -344,6 +343,8 @@
 	<path id="lib.kerb.core.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-core-*.jar"/></path> 
 	<path id="lib.kerby.asn1.classpath"><fileset dir="${ejbca.home}/lib" includes="kerby-asn1-*.jar"/></path> 
 	<path id="lib.kerb.crypto.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-crypto-*.jar"/></path> 
+	<path id="lib.primefaces.classpath"><fileset dir="${ejbca.home}/lib/primefaces" includes="primefaces-*.jar"/></path>
+
 
 	<path id="lib.xmlpull.classpath">
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>

@@ -114,7 +114,6 @@
 	<classpathentry kind="lib" path="lib/xstream/xpp3_min-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="lib/adsddl-1.9.jar"/>
 	<classpathentry kind="lib" path="lib/jldap-4.6.0.jar"/>
-	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.14.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-4.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-extension-session-4.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-jsp-tags-4.0.0.jar"/>
@@ -166,6 +165,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
+	<classpathentry kind="lib" path="lib/primefaces/primefaces-12.0.0.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
@@ -184,7 +184,7 @@
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jaxb-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections4-4.4.jar"/>
-	<classpathentry kind="lib" path="lib/snakeyaml-1.27.jar"/>
+	<classpathentry kind="lib" path="lib/snakeyaml-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-1.6.4.jar"/>
@@ -192,16 +192,16 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/guava-31.1-jre.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.11.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.11.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.11.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.11.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.14.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.14.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.14.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.14.2.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-173b12.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk18on-173b12.jar"/>
-	<classpathentry kind="lib" path="lib/bctls-jdk18on-173b12.jar"/>
-	<classpathentry kind="lib" path="lib/bcutil-jdk18on-173b12.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-173.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk18on-173.jar"/>
+	<classpathentry kind="lib" path="lib/bctls-jdk18on-173.jar"/>
+	<classpathentry kind="lib" path="lib/bcutil-jdk18on-173.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.4.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-5.1.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/classmate-1.5.1.jar"/>

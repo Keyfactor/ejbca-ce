@@ -5,7 +5,7 @@
 	  xmlns:h="http://xmlns.jcp.org/jsf/html"
 	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	  xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-	  xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:p="http://java.sun.com/jsf/html">
+	  xmlns:p="http://java.sun.com/jsf/html">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -418,7 +418,7 @@
 			<br/>
 		</h:panelGroup>
 
-		<t:dataTable value="#{systemConfigMBean.availableProtocolInfos}" var="protocolinfos"
+		<h:dataTable value="#{systemConfigMBean.availableProtocolInfos}" var="protocolinfos"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto; padding: 2em">
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_PROTOCOL_TITLE}"/></f:facet>
@@ -443,7 +443,7 @@
 				<h:commandButton action="#{systemConfigMBean.toggleProtocolStatus(protocolinfos)}" value="#{protocolinfos.enabled ? web.text.PC_ACTION_DISABLE : web.text.PC_ACTION_ENABLE}"
 					 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" disabled="#{!protocolinfos.available}"/>
 			</h:column>
-		</t:dataTable>
+		</h:dataTable>
 		
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
 			<h:outputLabel for="header_customheaderrest" value="#{web.text.RESTPROTOCOLPROTECTION}" style="font-weight:bold; font-size:1.2em;"/>
@@ -684,7 +684,7 @@
 		    <h:panelGroup>
 		        <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}"
                        rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <t:inputFileUpload id="currentCTLogKeyFile"
+                <h:inputFile id="currentCTLogKeyFile"
                     value="#{systemConfigMBean.ctLogManager.ctLogEditor.publicKeyFile}"
                     title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}"
                     rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
@@ -838,11 +838,11 @@
 
 		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
 			<h:outputLabel for="raCssFile" value="#{web.text.CSSIMPORTFROM}"/>
-			<t:inputFileUpload id="raCssFile" value="#{systemConfigMBean.raCssFile}"/>
+			<h:inputFile id="raCssFile" value="#{systemConfigMBean.raCssFile}"/>
 		</h:panelGrid>
 		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
 			<h:outputLabel for="raLogoFile" value="#{web.text.LOGOIMPORTFROM}"/>
-			<t:inputFileUpload id="raLogoFile" value="#{systemConfigMBean.raLogoFile}"/>
+			<h:inputFile id="raLogoFile" value="#{systemConfigMBean.raLogoFile}"/>
 		</h:panelGrid>
 		<h:panelGrid columns="1" columnClasses="gridColumnLeft" styleClass="padding-top">
 			<h:outputText value="#{web.text.COLUMNNAMETITLE}"/>
@@ -884,7 +884,7 @@
             </h:selectOneMenu>
 
             <h:outputText value="#{web.text.STATEDUMPTAB_ZIPFILE}"/>
-            <t:inputFileUpload id="statedumpFile" value="#{systemConfigMBean.statedumpFile}" title="#{web.text.STATEDUMPTAB_ZIPFILE_TOOLTIP}"/>
+            <h:inputFile id="statedumpFile" value="#{systemConfigMBean.statedumpFile}" title="#{web.text.STATEDUMPTAB_ZIPFILE_TOOLTIP}"/>
 
             <h:outputText value="#{web.text.STATEDUMPTAB_LOCKDOWN}"/>
             <h:panelGroup>
@@ -1042,7 +1042,7 @@
 		</h:panelGroup>
 		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
 			<h:outputLabel for="eabCsvFile" value="#{web.text.EABTAB_SELECTFILE}"/>
-			<t:inputFileUpload id="eabCsvFile" value="#{systemConfigMBean.EABConfigManager.eabCSVFile}"/>
+			<h:inputFile id="eabCsvFile" value="#{systemConfigMBean.EABConfigManager.eabCSVFile}"/>
 		</h:panelGrid>
 		<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColumnRight">
 			<div></div>
