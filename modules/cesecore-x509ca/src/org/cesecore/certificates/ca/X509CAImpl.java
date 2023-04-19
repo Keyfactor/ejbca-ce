@@ -1752,7 +1752,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final PublicKey verifyKey;
         // We must use the configured public key if this is a rootCA, because then we can renew our own certificate, after changing
         // the keys. In this case the _new_ key will not match the current CA certificate.
-        if ((cacert != null) && (!isRootCA)) {
+        if ((cacert != null) && (!isRootCA) && (!linkCertificate)) {
             verifyKey = cacert.getPublicKey();
         } else {
             verifyKey = caPublicKey;
