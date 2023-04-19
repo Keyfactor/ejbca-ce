@@ -1344,11 +1344,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void changeUserInNewTransaction(final UserData newUserData, final boolean isNew) {
-            if (isNew) {
-                entityManager.persist(newUserData);
-            } else {
-                entityManager.merge(newUserData);
+        if (isNew) {
+            entityManager.persist(newUserData);
+        } else {
+            UserData entity = entityManager.find(UserData.class, newUserData.getUsername());
+            try {
+                entityManager.merge(entity);
+                entityManager.flush();
+            } catch (OptimisticLockException e) {
+                log.warn("Entity object in inconsistent state, retry the operation after a while!");
             }
+        }
     }
 
     /**
