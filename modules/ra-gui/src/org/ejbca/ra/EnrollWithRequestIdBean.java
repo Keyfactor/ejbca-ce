@@ -671,10 +671,6 @@ public class EnrollWithRequestIdBean implements Serializable {
             throw e;
         }
     }
-    
-    protected String getKeyAlgorithmMessageString(String alg, String spec ) {
-        return alg.equals(spec)? alg : alg + "_" + spec;
-    }
 
     public boolean isRenderPassword() {
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
