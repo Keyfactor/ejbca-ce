@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
@@ -32,8 +31,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 import org.apache.log4j.Logger;
-import org.apache.myfaces.renderkit.html.util.AddResource;
-import org.apache.myfaces.renderkit.html.util.AddResourceFactory;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -76,6 +73,7 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+import org.primefaces.PrimeFaces;
 
 /**
  * Session scoped bean for displaying information about an approval request.
@@ -328,13 +326,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
 
     private void closeWindow() {
-        //Hack for closing the window after saving
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        //Add the Javascript to the rendered page's header for immediate execution
-        AddResource addResource = AddResourceFactory.getInstance(facesContext);
-        //Think of a better solution and you're free to implement it.
-        addResource.addInlineScriptAtPosition(facesContext, AddResource.HEADER_BEGIN, "window.close();");
-        //I'm so, so sorry. I have dishonored my dojo.
+        PrimeFaces.current().executeScript("window.close();");
     }
 
     public void setUniqueId(int uniqueId) {

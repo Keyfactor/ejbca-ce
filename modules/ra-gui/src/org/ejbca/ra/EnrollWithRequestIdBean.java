@@ -214,7 +214,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         if (generatedToken != null) {
             try {
                 Certificate certificate = CertTools.getCertfromByteArray(generatedToken, Certificate.class);
-                byte[] pemToDownload = CertTools.getPemFromCertificateChain(Arrays.asList(certificate));
+                byte[] pemToDownload = CertTools.getPemFromCertificateChain(List.of(certificate));
                 downloadToken(pemToDownload, "application/octet-stream", ".pem");
             } catch (CertificateParsingException | CertificateEncodingException e) {
                 log.info(e);
@@ -661,41 +661,14 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        selectedAlgorithm = null;
-        final String valueStr = value.toString();
-        if (valueStr != null && valueStr.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
-            log.info("CSR uploaded was too large: "+valueStr.length());
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
-        }
-        RequestMessage certificateRequestMessage = RequestMessageUtils.parseRequestMessage(valueStr.getBytes());
-        if (certificateRequestMessage == null) {
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
-        }
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
+        RaCsrTools.validateCsr(value, this, raLocaleBean, getCertificateProfile(), requestId, false);
         try {
-            final String keySpecification = AlgorithmTools.getKeySpecification(certificateRequestMessage.getRequestPublicKey());
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certificateRequestMessage.getRequestPublicKey());
-            if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
-                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", getKeyAlgorithmMessageString(keyAlgorithm, keySpecification))));
-            }
-            // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
-            final CertificateProfile certificateProfile = getCertificateProfile();
-            if (certificateProfile != null) {
-                if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
-                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Ignoring algorithm validation on CSR because we can not find a Certificate Profile for request with ID: " + requestId);
-                }
-            }
-            selectedAlgorithm = keyAlgorithm + " " + keySpecification; // Save for later use
-            // For yet unknown reasons, the setter is never when invoked during AJAX request
-            certificateRequest = value.toString();
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e.getMessage());
+            RaCsrTools.validetaNumberOfFieldsInSubjectDn(authorizedEndEntityProfiles.get(getEndEntityInformation().getEndEntityProfileId()),
+                    getCertificateRequest(), raLocaleBean, requestId, false);
+        } catch (ValidatorException e) {
+            setSelectedAlgorithm(null);
+            certificateRequest = null;
+            throw e;
         }
     }
     
@@ -757,7 +730,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                             continue;
                         }
                         final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                        if (availableBitLengths.contains(bitLength)) {
                             ecChoices.add(ecNamedCurve);
                         }
                     }
@@ -787,7 +760,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                     for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                         final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                         final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                        if (availableBitLengths.contains(bitLength)) {
                             availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
                                     CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
                         } else {

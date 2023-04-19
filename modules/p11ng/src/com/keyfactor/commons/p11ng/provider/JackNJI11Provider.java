@@ -45,6 +45,12 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.keyfactor.commons.p11ng.MechanismNames;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.sun.jna.Memory;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -55,6 +61,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.OAEP;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.pkcs11.jacknji11.CKA;
@@ -64,12 +71,6 @@ import org.pkcs11.jacknji11.CKO;
 import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
-
-import com.keyfactor.commons.p11ng.MechanismNames;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.sun.jna.Memory;
 
 /**
  * Provider using JackNJI11.
@@ -122,9 +123,13 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "MessageDigest", "SHA256", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA384", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA512", MyMessageDigiest.class.getName()));
-        putService(new MySigningService(this, "AlgorithmParameters", "PSS", MyAlgorithmParameters.class.getName()));
+        putService(new MySigningService(this, "AlgorithmParameters", "PSS", MyPSSAlgorithmParameters.class.getName()));
+        putService(new MySigningService(this, "AlgorithmParameters", "OAEP", MyOAEPAlgorithmParameters.class.getName()));
         putService(new MySigningService(this, "Cipher", "RSAEncryption", MyCipher.class.getName()));
         putService(new MySigningService(this, "Cipher", PKCSObjectIdentifiers.rsaEncryption.getId(), MyCipher.class.getName()));
+        // Some HSMs only support RSAES_OAEP with SHA1/MGF1_SHA1 and not SHA256/MGF1_SHA256. Unsupported MGF hash algorithm typically results in
+        // org.pkcs11.jacknji11.CKRException: 0x00000007: ARGUMENTS_BAD
+        putService(new MySigningService(this, "Cipher", PKCSObjectIdentifiers.id_RSAES_OAEP.getId(), MyCipher.class.getName()));
         putService(new MySigningService(this, "KeyAgreement", "ECDH", MyKeyAgreement.class.getName()));
 
     }
@@ -566,11 +571,19 @@ public class JackNJI11Provider extends Provider {
             }
         }
     }
+
+    private static class MyOAEPAlgorithmParameters extends OAEP {
+        // Fall back on BC OAEP parameter configuration.         
+        @SuppressWarnings("unused")
+        public MyOAEPAlgorithmParameters(Provider provider, String algorithm) {
+            super();
+        }
+    }
     
-    private static class MyAlgorithmParameters extends PSS {
+    private static class MyPSSAlgorithmParameters extends PSS {
         // Fall back on BC PSS parameter configuration. 
         @SuppressWarnings("unused")
-        public MyAlgorithmParameters(Provider provider, String algorithm) {
+        public MyPSSAlgorithmParameters(Provider provider, String algorithm) {
             super();
         }
     }
@@ -616,6 +629,7 @@ public class JackNJI11Provider extends Provider {
         private String algorithm;
         private NJI11Object myKey;
         private NJI11Session session;
+        private AlgorithmParameters params;
         private boolean hasActiveSession;
         private Exception debugStacktrace;
 
@@ -644,18 +658,28 @@ public class JackNJI11Provider extends Provider {
             }
             try {
                 long mechanism = MechanismNames.longFromEncAlgoName(this.algorithm).get();
+                CKM ckm = new CKM(mechanism);
+                if (params != null) {
+                    final byte[] param;
+                    if (params != null && "OAEP".equals(params.getAlgorithm())) {
+                        param = MechanismNames.encodeOAEPParameters(params);
+                    } else {
+                        throw new InvalidKeyException("Unsupported algorithm parameter: " + params);
+                    }
+                    ckm = new CKM(mechanism, param);
+                }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("engineUnwrap: session: " + session + ", object: " +
-                            myKey.getObject() + ", algoValue: 0x" + Long.toHexString(mechanism) + ", param: null");
+                            myKey.getObject() + ", algoValue: 0x" + Long.toHexString(mechanism) + ", param: " + (params == null ? "null" : params.getAlgorithm()));
                     debugStacktrace = new Exception();
                 }
                 // We do unwrapping using DECRYPT in PKCS#11
                 // This is very generic and ignores wrappedeyAlgorithm and wrappedKeyType to this method, but it supports our 
                 // goal of CMS message encryption using wrapped AES keys for keyRecovery and SCEP in EJBCA
                 // Does not support all other generic cases for key wrapping/unwrapping, specifically when you want to use the secret key inside the HSM 
-                myKey.getSlot().getCryptoki().DecryptInit(session.getId(), new CKM(mechanism), myKey.getObject());
+                myKey.getSlot().getCryptoki().DecryptInit(session.getId(), ckm, myKey.getObject());
                 final byte[] seckeybuf = myKey.getSlot().getCryptoki().Decrypt(session.getId(), wrappedKey);                
-                // Get AES key from byte array
+                // Get Secret key from byte array
                 SecretKey key = new SecretKeySpec(seckeybuf, wrappedKeyAlgorithm);
                 return key;
             } finally {
@@ -774,8 +798,10 @@ public class JackNJI11Provider extends Provider {
         protected void engineInit(int opmode, Key arg1, AlgorithmParameters arg2, SecureRandom arg3)
                 throws InvalidKeyException, InvalidAlgorithmParameterException {
             if (log.isDebugEnabled()) {
-                log.debug("engineInit3: " + this.getClass().getName());
+                log.debug("engineInit3: " + this.getClass().getName() + ", " + arg2.getAlgorithm());
             }
+            this.params = arg2;
+            engineInit(opmode, arg1, arg3);
         }
 
         @Override

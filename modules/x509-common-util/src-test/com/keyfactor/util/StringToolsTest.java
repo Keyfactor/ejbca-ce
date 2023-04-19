@@ -12,14 +12,6 @@
  *************************************************************************/
 package com.keyfactor.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.InvalidKeyException;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
@@ -30,13 +22,21 @@ import java.util.Random;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.string.StringConfigurationCache;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the StringTools class.
@@ -102,6 +102,8 @@ public class StringToolsTest {
     @Test
     public void testIpOctetsToString() throws Exception {
         log.trace(">testIpOctetsToString");
+        
+        // IPv4
         final byte[] octets = {(byte) 192,(byte) 168, 100, 1} ;
         final byte[] octets1 = {1, 1, 1, 1};
         final byte[] notValid = {1, 1, 1};
@@ -109,6 +111,51 @@ public class StringToolsTest {
         assertEquals("1.1.1.1", StringTools.ipOctetsToString(octets1));  
         assertFalse("1.1.1.1", StringTools.ipOctetsToString(octets1).isEmpty());     
         assertNull(StringTools.ipOctetsToString(notValid));
+        
+        // IPv6
+        final String ipV6Example1 = "2001:0db8:3333:4444:5555:6666:7777:8888";        
+        final String ipV6Example2 = "2001:db8:3333:4444:5555:6666:7777:8888";
+        final String ipV6Example3 = "2001:db8::";
+        final String ipV6Example4 = "2001:db8::1234:5678";
+        final String ipV6Example5 = "::1234:5678";
+        final String ipV6Example6 = "2001:0db8:0001:0000:0000:0ab9:C0A8:0102";
+        byte[] ex1 = StringTools.ipStringToOctets(ipV6Example1);
+        byte[] ex2 = StringTools.ipStringToOctets(ipV6Example2);
+        byte[] ex3 = StringTools.ipStringToOctets(ipV6Example3);
+        byte[] ex4 = StringTools.ipStringToOctets(ipV6Example4);
+        byte[] ex5 = StringTools.ipStringToOctets(ipV6Example5);
+        byte[] ex6 = StringTools.ipStringToOctets(ipV6Example6);
+        assertEquals(16, ex1.length);
+        assertEquals(16, ex2.length);
+        assertEquals(16, ex3.length);
+        assertEquals(16, ex4.length);
+        assertEquals(16, ex5.length);
+        assertEquals(16, ex6.length);
+        assertEquals("2001:db8:3333:4444:5555:6666:7777:8888", StringTools.ipOctetsToString(ex1));
+        assertEquals("2001:db8:3333:4444:5555:6666:7777:8888", StringTools.ipOctetsToString(ex2));
+        assertEquals("2001:db8:0:0:0:0:0:0", StringTools.ipOctetsToString(ex3));
+        assertEquals("2001:db8:0:0:0:0:1234:5678", StringTools.ipOctetsToString(ex4));
+        assertEquals("0:0:0:0:0:0:1234:5678", StringTools.ipOctetsToString(ex5));
+        assertEquals("2001:db8:1:0:0:ab9:c0a8:102", StringTools.ipOctetsToString(ex6));
+
+        final byte[] v6octets1 = {32,1,13,-72,51,51,68,68,85,85,102,102,119,119,-120,-120};
+        final byte[] v6octets2 = {32,1,13,-72,51,51,68,68,85,85,102,102,119,119,-120,-120};
+        final byte[] v6octets3 = {32,1,13,-72,0,0,0,0,0,0,0,0,0,0,0,0};
+        final byte[] v6octets4 = {32,1,13,-72,0,0,0,0,0,0,0,0,18,52,86,120};
+        final byte[] v6octets5 = {0,0,0,0,0,0,0,0,0,0,0,0,18,52,86,120};
+        final byte[] v6octets6 = {32,1,13,-72,0,1,0,0,0,0,10,-71,-64,-88,1,2};
+        assertEquals("2001:db8:3333:4444:5555:6666:7777:8888", StringTools.ipOctetsToString(v6octets1));
+        assertEquals("2001:db8:3333:4444:5555:6666:7777:8888", StringTools.ipOctetsToString(v6octets2));
+        assertEquals("2001:db8:0:0:0:0:0:0", StringTools.ipOctetsToString(v6octets3));
+        assertEquals("2001:db8:0:0:0:0:1234:5678", StringTools.ipOctetsToString(v6octets4));
+        assertEquals("0:0:0:0:0:0:1234:5678", StringTools.ipOctetsToString(v6octets5));
+        assertEquals("2001:db8:1:0:0:ab9:c0a8:102", StringTools.ipOctetsToString(v6octets6));
+
+        final byte[] ipV6Invalid1 = "blabla".getBytes();
+        final byte[] ipV6Invalid2 = {(byte) 97,(byte) 98, 97, 98, 98};
+        assertNull("Invalid IPv6 address should return null", StringTools.ipOctetsToString(ipV6Invalid1));
+        assertNull("Invalid IPv6 address should return null", StringTools.ipOctetsToString(ipV6Invalid2));
+
         log.trace("<testIpOctetsToString");
     }
     
