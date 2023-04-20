@@ -26,10 +26,11 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -57,7 +58,7 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
     private String importPassword;
     private String importSigAlias;
     private String importEncAlias;
-    private UploadedFile uploadedFile;
+    private Part uploadedFile;
 
     public ImportCaMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
@@ -79,11 +80,11 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
         this.importCaName = importCaName;
     }
 
-    public UploadedFile getUploadedFile() {
+    public Part getUploadedFile() {
         return uploadedFile;
     }
 
-    public void setUploadedFile(final UploadedFile uploadedFile) {
+    public void setUploadedFile(final Part uploadedFile) {
         this.uploadedFile = uploadedFile;
     }
     
@@ -111,9 +112,9 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
         this.importEncAlias = importEncAlias;
     }    
     
-    public String importCaCertificate() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
+    public String importCaCertificate() {      
         try {
+            final byte[] fileBuffer =  IOUtils.toByteArray(uploadedFile.getInputStream(), uploadedFile.getSize());
             detectAliases(fileBuffer);
             caAdminSession.importCAFromKeyStore(getAdmin(), importCaName, fileBuffer, importPassword, importPassword, importSigAlias, importEncAlias);
             return EditCaUtil.MANAGE_CA_NAV;

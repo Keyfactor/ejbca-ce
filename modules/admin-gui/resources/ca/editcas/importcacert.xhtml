@@ -4,7 +4,6 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:t="http://myfaces.apache.org/tomahawk"
     xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 <ui:remove>
 	<!--
@@ -182,7 +181,7 @@
 							style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup>
-						<t:inputFileUpload 
+						<h:inputFile 
 							id="filerecievefile" value="#{importCaCertMBean.uploadedFile}" required="true" 
 							label="File containing full CA certificate chain in PEM format"/>
 					</h:panelGroup>

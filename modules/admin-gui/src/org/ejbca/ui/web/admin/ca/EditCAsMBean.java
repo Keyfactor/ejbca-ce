@@ -54,11 +54,12 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -215,9 +216,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String caCryptoTokenKeyEncryptKey;
     private String caCryptoTokenTestKey;
 
-    private UploadedFile fileRecieveFileMakeRequest;
-    private UploadedFile fileRecieveFileRecieveRequest;
-    private UploadedFile fileRecieveFileImportRenewal;
+    private Part fileRecieveFileMakeRequest;
+    private Part fileRecieveFileRecieveRequest;
+    private Part fileRecieveFileImportRenewal;
     private boolean uploadAsAlternateChain;
     private List<String> alternateChainRoots;
     private Map<String, Boolean> removeAlternateCertChain;
@@ -303,11 +304,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return caCertificateHash;
     }
 
-    public UploadedFile getFileRecieveFileImportRenewal() {
+    public Part getFileRecieveFileImportRenewal() {
         return fileRecieveFileImportRenewal;
     }
 
-    public void setFileRecieveFileImportRenewal(final UploadedFile fileRecieveFileImportRenewal) {
+    public void setFileRecieveFileImportRenewal(final Part fileRecieveFileImportRenewal) {
         this.fileRecieveFileImportRenewal = fileRecieveFileImportRenewal;
     }
 
@@ -319,11 +320,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.caInfoDto = caInfoDto;
     }
 
-    public UploadedFile getFileRecieveFileMakeRequest() {
+    public Part getFileRecieveFileMakeRequest() {
         return fileRecieveFileMakeRequest;
     }
 
-    public void setFileRecieveFileMakeRequest(final UploadedFile fileRecieveFileMakeRequest) {
+    public void setFileRecieveFileMakeRequest(final Part fileRecieveFileMakeRequest) {
         this.fileRecieveFileMakeRequest = fileRecieveFileMakeRequest;
     }
 
@@ -1380,11 +1381,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return false;
     }
 
-    public UploadedFile getFileRecieveFileRecieveRequest() {
+    public Part getFileRecieveFileRecieveRequest() {
         return fileRecieveFileRecieveRequest;
     }
 
-    public void setFileRecieveFileRecieveRequest(final UploadedFile fileRecieveFileRecieveRequest) {
+    public void setFileRecieveFileRecieveRequest(final Part fileRecieveFileRecieveRequest) {
         this.fileRecieveFileRecieveRequest = fileRecieveFileRecieveRequest;
     }
 
@@ -1498,27 +1499,28 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         boolean illegalDnOrAltName;
 
         byte[] fileBuffer = null;
-        if (makeRequest) {
-            if(isCaTypeCits()) {
-                // only applicable to externally signed ca
-                try {
-                    validateCitsFields();
-                    caInfoDto.setCaSubjectDN(CAInfo.CITS_SUBJECTDN_PREFIX + caInfoDto.getCertificateId());
-                    ItsGeographicElement geoElement = 
-                            EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
-                    if(geoElement!=null) {
-                        log.info("Region: '" + geoElement.toStringFormat() + "'");
-                        caInfoDto.setRegion(geoElement.toStringFormat());
+        try {
+            if (makeRequest) {
+                if (isCaTypeCits()) {
+                    // only applicable to externally signed ca
+                    try {
+                        validateCitsFields();
+                        caInfoDto.setCaSubjectDN(CAInfo.CITS_SUBJECTDN_PREFIX + caInfoDto.getCertificateId());
+                        ItsGeographicElement geoElement = EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
+                        if (geoElement != null) {
+                            log.info("Region: '" + geoElement.toStringFormat() + "'");
+                            caInfoDto.setRegion(geoElement.toStringFormat());
+                        }
+                    } catch (final Exception e) {
+                        addNonTranslatedErrorMessage(e);
+                        return "";
                     }
-                } catch (final Exception e) {
-                    addNonTranslatedErrorMessage(e);
-                    return "";
+                }
+                if (fileRecieveFileMakeRequest != null) {
+                    fileBuffer = IOUtils.toByteArray(fileRecieveFileMakeRequest.getInputStream(), fileRecieveFileMakeRequest.getSize());
                 }
             }
-            fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
-        }
-        
-        try {
+
             illegalDnOrAltName = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
             if (illegalDnOrAltName) {
                 addErrorMessage("INVALIDSUBJECTDN");
@@ -1767,9 +1769,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * Receives a request (in editcas page) and navigates to managecas.xhtml page
      * @return Navigation
      */
-    public String receiveResponse() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileRecieveRequest);
+    public String receiveResponse() {       
         try {
+            final byte[] fileBuffer = IOUtils.toByteArray(fileRecieveFileRecieveRequest.getInputStream(), fileRecieveFileRecieveRequest.getSize());
             if(isCaTypeCits()) {
                 if(!fileRecieveFileRecieveRequest.getName().endsWith(".oer")) {
                     throw new EjbcaException("CITS certificate needs to be OER encoded.");
@@ -1844,15 +1846,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return Navigation
      */
     public String importCACertUpdate() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileImportRenewal);
-
-        if (fileBuffer==null) {
-           addNonTranslatedErrorMessage("No file selected or upload failed");
-           return "";
-        }
-
         try {
-            if(isCaTypeCits()) {
+            final byte[] fileBuffer = IOUtils.toByteArray(fileRecieveFileImportRenewal.getInputStream(), fileRecieveFileImportRenewal.getSize());
+
+            if (fileBuffer == null) {
+                addNonTranslatedErrorMessage("No file selected or upload failed");
+                return "";
+            }
+
+            if (isCaTypeCits()) {
                 addNonTranslatedErrorMessage("CITS CA updating imported certificate is not supported yet.");
                 return EditCaUtil.MANAGE_CA_NAV;
             }
@@ -1954,10 +1956,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (caInfo==null) {
             return "";
         }
-        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
+       
 
         byte[] certreq = null;
         try {
+            final byte[] fileBuffer = IOUtils.toByteArray(fileRecieveFileMakeRequest.getInputStream(), fileRecieveFileMakeRequest.getSize()); 
             if (isCaTypeCits()) {
                 if(getCitsHexCertificateHash().equals(CERTIFICATE_UNAVAILABLE)) {
                     // same as initial CSR
@@ -1971,7 +1974,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             } else {
                 certreq = caAdminSession.makeRequest(administrator, caid, fileBuffer, this.certExtrSignKeyReNewValue);
             }
-        } catch (CADoesntExistsException | CryptoTokenOfflineException | AuthorizationDeniedException e) {
+        } catch (CADoesntExistsException | CryptoTokenOfflineException | AuthorizationDeniedException | IOException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
