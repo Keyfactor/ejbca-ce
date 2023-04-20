@@ -28,10 +28,11 @@ import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -78,12 +79,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     // MSAE Kerberos Settings
     private String msaeForestRoot;
     private String msaeDomain;
-    private UploadedFile keyTabFile;
+    private Part keyTabFile;
     private String keyTabFilename;
     private byte[] keyTabFileBytes;
     
     // MSAE Krb5Conf Settings
-    private UploadedFile krb5ConfFile;
+    private Part krb5ConfFile;
     private String krb5ConfFilename;
     private byte[] krb5ConfFileBytes;    
 
@@ -198,11 +199,11 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.servicePrincipalName = servicePrincipalName;
     }
 
-    public UploadedFile getKeyTabFile() {
+    public Part getKeyTabFile() {
         return keyTabFile;
     }
 
-    public void setKeyTabFile(UploadedFile keyTabFile) {
+    public void setKeyTabFile(Part keyTabFile) {
         this.keyTabFile = keyTabFile;
     }
 
@@ -226,11 +227,11 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         return (keyTabFilename != null && keyTabFileBytes != null);
     }
     
-    public UploadedFile getKrb5ConfFile() {
+    public Part getKrb5ConfFile() {
         return krb5ConfFile;
     }
 
-    public void setKrb5ConfFile(UploadedFile krb5ConfFile) {
+    public void setKrb5ConfFile(Part krb5ConfFile) {
         this.krb5ConfFile = krb5ConfFile;
     }
 
@@ -583,8 +584,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 return;
             }
 
+            final byte[] fileBytes =  IOUtils.toByteArray(keyTabFile.getInputStream(), keyTabFile.getSize());      
             setKeyTabFilename(keyTabFile.getName());
-            setKeyTabFileBytes(keyTabFile.getBytes());
+            setKeyTabFileBytes(fileBytes);
 
             saveKeyTabFile();
         } else {
@@ -605,9 +607,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 addErrorMessage("MSAE_KRB5_CONF_ERROR_WRONG_CONTENT");
                 return;
             }
-            
+            final byte[] fileBytes =  IOUtils.toByteArray(krb5ConfFile.getInputStream(), krb5ConfFile.getSize());      
             setKrb5ConfFilename(krb5ConfFile.getName());
-            setKrb5ConfFileContent(krb5ConfFile.getBytes());
+            setKrb5ConfFileContent(fileBytes);
 
             saveKrb5ConfFile();
         } else {
