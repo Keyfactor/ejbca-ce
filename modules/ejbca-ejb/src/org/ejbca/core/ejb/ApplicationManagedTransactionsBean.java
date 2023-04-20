@@ -18,6 +18,7 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceUnit;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -59,22 +60,26 @@ public class ApplicationManagedTransactionsBean {
     public void changeUserIfNoConflict(final UserData newUserData, final boolean isNew) {
         final EntityManager em = entityManagerFactory.createEntityManager();
         try {
-            try {
-                userTransaction.begin();
-                if (isNew) {
-                    em.persist(newUserData);
-                } else {
-                    em.merge(newUserData);
-                }
-                userTransaction.commit();
-            } catch (RollbackException | HeuristicRollbackException | HeuristicMixedException e) {
-                if (log.isTraceEnabled()) {
-                    log.trace("Caught rollback exception: " + e.getMessage(), e);
-                }
-                log.info("User '" + newUserData.getUsername() + "' was updated in concurrent transaction, and will not be updated. The " + ClassUtils.getShortClassName(e.getClass()) + " was ignored.");
-            } catch (SecurityException | SystemException | NotSupportedException e) {
-                throw new IllegalStateException(e);
+            userTransaction.begin();
+            if (isNew) {
+                em.persist(newUserData);
+            } else {
+                em.merge(newUserData);
             }
+            userTransaction.commit();
+        } catch (RollbackException | HeuristicRollbackException | HeuristicMixedException | OptimisticLockException e) {
+            if (log.isTraceEnabled()) {
+                log.trace("Caught rollback exception: " + e.getMessage(), e);
+            }
+            log.info("User '" + newUserData.getUsername() + "' was updated in concurrent transaction, and will not be updated. The " + ClassUtils.getShortClassName(e.getClass()) + " was ignored.");
+            try {
+                userTransaction.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException rollbackException) {
+                log.warn("An exception happened during transaction rollback: " + rollbackException.getClass() + ": " + rollbackException.getMessage());
+                log.debug("Rollback exception stacktrace: ", rollbackException);
+            }
+        } catch (SecurityException | SystemException | NotSupportedException e) {
+            throw new IllegalStateException(e);
         } finally {
             em.close();
         }
