@@ -21,7 +21,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class CrlRestResponse {
 
-    @ApiModelProperty(value = "Certificate Revokation List (CRL)", example = "MIIEV...SqQPE")
+    @ApiModelProperty(value = "Certificate Revocation List (CRL)", example = "MIIEV...SqQPE")
     private byte[] crl;
     @ApiModelProperty(value = "Response format", example = "DER")
     private String responseFormat;
