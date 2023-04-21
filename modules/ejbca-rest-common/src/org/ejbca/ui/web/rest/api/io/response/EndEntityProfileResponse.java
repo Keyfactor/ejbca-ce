@@ -24,13 +24,13 @@ public class EndEntityProfileResponse {
 
     @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    @ApiModelProperty(value = "List of available Certificate Authorities (CAs)", position = 2, example = "[ “ExampleCA“ ]")
+    @ApiModelProperty(value = "List of available Certificate Authorities (CAs)", example = "[\"ExampleCA\"]")
     private List<String> availableCAs;
-    @ApiModelProperty(value = "List of available Certificate Profiles",position = 1, example = "[ “ENDUSER“ ]")
+    @ApiModelProperty(value = "List of available Certificate Profiles", example = "[\"ENDUSER\"]")
     private List<String> availableCertificateProfiles;
-    @ApiModelProperty(value = "List of Subject DN Attributes", example = "[ “CN“ ]")
+    @ApiModelProperty(value = "List of Subject DN Attributes", example = "[\"CN\"]")
     private List<String> subjectDistinguishedNameFields;
-    @ApiModelProperty(value = "List of Subject Alternative Name fields", example = "[ “RFC822NAME“ ]")
+    @ApiModelProperty(value = "List of Subject Alternative Name fields", example = "[\"RFC822NAME\"]")
     private List<String> subjectAlternativeNameFields;
 
     public EndEntityProfileResponse() {

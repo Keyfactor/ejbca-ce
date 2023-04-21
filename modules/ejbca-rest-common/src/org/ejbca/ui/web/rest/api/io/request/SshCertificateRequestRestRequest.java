@@ -44,7 +44,7 @@ public class SshCertificateRequestRestRequest {
     private String comment;
     @ApiModelProperty(value = "Public Key", example = "ssh-rsa AAA...EWj")
     private String publicKey;
-    @ApiModelProperty(value = "Valid principals", example = "[“Wishman“, “Bradman“]")
+    @ApiModelProperty(value = "Valid principals", example = "[\"Wishman\", \"Bradman\"]")
     private List<String> principals;
     @ApiModelProperty(value = "Critical options")
     private SshCriticalOptions criticalOptions;
