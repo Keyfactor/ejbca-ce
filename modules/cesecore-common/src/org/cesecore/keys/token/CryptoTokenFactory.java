@@ -34,6 +34,7 @@ import org.cesecore.internal.InternalResources;
  */
 public class CryptoTokenFactory {
 	
+
     private static transient Logger log = Logger.getLogger(CryptoTokenFactory.class);
     
     // Used for references where EE version may not be available
@@ -43,6 +44,9 @@ public class CryptoTokenFactory {
     public static final String PRIME_CA_TOKEN_NAME = "se.primeKey.caToken.card.PrimeCAToken";
     public static final String AWSKMS_SIMPLE_NAME = "AWSKMSCryptoToken";
     public static final String AWSKMS_NAME = "org.ejbca.keys.token.AWSKMSCryptoToken";
+    public static final String FORTANIX_NAME = "org.ejbca.keys.token.FortanixCryptoToken";
+    public static final String FORTANIX_SIMPLE_NAME = "FortanixCryptoToken";
+
 
     /** Registry of available hard ca token classes that can be instantiated. */
     private Map<String, AvailableCryptoToken> availabletokens = new HashMap<>(4);
@@ -63,6 +67,8 @@ public class CryptoTokenFactory {
             instance.addAvailableCryptoToken(SoftCryptoToken.class.getName(), "SOFT", true, true);
             instance.addAvailableCryptoToken(NullCryptoToken.class.getName(), "Null", false, false);
             instance.addAvailableCryptoToken(AzureCryptoToken.class.getName(), "Azure Key Vault", false, true);
+            // Enterprise only. May not be available don't reference class.
+            instance.addAvailableCryptoToken(FORTANIX_NAME, "Fortanix DSM", false, true);
             // Enterprise only. May not be available don't reference class.
             instance.addAvailableCryptoToken(AWSKMS_NAME, "AWS KMS", false, true);
             // Enterprise only. May not be available don't reference class.
