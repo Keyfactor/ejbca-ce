@@ -7,6 +7,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -33,10 +34,13 @@ public class RaCsrTools {
         if (certRequest == null) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile
+        //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
         try {
             final String keySpecification = AlgorithmTools.getKeySpecification(certRequest.getRequestPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certRequest.getRequestPublicKey());
+            if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", getKeyAlgorithmMessageString(keyAlgorithm, keySpecification))));
+            }
             // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
             if (certificateProfile != null) {
                 if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
@@ -60,6 +64,10 @@ public class RaCsrTools {
         } catch (NoSuchProviderException e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+    
+    private static String getKeyAlgorithmMessageString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + "_" + spec;
     }
 
     public static void validetaNumberOfFieldsInSubjectDn(final KeyToValueHolder<EndEntityProfile> endEntityProfileKeyValue, String certificateRequest,
