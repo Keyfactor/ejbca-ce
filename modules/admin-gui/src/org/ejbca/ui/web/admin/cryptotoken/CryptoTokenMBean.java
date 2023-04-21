@@ -235,6 +235,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isAzureType() {
             return AzureCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType());
         }
+
+        public boolean isFortanixType() {
+            return CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
+        }
+
         public boolean isAWSKMSType() {
             return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
         }
@@ -273,6 +278,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String keyVaultName = "ejbca-keyvault";
         private String keyVaultClientID = "";
         private String keyVaultKeyBinding = "";
+        private String fortanixBaseAddress =  "https://apps.smartkey.io"; // default value
         private String awsKMSRegion = "us-east-1"; // default value
         private String awsKMSAccessKeyID = ""; // default value
         private AzureAuthenticationType azureAuthenticationType = AzureAuthenticationType.APP_ID_AND_SECRET;
@@ -465,6 +471,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return keyVaultClientID;
         }
 
+        public String getFortanixBaseAddress() {
+            return fortanixBaseAddress;
+        }
         public boolean isShowSoftCryptoToken() {
             return SoftCryptoToken.class.getSimpleName().equals(getType());
         }
@@ -484,6 +493,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public boolean isShowAWSKMSCryptoToken() {
             return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getType());
+        }
+
+        public boolean isShowFortanixCryptoToken() {
+            return CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getType());
         }
 
         public boolean isSlotOfTokenLabelType() {
@@ -535,6 +548,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         
         public boolean getShowClientId() {
             return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType != AzureAuthenticationType.MANAGED_IDENTITY;
+        }
+
+        public void setFortanixBaseAddress(String fortanixBaseAddress) {
+            this.fortanixBaseAddress = fortanixBaseAddress;
         }
     }
 
@@ -1119,6 +1136,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 String keyid = getCurrentCryptoToken().getAWSKMSAccessKeyID().trim();
                 properties.setProperty(CryptoTokenConstants.AWSKMS_REGION, region);
                 properties.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, keyid);
+            } else if (CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
+                className = CryptoTokenFactory.FORTANIX_NAME;
+                final String fortanixBaseAddress = getCurrentCryptoToken().getFortanixBaseAddress().trim();
+                properties.setProperty(CryptoTokenConstants.FORTANIX_BASE_ADDRESS, fortanixBaseAddress);
             }
             if (getCurrentCryptoToken().isAllowExportPrivateKey()) {
                 properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, String.valueOf(getCurrentCryptoToken().isAllowExportPrivateKey()));
@@ -1423,6 +1444,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME)) {
                     currentCryptoToken.setAWSKMSRegion(cryptoTokenInfo.getAWSKMSRegion());
                     currentCryptoToken.setAWSKMSAccessKeyID(cryptoTokenInfo.getAWSKMSAccessKeyID());
+                }
+                if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.FORTANIX_SIMPLE_NAME)) {
+                    currentCryptoToken.setFortanixBaseAddress(cryptoTokenInfo.getFortanixBaseAddress());
                 }
                 currentCryptoToken.setActive(cryptoTokenInfo.isActive());
                 currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(cryptoTokenId));
