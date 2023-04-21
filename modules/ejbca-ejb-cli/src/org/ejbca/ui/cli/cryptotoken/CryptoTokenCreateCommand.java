@@ -71,6 +71,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String AZUREVAULT_KEY_BINDING = "--azurevaultkeybinding";
     private static final String AZUREVAULT_NAME= "--azurevaultname";
     private static final String AZUREVAULT_CLIENTID= "--azurevaultclientid";
+    private static final String FORTANIX_BASE_ADDRESS = "--fortanixaddr";
+
 
     {
         registerParameter(new Parameter(CRYPTOTOKEN_NAME_KEY, "Token Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -110,6 +112,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(AzureCryptoToken) Whether or not to use an Internal Key Binding when authenticating to Azure."));
         registerParameter(new Parameter(AZUREVAULT_KEY_BINDING, "Key Binding", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(AzureCryptoToken) Internal Key Binding to use when authenticating to Azure."));
+        registerParameter(new Parameter(FORTANIX_BASE_ADDRESS, "Base Fortanix Address", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(Fortanix) Base address of Fortanix DSM API."));
 
         // ePassport CSCA only
         registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -138,6 +142,11 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             final Class<?> awsKmsClass = Class.forName(CryptoTokenFactory.AWSKMS_NAME);
             sb.append(", ");
             sb.append(awsKmsClass.getSimpleName());
+        } catch (ClassNotFoundException e) { /* Ignored */ }
+        try {
+            final Class<?> fortanixClass = Class.forName(CryptoTokenFactory.FORTANIX_NAME);
+            sb.append(", ");
+            sb.append(fortanixClass.getSimpleName());
         } catch (ClassNotFoundException e) { /* Ignored */ }
         return sb.toString();
     }
@@ -171,6 +180,12 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             }
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_REGION, parameters.get(AWSKMS_REGION));
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, parameters.get(AWSKMS_ACCESSKEYID));
+        } else if (CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(type)) {
+            className = CryptoTokenFactory.FORTANIX_NAME;
+            String baseAddress = parameters.get(FORTANIX_BASE_ADDRESS);
+            if (baseAddress == null)
+                baseAddress = CryptoTokenConstants.FORTANIX_BASE_ADDRESS_DEFAULT;
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.FORTANIX_BASE_ADDRESS, baseAddress);
         } else if (AzureCryptoToken.class.getSimpleName().equals(type)) {
             className = AzureCryptoToken.class.getName();
             // For an Azure token all three parameters are needed
