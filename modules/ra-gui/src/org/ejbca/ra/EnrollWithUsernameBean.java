@@ -44,8 +44,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.EnrollMakeNewRequestBean.KeyPairGeneration;
 
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-
 /**
  * Managed bean that backs up the enrollwithusername.xhtml page. Extends EnrollWithRequestIdBean to make use of common code
  */
