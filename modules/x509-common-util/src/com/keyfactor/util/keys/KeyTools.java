@@ -666,7 +666,7 @@ public final class KeyTools {
             throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         try {
             KeyStore store = CryptoProviderConfigurationCache.INSTANCE.isUseLegacyPkcs12Keystore()
-                    ? KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME)
+                    ? KeyStore.getInstance("PKCS12", CryptoProviderTools.getProviderNameFromAlg(privateKey.getAlgorithm()))
                     : KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
             store.load(null, null);
             return createP12(alias, privateKey, certificate, caCertificateChain, store);
@@ -692,7 +692,7 @@ public final class KeyTools {
     public static KeyStore createBcfks(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
             throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         try {
-            KeyStore store = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
+            KeyStore store = KeyStore.getInstance("BCFKS", CryptoProviderTools.getProviderNameFromAlg(privateKey.getAlgorithm()));
             store.load(null, null);
             return createP12(alias, privateKey, certificate, caCertificateChain, store);
         } catch (IOException | KeyStoreException | NoSuchProviderException e) {
@@ -769,7 +769,8 @@ public final class KeyTools {
             // EdDSA (Ed25519 or Ed448) keys have a v1 format, with only the private key, and a v2 format that includes both the private and public
             final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privateKey.getEncoded());
             final PrivateKeyInfo v1PkInfo = new PrivateKeyInfo(pkInfo.getPrivateKeyAlgorithm(), pkInfo.parsePrivateKey());
-            final KeyFactory keyfact = KeyFactory.getInstance(privateKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
+            final KeyFactory keyfact = KeyFactory.getInstance(privateKey.getAlgorithm(), 
+                    CryptoProviderTools.getProviderNameFromAlg(privateKey.getAlgorithm()));
             final PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(v1PkInfo.getEncoded()));
             // The PKCS#12 bag attributes PKCSObjectIdentifiers.pkcs_9_at_friendlyName and PKCSObjectIdentifiers.pkcs_9_at_localKeyId
             // are set automatically by BC when setting the key entry
@@ -1144,7 +1145,7 @@ public final class KeyTools {
                     keyASN1Sequence = (ASN1Sequence) keyObject;
                 } else {
                     // PublicKey key that doesn't encode to a ASN1Sequence. Fix this by creating a BC object instead.
-                    final PublicKey altKey = (PublicKey) KeyFactory.getInstance(pubKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME).translateKey(pubKey);
+                    final PublicKey altKey = (PublicKey) KeyFactory.getInstance(pubKey.getAlgorithm(), CryptoProviderTools.getProviderNameFromAlg(pubKey.getAlgorithm())).translateKey(pubKey);
                     try ( final ASN1InputStream altKeyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(altKey.getEncoded())) ) {
                         keyASN1Sequence = (ASN1Sequence) altKeyAsn1InputStream.readObject();
                     }
@@ -1172,7 +1173,7 @@ public final class KeyTools {
      */
     public static byte[] signData(final PrivateKey privateKey, final String signatureAlgorithm, final byte[] data) throws SignatureException,
             NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
-        final Signature signer = Signature.getInstance(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
+        final Signature signer = Signature.getInstance(signatureAlgorithm, CryptoProviderTools.getProviderNameFromAlg(privateKey.getAlgorithm()));
         signer.initSign(privateKey);
         signer.update(data);
         return (signer.sign());
@@ -1193,7 +1194,7 @@ public final class KeyTools {
      */
     public static boolean verifyData(final PublicKey publicKey, final String signatureAlgorithm, final byte[] data, final byte[] signature)
             throws SignatureException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
-        final Signature signer = Signature.getInstance(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
+        final Signature signer = Signature.getInstance(signatureAlgorithm, CryptoProviderTools.getProviderNameFromAlg(publicKey.getAlgorithm()));
         signer.initVerify(publicKey);
         signer.update(data);
         return (signer.verify(signature));
