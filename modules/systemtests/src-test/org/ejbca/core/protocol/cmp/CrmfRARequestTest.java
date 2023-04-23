@@ -276,8 +276,8 @@ public class CrmfRARequestTest extends CmpTestCase {
         final String serial2 = "cmptest2serial";
         final String surName1 = "cmptest1surname";
         final String surName2 = "cmptest2surname";
-        final X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=" + userName1+",SN="+serial1+",SURNAME="+surName1+",VID=FFF1");
-        final X500Name userDN2 = new X500Name("C=SE,O=PrimeKey,CN=" + userName2+",SN="+serial2+",SURNAME="+surName2+",PID=8000");
+        final X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=" + userName1+",SN="+serial1+",SURNAME="+surName1+",VID=FFF1,uniqueIdentifier=060329012d");
+        final X500Name userDN2 = new X500Name("C=SE,O=PrimeKey,CN=" + userName2+",SN="+serial2+",SURNAME="+surName2+",PID=8000,CertificationID=BSI-K-TR-1234-2023");
         X509Certificate cert1 = null;
         X509Certificate cert2 = null;
         Certificate user1Cert = null;
@@ -301,15 +301,23 @@ public class CrmfRARequestTest extends CmpTestCase {
             assertTrue("A user with "+userName1+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName1));
             String dn = cert1.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
-            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,1.3.6.1.4.1.37244.2.1=FFF1", dn);
-            assertEquals("Not the expected DN in issued cert", "VID=FFF1,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert1));
+            // The "plain" string representation here is BC X500Name.toString, in which case DERBitString is an implementation of ASN1String, with the 
+            // ASn1ObjectIdentifier encoded as 060329012d becomes the BitString #030600060329012D and is then printed as \#030600060329012D. 
+            // This is a bit strange, but perhaps a testament to why it's not a good idea to jam arbitrary binary blobs into subjectDN
+            // it becomes very implementation specific
+            // While CertificationID below is a sequence, which is not an implementation of ASN1String, so it is without the backslash
+            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,1.3.6.1.4.1.37244.2.1=FFF1,UniqueIdentifier=\\#030600060329012D", dn);
+            // getSubjectX500Principal returns another form though...
+            String principalDn = cert1.getSubjectX500Principal().getName();            
+            assertEquals("Not the expected Principal DN in issued cert", "2.5.4.45=#030600060329012d,1.3.6.1.4.1.37244.2.1=#0c0446464631,2.5.4.4=#0c0f636d7074657374317375726e616d65,2.5.4.5=#130e636d70746573743173657269616c,CN=cmptest1,O=PrimeKey,C=SE", principalDn);            
+            assertEquals("Not the expected DN in issued cert", "UniqueIdentifier=060329012d,VID=FFF1,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert1));
             cert2 = crmfHttpUserTest(userDN2, key2, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert2);
             assertTrue("A user with "+userName2+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName2));
             dn = cert2.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
-            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,1.3.6.1.4.1.37244.2.2=8000", dn);
-            assertEquals("Not the expected DN in issued cert", "PID=8000,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert2));
+            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,1.3.6.1.4.1.37244.2.2=8000,0.4.0.127.0.7.3.10.1.2=#301702010113124253492d4b2d54522d313233342d32303233", dn);
+            assertEquals("Not the expected DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,PID=8000,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert2));
             // check that the request fails when asking for certificate for another user with same key.
             crmfHttpUserTest(
                     userDN2,

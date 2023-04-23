@@ -102,7 +102,8 @@ public class SetSubjectDNCommand extends BaseRaCommand {
                 + "unstructuredName=<domain name>, postalCode=<string>, businessCategory=<organization type>, "
                 + "dnQualifier=<string>, postalAddress=<the postal address>, telephoneNumber=<telephone number>, "
                 + "pseudonym=<string>, streetAddress=<string>, name=<string>, role=<string>, CIF=<tax ID code for companies in Spain>, "
-                + "NIF=<tax ID number for companied in Spain>, VID=<Matter IoT VID>, PID=<Matter IoT PID>";
+                + "NIF=<tax ID number for companied in Spain>, VID=<Matter IoT VID>, PID=<Matter IoT PID>, "
+                + "uniqueIdentifier=<hex encoded object>, CertificationID=<in form BSI-K-TR-'four digit number'-'year as four digit'>";
     }
 
     protected Logger getLogger() {
