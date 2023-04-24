@@ -1292,7 +1292,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
      * @param keySpec that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
      * @param keyAlg that the generated key should have, RSA, ECDSA. Use one of the constants in
-     * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
+     * {@link com.keyfactor.util.crypto.algorithm.AlgorithmConstant}.KEYALGORITHM_...
      * @return the generated keystore
      * @throws CADoesntExistsException if a referenced CA does not exist
      * @throws AuthorizationDeniedException if client isn't authorized to request
@@ -2673,7 +2673,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
      * @param keySpec that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
      * @param keyAlg that the generated key should have, RSA, ECDSA. Use one of the constants in
-     * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
+     * {@link com.keyfactor.util.crypto.algorithm.AlgorithmConstant}.KEYALGORITHM_...
      * @return the generated token data
      * @throws CADoesntExistsException if a referenced CA does not exist
      * @throws AuthorizationDeniedException if client isn't authorized to request
