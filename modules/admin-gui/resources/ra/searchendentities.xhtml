@@ -3,8 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
-	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
-	xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -27,101 +27,264 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
 	<ui:param name="resourceBean" value="#{searchEndEntitiesMBean}" />
 	<ui:define name="content">
-
+		<p:inputText rendered="false" />
 		<h1>
 			<h:outputText value="#{web.text.SEARCHENDENTITIES}" />
 		</h1>
 
-		<div class="tabLinks">
-		<!-- Note: remove this once we've added primefaces -->
-			<c:forEach items="#{searchEndEntitiesMBean.availableTabs}" var="tab">
-				<span> <h:outputLink
-						value="searchendentities.xhtml?tab=#{tab}"
-						styleClass="tabLink#{tab eq searchendentities.selectedTab}">
-						<h:outputText value="#{tab}" />
-					</h:outputLink>
-				</span>
-			</c:forEach>
-		</div>
-		
+		<p:tabView>
+			<p:tab title="Basic">
+				<h:form id="basic">
+					<h:panelGrid columns="3" columnClasses="unpadded,unpadded,unpadded">
+						<!--  Search by username -->
+						<h:outputText value="#{web.text.FINDENDENTITYWITHUSERNAME}" />
+						<h:inputText value="#{searchEndEntitiesMBean.searchByName}"
+							immediate="true" />
+						<h:commandButton id="findWithUserNameButton"
+							value="#{web.text.SEARCH}"
+							action="#{searchEndEntitiesMBean.performSearchByName()}">
+							<f:ajax execute="@form" event="click" render=":results" />
+						</h:commandButton>
+						<!-- Search by SN -->
+						<h:outputText value="#{web.text.ORIFCERTIFICATSERIAL}" />
+						<h:inputText
+							value="#{searchEndEntitiesMBean.searchBySerialNumber}"
+							immediate="true" />
+						<h:commandButton id="findWithSerialNumberButton"
+							value="#{web.text.SEARCH}"
+							action="#{searchEndEntitiesMBean.performSearchBySerialNumber()}">
+							<f:ajax execute="@form" event="click" render=":results" />
+						</h:commandButton>
+						<!-- Search by status -->
+						<h:outputText value="#{web.text.ORWITHSTATUS}" />
+						<h:selectOneMenu
+							value="#{searchEndEntitiesMBean.searchByStatusCode}"
+							immediate="true">
+							<f:selectItems
+								value="#{searchEndEntitiesMBean.availableStatuses}" />
+						</h:selectOneMenu>
+						<h:commandButton id="findByStatusButton"
+							value="#{web.text.SEARCH}"
+							action="#{searchEndEntitiesMBean.performSearchByStatus()}">
+							<f:ajax execute="@form" event="click" render=":results" />
+						</h:commandButton>
+						<!-- Search by expiry date  -->
+						<h:outputText value="#{web.text.ORLISTEXPIRING}" />
+						<h:panelGroup>
+							<h:inputText value="#{searchEndEntitiesMBean.searchByExpiryDays}"
+								immediate="true" size="5" />
+							<h:outputText value="#{web.text.DAYS}" />
+						</h:panelGroup>
+						<h:commandButton id="findByExpiryButton"
+							value="#{web.text.SEARCH}"
+							action="#{searchEndEntitiesMBean.performSearchByExpiry()}">
+							<f:ajax execute="@form" event="click" render=":results" />
+						</h:commandButton>
 
-	<h:form id="basic" rendered="#{searchEndEntitiesMBean.selectedTab eq 'Basic'}">
-			<h:panelGrid columns="3" columnClasses="unpadded,unpadded,unpadded">
-				<!--  Search by username -->
-				<h:outputText value="#{web.text.FINDENDENTITYWITHUSERNAME}" />
-				<h:inputText
-					value="#{searchEndEntitiesMBean.searchByName}" immediate="true" />
-				<h:commandButton id="findWithUserNameButton"
-					value="#{web.text.SEARCH}"
-					action="#{searchEndEntitiesMBean.performSearchByName()}">
-					<f:ajax execute="@form" event="click" render=":results" />
-				</h:commandButton>
-				<!-- Search by SN -->
-				<h:outputText value="#{web.text.ORIFCERTIFICATSERIAL}" />
-				<h:inputText
-					value="#{searchEndEntitiesMBean.searchBySerialNumber}" immediate="true" />
-				<h:commandButton id="findWithSerialNumberButton"
-					value="#{web.text.SEARCH}"
-					action="#{searchEndEntitiesMBean.performSearchBySerialNumber()}">
-					<f:ajax execute="@form" event="click" render=":results" />
-				</h:commandButton>
-				<!-- Search by status -->
-				<h:outputText value="#{web.text.ORWITHSTATUS}" />
-				<h:selectOneMenu value="#{searchEndEntitiesMBean.searchByStatusCode}" immediate="true">
-					<f:selectItems value="#{searchEndEntitiesMBean.availableStatuses}" />
-				</h:selectOneMenu>
-				<h:commandButton id="findByStatusButton"
-					value="#{web.text.SEARCH}"
-					action="#{searchEndEntitiesMBean.performSearchByStatus()}">
-					<f:ajax execute="@form" event="click" render=":results" />
-				</h:commandButton>
-				<!-- Search by expiry date  -->
-				<h:outputText value="#{web.text.ORLISTEXPIRING}" />
-				<h:panelGroup>
-					<h:inputText
-						value="#{searchEndEntitiesMBean.searchByExpiryDays}" immediate="true" size="5" />
-					<h:outputText value="#{web.text.DAYS}" />
-				</h:panelGroup>
-				<h:commandButton id="findByExpiryButton"
-					value="#{web.text.SEARCH}"
-					action="#{searchEndEntitiesMBean.performSearchByExpiry()}">
-					<f:ajax execute="@form" event="click" render=":results" />
-				</h:commandButton>
+					</h:panelGrid>
+				</h:form>
+			</p:tab>
+			<p:tab title="Advanced">
+				<h:form id="advanced">
+					<p:dataTable id="queryBuilder" widgetVar="queryBuilder" editable="true"	
+						value="#{searchEndEntitiesMBean.queryLines}" 
+						var="queryLine">	
+						<p:column width="10em">
+							<p:selectOneMenu
+								rendered="#{queryLine.isNotFirst()}"
+								value="#{queryLine.booleanCriteria}"
+								hideNoSelectionOption="#{queryLine.isBooleanCriteriaChosen()}">
+								<f:selectItems
+									value="#{searchEndEntitiesMBean.booleanCriteria}" />
+								<f:ajax  event="change" listener="#{searchEndEntitiesMBean.addQueryLine()}" render="@form"/>
+							</p:selectOneMenu>
+						</p:column>
+						<p:column  width="20em" >
+							<p:selectOneMenu
+								value="#{queryLine.criteria}"
+								hideNoSelectionOption="#{queryLine.isCriteriaChosen()}" 
+								immediate="true"
+								disabled="#{queryLine.isNotInitialized()}">							
+								<p:ajax event="change" execute="@this" update="matchHow matchWithItems" render="matchOptionsGroup"/>
+								<f:selectItems
+									value="#{searchEndEntitiesMBean.searchCriteria}" />							
+							</p:selectOneMenu>				
+						</p:column>
+						<p:column  width="20em" >
+							<h:panelGroup id="matchOptionsGroup">
+								<p:selectOneMenu
+									id="matchHow"
+									value="#{queryLine.matchHow}"
+									disabled="#{queryLine.isNotInitialized()}"
+									immediate="true">
+									<f:selectItems
+										value="#{queryLine.matchOptions}" />
+								</p:selectOneMenu>	
+							</h:panelGroup>	
+						</p:column>
+						<p:column  width="auto" >
+							<h:panelGroup id="matchWithItemsGroup" >
+								<p:selectOneMenu
+									id="matchWithItems"
+									value="#{queryLine.matchWith}"
+									editable="true"
+									disabled="#{queryLine.isNotInitialized()}"
+									immediate="true"
+									alwaysDisplayLabel="true"
+									label="#{queryLine.matchWithLabel}">
+									<f:selectItems
+										value="#{queryLine.matchWithValues}" itemLabel="#{queryLine.matchWithLabel}"/>
+									<p:ajax event="change" execute="@this"/>
+								</p:selectOneMenu>	
+							</h:panelGroup>
+						</p:column>				
+					</p:dataTable>
+					
+					<p:panelGrid columns="3" columnClasses="col-2, col-4, col-4" layout="tabular" contentStyleClass="align-items-baseline ui-fluid" >
+						<h:panelGroup>
+							<p:selectOneMenu value="#{searchEndEntitiesMBean.timeConstraint}" immediate="true">
+								<f:selectItems
+									value="#{searchEndEntitiesMBean.timeConstraintValues}" />
+								<p:ajax event="change" update="after before"/>
+							</p:selectOneMenu>
+						</h:panelGroup>  
+						<h:panelGroup>  
+							<h:outputText value="#{web.text.ONORAFTER}" /> 
+						</h:panelGroup>             		              		     		
+	              		<h:panelGroup>				
+		              		<p:datePicker id="after" value="#{searchEndEntitiesMBean.notAfter}" 
+		              			showTime="true" 
+		              			disabled="#{!(searchEndEntitiesMBean.isTimeConstraintChosen())}"
+		              			hideOnDateTimeSelect="true"
+		              			yearNavigator="true"/>
+	              		</h:panelGroup>    
+              		         		
+	              		<h:panelGroup>
+	              			<h:outputText value=" " />
+	              		</h:panelGroup>    
+	              		<h:panelGroup>  
+							<h:outputText value="#{web.text.ONORBEFORE}" /> 
+						</h:panelGroup>
+	              		<h:panelGroup>    	
+		              		<p:datePicker id="before" value="#{searchEndEntitiesMBean.notBefore}" 
+		              			showTime="true" 
+		              			disabled="#{!(searchEndEntitiesMBean.isTimeConstraintChosen())}"
+		              			hideOnDateTimeSelect="true"
+		              			yearNavigator="true"/>
+	              		</h:panelGroup>
+					</p:panelGrid>           		
+              		<h:commandButton id="findAdvancedButton"
+						value="#{web.text.SEARCH}"
+						action="#{searchEndEntitiesMBean.performAdvancedSearch()}">
+						<f:ajax execute="@form" event="click" render=":results" />
+					</h:commandButton>
+              		
+				</h:form>
+			</p:tab>
+		</p:tabView>
+		<h:form id="results">
+			<p:dataTable id="resultsTable" paginator="true"
+				rendered="#{searchEndEntitiesMBean.searchResults.rowCount!=0}"
+				value="#{searchEndEntitiesMBean.searchResults}" var="searchResult"
+				paginatorPosition="both"
+				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+				rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+				rows="10"
+				selection="#{searchEndEntitiesMBean.selectedResults}"
+				rowKey="#{searchResult.username}"
+				allowUnsorting="true" sortMode="single">
+				<p:column selectionMode="multiple"
+					style="width:16px;text-align:center" />
 
-			</h:panelGrid>
-		</h:form>
-	
-	<h:form id="advanced" rendered="#{earchEndEntitiesMBean.selectedTab eq 'Advanced'}">
-	
-	</h:form>
-	
-	<h:dataTable id="results" rendered="#{searchEndEntitiesMBean.searchResults.rowCount!=0}" value="#{searchEndEntitiesMBean.searchResults}" var="searchResult" columnClasses="col1,col2,col3,unpadded">
-			<h:column>
-				<f:facet name="header"><h:outputText value="#{web.text.USERNAME_ABBR}"/></f:facet>
-				<h:panelGrid columns="1" columnClasses="unpadded" styleClass="fullwidth">
+				<p:column headerText="#{web.text.USERNAME_ABBR}">
 					<h:outputText value="#{searchResult.username}" />
-				</h:panelGrid>
-			</h:column>
-			<h:column>
-				<f:facet name="header"><h:outputText value="#{web.text.CA}"/></f:facet>
-				<h:panelGrid columns="1" columnClasses="unpadded" styleClass="fullwidth">
+				</p:column>
+				<p:column headerText="#{web.text.CA}">
 					<h:outputText value="#{searchResult.caName}" />
-				</h:panelGrid>
-			</h:column>
-			<h:column>
-				<f:facet name="header"><h:outputText value="#{web.text.DN_ABBR_COMMONNAME}"/></f:facet>
-				<h:panelGrid columns="1" columnClasses="unpadded" styleClass="fullwidth">
+				</p:column>
+				<p:column headerText="#{web.text.DN_ABBR_COMMONNAME}">
 					<h:outputText value="#{searchResult.commonName}" />
-				</h:panelGrid>
-			</h:column>
-			<h:column>
-				<f:facet name="header"><h:outputText value="#{web.text.STATUS}"/></f:facet>
-				<h:panelGrid columns="1" columnClasses="unpadded" styleClass="fullwidth">
+				</p:column>
+				<p:column headerText="#{web.text.STATUS}">
 					<h:outputText value="#{searchResult.status}" />
-				</h:panelGrid>
-			</h:column>
-		</h:dataTable>
+				</p:column>
+				<p:column headerText="#{web.text.ACTIONS}">
+					<p:menuButton value="#{web.text.CERTIFICATE}">
+						<p:menuitem value="#{web.text.VIEW}"
+							onclick="window.open('#{searchEndEntitiesMBean.getCertificatePopupLink(searchResult.username)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
+							icon="pi pi-external-link" />
 
+					</p:menuButton>
+
+					<p:menuButton value="#{web.text.ENDENTITY}">
+						<p:menuitem value="#{web.text.VIEW}"
+							onclick="window.open('#{searchEndEntitiesMBean.getViewEndEntityPopupLink(searchResult.username)}', 'view_user','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
+							icon="pi pi-external-link" />
+						<p:menuitem value="#{web.text.EDIT}"
+							onclick="window.open('#{searchEndEntitiesMBean.getEditEndEntityPopupLink(searchResult.username)}', 'edit_user','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
+							icon="pi pi-external-link" />
+
+					</p:menuButton>
+				</p:column>
+			</p:dataTable>
+			<h:panelGrid columns="1">
+				<h:panelGroup rendered="#{searchEndEntitiesMBean.mayRevoke}">
+					<h:outputText value="#{web.text.CRL_ENTRY_REVOCATIONREASON}" />
+					<h:selectOneMenu
+						value="#{searchEndEntitiesMBean.selectedRevocationReason}"
+						immediate="true">
+						<f:selectItems value="#{searchEndEntitiesMBean.revocationReasons}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+
+				<h:panelGroup
+					rendered="#{searchEndEntitiesMBean.mayRevoke or searchEndEntitiesMBean.mayDelete}">
+					<p:commandButton rendered="#{searchEndEntitiesMBean.mayRevoke}"
+						value="#{web.text.REVOKESELECTED}"
+						type="submit"
+						action="#{searchEndEntitiesMBean.revokeSelected()}"
+						styleClass="mr-2" icon="pi pi-times" 
+						process="@all"
+						update="@form">
+ 
+						<p:confirm type="popup" header="Confirmation"
+							message="#{web.text.AREYOUSUREREVOKE}" icon="pi pi-info-circle" />
+					</p:commandButton>
+					<p:commandButton
+						rendered="#{searchEndEntitiesMBean.mayDelete and searchEndEntitiesMBean.mayRevoke}"
+						value="#{web.text.REVOKEANDDELETE}"
+						type="submit"
+						action="#{searchEndEntitiesMBean.revokeAndDeleteSelected()}"
+						styleClass="mr-2" icon="pi pi-times"
+						process="@all"
+						update="@form">
+						<p:confirm type="popup" header="Confirmation"
+							message="#{web.text.AREYOUSUREDELETEREVOKE}"
+							icon="pi pi-info-circle" />
+					</p:commandButton>
+					<p:commandButton rendered="#{searchEndEntitiesMBean.mayDelete}"
+						value="#{web.text.DELETE_SELECTED}"
+						type="submit"
+						action="#{searchEndEntitiesMBean.deleteSelected()}"
+						styleClass="mr-2" icon="pi pi-times"
+						process="@all"
+						update="@form">
+						<p:confirm type="popup" header="Confirmation"
+							message="#{web.text.HAVEYOUREVOKEDTHEENDENTITIES}"
+							icon="pi pi-info-circle" />
+					</p:commandButton>
+					<p:confirmPopup global="true">
+						<p:commandButton value="No" type="button"
+							styleClass="ui-confirm-popup-no ui-button-flat" />
+						<p:commandButton value="Yes" type="button"
+							styleClass="ui-confirm-popup-yes" />
+					</p:confirmPopup>
+
+				</h:panelGroup>
+			</h:panelGrid>
+
+		</h:form>
 
 	</ui:define>
 </ui:composition>
