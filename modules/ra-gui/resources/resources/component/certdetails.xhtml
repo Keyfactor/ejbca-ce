@@ -207,6 +207,12 @@
             <h:outputText id="sshForceCommand" value="#{cc.attrs.raCertificateDetails.sshForceCommand}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshForceCommand}"/>
+            <h:outputLabel for="sshVerifyRequirred" value="#{msg.enroll_ssh_critical_verify_required}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and cc.attrs.raCertificateDetails.sshVerifyRequired}"/>
+            <h:outputText id="sshVerifyRequirred" value="#{msg.enroll_ssh_critical_verify_required_enabled}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.typeSsh and cc.attrs.raCertificateDetails.sshVerifyRequired}"/>
             
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
