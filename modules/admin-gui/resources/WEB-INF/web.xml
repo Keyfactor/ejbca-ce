@@ -39,6 +39,11 @@
           <param-value>false</param-value>
     </context-param>
 
+	<context-param>
+		<param-name>primefaces.CSP</param-name>
+		<param-value>policyProvided</param-value>
+	</context-param>
+
     <!-- Set to "Development" for debugging.
         "Production" also implies javax.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
         TODO: Set automatically when ejbca.productionmode=false
