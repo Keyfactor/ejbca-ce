@@ -1796,7 +1796,7 @@
         },
         "name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "subject_dn": {
@@ -2137,7 +2137,7 @@
         },
         "certificate_authority_name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "username": {
@@ -2188,7 +2188,7 @@
         },
         "certificate_authority_name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         }
       }
@@ -2568,7 +2568,7 @@
         },
         "ca_name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "certificate_profile_name": {
@@ -2968,7 +2968,7 @@
       "properties": {
         "ca_name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "response": {
@@ -2993,7 +2993,7 @@
         },
         "certificate_authority": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "key_id": {
