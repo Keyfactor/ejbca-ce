@@ -968,18 +968,18 @@
 						<h:outputText id="cert_issuerdn" value="#{editCAsMBean.caIssuerDN}" />
 					</h:panelGroup>
 
-					<h:panelGroup>
+					<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
 						<h:outputLabel for="cert_signedby" value="#{web.text.SIGNEDBY}" />
 					</h:panelGroup>
 
 					<h:panelGroup
-						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
+						rendered="#{not editCAsMBean.caInfoDto.caTypeSsh and editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
 						<h:outputText id="cert_signedby"
 							value="#{editCAsMBean.signedByAsText}" />
 					</h:panelGroup>
 
 					<h:panelGroup
-						rendered="#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}">
+						rendered="#{not editCAsMBean.caInfoDto.caTypeSsh and (not editCAsMBean.editCA or editCAsMBean.caUninitialized)}">
 						<h:selectOneMenu id="cadatasignedby" value="#{editCAsMBean.caInfoDto.signedBy}"
 							disabled="#{not editCAsMBean.hasEditRight}">
 							<f:selectItems value="#{editCAsMBean.signedByList}" />

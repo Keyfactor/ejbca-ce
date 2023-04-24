@@ -1372,7 +1372,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             return isHasEditRight();
         }
         try {
-            return !isCaexternal && cryptoTokenManagementSession.isCryptoTokenPresent(getAdmin(), cryptoTokenId) &&
+            return !isCaTypeSSH() && !isCaexternal && cryptoTokenManagementSession.isCryptoTokenPresent(getAdmin(), cryptoTokenId) &&
                     cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId) &&
                     isHasEditRight();
         } catch (final AuthorizationDeniedException e) {
