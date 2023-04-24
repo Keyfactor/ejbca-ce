@@ -36,7 +36,7 @@ public class SshCertificateRequestRestRequest {
     private String endEntityProfile;
     @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
     private String certificateProfile;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
     private String certificateAuthority;
     @ApiModelProperty(value = "SSH Key Identifier", example = "ski-02")
     private String keyId;
