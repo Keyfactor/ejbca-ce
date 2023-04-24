@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
     <ui:remove>
     <!--
     /*************************************************************************
@@ -41,8 +42,12 @@
         <link rel="stylesheet" type="text/css" href="#{web.ejbcaWebBean.baseUrl}#{web.ejbcaWebBean.cssFile}"/>
         <script type="text/javascript" src="#{adminMenuBean.adminWebUrl}ejbcajslib.js"></script>
         <link rel="shortcut icon" type="image/png" href="#{adminMenuBean.adminWebUrl}images/favicon.png"/>
+       
+        <h:outputStylesheet name="primeicons/primeicons.css" library="primefaces" />
     </h:head>
     <h:body dir="ltr" styleClass="ltrDirection isJsf">
+    	<!--  Due to PrimeFaces taking over all JS execution, there needs to be a call to a PF method early on, even for pages that don't use PF. -->
+    	<p:inputText rendered="false" />
     	<h:outputScript rendered="#{ejbcawebbean.sessionTimeoutEnabled}">
 	        var time;
 	        window.onload=resetTimer("#{ejbcawebbean.sessionTimeoutTime}");
@@ -84,7 +89,6 @@
         <h:panelGroup layout="block" styleClass="section-content">
           <h:outputLink id="raAddendentity" value="#{adminMenuBean.adminWebUrl}ra/addendentity.jsp" rendered="#{adminMenuBean.authorizedToCreateEndEntity}"><h:outputText value="#{web.text.NAV_ADDENDENTITY}"/></h:outputLink>
           <h:outputLink id="raEditendentityprofiles" value="#{adminMenuBean.adminWebUrl}ra/editendentityprofiles/editendentityprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntityProfiles}"><h:outputText value="#{web.text.NAV_ENDENTITYPROFILES}"/></h:outputLink>
-          <h:outputLink id="raListendentitiesOld" value="#{adminMenuBean.adminWebUrl}ra/listendentities.jsp" rendered="#{adminMenuBean.authorizedToViewEndEntity}"><h:outputText value="#{web.text.NAV_SEARCHENDENTITIES}"/></h:outputLink>
           <h:outputLink id="raListendentities" value="#{adminMenuBean.adminWebUrl}ra/searchendentities.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntity}"><h:outputText value="#{web.text.NAV_SEARCHENDENTITIES}"/></h:outputLink>
           <h:outputLink id="raEdituserdatasources" value="#{adminMenuBean.adminWebUrl}ra/edituserdatasources/userdatasourcespage.xhtml" rendered="#{adminMenuBean.authorizedToEditUserDataSources}"><h:outputText value="#{web.text.NAV_USERDATASOURCES}"/></h:outputLink>
         </h:panelGroup>

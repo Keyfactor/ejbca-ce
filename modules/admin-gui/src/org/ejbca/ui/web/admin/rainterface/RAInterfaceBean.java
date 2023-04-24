@@ -19,9 +19,7 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,7 +33,6 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -68,11 +65,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
-import org.ejbca.util.query.IllegalQueryException;
-import org.ejbca.util.query.Query;
 
 import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
@@ -106,7 +100,6 @@ public class RAInterfaceBean implements Serializable {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     private KeyRecoverySession keyrecoverysession;
 
-    private UsersView usersView;
     private CertificateView[]                  certificates;
     private AddedUserMemory              addedusermemory;
     private AuthenticationToken administrator;
@@ -115,7 +108,6 @@ public class RAInterfaceBean implements Serializable {
 
     /** Creates new RaInterfaceBean */
     public RAInterfaceBean()  {
-        usersView = new UsersView();
         addedusermemory = new AddedUserMemory();
     }
 
@@ -205,25 +197,6 @@ public class RAInterfaceBean implements Serializable {
       return success;
     }
 
-    /**
-     * Revokes the given user.
-     * @param username username of user to revoke.
-     * @param reason reason(s) of revocation.
-     */
-    public void revokeUser(String username, int reason) throws AuthorizationDeniedException,
-        NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
-        log.trace(">revokeUser()");
-        endEntityManagementSession.revokeUser(administrator, username, reason);
-        log.trace("<revokeUser()");
-    }
-
-    public void revokeAndDeleteUser(String username, int reason) throws AuthorizationDeniedException,
-    		ApprovalException, WaitingForApprovalException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
-		log.trace(">revokeUser()");
-		endEntityManagementSession.revokeAndDeleteUser(administrator, username, reason);
-		log.trace("<revokeUser()");
-    }
-
     /** Revokes the  certificate with certificate serno.
      *
      * @param serno serial number of certificate to revoke.
@@ -294,30 +267,6 @@ public class RAInterfaceBean implements Serializable {
         log.trace("<changeUserData()");
     }
 
-    /** Method to filter out a user by it's username 
-     * 
-     * @deprecated Remove once conversion to jsf is done
-     */
-    @Deprecated
-    public UserView[] filterByUsername(String username) {
-        log.trace(">filterByUserName()");
-        EndEntityInformation[] userarray = new EndEntityInformation[1];
-        EndEntityInformation user = null;
-        try {
-            user = endEntityAccessSession.findUser(administrator, username);
-        } catch (AuthorizationDeniedException e) {
-            // Non super-admin access.
-        }
-        if (user != null) {
-            userarray[0] = user;
-            usersView.setUsers(userarray, caSession.getCAIdToNameMap());
-        } else {
-            usersView.setUsers((EndEntityInformation[]) null, caSession.getCAIdToNameMap());
-        }
-        log.trace("<filterByUserName()");
-        return usersView.getUsers(0, 1);
-    }
-
     /** Method used to check if user exists */
     public boolean userExist(String username) {
     	return endEntityManagementSession.existsUser(username);
@@ -354,97 +303,6 @@ public class RAInterfaceBean implements Serializable {
         return userview;
     }
 
-    /** Method to find all users in database 
-     * @deprecated Remove once conversion to jsf is done 
-     */
-    @Deprecated
-    public UserView[] findAllUsers(int index, int size) {
-       usersView.setUsers(endEntityAccessSession.findAllUsersWithLimit(administrator), caSession.getCAIdToNameMap());
-       return usersView.getUsers(index,size);
-    }
-
-    /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. 
-     * 
-     * @deprecated Remove once conversion to jsf is done
-     */
-    @Deprecated
-    public UserView[] filterByCertificateSerialNumber(final String serialnumber, final int index, final int size) {
-        final BigInteger serno = new BigInteger(StringTools.stripWhitespace(serialnumber), 16);
-        final List<CertificateDataWrapper> cdws = certificatesession.getCertificateDataBySerno(serno);
-        final List<EndEntityInformation> userlist = new ArrayList<>();
-        for (final CertificateDataWrapper next : cdws) {
-            final CertificateData certdata = next.getCertificateData();
-            try {
-                final String username = certdata.getUsername();
-                if (username != null) {
-                    final EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
-                    if (user != null) {
-                        userlist.add(user);
-                    }
-                }
-                if (userlist.isEmpty()) {
-                    // Perhaps it's such an old installation that we don't have username in the CertificateData table (has it even ever been like that?, I don't think so)
-                    final List<EndEntityInformation> users = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator,
-                            certdata.getSubjectDnNeverNull(), certdata.getIssuerDN());
-                    userlist.addAll(users);
-                }
-            } catch (AuthorizationDeniedException e) {
-                // Non super-admin access!
-            }
-        }
-        usersView.setUsers(userlist, caSession.getCAIdToNameMap());
-        return usersView.getUsers(index, size);
-    }
-
-    /** Method that lists all users with certificate's that expires within given days. 
-     * 
-     * @deprecated Remove once conversion to jsf is done
-     */
-    @Deprecated
-    public UserView[] filterByExpiringCertificates(String days, int index, int size) {
-        ArrayList<EndEntityInformation> userlist = new ArrayList<>();
-        UserView[] returnval = null;
-        long d = Long.parseLong(days);
-        Date finddate = new Date();
-        long millis = (d * 86400000); // One day in milliseconds.
-        finddate.setTime(finddate.getTime() + millis);
-        Collection<String> usernames = certificatesession.findUsernamesByExpireTimeWithLimit(finddate);
-        if (!usernames.isEmpty()) {
-            Iterator<String> i = usernames.iterator();
-            while (i.hasNext() && userlist.size() <= getMaximumQueryRowCount() + 1) {
-                EndEntityInformation user = null;
-                try {
-                    user = endEntityAccessSession.findUser(administrator, i.next());
-                } catch (AuthorizationDeniedException e) {
-                    // Non super-admin access.
-                }
-                if (user != null) {
-                    userlist.add(user);
-                }
-            }
-            usersView.setUsers(userlist, caSession.getCAIdToNameMap());
-            returnval = usersView.getUsers(index, size);
-        }
-        return returnval;
-    }
-
-    /** 
-     * 
-     * @deprecated Remove once conversion to jsf is done
-     */
-    @Deprecated
-    public UserView[] filterByQuery(Query query, int index, int size, final String endentityAccessRule) throws IllegalQueryException {
-        Collection<EndEntityInformation> userlist = endEntityAccessSession.query(administrator, query,
-                raauthorization.getCAAuthorizationString(),
-                raauthorization.getEndEntityProfileAuthorizationString(true, endentityAccessRule), 0, endentityAccessRule);
-    	usersView.setUsers(userlist, caSession.getCAIdToNameMap());
-    	return usersView.getUsers(index,size);
-    }
-
-    public int getResultSize(){
-    	return usersView.size();
-    }
-
     public boolean isAuthorizedToViewUserHistory(String username) throws AuthorizationDeniedException {
     	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
     	return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.VIEW_END_ENTITY_HISTORY, false);
@@ -455,27 +313,6 @@ public class RAInterfaceBean implements Serializable {
         return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_END_ENTITY, false);
     }
 
-    /** Method to resort filtered user data. */
-    public void sortUserData(int sortby, int sortorder) {
-    	usersView.sortBy(sortby,sortorder);
-    }
-
-    /** Method to return the users between index and size, if userdata is smaller than size, a smaller array is returned. */
-    public UserView[] getUsers(int index, int size) {
-    	return usersView.getUsers(index, size);
-    }
-
-    /** Method that clears the userview memory. */
-    public void clearUsers() {
-    	usersView.clear();
-    }
-
-    public boolean nextButton(int index, int size) {
-    	return index + size < usersView.size();
-    }
-    public boolean previousButton(int index) {
-    	return index > 0 ;
-    }
 
     // Method dealing with added user memory.
     /** A method to get the last added users in adduser.jsp.
