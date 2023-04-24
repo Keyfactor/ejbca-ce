@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
 <ui:remove>
   	<!--
     /*************************************************************************
@@ -31,7 +32,6 @@
 	</h1>
 	
 	<h:panelGroup id="home" class="app">
-
 	<!-- Audit log: CONDITIONS -->
 
 	<h:outputText value="#{web.text.NO_SEARCHABLE_AUDIT}" rendered="#{auditor.device == null}"/>
