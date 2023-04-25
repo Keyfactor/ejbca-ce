@@ -21,7 +21,7 @@
 		<path refid="lib.jaxws-api.classpath"/>
 		<path location="${cesecore-ejb-interface.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb-interface.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 	<path id="test.classpath">

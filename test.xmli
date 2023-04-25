@@ -42,7 +42,6 @@
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
       	<antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" inheritall="true" inheritrefs="true"/>
-       	<ant antfile="build.xml" dir="modules/x509-common-util" target="test" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test" inheritall="true" inheritrefs="true"/>
@@ -161,7 +160,6 @@
 					<include name="modules/ejbca-common/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-common-web/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-common/src-test/**/${test.runone}.java" />
-					<include name="modules/x509-common-util/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-ejb/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-ejb-interface/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-entity/src-test/**/${test.runone}.java" />
@@ -222,9 +220,6 @@
     	</condition>
     	<condition property="module" value="modules/cesecore-common">
     		<matches string="${test-fullname}" pattern="^modules/cesecore-common/.*$"/>
-    	</condition>
-    	<condition property="module" value="modules/x509-common-util">
-    		<matches string="${test-fullname}" pattern="^modules/x509-common-util/.*$"/>
     	</condition>
     	<condition property="module" value="modules/cesecore-ejb">
     		<matches string="${test-fullname}" pattern="^modules/cesecore-ejb/.*$"/>
