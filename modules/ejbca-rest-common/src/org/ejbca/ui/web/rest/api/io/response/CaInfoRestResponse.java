@@ -31,7 +31,7 @@ public class CaInfoRestResponse {
 
     @ApiModelProperty(value = "CA identifier", example = "12345678")
     private Integer id;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
     private String name;
     @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String subjectDn;
