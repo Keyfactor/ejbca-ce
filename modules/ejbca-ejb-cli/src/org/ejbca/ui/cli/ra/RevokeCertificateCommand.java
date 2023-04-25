@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ra;
 
 import java.math.BigInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -50,7 +51,7 @@ public class RevokeCertificateCommand extends BaseRaCommand {
     {
         registerParameter(new Parameter(DN_KEY, "Issuer DN", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Issuer DN"));
         registerParameter(new Parameter(SERIAL_NUMBER_KEY, "Serial Number", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The certificate serial number in HEX."));
+                "The certificate serial number in HEX or DEC."));
         registerParameter(new Parameter(
                 REASON_KEY,
                 "Reason",
@@ -66,6 +67,11 @@ public class RevokeCertificateCommand extends BaseRaCommand {
         return "revokecert";
     }
 
+    private boolean isValidDecSerialNumber(final String s) {
+        // Assumption: Half of the leading bits might be zero, so the string could use only half of the length.
+        return (s != null && s.length() >= 10 && StringUtils.isNumeric(s));
+    }
+
     @Override
     public CommandResult execute(ParameterContainer parameters) {
 
@@ -73,10 +79,15 @@ public class RevokeCertificateCommand extends BaseRaCommand {
         final String issuerDN = CertTools.stringToBCDNString(issuerDNStr);
         final String certserno = parameters.get(SERIAL_NUMBER_KEY);
         final BigInteger serno;
+        
         try {
-            serno = new BigInteger(certserno, 16);
+            if (isValidDecSerialNumber(certserno)) {
+                serno = new BigInteger(certserno);
+            } else {
+                serno = new BigInteger(certserno, 16);
+            }
         } catch (NumberFormatException e) {
-            log.error("ERROR: Invalid hexadecimal certificate serial number string: " + certserno);
+            log.error("ERROR: Invalid certificate serial number string: " + certserno);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         int reason;

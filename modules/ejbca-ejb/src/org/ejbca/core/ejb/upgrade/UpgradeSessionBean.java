@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.upgrade;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -53,7 +55,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+
 import org.apache.commons.configuration2.Configuration;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -150,6 +154,7 @@ import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
+
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
@@ -708,7 +713,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     private boolean postMigrateDatabase781() {
         log.info("Starting post upgrade to 7.8.1");
-        List<Integer> ids;
+        List<?> ids;
         try {
             Query query = entityManager.createQuery("SELECT eepd.id FROM EndEntityProfileData eepd");
             ids = query.getResultList();
@@ -717,7 +722,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             return false;
         }
 
-        for(Integer id: ids) {
+        for(Object idObject: ids) {
+            Integer id = (Integer) idObject;
             final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
             try {
                 EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
