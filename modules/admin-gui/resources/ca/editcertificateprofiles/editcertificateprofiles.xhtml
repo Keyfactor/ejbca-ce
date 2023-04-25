@@ -3,8 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:t="http://myfaces.apache.org/tomahawk">
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <ui:remove>
   	<!--
     /*************************************************************************
@@ -122,7 +121,7 @@
 			<h:panelGrid columns="1" >
 				<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}" rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:panelGroup>
-					<t:inputFileUpload id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
+					<h:inputFile id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
 					<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORTPROFILE}" rendered="#{certProfilesBean.authorizedToEdit}"/>
 					<h:commandButton styleClass="commandButtonExport" value="#{web.text.EXPORTPROFILES}" action="#{certProfilesBean.actionExportProfiles}" />
 				</h:panelGroup>

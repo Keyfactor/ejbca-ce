@@ -13,9 +13,6 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -48,8 +43,6 @@ import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.EnrollMakeNewRequestBean.KeyPairGeneration;
-
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * Managed bean that backs up the enrollwithusername.xhtml page. Extends EnrollWithRequestIdBean to make use of common code
@@ -206,43 +199,14 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     @Override
     public final void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        setSelectedAlgorithm(null);
-        final String valueStr = value.toString();
-        if (valueStr != null && valueStr.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
-            log.info("CSR uploaded was too large: "+valueStr.length());
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));            
-        }
-        RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(valueStr.getBytes());
-        if (certRequest == null) {
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
-        }
-        
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile
+        RaCsrTools.validateCsr(value, this, raLocaleBean, getCertificateProfile(), username, true);
         try {
-            final String keySpecification = AlgorithmTools.getKeySpecification(certRequest.getRequestPublicKey());
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certRequest.getRequestPublicKey());
-            // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
-            final CertificateProfile certificateProfile = getCertificateProfile();
-            if (certificateProfile != null) {
-                if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
-                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Ignoring algorithm validation on CSR because we can not find a Certificate Profile for user: "+username);
-                }
-            }
-            setSelectedAlgorithm(keyAlgorithm + " " + keySpecification);
-            // For yet unknown reasons, the setter is never when invoked during AJAX request
-            certificateRequest = valueStr;
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            final String msg = raLocaleBean.getMessage("enroll_unknown_key_algorithm");
-            if (log.isDebugEnabled()) {
-                log.debug(msg + ": " + e.getMessage());
-            }
-            throw new ValidatorException(new FacesMessage(msg));
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e.getMessage());
+            RaCsrTools.validetaNumberOfFieldsInSubjectDn(authorizedEndEntityProfiles.get(getEndEntityInformation().getEndEntityProfileId()),
+                    getCertificateRequest(), raLocaleBean, username, true);
+        } catch (ValidatorException e) {
+            setSelectedAlgorithm(null);
+            certificateRequest = null;
+            throw e;
         }
     }
 

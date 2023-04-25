@@ -30,5 +30,10 @@ public final class CryptoTokenConstants {
      */ 
     public static final String AWSKMS_ACCESSKEYID = "kmsSignInAccessKeyID";
     
+    /**
+     * Property for storing the base URL for the Fortanix DRM REST API ("https://apps.smartkey.io" is the default)
+     */
+    public static final String FORTANIX_BASE_ADDRESS = "fortanixBaseAddress";
+    public static final String FORTANIX_BASE_ADDRESS_DEFAULT = "https://apps.smartkey.io";
 
 }
