@@ -164,6 +164,7 @@ public class RaCertificateDetails {
     private String sshExtensions = "";
     private String sshSourceAddress = "";
     private String sshForceCommand = "";
+    private boolean sshVerifyRequired = false;
 
     private boolean more = false;
     private boolean renderConfirmRecovery = false;
@@ -361,6 +362,8 @@ public class RaCertificateDetails {
                          SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, "");
                  this.sshSourceAddress = sshCertificate.getCriticalOptions().getOrDefault(
                          SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, "");
+                 this.sshVerifyRequired = sshCertificate.getCriticalOptions().containsKey(
+                         SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
             }
         }
 
@@ -872,6 +875,10 @@ public class RaCertificateDetails {
 
     public String getSshForceCommand() {
         return sshForceCommand;
+    }
+    
+    public boolean isSshVerifyRequired() {
+        return sshVerifyRequired;
     }
     
 }
