@@ -56,12 +56,13 @@ import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.Part;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -95,6 +96,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.TokenDownloadType;
@@ -141,6 +143,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
+    private static final String ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD = "enroll_invalid_certificate_request_not_parsable_subject_dn_field";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
     
     private static final String ENROLL_INVALID_SSH_PUB_KEY = "enroll_invalid_ssh_pub_key";
@@ -221,7 +224,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String algorithmFromCsr; //PROVIDED BY USER
     private int selectedTokenType;
 
-    private UploadedFile uploadFile;
+    private Part uploadFile;
     private String certificateRequest;
     private String publicKeyModulus;
     private String publicKeyExponent;
@@ -1010,6 +1013,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     }
                 }
             }
+            if (RequestFieldType.DN.equals(type) && getCertificateProfile().getAllowDNOverride()) {
+                raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField);
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
+            }
             if (log.isDebugEnabled()) {
                 log.debug("Unparsable subject " + type + " field '" + subjectField +
                         "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
@@ -1274,7 +1281,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
         endEntityInformation.setKeyRecoverable(getKeyRecoverableUse());
         endEntityInformation.setSendNotification(getSendNotification());
-        endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
         
         // Fill end-entity information (Username and Password)
@@ -1351,7 +1357,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     ret = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
                 } else if (tokenDownloadType == TokenDownloadType.PEM) {
                     final Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, Certificate.class);
-                    ret = CertTools.getPemFromCertificateChain(Arrays.asList(certificate));
+                    ret = CertTools.getPemFromCertificateChain(List.of(certificate));
                 } else {
                     ret = certificateDataToDownload;
                 }
@@ -1672,13 +1678,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         byte[] fileContents;
         String pemEncodedCsr;
         try {
-            fileContents = uploadFile.getBytes();
+            fileContents = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
             String fileContentString = new String(fileContents);
             if (fileContentString.startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)||
                     fileContentString.startsWith(CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST)) {
-                pemEncodedCsr = new String(uploadFile.getBytes());
+                pemEncodedCsr = new String(fileContents);
             } else {
-                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(uploadFile.getBytes()));
+                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(fileContents));
             }
         } catch (IOException e) {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
@@ -1709,12 +1715,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile
+        //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
         try {
             final PublicKey publicKey = certRequest.getRequestPublicKey();
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-
+            if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", getKeyAlgorithmMessageString(keyAlgorithm, keySpecification))));
+            }
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
                 raLocaleBean.addMessageError("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification);
@@ -1735,6 +1743,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
             throw new IllegalStateException(e);
         }
     }
+    
+    private String getKeyAlgorithmMessageString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + "_" + spec;
+    }
+
 
     private String extractSignatureFromCsr(final RequestMessage certRequest) {
         if (certRequest instanceof PKCS10RequestMessage) {
@@ -2221,7 +2234,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                                 continue;
                             }
                             final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                            if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                            if (availableBitLengths.contains(bitLength)) {
                                 ecChoices.add(ecNamedCurve);
                             }
                         }
@@ -2239,12 +2252,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
                                 + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                     }
                 }
+                if (WebConfiguration.isPQCEnabled()) {
+                    for (String algorithm : availableKeyAlgorithms) {
+                        if (AlgorithmTools.isPQC(algorithm)) {
+                            availableAlgorithmSelectItems.add(new SelectItem(algorithm));
+                        }
+                    }
+                }
                 for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
                     if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
                         for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                             final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                             final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                            if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                            if (availableBitLengths.contains(bitLength)) {
                                 availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
                                         CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
                             } else {
@@ -2269,7 +2289,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Sort the provided list by label with the exception of any item with null value that ends up first.
      */
     protected static void sortSelectItemsByLabel(final List<SelectItem> items) {
-        Collections.sort(items, new Comparator<SelectItem>() {
+        items.sort(new Comparator<SelectItem>() {
             @Override
             public int compare(final SelectItem item1, final SelectItem item2) {
                 if (item1.getValue() == null || (item1.getValue() instanceof String && ((String) item1.getValue()).isEmpty())) {
@@ -2713,11 +2733,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return false;
     }
 
-    public UploadedFile getUploadFile() {
+    public Part getUploadFile() {
         return uploadFile;
     }
 
-    public void setUploadFile(UploadedFile uploadFile) {
+    public void setUploadFile(Part uploadFile) {
         this.uploadFile = uploadFile;
     }
 
@@ -3185,7 +3205,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void uploadSshPubKey() {
         if(uploadFile!=null) {
             try {
-                sshPublicKeyString = new String(uploadFile.getBytes());
+                final byte[] fileBytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
+                sshPublicKeyString = new String(fileBytes);
                 updateSshPublicKey();
                 return;
             } catch (IOException e) {
