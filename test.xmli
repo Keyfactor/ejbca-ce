@@ -52,6 +52,7 @@
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/p11ng" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/plugins-ee" target="runsa" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>

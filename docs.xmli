@@ -33,7 +33,7 @@
            <include name="bcprov*.jar"/>
            <include name="bcpkix*.jar"/>
            <include name="bctls*.jar"/>
-           <include name="x509-common-util.jar"/> 
+           <include name="x509-common-util*.jar"/> 
         </fileset>
        <fileset dir="${ejbca.home}/lib/jee">
            <include name="javaee-api*.jar"/>
@@ -214,7 +214,7 @@
 
     <target name="doc-rest" if="${mod.rest-api.exists}">
         <mkdir dir="${docs.dest.rest}"/>
-        <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.4.25.jar" fork="true">
+        <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.4.31.jar" fork="true">
             <arg line="generate -i ${mod.ejbca-rest-api.path}/resources/swagger.json -l html2 -o ${docs.dest.rest}
             -t ${ejbca.home}/modules/ejbca-rest-common/htmlDocsTemplate"/>
         </java>
@@ -222,7 +222,7 @@
     
     <target name="doc-acme" if="${mod.acme.exists}">
         <mkdir dir="${docs.dest.acme}"/>
-        <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.4.25.jar" fork="true">
+        <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.4.31.jar" fork="true">
             <arg line="generate -i ${mod.acme.path}/resources/swagger.json -l html2 -o ${docs.dest.acme}
             -t ${ejbca.home}/modules/ejbca-rest-common/htmlDocsTemplate"/>
         </java>
