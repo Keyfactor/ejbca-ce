@@ -27,7 +27,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ra.UserData;
 
@@ -71,7 +70,7 @@ public class ApplicationManagedTransactionsBean {
             if (log.isTraceEnabled()) {
                 log.trace("Caught rollback exception: " + e.getMessage(), e);
             }
-            log.info("User '" + newUserData.getUsername() + "' was updated in concurrent transaction, and will not be updated. The " + ClassUtils.getShortClassName(e.getClass()) + " was ignored.");
+            log.info("Skipped update of '" + newUserData.getUsername() + "' due to concurrent transaction.");
             try {
                 userTransaction.rollback();
             } catch (IllegalStateException | SecurityException | SystemException rollbackException) {
