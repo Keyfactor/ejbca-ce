@@ -32,7 +32,8 @@
 			<h:outputText value="#{web.text.SEARCHENDENTITIES}" />
 		</h1>
 
-		<p:tabView>
+		<p:tabView id="tabs"  dynamic="true" >
+			<p:ajax event="tabChange" listener="#{searchEndEntitiesMBean.flushCache}" update="@all" render="@all" immediate="true" />
 			<p:tab title="Basic">
 				<h:form id="basic">
 					<h:panelGrid columns="3" columnClasses="unpadded,unpadded,unpadded">
@@ -126,14 +127,15 @@
 							<h:panelGroup id="matchWithItemsGroup" >
 								<p:selectOneMenu
 									id="matchWithItems"
+									
 									value="#{queryLine.matchWith}"
 									editable="true"
 									disabled="#{queryLine.isNotInitialized()}"
 									immediate="true"
 									alwaysDisplayLabel="true"
-									label="#{queryLine.matchWithLabel}">
+									label="#{queryLine.getMatchWithLabel(queryLine.matchWith)}">
 									<f:selectItems
-										value="#{queryLine.matchWithValues}" itemLabel="#{queryLine.matchWithLabel}"/>
+										value="#{queryLine.matchWithValues}" var="line" itemLabel="#{queryLine.getMatchWithLabel(line)}"/>
 									<p:ajax event="change" execute="@this"/>
 								</p:selectOneMenu>	
 							</h:panelGroup>
@@ -157,6 +159,10 @@
 		              			disabled="#{!(searchEndEntitiesMBean.isTimeConstraintChosen())}"
 		              			hideOnDateTimeSelect="true"
 		              			yearNavigator="true"/>
+				              	<p:commandButton 
+									value="#{web.text.CLEAR}"
+									action="#{searchEndEntitiesMBean.clearAfter()}">
+								</p:commandButton>           		
 	              		</h:panelGroup>    
               		         		
 	              		<h:panelGroup>
@@ -171,13 +177,17 @@
 		              			disabled="#{!(searchEndEntitiesMBean.isTimeConstraintChosen())}"
 		              			hideOnDateTimeSelect="true"
 		              			yearNavigator="true"/>
+		              			<p:commandButton 
+									value="#{web.text.CLEAR}"
+									action="#{searchEndEntitiesMBean.clearBefore()}">
+								</p:commandButton>  
 	              		</h:panelGroup>
 					</p:panelGrid>           		
-              		<h:commandButton id="findAdvancedButton"
+              		<p:commandButton id="findAdvancedButton"
 						value="#{web.text.SEARCH}"
 						action="#{searchEndEntitiesMBean.performAdvancedSearch()}">
 						<f:ajax execute="@form" event="click" render=":results" />
-					</h:commandButton>
+					</p:commandButton>
               		
 				</h:form>
 			</p:tab>
