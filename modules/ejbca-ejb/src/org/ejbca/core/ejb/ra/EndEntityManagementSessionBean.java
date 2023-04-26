@@ -37,9 +37,9 @@ import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 import javax.persistence.EntityManager;
-import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.transaction.Synchronization;
@@ -106,6 +106,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ApplicationManagedTransactionsBean;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -213,6 +214,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         IF_NO_CONFLICT,
         MANDATORY_CHANGE
     }
+
+    @Inject
+    private ApplicationManagedTransactionsBean applicationManagedTransactionsBean;
 
     @PostConstruct
     public void postConstruct() {
@@ -1321,15 +1325,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             break;
         case IF_NO_CONFLICT:
             entityManager.detach(newUserData);
-            try {
-                endEntityManagementSession.changeUserInNewTransaction(newUserData, !originalEndEntity.isExisting());
-            } catch (EJBException e) {
-                if (e.getCause() instanceof OptimisticLockException) {
-                    log.info("User '" + newUserData.getUsername() + "' was updated in concurrent transaction, and will not be updated. The OptimisticLockException was ignored.");
-                } else {
-                    throw e;
-                }
-            }
+            applicationManagedTransactionsBean.changeUserIfNoConflict(newUserData, !originalEndEntity.isExisting());
             break;
         case MANDATORY_CHANGE:
             // Keep the UserData changes in the current transaction
@@ -1339,22 +1335,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             break;
         }
         perTransactionData.clearEndEntityTransactionInfo(newUserData.getUsername());
-    }
-
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Override
-    public void changeUserInNewTransaction(final UserData newUserData, final boolean isNew) {
-        if (isNew) {
-            entityManager.persist(newUserData);
-        } else {
-            UserData entity = entityManager.find(UserData.class, newUserData.getUsername());
-            try {
-                entityManager.merge(entity);
-                entityManager.flush();
-            } catch (OptimisticLockException e) {
-                log.warn("Entity object in inconsistent state, retry the operation after a while!");
-            }
-        }
     }
 
     /**
