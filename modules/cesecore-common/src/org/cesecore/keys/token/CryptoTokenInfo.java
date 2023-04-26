@@ -123,6 +123,9 @@ public class CryptoTokenInfo implements Named, Serializable {
     public Properties getCryptoTokenProperties() {
         return cryptoTokenProperties;
     }
+    public String getFortanixBaseAddress() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.FORTANIX_BASE_ADDRESS);        
+    }
 
     public AzureAuthenticationType getAzureAuthenticationType() {
         // legacy setting

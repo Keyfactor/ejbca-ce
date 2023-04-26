@@ -24,7 +24,7 @@
 		<path location="${cesecore-ejb.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-ejb-interface/dist/cesecore-ejb-interface.jar"/>
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 	<path id="test.classpath">

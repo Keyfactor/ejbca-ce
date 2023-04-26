@@ -35,7 +35,7 @@
 		<path refid="lib.jaxws-api.classpath"/>
 		<path refid="lib.javax.ejb-api.classpath"/>
         <path location="${mod.cesecore-x509ca.lib}"/>
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 	<!-- The buildservicemanifest needs additional classes in order to run.
@@ -61,7 +61,7 @@
 		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 	<target name="jar" depends="">

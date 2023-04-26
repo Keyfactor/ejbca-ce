@@ -36,7 +36,7 @@ public class SshCertificateRequestRestRequest {
     private String endEntityProfile;
     @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
     private String certificateProfile;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
     private String certificateAuthority;
     @ApiModelProperty(value = "SSH Key Identifier", example = "ski-02")
     private String keyId;
@@ -44,7 +44,7 @@ public class SshCertificateRequestRestRequest {
     private String comment;
     @ApiModelProperty(value = "Public Key", example = "ssh-rsa AAA...EWj")
     private String publicKey;
-    @ApiModelProperty(value = "Valid principals", example = "[“Wishman“, “Bradman“]")
+    @ApiModelProperty(value = "Valid principals", example = "[\"Wishman\", \"Bradman\"]")
     private List<String> principals;
     @ApiModelProperty(value = "Critical options")
     private SshCriticalOptions criticalOptions;

@@ -411,6 +411,25 @@
                         rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
                 </h:panelGroup>
 
+				<!-- Fortanix Base URL -->
+                <h:panelGroup id="currentCryptoTokenFortanixBaseAddressPanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showFortanixCryptoToken}">
+                    <h:outputLabel id="currentCryptoTokenFortanixBaseAddressLabel"
+                        for="currentCryptoTokenFortanixBaseAddress"
+                        value="#{web.text.CRYPTOTOKEN_FORTANIX_BASE_ADDRESS} " />
+                    <h:outputText id="currentCryptoTokenFortanixBaseAddress" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showFortanixCryptoToken}">
+                    <h:inputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.fortanixBaseAddress}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
+                    <h:outputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.fortanixBaseAddress}"
+                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                </h:panelGroup>
+
                 <!-- Secret 1 -->
                 <h:panelGroup id="currentCryptoTokenSecret1LabelGroup">
                     <h:outputLabel 

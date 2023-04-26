@@ -39,7 +39,7 @@
 		<path refid="lib.hc.classpath"/> <!-- Apache http client for REST API calls -->
 		<path refid="lib.json-simple.classpath"/> <!-- for REST API calls -->
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- needed by KeyTools -->
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 
 	</path>
 
@@ -59,7 +59,7 @@
 		<path location="${mod.p11ng.lib}" />
 		<pathelement location="${mod.ejbca-common.lib}"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 
@@ -77,7 +77,7 @@
 		<path location="${mod.cesecore-entity.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-common-web.lib}"/>
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 	<target name="build" description="Build this module" depends="compile">

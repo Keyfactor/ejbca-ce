@@ -26,7 +26,7 @@ public class CertificateRequestRestRequest {
     @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
     private boolean includeChain;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
     private String certificateAuthorityName;
     
     public CertificateRequestRestRequest() {

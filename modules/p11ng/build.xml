@@ -20,7 +20,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.jacknji.classpath"/>
-		<path location="${mod.x509-common-util.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 	
 	<path id="test.classpath">
