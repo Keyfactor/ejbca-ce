@@ -26,7 +26,7 @@ public class EnrollCertificateRestRequest {
     private String certificateProfileName;
     @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
     private String certificateAuthorityName;
     @ApiModelProperty(value = "Username", example = "JohnDoe")
     private String username;
