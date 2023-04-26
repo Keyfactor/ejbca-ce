@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  Keyfactor Commons                                                    *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -12,22 +12,23 @@
  *************************************************************************/
 package com.keyfactor.util.certificate;
 
-import java.io.Serializable;
-import java.security.cert.Certificate;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
+
+import org.junit.Test;
 
 /**
- * General interface for any object that wraps a certificate, such as
- * {@link CertificateDataWrapper} and {@link CertificateSerializableWrapper}.
- * 
- * Implementations of this interface are expected to handle (de-)serialization of certificates
- * from the BouncyCastle provider. E.g. having a transient Certificate object and
- * having an encoded certificate that is actually serialized.
- *
- * @see com.keyfactor.util.EJBTools
- * 
+ * Test the {@link DnComponents} class with the enterprise properties
  */
-public interface CertificateWrapper extends Serializable {
+public class EnterpriseDnComponentsTest {
 
-    Certificate getCertificate();
+    @Test
+    public void testEnterpriseProperties() {
+        assumeTrue(DnComponents.enterpriseMappingsExist());
+        assertEquals("JURISDICTIONLOCALITY=", DnComponents.getDnExtractorFieldFromDnId(103));
+        assertEquals("JURISDICTIONSTATE=", DnComponents.getDnExtractorFieldFromDnId(104));
+        assertEquals("JURISDICTIONCOUNTRY=", DnComponents.getDnExtractorFieldFromDnId(105));
+        assertEquals("ORGANIZATIONIDENTIFIER=", DnComponents.getDnExtractorFieldFromDnId(106));
+    }
     
 }

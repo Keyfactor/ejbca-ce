@@ -19,7 +19,7 @@
         <path refid="lib.commons-config.classpath"/>
         <path refid="lib.commons-collections4.classpath"/>
         <path location="${mod.cesecore-common.lib}"/>
-    	<path location="${mod.x509-common-util.lib}"/>
+    	<path refid="lib.x509-common-util.classpath" />
     </path>
 
     <!-- The buildservicemanifest needs additional classes in order to run. 
