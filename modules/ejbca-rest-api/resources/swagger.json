@@ -1772,7 +1772,7 @@
         "crl": {
           "type": "array",
           "example": "MIIEV...SqQPE",
-          "description": "Certificate Revokation List (CRL)",
+          "description": "Certificate Revocation List (CRL)",
           "items": {
             "type": "string",
             "format": "byte"
@@ -1796,7 +1796,7 @@
         },
         "name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "subject_dn": {
@@ -1891,7 +1891,7 @@
         },
         "certificate_chain": {
           "type": "array",
-          "example": "[ \u201cABC123efg...345xyz0=\u201c ]",
+          "example": "[\"ABC123efg...345xyz0=\"]",
           "description": "Certificate chain",
           "items": {
             "type": "array",
@@ -2137,7 +2137,7 @@
         },
         "certificate_authority_name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "username": {
@@ -2188,7 +2188,7 @@
         },
         "certificate_authority_name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         }
       }
@@ -2568,7 +2568,7 @@
         },
         "ca_name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "certificate_profile_name": {
@@ -2841,7 +2841,7 @@
         },
         "subject_distinguished_name_fields": {
           "type": "array",
-          "example": "[ \u201cCN\u201c ]",
+          "example": "[\"CN\"]",
           "description": "List of Subject DN Attributes",
           "items": {
             "type": "string"
@@ -2849,7 +2849,7 @@
         },
         "subject_alternative_name_fields": {
           "type": "array",
-          "example": "[ \u201cRFC822NAME\u201c ]",
+          "example": "[\"RFC822NAME\"]",
           "description": "List of Subject Alternative Name fields",
           "items": {
             "type": "string"
@@ -2857,7 +2857,7 @@
         },
         "available_certificate_profiles": {
           "type": "array",
-          "example": "[ \u201cENDUSER\u201c ]",
+          "example": "[\"ENDUSER\"]",
           "position": 1,
           "description": "List of available Certificate Profiles",
           "items": {
@@ -2866,7 +2866,7 @@
         },
         "available_cas": {
           "type": "array",
-          "example": "[ \u201cExampleCA\u201c ]",
+          "example": "[\"ExampleCA\"]",
           "position": 2,
           "description": "List of available Certificate Authorities (CAs)",
           "items": {
@@ -2968,7 +2968,7 @@
       "properties": {
         "ca_name": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "response": {
@@ -2993,7 +2993,7 @@
         },
         "certificate_authority": {
           "type": "string",
-          "example": "CN=ExampleCA",
+          "example": "ExampleCA",
           "description": "Certificate Authority (CA) name"
         },
         "key_id": {
@@ -3013,7 +3013,7 @@
         },
         "principals": {
           "type": "array",
-          "example": "[“Wishman“, “Bradman“]",
+          "example": "[\"Wishman\", \"Bradman\"]",
           "description": "Valid principals",
           "items": {
             "type": "string"
