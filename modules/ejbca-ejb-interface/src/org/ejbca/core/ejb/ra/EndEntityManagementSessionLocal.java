@@ -164,10 +164,4 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      */
     void suppressUnwantedUserDataChanges(String username);
 
-    /**
-     * Used internally to migrate certain updates of UserData during certificate to a separate transaction.
-     * @see #initializeEndEntityTransaction
-     */
-    void changeUserInNewTransaction(UserData newUserData, boolean isNew);
-
 }
