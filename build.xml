@@ -949,10 +949,6 @@
         <condition property="build.contains.ra" value="true">
         	<not><equals arg1="${variant}" arg2="va" casesensitive="false"/></not>
         </condition>
-		
-        <condition property="build.contains.ssh" value="true">
-        	<equals arg1="${variant}" arg2="ssh" casesensitive="false"/>
-        </condition>
 
         <condition property="build.contains.proxy-ca" value="true">
             <equals arg1="${variant}" arg2="proxy-ca" casesensitive="false"/>
@@ -976,10 +972,6 @@
 
 		<condition property="variant.suffix" value="_eIDAS">
 			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
-		</condition>
-		
-		<condition property="variant.suffix" value="_SSH">
-			<equals arg1="${variant}" arg2="ssh" casesensitive="false"/>
 		</condition>
 
 		<condition property="variant.suffix" value="_ProxyCA">
@@ -1071,12 +1063,6 @@
 		    	
 		    	<exclude unless="build.contains.va" name="modules/va/src-war/org/ejbca/ui/web/protocol/OCSPServlet.java"/>
 		    	<exclude unless="build.contains.va" name="modules/va/resources/WEB-INF/web-status-ejbca.xml"/>
-		    	
-		    	<!-- Only include SSH module if specified -->
-		    	<exclude unless="build.contains.ssh" name="modules/ssh/**"/>
-		    	<exclude unless="build.contains.ssh" name="modules/ejbca-rest-ssh/**"/>
-		    	<exclude unless="build.contains.ssh" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/SshRestResourceSwagger.java"/>
-		    	<exclude unless="build.contains.ssh" name="modules/ssh/src-test/org/ejbca/ui/web/rest/api/resource/SshRestResourceSystemTest.java"/>
 
                 <!-- Only include ProxyCA module if specified -->
                 <exclude unless="build.contains.proxy-ca" name="modules/proxy-ca/**"/>
