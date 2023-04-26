@@ -64,6 +64,7 @@ import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.TimeMatch;
 import org.ejbca.util.query.UserMatch;
+import org.primefaces.event.TabChangeEvent;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
@@ -229,12 +230,20 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
     }
 
-    public void flushCache() {
+    public void flushCache(@SuppressWarnings("rawtypes") TabChangeEvent event) {
         searchResults = new ListDataModel<>();
         searchByName = null;
         searchBySerialNumber = null;
         searchByStatusCode = null;
         searchByExpiryDays = null;
+        
+        notAfter = null;
+        notBefore = null;
+        timeConstraint = null;
+        
+        queryLines = new ArrayList<>();
+        queryLines.add(new QueryLine(BooleanCriteria.FIRST, UserMatch.MATCH_NONE));
+        queryLines.add(new QueryLine(null, UserMatch.MATCH_NONE));
     }
 
     public String getSearchByName() {
@@ -623,6 +632,14 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     public void setNotBefore(Date notBefore) {
         this.notBefore = notBefore;
     }
+    
+    public void clearAfter() {
+        this.notAfter = null;
+    }
+    
+    public void clearBefore() {
+        this.notBefore = null;
+    }
 
     public class EndEntititySearchResult {
         private final EndEntityInformation endEntityInformation;
@@ -773,9 +790,9 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             return matchOptions;
         }
 
-        public String getMatchWithLabel() {
+        public String getMatchWithLabel(String matchWith) {
             final String returnValue;
-            if(matchWith != null) {
+            if(StringUtils.isNotEmpty(matchWith)) {
                 switch (criteria) {
                 case UserMatch.MATCH_WITH_CA:
                     returnValue = caSession.getCAIdToNameMap().get(Integer.valueOf(matchWith));
