@@ -63,6 +63,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	enum TestType {
 		BASIC,
 		BASICSINGLETRANS,
+		BASICSINGLETRANS_SAMEUSER,
 		REVOKE,
 		REVOKE_BACKDATED,
 		REVOKEALOT
@@ -110,10 +111,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				return new Command[]{
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
 									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
-			case BASICSINGLETRANS:
-				return new Command[]{
-									 new CertificateRequestCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN, kpg.generateKeyPair())
-									};
+            case BASICSINGLETRANS_SAMEUSER:
+            case BASICSINGLETRANS:
+                boolean createNewUser = (testType == TestType.BASICSINGLETRANS);
+                boolean randomizeDn = (testType == TestType.BASICSINGLETRANS_SAMEUSER);
+                return new Command[]{
+                                     new CertificateRequestCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, createNewUser, randomizeDn, this.maxCertificateSN, kpg.generateKeyPair())
+                                    };
 			case REVOKE_BACKDATED:
 			case REVOKE:
 				return new Command[]{
@@ -177,7 +181,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		public boolean doIt() throws Exception {
 			final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(this.jobData.userName, this.jobData.passWord,
 																					   new String(Base64.encode(this.pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
-			return checkAndLogCertificateResponse(certificateResponse, this.jobData);
+			return checkAndLogCertificateResponse(certificateResponse, this.jobData, true);
 		}
 		@Override
 		public String getJobTimeDescription() {
@@ -190,7 +194,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	 * @throws CertificateException
 	 */
 	private boolean checkAndLogCertificateResponse(
-			final CertificateResponse certificateResponse, final JobData jobData)
+			final CertificateResponse certificateResponse, final JobData jobData, final boolean validateUsername)
 					throws CertificateException {
 		X509Certificate cert = null;
 		for ( final java.security.cert.Certificate tmp : CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))) ) {
@@ -201,7 +205,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			return false;
 		}
 		final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
-		if ( !commonName.equals(jobData.userName) ) {
+		if (validateUsername && !commonName.equals(jobData.userName)) {
 			StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
 			return false;
 		}
@@ -425,12 +429,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		final private EjbcaWS ejbcaWS;
 		final private UserDataVOWS user;
 		final private boolean doCreateNewUser;
+		final private boolean randomizeDn;
 		final private int bitsInCertificateSN;
 		private PKCS10CertificationRequest pkcs10;
 		CertificateRequestCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName,
-						JobData _jobData, boolean _doCreateNewUser, int _bitsInCertificateSN, KeyPair keys) throws SignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+						JobData _jobData, boolean _doCreateNewUser, boolean randomizeDn, int _bitsInCertificateSN, KeyPair keys) throws SignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 			super(_jobData);
 			this.doCreateNewUser = _doCreateNewUser;
+			this.randomizeDn = randomizeDn;
 			this.ejbcaWS = _ejbcaWS;
 			this.user = new UserDataVOWS();
 			this.user.setClearPwd(true);
@@ -442,6 +448,10 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.user.setEndEntityProfileName(endEntityProfileName);
 			this.user.setCertificateProfileName(certificateProfileName);
 			this.bitsInCertificateSN = _bitsInCertificateSN;
+            if (!doCreateNewUser) {
+                this.jobData.passWord = "foo123";
+                this.jobData.userName = "WSTESTUSER_REUSE_"+StressTestCommand.this.performanceTest.nextLong();
+            }
 			try {
                 this.pkcs10 = CertTools.genPKCS10CertificationRequest(
                         keys.getPublic().getAlgorithm().equals("RSA") ? "SHA1WithRSA" : "SHA256withECDSA", 
@@ -460,14 +470,18 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			if ( this.bitsInCertificateSN>0 && this.doCreateNewUser ) {
 				this.user.setCertificateSerialNumber(new BigInteger(this.bitsInCertificateSN, StressTestCommand.this.performanceTest.getRandom()));
 			}
-			this.user.setSubjectDN(this.jobData.getDN());
+            if (randomizeDn) {
+                this.user.setSubjectDN(this.jobData.getDN() + "_" + StressTestCommand.this.performanceTest.nextLong());
+            } else {
+                this.user.setSubjectDN(this.jobData.getDN());
+            }
 			this.user.setUsername(this.jobData.userName);
 			this.user.setPassword(this.jobData.passWord);
 			int requestType = CertificateHelper.CERT_REQ_TYPE_PKCS10;
 			String responseType = CertificateHelper.RESPONSETYPE_CERTIFICATE;
 			String requestData = new String(Base64.encode(this.pkcs10.getEncoded()));
 			final CertificateResponse certificateResponse = this.ejbcaWS.certificateRequest(this.user, requestData, requestType, null, responseType);
-			return checkAndLogCertificateResponse(certificateResponse, this.jobData);
+			return checkAndLogCertificateResponse(certificateResponse, this.jobData, !randomizeDn);
 		}
 		@Override
 		public String getJobTimeDescription() {
