@@ -153,9 +153,9 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     private Integer searchByStatusCode = null;
     private Integer searchByExpiryDays = null;
 
-    private ListDataModel<EndEntititySearchResult> searchResults = new ListDataModel<>();
+    private ListDataModel<EndEntitySearchResult> searchResults = new ListDataModel<>();
    
-    private List<EndEntititySearchResult> selectedResults = new ArrayList<>();
+    private List<EndEntitySearchResult> selectedResults = new ArrayList<>();
     private int selectedRevocationReason = 0;
     
     private SearchMethods lastSearch = null;
@@ -266,7 +266,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                 addNonTranslatedErrorMessage("No end entity with name " + searchByName + " found.");
                 this.searchResults = new ListDataModel<>();
             } else {
-                EndEntititySearchResult endEntititySearchResult = new EndEntititySearchResult(endEntityInformation,
+                EndEntitySearchResult endEntititySearchResult = new EndEntitySearchResult(endEntityInformation,
                         caIdToNameMap.get(endEntityInformation.getCAId()));
                 this.searchResults = new ListDataModel<>(Arrays.asList(endEntititySearchResult));
             }
@@ -291,7 +291,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             return "";
         }
         final List<CertificateDataWrapper> certificateDataWrappers = certificateStoreSession.getCertificateDataBySerno(serno);
-        List<EndEntititySearchResult> results = new ArrayList<>();
+        List<EndEntitySearchResult> results = new ArrayList<>();
         Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
         for (final CertificateDataWrapper next : certificateDataWrappers) {
             final CertificateData certdata = next.getCertificateData();
@@ -300,7 +300,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                 if (username != null) {
                     final EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(getAdmin(), username);
                     if (endEntityInformation != null) {
-                        results.add(new EndEntititySearchResult(endEntityInformation, caIdToNameMap.get(endEntityInformation.getCAId())));
+                        results.add(new EndEntitySearchResult(endEntityInformation, caIdToNameMap.get(endEntityInformation.getCAId())));
                     }
                 }
             } catch (AuthorizationDeniedException e) {
@@ -312,12 +312,12 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         return "";
     }
 
-    private List<EndEntititySearchResult> compileResults(final Collection<EndEntityInformation> endEntityInformations) {
-        List<EndEntititySearchResult> results = new ArrayList<>();
+    private List<EndEntitySearchResult> compileResults(final Collection<EndEntityInformation> endEntityInformations) {
+        List<EndEntitySearchResult> results = new ArrayList<>();
         Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
 
         for (EndEntityInformation endEntityInformation : endEntityInformations) {
-            results.add(new EndEntititySearchResult(endEntityInformation, caIdToNameMap.get(endEntityInformation.getCAId())));
+            results.add(new EndEntitySearchResult(endEntityInformation, caIdToNameMap.get(endEntityInformation.getCAId())));
         }
         return results;
     }
@@ -326,7 +326,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
      * Search for all end entities with a status
      */
     public String performSearchByStatus() {
-        List<EndEntititySearchResult> results;
+        List<EndEntitySearchResult> results;
         if (searchByStatusCode.equals(STATUS_ALL)) {
             results = compileResults(endEntityAccessSession.findAllUsersWithLimit(getAdmin()));
             this.searchResults = new ListDataModel<>(results);
@@ -363,7 +363,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                 query.add(queryLine.getCriteria(), queryLine.getMatchHow().getNumericValue(), queryLine.getMatchWith());
             }
         }
-        List<EndEntititySearchResult> results;      
+        List<EndEntitySearchResult> results;      
         if(!timeConstraint.equals(TimeConstraint.NONE) && !(notBefore == null && notAfter == null)) {
             query.add(timeConstraint.getNumericValue(), notBefore, notAfter, BooleanCriteria.AND.getNumericValue());
         }        
@@ -394,42 +394,47 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     
     public String getViewEndEntityPopupLink(final String username) {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "/ra/viewendentity.jsp?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.jsp?username=" + username;
     }
     
     public String getEditEndEntityPopupLink(final String username) {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "/ra/editendentity.jsp?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/editendentity.jsp?username=" + username;
     }
     
     /**
      * Search for all end entities with a status
      */
-    public String performSearchByExpiry() {       
-        LocalDate expiryTime = LocalDate.now().plusDays(searchByExpiryDays);
-        Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(Date.from(expiryTime.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        List<EndEntityInformation> endEntities = new ArrayList<>();
-        Iterator<String> i = usernames.iterator();
-        while (i.hasNext() && endEntities.size() <= getMaximumQueryRowCount() + 1) {
-            EndEntityInformation user = null;
-            try {
-                user = endEntityAccessSession.findUser(getAdmin(), i.next());
-            } catch (AuthorizationDeniedException e) {
-                // Non super-admin access.
+    public String performSearchByExpiry() {
+        if (searchByExpiryDays != null) {
+            LocalDate expiryTime = LocalDate.now().plusDays(searchByExpiryDays);
+            Collection<String> usernames = certificateStoreSession
+                    .findUsernamesByExpireTimeWithLimit(Date.from(expiryTime.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            List<EndEntityInformation> endEntities = new ArrayList<>();
+            Iterator<String> i = usernames.iterator();
+            while (i.hasNext() && endEntities.size() <= getMaximumQueryRowCount() + 1) {
+                EndEntityInformation user = null;
+                try {
+                    user = endEntityAccessSession.findUser(getAdmin(), i.next());
+                } catch (AuthorizationDeniedException e) {
+                    // Non super-admin access.
+                }
+                if (user != null) {
+                    endEntities.add(user);
+                }
             }
-            if (user != null) {
-                endEntities.add(user);
-            }
+            List<EndEntitySearchResult> results = compileResults(endEntities);
+            this.searchResults = new ListDataModel<>(results);
+            lastSearch = SearchMethods.BY_EXPIRY;
+        } else {
+            this.searchResults = new ListDataModel<>();
         }
-        List<EndEntititySearchResult> results = compileResults(endEntities);
-        this.searchResults = new ListDataModel<>(results);
-        lastSearch = SearchMethods.BY_EXPIRY;
         return "";
 
     }
     
     public String revokeSelected() {
-        for (EndEntititySearchResult selectedResult : selectedResults) {
+        for (EndEntitySearchResult selectedResult : selectedResults) {
             try {
                 endEntityManagementSession.revokeUser(getAdmin(), selectedResult.getUsername(), selectedRevocationReason);
             } catch (NoSuchEndEntityException | ApprovalException | AlreadyRevokedException | AuthorizationDeniedException
@@ -444,7 +449,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     }
     
     public String revokeAndDeleteSelected() {
-        for (EndEntititySearchResult selectedResult : selectedResults) {
+        for (EndEntitySearchResult selectedResult : selectedResults) {
             try {
                 endEntityManagementSession.revokeAndDeleteUser(getAdmin(), selectedResult.getUsername(), selectedRevocationReason);
             } catch (NoSuchEndEntityException | ApprovalException | AuthorizationDeniedException
@@ -459,7 +464,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     }
     
     public String deleteSelected() {
-        for (EndEntititySearchResult selectedResult : selectedResults) {
+        for (EndEntitySearchResult selectedResult : selectedResults) {
             try {
                 endEntityManagementSession.deleteUser(getAdmin(), selectedResult.getUsername());
             } catch (NoSuchEndEntityException | AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {
@@ -503,7 +508,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         return globalConfiguration.getMaximumQueryCount();
     }
 
-    public ListDataModel<EndEntititySearchResult> getSearchResults() {
+    public ListDataModel<EndEntitySearchResult> getSearchResults() {
         return searchResults;
     }
 
@@ -548,11 +553,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         this.searchByExpiryDays = searchByExpiryDays;
     }
 
-    public List<EndEntititySearchResult> getSelectedResults() {
+    public List<EndEntitySearchResult> getSelectedResults() {
         return selectedResults;
     }
 
-    public void setSelectedResults(List<EndEntititySearchResult> selectedResults) {
+    public void setSelectedResults(List<EndEntitySearchResult> selectedResults) {
         this.selectedResults = selectedResults;
     }
 
@@ -641,11 +646,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         this.notBefore = null;
     }
 
-    public class EndEntititySearchResult {
+    public class EndEntitySearchResult {
         private final EndEntityInformation endEntityInformation;
         private final String caName;
 
-        public EndEntititySearchResult(final EndEntityInformation endEntityInformation, final String caName) {
+        public EndEntitySearchResult(final EndEntityInformation endEntityInformation, final String caName) {
             this.endEntityInformation = endEntityInformation;
             this.caName = caName;
         }
@@ -775,15 +780,6 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
         public void setMatchHow(MatchHow matchHow) {
             this.matchHow = matchHow;
-        }
-
-        public void onCriteraChange() {
-            matchOptions = new ArrayList<>();
-            if (criteria != UserMatch.MATCH_NONE) {
-                for (MatchHow matchHow : matchMap.get(criteria)) {
-                    matchOptions.add(new SelectItem(matchHow, matchHow.getLabel()));
-                }
-            }
         }
 
         public List<SelectItem> getMatchOptions() {
