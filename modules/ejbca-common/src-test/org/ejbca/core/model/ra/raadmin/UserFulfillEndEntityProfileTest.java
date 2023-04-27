@@ -217,7 +217,7 @@ public class UserFulfillEndEntityProfileTest {
         
         // Test uniqueIdentifier and CertificationID
         try{ 
-          profile.doesUserFulfillEndEntityProfile("username","password","CN=Some Common Name,uniqueIdentifier=060329012d,CertificationID=BSI-K-TR-1234-2023","null","","",
+          profile.doesUserFulfillEndEntityProfile("username","password","CN=Some Common Name,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
                                                    false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of uniqueIdentifier and CertificationID value.");
@@ -228,7 +228,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.addField(DnComponents.UNIQUEIDENTIFIER);
         profile.addField(DnComponents.CERTIFICATIONID);
         // Should pass now
-        profile.doesUserFulfillEndEntityProfile("username","password","OU=DEP1_1,OU=DEP2_2,CN=Some Common Name,uniqueIdentifier=060329012d,CertificationID=BSI-K-TR-1234-2023","null","","",
+        profile.doesUserFulfillEndEntityProfile("username","password","OU=DEP1_1,OU=DEP2_2,CN=Some Common Name,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023","null","","",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
                 false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
         
