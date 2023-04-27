@@ -180,10 +180,7 @@
 	<property name="mod.proxy-ca.path" location="${mod.path}/proxy-ca" />
 	<property name="mod.proxy-ca.lib" location="${mod.dist.path}/proxy-ca.jar" />
 	<property name="mod.proxy-ca.jar" location="${mod.dist.path}/proxy-ca.jar" />
-	<property name="mod.p11ng.path" location="${mod.path}/p11ng" />
-	<property name="mod.p11ng.lib" location="${mod.dist.path}/p11ng.jar" />
-	
-	
+		
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
 	<property name="ejbcaws.enabled" value="true" />
@@ -345,6 +342,8 @@
 
 
 	<path id="lib.x509-common-util.classpath"><fileset dir="${ejbca.home}/lib" includes="x509-common-util*.jar"/></path> 
+	<path id="lib.p11ng.classpath"><fileset dir="${ejbca.home}/lib" includes="p11ng-*.jar"/></path> 
+	
 	
 	<path id="lib.xmlpull.classpath">
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>
@@ -641,10 +640,6 @@
 
 	<condition property="mod.ssh.exists">
 		<available file="${mod.ssh.path}/build.xml" />
-	</condition>
-	
-	<condition property="mod.p11ng.exists">
-		<available file="${mod.p11ng.path}/build.xml" />
 	</condition>
 
 	<condition property="mod.msae.exists">
