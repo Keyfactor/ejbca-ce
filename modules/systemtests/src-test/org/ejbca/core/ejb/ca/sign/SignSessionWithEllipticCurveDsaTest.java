@@ -27,8 +27,16 @@ import com.keyfactor.util.keys.KeyTools;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.ASN1PrintableString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.operator.ContentVerifierProvider;
@@ -360,18 +368,41 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         createEndEntity(endEntityName, eeprofile, cprofile, rsacaid);
         try {
     
-            EndEntityInformation user = new EndEntityInformation(endEntityName, "C=SE,O=PrimeKey,CN=Some CN,uniqueIdentifier=060329012d,CertificationID=BSI-K-TR-1234-2023", rsacaid, null, null,
+            EndEntityInformation user = new EndEntityInformation(endEntityName, "C=SE,O=PrimeKey,CN=Some CN,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023", rsacaid, null, null,
                     new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
-            log.debug("created user: " + endEntityName + ", foo123, C=SE,O=PrimeKey,CN=Some CN,uniqueIdentifier=060329012d,CertificationID=BSI-K-TR-1234-2023");
+            log.debug("created user: " + endEntityName + ", foo123, C=SE,O=PrimeKey,CN=Some CN,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023");
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are not known by JDK so OIDs displayed
-            assertEquals("Not the expected DN in issued cert", "C=SE, O=PrimeKey, CN=Some CN, OID.2.5.4.45=#030600060329012D, OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233", dn);
-            assertEquals("Not the expected EJBCA ordered DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,UniqueIdentifier=060329012d,CN=Some CN,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
+            assertEquals("Not the expected DN in issued cert", "C=SE, O=PrimeKey, CN=Some CN, OID.2.5.4.45=N62892, OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233", dn);
+            assertEquals("Not the expected EJBCA ordered DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,UniqueIdentifier=N62892,CN=Some CN,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
 
+            // Check the encoding of uniqueIdentifier and CertificationID
+            final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
+            RDN[] rdns = x500Name.getRDNs(new ASN1ObjectIdentifier("2.5.4.45")); // UniqueIdentifier
+            assertEquals(1, rdns.length);
+            AttributeTypeAndValue value = rdns[0].getFirst();
+            assertEquals("UniqueIdentifier value is not the expected", "N62892", value.getValue().toString());
+            assertTrue("Value of uniqueIdenfier is not type UTF8String: " + value.getValue().toASN1Primitive().getClass().getName(), (value.getValue().toASN1Primitive() instanceof ASN1UTF8String));
+            ASN1UTF8String utf8 = ASN1UTF8String.getInstance(value.getValue());
+            assertEquals("UniqueIdentifier value is not the expected", "N62892", utf8.toString());
+            
+            rdns = x500Name.getRDNs(new ASN1ObjectIdentifier("0.4.0.127.0.7.3.10.1.2")); // CertificationID
+            assertEquals(1, rdns.length);
+            value = rdns[0].getFirst();
+            assertEquals("CertificationID value is not the expected", "[1, BSI-K-TR-1234-2023]", value.getValue().toString());
+            assertTrue("Value of CertificationID is not type ASN1Sequence: " + value.getValue().toASN1Primitive().getClass().getName(), (value.getValue().toASN1Primitive() instanceof ASN1Sequence));
+            ASN1Sequence sec = ASN1Sequence.getInstance(value.getValue());
+            assertTrue("Value of CertificationID.version is not type ASN1Integer: " + sec.getObjectAt(0).toASN1Primitive().getClass().getName(), (sec.getObjectAt(0).toASN1Primitive() instanceof ASN1Integer));
+            ASN1Integer version = ASN1Integer.getInstance(sec.getObjectAt(0));
+            assertEquals("CertificationID.version is not the expected", 1, version.getValue().intValue());
+            assertTrue("Value of CertificationID.certificationID is not type ASN1PrintableString: " + sec.getObjectAt(1).toASN1Primitive().getClass().getName(), (sec.getObjectAt(1).toASN1Primitive() instanceof ASN1PrintableString));
+            ASN1PrintableString certifationID = ASN1PrintableString.getInstance(sec.getObjectAt(1));
+            assertEquals("CertificationID.certificationID is not the expected", "BSI-K-TR-1234-2023", certifationID.getString());
+            
             // Change to X509 DN order
             certprof.setUseLdapDnOrder(false);
             certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, certprof);
@@ -380,8 +411,8 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
-            assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233, OID.2.5.4.45=#030600060329012D, CN=Some CN, O=PrimeKey, C=SE", dn);
-            assertEquals("Not the expected EJBCA ordered DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,UniqueIdentifier=060329012d,CN=Some CN,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
+            assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233, OID.2.5.4.45=N62892, CN=Some CN, O=PrimeKey, C=SE", dn);
+            assertEquals("Not the expected EJBCA ordered DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,UniqueIdentifier=N62892,CN=Some CN,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
         } finally {
             // Clean up
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);

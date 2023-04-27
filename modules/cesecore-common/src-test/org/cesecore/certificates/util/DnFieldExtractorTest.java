@@ -34,9 +34,8 @@ public class DnFieldExtractorTest {
     	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
     	String dn = "name=tomas,street=a street, role=Test Role, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,"
-    	        + "L=Stockholm,dc=PrimeKey,DC=com,description=Test DN,vid=FFF1,pid=8000,uniqueIdentifier=060329012d, CertificationID=BSI-K-TR-1234-2023";
-    	// uniqueIdentifier=060329012d, the value is the hex encoding of "(new ASN1ObjectIdentifier("1.1.1.45")).getEncoded()"
-    	// See X.520 6.2.7, "It may be, for example, an encoded object identifier, certificate, date, timestamp, or some other"...
+    	        + "L=Stockholm,dc=PrimeKey,DC=com,description=Test DN,vid=FFF1,pid=8000,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023";
+    	// uniqueIdentifier should be a ASN.1 BITSTRING, see X.520 6.2.7, but that is too advanced for customers so they just assume a normal UTF8String
     	// CertificationID is specified in TR03145-5, Note that the certification ID is issued by the certification authority and has the following notation:
     	// BSI-K-TR-"four digit number"-"year as four digit"
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
@@ -91,7 +90,7 @@ public class DnFieldExtractorTest {
         fieldstr = extractor.getFieldString(DNFieldExtractor.PID);
         assertEquals("PID=8000", fieldstr);
         fieldstr = extractor.getFieldString(DNFieldExtractor.UNIQUEIDENTIFIER);
-        assertEquals("UNIQUEIDENTIFIER=060329012d", fieldstr);
+        assertEquals("UNIQUEIDENTIFIER=N62892", fieldstr);
         fieldstr = extractor.getFieldString(DNFieldExtractor.CERTIFICATIONID);
         assertEquals("CERTIFICATIONID=BSI-K-TR-1234-2023", fieldstr);
     	boolean illegal = extractor.isIllegal();
