@@ -350,7 +350,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 }
             }
         }
-        if (currentValueMatched == false && !StringUtils.isEmpty(currentValue)) {
+        if (!currentValueMatched && !StringUtils.isEmpty(currentValue)) {
             ret.add(new SelectItem(currentValue, "Unmatched DN: " + currentValue));
         }
 
@@ -662,7 +662,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         if (signOcspResponseForCas == null) {
             final int internalKeyBindingId = Integer.parseInt(getCurrentInternalKeyBindingId());
             if (internalKeyBindingId == 0) {
-                signOcspResponseForCas = new ListDataModel<>(new ArrayList<InternalKeyBindingTrustEntry>());
+                signOcspResponseForCas = new ListDataModel<>(new ArrayList<>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
@@ -741,7 +741,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 }
                 setCurrentInternalKeybindingId(String.valueOf(internalKeyBindingSession.createInternalKeyBinding(authenticationToken,
                         getSelectedInternalKeyBindingType(), getCurrentName(), InternalKeyBindingStatus.DISABLED, null,
-                        getCurrentCryptoToken().intValue(), getCurrentKeyPairAlias(), getCurrentSignatureAlgorithm(), dataMap,
+                        getCurrentCryptoToken(), getCurrentKeyPairAlias(), getCurrentSignatureAlgorithm(), dataMap,
                         (List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData())));
 
                 List<String> exts = (List<String>) ocspExtensions.getWrappedData();
@@ -757,7 +757,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 if (!Objects.isNull(this.signOcspResponseForCas.getWrappedData())) {
                     signOcspResponseForCas = (List<InternalKeyBindingTrustEntry>) this.signOcspResponseForCas.getWrappedData();
                 } else {
-                    signOcspResponseForCas = new ArrayList<InternalKeyBindingTrustEntry>();
+                    signOcspResponseForCas = new ArrayList<>();
                 }
                 internalKeyBinding.setSignOcspResponseOnBehalf(signOcspResponseForCas);
                 // we save an empty list for sign on behalf of CAs
@@ -784,17 +784,17 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             if (isCryptoTokenActive()) {
                 final int loadedCryptoTokenId = internalKeyBinding.getCryptoTokenId();
                 final String loadedKeyPairAlias = internalKeyBinding.getKeyPairAlias();
-                if (loadedCryptoTokenId != getCurrentCryptoToken().intValue() || !loadedKeyPairAlias.equals(getCurrentKeyPairAlias())) {
+                if (loadedCryptoTokenId != getCurrentCryptoToken() || !loadedKeyPairAlias.equals(getCurrentKeyPairAlias())) {
                     // Since we have changed the referenced key, the referenced certificate (if any) is no longer valid
                     internalKeyBinding.setCertificateId(null);
                 }
-                internalKeyBinding.setCryptoTokenId(getCurrentCryptoToken().intValue());
+                internalKeyBinding.setCryptoTokenId(getCurrentCryptoToken());
                 internalKeyBinding.setKeyPairAlias(getCurrentKeyPairAlias());
                 internalKeyBinding.setSignatureAlgorithm(getCurrentSignatureAlgorithm());
-                if (getCurrentKeyPairAlias() == null || getCurrentKeyPairAlias().length() == 0) {
+                if (getCurrentNextKeyPairAlias() == null || getCurrentNextKeyPairAlias().length() == 0) {
                     internalKeyBinding.setNextKeyPairAlias(null);
                 } else {
-                    internalKeyBinding.setNextKeyPairAlias(getCurrentKeyPairAlias());
+                    internalKeyBinding.setNextKeyPairAlias(getCurrentNextKeyPairAlias());
                 }
             }
             internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData());
@@ -810,7 +810,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 if (!Objects.isNull(this.signOcspResponseForCas.getWrappedData())) {
                     signOcspResponseForCas = (List<InternalKeyBindingTrustEntry>) this.signOcspResponseForCas.getWrappedData();
                 } else {
-                    signOcspResponseForCas = new ArrayList<InternalKeyBindingTrustEntry>();
+                    signOcspResponseForCas = new ArrayList<>();
                 }
                 ocspKeyBinding.setSignOcspResponseOnBehalf(signOcspResponseForCas);
             
