@@ -44,7 +44,7 @@
         <path location="${mod.plugins.lib}"/>
         <path location="${mod.plugins-ee.lib}"/>
 		<path refid="lib.xstream.classpath"/>
-        <path location="${mod.p11ng.lib}" />
+        <path refid="lib.p11ng.classpath" />
 	</path>
 
     <path id="compile-test.classpath">
@@ -55,7 +55,7 @@
         <path refid="lib.junit.classpath"/>
         <path location="${ejbca-ejb-cli.build.dir}"/>
         <path location="${ejbca-ejb-cli.dir}/../dist/systemtests-interfaces.jar"/>
-        <path location="${mod.p11ng.lib}" />
+        <path refid="lib.p11ng.classpath" />
     </path>
 
     <path id="test.classpath">
