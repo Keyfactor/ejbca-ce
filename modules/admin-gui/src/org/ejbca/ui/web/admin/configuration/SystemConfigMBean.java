@@ -2098,6 +2098,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return eabConfigManager;
     }
+    
+    public boolean renderCertificateTransparency() {
+        return getEjbcaWebBean().isRunningBuildWithCA()
+                && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())
+                && CertificateTransparencyFactory.isCTAvailable();
+    }
+    
+    public boolean renderSystemConfiguration() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+    }
 
     public List<String> getAvailableTabs() {
         final List<String> availableTabs = new ArrayList<>();
