@@ -593,6 +593,7 @@
 				<include name="kerby-asn1-*.jar"/>
             	<include name="kerb-crypto-*.jar"/>
         		<include name="x509-common-util*.jar" />
+        		<include name="p11ng-*.jar" />
             	<!-- Internally generated WS server and client files. -->
             	<include name="ejbca-ws-client-gen.jar"/>
             </zipfileset>
@@ -696,13 +697,12 @@
         		<include name="ejbca-ssh.jar" />
         		<include name="ejbca-cits.jar" />
         		<include name="proxy-ca.jar" />
-        		<include name="p11ng.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
                 <include name="*.jar"/>
             </zipfileset>
-        	<!-- Include JackNji11 for use from P11NG (cesecore-common) -->
+        	<!-- Include JackNji11 for use from P11NG -->
         	<zipfileset prefix="lib" dir="${lib}" includes="jacknji11-*.jar"/>
         	<zipfileset prefix="lib" dir="${mod.dist.path}">
         		<!-- ejbca-ws-client is needed for automatic OCSP Renewal via WS
@@ -788,7 +788,6 @@
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-interface"/>
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-publ"/>
         	<sourcepath location="${ejbca.home}/modules/peerconnector/src-rar"/>
-        	<sourcepath location="${ejbca.home}/modules/p11ng/src"/>
         	<sourcepath location="${ejbca.home}/modules/acme/src-common"/>
         	<sourcepath location="${ejbca.home}/modules/cits/src"/>
 		<sourcepath location="${ejbca.home}/modules/peerconnector/src-war"/>
@@ -1440,11 +1439,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     <target name="ejbca-ejb-cli" depends="deprecated:check" description="Builds EJBCA command line interface">
     	<ant dir="modules" target="ejbca-ejb-cli" />
     </target>
-	
-	<target name="p11ng">
-       	<ant dir="modules" target="p11ng" />
-    </target>
-
 	
     <target name="peerconnector-cli:fail" unless="mod.peerconnector.exists">
         <fail>EJBCA DB CLI does not exist in EJBCA Community. Please contact a sales representative at PrimeKey Solutions for information about how to get an Enterprise License.</fail>
