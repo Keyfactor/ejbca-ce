@@ -12,24 +12,17 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import java.io.IOException;
+import com.keyfactor.util.CeSecoreNameStyle;
 
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x500.X500NameStyle;
-import org.bouncycastle.asn1.x500.style.IETFUtils;
-
-import com.keyfactor.util.CeSecoreNameStyle;
 
 /**
  * Like CeSecoreNameStyle, but uses PrintableStrings to encode most attributes
  * (the default encoding is UTF-8)
- * 
- * @version $Id$
  */
 public class PrintableStringNameStyle extends CeSecoreNameStyle {
 
@@ -41,44 +34,21 @@ public class PrintableStringNameStyle extends CeSecoreNameStyle {
      * return true if the passed in String can be represented without
      * loss as a PrintableString, false otherwise.
      */
-    private boolean canBePrintable(
-        String  str)
-    {
+    private boolean canBePrintable(String  str) {
         return DERPrintableString.isPrintableString(str);
     }
 
     @Override
-    public ASN1Encodable stringToValue(ASN1ObjectIdentifier oid, String value)
-    {
-        if (value.length() != 0 && value.charAt(0) == '#')
-        {
-            try
-            {
-                return IETFUtils.valueFromHexString(value, 1);
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException("can't recode value for oid " + oid.getId());
-            }
+    public ASN1Encodable stringToValue(ASN1ObjectIdentifier oid, String value) {
+        // Let super classes encode value first, then check if we need to change it
+        // THis is better than copying, and keeping updated, from super class
+        ASN1Encodable asn1Value = super.stringToValue(oid, value);
+        if (asn1Value instanceof DERUTF8String) {
+            if (canBePrintable(value)) {
+                return new DERPrintableString(value);
+            }   
         }
-        else if (value.length() != 0 && value.charAt(0) == '\\')
-        {
-            value = value.substring(1);
-        }
-        else if (oid.equals(CeSecoreNameStyle.EmailAddress) || oid.equals(CeSecoreNameStyle.DC))
-        {
-            return new DERIA5String(value);
-        }
-        else if (oid.equals(DATE_OF_BIRTH))  // accept time string as well as # (for compatibility)
-        {
-            return new ASN1GeneralizedTime(value);
-        }
-        else if (canBePrintable(value))  
-        {
-            return new DERPrintableString(value);
-        }
-
-        return new DERUTF8String(value);
+        return asn1Value;
     }
     
 }
