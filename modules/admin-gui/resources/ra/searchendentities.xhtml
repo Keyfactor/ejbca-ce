@@ -20,7 +20,6 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
       -->
 </ui:remove>
 
@@ -159,10 +158,11 @@
 		              			disabled="#{!(searchEndEntitiesMBean.isTimeConstraintChosen())}"
 		              			hideOnDateTimeSelect="true"
 		              			yearNavigator="true"/>
-				              	<p:commandButton 
-									value="#{web.text.CLEAR}"
-									action="#{searchEndEntitiesMBean.clearAfter()}">
-								</p:commandButton>           		
+				             <p:commandButton 
+								value="#{web.text.CLEAR}"
+								action="#{searchEndEntitiesMBean.clearAfter()}"
+								update="after">
+							</p:commandButton>           		
 	              		</h:panelGroup>    
               		         		
 	              		<h:panelGroup>
@@ -177,16 +177,17 @@
 		              			disabled="#{!(searchEndEntitiesMBean.isTimeConstraintChosen())}"
 		              			hideOnDateTimeSelect="true"
 		              			yearNavigator="true"/>
-		              			<p:commandButton 
-									value="#{web.text.CLEAR}"
-									action="#{searchEndEntitiesMBean.clearBefore()}">
-								</p:commandButton>  
+		              		<p:commandButton 
+								value="#{web.text.CLEAR}"
+								action="#{searchEndEntitiesMBean.clearBefore()}"
+								update="before">
+							</p:commandButton>  
 	              		</h:panelGroup>
 					</p:panelGrid>           		
               		<p:commandButton id="findAdvancedButton"
 						value="#{web.text.SEARCH}"
-						action="#{searchEndEntitiesMBean.performAdvancedSearch()}">
-						<f:ajax execute="@form" event="click" render=":results" />
+						action="#{searchEndEntitiesMBean.performAdvancedSearch()}"
+						update="results">
 					</p:commandButton>
               		
 				</h:form>
