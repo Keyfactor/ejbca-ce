@@ -194,7 +194,6 @@
 		</p:tabView>
 		<h:form id="results">
 			<p:dataTable id="resultsTable" paginator="true"
-				rendered="#{searchEndEntitiesMBean.searchResults.rowCount!=0}"
 				value="#{searchEndEntitiesMBean.searchResults}" var="searchResult"
 				paginatorPosition="both"
 				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
