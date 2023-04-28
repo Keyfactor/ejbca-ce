@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -70,7 +69,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 
 /**
- * Backing bean for the Search End Entities page in the CA UI. 
+ * Backing bean for the Search End Entities page in the CA UI.
  */
 @Named("searchEndEntitiesMBean")
 @ViewScoped
@@ -79,9 +78,9 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     private static final long serialVersionUID = 1L;
 
     private static final int STATUS_ALL = -1;
-    
+
     private static final int NO_TIME_MATCH = -1;
-    
+
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -100,7 +99,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     private final EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
-    
+
     private transient final List<SelectItem> searchCriteria = Arrays.asList(
             new SelectItem(UserMatch.MATCH_NONE, getEjbcaWebBean().getText("SELECT_CRITERIA")),
             new SelectItem(UserMatch.MATCH_WITH_CA, getEjbcaWebBean().getText("MATCHCA")),
@@ -126,47 +125,47 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     private transient final List<SelectItem> booleanCriteria = Arrays.asList(
             new SelectItem(null, "Add Constraint"),
             new SelectItem(BooleanCriteria.AND, "And"),
-            new SelectItem(BooleanCriteria.OR, "Or"), 
+            new SelectItem(BooleanCriteria.OR, "Or"),
             new SelectItem(BooleanCriteria.AND_NOT, "And not"),
             new SelectItem(BooleanCriteria.OR_NOT, "Or not"));
 
     private transient final Map<Integer, MatchHow[]> matchMap = new HashMap<>();
 
     private transient final List<String> matchWithCa = new ArrayList<>();
-    
+
     private transient final List<String> matchWithCertificateProfile = new ArrayList<>();
-    
+
     private transient final List<String> matchWithEndEntityProfile = new ArrayList<>();
-    
+
     private transient final List<String> availableAdvancedStatusCodes = new ArrayList<>();
 
     private transient final List<SelectItem> availableStatusCodes;
-    
+
     private transient final List<SelectItem> revocationReasons;
 
     private transient RAAuthorization raAuthorization;
 
     //Basic mode values:
-    
+
     private String searchByName = null;
     private String searchBySerialNumber = null;
     private Integer searchByStatusCode = null;
     private Integer searchByExpiryDays = null;
 
     private ListDataModel<EndEntitySearchResult> searchResults = new ListDataModel<>();
-   
+
     private List<EndEntitySearchResult> selectedResults = new ArrayList<>();
     private int selectedRevocationReason = 0;
-    
+
     private SearchMethods lastSearch = null;
-    
+
     //Advanced mode values:
-    
+
     private List<QueryLine> queryLines = new ArrayList<>();
-    
+
     private TimeConstraint timeConstraint;
-    
-    private Date after;    
+
+    private Date after;
     private Date before;
 
     public SearchEndEntitiesMBean() {
@@ -176,55 +175,55 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         for (Integer statusCode : EndEntityConstants.getAllStatusCodes()) {
             availableStatusCodes.add(new SelectItem(statusCode, ejbcaWebBean.getText(EndEntityConstants.getTranslatableStatusText(statusCode))));
         }
-        
+
         revocationReasons = new ArrayList<>();
-        for(int i = 0; i < SecConst.reasontexts.length; i++) {
+        for (int i = 0; i < SecConst.reasontexts.length; i++) {
             revocationReasons.add(new SelectItem(i, ejbcaWebBean.getText(SecConst.reasontexts[i])));
         }
-        
+
         //First line is the initial search
         queryLines.add(new QueryLine(BooleanCriteria.FIRST, UserMatch.MATCH_NONE));
         //Second line 
         queryLines.add(new QueryLine(null, UserMatch.MATCH_NONE));
 
-        matchMap.put(UserMatch.MATCH_WITH_CA, new MatchHow[] { MatchHow.EQUALS });
-        matchMap.put(UserMatch.MATCH_WITH_CERTIFICATEPROFILE, new MatchHow[] { MatchHow.EQUALS });
-        matchMap.put(UserMatch.MATCH_WITH_ENDENTITYPROFILE, new MatchHow[] { MatchHow.EQUALS });
-        matchMap.put(UserMatch.MATCH_WITH_STATUS, new MatchHow[] { MatchHow.EQUALS });
-        matchMap.put(UserMatch.MATCH_WITH_EMAIL, new MatchHow[] { MatchHow.EQUALS, MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_USERNAME, new MatchHow[] { MatchHow.EQUALS, MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_UID, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_COMMONNAME, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_DNSERIALNUMBER, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_GIVENNAME, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_INITIALS, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_SURNAME, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_TITLE, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_ORGANIZATIONALUNIT, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_ORGANIZATION, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_LOCALITY, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_STATEORPROVINCE, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_DOMAINCOMPONENT, new MatchHow[] { MatchHow.BEGINSWITH });
-        matchMap.put(UserMatch.MATCH_WITH_COUNTRY, new MatchHow[] { MatchHow.BEGINSWITH });
+        matchMap.put(UserMatch.MATCH_WITH_CA, new MatchHow[]{MatchHow.EQUALS});
+        matchMap.put(UserMatch.MATCH_WITH_CERTIFICATEPROFILE, new MatchHow[]{MatchHow.EQUALS});
+        matchMap.put(UserMatch.MATCH_WITH_ENDENTITYPROFILE, new MatchHow[]{MatchHow.EQUALS});
+        matchMap.put(UserMatch.MATCH_WITH_STATUS, new MatchHow[]{MatchHow.EQUALS});
+        matchMap.put(UserMatch.MATCH_WITH_EMAIL, new MatchHow[]{MatchHow.EQUALS, MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_USERNAME, new MatchHow[]{MatchHow.EQUALS, MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_UID, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_COMMONNAME, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_DNSERIALNUMBER, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_GIVENNAME, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_INITIALS, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_SURNAME, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_TITLE, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_ORGANIZATIONALUNIT, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_ORGANIZATION, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_LOCALITY, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_STATEORPROVINCE, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_DOMAINCOMPONENT, new MatchHow[]{MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_COUNTRY, new MatchHow[]{MatchHow.BEGINSWITH});
 
     }
 
     @PostConstruct
     public void initialize() {
         raAuthorization = new RAAuthorization(getAdmin(), globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
-        
+
         for (CAInfo caInfo : caSession.getAuthorizedCaInfos(getAdmin())) {
             matchWithCa.add(Integer.toString(caInfo.getCAId()));
         }
-        
-        for(int certificateProfileId : certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_UNKNOWN)) {
+
+        for (int certificateProfileId : certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_UNKNOWN)) {
             matchWithCertificateProfile.add(Integer.toString(certificateProfileId));
         }
-        
-        for(int endEntityProfileId : endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.VIEW_END_ENTITY)) {
+
+        for (int endEntityProfileId : endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.VIEW_END_ENTITY)) {
             matchWithEndEntityProfile.add(Integer.toString(endEntityProfileId));
         }
-        
+
         for (Integer statusCode : EndEntityConstants.getAllStatusCodes()) {
             availableAdvancedStatusCodes.add(statusCode.toString());
         }
@@ -236,11 +235,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         searchBySerialNumber = null;
         searchByStatusCode = null;
         searchByExpiryDays = null;
-        
+
         after = null;
         before = null;
         timeConstraint = null;
-        
+
         queryLines = new ArrayList<>();
         queryLines.add(new QueryLine(BooleanCriteria.FIRST, UserMatch.MATCH_NONE));
         queryLines.add(new QueryLine(null, UserMatch.MATCH_NONE));
@@ -352,9 +351,9 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         lastSearch = SearchMethods.BY_STATUS;
         return "";
     }
-    
+
     public String performAdvancedSearch() {
-        Query query = new Query(Query.TYPE_USERQUERY);        
+        Query query = new Query(Query.TYPE_USERQUERY);
         for (QueryLine queryLine : queryLines) {
             if (queryLine.isComplete()) {
                 if (!query.isEmpty()) {
@@ -363,10 +362,10 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                 query.add(queryLine.getCriteria(), queryLine.getMatchHow().getNumericValue(), queryLine.getMatchWith());
             }
         }
-        List<EndEntitySearchResult> results;      
-        if(!timeConstraint.equals(TimeConstraint.NONE) && !(before == null && after == null)) {
+        List<EndEntitySearchResult> results;
+        if (!timeConstraint.equals(TimeConstraint.NONE) && !(before == null && after == null)) {
             query.add(timeConstraint.getNumericValue(), after, before, BooleanCriteria.AND.getNumericValue());
-        }        
+        }
         try {
             Collection<EndEntityInformation> userlist = endEntityAccessSession.query(getAdmin(), query,
                     raAuthorization.getCAAuthorizationString(),
@@ -383,25 +382,25 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             this.searchResults = new ListDataModel<>();
         }
         lastSearch = SearchMethods.ADVANCED;
-        
+
         return "";
     }
-    
+
     public String getCertificatePopupLink(final String username) {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "viewcertificate.xhtml?username=" + username;
     }
-    
+
     public String getViewEndEntityPopupLink(final String username) {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.jsp?username=" + username;
     }
-    
+
     public String getEditEndEntityPopupLink(final String username) {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/editendentity.jsp?username=" + username;
     }
-    
+
     /**
      * Search for all end entities with a status
      */
@@ -432,37 +431,38 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         return "";
 
     }
-    
+
     public String revokeSelected() {
         for (EndEntitySearchResult selectedResult : selectedResults) {
             try {
                 endEntityManagementSession.revokeUser(getAdmin(), selectedResult.getUsername(), selectedRevocationReason);
-            } catch (NoSuchEndEntityException | ApprovalException | AlreadyRevokedException | AuthorizationDeniedException
-                    | WaitingForApprovalException e) {
+            } catch (NoSuchEndEntityException | ApprovalException | AlreadyRevokedException |
+                     AuthorizationDeniedException
+                     | WaitingForApprovalException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             }
         }
-        selectedResults = new ArrayList<>();   
+        selectedResults = new ArrayList<>();
         repeatLastSearch();
-        
+
         return "";
     }
-    
+
     public String revokeAndDeleteSelected() {
         for (EndEntitySearchResult selectedResult : selectedResults) {
             try {
                 endEntityManagementSession.revokeAndDeleteUser(getAdmin(), selectedResult.getUsername(), selectedRevocationReason);
             } catch (NoSuchEndEntityException | ApprovalException | AuthorizationDeniedException
-                    | WaitingForApprovalException | CouldNotRemoveEndEntityException e) {
+                     | WaitingForApprovalException | CouldNotRemoveEndEntityException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             }
         }
-        selectedResults = new ArrayList<>();   
+        selectedResults = new ArrayList<>();
         repeatLastSearch();
-        
+
         return "";
     }
-    
+
     public String deleteSelected() {
         for (EndEntitySearchResult selectedResult : selectedResults) {
             try {
@@ -470,38 +470,40 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             } catch (NoSuchEndEntityException | AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             }
-        }  
-        selectedResults = new ArrayList<>();   
+        }
+        selectedResults = new ArrayList<>();
         repeatLastSearch();
-        
+
         return "";
     }
-    
-    
+
+
     private void repeatLastSearch() {
         switch (lastSearch) {
-        case BY_EXPIRY:
-            performSearchByExpiry();
-            break;
-        case BY_NAME:
-            performSearchByName();
-            break;
-        case BY_SERIALNUMBER:
-            performSearchBySerialNumber();
-            break;
-        case BY_STATUS:
-            performSearchByStatus();
-            break;
-        case ADVANCED:
-            performAdvancedSearch();
-            break;
-        default:
-            break;
+            case BY_EXPIRY:
+                performSearchByExpiry();
+                break;
+            case BY_NAME:
+                performSearchByName();
+                break;
+            case BY_SERIALNUMBER:
+                performSearchBySerialNumber();
+                break;
+            case BY_STATUS:
+                performSearchByStatus();
+                break;
+            case ADVANCED:
+                performAdvancedSearch();
+                break;
+            default:
+                break;
         }
 
     }
 
-    /** @return the maximum size of the result from SQL select queries */
+    /**
+     * @return the maximum size of the result from SQL select queries
+     */
     private int getMaximumQueryRowCount() {
         GlobalCesecoreConfiguration globalConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
@@ -522,6 +524,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
     /**
      * Gets a list of select items of the available certificate profiles.
+     *
      * @return the list.
      */
     public List<SelectItem> getAvailableStatuses() {
@@ -538,12 +541,13 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
     /**
      * Gets a list of select items of the available certificate profiles.
+     *
      * @return the list.
      */
     public List<SelectItem> getRevocationReasons() {
         return revocationReasons;
     }
-    
+
 
     public Integer getSearchByExpiryDays() {
         return searchByExpiryDays;
@@ -562,17 +566,16 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     }
 
     /**
-     * 
      * @return true if current administrator has general revocation rights
      */
     public boolean getMayRevoke() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_REVOKEENDENTITY);
     }
-    
+
     public boolean getMayDelete() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_DELETEENDENTITY);
     }
-    
+
     public int getSelectedRevocationReason() {
         return selectedRevocationReason;
     }
@@ -580,7 +583,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     public void setSelectedRevocationReason(int selectedRevocationReason) {
         this.selectedRevocationReason = selectedRevocationReason;
     }
-    
+
     public List<QueryLine> getQueryLines() {
         return queryLines;
     }
@@ -596,24 +599,23 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     public List<SelectItem> getBooleanCriteria() {
         return booleanCriteria;
     }
-    
+
     public void addQueryLine() {
         //On selecting a boolean criteria, add another potential line 
         queryLines.add(new QueryLine(null, UserMatch.MATCH_NONE));
     }
 
-   
-    
+
     public List<SelectItem> getTimeConstraintValues() {
         return Arrays.asList(new SelectItem(TimeConstraint.NONE, TimeConstraint.NONE.getLabel()),
-                        new SelectItem(TimeConstraint.CREATED, TimeConstraint.CREATED.getLabel()),
-                        new SelectItem(TimeConstraint.MODIFIED, TimeConstraint.MODIFIED.getLabel()));
+                new SelectItem(TimeConstraint.CREATED, TimeConstraint.CREATED.getLabel()),
+                new SelectItem(TimeConstraint.MODIFIED, TimeConstraint.MODIFIED.getLabel()));
     }
 
     public boolean isTimeConstraintChosen() {
         return timeConstraint != null && !timeConstraint.equals(TimeConstraint.NONE);
     }
-    
+
     public TimeConstraint getTimeConstraint() {
         return timeConstraint;
     }
@@ -637,11 +639,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     public void setBefore(Date before) {
         this.before = before;
     }
-    
+
     public void clearAfter() {
         this.after = null;
     }
-    
+
     public void clearBefore() {
         this.before = null;
     }
@@ -675,7 +677,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     private enum SearchMethods {
         BY_EXPIRY, BY_NAME, BY_SERIALNUMBER, BY_STATUS, ADVANCED;
     }
-    
+
     private enum MatchHow {
         EQUALS("Equals", BasicMatch.MATCH_TYPE_EQUALS), BEGINSWITH("Begins with", BasicMatch.MATCH_TYPE_BEGINSWITH);
 
@@ -684,7 +686,8 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
         private MatchHow(String label, int numericValue) {
             this.label = label;
-            this.numericValue = numericValue;;
+            this.numericValue = numericValue;
+            ;
         }
 
         public String getLabel() {
@@ -698,11 +701,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     }
 
     private enum TimeConstraint {
-        NONE("None", NO_TIME_MATCH), CREATED ("Created", TimeMatch.MATCH_WITH_TIMECREATED), MODIFIED("Modified", TimeMatch.MATCH_WITH_TIMEMODIFIED);
-        
+        NONE("None", NO_TIME_MATCH), CREATED("Created", TimeMatch.MATCH_WITH_TIMECREATED), MODIFIED("Modified", TimeMatch.MATCH_WITH_TIMEMODIFIED);
+
         private final String label;
         private final int numericValue;
-        
+
         private TimeConstraint(final String label, int numericValue) {
             this.label = label;
             this.numericValue = numericValue;
@@ -717,7 +720,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
 
     }
-    
+
     public class QueryLine {
         private BooleanCriteria booleanCriteria;
 
@@ -749,7 +752,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         public boolean isNotFirst() {
             return booleanCriteria != BooleanCriteria.FIRST;
         }
-        
+
         public boolean isNotInitialized() {
             return booleanCriteria == null;
         }
@@ -765,11 +768,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         public boolean isComplete() {
             return isCriteriaChosen() && matchHow != null && !StringUtils.isEmpty(matchWith);
         }
-        
+
         public boolean isCriteriaChosen() {
             return criteria != UserMatch.MATCH_NONE;
         }
-        
+
         public boolean isBooleanCriteriaChosen() {
             return this.booleanCriteria != null;
         }
@@ -788,23 +791,23 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
         public String getMatchWithLabel(String matchWith) {
             final String returnValue;
-            if(StringUtils.isNotEmpty(matchWith)) {
+            if (StringUtils.isNotEmpty(matchWith)) {
                 switch (criteria) {
-                case UserMatch.MATCH_WITH_CA:
-                    returnValue = caSession.getCAIdToNameMap().get(Integer.valueOf(matchWith));
-                    break;
-                case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
-                    returnValue = certificateProfileSession.getCertificateProfileName(Integer.valueOf(matchWith));
-                    break;
-                case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
-                    returnValue = endEntityProfileSession.getEndEntityProfileName(Integer.valueOf(matchWith));
-                    break;
-                case UserMatch.MATCH_WITH_STATUS:
-                    returnValue = ejbcaWebBean.getText(EndEntityConstants.getTranslatableStatusText(Integer.valueOf(matchWith)));
-                    break;
-                default:
-                    returnValue = matchWith;
-                    break;
+                    case UserMatch.MATCH_WITH_CA:
+                        returnValue = caSession.getCAIdToNameMap().get(Integer.valueOf(matchWith));
+                        break;
+                    case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
+                        returnValue = certificateProfileSession.getCertificateProfileName(Integer.valueOf(matchWith));
+                        break;
+                    case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
+                        returnValue = endEntityProfileSession.getEndEntityProfileName(Integer.valueOf(matchWith));
+                        break;
+                    case UserMatch.MATCH_WITH_STATUS:
+                        returnValue = ejbcaWebBean.getText(EndEntityConstants.getTranslatableStatusText(Integer.valueOf(matchWith)));
+                        break;
+                    default:
+                        returnValue = matchWith;
+                        break;
                 }
             } else {
                 returnValue = null;
@@ -812,7 +815,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
             return returnValue;
         }
-        
+
         public String getMatchWith() {
             return matchWith;
         }
@@ -824,41 +827,58 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         public List<String> getMatchWithValues() {
             List<String> result = null;
             switch (criteria) {
-            case UserMatch.MATCH_NONE:
-                
-                break;
-            case UserMatch.MATCH_WITH_CA:
-                result = matchWithCa;
-                break;
-            case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
-                result = matchWithCertificateProfile;
-                break;
-            case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
-                result = matchWithEndEntityProfile;
-                break;
-            case UserMatch.MATCH_WITH_STATUS:
-                result = availableAdvancedStatusCodes;
-                break;
-               
-            default:
-                break;
+                case UserMatch.MATCH_NONE:
+
+                    break;
+                case UserMatch.MATCH_WITH_CA:
+                    result = matchWithCa;
+                    break;
+                case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
+                    result = matchWithCertificateProfile;
+                    break;
+                case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
+                    result = matchWithEndEntityProfile;
+                    break;
+                case UserMatch.MATCH_WITH_STATUS:
+                    result = availableAdvancedStatusCodes;
+                    break;
+
+                default:
+                    break;
             }
             return result;
         }
 
     }
-    
+
     private enum BooleanCriteria {
         FIRST(-1), AND(Query.CONNECTOR_AND), OR(Query.CONNECTOR_OR), AND_NOT(Query.CONNECTOR_ANDNOT), OR_NOT(Query.CONNECTOR_ORNOT);
-        
+
         private final int numericValue;
-        
+
         private BooleanCriteria(int numericValue) {
             this.numericValue = numericValue;
         }
 
         protected int getNumericValue() {
             return numericValue;
+        }
+    }
+
+    public static class ListDataModel<E> extends javax.faces.model.ListDataModel<E> {
+
+        public ListDataModel() {
+            super();
+        }
+
+        public ListDataModel(List<E> results) {
+            super(results);
+        }
+
+        @Override
+        public int getRowCount() {
+            final int rowCount = super.getRowCount();
+            return rowCount == -1 ? 0 : rowCount;
         }
     }
 
