@@ -2093,9 +2093,6 @@ function edituser(row){
   <!-- nothing to do -->
   <% } else{ %>
   <div class="message"><strong><c:out value="<%= ejbcawebbean.getText(\"PREVIOUSLYADDEDENDENTITIES\") %>"/></strong></div>
-  <div>
-    <input type="submit" name="<%=BUTTON_RELOAD %>" value='<c:out value="<%= ejbcawebbean.getText(\"RELOAD\") %>"/>'>
-  </div>
   <table class="results" width="100%" border="0" cellspacing="1" cellpadding="0">
   <thead>
   <tr> 

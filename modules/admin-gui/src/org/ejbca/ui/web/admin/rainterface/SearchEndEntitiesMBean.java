@@ -166,8 +166,8 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     
     private TimeConstraint timeConstraint;
     
-    private Date notAfter;    
-    private Date notBefore;
+    private Date after;    
+    private Date before;
 
     public SearchEndEntitiesMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY);
@@ -237,8 +237,8 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         searchByStatusCode = null;
         searchByExpiryDays = null;
         
-        notAfter = null;
-        notBefore = null;
+        after = null;
+        before = null;
         timeConstraint = null;
         
         queryLines = new ArrayList<>();
@@ -364,8 +364,8 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             }
         }
         List<EndEntitySearchResult> results;      
-        if(!timeConstraint.equals(TimeConstraint.NONE) && !(notBefore == null && notAfter == null)) {
-            query.add(timeConstraint.getNumericValue(), notBefore, notAfter, BooleanCriteria.AND.getNumericValue());
+        if(!timeConstraint.equals(TimeConstraint.NONE) && !(before == null && after == null)) {
+            query.add(timeConstraint.getNumericValue(), after, before, BooleanCriteria.AND.getNumericValue());
         }        
         try {
             Collection<EndEntityInformation> userlist = endEntityAccessSession.query(getAdmin(), query,
@@ -622,28 +622,28 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         this.timeConstraint = timeConstraint;
     }
 
-    public Date getNotAfter() {
-        return notAfter;
+    public Date getAfter() {
+        return after;
     }
 
-    public void setNotAfter(Date notAfter) {
-        this.notAfter = notAfter;
+    public void setAfter(Date after) {
+        this.after = after;
     }
 
-    public Date getNotBefore() {
-        return notBefore;
+    public Date getBefore() {
+        return before;
     }
 
-    public void setNotBefore(Date notBefore) {
-        this.notBefore = notBefore;
+    public void setBefore(Date before) {
+        this.before = before;
     }
     
     public void clearAfter() {
-        this.notAfter = null;
+        this.after = null;
     }
     
     public void clearBefore() {
-        this.notBefore = null;
+        this.before = null;
     }
 
     public class EndEntitySearchResult {
