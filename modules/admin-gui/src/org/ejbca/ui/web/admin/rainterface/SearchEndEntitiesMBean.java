@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -859,6 +858,23 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
         protected int getNumericValue() {
             return numericValue;
+        }
+    }
+
+    public static class ListDataModel<E> extends javax.faces.model.ListDataModel<E> {
+
+        public ListDataModel() {
+            super();
+        }
+
+        public ListDataModel(List<E> results) {
+            super(results);
+        }
+
+        @Override
+        public int getRowCount() {
+            final int rowCount = super.getRowCount();
+            return rowCount == -1 ? 0 : rowCount;
         }
     }
 
