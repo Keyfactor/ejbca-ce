@@ -2116,6 +2116,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean renderOAuthProviders() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().isRunningEnterprise();
     }
+    
+    public boolean renderCustomCertificateExtensions() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
+    }
+    
+    public boolean renderCustomRaStyles() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource());
+    }
+    
+    public boolean renderStatedumpTab() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
+    }
 
     public List<String> getAvailableTabs() {
         final List<String> availableTabs = new ArrayList<>();
