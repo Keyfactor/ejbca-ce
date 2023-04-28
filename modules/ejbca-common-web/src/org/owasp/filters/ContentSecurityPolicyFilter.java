@@ -29,12 +29,14 @@ import org.apache.commons.lang.StringUtils;
  * <br/>
  * This implementation is oriented to be easily understandable and easily adapted.<br/>
  * 
- * @version $Id$
  */
 public class ContentSecurityPolicyFilter implements Filter {
 
-    /** Configuration member to specify if web app use web fonts */
-    public static final boolean APP_USE_WEBFONTS = false;
+    /** Configuration member to specify if web app use web fonts 
+     * 
+     * Set to true to allow PrimeFaces to load icons, but only allows loading locally. 
+     */
+    public static final boolean APP_USE_WEBFONTS = true;
 
     /** Configuration member to specify if web app use videos or audios */
     public static final boolean APP_USE_AUDIOS_OR_VIDEOS = false;
