@@ -2112,6 +2112,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean renderExtendedKeyUsages() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource());
     }
+    
+    public boolean renderOAuthProviders() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().isRunningEnterprise();
+    }
 
     public List<String> getAvailableTabs() {
         final List<String> availableTabs = new ArrayList<>();
