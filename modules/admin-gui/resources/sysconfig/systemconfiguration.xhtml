@@ -42,7 +42,7 @@
 		</c:forEach>
 	</div>
 	-->
-	<p:tabView dynamic="true" cache="true">
+	<p:tabView>
 		<p:tab title="Basic Configurations" rendered="systemConfigMBean.renderSystemConfiguration()">
 			<h:form id="systemconfiguration">
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
@@ -476,7 +476,7 @@
 	
 		<!-- Extended Key Usages -->
 		<p:tab title="Extended Key Usages" rendered="systemConfigMBean.renderExtendedKeyUsages()">
-			<h:form id="extkeyusageform" enctype="multipart/form-data"">
+			<h:form id="extkeyusageform" enctype="multipart/form-data">
 				<h:panelGroup>
 					<h4>
 						<h:outputText value="#{web.text.EKU_EDIT_EKU_TITLE}" rendered="#{systemConfigMBean.allowedToEditExtendedKeyUsages}"/>
@@ -595,7 +595,7 @@
 	
 		        <h:panelGroup id="ctRevocationService" styleClass="block hintBlock" layout="block" rendered="#{not systemConfigMBean.incompleteIssuanceServiceAvailable}">
 		               <h3><h:outputText value="#{web.text.CTLOGCONFIGURATION_ADDSERVICEHEADER}"/></h3>
-		               <p><h:outputText value=#{web.text.CTLOGCONFIGURATION_ADDSERVICETEXT}"/></p>
+		               <p><h:outputText value="#{web.text.CTLOGCONFIGURATION_ADDSERVICETEXT}"/></p>
 		               <div><h:commandButton action="#{systemConfigMBean.addIncompleteIssuanceService}"
 		                            value="#{web.text.CTLOGCONFIGURATION_ADDSERVICEBUTTON}"
 		                            id="addIncompleteIssuanceServiceButton"/></div>
@@ -727,331 +727,338 @@
 		                title="#{web.text.SAVE_CT_POLICY}"
 		                rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 		        </div>
-		</h:form>
-	</p:tab>
+			</h:form>
+		</p:tab>
 
-
-	<!-- Custom Certificate Extensions -->
-	<p:tab title="Custom Certificate Extensions" rendered="systemConfigMBean.renderCustomCertificateExtensions()">
-		<h:form id="customcertextensionsform" enctype="multipart/form-data">
-			<h:panelGroup>
-				<h4>
-					<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_EDIT_CCE_TITLE}" rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
-					<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_VIEW_CCE_TITLE}" rendered="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
-					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Custom_Certificate_Extensions.html')}" escape="false"/>
-				</h4>
-				<br/>
-			</h:panelGroup>
 	
-			<h:dataTable value="#{systemConfigMBean.availableCustomCertExtensions}" var="extension"
-						styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
-	
-				<h:column>
-	   				<f:facet name="header"><h:outputText value="#{web.text.ID}"/></f:facet>
-					<h:outputText value="#{extension.id}" title="#{extension.id}"/>
-				</h:column>
-				<h:column>
-	   				<f:facet name="header"><h:outputText value="#{web.text.OID}"/></f:facet>
-					<h:outputText value="#{extension.oid}" title="#{extension.oid}"/>
-					<f:facet name="footer">
-						<h:inputText id="newCEOID" value="#{systemConfigMBean.newOID}" size="25" title="#{web.text.FORMAT_OID}"
-							disabled="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
-					</f:facet>
-				</h:column>
-				<h:column>
-	   				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
-					<h:outputText value="#{extension.displayName}"/>
-					<f:facet name="footer">
-						<h:inputText id="newCELabel" value="#{systemConfigMBean.newDisplayName}" size="35" title="#{web.text.FORMAT_STRING}"
-	                                 disabled="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}">
-	                        <f:converter converterId="trimConverter"/>
-	                    </h:inputText>
-					</f:facet>
-				</h:column>
-	
-				<h:column>
-	   				<f:facet name="header"><h:outputText value="#{web.text.CRITICAL}"/></f:facet>
-					<h:outputText value="#{web.text.NO}" rendered="#{!extension.critical}"/>
-					<h:outputText value="#{web.text.YES}" rendered="#{extension.critical}"/>
-				</h:column>
-	
-				<h:column>
-	   				<f:facet name="header"><h:outputText value="#{web.text.REQUIRED}"/></f:facet>
-					<h:outputText value="#{web.text.NO}" rendered="#{!extension.required}"/>
-					<h:outputText value="#{web.text.YES}" rendered="#{extension.required}"/>
-				</h:column>
-	
-				<h:column>
-	   				<f:facet name="header"><h:outputText value="#{web.text.ENCODING}"/></f:facet>
-					<h:outputText value="#{extension.encoding}"/>
-				</h:column>
-	
-	
-				<h:column>
-					<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
-					<h:panelGroup>
-						<h:commandButton value="#{web.text.VIEW}" action="#{systemConfigMBean.actionView}"  />
-						<h:commandButton value="#{web.text.EDIT}" action="#{systemConfigMBean.actionEdit}"
-									rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
-						<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeCustomCertExtension}"
-									rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')"/>
-					</h:panelGroup>
-					<f:facet name="footer">
-						<h:commandButton value="#{web.text.ADD}" action="#{systemConfigMBean.addCustomCertExtension}" rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
-					</f:facet>
-				</h:column>
-			</h:dataTable>
-		</h:form>
-	</p:tab>
-	
-	<!-- Custom RA Styles -->
-	<p:tab title="Custom RA Styles" rendered="systemConfigMBean.renderCustomRaStyles()">
-		<h:form id="stylesheetform" enctype="multipart/form-data">
-	
-			<h:panelGroup>
-				<h3><h:outputText value="#{web.text.CSS_LIST_TITLE}"/></h3>
-				<h:dataTable value="#{systemConfigMBean.raStyleInfos}" var="raStyleInfo" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
-					<h:column headerClass="gridColumn1">
-						<f:facet name="header"><h:outputText value="#{web.text.COLUMNNAMETITLE}"/></f:facet>
-						<h:outputText value="#{raStyleInfo.archiveName}"/>
+		<!-- Custom Certificate Extensions -->
+		<p:tab title="Custom Certificate Extensions" rendered="systemConfigMBean.renderCustomCertificateExtensions()">
+			<h:form id="customcertextensionsform" enctype="multipart/form-data">
+				<h:panelGroup>
+					<h4>
+						<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_EDIT_CCE_TITLE}" rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
+						<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_VIEW_CCE_TITLE}" rendered="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Custom_Certificate_Extensions.html')}" escape="false"/>
+					</h4>
+					<br/>
+				</h:panelGroup>
+		
+				<h:dataTable value="#{systemConfigMBean.availableCustomCertExtensions}" var="extension"
+							styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+		
+					<h:column>
+		   				<f:facet name="header"><h:outputText value="#{web.text.ID}"/></f:facet>
+						<h:outputText value="#{extension.id}" title="#{extension.id}"/>
 					</h:column>
-					<h:column headerClass="gridColumn1">
-						<f:facet name="header"><h:outputText value="#{web.text.CSSCOLUMNTITLE}"/></f:facet>
-					 	<h:dataTable value="#{raStyleInfo.raCssValues}" var="raCssInfo">
-	            			<h:column>
-	             		  		<h:outputText value="#{raCssInfo.cssName}"/>
-	            			</h:column>
-	        			</h:dataTable>
+					<h:column>
+		   				<f:facet name="header"><h:outputText value="#{web.text.OID}"/></f:facet>
+						<h:outputText value="#{extension.oid}" title="#{extension.oid}"/>
+						<f:facet name="footer">
+							<h:inputText id="newCEOID" value="#{systemConfigMBean.newOID}" size="25" title="#{web.text.FORMAT_OID}"
+								disabled="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
+						</f:facet>
 					</h:column>
-					<h:column headerClass="gridColumn1">
-						<f:facet name="header"><h:outputText value="#{web.text.LOGOCOLUMNTITLE}"/></f:facet>
-						<h:outputText value="#{raStyleInfo.logoName}"/>
+					<h:column>
+		   				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
+						<h:outputText value="#{extension.displayName}"/>
+						<f:facet name="footer">
+							<h:inputText id="newCELabel" value="#{systemConfigMBean.newDisplayName}" size="35" title="#{web.text.FORMAT_STRING}"
+		                                 disabled="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}">
+		                        <f:converter converterId="trimConverter"/>
+		                    </h:inputText>
+						</f:facet>
 					</h:column>
-					<h:column headerClass="gridColumn1">
+		
+					<h:column>
+		   				<f:facet name="header"><h:outputText value="#{web.text.CRITICAL}"/></f:facet>
+						<h:outputText value="#{web.text.NO}" rendered="#{!extension.critical}"/>
+						<h:outputText value="#{web.text.YES}" rendered="#{extension.critical}"/>
+					</h:column>
+		
+					<h:column>
+		   				<f:facet name="header"><h:outputText value="#{web.text.REQUIRED}"/></f:facet>
+						<h:outputText value="#{web.text.NO}" rendered="#{!extension.required}"/>
+						<h:outputText value="#{web.text.YES}" rendered="#{extension.required}"/>
+					</h:column>
+		
+					<h:column>
+		   				<f:facet name="header"><h:outputText value="#{web.text.ENCODING}"/></f:facet>
+						<h:outputText value="#{extension.encoding}"/>
+					</h:column>
+		
+		
+					<h:column>
 						<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
-						<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeRaStyleInfo}" onclick="return confirm('#{web.text.CSS_CONFIRM_DELETE}')"/>
+						<h:panelGroup>
+							<h:commandButton value="#{web.text.VIEW}" action="#{systemConfigMBean.actionView}"  />
+							<h:commandButton value="#{web.text.EDIT}" action="#{systemConfigMBean.actionEdit}"
+										rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
+							<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeCustomCertExtension}"
+										rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')"/>
+						</h:panelGroup>
+						<f:facet name="footer">
+							<h:commandButton value="#{web.text.ADD}" action="#{systemConfigMBean.addCustomCertExtension}" rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
+						</f:facet>
 					</h:column>
 				</h:dataTable>
-			</h:panelGroup>
-			<br/>
-			<h3><h:outputText value="#{web.text.IMPORT}"/><h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Customizing_the_RA_Appearance.html')}" escape="false"/></h3>
-	
-	
-			<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
-				<h:outputLabel for="raCssFile" value="#{web.text.CSSIMPORTFROM}"/>
-				<h:inputFile id="raCssFile" value="#{systemConfigMBean.raCssFile}"/>
-			</h:panelGrid>
-			<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
-				<h:outputLabel for="raLogoFile" value="#{web.text.LOGOIMPORTFROM}"/>
-				<h:inputFile id="raLogoFile" value="#{systemConfigMBean.raLogoFile}"/>
-			</h:panelGrid>
-			<h:panelGrid columns="1" columnClasses="gridColumnLeft" styleClass="padding-top">
-				<h:outputText value="#{web.text.COLUMNNAMETITLE}"/>
-			</h:panelGrid>
-			<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColumnRight">
-				<h:inputText id="archiveName" value="#{systemConfigMBean.archiveName}">
-	                <f:converter converterId="trimConverter"/>
-	            </h:inputText>
-				<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.actionImportRaStyle}"/>
-			</h:panelGrid>
-	
-		</h:form>
-	</p:tab>
+			</h:form>
+		</p:tab>
+		
+		<!-- Custom RA Styles -->
+		<p:tab title="Custom RA Styles" rendered="systemConfigMBean.renderCustomRaStyles()">
+			<h:form id="stylesheetform" enctype="multipart/form-data">
+		
+				<h:panelGroup>
+					<h3><h:outputText value="#{web.text.CSS_LIST_TITLE}"/></h3>
+					<h:dataTable value="#{systemConfigMBean.raStyleInfos}" var="raStyleInfo" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+						<h:column headerClass="gridColumn1">
+							<f:facet name="header"><h:outputText value="#{web.text.COLUMNNAMETITLE}"/></f:facet>
+							<h:outputText value="#{raStyleInfo.archiveName}"/>
+						</h:column>
+						<h:column headerClass="gridColumn1">
+							<f:facet name="header"><h:outputText value="#{web.text.CSSCOLUMNTITLE}"/></f:facet>
+						 	<h:dataTable value="#{raStyleInfo.raCssValues}" var="raCssInfo">
+		            			<h:column>
+		             		  		<h:outputText value="#{raCssInfo.cssName}"/>
+		            			</h:column>
+		        			</h:dataTable>
+						</h:column>
+						<h:column headerClass="gridColumn1">
+							<f:facet name="header"><h:outputText value="#{web.text.LOGOCOLUMNTITLE}"/></f:facet>
+							<h:outputText value="#{raStyleInfo.logoName}"/>
+						</h:column>
+						<h:column headerClass="gridColumn1">
+							<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
+							<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeRaStyleInfo}" onclick="return confirm('#{web.text.CSS_CONFIRM_DELETE}')"/>
+						</h:column>
+					</h:dataTable>
+				</h:panelGroup>
+				<br/>
+				<h3><h:outputText value="#{web.text.IMPORT}"/><h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Customizing_the_RA_Appearance.html')}" escape="false"/></h3>
+		
+		
+				<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
+					<h:outputLabel for="raCssFile" value="#{web.text.CSSIMPORTFROM}"/>
+					<h:inputFile id="raCssFile" value="#{systemConfigMBean.raCssFile}"/>
+				</h:panelGrid>
+				<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
+					<h:outputLabel for="raLogoFile" value="#{web.text.LOGOIMPORTFROM}"/>
+					<h:inputFile id="raLogoFile" value="#{systemConfigMBean.raLogoFile}"/>
+				</h:panelGrid>
+				<h:panelGrid columns="1" columnClasses="gridColumnLeft" styleClass="padding-top">
+					<h:outputText value="#{web.text.COLUMNNAMETITLE}"/>
+				</h:panelGrid>
+				<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColumnRight">
+					<h:inputText id="archiveName" value="#{systemConfigMBean.archiveName}">
+		                <f:converter converterId="trimConverter"/>
+		            </h:inputText>
+					<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.actionImportRaStyle}"/>
+				</h:panelGrid>
+		
+			</h:form>
+		</p:tab>
 
-	<!-- Statedump -->
-	<p:tab title="Statedump" rendered="systemConfigMBean.renderStatedumpTab()">
-	    <h:form id="statedumpform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Statedump' and systemConfigMBean.statedumpAvailable}">
-	        <h:panelGroup>
-	            <h4>
-	            <h:outputText value="#{web.text.STATEDUMPTAB_TITLE}"/>
-	            </h4>
-	            <br/>
-	        </h:panelGroup>
-	
-	        <h:panelGroup>
-	            <h:outputText value="#{web.text.STATEDUMPTAB_WARNING}"/>
-	        </h:panelGroup>
-	
-	        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
-	            <h:panelGroup>
-	                &nbsp;
-	            </h:panelGroup>
-	            <h:panelGroup>
-	                &nbsp;
-	            </h:panelGroup>
-	
-	            <h:outputText value="#{web.text.STATEDUMPTAB_LOCALTEMPLATE}"/>
-	            <h:selectOneMenu value="#{systemConfigMBean.statedumpDir}" disabled="#{!systemConfigMBean.statedumpTemplatesVisible}">
-	                <f:selectItems value="#{systemConfigMBean.statedumpAvailableTemplates}"/>
-	            </h:selectOneMenu>
-	
-	            <h:outputText value="#{web.text.STATEDUMPTAB_ZIPFILE}"/>
-	            <h:inputFile id="statedumpFile" value="#{systemConfigMBean.statedumpFile}" title="#{web.text.STATEDUMPTAB_ZIPFILE_TOOLTIP}"/>
-	
-	            <h:outputText value="#{web.text.STATEDUMPTAB_LOCKDOWN}"/>
-	            <h:panelGroup>
-	                <h:selectBooleanCheckbox id="statedumpLockdownAfterImport" value="#{systemConfigMBean.statedumpLockdownAfterImport}"/>
-	                <h:outputLabel for="statedumpLockdownAfterImport" value="#{web.text.STATEDUMPTAB_LOCKDOWN_CHECKBOX}" />
-	            </h:panelGroup>
-	
-	            <h:panelGroup>
-	                &nbsp;
-	            </h:panelGroup>
-	            <h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.importStatedump}"/>
-	        </h:panelGrid>
-	    </h:form>
-    </p:tab>
+		<!-- Statedump -->
+		<p:tab title="Statedump" rendered="systemConfigMBean.renderStatedumpTab()">
+		    <h:form id="statedumpform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Statedump' and systemConfigMBean.statedumpAvailable}">
+		        <h:panelGroup>
+		            <h4>
+		            <h:outputText value="#{web.text.STATEDUMPTAB_TITLE}"/>
+		            </h4>
+		            <br/>
+		        </h:panelGroup>
+		
+		        <h:panelGroup>
+		            <h:outputText value="#{web.text.STATEDUMPTAB_WARNING}"/>
+		        </h:panelGroup>
+		
+		        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+		            <h:panelGroup>
+		                &nbsp;
+		            </h:panelGroup>
+		            <h:panelGroup>
+		                &nbsp;
+		            </h:panelGroup>
+		
+		            <h:outputText value="#{web.text.STATEDUMPTAB_LOCALTEMPLATE}"/>
+		            <h:selectOneMenu value="#{systemConfigMBean.statedumpDir}" disabled="#{!systemConfigMBean.statedumpTemplatesVisible}">
+		                <f:selectItems value="#{systemConfigMBean.statedumpAvailableTemplates}"/>
+		            </h:selectOneMenu>
+		
+		            <h:outputText value="#{web.text.STATEDUMPTAB_ZIPFILE}"/>
+		            <h:inputFile id="statedumpFile" value="#{systemConfigMBean.statedumpFile}" title="#{web.text.STATEDUMPTAB_ZIPFILE_TOOLTIP}"/>
+		
+		            <h:outputText value="#{web.text.STATEDUMPTAB_LOCKDOWN}"/>
+		            <h:panelGroup>
+		                <h:selectBooleanCheckbox id="statedumpLockdownAfterImport" value="#{systemConfigMBean.statedumpLockdownAfterImport}"/>
+		                <h:outputLabel for="statedumpLockdownAfterImport" value="#{web.text.STATEDUMPTAB_LOCKDOWN_CHECKBOX}" />
+		            </h:panelGroup>
+		
+		            <h:panelGroup>
+		                &nbsp;
+		            </h:panelGroup>
+		            <h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.importStatedump}"/>
+		        </h:panelGrid>
+		    </h:form>
+	    </p:tab>
+    
+	    <!-- Global validator settings -->
+		<p:tab title="External Scripts" rendered="systemConfigMBean.renderSystemConfiguration()">
+		    <h:form id="validatorsForm" enctype="multipart/form-data">
+		        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+		
+		            <!-- Header -->
+		
+		            <h:outputText value="#{web.text.EXTERNALSCRIPTS}" style="font-weight: bold; font-size:1.2em;"/>
+		            <h:panelGroup />
+		
+		            <!-- Enable/disable external scripts (and commands) -->
+		
+		            <h:panelGroup>
+		                <h:outputLabel for="enableExternalScripts" value="#{web.text.ENABLEEXTERNALSCRIPTS}" styleClass="titles"/>
+		                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Post_Processing_Validators.html')}" escape="false"/>
+		                <br/>
+		                <h:outputText value="#{web.text.ENABLEEXTERNALSCRIPTS_HELP}" styleClass="help"/>
+		            </h:panelGroup>
+		            <h:panelGroup>
+		                <h:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.validatorSettings.isExternalScriptsEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+		                <h:outputLabel for="enableExternalScripts" value="#{web.text.ACTIVATE}" />
+		            </h:panelGroup>
+		
+		            <!-- External script directories -->
+		
+		            <h:panelGroup>
+		                <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST}" styleClass="titles"/>
+		                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Post_Processing_Validators.html')}" escape="false"/>
+		                <br/>
+		                <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST_HELP}" styleClass="help"/>
+		            </h:panelGroup>
+		            <h:panelGroup>
+		                <h:selectBooleanCheckbox id="enableWhitelist" value="#{systemConfigMBean.validatorSettings.isExternalScriptsWhitelistEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+		                <h:outputLabel for="enableWhitelist" value="#{web.text.USE_EXTERNAL_SCRIPTS_WHITELIST}" />
+		                <br />
+		                <h:inputTextarea id="externalScriptDirectories" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+		                    value="#{systemConfigMBean.validatorSettings.externalScriptsWhitelist}" cols="80" rows="8" />
+		                <br />
+		                <h:dataTable value="#{systemConfigMBean.validatorSettings.validationResult}" var="validationMessage">
+		                    <h:column>
+		                        <h:outputText value="#{validationMessage}" />
+		                    </h:column>
+		                </h:dataTable>
+		            </h:panelGroup>
+		        </h:panelGrid>
+		
+		        <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+		            <h:panelGroup />
+		            <h:panelGroup>
+		                <h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.validatorSettings.save}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+		                <h:commandButton value="#{web.text.EXTERNAL_SCRIPTS_VALIDATE}" action="#{systemConfigMBean.validatorSettings.validateScripts}" />
+		            </h:panelGroup>
+		        </h:panelGrid>
+		    </h:form>
+	    </p:tab>
 
-    <!-- Configuration Checker -->
-	
-    <h:form id="configurationCheckerForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Configuration Checker'}">
-        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
-
-            <h:panelGroup>
-                <h:outputText value="#{web.text.CONFIGURATION_CHECKER}" style="font-weight: bold; font-size:1.2em;"/>
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/EJBCA_Configuration_Checker.html')}" style="font-weight: bold; font-size:1.2em;" escape="false"/>
-            </h:panelGroup>
-            <h:panelGroup />
-
-            <h:panelGroup>
-                <h:outputLabel value="#{web.text.TOGGLE_CONFIGURATION_CHECKER}" styleClass="titles"/>
-                <br/>
-                <h:outputText value="#{web.text.TOGGLE_CONFIGURATION_CHECKER_HELP}" styleClass="help"/>
-            </h:panelGroup>
-            <h:panelGroup>
-                <div>
-                    <h:selectBooleanCheckbox id="toggleConfigurationChecker" value="#{configurationCheckerSettings.configurationCheckerEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
-                        <f:ajax render="@form" />
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="toggleConfigurationChecker" value="#{web.text.ACTIVATE}" />
-                </div>
-                <h:panelGroup styleClass="card prio-warn" layout="block" id="notice" rendered="#{configurationCheckerSettings.configurationCheckerEnabled}">
-                    <h:outputText value="#{web.text.CONFIGURATION_CHECKER_NOTICE}"/>
-                </h:panelGroup>
-                <div style="margin: 10px;"/>
-            </h:panelGroup>
-
-            <h:panelGroup>
-                <h:outputLabel value="#{web.text.TOGGLE_CONFIGURATION_ISSUE_SETS}" styleClass="titles"/>
-                <br/>
-                <h:outputText value="#{web.text.TOGGLE_CONFIGURATION_ISSUE_SETS_HELP}" styleClass="help"/>
-            </h:panelGroup>
-            <h:panelGroup>
-                <h:dataTable value="#{configurationCheckerSettings.allConfigurationIssueSetsAndTheirStatus}" var="configurationIssueSetStatus">
-                    <h:column>
-                        <h:selectBooleanCheckbox id="toggleConfigurationIssueSet" value="#{configurationIssueSetStatus.enabled}"
-                            disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" />
-                        <h:outputLabel for="#{toggleConfigurationIssueSet}" style="font-weight: bold;" value="#{configurationCheckerSettings.getLabel(configurationIssueSetStatus.configurationIssueSet)}" />
-                        <br />
-                        <h:outputText value="#{configurationCheckerSettings.getDescription(configurationIssueSetStatus.configurationIssueSet)}" />
-                    </h:column>
-                </h:dataTable>
-            </h:panelGroup>
-
-        </h:panelGrid>
-
-        <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
-            <h:panelGroup />
-            <h:panelGroup>
-                <h:commandButton value="#{web.text.SAVE}" action="#{configurationCheckerSettings.save}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            </h:panelGroup>
-        </h:panelGrid>
-    </h:form>
-
-    <!-- Global validator settings -->
-
-    <h:form id="validatorsForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'External Scripts'}">
-        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
-
-            <!-- Header -->
-
-            <h:outputText value="#{web.text.EXTERNALSCRIPTS}" style="font-weight: bold; font-size:1.2em;"/>
-            <h:panelGroup />
-
-            <!-- Enable/disable external scripts (and commands) -->
-
-            <h:panelGroup>
-                <h:outputLabel for="enableExternalScripts" value="#{web.text.ENABLEEXTERNALSCRIPTS}" styleClass="titles"/>
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Post_Processing_Validators.html')}" escape="false"/>
-                <br/>
-                <h:outputText value="#{web.text.ENABLEEXTERNALSCRIPTS_HELP}" styleClass="help"/>
-            </h:panelGroup>
-            <h:panelGroup>
-                <h:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.validatorSettings.isExternalScriptsEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <h:outputLabel for="enableExternalScripts" value="#{web.text.ACTIVATE}" />
-            </h:panelGroup>
-
-            <!-- External script directories -->
-
-            <h:panelGroup>
-                <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST}" styleClass="titles"/>
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Post_Processing_Validators.html')}" escape="false"/>
-                <br/>
-                <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST_HELP}" styleClass="help"/>
-            </h:panelGroup>
-            <h:panelGroup>
-                <h:selectBooleanCheckbox id="enableWhitelist" value="#{systemConfigMBean.validatorSettings.isExternalScriptsWhitelistEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <h:outputLabel for="enableWhitelist" value="#{web.text.USE_EXTERNAL_SCRIPTS_WHITELIST}" />
-                <br />
-                <h:inputTextarea id="externalScriptDirectories" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
-                    value="#{systemConfigMBean.validatorSettings.externalScriptsWhitelist}" cols="80" rows="8" />
-                <br />
-                <h:dataTable value="#{systemConfigMBean.validatorSettings.validationResult}" var="validationMessage">
-                    <h:column>
-                        <h:outputText value="#{validationMessage}" />
-                    </h:column>
-                </h:dataTable>
-            </h:panelGroup>
-        </h:panelGrid>
-
-        <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
-            <h:panelGroup />
-            <h:panelGroup>
-                <h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.validatorSettings.save}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <h:commandButton value="#{web.text.EXTERNAL_SCRIPTS_VALIDATE}" action="#{systemConfigMBean.validatorSettings.validateScripts}" />
-            </h:panelGroup>
-        </h:panelGrid>
-    </h:form>
-	<!-- External Account bindings -->
-	<h:form id="eabForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'External Account Bindings'}">
-		<!-- Preview -->
-		<h3><h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_HEADER}"/></h3>
-		<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP1}"/></p>
-		<h:panelGroup layout="block" rendered="#{not systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
-			<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_EMPTY}"/>
-		</h:panelGroup>
-		<h:panelGroup layout="block" rendered="#{systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
-			<h:dataTable id="eabNamespaces" value="#{systemConfigMBean.EABConfigManager.eabNamespaces}" var="namespace" styleClass="grid">
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_NAMESPACE}"/>
-					</f:facet>
-					<h:outputText value="#{namespace.name}"/>
-				</h:column>
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_EABCOUNT}"/>
-					</f:facet>
-					<h:outputText value="#{namespace.count}" styleClass="numberCell"/>
-				</h:column>
-			</h:dataTable>
-		</h:panelGroup>
-		<p>&nbsp;</p>
-		<!-- Import -->
-		<h3><h:outputText value="#{web.text.EABTAB_IMPORT}"/></h3>
-		<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP2}"/></p>
-		<h:panelGroup layout="block" rendered="#{systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
-			<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP_REPLACE}"/></p>
-		</h:panelGroup>
-		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
-			<h:outputLabel for="eabCsvFile" value="#{web.text.EABTAB_SELECTFILE}"/>
-			<h:inputFile id="eabCsvFile" value="#{systemConfigMBean.EABConfigManager.eabCSVFile}"/>
-		</h:panelGrid>
-		<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColumnRight">
-			<div></div>
-			<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.EABConfigManager.saveEabConfig}"/>
-		</h:panelGrid>
-	</h:form>
+	    <!-- Configuration Checker -->
+		<p:tab title="Configuration Checker" rendered="systemConfigMBean.renderSystemConfiguration()">
+		
+		    <h:form id="configurationCheckerForm" enctype="multipart/form-data">
+		        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+		
+		            <h:panelGroup>
+		                <h:outputText value="#{web.text.CONFIGURATION_CHECKER}" style="font-weight: bold; font-size:1.2em;"/>
+		                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/EJBCA_Configuration_Checker.html')}" style="font-weight: bold; font-size:1.2em;" escape="false"/>
+		            </h:panelGroup>
+		            <h:panelGroup />
+		
+		            <h:panelGroup>
+		                <h:outputLabel value="#{web.text.TOGGLE_CONFIGURATION_CHECKER}" styleClass="titles"/>
+		                <br/>
+		                <h:outputText value="#{web.text.TOGGLE_CONFIGURATION_CHECKER_HELP}" styleClass="help"/>
+		            </h:panelGroup>
+		            <h:panelGroup>
+		                <div>
+		                    <h:selectBooleanCheckbox id="toggleConfigurationChecker" value="#{configurationCheckerSettings.configurationCheckerEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
+		                        <f:ajax render="@form" />
+		                    </h:selectBooleanCheckbox>
+		                    <h:outputLabel for="toggleConfigurationChecker" value="#{web.text.ACTIVATE}" />
+		                </div>
+		                <h:panelGroup styleClass="card prio-warn" layout="block" id="notice" rendered="#{configurationCheckerSettings.configurationCheckerEnabled}">
+		                    <h:outputText value="#{web.text.CONFIGURATION_CHECKER_NOTICE}"/>
+		                </h:panelGroup>
+		                <div style="margin: 10px;"/>
+		            </h:panelGroup>
+		
+		            <h:panelGroup>
+		                <h:outputLabel value="#{web.text.TOGGLE_CONFIGURATION_ISSUE_SETS}" styleClass="titles"/>
+		                <br/>
+		                <h:outputText value="#{web.text.TOGGLE_CONFIGURATION_ISSUE_SETS_HELP}" styleClass="help"/>
+		            </h:panelGroup>
+		            <h:panelGroup>
+		                <h:dataTable value="#{configurationCheckerSettings.allConfigurationIssueSetsAndTheirStatus}" var="configurationIssueSetStatus">
+		                    <h:column>
+		                        <h:selectBooleanCheckbox id="toggleConfigurationIssueSet" value="#{configurationIssueSetStatus.enabled}"
+		                            disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" />
+		                        <h:outputLabel for="#{toggleConfigurationIssueSet}" style="font-weight: bold;" value="#{configurationCheckerSettings.getLabel(configurationIssueSetStatus.configurationIssueSet)}" />
+		                        <br />
+		                        <h:outputText value="#{configurationCheckerSettings.getDescription(configurationIssueSetStatus.configurationIssueSet)}" />
+		                    </h:column>
+		                </h:dataTable>
+		            </h:panelGroup>
+		
+		        </h:panelGrid>
+		
+		        <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+		            <h:panelGroup />
+		            <h:panelGroup>
+		                <h:commandButton value="#{web.text.SAVE}" action="#{configurationCheckerSettings.save}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+		            </h:panelGroup>
+		        </h:panelGrid>
+		    </h:form>
+		</p:tab>
+   
+		<!-- External Account bindings -->
+		<p:tab title="External Account Bindings" rendered="systemConfigMBean.renderSystemConfiguration()">
+			<h:form id="eabForm" enctype="multipart/form-data">
+				<!-- Preview -->
+				<h3><h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_HEADER}"/></h3>
+				<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP1}"/></p>
+				<h:panelGroup layout="block" rendered="#{not systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
+					<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_EMPTY}"/>
+				</h:panelGroup>
+				<h:panelGroup layout="block" rendered="#{systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
+					<h:dataTable id="eabNamespaces" value="#{systemConfigMBean.EABConfigManager.eabNamespaces}" var="namespace" styleClass="grid">
+						<h:column>
+							<f:facet name="header">
+								<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_NAMESPACE}"/>
+							</f:facet>
+							<h:outputText value="#{namespace.name}"/>
+						</h:column>
+						<h:column>
+							<f:facet name="header">
+								<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_EABCOUNT}"/>
+							</f:facet>
+							<h:outputText value="#{namespace.count}" styleClass="numberCell"/>
+						</h:column>
+					</h:dataTable>
+				</h:panelGroup>
+				<p>&nbsp;</p>
+				<!-- Import -->
+				<h3><h:outputText value="#{web.text.EABTAB_IMPORT}"/></h3>
+				<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP2}"/></p>
+				<h:panelGroup layout="block" rendered="#{systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
+					<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP_REPLACE}"/></p>
+				</h:panelGroup>
+				<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
+					<h:outputLabel for="eabCsvFile" value="#{web.text.EABTAB_SELECTFILE}"/>
+					<h:inputFile id="eabCsvFile" value="#{systemConfigMBean.EABConfigManager.eabCSVFile}"/>
+				</h:panelGrid>
+				<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColumnRight">
+					<div></div>
+					<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.EABConfigManager.saveEabConfig}"/>
+				</h:panelGrid>
+			</h:form>
+		</p:tab>
+	</p:tabView>
 	</ui:define>
 	</ui:composition>
 </html>

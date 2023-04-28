@@ -314,7 +314,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public String getEncoding() { return this.encoding; }
     }
 
-    private String selectedTab = null;
     private GlobalConfiguration globalConfig = null;
     private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
     private OAuthConfiguration oAuthConfiguration = null;
@@ -674,22 +673,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             });
         }
         return validatorSettings;
-    }
-
-    public String getSelectedTab() {
-        final String tabHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("tab");
-        // First, check if the user has requested a valid tab
-        List<String> availableTabs = getAvailableTabs();
-        if (tabHttpParam != null && availableTabs.contains(tabHttpParam)) {
-            // The requested tab is an existing tab. Flush caches so we reload the page content
-            flushCache();
-            selectedTab = tabHttpParam;
-        }
-        if (selectedTab == null) {
-            // If no tab was requested, we use the first available tab as default
-            selectedTab = availableTabs.get(0);
-        }
-        return selectedTab;
     }
 
     public String getCurrentNode() {
@@ -2127,42 +2110,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     public boolean renderStatedumpTab() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
-    }
-
-    public List<String> getAvailableTabs() {
-        final List<String> availableTabs = new ArrayList<>();
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("Basic Configurations");
-            availableTabs.add("Administrator Preferences");
-            availableTabs.add("Protocol Configuration");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("Extended Key Usages");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().isRunningEnterprise()) {
-            availableTabs.add("Trusted OAuth Providers");
-        }
-        if (getEjbcaWebBean().isRunningBuildWithCA()
-                && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())
-                && CertificateTransparencyFactory.isCTAvailable()) {
-            availableTabs.add("Certificate Transparency Logs");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("Custom Certificate Extensions");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
-            availableTabs.add("Custom RA Styles");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable()) {
-            availableTabs.add("Statedump");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("External Scripts");
-            availableTabs.add("Configuration Checker");
-            availableTabs.add("External Account Bindings");
-        }
-
-        return availableTabs;
     }
 
 }
