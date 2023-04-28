@@ -1153,39 +1153,16 @@ function checkallfields(){
   <div class="container">
   <h1><c:out value="<%= ejbcawebbean.getText(\"ADDENDENTITY\") %>"/></h1>
 
-  <% 
-  String formAction = "listendentities.jsp";
-  %>
+
   <% if(noprofiles){ %>
     <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"NOTAUTHORIZEDTOCREATEENDENTITY\") %>"/></div>
   <% }else{
        if(userexists){ %>
   <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"ENDENTITYALREADYEXISTS\") %>"/></div>
-  <div class="message alert">
-    <form action="<%=formAction%>" method="post">
-      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
-      <input type="hidden" name="action" value="listusers"/>
-      <input type="hidden" name="buttonfind" value="value"/>
-      <input type="hidden" name="textfieldusername" value="<%=request.getParameter(TEXTFIELD_USERNAME)%>"/>
-      <input type="submit" class="commandLink" value="See existing user">
-    </form>  
-  </div>
+  
   <% } %>
     <% if(approvalmessage != null){ %>
       <div class="message alert"><c:out value="<%= approvalmessage%>"/></div>
-  		<% if(approvalmessage.equals(ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS"))){ %>
-	  <div class="message alert">
-	    <form action="<%=formAction%>" method="post">
-	      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
-	      <input type="hidden" name="action" value="listusers"/>
-	      <input type="hidden" name="buttonadvancedlist" value="value"/>
-	      <input type="hidden" name="selectmatchwithrow1" value="<%=UserMatch.MATCH_WITH_DNSERIALNUMBER%>"/>
-	      <input type="hidden" name="selectmatchtyperow1" value="<%=BasicMatch.MATCH_TYPE_EQUALS%>"/>
-	      <input type="hidden" name="textfieldmatchvaluerow1" value="serialnumber%>"/>
-	      <input type="submit" class="commandLink" value="See existing user">
-	    </form>  
-	  </div>
-  		<% } %>
   <% } %>
   <% if(useradded){ %>
   <div class="message info"><c:out value="<%= ejbcawebbean.getText(\"ENDENTITY\")+ \" \" + addedusername + \" \" + ejbcawebbean.getText(\"ADDEDSUCCESSFULLY\") %>"/></div>
