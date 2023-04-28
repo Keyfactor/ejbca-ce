@@ -584,8 +584,7 @@
 		</p:tab>
 	
 		<!-- Certificate Transparency Logs -->
-		<p:tab title="Certificate Transparency Logs" rendered="systemConfigMBean.renderCertificateTransparency()">
-			
+		<p:tab title="Certificate Transparency Logs" rendered="systemConfigMBean.renderCertificateTransparency()">		
 			<h:form id="ctlogsform" enctype="multipart/form-data">
 				<div class="section-label">
 		            <h4>
@@ -595,8 +594,8 @@
 		        </div>
 	
 		        <h:panelGroup id="ctRevocationService" styleClass="block hintBlock" layout="block" rendered="#{not systemConfigMBean.incompleteIssuanceServiceAvailable}">
-		               <h3>#{web.text.CTLOGCONFIGURATION_ADDSERVICEHEADER}</h3>
-		               <p>#{web.text.CTLOGCONFIGURATION_ADDSERVICETEXT}</p>
+		               <h3><h:outputText value="#{web.text.CTLOGCONFIGURATION_ADDSERVICEHEADER}"/></h3>
+		               <p><h:outputText value=#{web.text.CTLOGCONFIGURATION_ADDSERVICETEXT}"/></p>
 		               <div><h:commandButton action="#{systemConfigMBean.addIncompleteIssuanceService}"
 		                            value="#{web.text.CTLOGCONFIGURATION_ADDSERVICEBUTTON}"
 		                            id="addIncompleteIssuanceServiceButton"/></div>
@@ -904,7 +903,7 @@
     </p:tab>
 
     <!-- Configuration Checker -->
-
+	
     <h:form id="configurationCheckerForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Configuration Checker'}">
         <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
 
