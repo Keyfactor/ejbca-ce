@@ -1161,7 +1161,9 @@ function checkallfields(){
   <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"ENDENTITYALREADYEXISTS\") %>"/></div>
   
   <% } %>
-   
+    <% if(approvalmessage != null){ %>
+      <div class="message alert"><c:out value="<%= approvalmessage%>"/></div>
+  <% } %>
   <% if(useradded){ %>
   <div class="message info"><c:out value="<%= ejbcawebbean.getText(\"ENDENTITY\")+ \" \" + addedusername + \" \" + ejbcawebbean.getText(\"ADDEDSUCCESSFULLY\") %>"/></div>
   <% } %>
