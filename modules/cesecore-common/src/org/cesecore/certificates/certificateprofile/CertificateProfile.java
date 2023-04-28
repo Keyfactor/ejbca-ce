@@ -3183,6 +3183,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegaleccurve", keySpecification));
             }
         }
+        if (AlgorithmTools.isPQC(keyAlgorithm) && !AlgorithmConstants.KEYALGORITHM_NTRU.equals(keyAlgorithm)) {
+            //We implicitly allow a specific key length when configuring FALCON and/or DILITHIUM algorithms, 
+            //hence we don't need to check for key length compliancy with the certificate profile.
+            //NTRU allow for the configuration of 128, 192, 256 bits
+            return;
+        }
         // Verify key length that it is compliant with certificate profile
         if (keyLength == -1) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", publicKey.getClass().getName()));
