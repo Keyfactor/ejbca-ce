@@ -683,6 +683,36 @@
         }
       }
     },
+    "/v2/certificate/count": {
+      "get": {
+        "tags": [
+          "v2/certificate"
+        ],
+        "summary": "Retrieve the quantity of rather total issued or active certificates",
+        "description": "",
+        "operationId": "getCertificateCount",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "isActive",
+            "in": "query",
+            "description": "true if an active certificates should be counted only",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CaCertCountResponse"
+            }
+          }
+        }
+      }
+    },
     "/v2/certificate/search": {
       "post": {
         "tags": [
@@ -1814,6 +1844,16 @@
           "format": "date-time",
           "example": "2038-01-19T03:14:07Z",
           "description": "Expiration date"
+        }
+      }
+    },
+    "CaCertCountResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "example": "1054",
+          "description": "The quantity of certificates rather issued or expired"
         }
       }
     },

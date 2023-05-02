@@ -35,6 +35,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -68,6 +69,16 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @Override
     public Response status() {
         return super.status();
+    }
+
+    @GET
+    @Path("/count")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Get the quantity of rather total issued or active certificates")
+    @Override
+    public Response getCertificateCount(@ApiParam(value = "true if an active certificates should be counted only")
+                                        @QueryParam("isActive") Boolean isActive) {
+        return super.getCertificateCount(isActive);
     }
 
     @POST
