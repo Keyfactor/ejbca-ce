@@ -12,14 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
+import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.QueryResultWrapper;
+import org.cesecore.util.ValidityDate;
+import org.cesecore.util.ValueExtractor;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -28,14 +27,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.QueryResultWrapper;
-import org.cesecore.util.ValidityDate;
-import org.cesecore.util.ValueExtractor;
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * Low level CRUD functions to access CertificateData
@@ -96,6 +95,21 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("serialNumber", serialNumber);
         return query.getResultList();
+    }
+
+    @Override
+    public Long findQuantityOfAllCertificates() {
+        return executeCountQuery("SELECT count(cd) FROM CertificateData cd");
+    }
+
+    @Override
+    public Long findQuantityOfTheActiveCertificates() {
+        return executeCountQuery("SELECT count(cd) FROM CertificateData cd WHERE cd.expireDate >= UNIX_TIMESTAMP() * 1000");
+    }
+
+    private Long executeCountQuery(String countQuery) {
+        Query query = entityManager.createQuery(countQuery);
+        return (Long) query.getResultList().get(0);
     }
 
     @Override
