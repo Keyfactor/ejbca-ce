@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ca.sign;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.Runtime.Version;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -411,7 +412,13 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
-            assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233, OID.2.5.4.45=N62892, CN=Some CN, O=PrimeKey, C=SE", dn);
+            Version javaVersion = Runtime.version();
+            if (javaVersion.feature() > 11) {
+                // Java 17 switched to lower case?
+                assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492d4b2d54522d313233342d32303233, OID.2.5.4.45=N62892, CN=Some CN, O=PrimeKey, C=SE", dn);                
+            } else { // Java 11 caps
+                assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233, OID.2.5.4.45=N62892, CN=Some CN, O=PrimeKey, C=SE", dn);                
+            }
             assertEquals("Not the expected EJBCA ordered DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,UniqueIdentifier=N62892,CN=Some CN,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
         } finally {
             // Clean up
