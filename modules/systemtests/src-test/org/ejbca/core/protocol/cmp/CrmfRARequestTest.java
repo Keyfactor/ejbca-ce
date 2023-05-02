@@ -309,7 +309,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,1.3.6.1.4.1.37244.2.1=FFF1,UniqueIdentifier=N62892", dn);
             // getSubjectX500Principal returns another form though...
             String principalDn = cert1.getSubjectX500Principal().getName();            
-            assertEquals("Not the expected Principal DN in issued cert", "2.5.4.45=#030600060329012d,1.3.6.1.4.1.37244.2.1=#0c0446464631,2.5.4.4=#0c0f636d7074657374317375726e616d65,2.5.4.5=N62892,CN=cmptest1,O=PrimeKey,C=SE", principalDn);            
+            assertEquals("Not the expected Principal DN in issued cert", "2.5.4.45=#0c064e3632383932,1.3.6.1.4.1.37244.2.1=#0c0446464631,2.5.4.4=#0c0f636d7074657374317375726e616d65,2.5.4.5=#130e636d70746573743173657269616c,CN=cmptest1,O=PrimeKey,C=SE", principalDn);            
             assertEquals("Not the expected DN in issued cert", "UniqueIdentifier=N62892,VID=FFF1,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert1));
             cert2 = crmfHttpUserTest(userDN2, key2, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert2);
