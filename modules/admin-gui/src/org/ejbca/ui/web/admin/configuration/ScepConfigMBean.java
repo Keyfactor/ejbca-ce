@@ -728,6 +728,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem("NIF", "NIF"));
         ret.add(new SelectItem("VID", "VID"));
         ret.add(new SelectItem("PID", "PID"));
+        ret.add(new SelectItem("CertificationID", "CertificationID"));
+        // UniqueIdentifier is left out, because we don't want people to use that
         return ret;
     }
 
