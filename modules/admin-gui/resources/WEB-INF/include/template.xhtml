@@ -70,6 +70,89 @@
       </h:panelGroup>
     </ui:insert>
     
+     <p:megaMenu orientation="horizontal" autoDisplay="false">
+           
+           
+           
+           
+            <p:submenu label="#{web.text.NAV_CAFUNCTIONS}" icon="pi pi-fw pi-users">		
+            	
+            	
+               
+                    <p:submenu label="User 1">
+                        <p:menuitem value="User 1.1"/>
+                        <p:menuitem value="User 1.2"/>
+                    </p:submenu>
+                    <p:submenu label="User 2">
+                        <p:menuitem value="User 2.1"/>
+                        <p:menuitem value="User 2.2"/>
+                    </p:submenu>
+               <!-- 
+            	
+		  		<p:menuitem value="foo" />
+            	<p:menuitem value="#{web.text.NAV_CASTRUCTUREANDCRL}"/>
+                <p:menuitem value="#{web.text.NAV_CERTIFICATEPROFILES}"/>
+                <p:menuitem value="#{web.text.NAV_CAS}"/>
+                <p:menuitem value="#{web.text.NAV_CRYPTOTOKENS}"/>
+                <p:menuitem value="#{web.text.NAV_PUBLISHERS}"/>
+                <p:menuitem value="#{web.text.NAV_VALIDATORS}"/>
+                 -->
+            </p:submenu>
+
+            <p:submenu label="Users" icon="pi pi-fw pi-users">
+
+                <p:column>
+                    <p:submenu label="User 1">
+                        <p:menuitem value="User 1.1"/>
+                        <p:menuitem value="User 1.2"/>
+                    </p:submenu>
+                    <p:submenu label="User 2">
+                        <p:menuitem value="User 2.1"/>
+                        <p:menuitem value="User 2.2"/>
+                    </p:submenu>
+                </p:column>
+
+            
+            </p:submenu>
+
+            <p:submenu label="Events" icon="pi pi-fw pi-calendar">
+                <p:column>
+                    <p:submenu label="Event 1">
+                        <p:menuitem value="Event 1.1"/>
+                        <p:menuitem value="Event 1.2"/>
+                    </p:submenu>
+                    <p:submenu label="Event 2">
+                        <p:menuitem value="Event 2.1"/>
+                        <p:menuitem value="Event 2.2"/>
+                    </p:submenu>
+                </p:column>
+
+             
+            </p:submenu>
+
+            <p:submenu label="Settings" icon="pi pi-fw pi-cog">
+                <p:column>
+                    <p:submenu label="Setting 1">
+                        <p:menuitem value="Setting 1.1"/>
+                        <p:menuitem value="Setting 1.2"/>
+                    </p:submenu>
+                    <p:submenu label="Setting 2">
+                        <p:menuitem value="Setting 2.1"/>
+                        <p:menuitem value="Setting 2.2"/>
+                    </p:submenu>
+                    <p:submenu label="Setting 3">
+                        <p:menuitem value="Setting 3.1"/>
+                        <p:menuitem value="Setting 3.2"/>
+                    </p:submenu>
+                </p:column>
+            </p:submenu>
+
+              
+        </p:megaMenu>
+    
+  
+    
+    
     <h:panelGroup id="navigation" layout="block" styleClass="navbar">
       <h:outputLink styleClass="homeLink" value="#{adminMenuBean.adminWebUrl}"><h:outputText value="#{web.text.NAV_HOME}"/></h:outputLink>      
       <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewCAHeader}">
@@ -141,6 +224,7 @@
         </h:panelGroup>
       </h:panelGroup>
     </h:panelGroup>
+
     
     <h:panelGroup layout="block" styleClass="main-wrapper">
     <h:panelGroup layout="block" styleClass="container">
