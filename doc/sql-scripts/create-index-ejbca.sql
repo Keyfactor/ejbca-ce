@@ -1,5 +1,3 @@
--- version: $Id$
-
 -- Note: For MySQL's NDB engine add 'USING HASH' to all UNIQUE indexes.
 
 -- Selecting log entries when verifying/exporting IntegrityProtectedDevice logs:
@@ -56,7 +54,19 @@ CREATE INDEX certificatedata_idx18 ON CertificateData (issuerDN, status, crlPart
 -- Optimized index for CRL generation on Microsoft SQL Server (should be used instead of certificatedata_idx17 and certificatedata_idx18).
 -- CREATE NONCLUSTERED INDEX certificatedata_idx19 ON CertificateData (issuerDN, status, revocationDate, fingerprint, crlPartitionIndex) INCLUDE (expireDate, revocationReason, serialNumber);
 -- Index useful when searching for certificates with an invalidity date.
--- CREATE INDEX certificatedata_idx20 ON CertificateData (invalidityDate);  
+-- CREATE INDEX certificatedata_idx20 ON CertificateData (invalidityDate);
+-- The following indexes can be beneficial to perfomance for certificate search in RA web and REST AAPI
+CREATE INDEX certificatedata_idx_serial ON CertificateData (serialNumber);
+-- The accountBindingId is often not used, but even if it is not used, it is necessary to have an index (EJBCA will still search by this column)
+CREATE INDEX certificatedata_idx_eab ON CertificateData (accountBindingId);
+-- The subjectAltName index could be configured either to match only the first 750 characters, or to match the full row, using a slower full-text index.
+CREATE INDEX certificatedata_idx_san ON CertificateData (subjectAltName(750));
+-- or, for slower full-text querying: CREATE FULLTEXT INDEX certificatedata_idx_san ON CertificateData (subjectAltName);
+-- Next indexes are useful when searching for certificates by dates and intervals in REST API and RA web.
+-- CREATE INDEX certificatedata_idx_nbef ON CertificateData (notBefore);
+-- CREATE INDEX certificatedata_idx_exp ON CertificateData (expireDate);
+-- CREATE INDEX certificatedata_idx_rev ON CertificateData (revocationDate);
+-- CREATE INDEX certificatedata_idx_upd ON CertificateData (updateTime);
 
 CREATE INDEX historydata_idx1 ON CertReqHistoryData (username);
 CREATE INDEX historydata_idx3 ON CertReqHistoryData (serialNumber);
