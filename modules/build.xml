@@ -59,7 +59,7 @@
         edition-specific-clean, edition-specific-ee-clean, peerconnectorclean, acmeclean, caaclean,
         estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-coap-clean, ejbca-rest-configdump-clean,
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
-        cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, p11ng-clean, msae-clean, cits-clean, proxy-ca-clean"/>
+        cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cits-clean, proxy-ca-clean"/>
 
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
@@ -299,7 +299,7 @@
         <ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
     </target>
 
-	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-common, cesecore-entity, cesecore-ejb-interface, p11ng">
+	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-common, cesecore-entity, cesecore-ejb-interface">
 		<ant antfile="${mod.ejbca-common.path}/build.xml" target="build-common" inheritall="true" inheritrefs="true"/>
 	</target>
 	
@@ -523,12 +523,8 @@
 		</fail>
 		<ant antfile="${mod.cmpclient.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
-	
-	<target name="p11ng" description="Build P11NG library" depends="cesecore-common" if="${mod.p11ng.exists}">
-		<ant antfile="${mod.p11ng.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
 
-	<target name="p11ng-cli" depends="ejbca-ejb-interface, ejbca-ejb-cli, p11ng">
+	<target name="p11ng-cli" depends="ejbca-ejb-interface, ejbca-ejb-cli">
 		<echo  message="${mod.p11ng-cli.path}/build.xml" />
 		<fail message="P11Ng Cli is not distributed with this version of EJBCA">
 		    <condition>
