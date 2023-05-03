@@ -75,8 +75,6 @@
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
 	<classpathentry kind="src" path="modules/msae/src"/>
-	<classpathentry kind="src" path="modules/p11ng/src"/>
-	<classpathentry kind="src" path="modules/p11ng/src-test"/>
 	<classpathentry kind="src" path="modules/p11ng-cli/src"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-cli"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
@@ -165,6 +163,7 @@
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
 	<classpathentry kind="lib" path="lib/x509-common-util-0.6.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-12.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/p11ng-0.1.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>

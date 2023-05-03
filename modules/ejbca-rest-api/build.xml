@@ -53,7 +53,7 @@
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path location="${ejbca-rest-api.build.dir}/WEB-INF/classes"/>
-		<path location="${mod.p11ng.lib}" />
+		<path refid="lib.p11ng.classpath" />
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-interfaces.jar"/>
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-common.jar"/>
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-ejb.jar"/>

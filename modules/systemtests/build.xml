@@ -81,7 +81,7 @@
         <path location="${mod.cesecore-cvcca.lib}"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.json-smart.classpath"/>
-		<path location="${mod.p11ng.lib}" />
+		<path refid="lib.p11ng.classpath" />
 		<path refid="lib.jackson2.classpath"/>
 		<pathelement location="${mod.ejbca-rest-common.lib}"/>
 		<path refid="lib.resteasy-jaxrs.classpath"/>
