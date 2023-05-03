@@ -12,10 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
@@ -23,7 +21,6 @@ import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
-import org.ejbca.ui.web.rest.api.io.response.CaCertCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
@@ -47,7 +44,6 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
     private static final String RESOURCE_STATUS = "OK";
     protected static final String RESOURCE_VERSION = "2.0";
-    private static final Logger log = Logger.getLogger(CertificateRestResourceV2.class);
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
@@ -60,20 +56,6 @@ public class CertificateRestResourceV2 extends BaseRestResource {
                 .revision(GlobalConfiguration.EJBCA_VERSION)
                 .build()
         ).build();
-    }
-
-    @EJB
-    private CertificateDataSessionLocal certDataSession;
-
-    public Response getCertificateCount(Boolean isActive) {
-        if (isActive != null && isActive) {
-            return constructCertificateCountResponse(certDataSession.findQuantityOfTheActiveCertificates());
-        }
-        return constructCertificateCountResponse(certDataSession.findQuantityOfAllCertificates());
-    }
-
-    private Response constructCertificateCountResponse(Long count) {
-        return Response.ok(new CaCertCountResponse(count)).build();
     }
 
     public Response searchCertificates(

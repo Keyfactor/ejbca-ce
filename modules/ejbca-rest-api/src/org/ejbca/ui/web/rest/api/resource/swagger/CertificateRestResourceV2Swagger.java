@@ -21,12 +21,15 @@ import io.swagger.annotations.SwaggerDefinition.Scheme;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
+import org.ejbca.ui.web.rest.api.io.response.CaCertCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 import org.ejbca.ui.web.rest.api.resource.BaseRestResource;
 import org.ejbca.ui.web.rest.api.resource.CertificateRestResourceV2;
+import org.cesecore.certificates.certificate.InternalCertificateRestSessionLocal;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -60,6 +63,9 @@ import java.security.cert.CertificateParsingException;
 @Stateless
 public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 {
 
+    @EJB
+    private InternalCertificateRestSessionLocal certificateSessionLocal;
+
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
@@ -75,10 +81,11 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @Path("/count")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the quantity of rather total issued or active certificates")
-    @Override
     public Response getCertificateCount(@ApiParam(value = "true if an active certificates should be counted only")
                                         @QueryParam("isActive") Boolean isActive) {
-        return super.getCertificateCount(isActive);
+        return Response.ok(new CaCertCountResponse(
+                certificateSessionLocal.getCertificateCount(isActive)
+        )).build();
     }
 
     @POST
@@ -96,7 +103,7 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException, CertificateParsingException {
         return super.searchCertificates(requestContext, searchCertificatesRestRequest);
     }
-    
+
     @GET
     @Path("/profile/{profile_name}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -109,5 +116,5 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
             ) throws AuthorizationDeniedException, RestException {
         return super.getCertificateProfileInfo(requestContext, certProfileName);
     }
-    
+
 }
