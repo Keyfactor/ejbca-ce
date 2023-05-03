@@ -232,4 +232,8 @@ public class Query implements Serializable {
     public String toString() {
         return getQueryString();
     }
+    
+    public boolean isEmpty() {
+        return matches.isEmpty();
+    }
 }
