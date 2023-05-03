@@ -325,17 +325,17 @@ httpsserver.tokentype=JKS
 
 #
 # Enable usage of Azure Key Vault Crypto Token in the Admin UI
-# Default: false (not enabled)
+# Default: true (enabled)
 #keyvault.cryptotoken.enabled=true
 
 #
 # Enable usage of AWS KMS Crypto Token in the Admin UI
-# Default: false (not enabled)
+# Default: true (enabled)
 #awskms.cryptotoken.enabled=true
 
 #
 # Enable usage of P11NG Crypto Token in the Admin UI
-# Default: false (not enabled)
+# Default: true (enabled)
 #p11ng.cryptotoken.enabled=true
 
 #
