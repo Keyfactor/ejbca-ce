@@ -92,7 +92,8 @@ public final class SafeObjectInputStream extends ObjectInputStream {
                 .allowPackage("java")
                 .allowPackage("org.cesecore")
                 .allowPackage("org.ejbca")
-                .allowPackage("org.signserver");
+                .allowPackage("org.signserver")
+                .allowPackage("com.keyfactor");
     }
 
     private SafeObjectInputStream(final Builder builder, final InputStream inputStream) throws IOException {
