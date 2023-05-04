@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource.util;
@@ -27,7 +30,10 @@ import java.util.Arrays;
 public class CertificateRestResourceSystemTestUtil {
 
 	/**
-	 * Creates a test End Entity
+	 * Creates a test End Entity.
+	 *
+	 * @param paramHolder parameter holder having all the fields needed to create a mocked test certificate.
+	 * @return end entity information.
 	 */
 	public EndEntityInformation createTestEndEntity(TestEndEntityParamHolder paramHolder) throws Exception {
 		X509CA x509TestCa = paramHolder.getX509TestCa();
@@ -63,6 +69,10 @@ public class CertificateRestResourceSystemTestUtil {
 
 	/**
 	 * Creates a test certificate profile and returns its ID
+	 *
+	 * @param paramHolder parameter holder having all the fields needed to create a mocked test certificate so is the
+	 * certificate profile.
+	 * @return the certificate profile ID.
 	 */
 	private int createCertificateProfile(TestEndEntityParamHolder paramHolder) throws Exception {
 		CertificateProfileSessionRemote certificateProfileSession = paramHolder.getCertificateProfileSession();
