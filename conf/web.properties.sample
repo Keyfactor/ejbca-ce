@@ -334,6 +334,11 @@ httpsserver.tokentype=JKS
 #awskms.cryptotoken.enabled=true
 
 #
+# Enable usage of Fortanix DSM Crypto Token in the Admin UI
+# Default: true  (enabled)
+#fortanix.cryptotoken.enabled=true
+
+#
 # Enable usage of P11NG Crypto Token in the Admin UI
 # Default: true (enabled)
 #p11ng.cryptotoken.enabled=true
