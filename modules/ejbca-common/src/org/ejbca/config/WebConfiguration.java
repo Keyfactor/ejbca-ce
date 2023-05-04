@@ -342,6 +342,11 @@ public class WebConfiguration {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("awskms.cryptotoken.enabled"));
     }
 
+    /** @return true if we have Fortanix DSM Crypto Token enabled in the Admin GUI. */
+    public static boolean isFortanixEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("fortanix.cryptotoken.enabled"));
+    }
+
     /** @return true if we have SunP11 Crypto Token enabled in the Admin GUI. */
     public static boolean isSunP11Enabled(){
         return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("sunp11.cryptotoken.enabled")); // default true

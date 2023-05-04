@@ -1358,6 +1358,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     continue;
                 }
             }
+            if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.FORTANIX_NAME)) {
+                // Don't expose the FortanixCryptoToken when creating new tokens if it is not enabled in web.properties
+                if (!WebConfiguration.isFortanixEnabled()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Fortanix DSM Crypto Token support is not enabled in GUI. See web.properties for enabling Fortanix DSM.");
+                    }
+                    continue;
+                }
+            }
             // Use one the class's simpleName
             final String fullClassName = availableCryptoToken.getClassPath();
             ret.add(new SelectItem(fullClassName.substring(fullClassName.lastIndexOf('.') + 1), availableCryptoToken.getName()));
