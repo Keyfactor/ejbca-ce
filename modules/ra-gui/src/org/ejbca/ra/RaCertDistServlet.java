@@ -14,7 +14,7 @@ package org.ejbca.ra;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -81,20 +81,18 @@ public class RaCertDistServlet extends HttpServlet {
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
 
-    private RaAuthenticationHelper raAuthenticationHelper = null;
 
     @Override
     protected void service(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) throws ServletException, IOException {
-        if (raAuthenticationHelper==null) {
-            // Initialize the authentication helper function
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
-        }
+
+        // Initialize the authentication helper function
+        RaAuthenticationHelper raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
         if (httpServletRequest.getParameter(PARAMETER_FINGERPRINTSHEET) != null) {
-            downloadFingerprintSheet(httpServletRequest, httpServletResponse);
+            downloadFingerprintSheet(httpServletRequest, httpServletResponse, raAuthenticationHelper);
             return;
         }
         if (httpServletRequest.getParameter(PARAMETER_CERT_BUNDLE) != null) {
-            downloadCertificateBundle(httpServletRequest, httpServletResponse);
+            downloadCertificateBundle(httpServletRequest, httpServletResponse, raAuthenticationHelper);
             return;
         }
         final boolean fullChain = Boolean.parseBoolean(httpServletRequest.getParameter(PARAMETER_CHAIN));
@@ -116,7 +114,7 @@ public class RaCertDistServlet extends HttpServlet {
             } catch (NumberFormatException e) {
                 log.debug("Unable to parse " + PARAMETER_CAID + " request parameter: " + e.getMessage());
             }
-            if (chain==null) {
+            if (chain == null) {
                 httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unable to parse " + PARAMETER_CAID + " request parameter.");
                 return;
             } else {
@@ -127,55 +125,55 @@ public class RaCertDistServlet extends HttpServlet {
                     byte[] response = null;
                     if (fullChain) {
                         switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
-                        case PARAMETER_FORMAT_OPTION_JKS: {
-                            // Create a JKS truststore with the CA certificates in
-                            final KeyStore keyStore = KeyStore.getInstance("JKS");
-                            keyStore.load(null, null);
-                            for (int i = 0; i < chain.size(); i++) {
-                                keyStore.setCertificateEntry("cacert" + i, chain.get(i));
+                            case PARAMETER_FORMAT_OPTION_JKS: {
+                                // Create a JKS truststore with the CA certificates in
+                                final KeyStore keyStore = KeyStore.getInstance("JKS");
+                                keyStore.load(null, null);
+                                for (int i = 0; i < chain.size(); i++) {
+                                    keyStore.setCertificateEntry("cacert" + i, chain.get(i));
+                                }
+                                try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                                    keyStore.store(out, "changeit".toCharArray());
+                                    response = out.toByteArray();
+                                }
+                                filename += "-chain.jks";
+                                break;
                             }
-                            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                                keyStore.store(out, "changeit".toCharArray());
-                                response = out.toByteArray();
+                            case PARAMETER_FORMAT_OPTION_P7C: {
+                                response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain));
+                                filename += "-chain.p7c";
+                                break;
                             }
-                            filename += "-chain.jks";
-                            break;
-                        }
-                        case PARAMETER_FORMAT_OPTION_P7C: {
-                            response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain));
-                            filename += "-chain.p7c";
-                            break;
-                        }
-                        case PARAMETER_FORMAT_OPTION_PEM:
-                        default: {
-                            response = CertTools.getPemFromCertificateChain(chain);
-                            filename += "-chain.pem";
-                            break;
-                        }
+                            case PARAMETER_FORMAT_OPTION_PEM:
+                            default: {
+                                response = CertTools.getPemFromCertificateChain(chain);
+                                filename += "-chain.pem";
+                                break;
+                            }
                         }
                     } else {
                         response = caCertificate.getEncoded();
                         switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
-                        case PARAMETER_FORMAT_OPTION_FIREFOX: {
-                            filename = null;
-                            contentType = "application/x-x509-ca-cert";
-                            break;
-                        }
-                        case PARAMETER_FORMAT_OPTION_DER: {
-                            filename += (caCertificate instanceof CardVerifiableCertificate) ? ".cvcert" : ".crt";
-                            break;
-                        }
-                        case PARAMETER_FORMAT_OPTION_P7C: {
-                            response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(Arrays.asList(new Certificate[]{ caCertificate })));
-                            filename += ".p7c";
-                            break;
-                        }
-                        case PARAMETER_FORMAT_OPTION_PEM:
-                        default: {
-                            filename += ".pem";
-                            response = CertTools.getPemFromCertificateChain(Collections.singletonList(caCertificate));
-                            break;
-                        }
+                            case PARAMETER_FORMAT_OPTION_FIREFOX: {
+                                filename = null;
+                                contentType = "application/x-x509-ca-cert";
+                                break;
+                            }
+                            case PARAMETER_FORMAT_OPTION_DER: {
+                                filename += (caCertificate instanceof CardVerifiableCertificate) ? ".cvcert" : ".crt";
+                                break;
+                            }
+                            case PARAMETER_FORMAT_OPTION_P7C: {
+                                response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(Arrays.asList(new Certificate[]{caCertificate})));
+                                filename += ".p7c";
+                                break;
+                            }
+                            case PARAMETER_FORMAT_OPTION_PEM:
+                            default: {
+                                filename += ".pem";
+                                response = CertTools.getPemFromCertificateChain(Collections.singletonList(caCertificate));
+                                break;
+                            }
                         }
                     }
                     writeResponseBytes(httpServletResponse, filename, contentType, response);
@@ -195,7 +193,7 @@ public class RaCertDistServlet extends HttpServlet {
             // Only process request if there is a chance the client is authorized to the CA that issued it
             if (!caInfos.isEmpty()) {
                 final CertificateDataWrapper cdw = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
-                if (cdw!=null) {
+                if (cdw != null) {
                     for (final CAInfo caInfo : caInfos) {
                         if (caInfo.getSubjectDN().equals(cdw.getCertificateData().getIssuerDN())) {
                             List<Certificate> chain = new ArrayList<>();
@@ -205,35 +203,35 @@ public class RaCertDistServlet extends HttpServlet {
                             }
                             try {
                                 byte[] response = null;
-                                String filename = "cert"+fingerprint;
+                                String filename = "cert" + fingerprint;
                                 switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
-                                case PARAMETER_FORMAT_OPTION_SSH: {
-                                    response = chain.get(0).getEncoded();
-                                    filename = "ssh-" + fingerprint + "-cert.pub";
-                                    break;
-                                }
-                                case PARAMETER_FORMAT_OPTION_DER: {
-                                    response = chain.get(0).getEncoded();
-                                    filename += (chain.get(0) instanceof CardVerifiableCertificate) ? ".cvcert" : ".crt";
-                                    break;
-                                }
-                                case PARAMETER_FORMAT_OPTION_P7C: {
-                                    response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain));
-                                    if (fullChain) {
-                                        filename += "-chain";
+                                    case PARAMETER_FORMAT_OPTION_SSH: {
+                                        response = chain.get(0).getEncoded();
+                                        filename = "ssh-" + fingerprint + "-cert.pub";
+                                        break;
                                     }
-                                    filename += ".p7c";
-                                    break;
-                                }
-                                case PARAMETER_FORMAT_OPTION_PEM:
-                                default: {
-                                    response = CertTools.getPemFromCertificateChain(chain);
-                                    if (fullChain) {
-                                        filename += "-chain";
+                                    case PARAMETER_FORMAT_OPTION_DER: {
+                                        response = chain.get(0).getEncoded();
+                                        filename += (chain.get(0) instanceof CardVerifiableCertificate) ? ".cvcert" : ".crt";
+                                        break;
                                     }
-                                    filename += ".pem";
-                                    break;
-                                }
+                                    case PARAMETER_FORMAT_OPTION_P7C: {
+                                        response = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain));
+                                        if (fullChain) {
+                                            filename += "-chain";
+                                        }
+                                        filename += ".p7c";
+                                        break;
+                                    }
+                                    case PARAMETER_FORMAT_OPTION_PEM:
+                                    default: {
+                                        response = CertTools.getPemFromCertificateChain(chain);
+                                        if (fullChain) {
+                                            filename += "-chain";
+                                        }
+                                        filename += ".pem";
+                                        break;
+                                    }
                                 }
                                 writeResponseBytes(httpServletResponse, filename, "application/octet-stream", response);
                                 return;
@@ -252,7 +250,7 @@ public class RaCertDistServlet extends HttpServlet {
 
     private void writeResponseBytes(final HttpServletResponse httpServletResponse, final String filename, final String contentType, final byte[] response) throws IOException {
         ServletUtils.removeCacheHeaders(httpServletResponse);
-        if (filename!=null) {
+        if (filename != null) {
             httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");
         }
         httpServletResponse.setContentType(contentType);
@@ -269,7 +267,7 @@ public class RaCertDistServlet extends HttpServlet {
      * @param httpServletResponse the HTTP response to which the fingerprint sheet should be written
      * @throws IOException if an error occurred when creating the response
      */
-    public void downloadFingerprintSheet(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse)
+    public void downloadFingerprintSheet(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse, RaAuthenticationHelper raAuthenticationHelper)
             throws IOException {
         final Map<String, Object> entries = new LinkedHashMap<>();
         final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
@@ -306,7 +304,7 @@ public class RaCertDistServlet extends HttpServlet {
         final Yaml yaml = new Yaml(dumperOptions);
         log.info("User " + authenticationToken.toString() + " requested a CA certificate fingerprint file.");
         writeResponseBytes(httpServletResponse, "fingerprints.yaml", "text/plain; charset=utf-8",
-                yaml.dumpAsMap(entries).getBytes(Charset.forName("UTF-8")));
+                yaml.dumpAsMap(entries).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -318,7 +316,7 @@ public class RaCertDistServlet extends HttpServlet {
      * @param httpServletResponse the HTTP response to which the certificate bundle should be written
      * @throws IOException if an error occurred when creating the response
      */
-    private void downloadCertificateBundle(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse)
+    private void downloadCertificateBundle(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse, RaAuthenticationHelper raAuthenticationHelper)
             throws IOException {
         try (final ByteArrayOutputStream zipContent = new ByteArrayOutputStream()) {
             try (final ZipOutputStream certificateBundle = new ZipOutputStream(zipContent)) {
