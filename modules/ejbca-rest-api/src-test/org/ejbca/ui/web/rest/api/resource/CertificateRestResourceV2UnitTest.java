@@ -14,6 +14,7 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.InternalCertificateRestSessionLocal;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.easymock.EasyMockRunner;
@@ -35,6 +36,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Optional;
 
+import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.isNull;
@@ -51,6 +53,9 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(EasyMockRunner.class)
 public class CertificateRestResourceV2UnitTest {
+
+	private static final String ERROR_MESSAGE = "Unauthorized access to: aaa Only the user with the \"/system_functionality/view_systemconfiguration/\" privilege "
+			+ "is allowed to perform this operation.";
 
 	private static final JSONParser jsonParser = new JSONParser();
 	private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(
@@ -83,10 +88,10 @@ public class CertificateRestResourceV2UnitTest {
 	}
 
 	@Test
-	public void shouldGetCountOfAllTheIssuedCertificates() throws ParseException {
+	public void shouldGetCountOfAllTheIssuedCertificates() throws ParseException, AuthorizationDeniedException {
 		// given
 		final Long expectedCount = 3L;
-		expect(certificateSessionLocal.getCertificateCount(isNull())).andReturn(expectedCount);
+		expect(certificateSessionLocal.getCertificateCount(anyObject(AuthenticationToken.class), isNull())).andReturn(expectedCount);
 		replay(certificateSessionLocal);
 
 		// when
@@ -105,10 +110,32 @@ public class CertificateRestResourceV2UnitTest {
 	}
 
 	@Test
-	public void shouldGetCountOfActiveCertificates() throws ParseException {
+	public void shouldThrowAuthorizationDeniedException_WhenQueryingQuantityOfAllCertificates() throws ParseException, AuthorizationDeniedException {
+		// given
+		AuthorizationDeniedException exception = new AuthorizationDeniedException(ERROR_MESSAGE);
+		expect(certificateSessionLocal.getCertificateCount(anyObject(AuthenticationToken.class), isNull())).andThrow(exception);
+		replay(certificateSessionLocal);
+
+		// when
+		final Invocation.Builder request = server.newRequest("/v2/certificate/count").request();
+		final Response actualResponse = request.get();
+		final String actualJsonString = actualResponse.readEntity(String.class);
+		final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+		final int actualStatus = actualResponse.getStatus();
+		final String errorMessage = (String) actualJsonObject.get("error_message");
+
+		// then
+		verify(certificateSessionLocal);
+		assertEquals(Response.Status.FORBIDDEN.getStatusCode(), actualStatus);
+		assertEquals(ERROR_MESSAGE, errorMessage);
+		assertJsonContentType(actualResponse);
+	}
+
+	@Test
+	public void shouldGetCountOfActiveCertificates() throws ParseException, AuthorizationDeniedException {
 		// given
 		final Long expectedCount = 3L;
-		expect(certificateSessionLocal.getCertificateCount(eq(Boolean.TRUE))).andReturn(expectedCount);
+		expect(certificateSessionLocal.getCertificateCount(anyObject(AuthenticationToken.class), eq(Boolean.TRUE))).andReturn(expectedCount);
 		replay(certificateSessionLocal);
 
 		// when
@@ -123,6 +150,28 @@ public class CertificateRestResourceV2UnitTest {
 		verify(certificateSessionLocal);
 		assertEquals(Optional.of(expectedCount), Optional.of(certCount));
 		assertEquals(Response.Status.OK.getStatusCode(), actualStatus);
+		assertJsonContentType(actualResponse);
+	}
+
+	@Test
+	public void shouldThrowAuthorizationDeniedException_WhenQueryingQuantityOfActiveCertificates() throws ParseException, AuthorizationDeniedException {
+		// given
+		AuthorizationDeniedException exception = new AuthorizationDeniedException(ERROR_MESSAGE);
+		expect(certificateSessionLocal.getCertificateCount(anyObject(AuthenticationToken.class), eq(Boolean.TRUE))).andThrow(exception);
+		replay(certificateSessionLocal);
+
+		// when
+		final Invocation.Builder request = server.newRequest("/v2/certificate/count?isActive=true").request();
+		final Response actualResponse = request.get();
+		final String actualJsonString = actualResponse.readEntity(String.class);
+		final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+		final int actualStatus = actualResponse.getStatus();
+		final String errorMessage = (String) actualJsonObject.get("error_message");
+
+		// then
+		verify(certificateSessionLocal);
+		assertEquals(Response.Status.FORBIDDEN.getStatusCode(), actualStatus);
+		assertEquals(ERROR_MESSAGE, errorMessage);
 		assertJsonContentType(actualResponse);
 	}
 }
