@@ -56,7 +56,7 @@
 	                </h:column>
 	                <h:column>
 	                    <f:facet name="header"><h:outputText value="#{msg.cas_page_colhead_certs}"/></f:facet>
-	                    <h:panelGrid columns="2" styleClass="nopadding noborder" rendered="#{caAndCrls.caId!=0}">
+	                    <h:panelGrid columns="3" styleClass="nopadding noborder" rendered="#{caAndCrls.caId!=0}">
 	                        <h:outputLink value="cert">
 	                            <f:param name="caid" value="#{caAndCrls.caId}"/>
 	                            <f:param name="chain" value="false"/>
@@ -69,6 +69,11 @@
 	                            <f:param name="format" value="der"/>
 	                            <h:outputText value="#{msg.cas_page_link_download_ca_der}"/>
 	                        </h:outputLink>
+                            <h:outputLink rendered="#{caAndCrls.ssh}"
+                                    value="#{caAndCrls.sshPublicKeyDownloadLink}"
+                                    style="margin-#{raLocaleBean.indentionDirection}: 24px; display: inline-block;">
+                                <h:outputText value="#{msg.cas_page_link_download_ssh_public_key}"/>
+                            </h:outputLink>
 	                    </h:panelGrid>
 	                </h:column>
 	                <h:column>
@@ -103,7 +108,7 @@
 	                            <f:param name="format" value="ns"/>
 	                            <h:outputText value="#{msg.cas_page_link_download_ca_ns}"/>
 	                        </h:outputLink>
-	                        <h:outputLink value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
+                            <h:outputLink value="cert" style="margin-#{raLocaleBean.indentionDirection}: 16px; display: inline-block;">
 	                            <f:param name="caid" value="#{caAndCrls.caId}"/>
 	                            <f:param name="chain" value="false"/>
 	                            <f:param name="format" value="der"/>
