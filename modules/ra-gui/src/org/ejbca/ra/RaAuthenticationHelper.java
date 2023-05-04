@@ -26,6 +26,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
@@ -105,7 +106,8 @@ public class RaAuthenticationHelper implements Serializable {
                 }
                 x509AuthenticationTokenFingerprint = authenticationToken == null ? null : fingerprint;
             }
-            if (oauthBearerToken != null && authenticationToken == null) {
+            if (oauthBearerToken != null && (authenticationToken == null ||
+             authenticationToken.matchTokenType(PublicAccessAuthenticationTokenMetaData.TOKEN_TYPE))) {
                 final OAuthConfiguration oauthConfiguration = raMasterApi.getGlobalConfiguration(OAuthConfiguration.class);
                 try {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
