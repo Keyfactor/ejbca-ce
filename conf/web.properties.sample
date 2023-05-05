@@ -320,7 +320,7 @@ httpsserver.tokentype=JKS
 
 # PQC algorithms can be enabled in the Admin UI
 # Only for testing until officially standardized
-# Default: false (not enabled)
+# Default: true (enabled)
 #cryptotoken.pqc.enabled=true
 
 #
