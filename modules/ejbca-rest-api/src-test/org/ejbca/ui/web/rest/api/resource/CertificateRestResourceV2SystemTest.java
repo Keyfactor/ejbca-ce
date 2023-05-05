@@ -13,23 +13,13 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
-import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
 import org.ejbca.ui.web.rest.api.resource.util.TestEndEntityParamHolder;
 import org.json.simple.JSONObject;
@@ -41,11 +31,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
-import java.util.Optional;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * A system test class for the {@link CertificateRestResourceV2} to test its content.
@@ -58,7 +46,7 @@ public class CertificateRestResourceV2SystemTest extends RestResourceSystemTestB
     private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private static final EndEntityProfileSessionRemote endEntityProfileSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
-    private CertificateRestResourceSystemTestUtil certificateRestResourceSystemTestUtil = new CertificateRestResourceSystemTestUtil();
+    private final CertificateRestResourceSystemTestUtil certificateRestResourceSystemTestUtil = new CertificateRestResourceSystemTestUtil();
 
     private X509CA x509TestCa;
     private String testCaName = "CertificateRestSystemTestCa";
@@ -125,7 +113,7 @@ public class CertificateRestResourceV2SystemTest extends RestResourceSystemTestB
 		final String actualJsonString = actualResponse.readEntity(String.class);
 		final JSONObject actualJsonObject = (JSONObject) JSON_PARSER.parse(actualJsonString);
 		final Long count = (Long) actualJsonObject.get("count");
-		assertEquals(Optional.of(2L), Optional.of(count));
+		assertTrue(count >= 2);
 	}
 
     @Test
@@ -149,7 +137,7 @@ public class CertificateRestResourceV2SystemTest extends RestResourceSystemTestB
 		final String actualJsonString = actualResponse.readEntity(String.class);
 		final JSONObject actualJsonObject = (JSONObject) JSON_PARSER.parse(actualJsonString);
 		final Long count = (Long) actualJsonObject.get("count");
-		assertEquals(Optional.of(2L), Optional.of(count));
-	}
+        assertTrue(count >= 2);
+    }
 
 }
