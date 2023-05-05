@@ -43,6 +43,12 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     /** @return return the query results as a List. */
     List<CertificateData> findByIssuerDNSerialNumber(String issuerDN, String serialNumber);
 
+    /** @return the quantity of all the certificates saved within the CA lifecycle. */
+    Long findQuantityOfAllCertificates();
+
+    /** @return the quantity of the active certificates saved within the CA lifecycle. */
+    Long findQuantityOfTheActiveCertificates();
+
     /** @return return the query results as a List. */
     CertificateInfo findFirstCertificateInfo(String issuerDN, String serialNumber);
     
@@ -134,7 +140,7 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
      *         issuer.
      */
     List<Certificate> findActiveCertificatesByTypeAndIssuer(Collection<Integer> certificateTypes, String issuerDN);
-    
+
 
     /**
      * Fetch a List of all certificate fingerprints and corresponding username
