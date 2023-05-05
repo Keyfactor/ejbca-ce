@@ -11,12 +11,12 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class CaCertCountResponse {
+public class CertificateCountResponse {
 
-	@ApiModelProperty(value = "The quantity of certificates rather issued or expired", example = "1054")
+	@ApiModelProperty(value = "The quantity of issued or active certificates", example = "1054")
 	private Long count;
 
-	public CaCertCountResponse(Long count) {
+	public CertificateCountResponse(Long count) {
 		this.count = count;
 	}
 
