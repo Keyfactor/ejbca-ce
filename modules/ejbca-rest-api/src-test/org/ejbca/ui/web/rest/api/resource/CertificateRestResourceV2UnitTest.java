@@ -55,7 +55,7 @@ import static org.junit.Assert.assertEquals;
 public class CertificateRestResourceV2UnitTest {
 
 	private static final String ERROR_MESSAGE = "Unauthorized access to the resource. "
-			+ "Token: aaa Only the user with the \"/system_functionality/view_systemconfiguration/\" privilege "
+			+ "Token: aaa. Only the user with the \"/system_functionality/view_systemconfiguration/\" privilege "
 			+ "is allowed to perform this operation.";
 
 	private static final JSONParser jsonParser = new JSONParser();

@@ -99,16 +99,17 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
 
     @Override
     public Long findQuantityOfAllCertificates() {
-        return executeCountQuery("SELECT count(cd) FROM CertificateData cd");
+        Query query = entityManager.createQuery("SELECT count(cd) FROM CertificateData cd");
+        return (Long) query.getResultList().get(0);
     }
 
     @Override
     public Long findQuantityOfTheActiveCertificates() {
-        return executeCountQuery("SELECT count(cd) FROM CertificateData cd WHERE cd.expireDate >= UNIX_TIMESTAMP() * 1000");
-    }
-
-    private Long executeCountQuery(String countQuery) {
-        Query query = entityManager.createQuery(countQuery);
+        Query query = entityManager.createQuery("SELECT count(cd) FROM CertificateData cd WHERE cd.expireDate >= :now "
+                + "AND cd.expireDate>=:now AND (cd.status = :statusActive OR cd.status = :statusNotifiedAboutExpiration)");
+        query.setParameter("now", System.currentTimeMillis());
+        query.setParameter("statusActive", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("statusNotifiedAboutExpiration", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
         return (Long) query.getResultList().get(0);
     }
 
