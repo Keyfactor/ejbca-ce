@@ -18,19 +18,15 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.SwaggerDefinition.Scheme;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.InternalCertificateRestSessionLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
-import org.ejbca.ui.web.rest.api.io.response.CaCertCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 import org.ejbca.ui.web.rest.api.resource.BaseRestResource;
 import org.ejbca.ui.web.rest.api.resource.CertificateRestResourceV2;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -64,9 +60,6 @@ import java.security.cert.CertificateParsingException;
 @Stateless
 public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 {
 
-    @EJB
-    private InternalCertificateRestSessionLocal certificateSessionLocal;
-
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
@@ -82,14 +75,12 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @Path("/count")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the quantity of rather total issued or active certificates")
+    @Override
     public Response getCertificateCount(@Context HttpServletRequest requestContext,
                                         @ApiParam(value = "true if an active certificates should be counted only")
-                                        @QueryParam("isActive") Boolean isActive)
-            throws AuthorizationDeniedException, RestException {
-        AuthenticationToken admin = getAdmin(requestContext, false);
-        return Response.ok(new CaCertCountResponse(
-                certificateSessionLocal.getCertificateCount(admin, isActive)
-        )).build();
+                                        @QueryParam("isActive") Boolean isActive
+    ) throws AuthorizationDeniedException, RestException {
+        return super.getCertificateCount(requestContext, isActive);
     }
 
     @POST

@@ -688,7 +688,7 @@
         "tags": [
           "v2/certificate"
         ],
-        "summary": "Retrieve the quantity of rather total issued or active certificates",
+        "summary": "Retrieve the quantity of total issued or active certificates",
         "description": "",
         "operationId": "getCertificateCount",
         "produces": [
@@ -707,7 +707,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CaCertCountResponse"
+              "$ref": "#/definitions/CertificateCountResponse"
             }
           }
         }
@@ -1847,13 +1847,13 @@
         }
       }
     },
-    "CaCertCountResponse": {
+    "CertificateCountResponse": {
       "type": "object",
       "properties": {
         "count": {
           "type": "integer",
           "example": "1054",
-          "description": "The quantity of certificates rather issued or expired"
+          "description": "The quantity of issued or active certificates"
         }
       }
     },
