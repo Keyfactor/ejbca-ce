@@ -62,7 +62,6 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
@@ -100,8 +99,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
     private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
-    @EJB
-    private EndEntityAccessSessionLocal endEntityAccessSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -335,8 +332,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
 
         if (superAdminCN==null // only from ca init command, do additional validation 
                 // and importCA always validates superAdminCN not null
-                && (caSession.getAllCaIds().size()!=0 // there should not be any CA
-                || getUserCount(authenticationToken)!=0) // no user is created yet
+                && caSession.getAllCaIds().size()!=0 // only allowed for first CA
                 ) {
             return false;
         }
@@ -347,17 +343,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
                 , Role.STATE_ALLOW);
         roleDataSession.persistRole(publicRole);
         return true;
-    }
-    
-    private int getUserCount(AuthenticationToken authenticationToken) {
-        int endEntityCount = 0;
-        int[] allStatuses = new int[] {EndEntityConstants.STATUS_NEW, EndEntityConstants.STATUS_FAILED, 
-                EndEntityConstants.STATUS_INITIALIZED, EndEntityConstants.STATUS_INPROCESS,
-                EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_REVOKED};
-        for(int status: allStatuses) {
-            endEntityCount += endEntityAccessSession.findAllUsersByStatus(authenticationToken, status).size();
-        }
-        return endEntityCount;
     }
 
     @Override
