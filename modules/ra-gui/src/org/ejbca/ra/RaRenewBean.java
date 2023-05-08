@@ -205,7 +205,7 @@ public class RaRenewBean implements Serializable {
             username = certificateDataForRenew.getUsername();
             if (certificateDataForRenew.isRevoked()) {
                 raLocaleBean.addMessageInfo("renewcertificate_page_certificate_revoked_message", currentSerialNumber, currentIssuerDn);
-                return true;
+                return false;
             }
             caName = certificateDataForRenew.getCaName();
             endEntityProfileName = certificateDataForRenew.getEndEntityProfileName();
