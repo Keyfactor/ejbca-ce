@@ -315,6 +315,10 @@ public class EnrollWithRequestIdBean implements Serializable {
             getEndEntityInformation().getExtendedInformation().setCertificateRequest(binaryReqBytes);
         }
         generateCertificateAfterCheck();
+        removePublicRoleIfNeeded();
+    }
+
+    private void removePublicRoleIfNeeded() {
         if (generatedToken != null && isDeletePublicAccessRoleRendered() && isDeletePublicAccessRole()) {
             try {
                 final AlwaysAllowLocalAuthenticationToken adminToken = new AlwaysAllowLocalAuthenticationToken("DeleteRoleAfterSuperadminEnrollment");
@@ -483,6 +487,8 @@ public class EnrollWithRequestIdBean implements Serializable {
             raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
             log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
         }
+        
+        removePublicRoleIfNeeded();
     }
 
     public boolean isRenderGenerateCertificate(){
