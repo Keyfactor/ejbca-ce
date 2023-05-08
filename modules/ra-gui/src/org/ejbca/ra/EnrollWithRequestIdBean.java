@@ -315,6 +315,10 @@ public class EnrollWithRequestIdBean implements Serializable {
             getEndEntityInformation().getExtendedInformation().setCertificateRequest(binaryReqBytes);
         }
         generateCertificateAfterCheck();
+        removePublicRoleIfNeeded();
+    }
+
+    private void removePublicRoleIfNeeded() {
         if (generatedToken != null && isDeletePublicAccessRoleRendered() && isDeletePublicAccessRole()) {
             try {
                 final AlwaysAllowLocalAuthenticationToken adminToken = new AlwaysAllowLocalAuthenticationToken("DeleteRoleAfterSuperadminEnrollment");
@@ -484,15 +488,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
         }
         
-        if (generatedToken != null && isDeletePublicAccessRoleRendered() && isDeletePublicAccessRole()) {
-            try {
-                final AlwaysAllowLocalAuthenticationToken adminToken = new AlwaysAllowLocalAuthenticationToken("DeleteRoleAfterSuperadminEnrollment");
-                roleSession.deleteRoleIdempotent(adminToken, null, AuthorizationSystemSession.PUBLIC_ACCESS_ROLE);
-            } catch (AuthorizationDeniedException e) {
-                raLocaleBean.addMessageError("enrolle_failed_delete_role");
-                log.error("Not authorized to create CA: " + e.getMessage());
-            }
-        }
+        removePublicRoleIfNeeded();
     }
 
     public boolean isRenderGenerateCertificate(){
