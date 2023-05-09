@@ -222,6 +222,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String cabfOrganizationIdentifier;
     private String selectedAlgorithm; //GENERATED ON SERVER
     private String algorithmFromCsr; //PROVIDED BY USER
+    private String algorithmFromCsrUiRepresentation;
     private int selectedTokenType;
 
     private Part uploadFile;
@@ -1729,9 +1730,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
-
+            algorithmFromCsrUiRepresentation = getAlgorithmUiRepresentationString(keyAlgorithm, keySpecification);
             publicKeyModulus = KeyTools.getKeyModulus(publicKey);
-
             publicKeyExponent = KeyTools.getKeyPublicExponent(publicKey);
             sha256Fingerprint = KeyTools.getSha256Fingerprint(csrValue);
             signature = extractSignatureFromCsr(certRequest);
@@ -1748,6 +1748,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return alg.equals(spec)? alg : alg + "_" + spec;
     }
 
+    private String getAlgorithmUiRepresentationString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + " " + spec;
+    }
 
     private String extractSignatureFromCsr(final RequestMessage certRequest) {
         if (certRequest instanceof PKCS10RequestMessage) {
@@ -1907,6 +1910,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } else {
             return algorithmFromCsr;
         }
+    }
+    
+    /**
+     * @return the current key algorithm as UI representation
+     */
+    public String getAlgorithmUiRepresentation() {
+        return algorithmFromCsrUiRepresentation;
     }
 
     /**
@@ -2829,7 +2839,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         requestPreview.updateSubjectDn(getSubjectDn());
         requestPreview.updateSubjectAlternativeName(getSubjectAlternativeName(), getEndEntityProfile());
         requestPreview.updateSubjectDirectoryAttributes(getSubjectDirectoryAttributes());
-        requestPreview.setPublicKeyAlgorithm(getAlgorithm());
+        requestPreview.setPublicKeyAlgorithm(getAlgorithmUiRepresentation());
         requestPreview.updateCA(getCAInfo());
         requestPreview.updateCertificateProfile(getCertificateProfile());
         requestPreview.setMore(requestPreviewMoreDetails);
