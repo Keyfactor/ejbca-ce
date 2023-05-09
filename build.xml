@@ -577,7 +577,6 @@
             	<include name="adsddl-*.jar"/>
                 <include name="commons-*.jar" />
 				<include name="nimbus-jose-jwt-*.jar"/>
-				<include name="json-smart-*.jar"/>
 				<include name="httpclient-*.jar" />
                 <include name="httpcore-*.jar" />
                 <include name="httpmime-*.jar" />
@@ -612,17 +611,6 @@
 				<include name="jackson-databind-2.*.jar"/>
 				<include name="jackson-dataformat-yaml-2.*.jar"/>
 			</zipfileset>
-        	<zipfileset prefix="lib" dir="${lib}/intune" erroronmissingdir="false">    
-        		<include name="accessors-smart-*.jar"/>
-        		<include name="adal4j-*.jar"/>
-        		<include name="asm-*.jar"/>
-  				<include name="content-type-*.jar"/>
-				<include name="csr-validation-*.jar"/>
-        		<include name="gson-*.jar"/>
-				<include name="json-*.jar"/>
-				<include name="lang-tag-*.jar"/>
-  				<include name="oauth2-oidc-sdk-*.jar"/>
-        	</zipfileset>
         	
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
