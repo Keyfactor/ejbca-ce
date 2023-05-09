@@ -43,6 +43,8 @@ import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -80,6 +82,8 @@ public class RaCertDistServlet extends HttpServlet {
     private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
 
     @Override
@@ -124,6 +128,10 @@ public class RaCertDistServlet extends HttpServlet {
                     String contentType = "application/octet-stream";
                     byte[] response = null;
                     if (fullChain) {
+                        if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
+                                .getPublicWebCertChainOrderRootFirst()) {
+                            Collections.reverse(chain);
+                        }
                         switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
                             case PARAMETER_FORMAT_OPTION_JKS: {
                                 // Create a JKS truststore with the CA certificates in
