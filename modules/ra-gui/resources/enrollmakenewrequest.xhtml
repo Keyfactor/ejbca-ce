@@ -200,7 +200,7 @@
                     <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.uploadCsrDoneRendered}">
                         <h:panelGroup layout="block" styleClass="pure-control-group">
                             <h:outputLabel for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
-                            <h:outputText id="certificateRequestNode" value="#{enrollMakeNewRequestBean.algorithm}"/>
+                            <h:outputText id="certificateRequestNode" value="#{enrollMakeNewRequestBean.algorithmUiRepresentation}"/>
                         </h:panelGroup>
                         <h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
                             action="#{enrollMakeNewRequestBean.uploadCsrChange}">
