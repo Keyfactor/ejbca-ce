@@ -15,12 +15,11 @@
 	<property name="healthcheck-war.resources.dir" location="${healthcheck-war.dir}/resources"/>
 
 	<path id="compile-common.classpath">
-		<path refid="lib.json-smart.classpath"/>
+		<path refid="lib.json-simple.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
-		<path refid="lib.json-simple.classpath"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
