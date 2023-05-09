@@ -20,7 +20,6 @@
 	<path id="compile-ejbca-ejb.classpath">
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
-		<path refid="lib.json-smart.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
