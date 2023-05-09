@@ -355,7 +355,6 @@
 		<fileset dir="${ejbca.home}/lib/" includes="nimbus-jose-jwt-*.jar"/>
 		<fileset dir="${ejbca.home}/lib/" includes="jcip-annotations-*.jar"/>
 	</path>
-	<path id="lib.json-smart.classpath"><fileset dir="${ejbca.home}/lib/" includes="json-smart-*.jar"/></path>
 	<path id="lib.dnsjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnsjava-*.jar"/></path>
 	<path id="lib.guava.classpath"><fileset dir="${ejbca.home}/lib" includes="guava-*.jar"/></path>
 	<path id="lib.jacknji.classpath">
