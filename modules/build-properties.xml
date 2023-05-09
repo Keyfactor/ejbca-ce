@@ -320,6 +320,7 @@
 		<path refid="lib.commons-lang.classpath" />
 		<fileset dir="${ejbca.home}/lib" includes="commons-text-*.jar"/>
 	</path>
+	<path id="lib.javassist.classpath"><fileset dir="${ejbca.home}/lib" includes="javassist-*.jar"/></path>
 	<path id="lib.commons-beanutils.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-beanutils-*.jar"/></path>
 	<path id="lib.commons-codec.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/></path>
 	<path id="lib.commons-config.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-configuration2-*.jar"/></path>
@@ -496,7 +497,6 @@
             <include name="hibernate-core-*.jar"/>
         	<include name="istack-commons-runtime*.jar"/>
         	<include name="jandex*.jar"/>
-            <include name="javassist-*.jar"/>
         	<include name="javax.activation*.jar"/>
         	<include name="javax.persistence*.jar"/>
             <include name="jaxb-api*.jar"/>
