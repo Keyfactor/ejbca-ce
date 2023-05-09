@@ -263,7 +263,7 @@ public class RaCertificateDetails {
             this.fingerprintSha256 = new String(Hex.encode(CertTools.generateSHA256Fingerprint(certificateEncoded)));
             final PublicKey publicKey = certificate.getPublicKey();
             this.publicKeyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-            this.publicKeySpecification = AlgorithmTools.getKeySpecification(publicKey);
+            this.publicKeySpecification = checkForPQCAndGetPublicKeySpec(publicKey, publicKeyAlgorithm);
             if (publicKey instanceof RSAPublicKey) {
                 this.publicKeyParameter = ((RSAPublicKey)publicKey).getModulus().toString(16);
             } else if(certificate.getPublicKey() instanceof DSAPublicKey) {
@@ -383,7 +383,13 @@ public class RaCertificateDetails {
         this.accountBindingId = certificateData.getAccountBindingId();
         styleRowCallCounter = 0;    // Reset
     }
-
+    private String checkForPQCAndGetPublicKeySpec(final PublicKey pubKey, final String pubKeyAlgorithm) {
+        String pubKeySpecification = AlgorithmTools.getKeySpecification(pubKey);
+        if (AlgorithmTools.isPQC(pubKeyAlgorithm)){
+            pubKeySpecification = pubKeyAlgorithm.equals(pubKeySpecification)? "" : pubKeySpecification;
+        }
+        return pubKeySpecification;
+    }
     private String generalizedTimeToString(final ASN1GeneralizedTime gt) throws ParseException {
         return gt != null ? ValidityDate.formatAsISO8601ServerTZ(gt.getDate().getTime(), TimeZone.getDefault()) : "not specified";
     }
