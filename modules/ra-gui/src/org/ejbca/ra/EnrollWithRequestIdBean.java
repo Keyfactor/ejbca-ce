@@ -630,7 +630,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         this.certificateRequest = certificateRequest;
     }
 
-    /** Bafcking method for upload CSR button (used for uploading pasted CSR) populating fields is handled by AJAX */
+    /** Backing method for upload CSR button (used for uploading pasted CSR) populating fields is handled by AJAX */
     public void uploadCsr() {
     }
 
