@@ -15,6 +15,7 @@
 		<path refid="lib.commons-text.classpath"/>
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.jpa.classpath"/>
+		<path refid="lib.javassist.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>

@@ -35,6 +35,7 @@
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.utils.classpath"/>
+		<path refid="lib.javassist.classpath"/>
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.ldap.classpath"/>
