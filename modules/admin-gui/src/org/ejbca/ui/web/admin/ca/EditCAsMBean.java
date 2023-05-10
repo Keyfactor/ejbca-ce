@@ -84,6 +84,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.ca.ssh.SshCa;
+import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -2285,6 +2286,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             } else {
                 caInfoDto.setRegion("");
             }
+        }
+
+        if (caInfoDto.isCaTypeSsh() && cainfo != null) {
+            final SshCaInfo sshCaInfo = (SshCaInfo) cainfo;
+            caInfoDto.setUseLdapDNOrder(sshCaInfo.getUseLdapDnOrder());
         }
 
         if (caInfoDto.isCaTypeX509() && cainfo != null) {
