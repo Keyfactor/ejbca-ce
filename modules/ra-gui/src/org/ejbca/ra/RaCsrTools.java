@@ -55,6 +55,7 @@ public class RaCsrTools {
             }
             bean.setSelectedAlgorithm(keyAlgorithm + " " + keySpecification);
             bean.setCertificateRequest(valueStr);
+            bean.setAlgorithmUiRepresentationString(keyAlgorithm, keySpecification);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             final String msg = raLocaleBean.getMessage("enroll_unknown_key_algorithm");
             if (log.isDebugEnabled()) {
