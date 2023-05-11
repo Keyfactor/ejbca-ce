@@ -459,7 +459,7 @@
                                         </h:selectBooleanCheckbox>
                                         <h:outputLabel for="rfcEmailUsed" value="#{msg.subject_dn_USESEMAILFIELDDATA}"/>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{instance.upnRfc and !instance.rfcUseEmail and !instance.copyUpn}">
+                                    <h:panelGroup rendered="#{instance.upnRfc and !instance.rfcUseEmail and !instance.upnCopyCheckbox}">
                                         <h:inputText id="upnRfcEmail" rendered="#{instance.isSelectableValuesUpnRfcDomainOnly()}">
                                             <f:ajax event="change" listener="#{enrollMakeNewRequestBean.upnRfc}"
                                                 execute="@this upnRfcEmail upnRfcDomain" render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage" />
@@ -507,7 +507,7 @@
 									<h:outputLabel for="subjectAltNameOptionalField"
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]}"
 										rendered="#{!instance.required}" />
-                                    <h:panelGroup rendered="#{!instance.upnRfc and !instance.rfcUseEmail and !instance.dnsCopyCheckbox}">
+                                    <h:panelGroup rendered="#{!instance.upnRfc and !instance.rfcUseEmail and !instance.dnsCopyCheckbox and !instance.upnCopyCheckbox}">
                                         <h:inputText id="subjectAltNameOptionalField" value="#{enrollMakeNewRequestBean.subjectAlternativeName.optionalFieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
                                             rendered="#{!instance.required and !instance.selectable}" >
                                             <f:validator validatorId="extendedRegexValidator" />
@@ -536,7 +536,7 @@
                                         </h:selectBooleanCheckbox>
                                         <h:outputLabel for="rfcEmailUsed" value="#{msg.subject_dn_USESEMAILFIELDDATA}"/>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{instance.upnRfc and !instance.rfcUseEmail}">
+                                    <h:panelGroup rendered="#{instance.upnRfc and !instance.rfcUseEmail and !instance.upnCopyCheckbox}">
                                         <h:inputText id="upnRfcEmail" rendered="#{instance.isSelectableValuesUpnRfcDomainOnly()}">
                                             <f:ajax event="change" listener="#{enrollMakeNewRequestBean.upnRfc}"
                                                 execute="@this upnRfcEmail upnRfcDomain" render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage" />
@@ -561,7 +561,7 @@
                                         <h:message for="upnRfcEmail" id="upnRfcEmailMessage" styleClass="showErrorMessage"/>
                                         <h:message for="upnRfcEmail2" id="upnRfcEmailMessage2" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
-									<h:panelGroup rendered="#{instance.copyDns}">
+									<h:panelGroup rendered="#{instance.copyDns || instance.copyUpn}">
 										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText"/>
 									</h:panelGroup>
                             	</h:panelGroup>
