@@ -2292,7 +2292,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 if (DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnId)) || DnComponents.DNEMAILADDRESS.equals(DnComponents.dnIdToProfileName(dnId)) || DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnId))) {
                     //Don't split RFC822NAME addresses.
                     if (!DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnId))) {
-                        if (!StringUtils.contains(fieldValue, '@')) { // TODO
+                        if (!StringUtils.contains(fieldValue, '@')) { 
                             throw new EndEntityProfileValidationException("Field value DNEMAIL and UPN must contain an @ character: " + fieldValue);
                         }
                         fieldValue = fieldValue.split("@")[1];
@@ -2338,10 +2338,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 }
             }
             if (DnComponents.DNSNAME.equals(DnComponents.dnIdToProfileName(dnId))) {
-                verifyDnsNameFieldMatchesCnValue(fields, commonName, MATCHED_FIELD, profileID, dnFieldExtractorID, subjectsToProcess, profileCrossOffList);
+                verifyAltNameDnTypeFieldMatchesCnValue(fields, commonName, MATCHED_FIELD, profileID, dnFieldExtractorID, subjectsToProcess, profileCrossOffList);
             }
             if (DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnId))) {
-                //TODO
+                verifyAltNameDnTypeFieldMatchesCnValue(fields, commonName, MATCHED_FIELD, profileID, dnFieldExtractorID, subjectsToProcess, profileCrossOffList);
             }
             // For every field of this type in profile (start with required and non-modifiable, 2 + 1)
             for (int k = 3; k >= 0; k--) {
@@ -2390,7 +2390,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
     } // checkIfFieldsMatch
 
-    private void verifyDnsNameFieldMatchesCnValue(final DNFieldExtractor fields, String commonName, final int matchedField, final int profileID,
+    private void verifyAltNameDnTypeFieldMatchesCnValue(final DNFieldExtractor fields, String commonName, final int matchedField, final int profileID,
                                                   final int dnFieldExtractorID, String[] subjectsToProcess, int[] profileCrossOffList) {
         //0,1,2,3 are combinations of modifiable and required
         for (int k = 3; k >= 0; k--) {
@@ -2402,7 +2402,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                         if (subjectsToProcess[m] != null && profileCrossOffList[l] != matchedField) {
                             if (getCopy(profileID, l)) {
                                  /*
-                                 * IF the component is DNSNAME and getCopy is true, value from CN should be used
+                                 * IF the component is DNSNAME or UPN and getCopy is true, value from CN should be used
                                  */
                                 if (fields.getField(dnFieldExtractorID, m).equals(commonName)) {
                                     subjectsToProcess[m] = null;
