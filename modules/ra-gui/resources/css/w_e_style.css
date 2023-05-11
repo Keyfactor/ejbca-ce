@@ -943,8 +943,10 @@ span.approvalStep {
     font-size: 90%; }
 
 .footerLogo {
-  height: 1.5em;
-  display: inline-block; }
+  height: 2em;
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: -0.5em; }
 
 /*CSS för scroll to top-funktion*/
 #web-express-scroll-to-top {
