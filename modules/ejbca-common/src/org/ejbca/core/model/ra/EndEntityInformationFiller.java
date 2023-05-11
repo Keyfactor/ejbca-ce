@@ -136,36 +136,36 @@ public class EndEntityInformationFiller {
 
 
     /**
-     * Gets the first Common Name value from subjectDn and sets this value to all dns's with "use from CN" checked
+     * Gets the first Common Name value from subjectDn and sets this value to all dns's or upn's with "use from CN" checked
      *
      * @param endEntityProfile EEP selected for end entity
      * @param subjectDn        provided subjectDn
      * @return String with comma separated DNSNames
      */
-    public static String copyDnsNameValueFromCn(final EndEntityProfile endEntityProfile, String subjectDn) {
+    public static String copyCnToAltName(final EndEntityProfile endEntityProfile, String subjectDn, String fieldType) {
         if (endEntityProfile == null) {
             return StringUtils.EMPTY;
         }
-        StringBuilder dnses = new StringBuilder();
+        StringBuilder specifiedSans = new StringBuilder();
         String commonName = CertTools.getCommonNameFromSubjectDn(subjectDn);
         if (StringUtils.isNotEmpty(commonName)) {
             int[] field = null;
             final int numberOfFields = endEntityProfile.getSubjectAltNameFieldOrderLength();
             for (int i = 0; i < numberOfFields; i++) {
                 field = endEntityProfile.getSubjectAltNameFieldsInOrder(i);
-                final boolean isDnsField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
+                final boolean isDnsorUpnField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], fieldType);
                 final boolean isCopy = endEntityProfile.getCopy(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
-                if (isDnsField && isCopy) {
-                    if (dnses.length() > 0) {
-                        dnses.append(", ");
+                if (isDnsorUpnField && isCopy) {
+                    if (specifiedSans.length() > 0) {
+                        specifiedSans.append(", ");
                     }
                     int dnId = DnComponents.profileIdToDnId(field[EndEntityProfile.FIELDTYPE]);
                     String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTALTNAME) + commonName;
-                    dnses.append(nameValueDnPart);
+                    specifiedSans.append(nameValueDnPart);
                 }
             }
         }
-        return dnses.toString();
+        return specifiedSans.toString();
     }
     
     /**
