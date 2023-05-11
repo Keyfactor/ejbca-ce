@@ -661,7 +661,7 @@
                                 value="#{web.text.USEENTITYEMAILFIELD}" />
                         </h:panelGroup>
                         <h:panelGroup
-                            rendered="#{subjectAltNameComponent.dnsField}">
+                            rendered="#{subjectAltNameComponent.dnsField or subjectAltNameComponent.upnField}">
                             <h:selectBooleanCheckbox
                                 id="altNameUseEndEntityCnAsDns"
                                 value="#{subjectAltNameComponent.copy}"
