@@ -2293,7 +2293,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     //Don't split RFC822NAME addresses.
                     if (!DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnId))) {
                         if (!StringUtils.contains(fieldValue, '@')) { 
-                            throw new EndEntityProfileValidationException("Field value DNEMAIL and UPN must contain an @ character: " + fieldValue);
+                            throw new EndEntityProfileValidationException("Field value DNEMAIL and UPN must contain an @ character. If CN is copied to UPN, then CN should also have same format: " + fieldValue);
                         }
                         fieldValue = fieldValue.split("@")[1];
                     }
@@ -3315,6 +3315,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public void setRfcEmailUsed(boolean rfcEmailUsed) { this.rfcEmailUsed = rfcEmailUsed; }
         public boolean isCopyDns() {
             return name.equals(DnComponents.DNSNAME) && isCopy();
+        }
+        public boolean isCopyUpn() {
+            return name.equals(DnComponents.UPN) && isCopy();
         }
         public boolean isDnsCopyCheckbox() {
             return dnsCopyCheckbox;

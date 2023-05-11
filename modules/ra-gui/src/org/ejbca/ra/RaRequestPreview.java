@@ -22,6 +22,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
+import com.keyfactor.util.certificate.DnComponents;
+
 /** 
  * UI representation of a certificate preview to be confirmed before enrollment.
  * 
@@ -101,26 +103,32 @@ public class RaRequestPreview {
         if(profile ==null) {
             this.subjectAlternativeName =subjectAlternativeName.getUpdatedValue();
         } else {
-            this.subjectAlternativeName = getAddDnsFromCnToAltName(subjectDn, subjectAlternativeName.getUpdatedValue(), profile);
+            String sanUpdatedValue = subjectAlternativeName.getUpdatedValue();
+            sanUpdatedValue = copyCnToAltName(subjectDn, sanUpdatedValue, profile, DnComponents.DNSNAME);
+            this.subjectAlternativeName = copyCnToAltName(subjectDn, sanUpdatedValue, profile, DnComponents.UPN);
         }
     }
 
     /**
-     * Update subjectAltName with dns fields with value from CN
+     * Update subjectAltName with dns and upns fields with value from CN
      * @param subjectDn subjectDn
      * @param altName altName
      * @param profile EEProfile
-     * @return altName updated with dns copied from CN
+     * @return altName updated with dns and upns copied from CN
      */
-    private String getAddDnsFromCnToAltName(final String subjectDn, String altName, final EndEntityProfile profile) {
-        String dnsNameValueFromCn = EndEntityInformationFiller.copyDnsNameValueFromCn(profile, subjectDn);
+    private String copyCnToAltName(final String subjectDn, String altName, final EndEntityProfile profile, final String specifiedDnType) {
+        String specifiedDnTypeValueFromCn = EndEntityInformationFiller.copyCnToAltName(profile, subjectDn, specifiedDnType);
         if (altName == null) {
             altName = "";
         }
-        if (StringUtils.isNotEmpty(altName) && StringUtils.isNotEmpty(dnsNameValueFromCn)) {
-            altName += ", ";
+        if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn) && !altName.contains(specifiedDnTypeValueFromCn)) {
+       
+            if (StringUtils.isNotEmpty(altName)) {
+                altName += ", ";
+            }
+        altName += specifiedDnTypeValueFromCn;
         }
-        altName += dnsNameValueFromCn;
+        
         return altName;
     }
     
