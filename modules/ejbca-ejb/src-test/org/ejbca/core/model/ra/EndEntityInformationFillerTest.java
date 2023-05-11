@@ -24,6 +24,7 @@ import org.junit.Test;
 import com.keyfactor.util.certificate.DnComponents;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -263,7 +264,7 @@ public class EndEntityInformationFillerTest {
 
     @Test
     public void testNoCn(){
-        String altName = EndEntityInformationFiller.copyDnsNameValueFromCn(profile, "");
+        String altName = EndEntityInformationFiller.copyCnToAltName(profile, "", DnComponents.DNSNAME);
         assertEquals("Alt name should be empty", "", altName);
     }
 
@@ -271,8 +272,30 @@ public class EndEntityInformationFillerTest {
     public void testOneDns(){
         profile.addField(DnComponents.DNSNAME);
         profile.setCopy(DnComponents.DNSNAME, 0, true);
-        String altName = EndEntityInformationFiller.copyDnsNameValueFromCn(profile, "CN=commonName");
+        String altName = EndEntityInformationFiller.copyCnToAltName(profile, "CN=commonName", DnComponents.DNSNAME);
         assertEquals("Alt name should contain DNSNAME copied from CN", "DNSNAME=commonName", altName);
+        profile.removeField(DnComponents.DNSNAME, 0);
+    }
+    
+    @Test
+    public void testOneUpn(){
+        profile.addField(DnComponents.UPN);
+        profile.setCopy(DnComponents.UPN, 0, true);
+        String altName = EndEntityInformationFiller.copyCnToAltName(profile, "CN=commonName", DnComponents.UPN);
+        assertEquals("Alt name should contain UPN copied from CN", "UPN=commonName", altName);
+        profile.removeField(DnComponents.UPN, 0);
+    }
+    
+    @Test
+    public void testOneUpnOneDnsNoneCopy(){
+        profile.addField(DnComponents.UPN);
+        profile.setCopy(DnComponents.UPN, 0, false);
+        profile.addField(DnComponents.DNSNAME);
+        profile.setCopy(DnComponents.DNSNAME, 0, false);
+        String altName = EndEntityInformationFiller.copyCnToAltName(profile, "CN=commonName", DnComponents.UPN);
+        altName = EndEntityInformationFiller.copyCnToAltName(profile, "CN=commonName", DnComponents.DNSNAME);
+        assertFalse("Alt name should contain DNSNAME copied from CN", altName.contains("DNSNAME=commonName"));
+        assertFalse("Alt name should contain UPN copied from CN", altName.contains("UPN=commonName"));
     }
     
     private void testCreateBigProfile() {
