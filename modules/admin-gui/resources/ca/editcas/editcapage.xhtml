@@ -968,18 +968,18 @@
 						<h:outputText id="cert_issuerdn" value="#{editCAsMBean.caIssuerDN}" />
 					</h:panelGroup>
 
-					<h:panelGroup>
+					<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
 						<h:outputLabel for="cert_signedby" value="#{web.text.SIGNEDBY}" />
 					</h:panelGroup>
 
 					<h:panelGroup
-						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
+						rendered="#{not editCAsMBean.caInfoDto.caTypeSsh and editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
 						<h:outputText id="cert_signedby"
 							value="#{editCAsMBean.signedByAsText}" />
 					</h:panelGroup>
 
 					<h:panelGroup
-						rendered="#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}">
+						rendered="#{not editCAsMBean.caInfoDto.caTypeSsh and (not editCAsMBean.editCA or editCAsMBean.caUninitialized)}">
 						<h:selectOneMenu id="cadatasignedby" value="#{editCAsMBean.caInfoDto.signedBy}"
 							disabled="#{not editCAsMBean.hasEditRight}">
 							<f:selectItems value="#{editCAsMBean.signedByList}" />
@@ -1131,13 +1131,13 @@
 						<h:outputLabel for="checkboxuseldapdnorder" value="#{web.text.USE}" />
 					</h:panelGroup>
 
-					<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeCVC and not editCAsMBean.caExternal}">
+					<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caInfoDto.caTypeCVC and not editCAsMBean.caExternal}">
 						<h:outputLabel for="caSerialNumberOctetSize" value="#{web.text.SERIALNUMBER_OCTET_SIZE}" />
 						<h:outputText
 							value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Serial_Number_Octet_Size')}"
 							escape="false" styleClass="helpReference"/>
 					</h:panelGroup>
-					<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeCVC and not editCAsMBean.caExternal}">
+					<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caInfoDto.caTypeCVC and not editCAsMBean.caExternal}">
 						<h:inputText id="caSerialNumberOctetSize" size="4" maxlength="2"
 							value="#{editCAsMBean.caInfoDto.caSerialNumberOctetSize}"
 							disabled="#{not editCAsMBean.hasEditRight}">
