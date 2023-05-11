@@ -2337,10 +2337,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     }
                 }
             }
-            if (DnComponents.DNSNAME.equals(DnComponents.dnIdToProfileName(dnId))) {
-                verifyAltNameDnTypeFieldMatchesCnValue(fields, commonName, MATCHED_FIELD, profileID, dnFieldExtractorID, subjectsToProcess, profileCrossOffList);
-            }
-            if (DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnId))) {
+            if (DnComponents.DNSNAME.equals(DnComponents.dnIdToProfileName(dnId)) || DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnId))) {
                 verifyAltNameDnTypeFieldMatchesCnValue(fields, commonName, MATCHED_FIELD, profileID, dnFieldExtractorID, subjectsToProcess, profileCrossOffList);
             }
             // For every field of this type in profile (start with required and non-modifiable, 2 + 1)

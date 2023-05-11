@@ -1167,13 +1167,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             altName = "";
         }
         if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn) && !altName.contains(specifiedDnTypeValueFromCn)) {
-       
             if (StringUtils.isNotEmpty(altName)) {
                 altName += ", ";
             }
-        altName += specifiedDnTypeValueFromCn;
+            altName += specifiedDnTypeValueFromCn;
         }
-        
         return altName;
     }
 
