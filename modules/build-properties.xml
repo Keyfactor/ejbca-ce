@@ -254,6 +254,7 @@
 		<fileset dir="${ejbca.home}/lib/ext/test/powermock">
 			<include name="*.jar"/>
 		</fileset>
+		<path refid="lib.javassist.classpath"/>
 	</path>
 
 	<path id="lib.resteasy-jaxrs.classpath">
