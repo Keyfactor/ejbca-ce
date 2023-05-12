@@ -287,6 +287,16 @@ public class EndEntityInformationFillerTest {
     }
     
     @Test
+    public void testOneUpnWithValue(){
+        profile.addField(DnComponents.UPN);
+        profile.setCopy(DnComponents.UPN, 0, true);
+        profile.setValue(DnComponents.UPN, 0, "abcd.com");
+        String altName = EndEntityInformationFiller.copyCnToAltName(profile, "CN=commonName", DnComponents.UPN);
+        assertEquals("Alt name should contain UPN copied from CN", "UPN=commonName@abcd.com", altName);
+        profile.removeField(DnComponents.UPN, 0);
+    }
+    
+    @Test
     public void testOneUpnOneDnsNoneCopy(){
         profile.addField(DnComponents.UPN);
         profile.setCopy(DnComponents.UPN, 0, false);

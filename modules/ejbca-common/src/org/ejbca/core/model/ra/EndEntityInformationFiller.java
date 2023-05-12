@@ -161,6 +161,10 @@ public class EndEntityInformationFiller {
                     }
                     int dnId = DnComponents.profileIdToDnId(field[EndEntityProfile.FIELDTYPE]);
                     String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTALTNAME) + commonName;
+                    String fieldValue = endEntityProfile.getValue(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+                    if(fieldType.equals(DnComponents.UPN) && StringUtils.isNotEmpty(fieldValue)) {
+                        nameValueDnPart += "@" + fieldValue;
+                    }
                     specifiedSans.append(nameValueDnPart);
                 }
             }
