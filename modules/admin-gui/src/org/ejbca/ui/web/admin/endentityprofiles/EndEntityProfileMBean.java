@@ -300,7 +300,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
 
         public boolean isSubjectAltComponentPropertyDisabled(){
-            return getUseEndEntityEmail() ||  getUseEndEntityDns() || getUseEndEntityUpn()  || isViewOnly();
+            return getUseEndEntityEmail() ||  getUseEndEntityDns()  || isViewOnly();
         }
     }
 
@@ -1255,6 +1255,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         validateNameComponents(getSubjectAltNameComponentList());
         validateNameComponents(getSubjectDirectoryAttributeComponentList());
         validateUseCnForDnsName(getSubjectAltNameComponentList(), getSubjectDnComponentList());
+        validateUpnCopy();
         
         // Ssh fields
         if(profiledata.isProfileTypeSsh()) {
@@ -1341,6 +1342,15 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP);
         }
         
+    }
+    
+    private void validateUpnCopy() {
+        for(int i=0; i<profiledata.getNumberOfField(DnComponents.UPN); i++) {
+            if(profiledata.getCopy(DnComponents.UPN, i) && profiledata.getValue(DnComponents.UPN, i).contains(";")) {
+                editerrors.add( "UPN with copy CN should not contain multiple possible values "
+                        + "separate by ';': " + profiledata.getValue(DnComponents.UPN, i));
+            }
+        }
     }
 
     private void validateNameComponents(final List<NameComponentGuiWrapper> list) {
