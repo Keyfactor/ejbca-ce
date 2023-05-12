@@ -80,7 +80,6 @@ import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
@@ -110,7 +109,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
@@ -1310,7 +1308,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     public void testCnCopyToMsUpn() throws Exception {
                 
         EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(DnComponents.DNEMAILADDRESS);
+        profile.addField(DnComponents.UNIFORMRESOURCEID);
         profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
 
         int eeProfileId = endEntityProfileSession.addEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
@@ -1326,11 +1324,15 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         profile.setCopy(DnComponents.UPN, 0, false);
         profile.setValue(DnComponents.UPN, 0, "abcd.com");
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "uniformResourceId=asdf.ghj", "uniformResourceId=asdf.ghj", "uniformResourceId=asdf.poi", "uniformResourceId=asdf.poi", null, null);
+        doAndVerifyUserOperation(eeProfileId, "uniformResourceId=asdf.ghj,upn=abcd@wef.com", "uniformResourceId=asdf.ghj,upn=abcd@wef.com", 
+                "uniformResourceId=asdf.poi,upn=abcd@wef.jkl", "uniformResourceId=asdf.poi,upn=abcd@wef.jkl", null, null);
         
         // create EEP with MS UPN - no copy, drop down
         profile.setValue(DnComponents.UPN, 0, "abcd.com;wxyz.com");
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
-        
+        doAndVerifyUserOperation(eeProfileId, "upn=abcd@wxyz.com", "upn=abcd@wxyz.com", "upn=abcd@abcd.com", "upn=abcd@abcd.com", 
+                            "uniformResourceId=asdf.poi,upn=abcd@wxyz.com", "uniformResourceId=asdf.poi,upn=abcd@wxyz.com");
         
         // modify EEP with MS UPN - copy -value
         profile.setCopy(DnComponents.UPN, 0, true);
@@ -1418,7 +1420,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         
         EndEntityInformation userData = new EndEntityInformation(userName, "CN="+commonName, caId, null, 
                 email, EndEntityTypes.ENDUSER.toEndEntityType(), 
-                eeProfileId, eeProfileId, SecConst.TOKEN_SOFT_P12, null);
+                eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
         
         try {
             userData = doAndVerifyAddUser(userData, requestAltNameAdd, expectedAltNameAdd);
@@ -1434,6 +1436,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private EndEntityInformation doAndVerifyAddUser(EndEntityInformation userData,
             String requestAltName, String expectedAltName) {
         userData.setSubjectAltName(requestAltName);
+        userData.setPassword("hardcoded");
         EndEntityInformation createdUser = null;
         try {
              createdUser = endEntityManagementSession.addUser(admin, userData, false);
@@ -1448,6 +1451,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             String requestAltName, String expectedAltName) {
         EndEntityInformation userData = new EndEntityInformation(currentUserData);
         userData.setSubjectAltName(requestAltName);
+        userData.setPassword("hardcoded");
         EndEntityInformation updatedUser = null;
         try {
             endEntityManagementSession.changeUser(admin, userData, false);
