@@ -1972,6 +1972,36 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
     }
 
+    @Test
+    public void testForbidEncryptionUsageForECCKeys() throws Exception {
+        // Given that ECDSA algorithm is used, and key encipherment and setKeyUsageForbidEncryption are selected in the Certificate Profile
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final KeyPair keypair = KeyTools.genKeys("brainpoolp224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        final X509CA x509CA = createTestCA(cryptoToken, "CN=foo");
+        final EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setKeyUsageForbidEncryption(true);
+        certificateProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+
+        try {
+            // Key Encipherment should not be true in the following certificate.
+            X509Certificate certificate = (X509Certificate) x509CA.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null,
+                                                                                       "10d", certificateProfile, "00000", cceConfig);
+
+            assertNotNull("There should be a valid certificate", certificate);
+
+            final boolean keyEncipherment = certificate.getKeyUsage()[CertificateConstants.KEYENCIPHERMENT];
+            final boolean nonRepudation = certificate.getKeyUsage()[CertificateConstants.NONREPUDIATION];
+
+            assertEquals("Key Encipherment key usage should be false", false, keyEncipherment);
+            assertEquals("Non Repudation key usage should be true", true, nonRepudation);
+
+        } catch (CAOfflineException e) {
+            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+        }
+    }
+
     private static ASN1Encodable getValueFromDN(Certificate cert, ASN1ObjectIdentifier oid) {
         final X500Principal principal = ((X509Certificate)cert).getSubjectX500Principal();
         final X500Name xname = X500Name.getInstance(principal.getEncoded());
