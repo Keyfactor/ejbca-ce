@@ -859,6 +859,14 @@
                         <h:outputLabel for="cbkeyusagecritical"
                             value="#{web.text.EXT_CRITICAL}" />
                     </h:panelGroup>
+                    <h:panelGroup>
+                        <h:selectBooleanCheckbox
+                                id="keyUsageForbidEncryptionUsage"
+                                value="#{certProfileBean.forbidEncryptionUsage}"
+                                disabled="#{certProfileBean.viewOnly}" />
+                        <h:outputLabel for="keyUsageForbidEncryptionUsage"
+                                       value="#{web.text.KU_FORBID_ENCRYPTION_USAGE}" />
+                    </h:panelGroup>
                     <h:outputLabel for="keyUsageSelection"
                         value="#{web.text.EXT_PKIX_KEYUSAGE}:"
                         rendered="#{certProfileBean.certificateProfile.useKeyUsage}" />

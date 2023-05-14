@@ -655,6 +655,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseKeyUsage(!getCertificateProfile().getUseKeyUsage());
     }
 
+    public boolean isForbidEncryptionUsage() { return getCertificateProfile().getKeyUsageForbidEncryption(); }
+
     public boolean isKeyUsageDigitalSignature() { return getCertificateProfile().getKeyUsage(CertificateConstants.DIGITALSIGNATURE); }
 
     public boolean isKeyUsageNonRepudiation() { return getCertificateProfile().getKeyUsage(CertificateConstants.NONREPUDIATION); }
@@ -690,6 +692,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void setKeyUsageEncipherOnly(final boolean enabled) { getCertificateProfile().setKeyUsage(CertificateConstants.ENCIPHERONLY, enabled); }
 
     public void setKeyUsageDecipherOnly(final boolean enabled) { getCertificateProfile().setKeyUsage(CertificateConstants.DECIPHERONLY, enabled); }
+
+    public void setForbidEncryptionUsage(final boolean enabled) { getCertificateProfile().setKeyUsageForbidEncryption(enabled); }
 
     public boolean isNonOverridableExtensionOIDs() { return !getCertificateProfile().getNonOverridableExtensionOIDs().isEmpty(); }
 
