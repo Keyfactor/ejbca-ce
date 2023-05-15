@@ -1338,59 +1338,105 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         profile.setCopy(DnComponents.UPN, 0, true);
         profile.setValue(DnComponents.UPN, 0, "abcd.com");
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
-        
+        doAndVerifyUserOperation(eeProfileId, "", "UPN=USER_CN@abcd.com", "", "UPN=USER_CN@abcd.com", 
+                "uniformResourceId=asdf.poi,UPN=USER_CN@abcd.com", "uniformResourceId=asdf.poi,UPN=USER_CN@abcd.com");
+
         // modify EEP with MS UPN - no copy + required + value
         profile.setCopy(DnComponents.UPN, 0, false);
         profile.setRequired(DnComponents.UPN, 0, true);
         profile.setValue(DnComponents.UPN, 0, "abcd.com");
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "upn=some@abcd.com", "upn=some@abcd.com", 
+                            "upn=thing@abcd.com", "upn=thing@abcd.com", null, null);
         
         // modify EEP with MS UPN - copy + required + value
         profile.setCopy(DnComponents.UPN, 0, true);
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "", "UPN=USER_CN@abcd.com", "", "UPN=USER_CN@abcd.com", 
+                "uniformResourceId=asdf.poi,UPN=USER_CN@abcd.com", "uniformResourceId=asdf.poi,UPN=USER_CN@abcd.com");
+        doAndVerifyUserOperation(eeProfileId, "UPN=USER_CN@abcd.com", "UPN=USER_CN@abcd.com", 
+                "UPN=USER_CN@abcd.com", "UPN=USER_CN@abcd.com", 
+                "uniformResourceId=asdf.poi", "uniformResourceId=asdf.poi, UPN=USER_CN@abcd.com");
         
         // modify EEP with 2x MS UPN - (copy + required + value) + (copy + value)
         profile.addField(DnComponents.UPN);
         profile.setCopy(DnComponents.UPN, 1, true);
         profile.setValue(DnComponents.UPN, 1, "pqrs.net");
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "", "UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", 
+                "uniformResourceId=asdf.poi", 
+                "uniformResourceId=asdf.poi, UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", null, null);
+        // either both or none of the copy UPN fields
+        doAndVerifyUserOperation(eeProfileId, "UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", 
+                "UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", 
+                "uniformResourceId=asdf.poi", 
+                "uniformResourceId=asdf.poi, UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", null, null);
         
         // modify EEP with 2x MS UPN - (copy + required + value) + (copy + required + value)
         profile.setRequired(DnComponents.UPN, 1, true);
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "", "UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", 
+                "uniformResourceId=asdf.poi", 
+                "uniformResourceId=asdf.poi, UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", null, null);
         
         // modify EEP with 2x MS UPN - (copy + required + value) + (no copy + value)
         profile.setRequired(DnComponents.UPN, 1, false);
         profile.setCopy(DnComponents.UPN, 1, false);
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "", "UPN=USER_CN@abcd.com", 
+                "uniformResourceId=asdf.poi", 
+                "uniformResourceId=asdf.poi, UPN=USER_CN@abcd.com", null, null);
+        doAndVerifyUserOperation(eeProfileId, "UPN=USER_CN@pqrs.net", "UPN=USER_CN@pqrs.net, UPN=USER_CN@abcd.com", 
+                "uniformResourceId=asdf.poi", 
+                "uniformResourceId=asdf.poi, UPN=USER_CN@abcd.com", null, null);        
+        doAndVerifyUserOperation(eeProfileId, "UPN=USER_CN@pqrs.net", "UPN=USER_CN@pqrs.net, UPN=USER_CN@abcd.com", 
+                "uniformResourceId=asdf.poi,UPN=USER_CN@pqrs.net", 
+                "uniformResourceId=asdf.poi,UPN=USER_CN@pqrs.net, UPN=USER_CN@abcd.com", null, null);
         
         // modify EEP with 2x MS UPN - (copy + value) + (copy + value)
         profile.setRequired(DnComponents.UPN, 0, false);
+        profile.setCopy(DnComponents.UPN, 1, true);
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "", "UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", 
+                "uniformResourceId=asdf.poi", 
+                "uniformResourceId=asdf.poi, UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", null, null);
+        doAndVerifyUserOperation(eeProfileId, "", "UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", 
+                "", "UPN=USER_CN@abcd.com, UPN=USER_CN@pqrs.net", null, null);
         
-        // modify EEP with UPN(copy), DNSName(copy), RFC822(copy email)
+        // modify EEP with UPN(copy), DNSName(copy)
         profile.removeField(DnComponents.UPN, 1);
         profile.addField(DnComponents.DNSNAME);
         profile.setCopy(DnComponents.DNSNAME, 0, true);
-        profile.addField(DnComponents.RFC822NAME);
-        profile.setUse(DnComponents.RFC822NAME, 0, true);
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "", "DNSNAME=USER_CN, UPN=USER_CN@abcd.com", 
+                "", "DNSNAME=USER_CN, UPN=USER_CN@abcd.com", null, null);
         
-        // modify EEP with UPN(no copy), DNSName(no copy), RFC822(no copy email)
+        // modify EEP with UPN(no copy), DNSName(no copy)
         profile.setCopy(DnComponents.UPN, 0, false);
         profile.setCopy(DnComponents.DNSNAME, 0, false);
-        profile.setUse(DnComponents.RFC822NAME, 0, false);
+        profile.addField(DnComponents.RFC822NAME);
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "uniformResourceId=asdf.poi", "uniformResourceId=asdf.poi", 
+                "uniformResourceId=asdf.poi,upn=xxUSER_CN@abcd.com,dnsName=xxUSER_CN,rfc822Name=xxUSER_EMAIL", 
+                "uniformResourceId=asdf.poi,upn=xxUSER_CN@abcd.com,dnsName=xxUSER_CN,rfc822Name=xxUSER_EMAIL", null, null);
         
         // allow merge dn
         profile.setAllowMergeDn(true);
-        profile.setValue(DnComponents.UPN, 0, "");
-        profile.setValue(DnComponents.DNSNAME, 0, "abcd.pqrs.wxyz");
+        profile.setValue(DnComponents.UPN, 0, "abcd.com");
+        profile.setCopy(DnComponents.UPN, 0, true);
+        profile.setCopy(DnComponents.DNSNAME, 0, true);
+        profile.addField(DnComponents.DNSNAME);
+        profile.setValue(DnComponents.DNSNAME, 1, "abcd.pqrs.wxyz");
+        profile.setUse(DnComponents.RFC822NAME, 0, true);
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
+        doAndVerifyUserOperation(eeProfileId, "uniformResourceId=asdf.poi", 
+                "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi", 
+                "", "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi", null, null);
         
-        
-        // delete users
-        
+        doAndVerifyUserOperation(eeProfileId, "uniformResourceId=asdf.poi", 
+                "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi", 
+                "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi",
+                "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi", null, null);
         
     }
     
@@ -1411,11 +1457,13 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         
         requestAltNameAdd = prepareAltNamesFromTemplate(requestAltNameAdd, commonName ,email);
         expectedAltNameAdd = prepareAltNamesFromTemplate(expectedAltNameAdd, commonName ,email);
-        requestAltNameChange1 = prepareAltNamesFromTemplate(requestAltNameChange1, commonName ,email);
-        expectedAltNameChange1 = prepareAltNamesFromTemplate(expectedAltNameChange1, commonName ,email);
+        final String commonNameFirstUpdate = requestAltNameChange1.isEmpty() ? commonName : prefixCn + random.nextLong();
+        requestAltNameChange1 = prepareAltNamesFromTemplate(requestAltNameChange1, commonNameFirstUpdate ,email);
+        expectedAltNameChange1 = prepareAltNamesFromTemplate(expectedAltNameChange1, commonNameFirstUpdate ,email);
+        final String commonNameSecondUpdate = StringUtils.isEmpty(requestAltNameChange2) ? commonName : prefixCn + random.nextLong();
         if (requestAltNameChange2!=null) {
-            requestAltNameChange2 = prepareAltNamesFromTemplate(requestAltNameChange2, commonName ,email);
-            expectedAltNameChange2 = prepareAltNamesFromTemplate(expectedAltNameChange2, commonName ,email);
+            requestAltNameChange2 = prepareAltNamesFromTemplate(requestAltNameChange2, commonNameSecondUpdate ,email);
+            expectedAltNameChange2 = prepareAltNamesFromTemplate(expectedAltNameChange2, commonNameSecondUpdate ,email);
         }
         
         EndEntityInformation userData = new EndEntityInformation(userName, "CN="+commonName, caId, null, 
@@ -1424,11 +1472,17 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         
         try {
             userData = doAndVerifyAddUser(userData, requestAltNameAdd, expectedAltNameAdd);
+            userData.setDN("CN="+commonNameFirstUpdate);
             userData = doAndVerifyChangeUser(userData, requestAltNameChange1, expectedAltNameChange1);
             if(requestAltNameChange2!=null) {
+                userData.setDN("CN="+commonNameSecondUpdate);
                 userData = doAndVerifyChangeUser(userData, requestAltNameChange2, expectedAltNameChange2);
             }
-        } finally {}
+        } finally {
+            try {
+               endEntityManagementSession.deleteUser(admin, userName); 
+            } catch (Exception e) {}
+        }
         
         return userName;
     }
