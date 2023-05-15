@@ -1981,7 +1981,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfile.setKeyUsageForbidEncryption(true);
+        certificateProfile.setKeyUsageForbidEncryptionUsageForECC(true);
         certificateProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
 
         try {
