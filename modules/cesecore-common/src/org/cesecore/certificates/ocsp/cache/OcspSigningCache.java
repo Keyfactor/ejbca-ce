@@ -39,8 +39,6 @@ import com.keyfactor.util.CertTools;
 
 /**
  * Hold information needed to create OCSP responses without database lookups.
- * 
- * @version $Id$
  */
 public enum OcspSigningCache {
     INSTANCE;
