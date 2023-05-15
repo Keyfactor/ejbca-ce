@@ -249,6 +249,8 @@ public enum OcspSigningCache {
             List<CertificateID> ret = new ArrayList<>();
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha384)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha512)), certificate, certificate.getSerialNumber()));
             return ret;
         } catch (OCSPException | CertificateEncodingException | OperatorCreationException e) {
             throw new OcspFailureException(e);
