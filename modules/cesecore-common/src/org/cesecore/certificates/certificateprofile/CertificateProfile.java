@@ -221,7 +221,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String PATHLENGTHCONSTRAINT = "pathlengthconstraint";
     protected static final String USEKEYUSAGE = "usekeyusage";
     protected static final String KEYUSAGECRITICAL = "keyusagecritical";
-    protected static final String KEYUSAGE_FORBIDENCRYPTION_USAGE = "keyusageforbidencyrptionusage";
+    protected static final String KEYUSAGE_FORBIDENCRYPTIONUSAGEFORECC = "keyusageforbidencyrptionusageforecc";
     protected static final String KEYUSAGE = "keyusage";
     protected static final String USESUBJECTKEYIDENTIFIER = "usesubjectkeyidentifier";
     protected static final String USETRUNCATEDSUBJECTKEYIDENTIFIER = "usetruncatedsubjectkeyidentifier";
@@ -983,12 +983,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(KEYUSAGECRITICAL, keyusagecritical);
     }
 
-    public boolean getKeyUsageForbidEncryption() {
-        return (Boolean) data.getOrDefault(KEYUSAGE_FORBIDENCRYPTION_USAGE, false);
+    public boolean getKeyUsageForbidEncryptionUsageForECC() {
+        return (Boolean) data.getOrDefault(KEYUSAGE_FORBIDENCRYPTIONUSAGEFORECC, false);
     }
 
-    public void setKeyUsageForbidEncryption(boolean keyUsageForbidEncryption) {
-        data.put(KEYUSAGE_FORBIDENCRYPTION_USAGE, keyUsageForbidEncryption);
+    public void setKeyUsageForbidEncryptionUsageForECC(boolean keyUsageForbidEncryptionUsageForECC) {
+        data.put(KEYUSAGE_FORBIDENCRYPTIONUSAGEFORECC, keyUsageForbidEncryptionUsageForECC);
     }
 
     public boolean getUseSubjectKeyIdentifier() {
