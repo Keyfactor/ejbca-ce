@@ -1640,7 +1640,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
     
-    public final void validateUpnRfcEmail(ComponentSystemEvent event) {//TODO
+    public final void validateUpnRfcEmail(ComponentSystemEvent event) {
         final FacesContext fc = FacesContext.getCurrentInstance();
         final UIComponent components = event.getComponent();
         UIInput field = (UIInput) components.findComponent("upnRfcEmail");
