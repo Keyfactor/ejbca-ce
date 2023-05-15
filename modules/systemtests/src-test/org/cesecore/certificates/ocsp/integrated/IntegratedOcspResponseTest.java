@@ -500,6 +500,50 @@ public class IntegratedOcspResponseTest {
                 singleResponses[0].getCertID().getSerialNumber());
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
 
+        // Do the same test but using SHA384 as hash algorithm for CertID, that should work
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha384)),
+                caCertificate, caCertificate.getSerialNumber()));
+        extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
+        gen.setRequestExtensions(new Extensions(extensions));
+        req = gen.build();
+        responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
+        assertNotNull("OCSP responder replied null", responseBytes);
+        response = new OCSPResp(responseBytes);
+        assertEquals("Response status not zero.", 0, response.getStatus());
+        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        singleResponses = basicOcspResponse.getResponses();
+        assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+        assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
+        assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
+
+        // Do the same test but using SHA512 as hash algorithm for CertID, that should work
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha512)),
+                caCertificate, caCertificate.getSerialNumber()));
+        extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
+        gen.setRequestExtensions(new Extensions(extensions));
+        req = gen.build();
+        responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
+        assertNotNull("OCSP responder replied null", responseBytes);
+        response = new OCSPResp(responseBytes);
+        assertEquals("Response status not zero.", 0, response.getStatus());
+        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+        singleResponses = basicOcspResponse.getResponses();
+        assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+        assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
+        assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
+
         // Do the same test but using SHA224 as hash algorithm for CertID to see that we get an error back
         gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha224)),
@@ -513,10 +557,9 @@ public class IntegratedOcspResponseTest {
         assertNotNull("OCSP responder replied null", responseBytes);
         response = new OCSPResp(responseBytes);
         // Response status 1 means malformed request
-        assertEquals("Response status not zero.", 1, response.getStatus());
+        assertEquals("Response status not one, it should be a malformed_request.", 1, response.getStatus());
         basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
         assertNull("No response object for this unsigned error response.", basicOcspResponse);
-
     }
 
     /**

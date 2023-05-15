@@ -1403,8 +1403,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 CertificateID certId = ocspRequest.getCertID();
                 ASN1ObjectIdentifier certIdhash = certId.getHashAlgOID();
                 
-                if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash)) {
-                    throw new InvalidAlgorithmException("CertID with SHA1 and SHA256 are supported, not: "+certIdhash.getId());
+                if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash) 
+                        && !NISTObjectIdentifiers.id_sha384.equals(certIdhash) && !NISTObjectIdentifiers.id_sha512.equals(certIdhash)) {
+                    throw new InvalidAlgorithmException("CertID with SHA1, SHA256, SHA384 and SHA512 are supported, not: "+certIdhash.getId());
                 }
                 if (!isPreSigning && transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
