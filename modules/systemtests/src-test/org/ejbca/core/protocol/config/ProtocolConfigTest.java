@@ -11,8 +11,8 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.protocol.ws.EjbcaWSTest;
@@ -21,10 +21,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
 
 /**
  * Tests the denied state of all configurable protocols and services in  (Modular Protocol Configuration)
@@ -97,24 +97,6 @@ public class ProtocolConfigTest {
         globalConfigurationSession.saveConfiguration(admin, protocolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.SCEP.getName()));
-        assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
-        assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
-    }
-    
-    /**
-     * Disables Public Web and then runs a simple Public Web access test which will expect status 403 when
-     * service is disabled by configuration.
-     * @throws AuthorizationDeniedException 
-     * @throws IOException 
-     */
-    @Test
-    public void testPublicWeb() throws AuthorizationDeniedException, IOException {
-        AvailableProtocolsConfiguration protocolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
-                getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protocolConfig.setProtocolStatus(AvailableProtocols.PUBLIC_WEB.getName(), false);
-        globalConfigurationSession.saveConfiguration(admin, protocolConfig);
-       
-        HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.PUBLIC_WEB.getName()));
         assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
         assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
     }

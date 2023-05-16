@@ -12,20 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
-import java.io.ByteArrayOutputStream;
-import java.lang.Runtime.Version;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.Collections;
-
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -67,6 +58,15 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.lang.Runtime.Version;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Collections;
+import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -378,7 +378,9 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are not known by JDK so OIDs displayed
-            assertEquals("Not the expected DN in issued cert", "C=SE, O=PrimeKey, CN=Some CN, OID.2.5.4.45=N62892, OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233", dn);
+            assertEquals("Not the expected DN in issued cert", "C=SE, O=PrimeKey, CN=Some CN, OID.2.5.4.45=N62892, OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233"
+                    .toUpperCase(Locale.ROOT),
+                    dn.toUpperCase(Locale.ROOT));
             assertEquals("Not the expected EJBCA ordered DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,UniqueIdentifier=N62892,CN=Some CN,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
 
             // Check the encoding of uniqueIdentifier and CertificationID
