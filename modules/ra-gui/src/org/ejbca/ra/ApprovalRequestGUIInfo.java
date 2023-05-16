@@ -447,11 +447,6 @@ public class ApprovalRequestGUIInfo implements Serializable {
                             final String ipAddress = principal.toString();
                             retval = raLocaleBean.getMessage("manage_requests_page_colhead_requester_raweb") + ": " + ipAddress;
                             break;
-                        } else if (principal instanceof PublicWebPrincipal) {
-                            // Mostly self-registration in the Public Web
-                            final String ipAddress = ((PublicWebPrincipal) principal).getClientIPAddress();
-                            retval = raLocaleBean.getMessage("manage_requests_page_colhead_requester_publicweb") + ": " + ipAddress;
-                            break;
                         } else if (principal instanceof UsernamePrincipal) {
                             final String username = principal.toString();
                             retval = raLocaleBean.getMessage("manage_requests_page_colhead_requester_cli") + ": " + username;

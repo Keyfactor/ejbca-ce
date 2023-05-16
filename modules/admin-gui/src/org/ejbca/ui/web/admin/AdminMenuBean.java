@@ -218,14 +218,6 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.ROLE_ADMINISTRATOR);
     }
     
-    public boolean isAuthorizedToViewPublicWeb() {
-        return getEjbcaErrorWebBean().isRunningBuildWithCA();
-    }
-
-    public boolean isPublicWebHidden() {
-        return getEjbcaWebBean().getGlobalConfiguration().getHidePublicWeb();
-    }
-    
     public boolean isAuthorizedToViewRaWeb() {
         return getEjbcaErrorWebBean().isRunningBuildWithRAWeb();
     }

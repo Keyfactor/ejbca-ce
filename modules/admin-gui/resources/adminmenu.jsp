@@ -58,7 +58,6 @@ org.ejbca.util.HTMLTools
        
        final String ESTCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/estconfigurations.xhtml";
        
-	   final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl();
 	   final String RAWEB_LINK          = ejbcawebbean.getBaseUrl() + "ra/";
        
        final String MYPREFERENCES_LINK     =  ejbcawebbean.getAdminWebBaseUrl() + "mypreferences.xhtml";
@@ -423,10 +422,6 @@ if(configheaderprinted){
 		</li>
 <% } %>
 
-<% if (!globalconfiguration.getHidePublicWeb() && ejbcawebbean.isRunningBuildWithCA()) { %>
-		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" rel="noopener noreferer"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
-		</li>
-<% } %>
 
 <% if (ejbcawebbean.isHelpEnabled()) { %>
 		<li id="cat10"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>" rel="noopener noreferer"

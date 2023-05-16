@@ -404,13 +404,6 @@
 			replacement-web-uri="doc.war"
 			replacement-context-root="/ejbca/doc"
 		/>
-		<war-replacement-in-module
-			replacement-tag="!--@renew.war@-->"
-			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${web.renewalenabled}"
-			replacement-web-uri="renew.war"
-			replacement-context-root="/ejbca/renew"
-		/>
 		<jar-replacement-in-module
 			replacement-tag="!--@ejbca-ws-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
@@ -620,7 +613,6 @@
                 <include name="ejbca-ws-ejb.jar" />
                 <include name="adminweb.war" />
                 <include name="cmp.war" />
-                <include name="publicweb.war" />
                 <include name="scep.war" />
                 <include name="est.war" />
                 <include name="healthcheck.war" />
@@ -629,7 +621,6 @@
                 <include name="status.war" />
                 <include name="certstore.war" />
                 <include name="crlstore.war" />
-                <include name="renew.war" />
 				<include name="${in-test-mode-include}systemtests-ejb.jar"/>
             	<include name="statedump-ejb.jar" />
             	<include name="configdump-ejb.jar" />
@@ -1430,11 +1421,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ra-gui" />
     </target>
 
-
-    <target name="publicweb.war">
-    	<ant dir="modules" target="publicweb-gui" />
-    </target>
-
     <target name="cmp.war">
     	<ant dir="modules" target="cmp-war" />
     </target>
@@ -1453,11 +1439,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		
     <target name="clearcache.war">
     	<ant dir="modules" target="clearcache-ejbca-war" />
-    </target>
-		
-    <target name="renew.war" if="renew.war.enabled">
-    	<ant dir="modules" target="renew-war" />
-    </target>   
+    </target>  
 
     <target name="scep.war">
     	<ant dir="modules" target="scep-war" />
