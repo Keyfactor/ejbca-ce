@@ -55,9 +55,9 @@
 	 <target name="doc.war" if="doc.war.enabled">
 	    <copy file="${jquery.file}" todir="${docs.dist}/assets/js"/>
     	<antcall target="doc" inheritall="true" inheritrefs="true"/>  	
-		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
+    	<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
             <fileset dir="${docs.dest}" />
-        </war>
+        </war>  
     </target>
 	
     <target name="doc-build-tool">

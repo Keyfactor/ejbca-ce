@@ -35,12 +35,6 @@
     </module>
     <module>
         <web>
-            <web-uri>publicweb.war</web-uri>
-            <context-root>/ejbca</context-root>
-        </web>
-    </module>
-    <module>
-        <web>
             <web-uri>scep.war</web-uri>
             <context-root>/ejbca/publicweb/apply</context-root>
         </web>
@@ -82,7 +76,6 @@
        <!--@ejbca-ws-ejb.jar@-->
        <!--@doc.war@-->
        <!--@doc_legacy.war@-->
-       <!--@renew.war@-->
        <!--@ejbca-cmp-tcp.war@-->
        <!--@statedump-ejb.jar@-->
        <!--@configdump-ejb.jar@-->
