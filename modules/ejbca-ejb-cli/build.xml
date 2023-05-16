@@ -126,6 +126,7 @@
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="false">
 			<path refid="lib.jee.classpath"/>
     		<path refid="lib.jpa.classpath"/>
+    		<path refid="lib.javassist.classpath"/>
        		<path refid="lib.jee-client.classpath"/>
     		<!-- slf4j-log4j.jar is needed just to avoid errors when running the CLI with later versions of JBoss -->
        		<path refid="lib.slf4jlog4j.classpath"/>
