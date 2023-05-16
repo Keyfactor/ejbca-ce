@@ -52,7 +52,6 @@
 	<classpathentry kind="src" path="modules/ejbca-entity/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src-cli"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src-test"/>
-	<classpathentry kind="src" path="modules/ejbca-renew-war/src"/>
 	<classpathentry excluding="**/.js" kind="src" path="modules/ejbca-rest-api/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-api/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src"/>
@@ -90,7 +89,6 @@
 	<classpathentry kind="src" path="modules/plugins-ee/src"/>
 	<classpathentry kind="src" path="modules/plugins-ee/src-test"/>
 	<classpathentry kind="src" path="modules/proxy-ca/src"/>
-	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
 	<classpathentry kind="src" path="modules/ra-gui/src"/>
 	<classpathentry kind="src" path="modules/ssh/src"/>
 	<classpathentry kind="src" path="modules/ssh/src-test"/>

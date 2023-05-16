@@ -305,8 +305,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes, X509Certificate.class);
         helper.reloadKeys();
         log.debug("httpReqPath=" + httpReqPath);
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
         cacert = (X509Certificate) CaTestCase.getTestCACert();
         caid = CaTestCase.getTestCAId();
         
@@ -415,9 +413,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
     @Test
     public void test07SignedOcsp() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
         // change status of cert to bad status
@@ -508,8 +503,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test08OcspEcdsaGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.",
-                ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
         final int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
         final CAInfo caInfo = addECDSACA("CN=OCSPECDSATEST", "secp256r1");
         final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
@@ -601,9 +594,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test16OcspDsaGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-
         int dsacaid = DSA_DN.hashCode();
         X509Certificate ecdsacacert = addDSACA(DSA_DN, "DSA1024");
         helper.reloadKeys();
@@ -1697,8 +1687,6 @@ Content-Type: text/html; charset=iso-8859-1
      *           error
      */
     public void removeDSACA() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
         try {
             if (caSession.existsCa(DSA_DN.hashCode())) {
                 final int cryptoTokenId = caSession.getCAInfo(admin, DSA_DN.hashCode()).getCAToken().getCryptoTokenId();
@@ -1730,8 +1718,6 @@ Content-Type: text/html; charset=iso-8859-1
      *           error
      */
     public void removeECDSACA() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
         CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPECDSATEST".hashCode()));
         CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPECDSAIMPCATEST".hashCode()));
     }

@@ -39,13 +39,11 @@
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.clearcache-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cerstore.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.crlstore.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.renew-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -397,10 +395,6 @@
 		<ant antfile="${mod.ra-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="publicweb-gui" depends="ejbca-common-web" description="Build the EJBCA Public Web GUI WAR">
-		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-
 	<target name="cmp-war" depends="ejbca-common-web" description="Build the CMP WAR">
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
@@ -431,10 +425,6 @@
 		<ant antfile="${mod.crlstore.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="renew-war" depends="ejbca-common-web" description="Build the Renew WAR">
-		<ant antfile="${mod.renew-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-
 	<target name="scep-war" depends="ejbca-common-web" description="Build the SCEP WAR">
 		<ant antfile="${mod.scep-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
@@ -452,11 +442,12 @@
 	</target>
 	
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
-	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
-					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, ejbca.clients,
-					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-certificate, ejbca-rest-coap, ejbca-rest-configdump,
-					ejbca-rest-ca,ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh, ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, msae, cits">
-	</target>
+	
+	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
+						ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, ejbca.clients,
+						systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-certificate, ejbca-rest-coap, ejbca-rest-configdump,
+						ejbca-rest-ca,ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh, ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, msae, cits">
+		</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
