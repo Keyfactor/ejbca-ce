@@ -12,6 +12,7 @@
 	<property name="cesecore-entity.src-test.dir" location="${cesecore-entity.dir}/src-test" />
 
 	<path id="compile.classpath">
+		<path refid="lib.javassist.classpath"/>
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.jpa.classpath" />
 		<path refid="lib.cert-cvc.classpath" />

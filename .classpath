@@ -210,7 +210,7 @@
 	<classpathentry kind="lib" path="lib/hibernate/stax-ex-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jaxb-runtime-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/javax.persistence-api-2.2.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/javassist-3.27.0-GA.jar"/>
+	<classpathentry kind="lib" path="lib/javassist-3.29.2-GA.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jandex-2.1.3.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/istack-commons-runtime-3.0.7.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/FastInfoset-1.2.15.jar"/>
@@ -218,7 +218,6 @@
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-5.4.25.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/easymock-4.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/cglib-nodep-3.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/javassist-3.24.0-GA.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
