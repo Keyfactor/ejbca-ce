@@ -263,10 +263,10 @@
 	<target name="assert-appserverrunning" description="Check that the server is running">
 		<echo message="Verifying that the application server is up and running..."/>
 		<echo message="If it is not running at ${target.hostname}:${target.port.http}, then please change in systemtests.properties." level="verbose"/>
-		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="appserver.notrunning.publicweb">
-			<http url="http://${target.hostname}:${target.port.http}/ejbca/index.jsp"/>
+		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="appserver.notrunning.adminweb">
+			<http url="http://${target.hostname}:${target.port.http}/ejbca/publicweb/healthcheck/ejbcahealth"/>
 		</waitfor>
-		<fail message="Please start application server before running this script" if="appserver.notrunning.publicweb"/>
+		<fail message="Please start application server before running this script" if="appserver.notrunning.adminweb"/>
 	</target>
 
 	<target name="assert-appserverrunning-ocsp" description="Check that the server is at least running the OCSP service">
