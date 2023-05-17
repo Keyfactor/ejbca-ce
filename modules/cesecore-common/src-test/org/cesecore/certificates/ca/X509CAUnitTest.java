@@ -1983,6 +1983,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfile.setKeyUsageForbidEncryptionUsageForECC(true);
         certificateProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+        certificateProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, true);
 
         try {
             // Key Encipherment should not be true in the following certificate.
@@ -1992,9 +1993,11 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             assertNotNull("There should be a valid certificate", certificate);
 
             final boolean keyEncipherment = certificate.getKeyUsage()[CertificateConstants.KEYENCIPHERMENT];
+            final boolean dataEncipherment = certificate.getKeyUsage()[CertificateConstants.DATAENCIPHERMENT];
             final boolean nonRepudation = certificate.getKeyUsage()[CertificateConstants.NONREPUDIATION];
 
             assertEquals("Key Encipherment key usage should be false", false, keyEncipherment);
+            assertEquals("Data Encipherment key usage should be false", false, dataEncipherment);
             assertEquals("Non Repudation key usage should be true", true, nonRepudation);
 
         } catch (CAOfflineException e) {
