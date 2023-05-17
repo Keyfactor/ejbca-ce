@@ -161,7 +161,7 @@ public class ServiceControlFilter implements Filter {
         }
 
         try {
-            return ejbcaRestHelperSession.getAdmin(false, certificate, oauthBearerToken);
+            return ejbcaRestHelperSession.getAdmin(false, certificate, oauthBearerToken, false);
         } catch (Exception e) {
             return null;
         }
