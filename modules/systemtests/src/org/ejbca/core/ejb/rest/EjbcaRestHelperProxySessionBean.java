@@ -29,6 +29,6 @@ public class EjbcaRestHelperProxySessionBean implements EjbcaRestHelperProxySess
 
     @Override
     public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String oauthBearerToken) throws AuthorizationDeniedException {
-        return ejbcaRestHelperSessionLocal.getAdmin(allowNonAdmins, cert, oauthBearerToken);
+        return ejbcaRestHelperSessionLocal.getAdmin(allowNonAdmins, cert, oauthBearerToken, false);
     }
 }

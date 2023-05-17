@@ -40,6 +40,8 @@ public abstract class BaseRestResource {
 
     private static final String RESOURCE_STATUS = "OK";
     public static final String RESOURCE_VERSION = "1.0";
+    private static final String CRYPTO_TOKEN = "v1/cryptotoken";
+    private static final String CONFIG_DUMP = "v1/configdump";
     
     // Some status codes (including 422) are missing from the JAX-RS Response.Status enum
     protected static final int HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
@@ -77,8 +79,11 @@ public abstract class BaseRestResource {
         if (certificate == null && StringUtils.isEmpty(oauthBearerToken)) {
             throw new AuthorizationDeniedException("Error no client certificate or OAuth token received for authentication.");
         }
+        if (requestContext.getRequestURI().toLowerCase().contains(CONFIG_DUMP) || requestContext.getRequestURI().toLowerCase().contains(CRYPTO_TOKEN)) {
+            return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certificate, oauthBearerToken, true);
+        }
 
-        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certificate, oauthBearerToken);
+        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certificate, oauthBearerToken, false);
     }
 
     // TODO ECA-7119 Due to limited validation exception handling support in JAX-RS 1.1, we validate the object programmatically to handle the response properly.
