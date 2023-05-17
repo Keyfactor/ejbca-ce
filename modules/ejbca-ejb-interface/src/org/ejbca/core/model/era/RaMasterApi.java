@@ -165,11 +165,23 @@ public interface RaMasterApi {
      * The local authorization system is always checked first and authorization is cached separately for local and remote system.
      * Since actual authorization check is performed during API call, a local override can never harm the remote system.
      *
+     * @param authenticationToken The authentication token of the administrator
+     * @param resources String identifier(s) of the resource(s) in question
      * @return true if the authenticationToken is authorized to all the resources
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
     boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String...resources);
 
+    /**
+     * Verify authorization to the given resources without requiring an active local CA
+     *
+     * @param authenticationToken The authentication token of the administrator
+     * @param resources String identifier(s) of the resource(s) in question
+     * @return true if the authenticationToken is authorized to all the resources
+     * @since RA Master API version 16 (EJBCA 8.0)
+     */
+    boolean isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(AuthenticationToken authenticationToken, String...resources);
+    
     /**
      * @return the access rules and corresponding authorization system update number for the specified AuthenticationToken.
      * @since RA Master API version 1 (EJBCA 6.8.0)
