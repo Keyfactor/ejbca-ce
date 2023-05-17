@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.cli.infrastructure.command;
 
+import com.keyfactor.util.string.StringConfigurationCache;
+
+import org.cesecore.config.ConfigurationHolder;
 
 /**
  * Base class for EJBCA commands that use the CLI user. 
@@ -19,7 +22,11 @@ package org.ejbca.ui.cli.infrastructure.command;
  * @version $Id$
  *
  */
-public abstract class EjbcaCliUserCommandBase extends PasswordUsingCommandBase{
+public abstract class EjbcaCliUserCommandBase extends PasswordUsingCommandBase {
+
+    static {
+        StringConfigurationCache.INSTANCE.setEncryptionKey(ConfigurationHolder.getString("password.encryption.key").toCharArray());
+    }
 
     @Override
     public String getImplementationName() {
