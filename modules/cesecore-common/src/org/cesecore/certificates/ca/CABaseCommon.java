@@ -598,10 +598,10 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
             return null;
         }
         Certificate ret = certificatechain.get(0);
-        if (log.isDebugEnabled()) {
-            log.debug("CA certificate chain is " + certificatechain.size() + " levels deep.");
-            log.debug("CA-cert subjectDN: " + CertTools.getSubjectDN(ret));
-            log.debug("CA-cert issuerDN: " + CertTools.getIssuerDN(ret));
+        if (log.isTraceEnabled()) {
+            log.trace("CA certificate chain is " + certificatechain.size() + " levels deep.");
+            log.trace("CA-cert subjectDN: " + CertTools.getSubjectDN(ret));
+            log.trace("CA-cert issuerDN: " + CertTools.getIssuerDN(ret));
         }
         return ret;
     }
