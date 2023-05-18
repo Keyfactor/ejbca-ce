@@ -2731,7 +2731,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         // For the email fields "used" means use EE email address
         if (fieldInstance.isUsed() || DnComponents.DNEMAILADDRESS.equals(fieldInstance.getName()) || DnComponents.RFC822NAME.equals(fieldInstance.getName())
-                || DnComponents.DNSNAME.equals(fieldInstance.getName())) {
+                || DnComponents.DNSNAME.equals(fieldInstance.getName()) || DnComponents.UPN.equals(fieldInstance.getName())) {
             if (isRenderNonModifiableFields()) {
                 return true;
             }
