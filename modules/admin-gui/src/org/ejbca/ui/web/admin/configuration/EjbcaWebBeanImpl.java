@@ -357,9 +357,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 stagingState.usercommonname = principal.getDisplayName();
             }
             if (stagingState.administrator == null) {
-                Object cipherSuite = httpServletRequest.getAttribute("javax.servlet.request.cipher_suite");
-                final boolean confidentialTransport = cipherSuite != null;
-                stagingState.administrator = authenticationSession.authenticateUsingNothing(stagingState.currentRemoteIp, confidentialTransport);
+                stagingState.administrator = authenticationSession.authenticateUsingNothing(stagingState.currentRemoteIp, httpServletRequest.isSecure());
                 final Map<String, Object> details = new LinkedHashMap<>();
                 if (!checkRoleMembershipAndLog(httpServletRequest, "AuthenticationToken", null, null, details)) {
                     throw new AuthenticationFailedException("Authentication failed for certificate with no access");

@@ -2292,7 +2292,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 if (DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnId)) || DnComponents.DNEMAILADDRESS.equals(DnComponents.dnIdToProfileName(dnId)) || DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnId))) {
                     //Don't split RFC822NAME addresses.
                     if (!DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnId))) {
-                        if (!StringUtils.contains(fieldValue, '@')) {
+                        if (!StringUtils.contains(fieldValue, '@')) { 
                             throw new EndEntityProfileValidationException("Field value DNEMAIL and UPN must contain an @ character: " + fieldValue);
                         }
                         fieldValue = fieldValue.split("@")[1];
@@ -2338,7 +2338,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 }
             }
             if (DnComponents.DNSNAME.equals(DnComponents.dnIdToProfileName(dnId))) {
-                verifyDnsNameFieldMatchesCnValue(fields, commonName, MATCHED_FIELD, profileID, dnFieldExtractorID, subjectsToProcess, profileCrossOffList);
+                verifyAltNameFieldMatchesCnValue(fields, commonName, MATCHED_FIELD, profileID, dnFieldExtractorID, subjectsToProcess, profileCrossOffList, DnComponents.DNSNAME);
+            }
+            if (DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnId))) {
+                verifyAltNameFieldMatchesCnValue(fields, commonName, MATCHED_FIELD, profileID, dnFieldExtractorID, subjectsToProcess, profileCrossOffList, DnComponents.UPN);
             }
             // For every field of this type in profile (start with required and non-modifiable, 2 + 1)
             for (int k = 3; k >= 0; k--) {
@@ -2387,8 +2390,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
     } // checkIfFieldsMatch
 
-    private void verifyDnsNameFieldMatchesCnValue(final DNFieldExtractor fields, String commonName, final int matchedField, final int profileID,
-                                                  final int dnFieldExtractorID, String[] subjectsToProcess, int[] profileCrossOffList) {
+    private void verifyAltNameFieldMatchesCnValue(final DNFieldExtractor fields, String commonName, final int matchedField, final int profileID,
+                                                  final int dnFieldExtractorID, String[] subjectsToProcess, int[] profileCrossOffList,
+                                                  String fieldName) {
         //0,1,2,3 are combinations of modifiable and required
         for (int k = 3; k >= 0; k--) {
             //	For every value in profile
@@ -2398,10 +2402,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     for (int m = 0; m < subjectsToProcess.length; m++) {
                         if (subjectsToProcess[m] != null && profileCrossOffList[l] != matchedField) {
                             if (getCopy(profileID, l)) {
+                                String expectedValue = commonName;
+                                if(DnComponents.UPN.equalsIgnoreCase(fieldName) && 
+                                        StringUtils.isNotBlank(getValue(profileID, l))) {
+                                    expectedValue += "@" + getValue(profileID, l);
+                                }
                                  /*
                                  * IF the component is DNSNAME and getCopy is true, value from CN should be used
+                                 * IF the component is UPN and getCopy is true, value from CN or CN@[value of UPN field] should be used
                                  */
-                                if (fields.getField(dnFieldExtractorID, m).equals(commonName)) {
+                                if (fields.getField(dnFieldExtractorID, m).equals(expectedValue)) {
                                     subjectsToProcess[m] = null;
                                     profileCrossOffList[l] = matchedField;
                                 }
@@ -2411,7 +2421,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 }
             }
         }
-    }
+    }    
 
     public void doesPasswordFulfillEndEntityProfile(String password, boolean clearPwd) throws EndEntityProfileValidationException {
 		boolean fulfillsProfile = true;
@@ -3275,6 +3285,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         private final int profileId;
         private boolean rfcEmailUsed;
         private boolean dnsCopyCheckbox;
+        private boolean upnCopyCheckbox;
 		private boolean useDataFromEmailField;
         String regexPattern;
         public FieldInstance(String name, int number){
@@ -3286,6 +3297,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.rfcEmailUsed = name.equals("RFC822NAME") && isUsed();
             this.dnsCopyCheckbox = name.equals(DnComponents.DNSNAME) && isCopy();
             if (dnsCopyCheckbox) this.value = "";
+            this.upnCopyCheckbox = name.equals(DnComponents.UPN) && isCopy();
+            if (upnCopyCheckbox) this.value = "";
             HashMap<String, Serializable> temp = EndEntityProfile.this.getValidation(name, number);
             if (temp != null){
                 this.regexPattern = (String)temp.get(RegexFieldValidator.class.getName());
@@ -3310,11 +3323,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isCopyDns() {
             return name.equals(DnComponents.DNSNAME) && isCopy();
         }
+        public boolean isCopyUpn() {
+            return name.equals(DnComponents.UPN) && isCopy();
+        }
         public boolean isDnsCopyCheckbox() {
             return dnsCopyCheckbox;
         }
         public void setDnsCopyCheckbox(boolean dnsCopyCheckbox) {
             this.dnsCopyCheckbox = dnsCopyCheckbox;
+        }
+        public boolean isUpnCopyCheckbox() {
+            return upnCopyCheckbox;
+        }
+        public void setUpnCopyCheckbox(boolean upnCopyCheckbox) {
+            this.upnCopyCheckbox = upnCopyCheckbox;
         }
         public String getValue(){ return value; }
         public void setValue(String value) { this.value = value; }
