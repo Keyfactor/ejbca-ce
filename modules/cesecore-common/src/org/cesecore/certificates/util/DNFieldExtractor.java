@@ -79,6 +79,8 @@ public class DNFieldExtractor implements Serializable {
     public static final int ORGANIZATIONIDENTIFIER = 106;
     public static final int VID = 107;
     public static final int PID = 108;
+    public static final int UNIQUEIDENTIFIER = 62;
+    public static final int CERTIFICATIONID = 109;
 
     // Subject Alternative Names.
     public static final int OTHERNAME = 16;

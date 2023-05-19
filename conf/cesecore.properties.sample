@@ -260,7 +260,9 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #authkeybind.ciphersuite.7=TLSv1;TLS_DHE_RSA_WITH_AES_256_CBC_SHA
 #authkeybind.ciphersuite.8=TLSv1;TLS_RSA_WITH_AES_256_CBC_SHA
 #authkeybind.ciphersuite.9=TLSv1;TLS_RSA_WITH_AES_128_CBC_SHA
-
+#authkeybind.ciphersuite.10=TLSv1.3;TLS_AES_128_GCM_SHA256
+#authkeybind.ciphersuite.11=TLSv1.3;TLS_AES_256_GCM_SHA384
+#authkeybind.ciphersuite.12=TLSv1.3;TLS_CHACHA20_POLY1305_SHA256
 
 # ------------------- Certificate Transparency settings -------------------
 # If your EJBCA has support for CT in it, you may configure caching of SCTs

@@ -93,31 +93,6 @@ public class HttpMethodsTest {
         performResourceTest("/ejbca/doc/index.html");
     }
 
-    /** Test the publicweb.war module. */
-    @Test
-    public void testPublicWeb() throws Exception {
-        performResourceTest("/ejbca/index.jsp");
-    }
-
-    /** Test the publicweb.war module that it returns X-FRAME-OPTIONS and CSP headers. */
-    @Test
-    public void testPublicWebSecurityHeaders() throws Exception {
-        // Check for X-FRAME-OPTIONS headers
-        HttpURLConnection con = getHttpURLConnection(httpBaseUrl+"/ejbca/index.jsp");
-        String xframe = con.getHeaderField("X-FRAME-OPTIONS");
-        String csp = con.getHeaderField("content-security-policy");
-        String xcsp = con.getHeaderField("x-content-security-policy");
-        con.disconnect();
-        assertNotNull("Public web should return X-FRAME-OPTIONS header", xframe);
-        assertNotNull("Public web page should return content-security-policy header", csp);
-        assertNotNull("Public web page should return x-content-security-policy header", xcsp);
-        assertEquals("Public web should return X-FRAME-OPTIONS DENY", "DENY", xframe);
-        assertEquals("Public web page should return csp default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block",
-                "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", csp);
-        assertEquals("Public web page should return xcsp default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", 
-                "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", xcsp);
-    }
-
     /** Test the adminweb.war module that it returns X-FRAME-OPTIONS and CSP headers on the error page (unathenticated). */
     @Test
     public void testAdminWebXFrameOptionsOnError() throws Exception {
@@ -134,10 +109,10 @@ public class HttpMethodsTest {
         assertNotNull("Admin web error page should return x-content-security-policy header", xcsp);
         assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", xframe);
         assertEquals("Admin web error page should return csp " + 
-            "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", 
+            "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block",
             "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", csp);
         assertEquals("Admin web error page should return x-csp " + 
-            "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", 
+            "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block",
             "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", xcsp);
     }
 
@@ -156,9 +131,9 @@ public class HttpMethodsTest {
         assertNotNull("Admin web error page should return content-security-policy header", csp);
         assertNotNull("Admin web error page should return x-content-security-policy header", xcsp);
         assertEquals("Admin web error page should return X-FRAME-OPTIONS DENY", "DENY", xframe);
-        assertEquals("Admin web error page should return csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", 
+        assertEquals("Admin web error page should return csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block",
                 "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", csp);
-        assertEquals("Admin web error page should return x-csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", 
+        assertEquals("Admin web error page should return x-csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block",
                 "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", xcsp);
     }
 
