@@ -117,6 +117,8 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.KeyTools;
 
+import static org.primefaces.util.Constants.SEMICOLON;
+
 /**
  * The main bean for the web interface, it contains all basic functions.
  * <p>
@@ -128,6 +130,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private static final long serialVersionUID = 1L;
 
     private static Logger log = Logger.getLogger(EjbcaWebBeanImpl.class);
+
+    private static final char SINGLE_SPACE_CHAR = ' ';
 
     private final EjbBridgeSessionLocal ejbLocalHelper;
     private final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
@@ -475,7 +479,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
-    public synchronized GlobalConfiguration initialize_errorpage(final HttpServletRequest request) throws Exception {
+    public synchronized GlobalConfiguration initialize_errorpage(final HttpServletRequest request) {
         if (!authState.errorpage_initialized) {
             stagingState = new AuthState();
             initializeErrorPageInternal(request);
@@ -485,7 +489,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return globalconfiguration;
     }
 
-    private void initializeErrorPageInternal(final HttpServletRequest request) throws Exception {
+    private void initializeErrorPageInternal(final HttpServletRequest request) {
         if (stagingState.administrator == null) {
             final String remoteAddr = request.getRemoteAddr();
             stagingState.administrator = new PublicAccessAuthenticationToken(remoteAddr, true);
@@ -928,7 +932,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /**
      * Save the given MSAutoEnrollmentConfiguration configuration.
      *
-     * @param msAutoenrollmentConfig A MSAutoEnrollmentConfiguration
+     * @param msAutoEnrollmentConfiguration A MSAutoEnrollmentConfiguration
      * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
      */
     @Override
@@ -1147,16 +1151,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public Map<Integer, String> getPublisherIdToNameMapByValue() {
         final Map<Integer,String> publisheridtonamemap = publisherSession.getPublisherIdToNameMap();
         final List<Map.Entry<Integer, String>> publisherIdToNameMapList = new LinkedList<>(publisheridtonamemap.entrySet());
-        publisherIdToNameMapList.sort(new Comparator<Entry<Integer, String>>() {
-            @Override
-            public int compare(final Entry<Integer, String> o1, final Entry<Integer, String> o2) {
-                if (o1 == null) {
-                    return o2 == null ? 0 : -1;
-                } else if (o2 == null) {
-                    return 1;
-                }
-                return o1.getValue().compareToIgnoreCase(o2.getValue());
+        publisherIdToNameMapList.sort((o1, o2) -> {
+            if (o1 == null) {
+                return o2 == null ? 0 : -1;
+            } else if (o2 == null) {
+                return 1;
             }
+            return o1.getValue().compareToIgnoreCase(o2.getValue());
         });
         final Map<Integer, String> sortedMap = new LinkedHashMap<>();
         for (final Map.Entry<Integer, String> entry : publisherIdToNameMapList) {
@@ -1318,19 +1319,19 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     localhostName = host;
                 } else {
                     if (checkHost(host, excludeActiveCryptoTokens)) {
-                        succeededHost.append(' ').append(host);
+                        succeededHost.append(SINGLE_SPACE_CHAR).append(host);
                     } else {
-                        failedHosts.append(' ').append(host);
+                        failedHosts.append(SINGLE_SPACE_CHAR).append(host);
                     }
                 }
             }
         }
-        succeededHost.append(' ').append(localhostName);
+        succeededHost.append(SINGLE_SPACE_CHAR).append(localhostName);
         // Invalidate local GUI cache
         authState.initialized = false;
         if (failedHosts.length() > 0) {
             // The below will print hosts starting with a blank (space), but it's worth it to not have to consider error handling if toString is empty
-            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts.toString() + "), but succeeded on (" + succeededHost.toString() + ").");
+            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts + "), but succeeded on (" + succeededHost + ").");
         }
         if (log.isTraceEnabled()) {
             log.trace("<clearClusterCache");
@@ -1417,7 +1418,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         reloadCmpConfiguration();
         cmpConfigForEdit = new CmpConfiguration();
-        cmpConfigForEdit.setAliasList(new LinkedHashSet<String>());
+        cmpConfigForEdit.setAliasList(new LinkedHashSet<>());
         cmpConfigForEdit.addAlias(alias);
         for(final String key : CmpConfiguration.getAllAliasKeys(alias)) {
             final String value = cmpconfiguration.getValue(key, alias);
@@ -1611,12 +1612,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      * @param endEntityProfileId the id of an end entity profile
      * @return a sorted list of certificate authorities for the specified end entity profile
      * @throws NumberFormatException if the end entity profile id is not a number
-     * @throws CADoesntExistsException if the certificate authority pointed to by an end entity profile does not exist
      * @throws AuthorizationDeniedException if we were denied access control
      */
     @Override
     public Collection<String> getAvailableCAsOfEEProfile(final String endEntityProfileId)
-            throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
+            throws NumberFormatException, AuthorizationDeniedException {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
             final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
             return addKeyIdAndSort(certificateAuthorities);
@@ -1725,14 +1725,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      * @param idString the semicolon separated list of CA IDs.
      * @return the list of CA names as semicolon separated String.
      * @throws NumberFormatException if a CA ID could not be parsed.
-     * @throws AuthorizationDeniedException if authorization was denied.
      */
     @Override
-    public String getCaNamesString(final String idString) throws NumberFormatException, AuthorizationDeniedException {
+    public String getCaNamesString(final String idString) throws NumberFormatException {
         final TreeMap<String, Integer> availableCas = getCAOptions();
         final List<String> result = new ArrayList<>();
         if (StringUtils.isNotBlank(idString)) {
-            for (final String id : idString.split(";")) {
+            for (final String id : idString.split(SEMICOLON)) {
                 if (availableCas.containsValue(Integer.valueOf(id))) {
                     for (final Entry<String,Integer> entry : availableCas.entrySet()) {
                         if (entry.getValue() != null && entry.getValue().equals( Integer.valueOf(id))) {
@@ -1742,7 +1741,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
             }
         }
-        return StringUtils.join(result, ";");
+        return StringUtils.join(result, SEMICOLON);
     }
 
     /** @return true if we are running in the enterprise mode otherwise false. */
@@ -1754,12 +1753,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /** @return true if we are running an EJBCA build that has CA functionality enabled. */
     @Override
     public boolean isRunningBuildWithCA() {
-        try {
-            Class.forName("org.cesecore.certificates.ca.X509CAImpl");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+        return isRunningBuildWith("org.cesecore.certificates.ca.X509CAImpl");
+    }
+
+    /** @return true if we are running EJBCA build that has VA functionality enabled. */
+    @Override
+    public boolean isRunningBuildWithVA() {
+        return isRunningBuildWith("org.ejbca.ui.web.protocol.OCSPServlet");
     }
 
     /** @return true if we are running an EJBCA build that has RA functionality enabled.
@@ -1770,8 +1770,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      * */
     @Override
     public boolean isRunningBuildWithRA() {
+        return isRunningBuildWith("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
+    }
+
+    private static boolean isRunningBuildWith(String className) {
         try {
-            Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
+            Class.forName(className);
             return true;
         } catch (ClassNotFoundException e) {
             return false;
