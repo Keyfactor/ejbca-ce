@@ -369,6 +369,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         // SystemConfigMBean.getLastActiveTab(), so it can't be used.
         int tabIndex = 0;
         for (final UIComponent tab : tabView.getChildren()) {
+            if (!tab.isRendered()) {
+                continue;
+            }
             if (tab == activeTab) {
                 setLastActiveTab(tabIndex);
                 break;
