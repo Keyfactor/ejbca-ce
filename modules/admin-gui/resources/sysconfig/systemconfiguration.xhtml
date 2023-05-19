@@ -29,7 +29,8 @@
 	<h1>
 		<h:outputText value="#{web.text.SYSTEMCONFIGURATION}"/>
 	</h1>
-	<p:tabView id="tabs" dynamic="true">
+	<p:tabView id="tabs" dynamic="true" activeIndex="#{systemConfigMBean.lastActiveTab}">
+		<p:ajax event="tabChange" listener="#{systemConfigMBean.onTabChange}"/>
 		<p:tab title="Basic Configurations" rendered="#{systemConfigMBean.renderSystemConfiguration()}" >
 			<h:form id="systemconfiguration" >
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
