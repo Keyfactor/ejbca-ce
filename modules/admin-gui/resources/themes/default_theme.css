@@ -1186,6 +1186,11 @@ table#config tr td:first-child {
 	margin-top: 3ex;
 }
 
+/* --- Search end entity page */
+.searchEndEntityTable button {
+	margin-right: .5em;
+}
+
 /*--------------------------------------------------------------------------*/
 /* TABLES */
 
