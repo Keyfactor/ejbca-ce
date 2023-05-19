@@ -29,9 +29,15 @@ import java.util.Properties;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -80,6 +86,7 @@ import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.anyObject;
@@ -90,12 +97,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.runners.MethodSorters;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Tests for the OcspResponseGenerator that don't involve creating a CA.
@@ -343,8 +344,8 @@ public class OcspResponseGeneratorSessionUnitTest {
     }
 
     @Test
-    public void basicCachedRequest() throws Exception {
-        log.trace(">basicRequest");
+    public void basicCachedRequestSHA1() throws Exception {
+        log.trace(">basicCachedRequestSHA1");
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
@@ -352,9 +353,61 @@ public class OcspResponseGeneratorSessionUnitTest {
         prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertGoodResponse(respInfo);
-        log.trace("<basicRequest");
+        log.trace("<basicCachedRequestSHA1");
     }
-    
+
+    @Test
+    public void basicCachedRequestSHA224() throws Exception {
+        log.trace(">basicCachedRequestSHA224");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha224, null);
+        expectLoggerChecks();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
+        assertEquals(OCSPResp.MALFORMED_REQUEST, respInfo.getStatus());
+        log.trace("<basicCachedRequestSHA224");
+    }
+
+    @Test
+    public void basicCachedRequestSHA256() throws Exception {
+        log.trace(">basicCachedRequestSHA256");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha256, null);
+        expectLoggerChecks();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<basicCachedRequestSHA256");
+    }
+
+    @Test
+    public void basicCachedRequestSHA384() throws Exception {
+        log.trace(">basicCachedRequestSHA256");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha384, null);
+        expectLoggerChecks();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<basicCachedRequestSHA256");
+    }
+
+    @Test
+    public void basicCachedRequestSHA512() throws Exception {
+        log.trace(">basicCachedRequestSHA512");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha512, null);
+        expectLoggerChecks();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<basicCachedRequestSHA512");
+    }
+
     private void setupOcspResponseCache() {
         ConfigurationHolder.updateConfiguration(OcspConfiguration.UNTIL_NEXT_UPDATE, "60000");
         OcspDataConfigCacheEntry entry = new OcspDataConfigCacheEntry(getIssuerCert(), ISSUER_CAID, true, false, false);

@@ -218,14 +218,6 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.ROLE_ADMINISTRATOR);
     }
     
-    public boolean isAuthorizedToViewPublicWeb() {
-        return getEjbcaErrorWebBean().isRunningBuildWithCA();
-    }
-
-    public boolean isPublicWebHidden() {
-        return getEjbcaWebBean().getGlobalConfiguration().getHidePublicWeb();
-    }
-    
     public boolean isAuthorizedToViewRaWeb() {
         return getEjbcaErrorWebBean().isRunningBuildWithRAWeb();
     }
@@ -253,7 +245,11 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     public String getLogoUrl() {
         return getEjbcaWebBean().getImagePath(getEjbcaWebBean().getEditionFolder() + "/keyfactor-"+ InternalConfiguration.getAppNameLower() +"-logo.png");
     }
-    
+
+    public String getFaviconUrl() {
+        return getEjbcaWebBean().getImagePath(getEjbcaWebBean().getEditionFolder() + "/favicon.png");
+    }
+
     /** 
      * @return the URL to EJBCA Admin UI, i.e. https://hostname:8443/ejbca/adminweb/, always ends with a '/'
      */

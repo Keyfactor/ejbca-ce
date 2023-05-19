@@ -436,9 +436,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
             }
             getLogger().info(signedByStr);
 
-            if (superAdminCN != null) {
-                initAuthorizationModule(getAuthenticationToken(), dn.hashCode(), superAdminCN);
-            }
+            initAuthorizationModule(getAuthenticationToken(), dn.hashCode(), superAdminCN);
+            
             // Transform our mixed properties into CA Token properties and cryptoTokenProperties
             final Properties caTokenProperties = new Properties();
             final String defaultAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);

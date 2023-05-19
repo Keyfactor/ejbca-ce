@@ -323,11 +323,20 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             log.info("The Role '" + SUPERADMIN_ROLE + "' does not exist. Cannot add SuperAdmin '" + superAdminCN + "'.");
             return false;
         }
-        // We don't care if the caller has done this before. If the caller is authorized we comply.
-        roleMemberSession.persist(authenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                superAdminCN, role.getRoleId(), null));
+        if (superAdminCN!=null) {
+            // We don't care if the caller has done this before. If the caller is authorized we comply.
+            roleMemberSession.persist(authenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                    superAdminCN, role.getRoleId(), null));
+        }
 
+        if (superAdminCN==null // only from ca init command, do additional validation 
+                // and importCA always validates superAdminCN not null
+                && caSession.getAllCaIds().size()!=0 // only allowed for first CA
+                ) {
+            return false;
+        }
+        
         //add managementCA access to Public Role
         final Role publicRole = roleSession.getRole(authenticationToken, null, PUBLIC_ACCESS_ROLE);
         publicRole.getAccessRules().put(AccessRulesHelper.normalizeResource(StandardRules.CAACCESSBASE.resource() + "/" + caId + "/")
