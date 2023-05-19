@@ -65,8 +65,6 @@ public class RaStyleRequestFilter implements Filter {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
     
-    private RaAuthenticationHelper raAuthenticationHelper = null;
-    
     @Override
     public void destroy() {
         //NOOP
@@ -147,7 +145,7 @@ public class RaStyleRequestFilter implements Filter {
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     private AuthenticationToken getAuthenticationToken(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
+        RaAuthenticationHelper raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
         return raAuthenticationHelper.getAuthenticationToken(httpRequest, httpResponse);
     }
     
