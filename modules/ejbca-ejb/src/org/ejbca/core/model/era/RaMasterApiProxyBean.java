@@ -361,9 +361,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     
     @Override
     public boolean isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(final AuthenticationToken authenticationToken, final String... resources) {
+        // First try to find one with an active CA
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.isAuthorizedNoLogging(authenticationToken, resources)) {
+                        return true;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        // If none were found, try to find one without an active CA
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             try {
-                if (raMasterApi.isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(authenticationToken, resources)) {
+                if (raMasterApi.isAuthorizedNoLogging(authenticationToken, resources)) {
                     return true;
                 }
             } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
