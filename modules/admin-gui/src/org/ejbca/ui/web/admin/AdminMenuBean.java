@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import java.io.Serializable;
-
-import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Named;
-
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
@@ -29,6 +23,11 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import javax.ejb.EJB;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
+import java.io.Serializable;
 
 /**
  * Backing bean for the menu on the left (in the default theme) in the AdminWeb.
@@ -111,7 +110,24 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
                 || isAuthorizedToViewEndEntity()
                 || isAuthorizedToEditUserDataSources());
     }
-    
+
+    public boolean isAuthorizedToViewVAHeader() {
+        return isAuthorizedViewInternalKeyBindings()
+                && isAuthorizedToViewVA();
+    }
+
+    private boolean isAuthorizedToViewVA() {
+        return getEjbcaErrorWebBean().isRunningBuildWithVA()
+                || getEjbcaErrorWebBean().isRunningBuildWithCA()
+                || isRunningBuildInFullMode();
+    }
+
+    private boolean isRunningBuildInFullMode() {
+        return getEjbcaErrorWebBean().isRunningBuildWithVA()
+                && getEjbcaErrorWebBean().isRunningBuildWithCA()
+                && getEjbcaErrorWebBean().isRunningBuildWithRA();
+    }
+
     /*===SUPERVISION FUNCTIONS===*/
     
     public boolean isAuthorizedToViewApprovalProfiles() {
