@@ -312,12 +312,11 @@ public class RaEndEntityDetails {
         if (extendedInformation != null && extendedInformation.getKeyStoreAlgorithmType() != null) {
             String keyTypeString = extendedInformation.getKeyStoreAlgorithmType();
             if (extendedInformation.getKeyStoreAlgorithmSubType() != null) {
-                keyTypeString += " " + extendedInformation.getKeyStoreAlgorithmSubType();
+                keyTypeString = getAlgorithmUiRepresentationString(keyTypeString, extendedInformation.getKeyStoreAlgorithmSubType());
             }
             return keyTypeString;
         } else if (extendedInformation.getCertificateRequest() != null && extendedInformation.getKeyStoreAlgorithmType() == null) {
             return getKeysFromCsr();
-
         }
         return null; // null = hidden in UI
     }
@@ -329,7 +328,7 @@ public class RaEndEntityDetails {
                 final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
                 final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
                 final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
-                return keyAlgorithm + " " + keySpecification;
+                return getAlgorithmUiRepresentationString(keyAlgorithm, keySpecification);
             } catch (InvalidKeyException e) {
                 log.info("Failed to retrieve public key from CSR attached to end entity " + username + ". Key is either uninitialized or corrupted", e);
             } catch (IOException e) {
@@ -340,6 +339,10 @@ public class RaEndEntityDetails {
         }
         log.info("No CSR found for end entity with username " + username);
         return null;
+    }
+   
+    private String getAlgorithmUiRepresentationString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + " " + spec;
     }
 
     /** Download CSR attached to end entity in .pem format */

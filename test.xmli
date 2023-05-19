@@ -50,7 +50,6 @@
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/p11ng" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins-ee" target="runsa" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
@@ -179,7 +178,6 @@
                     <include name="modules/ssh/src-test/**/${test.runone}.java" />
                     <include name="modules/msae/src-test/**/${test.runone}.java" />
                     <include name="modules/cits/src-test/**/${test.runone}.java" />
-                    <include name="modules/p11ng/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -277,9 +275,6 @@
         </condition>
         <condition property="module" value="modules/cits">
             <matches string="${test-fullname}" pattern="^modules/cits/.*$"/>
-        </condition>
-        <condition property="module" value="modules/p11ng">
-            <matches string="${test-fullname}" pattern="^modules/p11ng/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>

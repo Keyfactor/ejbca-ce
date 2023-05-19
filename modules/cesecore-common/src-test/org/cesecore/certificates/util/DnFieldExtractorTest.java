@@ -13,15 +13,15 @@
 
 package org.cesecore.certificates.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashMap;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 import org.junit.Test;
 
-import com.keyfactor.util.certificate.DnComponents;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -33,13 +33,17 @@ public class DnFieldExtractorTest {
     public void test01CheckDnFields() throws Exception {
     	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
-    	String dn = "name=tomas,street=a street, role=Test Role, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,L=Stockholm,dc=PrimeKey,DC=com,description=Test DN,vid=FFF1,pid=8000";
+    	String dn = "name=tomas,street=a street, role=Test Role, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,"
+    	        + "L=Stockholm,dc=PrimeKey,DC=com,description=Test DN,vid=FFF1,pid=8000,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023";
+    	// uniqueIdentifier should be a ASN.1 BITSTRING, see X.520 6.2.7, but that is too advanced for customers so they just assume a normal UTF8String
+    	// CertificationID is specified in TR03145-5, Note that the certification ID is issued by the certification authority and has the following notation:
+    	// BSI-K-TR-"four digit number"-"year as four digit"
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
         if (DnComponents.enterpriseMappingsExist()) {
-            assertEquals(34, i.size());
+            assertEquals(36, i.size());
         } else {
-            assertEquals(30, i.size());
+            assertEquals(32, i.size());
         }
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
@@ -85,6 +89,10 @@ public class DnFieldExtractorTest {
         assertEquals("VID=FFF1", fieldstr);
         fieldstr = extractor.getFieldString(DNFieldExtractor.PID);
         assertEquals("PID=8000", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.UNIQUEIDENTIFIER);
+        assertEquals("UNIQUEIDENTIFIER=N62892", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.CERTIFICATIONID);
+        assertEquals("CERTIFICATIONID=BSI-K-TR-1234-2023", fieldstr);
     	boolean illegal = extractor.isIllegal();
     	assertFalse(illegal);
     	boolean other = extractor.existsOther();

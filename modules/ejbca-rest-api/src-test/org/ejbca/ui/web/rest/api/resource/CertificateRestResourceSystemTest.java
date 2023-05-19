@@ -19,7 +19,6 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -66,6 +65,8 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
+import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
+import org.ejbca.ui.web.rest.api.resource.util.TestEndEntityParamHolder;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -106,15 +107,24 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import static org.cesecore.certificates.crl.RevocationReasons.*;
+import static org.cesecore.certificates.crl.RevocationReasons.AACOMPROMISE;
+import static org.cesecore.certificates.crl.RevocationReasons.AFFILIATIONCHANGED;
+import static org.cesecore.certificates.crl.RevocationReasons.CACOMPROMISE;
+import static org.cesecore.certificates.crl.RevocationReasons.CERTIFICATEHOLD;
+import static org.cesecore.certificates.crl.RevocationReasons.CESSATIONOFOPERATION;
+import static org.cesecore.certificates.crl.RevocationReasons.KEYCOMPROMISE;
+import static org.cesecore.certificates.crl.RevocationReasons.NOT_REVOKED;
+import static org.cesecore.certificates.crl.RevocationReasons.PRIVILEGESWITHDRAWN;
+import static org.cesecore.certificates.crl.RevocationReasons.SUPERSEDED;
+import static org.cesecore.certificates.crl.RevocationReasons.UNSPECIFIED;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -124,7 +134,6 @@ import static org.junit.Assume.assumeTrue;
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
 
-    //private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
     private static final String CRL_FILENAME = "CertificateRestSystemTestCrlFile";
     private static final String ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE = "Certificate with issuer: {0} and serial " +
             "number: {1} has previously been revoked. Revocation reason could not be changed or was not allowed.";
@@ -140,7 +149,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
-    private static final Random random = new Random();
+    private static final Random RANDOM = new Random();
     private X509CA x509TestCa;
     private String testCaName = "CertificateRestSystemTestCa";
     private String testIssuerDn = "C=SE,CN=" + testCaName;
@@ -148,7 +157,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private String testCertProfileName = "CertificateRestSystemTestCertProfile";
     private String testEeProfileName = "CertificateRestSystemTestEeProfile";
 
-    private final String csr = "-----BEGIN CERTIFICATE REQUEST-----\n"
+    private static final String CSR = "-----BEGIN CERTIFICATE REQUEST-----\n"
             + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
             + "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\n"
             + "ZWxsbzEyM3NlcnZlcjYwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDe\n"
@@ -181,7 +190,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Before
     public void setUp() throws Exception {
-        final int randomSuffix = random.nextInt();
+        final int randomSuffix = RANDOM.nextInt();
         testCaName += randomSuffix;
         testIssuerDn += randomSuffix;
         testUsername += randomSuffix;
@@ -627,7 +636,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String revocationDate = "2000-01-01T00:00:00Z";
         final int expectedErrorCode = 422;
         final String expectedErrorMessage = MessageFormat.format("Back dated revocation not allowed for certificate profile ''{0}''." +
-                " Certificate serialNumber ''{1}'', issuerDN ''{2}''.", testCertProfileName, serialNumber.toLowerCase(), testIssuerDn);
+                " Certificate serialNumber ''{1}'', issuerDN ''{2}''.", testCertProfileName, serialNumber.toLowerCase(),
+                testIssuerDn);
         // when
         final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, KEYCOMPROMISE.getStringValue(), revocationDate);
         // then
@@ -976,7 +986,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 endEntityProfileName("EMPTY").
                 username(testUsername).
                 password("foo123").email(email).
-                certificateRequest(csr).build();
+                certificateRequest(CSR).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
@@ -1015,7 +1025,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateAuthorityName(testCaName).
                 username(testUsername).
                 password("foo123").
-                certificateRequest(csr).build();
+                certificateRequest(CSR).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
@@ -1314,30 +1324,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      * Creates a test End Entity
      */
     private EndEntityInformation createTestEndEntity() throws Exception {
-        final int certificateProfileId = createCertificateProfile();
-        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
-        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
-        endEntityProfile.setAvailableCAs(Arrays.asList(x509TestCa.getCAId()));
-        endEntityProfile.setDefaultCA(x509TestCa.getCAId());
-        final int endEntityProfileId = endEntityProfileSessionRemote.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileName, endEntityProfile);
-        final EndEntityInformation userdata = new EndEntityInformation(
-                testUsername,
-                "CN=" + testUsername,
-                x509TestCa.getCAId(),
-                null,
-                null,
-                new EndEntityType(EndEntityTypes.ENDUSER),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                certificateProfileId,
-                SecConst.TOKEN_SOFT_P12,
-                new ExtendedInformation());
-        userdata.setPassword("foo123");
-        userdata.setStatus(EndEntityConstants.STATUS_NEW);
-        userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-        userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-        userdata.setEndEntityProfileId(endEntityProfileId);
-        return endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+        return new CertificateRestResourceSystemTestUtil()
+                .createTestEndEntity(TestEndEntityParamHolder.newBuilder()
+                .withX509TestCa(x509TestCa)
+                .withTestUsername(testUsername)
+                .withTestCertProfileName(testCertProfileName)
+                .withTestEeProfileName(testEeProfileName)
+                .withInternalAdminToken(INTERNAL_ADMIN_TOKEN)
+                .withCertificateProfileSession(certificateProfileSession)
+                .withEndEntityManagementSession(endEntityManagementSession)
+                .withEndEntityProfileSessionRemote(endEntityProfileSessionRemote)
+                .build());
     }
 
     /**
