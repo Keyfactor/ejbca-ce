@@ -221,7 +221,7 @@
 					<h:outputText value="#{searchResult.status}" />
 				</p:column>
 				<p:column headerText="#{web.text.ACTIONS}">
-					<p:menuButton value="#{web.text.CERTIFICATE}">
+					<p:menuButton value="#{web.text.CERTIFICATE}" style="margin-right:.5em;">
 						<p:menuitem value="#{web.text.VIEW}"
 							onclick="window.open('#{searchEndEntitiesMBean.getCertificatePopupLink(searchResult.username)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
 							icon="pi pi-external-link" />
@@ -239,7 +239,7 @@
 					</p:menuButton>
 				</p:column>
 			</p:dataTable>
-			<h:panelGrid columns="1">
+			<h:panelGrid columns="1" styleClass="searchEndEntityTable">
 				<h:panelGroup rendered="#{searchEndEntitiesMBean.mayRevoke}">
 					<h:outputText value="#{web.text.CRL_ENTRY_REVOCATIONREASON}" />
 					<h:selectOneMenu
