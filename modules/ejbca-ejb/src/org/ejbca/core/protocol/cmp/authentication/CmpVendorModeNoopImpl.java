@@ -19,15 +19,19 @@ import java.util.List;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.ejbca.config.CmpConfiguration;
 
 /**
  * NoOperation implementation of CMP Vendor mode
- * 
- * @version $Id$
+ *
  *
  */
 public class CmpVendorModeNoopImpl implements CmpVendorMode {
+
+    @Override
+    public void setCertificateDataSession(CertificateStoreSession certificateDataSession) {
+    }
 
     @Override
     public void setCaSession(final CaSession caSession) {
