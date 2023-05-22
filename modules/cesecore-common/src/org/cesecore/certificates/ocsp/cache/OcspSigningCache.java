@@ -212,6 +212,14 @@ public enum OcspSigningCache {
                 if (!cache.containsKey(cacheId)) {
                     cache.put(cacheId, ocspSigningCacheEntry);
                 }
+                for (CertificateID certIDOnBehalf : ocspSigningCacheEntry.getSignedBehalfOfCaIds()) {
+                    // override cache only if no OCSP key binding present or the entry is a placeholder
+                    int cacheIdOnBehalf = getCacheIdFromCertificateID(certIDOnBehalf);
+                    if(!cache.containsKey(cacheIdOnBehalf) || cache.get(cacheIdOnBehalf).isPlaceholder() 
+                                    || cache.get(cacheIdOnBehalf).getOcspKeyBinding()==null ) {
+                        cache.put(cacheId, ocspSigningCacheEntry);
+                    }      
+                }
             } finally {
                 lock.unlock();
             }
