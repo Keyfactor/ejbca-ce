@@ -2239,10 +2239,6 @@
 					</h:inputText>
 					<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
 												value="#{editCAsMBean.caInfoDto.upstreamUrl}" />
-					<br/>
-					<h:outputText styleClass="smallHelp" value="#{web.text.UPSTREAM_URL_HELP}"/>
-					<br/>
-					<h:outputText styleClass="smallHelp" value="#{web.text.UPSTREAM_CA_HELP}" />
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:outputLabel for="textFieldUsername" value="#{web.text.UPSTREAM_USERNAME}" />
