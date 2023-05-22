@@ -1308,6 +1308,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (countOnly) {
                 final long count = (long) query.getSingleResult();
                 response.setTotalCount(count);
+                response.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
                 if (log.isDebugEnabled()) {
                     log.debug("Certificate search count: " + count + ". queryTimeout=" + queryTimeout + "ms");
                 }
@@ -1316,6 +1317,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 for (final String fingerprint : fingerprints) {
                     response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
                 }
+                response.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
                 if (log.isDebugEnabled()) {
                     log.debug("Certificate search query: page " + request.getPageNumber() + ", page size " + maxResults + ", count " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
                 }
@@ -1335,8 +1337,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 //            } catch (PersistenceException pe) {
 //                log.debug("Query.unwrap(org.hibernate.Query.class) is not supported by JPA provider");
 //            }
+            response.setStatus(RaCertificateSearchResponseV2.Status.TIMEOUT);
             log.info("Requested search query by " + authenticationToken +  " took too long. Query was '" + queryString + "'. " + e.getMessage());
         } catch (PersistenceException e) {
+            response.setStatus(RaCertificateSearchResponseV2.Status.ERROR);
             log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
         }
         return response;
