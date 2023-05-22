@@ -108,16 +108,21 @@ public class OAuth2Principal implements Principal, Serializable {
             return false;
         }
         final OAuth2Principal other = (OAuth2Principal)obj;
-        return StringUtils.equals(subject, other.subject) &&
+        return oauthProviderId == other.oauthProviderId &&
                 StringUtils.equals(issuer, other.issuer) &&
+                StringUtils.equals(subject, other.subject) &&
                 StringUtils.equals(oid, other.oid) &&
-                roles.equals(roles) &&
-                audience.equals(other.audience);
+                audience.equals(other.audience) &&
+                StringUtils.equals(preferredUsername, other.preferredUsername) &&
+                StringUtils.equals(name, other.name) &&
+                StringUtils.equals(email, other.email) &&
+                emailVerified == other.emailVerified &&
+                roles.equals(roles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(subject, issuer, audience, roles);
+        return Objects.hash(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email, emailVerified, roles);
     }
 
     public static Builder builder() {
