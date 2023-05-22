@@ -40,6 +40,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
@@ -105,6 +106,9 @@ import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
+import org.primefaces.component.tabview.Tab;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.TabChangeEvent;
 
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StreamSizeLimitExceededException;
@@ -310,7 +314,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public String getEncoding() { return this.encoding; }
     }
 
-    private String selectedTab = null;
     private GlobalConfiguration globalConfig = null;
     private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
     private OAuthConfiguration oAuthConfiguration = null;
@@ -332,6 +335,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private GoogleCtPolicy googleCtPolicy;
     private boolean incompleteIssuanceServiceCheckDone = false;
     private boolean incompleteIssuanceServiceAvailable;
+    private int lastActiveTab = 0;
 
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
@@ -346,6 +350,35 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private boolean enableCustomHeaderRest;
     private String customHeaderRestName;
+
+    public int getLastActiveTab() {
+        return lastActiveTab;
+    }
+
+    public void setLastActiveTab(final int lastActiveTab) {
+        this.lastActiveTab = lastActiveTab;
+    }
+
+    public void onTabChange(final TabChangeEvent<?> event) {
+        final Tab activeTab = event.getTab();
+        if (activeTab == null) {
+            return;
+        }
+        final TabView tabView = (TabView) activeTab.getParent();
+        // There is tabView.getTabIndex(), but it just calls
+        // SystemConfigMBean.getLastActiveTab(), so it can't be used.
+        int tabIndex = 0;
+        for (final UIComponent tab : tabView.getChildren()) {
+            if (!tab.isRendered()) {
+                continue;
+            }
+            if (tab == activeTab) {
+                setLastActiveTab(tabIndex);
+                break;
+            }
+            tabIndex++;
+        }
+    }
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -670,22 +703,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             });
         }
         return validatorSettings;
-    }
-
-    public String getSelectedTab() {
-        final String tabHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("tab");
-        // First, check if the user has requested a valid tab
-        List<String> availableTabs = getAvailableTabs();
-        if (tabHttpParam != null && availableTabs.contains(tabHttpParam)) {
-            // The requested tab is an existing tab. Flush caches so we reload the page content
-            flushCache();
-            selectedTab = tabHttpParam;
-        }
-        if (selectedTab == null) {
-            // If no tab was requested, we use the first available tab as default
-            selectedTab = availableTabs.get(0);
-        }
-        return selectedTab;
     }
 
     public String getCurrentNode() {
@@ -2093,41 +2110,35 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return eabConfigManager;
     }
-
-    public List<String> getAvailableTabs() {
-        final List<String> availableTabs = new ArrayList<>();
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("Basic Configurations");
-            availableTabs.add("Administrator Preferences");
-            availableTabs.add("Protocol Configuration");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("Extended Key Usages");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().isRunningEnterprise()) {
-            availableTabs.add("Trusted OAuth Providers");
-        }
-        if (getEjbcaWebBean().isRunningBuildWithCA()
+    
+    public boolean renderCertificateTransparency() {
+        return getEjbcaWebBean().isRunningBuildWithCA()
                 && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())
-                && CertificateTransparencyFactory.isCTAvailable()) {
-            availableTabs.add("Certificate Transparency Logs");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("Custom Certificate Extensions");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
-            availableTabs.add("Custom RA Styles");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable()) {
-            availableTabs.add("Statedump");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("External Scripts");
-            availableTabs.add("Configuration Checker");
-            availableTabs.add("External Account Bindings");
-        }
-
-        return availableTabs;
+                && CertificateTransparencyFactory.isCTAvailable();
+    }
+    
+    public boolean renderSystemConfiguration() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+    }
+    
+    public boolean renderExtendedKeyUsages() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource());
+    }
+    
+    public boolean renderOAuthProviders() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().isRunningEnterprise();
+    }
+    
+    public boolean renderCustomCertificateExtensions() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
+    }
+    
+    public boolean renderCustomRaStyles() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource());
+    }
+    
+    public boolean renderStatedumpTab() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
     }
 
 }
