@@ -69,10 +69,8 @@ public class OcspSigningCacheEntry {
     
     /*
      * reverse look up table for faster operation, expected OCSP request frequency is lot higher than cache reloads
-     * we need 2 maps for SHA1 and SHA256, see OcspSigningCache.getCertificateIDFromCertificate for reference
      */
-    private Map<Principal, CertificateID> issuerNameToCertIdMap1;
-    private Map<Principal, CertificateID> issuerNameToCertIdMap2;
+    private Map<Principal, CertificateID> issuerNameToCertIdMap;
 
     public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, CertificateStatus issuerCaCertificateStatus,
             List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
@@ -139,8 +137,7 @@ public class OcspSigningCacheEntry {
         signedBehalfOfCaCerticates = new HashMap<>();
         signedBehalfOfCaStatus = new HashMap<>();
         
-        issuerNameToCertIdMap1 = new HashMap<>();
-        issuerNameToCertIdMap2 = new HashMap<>();
+        issuerNameToCertIdMap = new HashMap<>();
     }
 
     /** @return certificate of the CA that we want to respond for */
@@ -266,22 +263,17 @@ public class OcspSigningCacheEntry {
     }
     
     public void refreshInternalMappings() {
-        issuerNameToCertIdMap1.clear();
-        issuerNameToCertIdMap2.clear();
+        issuerNameToCertIdMap.clear();
         Principal issuerDn;
         for(Entry<CertificateID, X509Certificate> entry: signedBehalfOfCaCerticates.entrySet()) {
             issuerDn = entry.getValue().getIssuerDN();
-            if(issuerNameToCertIdMap1.containsKey(issuerDn)) {
-                issuerNameToCertIdMap1.put(issuerDn, entry.getKey());
-            } else {
-                issuerNameToCertIdMap2.put(issuerDn, entry.getKey());
-            }
+            issuerNameToCertIdMap.put(issuerDn, entry.getKey());
         }
     }
     
-    public boolean shouldSignBehalfOf(CertificateID certId) {
-        return this.signedBehalfOfCaIds.contains(certId);
-    }
+//    public boolean shouldSignBehalfOf(CertificateID certId) {
+//        return this.signedBehalfOfCaIds.contains(certId);
+//    }
     
     public X509Certificate getSignBehalfOfCaCertificate(CertificateID certId) {
         return this.signedBehalfOfCaCerticates.get(certId); 
@@ -289,12 +281,7 @@ public class OcspSigningCacheEntry {
     
     public CertificateID getSignBehalfOfCaCertId(X509Certificate issuedCertificate) {
         Principal issuer = issuedCertificate.getIssuerDN();
-        CertificateID certId = this.issuerNameToCertIdMap1.get(issuer);
-        if(certId!=null) {
-            return certId;
-        } else {
-            return this.issuerNameToCertIdMap2.get(issuer);
-        }
+        return this.issuerNameToCertIdMap.get(issuer);
     }
 
     public Map<CertificateID, CertificateStatus> getSignedBehalfOfCaStatus() {
