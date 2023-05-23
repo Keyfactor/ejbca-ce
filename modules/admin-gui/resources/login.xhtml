@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -31,27 +32,31 @@
 <f:metadata>
     <f:event type="preRenderView" listener="#{adminLoginMBean.onLoginPageLoad}"/>
 </f:metadata>
-<h:panelGroup styleClass="loginPage" layout="block">
-    <h1>
-        <h:outputText value="#{adminLoginMBean.firstHeader}"/>
-    </h1>
-    <h2>
-        <h:outputText value="#{adminLoginMBean.secondHeader}"/>
-    </h2>
-    <h:panelGroup styleClass="loginText" layout="block">
-        <h:outputText value="#{adminLoginMBean.text}"/>
+<h:body>
+    <!--  Due to PrimeFaces taking over all JS execution, there needs to be a call to a PF method early on, even for pages that don't use PF. -->
+    <p:inputText rendered="false" />
+    <h:panelGroup styleClass="loginPage" layout="block">
+        <h1>
+            <h:outputText value="#{adminLoginMBean.firstHeader}"/>
+        </h1>
+        <h2>
+            <h:outputText value="#{adminLoginMBean.secondHeader}"/>
+        </h2>
+        <h:panelGroup styleClass="loginText" layout="block">
+            <h:outputText value="#{adminLoginMBean.text}"/>
+        </h:panelGroup>
+        <h:form id="login">
+        <h:dataTable value="#{adminLoginMBean.allOauthKeys}"
+                     var="oauthkey"
+                     styleClass="oauthProviderTable"
+                     rendered="#{web.ejbcaWebBean.runningEnterprise}">
+            <h:column>
+                <h:commandLink action="#{adminLoginMBean.clickLoginLink(oauthkey.label)}">
+                    <h:outputText value="#{oauthkey.label}" />
+                </h:commandLink>
+            </h:column>
+        </h:dataTable>
+        </h:form>
     </h:panelGroup>
-    <h:form id="login">
-    <h:dataTable value="#{adminLoginMBean.allOauthKeys}"
-                 var="oauthkey"
-                 styleClass="oauthProviderTable"
-                 rendered="#{web.ejbcaWebBean.runningEnterprise}">
-        <h:column>
-            <h:commandLink action="#{adminLoginMBean.clickLoginLink(oauthkey.label)}">
-                <h:outputText value="#{oauthkey.label}" />
-            </h:commandLink>
-        </h:column>
-    </h:dataTable>
-    </h:form>
-</h:panelGroup>
+</h:body>
 </html>
