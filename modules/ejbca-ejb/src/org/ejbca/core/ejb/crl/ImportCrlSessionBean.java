@@ -54,7 +54,7 @@ import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import com.keyfactor.util.CertTools;
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ImportCrlSessionRemote")
-@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSessionRemote {
 
     private static final Logger log = Logger.getLogger(ImportCrlSessionBean.class);
