@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
     <ui:remove>
     <!--
     /*************************************************************************
@@ -32,6 +33,8 @@
 	        <script type="text/javascript" src="#{adminMenuBean.adminWebUrl}ejbcajslib.js"></script>
 	    </h:head>
 	    <h:body styleClass="popup">
+            <!--  Due to PrimeFaces taking over all JS execution, there needs to be a call to a PF method early on, even for pages that don't use PF. -->
+            <p:inputText rendered="false" />
 	        <h:panelGroup layout="block" id="messagesBlock">
                 <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="false"/>
             </h:panelGroup>
