@@ -101,7 +101,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
         final RaCertificateSearchResponseV2 raResponse = raMasterApi.searchForCertificatesV2(authenticationToken, raRequest);
         if (raResponse.getStatus() == RaCertificateSearchResponseV2.Status.TIMEOUT
                 || raResponse.getStatus() == RaCertificateSearchResponseV2.Status.ERROR) {
-                log.info("At least on certificate search database query timed out, responding with HTTP 500 error code.");
+                log.info("At least one certificate search database query timed out, responding with HTTP 500 error code.");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
         final SearchCertificatesRestResponseV2 restResponse = SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse,
