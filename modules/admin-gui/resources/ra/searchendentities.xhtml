@@ -160,7 +160,8 @@
 				             <p:commandButton 
 								value="#{web.text.CLEAR}"
 								action="#{searchEndEntitiesMBean.clearAfter()}"
-								update="after">
+								update="after"
+								style="margin-left:.5em;">
 							</p:commandButton>           		
 	              		</h:panelGroup>    
               		         		
@@ -179,14 +180,16 @@
 		              		<p:commandButton 
 								value="#{web.text.CLEAR}"
 								action="#{searchEndEntitiesMBean.clearBefore()}"
-								update="before">
+								update="before"
+								style="margin-left:.5em;">
 							</p:commandButton>  
 	              		</h:panelGroup>
 					</p:panelGrid>           		
               		<p:commandButton id="findAdvancedButton"
 						value="#{web.text.SEARCH}"
 						action="#{searchEndEntitiesMBean.performAdvancedSearch()}"
-						update="results">
+						update="results"
+						style="margin-top:.5em;">
 					</p:commandButton>
               		
 				</h:form>
