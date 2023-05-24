@@ -468,7 +468,7 @@ public class OCSPServlet extends HttpServlet {
             }
         } else if (HttpMethod.GET.equals(httpMethod)) {
             // GET request
-            final StringBuffer url = request.getRequestURL();
+            final String url = request.getRequestURI();
             // RFC2560 A.1.1 says that request longer than 255 bytes SHOULD be sent by POST, we support GET for longer requests anyway.
             if (url.length() <= LimitLengthASN1Reader.MAX_REQUEST_SIZE) {
                 final String decodedRequest;
