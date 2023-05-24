@@ -50,8 +50,22 @@ public enum OcspSigningCache {
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
     /** Flag to detect and log non-existence of a default responder once. */
     private boolean logDefaultHasRunOnce = false;
-
+ 
     public OcspSigningCacheEntry getEntry(final CertificateID certID) {
+        for (int key: cache.keySet()) {
+            log.info("key: " + key);
+            if(cache.get(key).getOcspKeyBinding()==null) {
+                log.info(": CA subjectDN: " + CertTools.getSubjectDN(cache.get(key).getCaCertificateChain().get(0)));
+                log.info(": CA subjectDN: " + CertTools.getSubjectDN(cache.get(key).getIssuerCaCertificate()));
+                cache.get(key).getCertificateID().forEach(c -> log.info(c.getSerialNumber()));
+                continue;
+            }
+            log.info(": name: " + cache.get(key).getOcspKeyBinding().getName());
+            log.info("getCertificateID: ");
+            cache.get(key).getCertificateID().forEach(c -> log.info(c.getSerialNumber()));
+            log.info("getSignedBehalfOfCaIds: ");
+            cache.get(key).getSignedBehalfOfCaIds().forEach(c -> log.info(c.getSerialNumber()));
+        }
         return cache.get(getCacheIdFromCertificateID(certID));
     }
 
@@ -130,19 +144,19 @@ public enum OcspSigningCache {
         logDefaultResponderChanges(defaultResponderCacheEntry, stagedDefaultResponder, defaultResponderSubjectDn);
         cache = staging;
         defaultResponderCacheEntry = stagedDefaultResponder;
-        if (log.isDebugEnabled()) {
-            log.debug("Committing the following to OCSP cache:");
+        //if (log.isDebugEnabled()) {
+            log.info("Committing the following to OCSP cache:");
             for (final Integer key : staging.keySet()) {
                 final OcspSigningCacheEntry entry = staging.get(key);
-                log.debug(" KeyBindingId: " + key + ", SubjectDN '" + CertTools.getSubjectDN(entry.getFullCertificateChain().get(0))
+                log.info(" KeyBindingId: " + key + ", SubjectDN '" + CertTools.getSubjectDN(entry.getFullCertificateChain().get(0))
                         + "', IssuerDN '" + CertTools.getIssuerDN(entry.getFullCertificateChain().get(0)) + "', SerialNumber "
                         + entry.getFullCertificateChain().get(0).getSerialNumber().toString() + "/"
                         + entry.getFullCertificateChain().get(0).getSerialNumber().toString(16));
                 if (entry.getOcspKeyBinding() != null) {
-                    log.debug("   keyPairAlias: " + entry.getOcspKeyBinding().getKeyPairAlias());
+                    log.info("   keyPairAlias: " + entry.getOcspKeyBinding().getKeyPairAlias());
                 }
             }
-        }
+        //}
     }
 
     public void stagingRelease() {
@@ -217,7 +231,7 @@ public enum OcspSigningCache {
                     int cacheIdOnBehalf = getCacheIdFromCertificateID(certIDOnBehalf);
                     if(!cache.containsKey(cacheIdOnBehalf) || cache.get(cacheIdOnBehalf).isPlaceholder() 
                                     || cache.get(cacheIdOnBehalf).getOcspKeyBinding()==null ) {
-                        cache.put(cacheId, ocspSigningCacheEntry);
+                        cache.put(cacheIdOnBehalf, ocspSigningCacheEntry);
                     }      
                 }
             } finally {
@@ -239,10 +253,8 @@ public enum OcspSigningCache {
         final BigInteger issuerNameHash = bigIntFromBytes(certID.getIssuerNameHash());
         final BigInteger issuerKeyHash = bigIntFromBytes(certID.getIssuerKeyHash());
         int result = issuerNameHash.hashCode() ^ issuerKeyHash.hashCode();
-        if (log.isDebugEnabled()) {
-            log.debug("Using getIssuerNameHash " + issuerNameHash.toString(16) + " and getIssuerKeyHash "
+        log.info("Using getIssuerNameHash " + issuerNameHash.toString(16) + " and getIssuerKeyHash "
                     + issuerKeyHash.toString(16) + " to produce id " + result);
-        }
         return result;
     }
 
