@@ -117,7 +117,7 @@ public class OAuth2Principal implements Principal, Serializable {
                 StringUtils.equals(name, other.name) &&
                 StringUtils.equals(email, other.email) &&
                 emailVerified == other.emailVerified &&
-                roles.equals(roles);
+                roles.equals(other.roles);
     }
 
     @Override
