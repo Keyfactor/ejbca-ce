@@ -160,7 +160,8 @@
 				             <p:commandButton 
 								value="#{web.text.CLEAR}"
 								action="#{searchEndEntitiesMBean.clearAfter()}"
-								update="after">
+								update="after"
+								style="margin-left:.5em;">
 							</p:commandButton>           		
 	              		</h:panelGroup>    
               		         		
@@ -179,14 +180,16 @@
 		              		<p:commandButton 
 								value="#{web.text.CLEAR}"
 								action="#{searchEndEntitiesMBean.clearBefore()}"
-								update="before">
+								update="before"
+								style="margin-left:.5em;">
 							</p:commandButton>  
 	              		</h:panelGroup>
 					</p:panelGrid>           		
               		<p:commandButton id="findAdvancedButton"
 						value="#{web.text.SEARCH}"
 						action="#{searchEndEntitiesMBean.performAdvancedSearch()}"
-						update="results">
+						update="results"
+						style="margin-top:.5em;">
 					</p:commandButton>
               		
 				</h:form>
@@ -221,7 +224,7 @@
 					<h:outputText value="#{searchResult.status}" />
 				</p:column>
 				<p:column headerText="#{web.text.ACTIONS}">
-					<p:menuButton value="#{web.text.CERTIFICATE}">
+					<p:menuButton value="#{web.text.CERTIFICATE}" style="margin-right:.5em;">
 						<p:menuitem value="#{web.text.VIEW}"
 							onclick="window.open('#{searchEndEntitiesMBean.getCertificatePopupLink(searchResult.username)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
 							icon="pi pi-external-link" />
@@ -239,7 +242,7 @@
 					</p:menuButton>
 				</p:column>
 			</p:dataTable>
-			<h:panelGrid columns="1">
+			<h:panelGrid columns="1" styleClass="searchEndEntityTable">
 				<h:panelGroup rendered="#{searchEndEntitiesMBean.mayRevoke}">
 					<h:outputText value="#{web.text.CRL_ENTRY_REVOCATIONREASON}" />
 					<h:selectOneMenu
