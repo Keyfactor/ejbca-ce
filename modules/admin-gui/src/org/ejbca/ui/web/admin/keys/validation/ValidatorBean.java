@@ -508,6 +508,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public String cancel() {
         reset();
+        validatorsBean.actionCancel();;
         return "done";
     }
 
@@ -544,6 +545,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             }
             addInfoMessage("VALIDATORSAVED");
             reset();
+            validatorsBean.savedFromTemplate();
             return "done";
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to edit validator " + stagedValidator.getProfileName());
