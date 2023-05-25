@@ -319,7 +319,14 @@ public class ValidatorsBean extends BaseManagedBean {
         validatorName = null;
         cloned = false;
     }
-
+    
+    public void savedFromTemplate() {
+        validatorItems = null;
+        validatorId = null;
+        validatorName = null;
+        cloned = false;
+    }
+    
     public void validateExternalCommand(final FacesContext facesContext, final UIComponent uiComponent, Object object) {
         final GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
         final ExternalScriptsAllowlist externalScriptsWhitelist = ExternalScriptsAllowlist.fromText(globalConfiguration.getExternalScriptsWhitelist(),
