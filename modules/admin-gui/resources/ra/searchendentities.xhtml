@@ -127,13 +127,13 @@
 								<p:selectOneMenu
 									id="matchWithItems"							
 									value="#{queryLine.matchWith}"
-									editable="true"
+									editable="#{queryLine.textEditable}"
 									disabled="#{queryLine.isNotInitialized()}"
 									immediate="true"
 									alwaysDisplayLabel="true"
 									label="#{queryLine.getMatchWithLabel(queryLine.matchWith)}">
 									<f:selectItems
-										value="#{queryLine.matchWithValues}" var="line" itemLabel="#{queryLine.getMatchWithLabel(line)}"/>
+										value="#{queryLine.matchWithValuesSelectItems}"/>
 									<p:ajax event="change" execute="@this"/>
 								</p:selectOneMenu>	
 							</h:panelGroup>
