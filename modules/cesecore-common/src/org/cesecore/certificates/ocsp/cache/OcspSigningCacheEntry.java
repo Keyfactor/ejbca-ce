@@ -272,10 +272,6 @@ public class OcspSigningCacheEntry {
         }
     }
     
-//    public boolean shouldSignBehalfOf(CertificateID certId) {
-//        return this.signedBehalfOfCaIds.contains(certId);
-//    }
-    
     public X509Certificate getSignBehalfOfCaCertificate(CertificateID certId) {
         return this.signedBehalfOfCaCerticates.get(certId); 
     }

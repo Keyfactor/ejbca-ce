@@ -1621,24 +1621,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 X509Certificate shouldSignOnBehalfCaCert = null;
                 
                 // only necessary if sign on behalf entries are present for corresponding cache entry
-                log.info("checking ocspSigningCacheEntry getSignedBehalfOfCaIds");
-                log.info("checking caCertificateSubjectDn " + caCertificateSubjectDn);
                 if(!ocspSigningCacheEntry.getSignedBehalfOfCaIds().isEmpty()) {
                     List<CertificateDataWrapper> certificateWrappers = 
                             certificateStoreSession.getCertificateDataBySerno(certId.getSerialNumber());
                     
-                    log.info("checking certificateWrappers: " + certificateWrappers.size());
                     for(CertificateDataWrapper certificateWrapper: certificateWrappers) {
 
-                        log.info("checking certificateWrappers not null.");
                         if(certificateWrapper.getCertificateData().getIssuerDN().equals(caCertificateSubjectDn)) {
-                            log.info("checking caCertificateSubjectDn issuer match. breaking");
                             break;
                         } else {
                             CertificateID issuerCertId = ocspSigningCacheEntry.getSignBehalfOfCaCertId(
                                                         certificateWrapper.getCertificateData().getIssuerDN());
     
-                            log.info("checking issuerCertId not null." + issuerCertId);
                             if(issuerCertId!=null) {
                                 shouldSignOnBehalfCaCert = ocspSigningCacheEntry.getSignBehalfOfCaCertificate(issuerCertId);
                                 signedBehalfOfCaSubjectDn = CertTools.getSubjectDN(shouldSignOnBehalfCaCert);
