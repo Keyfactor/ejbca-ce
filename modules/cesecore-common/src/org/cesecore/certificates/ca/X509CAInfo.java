@@ -1199,7 +1199,7 @@ public class X509CAInfo extends CAInfo {
         public X509CAInfo buildDefault () { return null;}
     }
     
-    public boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs) throws InvalidAlgorithmParameterException,
+    public static boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs, Collection<Certificate> trustedCertificates) throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException, CertPathBuilderException, CertPathValidatorException {
         if (certs == null || certs.isEmpty()) {
             throw new IllegalArgumentException("extraCerts must contain at least one certificate.");
@@ -1211,12 +1211,10 @@ public class X509CAInfo extends CAInfo {
         // -- We need to find the RootCA certificate only, should be in cainfo?
         // - An end entity certificate a SubCA certificate and a RootCA certificate
         // -- We need to remove the CA certificates that are not part of cainfo
-        List<Certificate> certlist = new ArrayList<>();
         // Create CertPath
-        certlist.addAll(certs);
+        List<Certificate> certlist = new ArrayList<>(certs);
         // Move CA certificates into cert path, except root certificate which is the trust anchor
         X509Certificate rootcert = null;
-        Collection<Certificate> trustedCertificates = getCertificateChain();
         final Iterator<Certificate> itr = trustedCertificates.iterator();
         while (itr.hasNext()) {
             // Trust anchor is last, so if this is the last element, don't add it
