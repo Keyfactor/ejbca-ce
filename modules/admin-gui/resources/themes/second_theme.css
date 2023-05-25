@@ -1091,6 +1091,17 @@ table#config tr td:first-child {
 	vertical-align: top;
 }
 
+.protocolStatus {
+	white-space: nowrap;
+}
+
+.protocolStatus img {
+	width: 16px;
+	height: 16px;
+	border-width: 0;
+	margin: 0 0.2em 0.1em 0.2em;
+	vertical-align: middle;
+}
 
 /* --- Login page */
 .loginPage {
