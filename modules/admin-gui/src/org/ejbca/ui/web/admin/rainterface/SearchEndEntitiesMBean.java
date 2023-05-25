@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.event.FacesEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -230,7 +231,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
     }
 
-    public void flushCache(@SuppressWarnings("rawtypes") TabChangeEvent event) {
+    /**
+     * Called when Basic/Advanced mode is toggled
+     * @param event Event from JSF
+     */
+    public void flushCache(final TabChangeEvent<?> event) {
         searchResults = new ListDataModel<>();
         searchByName = null;
         searchBySerialNumber = null;
@@ -868,6 +873,14 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                     criteria != UserMatch.MATCH_WITH_CERTIFICATEPROFILE &&
                     criteria != UserMatch.MATCH_WITH_ENDENTITYPROFILE &&
                     criteria != UserMatch.MATCH_WITH_STATUS;
+        }
+
+        /**
+         * Called when the criteria is changed.
+         * @param event Event from JSF
+         */
+        public void criteriaChanged(final FacesEvent event) {
+            setMatchWith("");
         }
 
     }
