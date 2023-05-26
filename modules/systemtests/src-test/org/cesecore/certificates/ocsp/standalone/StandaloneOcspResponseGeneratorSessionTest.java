@@ -259,6 +259,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             // Make sure default responder is restored
             setOcspDefaultResponderReference(originalDefaultResponder);
             caSession.removeCA(authenticationToken, externalCaInfo.getCAId());
+            caSession.removeCA(authenticationToken, x509CaSignBehalf.getCAId());
         }
     }
 
@@ -454,6 +455,45 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final OCSPResp response = sendRequest(ocspRequest);
         assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
         validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey(), userSignBehalfCertificate, null);
+    }
+    
+    @Test
+    public void testStandAloneOcspResponseSignedOnBehalfSubCaSanity() throws Exception {
+        
+        // setup the subca
+        X509CAInfo x509SubCaSignBehalf = cryptoTokenRunner.createX509Ca("CN=x509SubCaSignBehalf", "x509SubCaSignBehalf");
+        X509Certificate subCaSignBehalfCertificate = (X509Certificate) x509SubCaSignBehalf.getCertificateChain().get(0);
+
+        X509Certificate subcaIssuedUserSignBehalfCertificate = OcspTestUtils.createUserCertificate(authenticationToken, x509SubCaSignBehalf.getCAId(),
+                                                                        "testSubCaUserSignBehalfCertificate", "CN=testSubCaUserSignBehalfCertificate");
+
+        // populate on behalf list
+        List<InternalKeyBindingTrustEntry> signOnBehalfEntry = new ArrayList<>();
+        signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(x509SubCaSignBehalf.getCAId(), null, "behalf entry for subca"));
+        OcspTestUtils.addSignOnBehalfEntries(authenticationToken, internalKeyBindingId, signOnBehalfEntry);
+        
+        try {
+            //Now delete the original CA, making this test completely standalone.
+            OcspTestUtils.deleteCa(authenticationToken, x509ca);
+            activateKeyBinding(internalKeyBindingId);
+            ocspResponseGeneratorSession.reloadOcspSigningCache();
+            // Do the OCSP request
+            final OCSPReq ocspRequest = buildOcspRequest(null, null, subCaSignBehalfCertificate, subcaIssuedUserSignBehalfCertificate.getSerialNumber());
+            final OCSPResp response = sendRequest(ocspRequest);
+            assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+            validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey(), subcaIssuedUserSignBehalfCertificate, null); 
+        } finally {
+            try {
+                internalCertificateStoreSession.removeCertificate(subcaIssuedUserSignBehalfCertificate);
+            } catch (Exception e) {
+                //Ignore any failures.
+            }
+            try {
+                caSession.removeCA(authenticationToken, x509SubCaSignBehalf.getCAId());
+            } catch (Exception e) {
+                //Ignore any failures.
+            }
+        }
     }
     
     @Test
