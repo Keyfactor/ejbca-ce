@@ -125,6 +125,8 @@ public abstract class CryptoTokenRunner {
 
     
     public abstract X509CAInfo createX509Ca(String subjectDn, String username) throws Exception;
+    
+    public abstract X509CAInfo createX509Ca(String subjectDn, String issuerDn, String username, String validity) throws Exception;
 
     public void tearDownCa(X509CAInfo ca) {
         final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
@@ -191,7 +193,7 @@ public abstract class CryptoTokenRunner {
     
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
     protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
-            int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
+            int keyusage, String validity) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("createTestX509CAOptionalGenKeys"));
 
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -215,7 +217,7 @@ public abstract class CryptoTokenRunner {
         String caname = CertTools.getPartFromDN(cadn, "CN");
         boolean ldapOrder = !CertTools.isDNReversed(cadn);
         int certificateProfileId = (signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
-        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, certificateProfileId, "3650d",
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validity,
                 signedBy, null, catoken);
         cainfo.setDescription(caName);
         cainfo.setExtendedCAServiceInfos(extendedCaServices);
