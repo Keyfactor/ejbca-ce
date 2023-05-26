@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.event.FacesEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -58,6 +59,7 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ejbca.util.SelectItemComparator;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -229,7 +231,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
     }
 
-    public void flushCache(@SuppressWarnings("rawtypes") TabChangeEvent event) {
+    /**
+     * Called when Basic/Advanced mode is toggled
+     * @param event Event from JSF
+     */
+    public void flushCache(final TabChangeEvent<?> event) {
         searchResults = new ListDataModel<>();
         searchByName = null;
         searchBySerialNumber = null;
@@ -824,7 +830,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             this.matchWith = matchWith;
         }
 
-        public List<String> getMatchWithValues() {
+        public List<String> getMatchWithValuesIds() {
             List<String> result = null;
             switch (criteria) {
                 case UserMatch.MATCH_NONE:
@@ -847,6 +853,34 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                     break;
             }
             return result;
+        }
+
+        public List<SelectItem> getMatchWithValuesSelectItems() {
+            final List<SelectItem> result = new ArrayList<>();
+            final List<String> matchIds = getMatchWithValuesIds();
+            if (matchIds == null) {
+                return null;
+            }
+            for (final String id : matchIds) {
+                result.add(new SelectItem(id, getMatchWithLabel(id)));
+            }
+            result.sort(new SelectItemComparator());
+            return result;
+        }
+
+        public boolean isTextEditable() {
+            return criteria != UserMatch.MATCH_WITH_CA &&
+                    criteria != UserMatch.MATCH_WITH_CERTIFICATEPROFILE &&
+                    criteria != UserMatch.MATCH_WITH_ENDENTITYPROFILE &&
+                    criteria != UserMatch.MATCH_WITH_STATUS;
+        }
+
+        /**
+         * Called when the criteria is changed.
+         * @param event Event from JSF
+         */
+        public void criteriaChanged(final FacesEvent event) {
+            setMatchWith("");
         }
 
     }
