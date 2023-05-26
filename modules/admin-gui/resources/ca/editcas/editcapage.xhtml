@@ -197,6 +197,7 @@
 				<h:panelGroup
 					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}"
+						id="signatureAlgorithmParam"
 						value="#{editCAsMBean.signatureAlgorithmParam}">
 						<f:selectItems value="#{editCAsMBean.availableSigningAlgList}" />
 						<f:ajax event="change" render="editcapage" />
