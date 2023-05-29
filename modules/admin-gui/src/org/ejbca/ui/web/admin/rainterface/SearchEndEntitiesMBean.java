@@ -606,11 +606,18 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         return booleanCriteria;
     }
 
+    /**
+     * Adds a new "Add Constraint" line if all existing Boolean Criteria lines are used.
+     */
     public void addQueryLine() {
-        //On selecting a boolean criteria, add another potential line 
-        queryLines.add(new QueryLine(null, UserMatch.MATCH_NONE));
-    }
+        final long unusedBooleanCriteriaLineCount = queryLines.stream()
+                .filter(queryLine -> !queryLine.isBooleanCriteriaChosen())
+                .count();
 
+        if (unusedBooleanCriteriaLineCount == 0) {
+            queryLines.add(new QueryLine(null, UserMatch.MATCH_NONE));
+        }
+    }
 
     public List<SelectItem> getTimeConstraintValues() {
         return Arrays.asList(new SelectItem(TimeConstraint.NONE, TimeConstraint.NONE.getLabel()),
@@ -772,7 +779,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
 
         public boolean isComplete() {
-            return isCriteriaChosen() && matchHow != null && !StringUtils.isEmpty(matchWith);
+            return isBooleanCriteriaChosen() && isCriteriaChosen() && matchHow != null && !StringUtils.isEmpty(matchWith);
         }
 
         public boolean isCriteriaChosen() {
