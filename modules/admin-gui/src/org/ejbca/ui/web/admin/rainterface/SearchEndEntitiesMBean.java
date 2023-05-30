@@ -101,51 +101,17 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    private final EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
-
-    private transient final List<SelectItem> searchCriteria = Arrays.asList(
-            new SelectItem(UserMatch.MATCH_NONE, getEjbcaWebBean().getText("SELECT_CRITERIA")),
-            new SelectItem(UserMatch.MATCH_WITH_CA, getEjbcaWebBean().getText("MATCHCA")),
-            new SelectItem(UserMatch.MATCH_WITH_CERTIFICATEPROFILE, getEjbcaWebBean().getText("MATCHCERTIFICATEPROFILE")),
-            new SelectItem(UserMatch.MATCH_WITH_ENDENTITYPROFILE, getEjbcaWebBean().getText("MATCHENDENTITYPROFILE")),
-            new SelectItem(UserMatch.MATCH_WITH_STATUS, getEjbcaWebBean().getText("MATCHSTATUS")),
-            new SelectItem(UserMatch.MATCH_WITH_EMAIL, getEjbcaWebBean().getText("MATCHEMAILADDRESS")),
-            new SelectItem(UserMatch.MATCH_WITH_USERNAME, getEjbcaWebBean().getText("MATCHUSERNAME")),
-            new SelectItem(UserMatch.MATCH_WITH_UID, getEjbcaWebBean().getText("MATCHUID")),
-            new SelectItem(UserMatch.MATCH_WITH_COMMONNAME, getEjbcaWebBean().getText("MATCHCOMMONNAME")),
-            new SelectItem(UserMatch.MATCH_WITH_DNSERIALNUMBER, getEjbcaWebBean().getText("MATCHDNSERIALNUMBER")),
-            new SelectItem(UserMatch.MATCH_WITH_GIVENNAME, getEjbcaWebBean().getText("MATCHGIVENNAME")),
-            new SelectItem(UserMatch.MATCH_WITH_INITIALS, getEjbcaWebBean().getText("MATCHINITIALS")),
-            new SelectItem(UserMatch.MATCH_WITH_SURNAME, getEjbcaWebBean().getText("MATCHSURNAME")),
-            new SelectItem(UserMatch.MATCH_WITH_TITLE, getEjbcaWebBean().getText("MATCHTITLE")),
-            new SelectItem(UserMatch.MATCH_WITH_ORGANIZATIONALUNIT, getEjbcaWebBean().getText("MATCHORGANIZATIONALUNIT")),
-            new SelectItem(UserMatch.MATCH_WITH_ORGANIZATION, getEjbcaWebBean().getText("MATCHORGANIZATION")),
-            new SelectItem(UserMatch.MATCH_WITH_LOCALITY, getEjbcaWebBean().getText("MATCHLOCALITY")),
-            new SelectItem(UserMatch.MATCH_WITH_STATEORPROVINCE, getEjbcaWebBean().getText("MATCHSTATEORPROVINCE")),
-            new SelectItem(UserMatch.MATCH_WITH_DOMAINCOMPONENT, getEjbcaWebBean().getText("MATCHDOMAINCOMPONENT")),
-            new SelectItem(UserMatch.MATCH_WITH_COUNTRY, getEjbcaWebBean().getText("MATCHCOUNTRY")));
-
-    private transient final List<SelectItem> booleanCriteria = Arrays.asList(
-            new SelectItem(null, "Add Constraint"),
-            new SelectItem(BooleanCriteria.AND, "And"),
-            new SelectItem(BooleanCriteria.OR, "Or"),
-            new SelectItem(BooleanCriteria.AND_NOT, "And not"),
-            new SelectItem(BooleanCriteria.OR_NOT, "Or not"));
-
-    private transient final Map<Integer, MatchHow[]> matchMap = new HashMap<>();
-
-    private transient final List<String> matchWithCa = new ArrayList<>();
-
-    private transient final List<String> matchWithCertificateProfile = new ArrayList<>();
-
-    private transient final List<String> matchWithEndEntityProfile = new ArrayList<>();
-
-    private transient final List<String> availableAdvancedStatusCodes = new ArrayList<>();
-
-    private transient final List<SelectItem> availableStatusCodes;
-
-    private transient final List<SelectItem> revocationReasons;
-
+    // These depend on the GlobalConfiguration, and are initialized in PostConstruct
+    // so they don't get shared across sessions and/or lost if the bean/session is re-initialized.
+    private transient List<SelectItem> searchCriteria;
+    private transient List<SelectItem> booleanCriteria;
+    private transient Map<Integer, MatchHow[]> matchMap;
+    private transient List<String> matchWithCa;
+    private transient List<String> matchWithCertificateProfile;
+    private transient List<String> matchWithEndEntityProfile;
+    private transient List<String> availableAdvancedStatusCodes;
+    private transient List<SelectItem> availableStatusCodes;
+    private transient List<SelectItem> revocationReasons;
     private transient RAAuthorization raAuthorization;
 
     //Basic mode values:
@@ -155,6 +121,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     private Integer searchByStatusCode = null;
     private Integer searchByExpiryDays = null;
 
+    // FIXME this is not Serializable (ECA-11413)
     private ListDataModel<EndEntitySearchResult> searchResults = new ListDataModel<>();
 
     private List<EndEntitySearchResult> selectedResults = new ArrayList<>();
@@ -173,6 +140,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
     public SearchEndEntitiesMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY);
+    }
+
+    @PostConstruct
+    public void initialize() {
+        final EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
         availableStatusCodes = new ArrayList<>();
         availableStatusCodes.add(new SelectItem(STATUS_ALL, ejbcaWebBean.getText("ALL")));
         for (Integer statusCode : EndEntityConstants.getAllStatusCodes()) {
@@ -187,11 +159,41 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             }
         }
 
-        //First line is the initial search
+        // First line is the initial search
         queryLines.add(new QueryLine(BooleanCriteria.FIRST, UserMatch.MATCH_NONE));
-        //Second line 
+        // Second line
         queryLines.add(new QueryLine(null, UserMatch.MATCH_NONE));
 
+        searchCriteria = Arrays.asList(
+                new SelectItem(UserMatch.MATCH_NONE, ejbcaWebBean.getText("SELECT_CRITERIA")),
+                new SelectItem(UserMatch.MATCH_WITH_CA, ejbcaWebBean.getText("MATCHCA")),
+                new SelectItem(UserMatch.MATCH_WITH_CERTIFICATEPROFILE, ejbcaWebBean.getText("MATCHCERTIFICATEPROFILE")),
+                new SelectItem(UserMatch.MATCH_WITH_ENDENTITYPROFILE, ejbcaWebBean.getText("MATCHENDENTITYPROFILE")),
+                new SelectItem(UserMatch.MATCH_WITH_STATUS, ejbcaWebBean.getText("MATCHSTATUS")),
+                new SelectItem(UserMatch.MATCH_WITH_EMAIL, ejbcaWebBean.getText("MATCHEMAILADDRESS")),
+                new SelectItem(UserMatch.MATCH_WITH_USERNAME, ejbcaWebBean.getText("MATCHUSERNAME")),
+                new SelectItem(UserMatch.MATCH_WITH_UID, ejbcaWebBean.getText("MATCHUID")),
+                new SelectItem(UserMatch.MATCH_WITH_COMMONNAME, ejbcaWebBean.getText("MATCHCOMMONNAME")),
+                new SelectItem(UserMatch.MATCH_WITH_DNSERIALNUMBER, ejbcaWebBean.getText("MATCHDNSERIALNUMBER")),
+                new SelectItem(UserMatch.MATCH_WITH_GIVENNAME, ejbcaWebBean.getText("MATCHGIVENNAME")),
+                new SelectItem(UserMatch.MATCH_WITH_INITIALS, ejbcaWebBean.getText("MATCHINITIALS")),
+                new SelectItem(UserMatch.MATCH_WITH_SURNAME, ejbcaWebBean.getText("MATCHSURNAME")),
+                new SelectItem(UserMatch.MATCH_WITH_TITLE, ejbcaWebBean.getText("MATCHTITLE")),
+                new SelectItem(UserMatch.MATCH_WITH_ORGANIZATIONALUNIT, ejbcaWebBean.getText("MATCHORGANIZATIONALUNIT")),
+                new SelectItem(UserMatch.MATCH_WITH_ORGANIZATION, ejbcaWebBean.getText("MATCHORGANIZATION")),
+                new SelectItem(UserMatch.MATCH_WITH_LOCALITY, ejbcaWebBean.getText("MATCHLOCALITY")),
+                new SelectItem(UserMatch.MATCH_WITH_STATEORPROVINCE, ejbcaWebBean.getText("MATCHSTATEORPROVINCE")),
+                new SelectItem(UserMatch.MATCH_WITH_DOMAINCOMPONENT, ejbcaWebBean.getText("MATCHDOMAINCOMPONENT")),
+                new SelectItem(UserMatch.MATCH_WITH_COUNTRY, ejbcaWebBean.getText("MATCHCOUNTRY")));
+
+        booleanCriteria = Arrays.asList(
+                new SelectItem(null, "Add Constraint"),
+                new SelectItem(BooleanCriteria.AND, "And"),
+                new SelectItem(BooleanCriteria.OR, "Or"),
+                new SelectItem(BooleanCriteria.AND_NOT, "And not"),
+                new SelectItem(BooleanCriteria.OR_NOT, "Or not"));
+
+        matchMap = new HashMap<>();
         matchMap.put(UserMatch.MATCH_WITH_CA, new MatchHow[]{MatchHow.EQUALS});
         matchMap.put(UserMatch.MATCH_WITH_CERTIFICATEPROFILE, new MatchHow[]{MatchHow.EQUALS});
         matchMap.put(UserMatch.MATCH_WITH_ENDENTITYPROFILE, new MatchHow[]{MatchHow.EQUALS});
@@ -212,24 +214,24 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         matchMap.put(UserMatch.MATCH_WITH_DOMAINCOMPONENT, new MatchHow[]{MatchHow.BEGINSWITH});
         matchMap.put(UserMatch.MATCH_WITH_COUNTRY, new MatchHow[]{MatchHow.BEGINSWITH});
 
-    }
-
-    @PostConstruct
-    public void initialize() {
         raAuthorization = new RAAuthorization(getAdmin(), globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
 
+        matchWithCa = new ArrayList<>();
         for (CAInfo caInfo : caSession.getAuthorizedCaInfos(getAdmin())) {
             matchWithCa.add(Integer.toString(caInfo.getCAId()));
         }
 
+        matchWithCertificateProfile = new ArrayList<>();
         for (int certificateProfileId : certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_UNKNOWN)) {
             matchWithCertificateProfile.add(Integer.toString(certificateProfileId));
         }
 
+        matchWithEndEntityProfile = new ArrayList<>();
         for (int endEntityProfileId : endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.VIEW_END_ENTITY)) {
             matchWithEndEntityProfile.add(Integer.toString(endEntityProfileId));
         }
 
+        availableAdvancedStatusCodes = new ArrayList<>();
         for (Integer statusCode : EndEntityConstants.getAllStatusCodes()) {
             availableAdvancedStatusCodes.add(statusCode.toString());
         }
@@ -820,7 +822,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                         returnValue = endEntityProfileSession.getEndEntityProfileName(Integer.valueOf(matchWith));
                         break;
                     case UserMatch.MATCH_WITH_STATUS:
-                        returnValue = ejbcaWebBean.getText(EndEntityConstants.getTranslatableStatusText(Integer.valueOf(matchWith)));
+                        returnValue = getEjbcaWebBean().getText(EndEntityConstants.getTranslatableStatusText(Integer.valueOf(matchWith)));
                         break;
                     default:
                         returnValue = matchWith;
