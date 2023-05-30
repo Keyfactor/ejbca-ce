@@ -178,7 +178,7 @@ public interface RaMasterApi {
      * @param authenticationToken The authentication token of the administrator
      * @param resources String identifier(s) of the resource(s) in question
      * @return true if the authenticationToken is authorized to all the resources
-     * @since RA Master API version 16 (EJBCA 8.0)
+     * @since RA Master API version 16 (EJBCA 8.1.0)
      */
     boolean isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(AuthenticationToken authenticationToken, String...resources);
     
