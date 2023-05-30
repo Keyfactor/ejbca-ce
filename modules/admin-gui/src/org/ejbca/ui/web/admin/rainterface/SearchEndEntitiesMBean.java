@@ -41,6 +41,7 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
@@ -179,8 +180,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
 
         revocationReasons = new ArrayList<>();
-        for (int i = 0; i < SecConst.reasontexts.length; i++) {
-            revocationReasons.add(new SelectItem(i, ejbcaWebBean.getText(SecConst.reasontexts[i])));
+        for (final RevocationReasons revReason : RevocationReasons.values()) {
+            final int dbValue = revReason.getDatabaseValue();
+            if (dbValue >= 0) {
+                revocationReasons.add(new SelectItem(dbValue, ejbcaWebBean.getText(SecConst.reasontexts[dbValue])));
+            }
         }
 
         //First line is the initial search
