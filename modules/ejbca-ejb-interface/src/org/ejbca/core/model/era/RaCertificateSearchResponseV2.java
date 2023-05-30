@@ -23,9 +23,17 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
  * Response of certificates search from RA UI V2.
  */
 public class RaCertificateSearchResponseV2 implements Serializable {
+
+    public enum Status {
+        IN_PROGRESS,
+        TIMEOUT,
+        ERROR,
+        SUCCESSFUL
+    }
     
     private static final long serialVersionUID = 1L;
 
+    private Status status = Status.IN_PROGRESS;
     private List<CertificateDataWrapper> cdws = new ArrayList<>();
     private long totalCount = 0;
 
@@ -46,5 +54,14 @@ public class RaCertificateSearchResponseV2 implements Serializable {
         this.cdws.clear();
         this.cdws.addAll(cdwMap.values());
         setTotalCount(totalCount + other.totalCount);
+        // When merging with a reponse with fail status, fail status takes precedence
+        if (other.getStatus() == Status.ERROR || other.getStatus() == Status.TIMEOUT) {
+            this.setStatus(other.getStatus());
+        }
     }
+
+    public void setStatus(final Status newStatus) {
+        this.status = newStatus;
+    }
+    public Status getStatus() { return status; }
 }
