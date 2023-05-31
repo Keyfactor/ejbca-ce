@@ -103,8 +103,6 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    // These depend on the GlobalConfiguration, and are initialized in PostConstruct
-    // so they don't get shared across sessions and/or lost if the bean/session is re-initialized.
     private transient List<SelectItem> searchCriteria;
     private transient List<SelectItem> booleanCriteria;
     private transient Map<Integer, MatchHow[]> matchMap;
