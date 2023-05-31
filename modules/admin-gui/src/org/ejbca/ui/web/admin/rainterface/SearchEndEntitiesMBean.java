@@ -12,12 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -121,8 +123,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     private Integer searchByStatusCode = null;
     private Integer searchByExpiryDays = null;
 
-    // FIXME this is not Serializable (ECA-11413)
-    private ListDataModel<EndEntitySearchResult> searchResults = new ListDataModel<>();
+    private List<EndEntitySearchResult> searchResults = new ArrayList<>();
 
     private List<EndEntitySearchResult> selectedResults = new ArrayList<>();
     private int selectedRevocationReason = 0;
@@ -242,7 +243,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
      * @param event Event from JSF
      */
     public void flushCache(final TabChangeEvent<?> event) {
-        searchResults = new ListDataModel<>();
+        searchResults = new ArrayList<>();
         searchByName = null;
         searchBySerialNumber = null;
         searchByStatusCode = null;
@@ -275,15 +276,15 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             endEntityInformation = endEntityAccessSession.findUser(getAdmin(), searchByName);
             if (endEntityInformation == null) {
                 addNonTranslatedErrorMessage("No end entity with name " + searchByName + " found.");
-                this.searchResults = new ListDataModel<>();
+                this.searchResults = Collections.emptyList();
             } else {
                 EndEntitySearchResult endEntititySearchResult = new EndEntitySearchResult(endEntityInformation,
                         caIdToNameMap.get(endEntityInformation.getCAId()));
-                this.searchResults = new ListDataModel<>(Arrays.asList(endEntititySearchResult));
+                this.searchResults = new ArrayList<>(Arrays.asList(endEntititySearchResult));
             }
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage(e.getMessage());
-            this.searchResults = new ListDataModel<>();
+            this.searchResults = Collections.emptyList();
         }
         lastSearch = SearchMethods.BY_NAME;
         return "";
@@ -298,7 +299,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             serno = new BigInteger(StringTools.stripWhitespace(searchBySerialNumber), 16);
         } catch (NumberFormatException e) {
             addNonTranslatedErrorMessage("Not a serial number");
-            this.searchResults = new ListDataModel<>();
+            this.searchResults = Collections.emptyList();
             return "";
         }
         final List<CertificateDataWrapper> certificateDataWrappers = certificateStoreSession.getCertificateDataBySerno(serno);
@@ -318,7 +319,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                 addNonTranslatedErrorMessage(e.getMessage());
             }
         }
-        this.searchResults = new ListDataModel<>(results);
+        this.searchResults = new ArrayList<>(results);
         lastSearch = SearchMethods.BY_SERIALNUMBER;
         return "";
     }
@@ -340,7 +341,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         List<EndEntitySearchResult> results;
         if (searchByStatusCode.equals(STATUS_ALL)) {
             results = compileResults(endEntityAccessSession.findAllUsersWithLimit(getAdmin()));
-            this.searchResults = new ListDataModel<>(results);
+            this.searchResults = new ArrayList<>(results);
         } else {
             Query query = new Query(Query.TYPE_USERQUERY);
             query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(searchByStatusCode));
@@ -351,13 +352,13 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                         AccessRulesConstants.VIEW_END_ENTITY);
                 if (userlist.size() > 0) {
                     results = compileResults(userlist);
-                    this.searchResults = new ListDataModel<>(results);
+                    this.searchResults = new ArrayList<>(results);
                 } else {
-                    this.searchResults = new ListDataModel<>();
+                    this.searchResults = Collections.emptyList();
                 }
             } catch (IllegalQueryException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
-                this.searchResults = new ListDataModel<>();
+                this.searchResults = Collections.emptyList();
             }
         }
         lastSearch = SearchMethods.BY_STATUS;
@@ -385,13 +386,13 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                     AccessRulesConstants.VIEW_END_ENTITY);
             if (userlist.size() > 0) {
                 results = compileResults(userlist);
-                this.searchResults = new ListDataModel<>(results);
+                this.searchResults = new ArrayList<>(results);
             } else {
-                this.searchResults = new ListDataModel<>();
+                this.searchResults = Collections.emptyList();
             }
         } catch (IllegalQueryException e) {
             addNonTranslatedErrorMessage(e.getMessage());
-            this.searchResults = new ListDataModel<>();
+            this.searchResults = Collections.emptyList();
         }
         lastSearch = SearchMethods.ADVANCED;
 
@@ -435,10 +436,10 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                 }
             }
             List<EndEntitySearchResult> results = compileResults(endEntities);
-            this.searchResults = new ListDataModel<>(results);
+            this.searchResults = new ArrayList<>(results);
             lastSearch = SearchMethods.BY_EXPIRY;
         } else {
-            this.searchResults = new ListDataModel<>();
+            this.searchResults = Collections.emptyList();
         }
         return "";
 
@@ -522,7 +523,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         return globalConfiguration.getMaximumQueryCount();
     }
 
-    public ListDataModel<EndEntitySearchResult> getSearchResults() {
+    public List<EndEntitySearchResult> getSearchResults() {
         return searchResults;
     }
 
@@ -667,7 +668,8 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         this.before = null;
     }
 
-    public class EndEntitySearchResult {
+    public class EndEntitySearchResult implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final EndEntityInformation endEntityInformation;
         private final String caName;
 
@@ -740,7 +742,9 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
     }
 
-    public class QueryLine {
+    public class QueryLine implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         private BooleanCriteria booleanCriteria;
 
         private int criteria;
@@ -909,23 +913,6 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
         protected int getNumericValue() {
             return numericValue;
-        }
-    }
-
-    public static class ListDataModel<E> extends javax.faces.model.ListDataModel<E> {
-
-        public ListDataModel() {
-            super();
-        }
-
-        public ListDataModel(List<E> results) {
-            super(results);
-        }
-
-        @Override
-        public int getRowCount() {
-            final int rowCount = super.getRowCount();
-            return rowCount == -1 ? 0 : rowCount;
         }
     }
 
