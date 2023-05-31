@@ -1961,7 +1961,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         byte[] certreq = null;
         try {
-            final byte[] fileBuffer = IOUtils.toByteArray(fileRecieveFileMakeRequest.getInputStream(), fileRecieveFileMakeRequest.getSize()); 
+            byte[] fileBuffer = null;
+            if (fileRecieveFileMakeRequest != null) {
+                fileBuffer = IOUtils.toByteArray(fileRecieveFileMakeRequest.getInputStream(), fileRecieveFileMakeRequest.getSize());
+            }
             if (isCaTypeCits()) {
                 if(getCitsHexCertificateHash().equals(CERTIFICATE_UNAVAILABLE)) {
                     // same as initial CSR
