@@ -129,14 +129,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static final  String DOCWINDOW           = "_ejbcaDocWindow"; // Name of browser window used to display help
 
     // Private constants
-    private static final   String ADMINPATH             = "raadminpath";
     private static final   String AVAILABLELANGUAGES    = "availablelanguages";
     private static final   String AVAILABLETHEMES       = "availablethemes";
     private static final   String PUBLICPORT            = "publicport";
     private static final   String PRIVATEPORT           = "privateport";
-    private static final   String PUBLICPROTOCOL        = "publicprotocol";
-    private static final   String PRIVATEPROTOCOL       = "privateprotocol";
-
 
       // Title
     private static final   String TITLE              = "title";
@@ -164,24 +160,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     private static final   String ENABLEEXTERNALSCRIPTS        = "enableexternalscripts";
 
-      // Paths
-    private static final   String AUTHORIZATION_PATH  = "authorization_path";
-    private static final   String BANNERS_PATH        = "banners_path";
-    private static final   String CA_PATH             = "ca_path";
-    private static final   String CONFIG_PATH         = "data_path";
-    private static final   String IMAGES_PATH         = "images_path";
-    private static final   String LANGUAGE_PATH       = "language_path";
-    private static final   String LOG_PATH            = "log_path";
-    private static final   String REPORTS_PATH        = "reports_path";
-    private static final   String RA_PATH             = "ra_path";
-    private static final   String THEME_PATH          = "theme_path";
-
     private static final   String CTLOGS              = "ctlogs";
 
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
 
-    private static final   String LANGUAGEFILENAME      =  "languagefilename";
-    private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
     private static final String GOOGLE_CT_POLICY = "google_ct_policy";
     private static final String EXTERNAL_SCRIPTS_WHITELIST = "external_scripts_whitelist";
     private static final String IS_EXTERNAL_SCRIPTS_WHITELIST_ENABLED = "is_external_scripts_whitelist_enabled";
@@ -204,54 +186,24 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        setEnableIcaoCANameChange(false);
     }
 
-
     /** Initializes a new global configuration with data used in ra web interface. */
-    public void initialize(String adminpath, String availablelanguages, String availablethemes,
-                           String publicport, String privateport, String publicprotocol, String privateprotocol){
+    private void initialize(String availablelanguages, String availablethemes,
+                            String publicport, String privateport){
 
-       String tempadminpath = adminpath.trim();
-
-       if(tempadminpath == null) {
-         tempadminpath = "";
-       }
-       if(!tempadminpath.endsWith("/") && !tempadminpath.equals("")){
-         tempadminpath = tempadminpath + "/";   // Add ending '/'
-       }
-       if(tempadminpath.startsWith("/")){
-         tempadminpath = tempadminpath.substring(1);   // Remove starting '/'
-       }
-
-       data.put(ADMINPATH,tempadminpath);
        data.put(AVAILABLELANGUAGES,availablelanguages.trim());
        data.put(AVAILABLETHEMES,availablethemes.trim());
        data.put(PUBLICPORT,publicport.trim());
        data.put(PRIVATEPORT,privateport.trim());
-       data.put(PUBLICPROTOCOL,publicprotocol.trim());
-       data.put(PRIVATEPROTOCOL,privateprotocol.trim());
-
-       data.put(AUTHORIZATION_PATH,tempadminpath+"administratorprivileges");
-       data.put(BANNERS_PATH,"banners");
-       data.put(CA_PATH, tempadminpath+"ca");
-       data.put(CONFIG_PATH,tempadminpath+"sysconfig");
-       data.put(IMAGES_PATH,"images");
-       data.put(LANGUAGE_PATH,"languages");
-       data.put(LOG_PATH,tempadminpath+"log");
-       data.put(REPORTS_PATH,tempadminpath+"reports");
-       data.put(RA_PATH,tempadminpath+"ra");
-       data.put(THEME_PATH,"themes");
-
-       data.put(LANGUAGEFILENAME,"languagefile");
-       data.put(IECSSFILENAMEPOSTFIX,"_ie-fixes");
     }
 
     public void initializeAdminWeb() {
-        initialize("adminweb", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
-                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
+        initialize(WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
+                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort());
     }
     
     public void initializeRaWeb() {
-        initialize("ra", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
-                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
+        initialize(WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
+                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort());
     }
 
     /** Checks if global data configuration have been initialized. */
@@ -287,26 +239,24 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     /** @return The base path derived values in configuration files */
     public String getBaseUrlFromConfig() {
         return getBaseUrl(
-                (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL),
-                WebConfiguration.getHostName(),
+                "https", WebConfiguration.getHostName(),
                 Integer.parseInt((String) data.get(GlobalConfiguration.PRIVATEPORT))
         );
     }
 
     public String getBaseUrlPublic() {
         return getBaseUrl(
-                (String) data.get(PUBLICPROTOCOL),
-                WebConfiguration.getHostName(),
+                "http", WebConfiguration.getHostName(),
                 Integer.parseInt((String) data.get(PUBLICPORT))
         );
     }
 
     public String getAdminWebPath() {
-        return getString(ADMINPATH, "adminweb");
+        return "adminweb/";
     }
     
     public String getRaWebPath() {
-        return getString(ADMINPATH, "ra");
+        return "ra/";
     }
 
     public String getStandardCRLDistributionPointURI(){
@@ -366,7 +316,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         return !fullHeadBannerPath(DEFAULTHEADBANNER).equals(fullHeadBannerPath((String) data.get(HEADBANNER)));
     }
     private String fullHeadBannerPath(final String head) {
-        return ((String) data.get(ADMINPATH)) + ((String) data.get(BANNERS_PATH)) + "/" +
+        return getAdminWebPath() + getBannersPath() + "/" +
                 (StringUtils.isNotBlank(head) ? head.substring(head.lastIndexOf('/')+1) : DEFAULTHEADBANNER);
     }
 
@@ -377,7 +327,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
       data.put(FOOTBANNER, fullFootBannerPath(foot));
     }
     private String fullFootBannerPath(final String foot) {
-        return "/" + ((String) data.get(BANNERS_PATH)) + "/" +
+        return "/" + getBannersPath() + "/" +
                 (StringUtils.isNotBlank(foot) ? foot.substring(foot.lastIndexOf('/')+1) : DEFAULTFOOTBANNER);
     }
 
@@ -387,19 +337,19 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public   void setEjbcaTitle(String ejbcatitle) {data.put(TITLE,ejbcatitle);}
 
 
-    public   String getAuthorizationPath() {return (String) data.get(AUTHORIZATION_PATH);}
-    public   String getBannersPath() {return (String) data.get(BANNERS_PATH);}
-    public   String getCaPath() {return (String) data.get(CA_PATH);}
-    public   String getConfigPath() {return (String) data.get(CONFIG_PATH);}
-    public   String getImagesPath() {return (String) data.get(IMAGES_PATH);}
-    public   String getLanguagePath() {return (String) data.get(LANGUAGE_PATH);}
-    public   String getLogPath() {return (String) data.get(LOG_PATH);}
-    public   String getReportsPath() {return (String) data.get(REPORTS_PATH);}
-    public   String getRaPath() {return (String) data.get(RA_PATH);}
-    public   String getThemePath() {return (String) data.get(THEME_PATH);}
+    public   String getAuthorizationPath() {return getAdminWebPath()+"administratorprivileges";}
+    public   String getBannersPath() {return "banners";}
+    public   String getCaPath() {return getAdminWebPath()+"ca";}
+    public   String getConfigPath() {return getAdminWebPath()+"sysconfig";}
+    public   String getImagesPath() {return "images";}
+    public   String getLanguagePath() {return "languages";}
+    public   String getLogPath() {return getAdminWebPath()+"log";}
+    public   String getReportsPath() {return getAdminWebPath()+"reports";}
+    public   String getRaPath() {return getAdminWebPath()+"ra";}
+    public   String getThemePath() {return "themes";}
 
-    public   String getLanguageFilename(){return (String) data.get(LANGUAGEFILENAME);}
-    public   String getIeCssFilenamePostfix(){return (String) data.get(IECSSFILENAMEPOSTFIX);}
+    public   String getLanguageFilename(){return "languagefile";}
+    public   String getIeCssFilenamePostfix(){return "_ie-fixes";}
 
     public   String[] getPossibleEntiresPerPage(){return DEFAULTPOSSIBLEENTRIESPERPAGE;}
     public   String[] getPossibleLogEntiresPerPage(){return DEFAULTPOSSIBLELOGENTRIESPERPAGE;}
@@ -580,9 +530,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-    		if(data.get(REPORTS_PATH) == null){
-    			data.put(REPORTS_PATH, ((String) data.get(ADMINPATH) + "reports"));
-    		}
     		if(data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER) == null) {
     		        data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.TRUE);
     		}
