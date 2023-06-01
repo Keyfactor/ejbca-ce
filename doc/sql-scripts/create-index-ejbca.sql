@@ -75,6 +75,9 @@ CREATE INDEX userdata_idx10 ON UserData (subjectDN);
 -- Increase lookup speed of a small subset of users with a specific status
 CREATE INDEX userdata_idx11 ON UserData (status);
 
+-- Increase speed while selecting all the user data while looking for end entities
+CREATE INDEX userdata_idx12 ON UserData(timeCreated);
+
 CREATE INDEX publisherqueue_idx3 ON PublisherQueueData (publisherId, publishStatus, timeCreated);
 
 -- When using a role members with many entries
