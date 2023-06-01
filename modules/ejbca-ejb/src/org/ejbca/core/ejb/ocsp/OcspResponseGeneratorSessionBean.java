@@ -1626,18 +1626,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             certificateStoreSession.getCertificateDataBySerno(certId.getSerialNumber());
                     
                     for(CertificateDataWrapper certificateWrapper: certificateWrappers) {
-                        if(certificateWrapper.getCertificateData()==null || certificateWrapper.getCertificate()==null) {
-                            continue;
-                        }
+
                         if(certificateWrapper.getCertificateData().getIssuerDN().equals(caCertificateSubjectDn)) {
                             break;
                         } else {
-                            Certificate fetchedCertificate = certificateWrapper.getCertificate();
-                            if(!(fetchedCertificate instanceof X509Certificate)) {
-                                continue;
-                            }
                             CertificateID issuerCertId = ocspSigningCacheEntry.getSignBehalfOfCaCertId(
-                                                            (X509Certificate) fetchedCertificate);
+                                                        certificateWrapper.getCertificateData().getIssuerDN());
     
                             if(issuerCertId!=null) {
                                 shouldSignOnBehalfCaCert = ocspSigningCacheEntry.getSignBehalfOfCaCertificate(issuerCertId);
