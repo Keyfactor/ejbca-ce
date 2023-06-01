@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ejbca-community-helm.fullname" . }}
+  labels:
+    {{- include "ejbca-community-helm.labels" . | nindent 4 }}
+{{- if .Values.services.directHttp.enabled }}
+spec:
+  type: {{ .Values.services.directHttp.type }}
+  ports:
+    - port: {{ .Values.services.directHttp.httpPort }}
+      {{- if eq .Values.services.directHttp.type "NodePort" }}
+      nodePort: {{ .Values.services.directHttp.httpPort }}
+      {{- end }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.services.directHttp.httpsPort }}
+      {{- if eq .Values.services.directHttp.type "NodePort" }}
+      nodePort: {{ .Values.services.directHttp.httpsPort }}
+      {{- end }}
+      targetPort: https
+      protocol: TCP
+      name: https
+  selector:
+    {{- include "ejbca-community-helm.selectorLabels" . | nindent 4 }}
+{{- end }}
+{{- if .Values.services.proxyAJP.enabled }}
+spec:
+  type: {{ .Values.services.proxyAJP.type }}
+  ports:
+    - port: {{ .Values.services.proxyAJP.port }}
+      {{- if eq .Values.services.proxyAJP.type "NodePort" }}
+      nodePort: {{ .Values.services.proxyAJP.port }}
+      {{- end }}
+      targetPort: ajp
+      protocol: TCP
+      name: ajp
+  selector:
+    {{- include "ejbca-community-helm.selectorLabels" . | nindent 4 }}
+{{- end }}
+{{- if .Values.services.proxyHttp.enabled }}
+spec:
+  type: {{ .Values.services.proxyHttp.type }}
+  ports:
+    - port: {{ .Values.services.proxyHttp.httpPort }}
+      {{- if eq .Values.services.proxyHttp.type "NodePort" }}
+      nodePort: {{ .Values.services.proxyHttp.httpPort }}
+      {{- end }}
+      targetPort: proxy-http
+      protocol: TCP
+      name: proxy-http
+    - port: {{ .Values.services.proxyHttp.httpsPort }}
+      {{- if eq .Values.services.proxyHttp.type "NodePort" }}
+      nodePort: {{ .Values.services.proxyHttp.httpsPort }}
+      {{- end }}
+      targetPort: proxy-https
+      protocol: TCP
+      name: proxy-https
+  selector:
+    {{- include "ejbca-community-helm.selectorLabels" . | nindent 4 }}
+{{- end }}
