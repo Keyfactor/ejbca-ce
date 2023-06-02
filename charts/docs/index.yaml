@@ -2,13 +2,13 @@ apiVersion: v1
 entries:
   ejbca-community-helm:
   - apiVersion: v2
-    appVersion: 7.12.0
-    created: "2023-06-01T20:40:07.895652294+02:00"
+    appVersion: 7.11.0
+    created: "2023-06-02T19:52:02.055302699+02:00"
     description: A Helm chart for Kubernetes
-    digest: 36f3d6978927900002e9f31e28e570cc62197c774d312c3eb670e34b74801328
+    digest: 9133b24efb3cb529e8a3709c9e6edaea4722963ec1d02200033a9ee1d001f6e3
     name: ejbca-community-helm
     type: application
     urls:
     - ejbca-community-helm-1.0.tgz
     version: "1.0"
-generated: "2023-06-01T20:40:07.894676862+02:00"
+generated: "2023-06-02T19:52:02.053156305+02:00"
