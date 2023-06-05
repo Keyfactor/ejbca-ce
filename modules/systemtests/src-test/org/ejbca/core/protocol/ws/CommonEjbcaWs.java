@@ -1648,7 +1648,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             fail("Calling pkcs10Request for a user with status GENERATED should throw an exception.");
         } catch(EjbcaException_Exception e) {
-            assertTrue(e.getMessage().contains("Got request with status GENERATED (40), NEW, FAILED or INPROCESS required"));
+            assertTrue(e.getMessage().contains("Got request with status GENERATED (40). Status NEW, FAILED or INPROCESS required"));
         }
         
         // 2.2 Test user not found.
