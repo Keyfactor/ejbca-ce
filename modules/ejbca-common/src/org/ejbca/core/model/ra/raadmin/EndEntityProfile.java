@@ -1961,17 +1961,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	final Date now = new Date();
     	Date startTimeDate = null;
-    	if (getUse(STARTTIME, 0) && startTime != null && !startTime.equals("")) {
+        final String profileStartTimeString = getValue(STARTTIME, 0);
+        checkStartEndTimeIfEqualsOrModifiable(profileStartTimeString, startTime, STARTTIME);
+      	if (getUse(STARTTIME, 0) && startTime != null && !startTime.equals("")) {
     		if (startTime.matches(RELATIVE_TIME_FORMAT)) { //relative time
-    			final String[] startTimeArray = startTime.split(":");
-    			if (Long.parseLong(startTimeArray[0]) < 0 || Long.parseLong(startTimeArray[1]) < 0 || Long.parseLong(startTimeArray[2]) < 0) {
-    				throw new EndEntityProfileValidationException("Cannot use negtive relative time.");
-    			}
-    			final long relative = (Long.parseLong(startTimeArray[0]) * 24 * 60 + Long.parseLong(startTimeArray[1]) * 60 +
-    					Long.parseLong(startTimeArray[2])) * 60 * 1000;
-    			startTimeDate = new Date(now.getTime() + relative);
+    		    startTimeDate = handleRelativeTime(startTime, now);
     		} else {
-    			try {
+    		    try {
     				startTimeDate = ValidityDate.parseAsUTC(startTime);
     			} catch (ParseException e) {
     	            // If we could not parse the date string, something was awfully wrong
@@ -1980,17 +1976,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		}
     	}
     	Date endTimeDate = null;
+        final String profileEndTimeString = getValue(ENDTIME, 0);
+        checkStartEndTimeIfEqualsOrModifiable(profileEndTimeString, endTime, ENDTIME);
     	if (getUse(ENDTIME, 0) && endTime != null && !endTime.equals("")) {
     		if (endTime.matches(RELATIVE_TIME_FORMAT)) { //relative time
-    			final String[] endTimeArray = endTime.split(":");
-    			if (Long.parseLong(endTimeArray[0]) < 0 || Long.parseLong(endTimeArray[1]) < 0 || Long.parseLong(endTimeArray[2]) < 0) {
-    				throw new EndEntityProfileValidationException("Cannot use negtive relative time.");
-    			}
-    			final long relative = (Long.parseLong(endTimeArray[0]) * 24 * 60 + Long.parseLong(endTimeArray[1]) * 60 +
-    					Long.parseLong(endTimeArray[2])) * 60 * 1000;
-    			// If we haven't set a startTime, use "now"
-    			final Date start = (startTimeDate == null) ? new Date(): startTimeDate;
-    			endTimeDate = new Date(start.getTime() + relative);
+    		    endTimeDate = handleRelativeTime(endTime, (startTimeDate == null) ? new Date(): startTimeDate);
     		} else {
     			try {
     			    endTimeDate = ValidityDate.parseAsUTC(endTime);
@@ -2056,6 +2046,24 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if (log.isTraceEnabled()) {
             log.trace("<doesUserFulfillEndEntityProfileWithoutPassword()");
         }
+    }
+    
+    private void checkStartEndTimeIfEqualsOrModifiable(String profileTimeString, String timeString, String type) throws EndEntityProfileValidationException {
+        if (timeString != null && !profileTimeString.equals(timeString) && !isModifyable(type,0)) {
+            throw new EndEntityProfileValidationException("Field " + type + " data didn't match requirement of end entity profile. Not modifiable");
+        }
+    }
+
+    private Date handleRelativeTime(String relativeTime, Date nowOrStartTime) throws EndEntityProfileValidationException {
+        Date timeDate = null;
+        final String[] relativeTimeArray = relativeTime.split(":");
+        if (Long.parseLong(relativeTimeArray[0]) < 0 || Long.parseLong(relativeTimeArray[1]) < 0 || Long.parseLong(relativeTimeArray[2]) < 0) {
+            throw new EndEntityProfileValidationException("Cannot use negtive relative time.");
+        }
+        final long relative = (Long.parseLong(relativeTimeArray[0]) * 24 * 60 + Long.parseLong(relativeTimeArray[1]) * 60 +
+                Long.parseLong(relativeTimeArray[2])) * 60 * 1000;
+        timeDate = new Date(nowOrStartTime.getTime() + relative);
+        return timeDate;
     }
     
     private void validateDefaultProfileData(final String username, final String dn, final String subjectAltName, final String subjectDirAttr,
