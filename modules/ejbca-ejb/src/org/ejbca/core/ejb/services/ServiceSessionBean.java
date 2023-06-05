@@ -191,6 +191,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private RevocationSessionLocal revocationSession;
 
+
+    /** Maps timer IDs to next run timestamp. Used to prevent repeated scheduling of the same timer. */
+    private Map<Integer,Long> reservedTimers = new HashMap<>();
+
     @PostConstruct
     public void ejbCreate() {
         timerService = sessionContext.getTimerService();
@@ -494,7 +498,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 // Reschedule timer
                 IWorker worker = null;
                 if (serviceInterval != IInterval.DONT_EXECUTE) {
-                    Timer nextTrigger = addTimer(serviceInterval * 1000, timerInfo);
+                    Timer nextTrigger = addTimer(serviceInterval * 1000, timerInfo, true);
                     try {
                         // Try to acquire lock / see if this node should run
                         worker = serviceSession.getWorkerIfItShouldRun(timerInfo, nextTrigger.getNextTimeout().getTime());
@@ -892,11 +896,31 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method
     // should not be run from within a transaction.
-    private Timer addTimer(long interval, Integer id) {
+    private Timer addTimer(long interval, Integer id, boolean force) {
         if (log.isDebugEnabled()) {
             log.debug("addTimer: " + id);
-        } 
-        return timerService.createSingleActionTimer(interval, new TimerConfig(id, false));
+        }
+        final boolean readyToRun = reserveTimerInterval(interval, id);
+        if (readyToRun || force) {
+            return timerService.createSingleActionTimer(interval, new TimerConfig(id, false));
+        } else {
+            return null;
+        }
+    }
+
+    private void addTimer(long interval, Integer id) {
+        addTimer(interval, id, false);
+    }
+
+    private synchronized boolean reserveTimerInterval(final long interval, final Integer timerId) {
+        final long wantedTimeout = System.currentTimeMillis() + interval;
+        final Long existingTimeout = reservedTimers.get(timerId);
+        if (existingTimeout != null && existingTimeout >= wantedTimeout) {
+            return false;
+        } else {
+            reservedTimers.put(timerId, wantedTimeout);
+            return true;
+        }
     }
 
     /**
