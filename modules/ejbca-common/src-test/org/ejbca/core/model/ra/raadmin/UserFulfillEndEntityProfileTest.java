@@ -849,11 +849,10 @@ public class UserFulfillEndEntityProfileTest {
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
     	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-    	profile.setValidityStartTimeUsed(false);
+    	profile.setValidityStartTimeUsed(true);
     	profile.setValidityEndTimeUsed(true);
     	ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);
     	ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
-    	// Custom endtime can be empty or null
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
     	        false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
