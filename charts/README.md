@@ -30,6 +30,10 @@ In our Community we welcome contributions. The Community software is open source
 ## Commercial Support
 Commercial support is available for **[EJBCA Enterprise](https://www.keyfactor.com/platform/keyfactor-ejbca-enterprise/)**.
 
+## License
+EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICENSE)**.
+
+
 ## Prerequisites
 
 - [Kubernetes](http://kubernetes.io) v1.19+
