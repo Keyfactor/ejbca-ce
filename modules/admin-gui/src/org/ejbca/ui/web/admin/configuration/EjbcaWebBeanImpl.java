@@ -1407,7 +1407,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             conn.connect();
             
             int responseCode = conn.getResponseCode();
-            log.info("cache clearance redirect attempt: " + redirectAttempt  + " at: " + redirectUri + 
+            log.info("Cache clearance redirect attempt: " + redirectAttempt  + " at: " + redirectUri + 
                                     " response: " + responseCode);
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 return true;
@@ -1416,7 +1416,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 return followHttpsRedirect(conn.getHeaderField("Location"), redirectAttempt+1, hostname);
             }
         } catch (IOException e) {
-            log.error("cache clearance redirect attempt failed with exception: " + e.getMessage());
+            log.error("Cache clearance redirect attempt failed with exception: " + e.getMessage());
         }
         
         log.info("Failed to clear caches for host: " + hostname);
