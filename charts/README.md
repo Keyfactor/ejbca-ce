@@ -16,6 +16,20 @@ There are two versions of EJBCA:
 
 OSI Certified is a certification mark of the Open Source Initiative.
 
+## Community Support
+
+In our Community we welcome contributions. The Community software is open source and community supported, there is no support SLA, but a helpful best-effort Community.
+
+* To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab.
+* If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+* Ask the community for ideas: **[EJBCA Discussions](https://github.com/Keyfactor/ejbca-ce/discussions)**.
+* Read more in our documentation: **[EJBCA Documentation](https://doc.primekey.com/ejbca)**.
+* See release information: **[EJBCA Release information](https://doc.primekey.com/ejbca/ejbca-release-information)**.
+* Read more on the open source project website: **[EJBCA website](https://www.ejbca.org/)**.
+
+## Commercial Support
+Commercial support is available for **[EJBCA Enterprise](https://www.keyfactor.com/platform/keyfactor-ejbca-enterprise/)**.
+
 ## Prerequisites
 
 - [Kubernetes](http://kubernetes.io) v1.19+
