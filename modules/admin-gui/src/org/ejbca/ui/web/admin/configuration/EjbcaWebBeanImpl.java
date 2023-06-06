@@ -20,6 +20,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -28,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +45,11 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 import javax.ejb.EJBException;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -66,7 +72,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -80,6 +85,7 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -1358,6 +1364,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 final int responseCode = con.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     return true;
+                } else if(responseCode == HttpURLConnection.HTTP_MOVED_TEMP || 
+                        responseCode == HttpURLConnection.HTTP_MOVED_PERM) { 
+                    // only happens if redirect is https
+                    // https redirects may be setup by wildfly filters or (reverse-)proxies
+                    return followHttpsRedirect(con.getHeaderField("Location"), 0, hostname);
                 }
                 log.info("Failed to clear caches for host: " + hostname + ", responseCode=" + responseCode);
             } catch (final IOException e) {
@@ -1367,6 +1378,50 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             log.info("Not clearing cache for host with empty hostname.");
         }
         return false;
+    }
+    
+    private boolean followHttpsRedirect(String redirectUri, int redirectAttempt, String hostname) {
+        
+        if(StringUtils.isBlank(redirectUri)) {
+            return false;
+        }
+        SSLContext context = null;
+        try {
+            context = SSLContext.getInstance("TLS");
+            context.init(null, new TrustManager[] { new X509TrustManagerAcceptAll() }, null);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new IllegalStateException(e);
+        }
+        
+        HttpsURLConnection conn = null;
+        try {
+            URL url = new URL(redirectUri);
+            conn = (HttpsURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setSSLSocketFactory(context.getSocketFactory());
+            conn.setHostnameVerifier(new HostnameVerifier() {
+                public boolean verify(String arg0, SSLSession arg1) {
+                    return true;
+                }
+            });
+            conn.connect();
+            
+            int responseCode = conn.getResponseCode();
+            log.info("Cache clearance redirect attempt: " + redirectAttempt  + " at: " + redirectUri + 
+                                    " response: " + responseCode);
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                return true;
+            } else if((responseCode == HttpURLConnection.HTTP_MOVED_TEMP || 
+                responseCode == HttpURLConnection.HTTP_MOVED_PERM) && redirectAttempt < 3) {
+                return followHttpsRedirect(conn.getHeaderField("Location"), redirectAttempt+1, hostname);
+            }
+        } catch (IOException e) {
+            log.error("Cache clearance redirect attempt failed with exception: " + e.getMessage());
+        }
+        
+        log.info("Failed to clear caches for host: " + hostname);
+        return false;
+        
     }
 
     /** @return true if the provided hostname matches the name reported by the system for localhost */
