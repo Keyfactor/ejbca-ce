@@ -10,30 +10,25 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ra;
+package org.ejbca.util;
 
-import javax.annotation.PostConstruct;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import java.io.Serializable;
-import java.util.Random;
+import com.keyfactor.util.CeSecoreNameStyle;
+import org.bouncycastle.asn1.x500.X500NameStyle;
 
 /**
- * Example of JSF Managed Bean for backing a page. 
- * 
- * @version $Id$
+ * The following enum singleton is to comply with the case when the {@link CeSecoreNameStyle} should be serializable.
  */
-@Named
-@ViewScoped
-public class RaExampleBean implements Serializable {
+public enum CeSecoreNameStyleEnumSingleton {
 
-    private static final long serialVersionUID = 1L;
+	CE_SECORE_NAME_STYLE(CeSecoreNameStyle.INSTANCE);
 
-    @PostConstruct
-    private void postContruct() { }
+	private final X500NameStyle style;
 
-    @Deprecated
-    public void throwException() throws Exception {
-        throw new Exception("RaErrorBean.throwException " + new Random().nextInt(100));
-    }
+	CeSecoreNameStyleEnumSingleton(X500NameStyle style) {
+		this.style = style;
+	}
+
+	public X500NameStyle getStyle() {
+		return style;
+	}
 }
