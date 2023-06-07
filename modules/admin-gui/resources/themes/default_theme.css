@@ -115,6 +115,7 @@ body#menu {
 #navigation {
 	margin: 0em;
 	padding: .75em .75em .75em 1.25em;
+	box-sizing: content-box;
 	background-color: #EEE;
 	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
 	font-size: 9pt;
@@ -124,8 +125,7 @@ body#menu {
 	-moz-border-radius: 0em 1em 1em 0em;
 	-khtml-border-radius: 0em 1em 1em 0em;
 	-webkit-border-radius: 0em 1em 1em 0em;
-	
-	width: 17em;
+	width: 18em;
 	float: left;
 }
 
@@ -1166,6 +1166,17 @@ table#config tr td:first-child {
 	vertical-align: top;
 }
 
+.protocolStatus {
+	white-space: nowrap;
+}
+
+.protocolStatus img {
+	width: 16px;
+	height: 16px;
+	border-width: 0;
+	margin: 0 0.2em 0.1em 0.2em;
+	vertical-align: middle;
+}
 
 /* --- Login page */
 .loginPage {
@@ -1184,6 +1195,11 @@ table#config tr td:first-child {
 .oauthProviderTable {
 	border-spacing: 0;
 	margin-top: 3ex;
+}
+
+/* --- Search end entity page */
+.searchEndEntityTable button {
+	margin-right: .5em;
 }
 
 /*--------------------------------------------------------------------------*/
