@@ -21,6 +21,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
+		<path refid="lib.caffeine.classpath"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
@@ -46,6 +47,7 @@
 
 	<path id="compile-test.classpath">
 		<path refid="compile-ejbca-ejb.classpath"/>
+		<path refid="lib.caffeine.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
