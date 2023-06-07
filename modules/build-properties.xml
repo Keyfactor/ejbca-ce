@@ -354,6 +354,7 @@
 	</path>
 	<path id="lib.dnsjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnsjava-*.jar"/></path>
 	<path id="lib.guava.classpath"><fileset dir="${ejbca.home}/lib" includes="guava-*.jar"/></path>
+	<path id="lib.caffeine.classpath"><fileset dir="${ejbca.home}/lib" includes="caffeine-*.jar"/></path>
 	<path id="lib.jacknji.classpath">
 		<fileset dir="${ejbca.home}/lib/"> 
 			<include name="jacknji11-*.jar"/>
