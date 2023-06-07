@@ -13,6 +13,9 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -34,10 +37,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -3285,8 +3284,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /**
      * Nested class FieldInstance for convenient invoking from xhtml
      */
-    public class FieldInstance{
-        private final String name;
+    public class FieldInstance implements Serializable {
+		private static final long serialVersionUID = -7555686304626193105L;
+
+		private final String name;
         private final int number;
         private String value;
         private String defaultValue;

@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -82,7 +83,9 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
  * UI representation of a certificate from the back end.
  *
  */
-public class RaCertificateDetails {
+public class RaCertificateDetails implements Serializable {
+
+    private static final long serialVersionUID = -909308593706119329L;
 
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();

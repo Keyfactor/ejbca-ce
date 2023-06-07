@@ -49,7 +49,9 @@ import com.keyfactor.util.CertTools;
 public class RaCasPageBean implements Serializable {
 
     /** Representation of a CA in a chain with links to CRL download locations. */
-    public class CaAndCrl {
+    public class CaAndCrl implements Serializable {
+        private static final long serialVersionUID = 3589243870801789694L;
+
         private final String name;
         private final String subjectDn;
         private final int caId;
