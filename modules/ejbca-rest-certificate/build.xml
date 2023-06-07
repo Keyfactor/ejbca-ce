@@ -22,7 +22,6 @@
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.jee.classpath"/>
         <path refid="lib.json-simple.classpath"/>
-        <path refid="lib.json-smart.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.swagger.classpath"/>
         <path refid="lib.jackson2.classpath"/>

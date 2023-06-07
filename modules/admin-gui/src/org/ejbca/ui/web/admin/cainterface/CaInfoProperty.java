@@ -14,8 +14,7 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 /**
- * 
- * @version $Id$
+ *
  *
  */
 

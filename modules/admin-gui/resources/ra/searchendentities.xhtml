@@ -40,21 +40,19 @@
 						<h:outputText value="#{web.text.FINDENDENTITYWITHUSERNAME}" />
 						<h:inputText value="#{searchEndEntitiesMBean.searchByName}"
 							immediate="true" />
-						<h:commandButton id="findWithUserNameButton"
+						<p:commandButton id="findWithUserNameButton"
 							value="#{web.text.SEARCH}"
-							action="#{searchEndEntitiesMBean.performSearchByName()}">
-							<f:ajax execute="@form" event="click" render=":results" />
-						</h:commandButton>
+							action="#{searchEndEntitiesMBean.performSearchByName()}"
+							update="results" />
 						<!-- Search by SN -->
 						<h:outputText value="#{web.text.ORIFCERTIFICATSERIAL}" />
 						<h:inputText
 							value="#{searchEndEntitiesMBean.searchBySerialNumber}"
 							immediate="true" />
-						<h:commandButton id="findWithSerialNumberButton"
+						<p:commandButton id="findWithSerialNumberButton"
 							value="#{web.text.SEARCH}"
-							action="#{searchEndEntitiesMBean.performSearchBySerialNumber()}">
-							<f:ajax execute="@form" event="click" render=":results" />
-						</h:commandButton>
+							action="#{searchEndEntitiesMBean.performSearchBySerialNumber()}"
+							update="results" />
 						<!-- Search by status -->
 						<h:outputText value="#{web.text.ORWITHSTATUS}" />
 						<h:selectOneMenu
@@ -63,11 +61,10 @@
 							<f:selectItems
 								value="#{searchEndEntitiesMBean.availableStatuses}" />
 						</h:selectOneMenu>
-						<h:commandButton id="findByStatusButton"
+						<p:commandButton id="findByStatusButton"
 							value="#{web.text.SEARCH}"
-							action="#{searchEndEntitiesMBean.performSearchByStatus()}">
-							<f:ajax execute="@form" event="click" render=":results" />
-						</h:commandButton>
+							action="#{searchEndEntitiesMBean.performSearchByStatus()}"
+							update="results" />
 						<!-- Search by expiry date  -->
 						<h:outputText value="#{web.text.ORLISTEXPIRING}" />
 						<h:panelGroup>
@@ -75,11 +72,10 @@
 								immediate="true" size="5" />
 							<h:outputText value="#{web.text.DAYS}" />
 						</h:panelGroup>
-						<h:commandButton id="findByExpiryButton"
+						<p:commandButton id="findByExpiryButton"
 							value="#{web.text.SEARCH}"
-							action="#{searchEndEntitiesMBean.performSearchByExpiry()}">
-							<f:ajax execute="@form" event="click" render=":results" />
-						</h:commandButton>
+							action="#{searchEndEntitiesMBean.performSearchByExpiry()}"
+							update="results" />
 
 					</h:panelGrid>
 				</h:form>
@@ -105,7 +101,7 @@
 								hideNoSelectionOption="#{queryLine.isCriteriaChosen()}" 
 								immediate="true"
 								disabled="#{queryLine.isNotInitialized()}">							
-								<p:ajax event="change" execute="@this" update="matchHow matchWithItems" render="matchOptionsGroup"/>
+								<p:ajax event="change" execute="@this" listener="#{queryLine.criteriaChanged}" update="matchHow matchWithItems" render="matchOptionsGroup"/>
 								<f:selectItems
 									value="#{searchEndEntitiesMBean.searchCriteria}" />							
 							</p:selectOneMenu>				
@@ -119,6 +115,7 @@
 									immediate="true">
 									<f:selectItems
 										value="#{queryLine.matchOptions}" />
+								        <p:ajax event="change" execute="@this"/>
 								</p:selectOneMenu>	
 							</h:panelGroup>	
 						</p:column>
@@ -127,13 +124,13 @@
 								<p:selectOneMenu
 									id="matchWithItems"							
 									value="#{queryLine.matchWith}"
-									editable="true"
+									editable="#{queryLine.textEditable}"
 									disabled="#{queryLine.isNotInitialized()}"
 									immediate="true"
 									alwaysDisplayLabel="true"
 									label="#{queryLine.getMatchWithLabel(queryLine.matchWith)}">
 									<f:selectItems
-										value="#{queryLine.matchWithValues}" var="line" itemLabel="#{queryLine.getMatchWithLabel(line)}"/>
+										value="#{queryLine.matchWithValuesSelectItems}"/>
 									<p:ajax event="change" execute="@this"/>
 								</p:selectOneMenu>	
 							</h:panelGroup>
@@ -160,7 +157,8 @@
 				             <p:commandButton 
 								value="#{web.text.CLEAR}"
 								action="#{searchEndEntitiesMBean.clearAfter()}"
-								update="after">
+								update="after"
+								style="margin-left:.5em;">
 							</p:commandButton>           		
 	              		</h:panelGroup>    
               		         		
@@ -179,14 +177,16 @@
 		              		<p:commandButton 
 								value="#{web.text.CLEAR}"
 								action="#{searchEndEntitiesMBean.clearBefore()}"
-								update="before">
+								update="before"
+								style="margin-left:.5em;">
 							</p:commandButton>  
 	              		</h:panelGroup>
 					</p:panelGrid>           		
               		<p:commandButton id="findAdvancedButton"
 						value="#{web.text.SEARCH}"
 						action="#{searchEndEntitiesMBean.performAdvancedSearch()}"
-						update="results">
+						update="results"
+						style="margin-top:.5em;">
 					</p:commandButton>
               		
 				</h:form>
@@ -221,7 +221,7 @@
 					<h:outputText value="#{searchResult.status}" />
 				</p:column>
 				<p:column headerText="#{web.text.ACTIONS}">
-					<p:menuButton value="#{web.text.CERTIFICATE}">
+					<p:menuButton value="#{web.text.CERTIFICATE}" style="margin-right:.5em;">
 						<p:menuitem value="#{web.text.VIEW}"
 							onclick="window.open('#{searchEndEntitiesMBean.getCertificatePopupLink(searchResult.username)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
 							icon="pi pi-external-link" />
@@ -239,7 +239,7 @@
 					</p:menuButton>
 				</p:column>
 			</p:dataTable>
-			<h:panelGrid columns="1">
+			<h:panelGrid columns="1" styleClass="searchEndEntityTable">
 				<h:panelGroup rendered="#{searchEndEntitiesMBean.mayRevoke}">
 					<h:outputText value="#{web.text.CRL_ENTRY_REVOCATIONREASON}" />
 					<h:selectOneMenu

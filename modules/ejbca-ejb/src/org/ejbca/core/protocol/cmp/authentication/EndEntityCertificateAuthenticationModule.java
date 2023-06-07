@@ -164,6 +164,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 }
                 impl = (CmpVendorMode) implClass.getDeclaredConstructor().newInstance();
                 impl.setCaSession(caSession);
+                impl.setCertificateDataSession(certSession);
                 impl.setCmpConfiguration(cmpConfiguration);
             } catch (ClassNotFoundException e) {
                 // We only end up here once, if the class does not exist, we will never end up here again
@@ -892,7 +893,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         // We "hope" that the first certificate is the end entity certificate
         Certificate endentitycert = certs.get(0);
         try {
-            return cainfo.isCertListValidAndIssuedByCA(certs);
+            return isListValidAndIssuedByCA(certs, cainfo);
         } catch (CertPathValidatorException e) {
             this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid - " + getCertPathValidatorExceptionMessage(e);
             if(log.isDebugEnabled()) {
@@ -915,7 +916,28 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         return false;
     }
-    
+
+    private boolean isListValidAndIssuedByCA(List<X509Certificate> certs, X509CAInfo cainfo) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertPathBuilderException, CertPathValidatorException {
+        try {
+            return X509CAInfo.isCertListValidAndIssuedByCA(certs, cainfo.getCertificateChain());
+        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException | CertPathBuilderException | CertPathValidatorException e) {
+            List<Certificate> certificateList = certSession.findCertificatesBySubject(cainfo.getSubjectDN());
+            if (certificateList.size() > 1) {
+                for (final Certificate certificate : certificateList) {
+                    List<Certificate> certificateChain = new ArrayList<>();
+                    certificateChain.add(certificate);
+                    try {
+                        if (X509CAInfo.isCertListValidAndIssuedByCA(certs, certificateChain)) {
+                            return true;
+                        }
+                    } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException | CertPathBuilderException | CertPathValidatorException ex) {
+                    }
+                }
+            }
+            throw e;
+        }
+    }
+
     /**
      * Returns the message from a CertPathValidatorException. For the common cases, this method is locale independent.
      */

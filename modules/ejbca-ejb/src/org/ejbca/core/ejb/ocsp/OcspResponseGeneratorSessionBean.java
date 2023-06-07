@@ -1403,8 +1403,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 CertificateID certId = ocspRequest.getCertID();
                 ASN1ObjectIdentifier certIdhash = certId.getHashAlgOID();
                 
-                if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash)) {
-                    throw new InvalidAlgorithmException("CertID with SHA1 and SHA256 are supported, not: "+certIdhash.getId());
+                if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash) 
+                        && !NISTObjectIdentifiers.id_sha384.equals(certIdhash) && !NISTObjectIdentifiers.id_sha512.equals(certIdhash)) {
+                    throw new InvalidAlgorithmException("CertID with SHA1, SHA256, SHA384 and SHA512 are supported, not: "+certIdhash.getId());
                 }
                 if (!isPreSigning && transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
@@ -1625,18 +1626,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             certificateStoreSession.getCertificateDataBySerno(certId.getSerialNumber());
                     
                     for(CertificateDataWrapper certificateWrapper: certificateWrappers) {
-                        if(certificateWrapper.getCertificateData()==null || certificateWrapper.getCertificate()==null) {
-                            continue;
-                        }
+
                         if(certificateWrapper.getCertificateData().getIssuerDN().equals(caCertificateSubjectDn)) {
                             break;
                         } else {
-                            Certificate fetchedCertificate = certificateWrapper.getCertificate();
-                            if(!(fetchedCertificate instanceof X509Certificate)) {
-                                continue;
-                            }
                             CertificateID issuerCertId = ocspSigningCacheEntry.getSignBehalfOfCaCertId(
-                                                            (X509Certificate) fetchedCertificate);
+                                                        certificateWrapper.getCertificateData().getIssuerDN());
     
                             if(issuerCertId!=null) {
                                 shouldSignOnBehalfCaCert = ocspSigningCacheEntry.getSignBehalfOfCaCertificate(issuerCertId);
@@ -2300,8 +2295,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress, ocspConfiguration);
         CertificateID certId;
         try {
-            if (isSHA1(certIDHashAlgorithm)) {
+            if (isHashAlg(certIDHashAlgorithm, HashAlgorithm.sha1)) {
                 certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, serialNr);
+            } else if (isHashAlg(certIDHashAlgorithm, HashAlgorithm.sha384)) {
+                certId = new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha384)), cacert, serialNr);
+            } else if (isHashAlg(certIDHashAlgorithm, HashAlgorithm.sha512)) {
+                certId = new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha512)), cacert, serialNr);
             } else {
                 certId = new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), cacert, serialNr);
             }
@@ -2319,8 +2318,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         
     }
 
-    private boolean isSHA1(String algorithmName) {
-        return algorithmName.equalsIgnoreCase(HashAlgorithm.getName(HashAlgorithm.sha1));
+    private boolean isHashAlg(String algorithmName, short askedHashAlg) {
+        return algorithmName.equalsIgnoreCase(HashAlgorithm.getName(askedHashAlg));
     }
     
     private BasicOCSPResp signOcspResponse(OCSPReq req, List<OCSPResponseItem> responseList, Extensions exts, 

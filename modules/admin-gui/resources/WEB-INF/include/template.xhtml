@@ -41,7 +41,7 @@
         <title dir="ltr"><h:outputText value="#{web.ejbcaTitle}"/></title>
         <link rel="stylesheet" type="text/css" href="#{web.ejbcaWebBean.baseUrl}#{web.ejbcaWebBean.cssFile}"/>
         <script type="text/javascript" src="#{adminMenuBean.adminWebUrl}ejbcajslib.js"></script>
-        <link rel="shortcut icon" type="image/png" href="#{adminMenuBean.adminWebUrl}images/favicon.png"/>
+        <link rel="shortcut icon" type="image/png" href="#{adminMenuBean.adminWebUrl}#{adminMenuBean.faviconUrl}"/>
        
         <h:outputStylesheet name="primeicons/primeicons.css" library="primefaces" />
     </h:head>
@@ -176,7 +176,7 @@
           <h:outputLink id="raEdituserdatasources" value="#{adminMenuBean.adminWebUrl}ra/edituserdatasources/userdatasourcespage.xhtml" rendered="#{adminMenuBean.authorizedToEditUserDataSources}"><h:outputText value="#{web.text.NAV_USERDATASOURCES}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>
-      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSystemFunctionsHeader}">
+      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewVAHeader}">
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_VAFUNCTIONS}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
           <h:outputLink id="vaOcspResonders" value="#{adminMenuBean.adminWebUrl}keybind/ocspresponders.xhtml" rendered="#{adminMenuBean.authorizedViewInternalKeyBindings}"><h:outputText value="#{web.text.NAV_OCSPRESPONDERS}"/></h:outputLink>
@@ -218,7 +218,6 @@
         <h:panelGroup layout="block" styleClass="misc-section-content">
           <h:outputLink value="#{adminMenuBean.adminWebUrl}mypreferences.xhtml"><h:outputText value="#{web.text.NAV_MYPREFERENCES}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb" rel="noopener noreferer" rendered="#{adminMenuBean.authorizedToViewRaWeb}"><h:outputText value="#{web.text.RAWEB}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}" rendered="#{adminMenuBean.authorizedToViewPublicWeb and !adminMenuBean.publicWebHidden}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getHelpBaseURI() }/index.html" target="_ejbcaDocWindow" rel="noopener noreferer" rendered="#{adminMenuBean.helpEnabled}"><h:outputText value="#{web.text.DOCUMENTATION}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top" rendered="#{adminMenuBean.logoutAvailable}"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
         </h:panelGroup>

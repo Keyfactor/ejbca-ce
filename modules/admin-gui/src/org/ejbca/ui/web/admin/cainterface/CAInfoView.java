@@ -203,11 +203,11 @@ public class CAInfoView implements Serializable, Cloneable {
         caGuiInfo = new CaGuiInfo();
 
         final String subjectDnText = ejbcawebbean.getText("CERT_SUBJECTDN");
-        final String subjectDn = HTMLTools.htmlescape(cainfo.getSubjectDN());
+        final String subjectDn = cainfo.getSubjectDN();
         caGuiInfo.setSubjectDn(new CaInfoProperty(subjectDnText, subjectDn));
 
         final String caNameText = ejbcawebbean.getText("CANAME");
-        final String caName = HTMLTools.htmlescape(cainfo.getName());
+        final String caName = cainfo.getName();
         caGuiInfo.setCaName(new CaInfoProperty(caNameText, caName));
 
         final String caTypeText = ejbcawebbean.getText("CATYPE");
@@ -241,7 +241,7 @@ public class CAInfoView implements Serializable, Cloneable {
         caGuiInfo.setStatus(new CaInfoProperty(statusText, caTokenStatus));
 
         final String descriptionText = ejbcawebbean.getText("DESCRIPTION");
-        final String description = HTMLTools.htmlescape(cainfo.getDescription());
+        final String description =cainfo.getDescription();
         caGuiInfo.setDescription(new CaInfoProperty(descriptionText, description));
 
         final String crlPeriodText = ejbcawebbean.getText("CRL_CA_CRLPERIOD");
@@ -268,7 +268,7 @@ public class CAInfoView implements Serializable, Cloneable {
     private void addX509CAInformation(final CAInfo cainfo, final EjbcaWebBean ejbcawebbean,
             final Map<Integer, String> publishersidtonamemap, final Map<Integer, String> keyValidatorsIdToNameMap) {
         final String alternativeNameText = ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME");
-        final String alternativeName = HTMLTools.htmlescape(((X509CAInfo) cainfo).getSubjectAltName());
+        final String alternativeName = ((X509CAInfo) cainfo).getSubjectAltName();
         caGuiInfo.setAlternativeName(new CaInfoProperty(alternativeNameText, alternativeName));
 
         final String publishersText = ejbcawebbean.getText("PUBLISHERS");

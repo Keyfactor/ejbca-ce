@@ -23,7 +23,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -122,6 +121,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     private CertificateProfile certificateProfile;
     private String requestUsername;
     private String selectedAlgorithm;
+    private String selectedAlgorithmUiRepresentation;
     private String certificateRequest;
     private int requestStatus;
     private EndEntityInformation endEntityInformation;
@@ -315,6 +315,10 @@ public class EnrollWithRequestIdBean implements Serializable {
             getEndEntityInformation().getExtendedInformation().setCertificateRequest(binaryReqBytes);
         }
         generateCertificateAfterCheck();
+        removePublicRoleIfNeeded();
+    }
+
+    private void removePublicRoleIfNeeded() {
         if (generatedToken != null && isDeletePublicAccessRoleRendered() && isDeletePublicAccessRole()) {
             try {
                 final AlwaysAllowLocalAuthenticationToken adminToken = new AlwaysAllowLocalAuthenticationToken("DeleteRoleAfterSuperadminEnrollment");
@@ -483,6 +487,8 @@ public class EnrollWithRequestIdBean implements Serializable {
             raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
             log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
         }
+        
+        removePublicRoleIfNeeded();
     }
 
     public boolean isRenderGenerateCertificate(){
@@ -651,12 +657,17 @@ public class EnrollWithRequestIdBean implements Serializable {
                 final String keySpecification = AlgorithmTools.getKeySpecification(certRequest.getRequestPublicKey());
                 final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certRequest.getRequestPublicKey());
                 selectedAlgorithm = keyAlgorithm + " " + keySpecification; // Save for later use
+                setAlgorithmUiRepresentationString(keyAlgorithm, keySpecification);
             } catch (InvalidKeyException | NoSuchAlgorithmException e) {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
             } catch (NoSuchProviderException e) {
                 throw new IllegalStateException(e);
             }
         }
+    }
+    
+    protected void setAlgorithmUiRepresentationString(String alg, String spec ) {
+        selectedAlgorithmUiRepresentation = alg.equals(spec)? alg : alg + " " + spec;
     }
 
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
@@ -842,6 +853,10 @@ public class EnrollWithRequestIdBean implements Serializable {
     /** @return key algorithm and size to be used for keystore / certificate enrollment. Format: 'algorithm keysize' */
     public String getSelectedAlgorithm() {
         return selectedAlgorithm;
+    }
+    
+    public String getSelectedAlgorithmUiRepresentation() {
+        return selectedAlgorithmUiRepresentation;
     }
 
     /** @param selectedAlgorithm sets the algorithm and key size to be used for keystore / certificate enrollment. Format: 'algorithm keysize'*/

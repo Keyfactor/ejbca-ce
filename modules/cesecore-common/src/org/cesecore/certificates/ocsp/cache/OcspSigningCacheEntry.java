@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.cache;
 
-import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -62,17 +61,19 @@ public class OcspSigningCacheEntry {
     private final X509Certificate[] responseCertChain;
     private final boolean signingCertificateForOcspSigning;
     
-    // we flatten the CertificateIds SHA1 and SHA256 for simpler lookup
+    // we flatten the CertificateIds SHA(1/256/384/512) for simpler lookup
+    // references to each CA X509Certificate is stored for each hash mechanism
+    // CertificateID is used to maintain similar convention to top level OCSP signing cache
     private Set<CertificateID> signedBehalfOfCaIds;
     private Map<CertificateID, X509Certificate> signedBehalfOfCaCerticates;
     private Map<CertificateID, CertificateStatus> signedBehalfOfCaStatus;
     
     /*
-     * reverse look up table for faster operation, expected OCSP request frequency is lot higher than cache reloads
-     * we need 2 maps for SHA1 and SHA256, see OcspSigningCache.getCertificateIDFromCertificate for reference
+     * reverse look up table for faster operation,
+     * there are multiple CertificateID for each issuer based on each hashing mechanism
+     * but we need this only for internal resolution, so any CertificateID is good
      */
-    private Map<Principal, CertificateID> issuerNameToCertIdMap1;
-    private Map<Principal, CertificateID> issuerNameToCertIdMap2;
+    private Map<String, CertificateID> issuerNameToCertIdMap;
 
     public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, CertificateStatus issuerCaCertificateStatus,
             List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
@@ -139,8 +140,7 @@ public class OcspSigningCacheEntry {
         signedBehalfOfCaCerticates = new HashMap<>();
         signedBehalfOfCaStatus = new HashMap<>();
         
-        issuerNameToCertIdMap1 = new HashMap<>();
-        issuerNameToCertIdMap2 = new HashMap<>();
+        issuerNameToCertIdMap = new HashMap<>();
     }
 
     /** @return certificate of the CA that we want to respond for */
@@ -266,35 +266,18 @@ public class OcspSigningCacheEntry {
     }
     
     public void refreshInternalMappings() {
-        issuerNameToCertIdMap1.clear();
-        issuerNameToCertIdMap2.clear();
-        Principal issuerDn;
+        issuerNameToCertIdMap.clear();
         for(Entry<CertificateID, X509Certificate> entry: signedBehalfOfCaCerticates.entrySet()) {
-            issuerDn = entry.getValue().getIssuerDN();
-            if(issuerNameToCertIdMap1.containsKey(issuerDn)) {
-                issuerNameToCertIdMap1.put(issuerDn, entry.getKey());
-            } else {
-                issuerNameToCertIdMap2.put(issuerDn, entry.getKey());
-            }
+            issuerNameToCertIdMap.put(CertTools.getSubjectDN(entry.getValue()), entry.getKey());
         }
-    }
-    
-    public boolean shouldSignBehalfOf(CertificateID certId) {
-        return this.signedBehalfOfCaIds.contains(certId);
     }
     
     public X509Certificate getSignBehalfOfCaCertificate(CertificateID certId) {
         return this.signedBehalfOfCaCerticates.get(certId); 
     }
     
-    public CertificateID getSignBehalfOfCaCertId(X509Certificate issuedCertificate) {
-        Principal issuer = issuedCertificate.getIssuerDN();
-        CertificateID certId = this.issuerNameToCertIdMap1.get(issuer);
-        if(certId!=null) {
-            return certId;
-        } else {
-            return this.issuerNameToCertIdMap2.get(issuer);
-        }
+    public CertificateID getSignBehalfOfCaCertId(String issuerDN) {
+        return this.issuerNameToCertIdMap.get(issuerDN);
     }
 
     public Map<CertificateID, CertificateStatus> getSignedBehalfOfCaStatus() {

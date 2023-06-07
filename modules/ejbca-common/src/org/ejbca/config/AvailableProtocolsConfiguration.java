@@ -47,7 +47,6 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         EST("EST", "/.well-known/est"),
         MSAE("MSAE", "/ejbca/msae"),
         OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
-        PUBLIC_WEB("Public Web", "/ejbca"),
         SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
         RA_WEB("RA Web", "/ejbca/ra"),
         REST_CA_MANAGEMENT("REST CA Management", "/ejbca/ejbca-rest-api/v1/ca_management"),

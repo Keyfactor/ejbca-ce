@@ -39,8 +39,6 @@ import com.keyfactor.util.CertTools;
 
 /**
  * Hold information needed to create OCSP responses without database lookups.
- * 
- * @version $Id$
  */
 public enum OcspSigningCache {
     INSTANCE;
@@ -52,7 +50,7 @@ public enum OcspSigningCache {
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
     /** Flag to detect and log non-existence of a default responder once. */
     private boolean logDefaultHasRunOnce = false;
-
+ 
     public OcspSigningCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
     }
@@ -214,6 +212,14 @@ public enum OcspSigningCache {
                 if (!cache.containsKey(cacheId)) {
                     cache.put(cacheId, ocspSigningCacheEntry);
                 }
+                for (CertificateID certIDOnBehalf : ocspSigningCacheEntry.getSignedBehalfOfCaIds()) {
+                    // override cache only if no OCSP key binding present or the entry is a placeholder
+                    int cacheIdOnBehalf = getCacheIdFromCertificateID(certIDOnBehalf);
+                    if(!cache.containsKey(cacheIdOnBehalf) || cache.get(cacheIdOnBehalf).isPlaceholder() 
+                                    || cache.get(cacheIdOnBehalf).getOcspKeyBinding()==null ) {
+                        cache.put(cacheIdOnBehalf, ocspSigningCacheEntry);
+                    }      
+                }
             } finally {
                 lock.unlock();
             }
@@ -249,6 +255,8 @@ public enum OcspSigningCache {
             List<CertificateID> ret = new ArrayList<>();
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha384)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha512)), certificate, certificate.getSerialNumber()));
             return ret;
         } catch (OCSPException | CertificateEncodingException | OperatorCreationException e) {
             throw new OcspFailureException(e);

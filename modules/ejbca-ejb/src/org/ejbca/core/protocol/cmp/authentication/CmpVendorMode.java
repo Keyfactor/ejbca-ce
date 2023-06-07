@@ -21,6 +21,7 @@ import java.util.List;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.ejbca.config.CmpConfiguration;
 
 /**
@@ -28,6 +29,7 @@ import org.ejbca.config.CmpConfiguration;
  */
 public interface CmpVendorMode {
 
+    void setCertificateDataSession(CertificateStoreSession certificateDataSession);
 
     void setCaSession(final CaSession caSession);
 

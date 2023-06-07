@@ -180,11 +180,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
 
     protected void initAuthorizationModule(AuthenticationToken authenticationToken, int caid, String superAdminCN)
             throws AuthorizationDeniedException {
-        if (superAdminCN == null) {
-            log.info("Not initializing authorization module.");
-        } else {
-            log.info("Initalizing authorization module with caid=" + caid + " and superadmin CN '" + superAdminCN + "'.");
-        }
+        log.info("Initalizing authorization module with caid=" + caid + " and superadmin CN '" + superAdminCN + "'.");
         EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSystemSessionRemote.class).initializeAuthorizationModuleWithSuperAdmin(authenticationToken, caid,
                 superAdminCN);
     }
