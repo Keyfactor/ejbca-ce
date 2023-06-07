@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -58,7 +59,9 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
  *
  * For printing user data fields.
  */
-public class RaEndEntityDetails {
+public class RaEndEntityDetails implements Serializable {
+
+    private static final long serialVersionUID = -7607596829535211817L;
 
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
