@@ -58,13 +58,16 @@ public class RaCasPageBean implements Serializable {
         private final int position;
         private final List<String> chainNames;
         private boolean x509 = false;
+        private final boolean sshType;
 
-        CaAndCrl(final String name, final String subjectDn, final int caId, final int position, final List<String> chainNames) {
+        CaAndCrl(final String name, final String subjectDn, final int caId, final int position, final List<String> chainNames,
+                final boolean sshType) {
             this.name = name;
             this.subjectDn = subjectDn;
             this.caId = caId;
             this.position = position;
             this.chainNames = chainNames;
+            this.sshType = sshType;
             crlLinks = new ArrayList<>();
         }
 
@@ -75,6 +78,7 @@ public class RaCasPageBean implements Serializable {
         public String getDeltaCrlLink() { return deltaCrlLink; }
         public int getPosition() { return position; }
         public boolean isX509() { return x509; }
+        public boolean isSsh() { return sshType; }
         public boolean isPartitionedCrl() { 
             return crlLinks.size() > 1;
         }
@@ -91,6 +95,10 @@ public class RaCasPageBean implements Serializable {
             } else {
                 return subjectDn;
             }
+        }
+
+        public final String getSshPublicKeyDownloadLink() {
+            return "/ejbca/ssh?name=" + name;
         }
     }
 
@@ -150,6 +158,7 @@ public class RaCasPageBean implements Serializable {
                 Collections.reverse(chain);
                 final List<String> chainNames = new ArrayList<>();
                 final int caId = caInfo.getCAId();
+                final boolean sshType = caInfo.getCAType() == CAInfo.CATYPE_SSH ? true : false;
                 for (final Certificate caCertificate : chain) {
                     final String subjectDn = CertTools.getSubjectDN(caCertificate);
                     String name = caSubjectToNameMap.get(subjectDn);
@@ -157,7 +166,8 @@ public class RaCasPageBean implements Serializable {
                         name = subjectDn;
                     }
                     chainNames.add(name);
-                    final CaAndCrl caAndCrl = new CaAndCrl(name, subjectDn, chainNames.size()==chain.size()?caId:NO_CAID_AVAILABLE, chainNames.size()-1, new ArrayList<>(chainNames));
+                    final CaAndCrl caAndCrl = new CaAndCrl(name, subjectDn, chainNames.size()==chain.size()?caId:NO_CAID_AVAILABLE,
+                            chainNames.size()-1, new ArrayList<>(chainNames), sshType);
                     // Construct links to RFC4387 CRL Download Servlet
                     if (caCertificate instanceof X509Certificate) {
                         caAndCrl.x509 = true;

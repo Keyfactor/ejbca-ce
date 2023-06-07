@@ -140,7 +140,7 @@
                     <br/>
                     <h:panelGroup styleClass="help">
                         <h:outputText
-                            value="For NTRU 'bit length' means the security strength" />
+                            value="#{web.text.PQCMEANSSECURITYSTRENGTH}" />
                     </h:panelGroup>
                 </h:panelGroup>
                 <h:selectManyListbox id="selectavailablebitlengths" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
@@ -858,6 +858,14 @@
                             disabled="#{!certProfileBean.certificateProfile.useKeyUsage or certProfileBean.viewOnly}" />
                         <h:outputLabel for="cbkeyusagecritical"
                             value="#{web.text.EXT_CRITICAL}" />
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:selectBooleanCheckbox
+                                id="keyUsageForbidEncryptionUsage"
+                                value="#{certProfileBean.keyUsageForbidEncryptionUsageForECC}"
+                                disabled="#{certProfileBean.viewOnly}" />
+                        <h:outputLabel for="keyUsageForbidEncryptionUsage"
+                                       value="#{web.text.KU_FORBID_ENCRYPTION_USAGE}" />
                     </h:panelGroup>
                     <h:outputLabel for="keyUsageSelection"
                         value="#{web.text.EXT_PKIX_KEYUSAGE}:"

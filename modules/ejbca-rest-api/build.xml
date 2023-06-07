@@ -25,7 +25,6 @@
         <path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
-        <path refid="lib.json-smart.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.swagger.classpath"/>
 		<path refid="lib.jackson2.classpath"/>
@@ -53,7 +52,7 @@
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path location="${ejbca-rest-api.build.dir}/WEB-INF/classes"/>
-		<path location="${mod.p11ng.lib}" />
+		<path refid="lib.p11ng.classpath" />
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-interfaces.jar"/>
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-common.jar"/>
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-ejb.jar"/>
