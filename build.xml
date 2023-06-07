@@ -404,13 +404,6 @@
 			replacement-web-uri="doc.war"
 			replacement-context-root="/ejbca/doc"
 		/>
-		<war-replacement-in-module
-			replacement-tag="!--@renew.war@-->"
-			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${web.renewalenabled}"
-			replacement-web-uri="renew.war"
-			replacement-context-root="/ejbca/renew"
-		/>
 		<jar-replacement-in-module
 			replacement-tag="!--@ejbca-ws-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
@@ -577,7 +570,6 @@
             	<include name="adsddl-*.jar"/>
                 <include name="commons-*.jar" />
 				<include name="nimbus-jose-jwt-*.jar"/>
-				<include name="json-smart-*.jar"/>
 				<include name="httpclient-*.jar" />
                 <include name="httpcore-*.jar" />
                 <include name="httpmime-*.jar" />
@@ -593,6 +585,7 @@
 				<include name="kerby-asn1-*.jar"/>
             	<include name="kerb-crypto-*.jar"/>
         		<include name="x509-common-util*.jar" />
+        		<include name="p11ng-*.jar" />
             	<!-- Internally generated WS server and client files. -->
             	<include name="ejbca-ws-client-gen.jar"/>
             </zipfileset>
@@ -611,17 +604,6 @@
 				<include name="jackson-databind-2.*.jar"/>
 				<include name="jackson-dataformat-yaml-2.*.jar"/>
 			</zipfileset>
-        	<zipfileset prefix="lib" dir="${lib}/intune" erroronmissingdir="false">    
-        		<include name="accessors-smart-*.jar"/>
-        		<include name="adal4j-*.jar"/>
-        		<include name="asm-*.jar"/>
-  				<include name="content-type-*.jar"/>
-				<include name="csr-validation-*.jar"/>
-        		<include name="gson-*.jar"/>
-				<include name="json-*.jar"/>
-				<include name="lang-tag-*.jar"/>
-  				<include name="oauth2-oidc-sdk-*.jar"/>
-        	</zipfileset>
         	
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
@@ -631,7 +613,6 @@
                 <include name="ejbca-ws-ejb.jar" />
                 <include name="adminweb.war" />
                 <include name="cmp.war" />
-                <include name="publicweb.war" />
                 <include name="scep.war" />
                 <include name="est.war" />
                 <include name="healthcheck.war" />
@@ -640,7 +621,6 @@
                 <include name="status.war" />
                 <include name="certstore.war" />
                 <include name="crlstore.war" />
-                <include name="renew.war" />
 				<include name="${in-test-mode-include}systemtests-ejb.jar"/>
             	<include name="statedump-ejb.jar" />
             	<include name="configdump-ejb.jar" />
@@ -696,13 +676,12 @@
         		<include name="ejbca-ssh.jar" />
         		<include name="ejbca-cits.jar" />
         		<include name="proxy-ca.jar" />
-        		<include name="p11ng.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
                 <include name="*.jar"/>
             </zipfileset>
-        	<!-- Include JackNji11 for use from P11NG (cesecore-common) -->
+        	<!-- Include JackNji11 for use from P11NG -->
         	<zipfileset prefix="lib" dir="${lib}" includes="jacknji11-*.jar"/>
         	<zipfileset prefix="lib" dir="${mod.dist.path}">
         		<!-- ejbca-ws-client is needed for automatic OCSP Renewal via WS
@@ -788,7 +767,6 @@
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-interface"/>
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-publ"/>
         	<sourcepath location="${ejbca.home}/modules/peerconnector/src-rar"/>
-        	<sourcepath location="${ejbca.home}/modules/p11ng/src"/>
         	<sourcepath location="${ejbca.home}/modules/acme/src-common"/>
         	<sourcepath location="${ejbca.home}/modules/cits/src"/>
 		<sourcepath location="${ejbca.home}/modules/peerconnector/src-war"/>
@@ -1069,7 +1047,6 @@
 		    	
 				<!-- List of subcommands for ejbca.sh script that must be hidden when we are running on limited ejbca (va/ra) installation. -->
 		    	<!-- The excluded parts are listed in the ticket ECA-7904 and could be updated accordingly if needed.   -->
-	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/config/**/*.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaEditCaCommand.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaRenewCACommand.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaDeactivateCACommand.java" unless="running.full.ejbca"/>
@@ -1427,11 +1404,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ejbca-ejb-cli" />
     </target>
 	
-	<target name="p11ng">
-       	<ant dir="modules" target="p11ng" />
-    </target>
-
-	
     <target name="peerconnector-cli:fail" unless="mod.peerconnector.exists">
         <fail>EJBCA DB CLI does not exist in EJBCA Community. Please contact a sales representative at PrimeKey Solutions for information about how to get an Enterprise License.</fail>
     </target>
@@ -1446,11 +1418,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 	
     <target name="raweb.war" if="${variant.ra.enabled}">
     	<ant dir="modules" target="ra-gui" />
-    </target>
-
-
-    <target name="publicweb.war">
-    	<ant dir="modules" target="publicweb-gui" />
     </target>
 
     <target name="cmp.war">
@@ -1471,11 +1438,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		
     <target name="clearcache.war">
     	<ant dir="modules" target="clearcache-ejbca-war" />
-    </target>
-		
-    <target name="renew.war" if="renew.war.enabled">
-    	<ant dir="modules" target="renew-war" />
-    </target>   
+    </target>  
 
     <target name="scep.war">
     	<ant dir="modules" target="scep-war" />
