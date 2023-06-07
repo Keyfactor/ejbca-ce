@@ -176,8 +176,12 @@ public class CertificateRestResource extends BaseRestResource {
         } catch (CertificateCreateException e) {
             if (ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR.equals(e.getErrorCode())) {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
+            } else if (ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode()) ||
+                    ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode()) ||
+                    ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS.equals(e.getErrorCode())) {
+                throw new RestException(Status.CONFLICT.getStatusCode(), "Failed to generate certificate due to the new certificate conflicting with an existing one.");
             } else {
-                throw new RestException(Status.CONFLICT.getStatusCode(), "Failed to generate certificate due to the new certificate potentially conflicting with an existing one.");   
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Certificate could not be generated.");
             }
         }
     }
