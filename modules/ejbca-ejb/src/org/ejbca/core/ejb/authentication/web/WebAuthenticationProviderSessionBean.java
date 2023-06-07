@@ -12,29 +12,21 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
-import java.io.IOException;
-
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
-import org.cesecore.keybind.KeyBindingFinder;
-import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
-import java.security.Key;
-import java.security.cert.X509Certificate;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jwt.EncryptedJWT;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.PlainJWT;
+import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,27 +51,37 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConstants;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
-import com.nimbusds.jwt.EncryptedJWT;
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
-import com.nimbusds.jwt.PlainJWT;
-import com.nimbusds.jwt.SignedJWT;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.Key;
+import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -107,6 +109,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @EJB
     private CryptoTokenManagementSessionLocal cryptoToken;
 
+    private LoadingCache<CertificateStatusCacheKey, Integer> cache;
+
     private boolean allowBlankAudience = false;
 
     public WebAuthenticationProviderSessionBean() { }
@@ -130,6 +134,12 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         GlobalUpgradeConfiguration upgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.8.0");
+        cache = Caffeine.newBuilder()
+                .maximumSize(10_000)
+                .refreshAfterWrite(12, TimeUnit.SECONDS)
+                .expireAfterAccess(60, TimeUnit.SECONDS)
+                .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(
+                        key.getSubjectDn(), key.getSerialNumber()));
         if (isAllowBlankAudience()) {
             LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
@@ -377,35 +387,39 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 LOG.debug("certificateArray contains "+certs.size()+" certificates, instead of 1 that is required.");
             }
             return null;
-        } else {
-            final X509Certificate certificate = certs.iterator().next();
-            // Check Validity
-            try {
-                certificate.checkValidity();
-            } catch (Exception e) {
-                logAuthenticationFailure(intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString()));
-            	return null;
-            }
-            // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
-            // Database integrity protection verification not performed running this query
-            final int status = certificateStoreSession.getFirstStatusByIssuerAndSerno(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
-            if (status != -1) {
-                // The certificate is present in the database.
-                if (!(status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
-                    // The certificate is neither active, nor active (but user is notified of coming revocation)
-                    logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
-                    return null;
-                }
-            } else {
-                // The certificate is not present in the database.
-                if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                    logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
-                    return null;
-                }
-                // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
-            }
-            return new X509CertificateAuthenticationToken(certificate);
         }
+        final X509Certificate certificate = certs.iterator().next();
+        // Check Validity
+        try {
+            certificate.checkValidity();
+        } catch (Exception e) {
+            logAuthenticationFailure(intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString()));
+            return null;
+        }
+        // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
+        // Database integrity protection verification not performed running this query
+        final int status = getCachedStatus(certificate);
+        if (status != -1) {
+            // The certificate is present in the database.
+            if (!(status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
+                // The certificate is neither active, nor active (but user is notified of coming revocation)
+                logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
+                return null;
+            }
+        } else {
+            // The certificate is not present in the database.
+            if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+                logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
+                return null;
+            }
+            // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
+        }
+        return new X509CertificateAuthenticationToken(certificate);
+    }
+
+    private int getCachedStatus(X509Certificate certificate) {
+        return cache.get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
+                CertTools.getSerialNumber(certificate)));
     }
 
     private void logAuthenticationFailure(final String msg) {
@@ -426,5 +440,41 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     public boolean isAllowBlankAudience() {
         return allowBlankAudience;
+    }
+
+    private static class CertificateStatusCacheKey {
+
+        private final String subjectDn;
+        private final BigInteger serialNumber;
+
+        public CertificateStatusCacheKey(String subjectDn, BigInteger serialNumber) {
+            this.subjectDn = subjectDn;
+            this.serialNumber = serialNumber;
+        }
+
+        public String getSubjectDn() {
+            return subjectDn;
+        }
+
+        public BigInteger getSerialNumber() {
+            return serialNumber;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            CertificateStatusCacheKey that = (CertificateStatusCacheKey) obj;
+            return Objects.equals(subjectDn, that.subjectDn) && Objects.equals(serialNumber, that.serialNumber);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(subjectDn, serialNumber);
+        }
     }
 }
