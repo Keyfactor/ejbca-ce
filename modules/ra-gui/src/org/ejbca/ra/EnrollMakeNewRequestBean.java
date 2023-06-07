@@ -189,10 +189,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private byte[] sshPublicKey;
     private String sshPublicKeyString;
     private String sshPubKeyFileName;
-    List<EndEntityProfile.FieldInstance> sshPrincipals;
+    private List<EndEntityProfile.FieldInstance> sshPrincipals;
     private String criticalOptionsForceCommand;
     private String criticalOptionsSourceAddress;
-    private Optional<Boolean> criticalOptionsVerifyRequired = Optional.empty();
+    private transient Optional<Boolean> criticalOptionsVerifyRequired = Optional.empty();
     private String sshAdditionalExtensions;
     private String sshPubKeyDescription;
     private boolean useClearPassword;

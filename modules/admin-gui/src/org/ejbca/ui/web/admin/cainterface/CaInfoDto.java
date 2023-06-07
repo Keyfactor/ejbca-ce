@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cainterface;
 
+import com.keyfactor.util.StringTools;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
@@ -20,8 +21,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.util.SimpleTime;
 
-import com.keyfactor.util.StringTools;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +30,10 @@ import java.util.stream.Collectors;
 /**
  * Wrapper class for holding CaInfo properties.
  */
-public class CaInfoDto {
-    
+public class CaInfoDto implements Serializable {
+
+    private static final long serialVersionUID = 8205287605160605300L;
+
     private String caName;
     private String signatureAlgorithmParam = StringUtils.EMPTY;
     private int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
