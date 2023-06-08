@@ -1485,7 +1485,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             assertEquals(PKIBody.TYPE_ERROR, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
-            String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: cmptestuser26.";
+            String expectedErrMsg = "Got request with status GENERATED (40). Status NEW, FAILED or INPROCESS required: cmptestuser26.";
             assertEquals(expectedErrMsg, errMsg);
             // Step 4 now set status to NEW, and a clear text password, then it should finally work
             createUser(testUsername, testUserDN.toString(), "randompasswordhere", true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,

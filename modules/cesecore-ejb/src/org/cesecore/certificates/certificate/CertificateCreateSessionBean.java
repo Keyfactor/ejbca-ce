@@ -724,7 +724,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             log.error("Error creating certificate", e);
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
-        } catch (OperatorCreationException | IOException | SignatureException | CertificateExtensionException e) {
+        } catch (CertificateExtensionException e) {
+            log.error("Error creating certificate", e);
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            // Rollback
+            throw new CertificateCreateException(ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR, e);
+        } catch (OperatorCreationException | IOException | SignatureException e) {
             log.error("Error creating certificate", e);
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             // Rollback
