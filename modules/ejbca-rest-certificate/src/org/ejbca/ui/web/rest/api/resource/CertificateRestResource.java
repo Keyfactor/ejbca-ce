@@ -50,6 +50,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
@@ -93,6 +94,7 @@ import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
 import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
@@ -165,9 +167,22 @@ public class CertificateRestResource extends BaseRestResource {
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException |
-                 CertificateExtensionException | CertificateException | EjbcaException |
-                 ParseException e) {
+                 CertificateException | EjbcaException | ParseException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
+        } catch (CertificateExtensionException e) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
+        } catch (IOException e) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to malformed CSR.");
+        } catch (CertificateCreateException e) {
+            if (ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR.equals(e.getErrorCode())) {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
+            } else if (ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode()) ||
+                    ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode()) ||
+                    ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS.equals(e.getErrorCode())) {
+                throw new RestException(Status.CONFLICT.getStatusCode(), "Failed to generate certificate due to the new certificate conflicting with an existing one.");
+            } else {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Certificate could not be generated.");
+            }
         }
     }
 
