@@ -382,7 +382,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAtUTF8(0).getString();
-        final String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: " + RENEWAL_USERNAME + ".";
+        final String expectedErrMsg = "Got request with status GENERATED (40). Status NEW, FAILED or INPROCESS required: " + RENEWAL_USERNAME + ".";
         assertEquals(expectedErrMsg, errMsg);
 
         if(log.isTraceEnabled()) {

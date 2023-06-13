@@ -191,6 +191,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private RevocationSessionLocal revocationSession;
 
+
+    /** Maps timer IDs to next run timestamp. Used to prevent repeated scheduling of the same timer. */
+    private Map<Integer,Long> reservedTimers = new HashMap<>();
+
     @PostConstruct
     public void ejbCreate() {
         timerService = sessionContext.getTimerService();
@@ -216,7 +220,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         boolean success = addServiceInternal(admin, id, name, serviceConfiguration);
         if (success) {
             final String msg = intres.getLocalizedMessage("services.serviceadded", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
@@ -261,7 +265,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             if (isAuthorizedToEditService(admin)) {
                 addServiceInternal(admin, findFreeServiceId(), newname, servicedata);
                 final String msg = intres.getLocalizedMessage("services.servicecloned", newname, oldname);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                         admin.toString(), null, null, null, details);
@@ -296,7 +300,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 }
                 serviceDataSession.removeServiceData(htp.getId());
                 final String msg = intres.getLocalizedMessage("services.serviceremoved", name);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.SERVICE_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                         admin.toString(), null, null, null, details);
@@ -307,7 +311,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             }
         } catch (Exception e) {
             final String msg = intres.getLocalizedMessage("services.errorremovingservice", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.SERVICE_REMOVE, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
@@ -337,7 +341,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
         if (success) {
             final String msg = intres.getLocalizedMessage("services.servicerenamed", oldname, newname);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.SERVICE_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
@@ -351,7 +355,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @Override
     public Collection<Integer> getVisibleServiceIds() {
-        Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
+        Collection<Integer> allVisibleServiceIds = new ArrayList<>();
             Collection<Integer> allServiceIds = getServiceIdToNameMap().keySet();
             for (int id : allServiceIds) {
                 // Remove hidden services here..
@@ -494,7 +498,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 // Reschedule timer
                 IWorker worker = null;
                 if (serviceInterval != IInterval.DONT_EXECUTE) {
-                    Timer nextTrigger = addTimer(serviceInterval * 1000, timerInfo);
+                    Timer nextTrigger = addTimer(serviceInterval * 1000, timerInfo, true);
                     try {
                         // Try to acquire lock / see if this node should run
                         worker = serviceSession.getWorkerIfItShouldRun(timerInfo, nextTrigger.getNextTimeout().getTime());
@@ -558,7 +562,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public boolean canWorkerRun(final IWorker worker) {
-        Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
+        Map<Class<?>, Object> ejbs = new HashMap<>();
         ejbs.put(ApprovalSessionLocal.class, approvalSession);
         ejbs.put(ApprovalProfileSessionLocal.class, approvalProfileSession);
         ejbs.put(EndEntityAuthenticationSessionLocal.class, authenticationSession);
@@ -722,7 +726,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         try {
             // Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since
             // we have circular dependencies!
-            Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
+            Map<Class<?>, Object> ejbs = new HashMap<>();
             ejbs.put(ApprovalSessionLocal.class, approvalSession);
             ejbs.put(ApprovalProfileSessionLocal.class, approvalProfileSession);
             ejbs.put(EndEntityAuthenticationSessionLocal.class, authenticationSession);
@@ -779,7 +783,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     if (noLogging) {
                         log.info(msg);
                     } else {
-                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                        final Map<String, Object> details = new LinkedHashMap<>();
                         details.put("msg", msg);
                         for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                             details.put(entry.getKey().toString(), entry.getValue().toString());
@@ -792,7 +796,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     if (noLogging) {
                         log.error(msg);
                     } else {
-                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                        final Map<String, Object> details = new LinkedHashMap<>();
                         details.put("msg", msg);
                         auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                                 admin.toString(), null, null, null, details);
@@ -815,7 +819,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         // Get all services
         Collection<Timer> currentTimers = timerService.getTimers();
         Iterator<Timer> iter = currentTimers.iterator();
-        HashSet<Serializable> existingTimers = new HashSet<Serializable>();
+        HashSet<Serializable> existingTimers = new HashSet<>();
         while (iter.hasNext()) {
             Timer timer = iter.next();
             try {
@@ -842,7 +846,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public Map<Integer, Long> getNewServiceTimeouts(HashSet<Serializable> existingTimers) {
-        Map<Integer, Long> ret = new HashMap<Integer, Long>();
+        Map<Integer, Long> ret = new HashMap<>();
         HashMap<Integer, String> idToNameMap = getServiceIdToNameMap();
         Collection<Integer> allServices = idToNameMap.keySet();
         Iterator<Integer> iter2 = allServices.iterator();
@@ -892,11 +896,31 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method
     // should not be run from within a transaction.
-    private Timer addTimer(long interval, Integer id) {
+    private Timer addTimer(long interval, Integer id, boolean force) {
         if (log.isDebugEnabled()) {
             log.debug("addTimer: " + id);
-        } 
-        return timerService.createSingleActionTimer(interval, new TimerConfig(id, false));
+        }
+        final boolean readyToRun = reserveTimerInterval(interval, id);
+        if (readyToRun || force) {
+            return timerService.createSingleActionTimer(interval, new TimerConfig(id, false));
+        } else {
+            return null;
+        }
+    }
+
+    private void addTimer(long interval, Integer id) {
+        addTimer(interval, id, false);
+    }
+
+    private synchronized boolean reserveTimerInterval(final long interval, final Integer timerId) {
+        final long wantedTimeout = System.currentTimeMillis() + interval;
+        final Long existingTimeout = reservedTimers.get(timerId);
+        if (existingTimeout != null && existingTimeout >= wantedTimeout) {
+            return false;
+        } else {
+            reservedTimers.put(timerId, wantedTimeout);
+            return true;
+        }
     }
 
     /**
@@ -1018,7 +1042,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public HashMap<Integer, String> getServiceIdToNameMap() {
-        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
+        HashMap<Integer, String> returnval = new HashMap<>();
         Collection<ServiceData> result = serviceDataSession.findAll();
         for(ServiceData next : result) {
             returnval.put(next.getId(), next.getName());
@@ -1029,7 +1053,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<String> getServicesUsingCertificateProfile(Integer certificateProfileId) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         //Since the service types are embedded in the data objects there is no more elegant way to to this.
         List<ServiceData> allServices = serviceDataSession.findAll();
         for (ServiceData service : allServices) {

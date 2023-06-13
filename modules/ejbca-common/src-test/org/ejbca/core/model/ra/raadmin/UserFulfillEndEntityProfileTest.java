@@ -809,7 +809,7 @@ public class UserFulfillEndEntityProfileTest {
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
     	log.trace("<fulfillSubjectDirAttributesReversedChecks");
     }
-
+    
     /**
      * Tests validity start time / end time fulfilling checks
      */
@@ -849,7 +849,37 @@ public class UserFulfillEndEntityProfileTest {
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
     	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        // Static times work?
+    	profile.setValidityStartTimeUsed(true);
+    	profile.setValidityEndTimeUsed(true);
+    	ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);
+    	ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
+    	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
+    	        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+    	        false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	// Not possible to edit start end time if non-modifiable in profile
+    	profile.setValidityStartTimeModifiable(false);
+    	ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, "1:00:00" );
+    	try {
+    	    profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
+    	            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+    	            false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	    fail("Error: Possible to edit user certificate start time when non modifiable in profile.");
+    	} catch (EndEntityProfileValidationException e) {
+    	    log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+    	}
+    	profile.setValidityEndTimeModifiable(false);
+    	ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "9999-12-31 23:58" );
+    	try {
+    	    profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
+    	            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+    	            false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	    fail("Error: Possible to edit user certificate end time when non modifiable in profile.");
+    	} catch (EndEntityProfileValidationException e) {
+    	    log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+    	}
+    	profile.setValidityStartTimeModifiable(true);
+    	profile.setValidityEndTimeModifiable(true);
+    	// Static times work?
         profile.setValidityStartTimeUsed(true);
         profile.setValidityEndTimeUsed(true);
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);

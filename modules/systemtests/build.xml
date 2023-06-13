@@ -31,6 +31,7 @@
 		<path refid="lib.commons-io.classpath" />
 		<path refid="lib.ctlog.classpath"/>
 		<path refid="lib.guava.classpath"/>
+		<path refid="lib.caffeine.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
