@@ -145,7 +145,7 @@ spec:
               {{- end }}
             initialDelaySeconds: 15
             periodSeconds: 2
-            failureThreshold: 50
+            failureThreshold: 500
           livenessProbe:
             tcpSocket:
               {{- if .Values.services.directHttp.enabled }}
