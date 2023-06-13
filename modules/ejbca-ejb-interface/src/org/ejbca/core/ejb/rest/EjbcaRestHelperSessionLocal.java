@@ -36,10 +36,11 @@ public interface EjbcaRestHelperSessionLocal extends EjbcaRestHelperSession {
      * @param allowNonAdmins false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
      * @param cert X509 certificate
      * @param oauthBearerToken OAuth token for JWT authentication
+     * @param allowNoActiveCA true if having a an active (local) CA should not be a requirement. Useful for allowing some requests to be performed before a local CA is set up.
      * @return AuthenticationToken object based on the SSL client certificate
      * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins = false and the certificate does not belong to an administrator
      */
-    AuthenticationToken getAdmin(boolean allowNonAdmins, X509Certificate cert, String oauthBearerToken) throws AuthorizationDeniedException;
+    AuthenticationToken getAdmin(boolean allowNonAdmins, X509Certificate cert, String oauthBearerToken, boolean allowNoActiveCa) throws AuthorizationDeniedException;
 
     /**
      * Compose EndEntityInformation object based on EnrollPkcs10CertificateRequest input
