@@ -360,9 +360,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>13<td>=<td>7.9.0
      * <tr><th>14<td>=<td>7.10.0
      * <tr><th>15<td>=<td>7.11.0
+     * <tr><th>16<td>=<td>8.1.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 15;
+    private static final int RA_MASTER_API_VERSION = 16;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -398,6 +399,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String... resources) {
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, resources);
+    }
+    
+    @Override
+    public boolean isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(AuthenticationToken authenticationToken, String... resources) {
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, resources);
     }
 
