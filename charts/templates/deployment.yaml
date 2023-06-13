@@ -95,7 +95,6 @@ spec:
             - name: PROXY_HTTP_BIND
               value: {{ .Values.services.proxyHttp.bindIP }}
             {{- end }}
-          {{- if or (not .Values.ejbca.importEjbcaConfFiles) (hasKey .Values.ejbca "superadminPasswordOverride") }}
           lifecycle:
             postStart:
               exec:
@@ -107,13 +106,12 @@ spec:
                     sed -i s/https=443/https={{- include "ejbca-community-helm.ejbcaHttpsPort" . -}}/g /opt/primekey/ejbca/conf/web.properties
                     sed -i s/pubhttp=80/pubhttp={{- include "ejbca-community-helm.ejbcaPubhttpPort" . -}}/g /opt/primekey/ejbca/conf/web.properties
                     {{- end }}
-                    {{- if hasKey .Values.ejbca "superadminPasswordOverride" }}
+                    {{- if and (hasKey .Values.ejbca "superadminPasswordOverride") (eq .Values.ejbca.env.TLS_SETUP_ENABLED "true") }}
                     until [ -f /opt/keyfactor/appserver/standalone/deployments/ejbca.ear.deployed ]; do sleep 5; done
                     until [[ $(/opt/keyfactor/bin/ejbca.sh roles listadmins --role "Super Administrator Role" | grep -v 'USERNAME TYPE_EQUALCASE "ejbca"') ]]; do sleep 5; done
                     sleep 5
                     /opt/keyfactor/bin/ejbca.sh ra setpwd 'superadmin' '{{ .Values.ejbca.superadminPasswordOverride }}'
                     {{- end }}
-          {{- end }}
           ports:
             {{- if .Values.services.directHttp.enabled }}
             - name: http
