@@ -403,7 +403,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         } else {
             log.info("Autoenrollment alias '" + alias + "' does not exist");
         }
-        return null;
+        return new byte[0];
     }
 
     public void setValueBytes(String key, byte[] value, String alias) {
