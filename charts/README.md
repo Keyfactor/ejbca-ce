@@ -45,12 +45,12 @@ The **EJBCA Community Helm Chart** boostraps **EJBCA Community** on a [Kubernete
 
 ### Add repo
 ```shell
-helm repo add ejbca-community-helm https://github.com/Keyfactor/ejbca-community-helm
+helm repo add keyfactor https://keyfactor.github.io/ejbca-community-helm/
 ```
 
 ### Quick start
 ```shell
-helm install ejbca https://github.com/Keyfactor/ejbca-community-helm --namespace ejbca --create-namespace
+helm install ejbca keyfactor/ejbca-community-helm --namespace ejbca --create-namespace
 ```
 This command deploys `ejbca-community-helm` on the Kubernetes cluster in the default configuration.
 
@@ -69,22 +69,22 @@ helm install ejbca https://github.com/Keyfactor/ejbca-community-helm --namespace
 
 ### EJBCA Deployment Parameters
 
-| Name                             | Description                                                                                            | Default |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------ | ------- |
-| useEphemeralH2Database           | If in-memory internal H2 database should be used                                                       | true    |
-| ejbca.useH2Persistence           | If internal H2 database with persistence should be used. Requires existingH2PersistenceClaim to be set | false   |
-| ejbca.existingH2PersistenceClaim | PersistentVolumeClaim that internal H2 database can use for data persistence                           |         |
-| ejbca.importExternalCas          | If CA certificates should be imported into EJBCA as external CAs                                       | false   |
-| ejbca.externalCasSecret          | Secret containing CA certificates to import into EJBCA as external CAs                                 |         |
-| ejbca.importAppserverKeystore    | If an existing keystore should be used for TLS configurations when reverse proxy is not used           | false   |
-| ejbca.appserverKeystoreSecret    | Secret containing keystore for TLS configuration of EJBCA application server                           |         |
-| ejbca.importAppserverTruststore  | If an existing truststore should be used for TLS configurations when reverse proxy is not used         | false   |
-| ejbca.appserverTruststoreSecret  | Secret containing truststore for TLS configuration of EJBCA application server                         |         |
-| ejbca.importEjbcaConfFiles       | If run-time overridable application configuration property files should be applied                     | false   |
-| ejbca.ejbcaConfFilesSecret       | Secret containing run-time overridable application configuration property files                        |         |
-| ejbca.superadminPasswordOverride | If a custom password should be set for the initial superadmin created at first deployment              |         |
-| ejbca.env                        | Environment variables to pass to container                                                             |         |
-| ejbca.envRaw                     | Environment variables to pass to container in Kubernetes YAML format                                   |         |
+| Name                             | Description                                                                                                                            | Default |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| useEphemeralH2Database           | If in-memory internal H2 database should be used                                                                                       | true    |
+| ejbca.useH2Persistence           | If internal H2 database with persistence should be used. Requires existingH2PersistenceClaim to be set                                 | false   |
+| ejbca.existingH2PersistenceClaim | PersistentVolumeClaim that internal H2 database can use for data persistence                                                           |         |
+| ejbca.importExternalCas          | If CA certificates should be imported into EJBCA as external CAs                                                                       | false   |
+| ejbca.externalCasSecret          | Secret containing CA certificates to import into EJBCA as external CAs                                                                 |         |
+| ejbca.importAppserverKeystore    | If an existing keystore should be used for TLS configurations when reverse proxy is not used                                           | false   |
+| ejbca.appserverKeystoreSecret    | Secret containing keystore for TLS configuration of EJBCA application server                                                           |         |
+| ejbca.importAppserverTruststore  | If an existing truststore should be used for TLS configurations when reverse proxy is not used                                         | false   |
+| ejbca.appserverTruststoreSecret  | Secret containing truststore for TLS configuration of EJBCA application server                                                         |         |
+| ejbca.importEjbcaConfFiles       | If run-time overridable application configuration property files should be applied                                                     | false   |
+| ejbca.ejbcaConfFilesSecret       | Secret containing run-time overridable application configuration property files                                                        |         |
+| ejbca.superadminPasswordOverride | If a custom password should be set for the initial superadmin created at first deployment. Requires ejbca.env.TLS_SETUP_ENABLED "true" |         |
+| ejbca.env                        | Environment variables to pass to container                                                                                             |         |
+| ejbca.envRaw                     | Environment variables to pass to container in Kubernetes YAML format                                                                   |         |
 
 ### EJBCA Environment Variables
 
