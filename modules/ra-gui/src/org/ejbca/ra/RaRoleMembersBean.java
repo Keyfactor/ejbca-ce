@@ -89,7 +89,7 @@ public class RaRoleMembersBean implements Serializable {
     private Map<Integer,String> roleIdToNamespaceMap;
     private boolean hasMultipleNamespaces;
     
-    private enum SortBy { ROLE, ROLENAMESPACE, CA, PROVIDER, TOKENTYPE, TOKENMATCHVALUE, DESCRIPTION };
+    private enum SortBy { ROLE, ROLENAMESPACE, CA, PROVIDER, TOKENTYPE, TOKENMATCHVALUE, DESCRIPTION }
     private SortBy sortBy = SortBy.ROLE;
     private boolean sortAscending = true;
     
