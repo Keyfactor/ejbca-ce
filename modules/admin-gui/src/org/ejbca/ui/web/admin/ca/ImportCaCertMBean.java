@@ -56,7 +56,7 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     private CAAdminSessionLocal caAdminSession;
 
     private String importCaCertName;
-    private Part uploadedFile;
+    private transient Part uploadedFile;
     
     private boolean keyFactorCa;
     private CaInfoDto caInfoDto;
