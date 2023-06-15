@@ -12,28 +12,29 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.keyfactor.util.certificate.DnComponents;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
+import org.ejbca.util.CeSecoreNameStyleEnumSingleton;
 
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.certificate.DnComponents;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents two APIs: list (needed for JSF) and map
  * for the DN fields of the specified end entity profile. It is
  * extended by Subject DN, SubjectAlternateName and Subject Directory Attributes
  */
-public abstract class RaAbstractDn {
+public abstract class RaAbstractDn implements Serializable {
+    private static final long serialVersionUID = 263071874125880307L;
 
     private static final Logger log = Logger.getLogger(RaAbstractDn.class);
     
@@ -43,7 +44,7 @@ public abstract class RaAbstractDn {
 
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
     protected String value;
-    protected X500NameStyle nameStyle = CeSecoreNameStyle.INSTANCE;
+    protected X500NameStyle nameStyle = CeSecoreNameStyleEnumSingleton.CE_SECORE_NAME_STYLE.getStyle();
     protected boolean ldapOrder = true;
 
     /**
@@ -77,7 +78,7 @@ public abstract class RaAbstractDn {
         }
         for (final String key : getAbstractDnFields()) {
             final Field field = endEntityProfile.new Field(key);
-            fieldInstancesMap.put(key, new HashMap<Integer, EndEntityProfile.FieldInstance>());
+            fieldInstancesMap.put(key, new HashMap<>());
             for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
                 if (dnFieldExtractor!=null) {
                     fieldInstance.setValue(dnFieldExtractor.getField(DnComponents.profileIdToDnId(fieldInstance.getProfileId()), fieldInstance.getNumber()));
