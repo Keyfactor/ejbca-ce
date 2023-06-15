@@ -58,11 +58,11 @@ This command deploys `ejbca-community-helm` on the Kubernetes cluster in the def
 
 To customize the installation, create and edit a custom values file with deployment parameters:
 ```shell
-helm show values https://github.com/Keyfactor/ejbca-community-helm > ejbca.yaml
+helm show values keyfactor/ejbca-community-helm > ejbca.yaml
 ```
 Deploy `ejbca-community-helm` on the Kubernetes cluster with custom configurations:
 ```shell
-helm install ejbca https://github.com/Keyfactor/ejbca-community-helm --namespace ejbca --create-namespace --values ejbca.yaml
+helm install ejbca keyfactor/ejbca-community-helm --namespace ejbca --create-namespace --values ejbca.yaml
 ```
 
 ## Parameters
