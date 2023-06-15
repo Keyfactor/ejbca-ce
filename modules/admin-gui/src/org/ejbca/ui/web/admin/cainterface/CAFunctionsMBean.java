@@ -78,9 +78,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private PublishingCrlSessionLocal publishingCrlSession;
 
     private final GlobalConfiguration globalConfiguration;
-    List<CAGuiInfo> caGuiInfos = null;
-    private Part uploadFile;
-    List<String> extCaNameList;
+    private List<CAGuiInfo> caGuiInfos = null;
+    private transient Part uploadFile;
+    private final List<String> extCaNameList;
     private String crlImportCaName;
 
     public CAFunctionsMBean() {
@@ -91,7 +91,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     /** GUI representation of a CA for the CA Structure page */
-    public class CAGuiInfo {
+    public class CAGuiInfo implements Serializable {
+        private static final long serialVersionUID = -555096060949439122L;
+
         private final String name;
         private final int caId;
         private final String subjectdn;
