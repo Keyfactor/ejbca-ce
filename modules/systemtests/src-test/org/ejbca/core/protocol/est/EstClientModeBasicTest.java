@@ -441,6 +441,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
             config.setExtractUsernameComponent(alias, "CN");
             config.setKurAllowSameKey(alias, false);
+            config.setDefaultCAID(alias, getTestCAId(TESTCA_NAME));
             // In order to re-enroll we need to be able to establish a TLS connection with client authentication, which means
             // that we need a client certificate issued from ManagementCA, which is an accepted CA for TLS client certs
             // We also need to enroll against port 8443
@@ -518,6 +519,16 @@ public class EstClientModeBasicTest extends EstTestCase {
             }
             assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256New.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
+            
+            // Make EST cacerts request with client keystore
+            resp = sendEstRequest(true, alias, "cacerts", null, 200, null, null, null);
+            // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.1.3
+            assertNotNull("There must be response data to cacerts request", resp);
+            final CMSSignedData msg = new CMSSignedData(Base64.decode(resp));
+            final Store<X509CertificateHolder> cacertstore = msg.getCertificates();
+            final Collection<X509CertificateHolder> cacerts = cacertstore.getMatches(null);
+            assertEquals("EST test CA has a single CA certificate", 1, cacerts.size());
+            
             // Checking for enrollment with the same public key only compares the TLS cert (reenroll authentication) with the CSR, it does not loop through all existing client certificates
             // so a failed reenroll can be retried with the same CSR, therefore it should work to reenroll with the same (new) CSR as long as we use the old key for TLS authentication
             resp = sendEstRequest(true, alias, "simplereenroll", reqmsgNew, 200, null, null, null);
