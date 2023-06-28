@@ -121,7 +121,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             final AuthenticationToken admin;
             final OAuthConfiguration oauthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
             try {
-                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
+                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken, null);
                 if (admin == null) {
                     throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
                 }
@@ -259,9 +259,5 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     private int getCertificateProfileId(String certificateProfileName) {
         int certificateProfileId = certificateProfileSessionBean.getCertificateProfileId(certificateProfileName);
         return certificateProfileId;
-    }
-
-    public byte[] createCertificateRest(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest request) {
-        return new byte[1337]; // TODO To the happy programmer who called this method without defining it first. Implement it!
     }
 }
