@@ -156,7 +156,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public AuthenticationToken authenticateUsingOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken) throws TokenExpiredException {
+    public AuthenticationToken authenticateUsingOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken,
+            final String oauthIdToken) throws TokenExpiredException {
         try {
             String keyFingerprint = null;
             OAuthKeyInfo keyInfo = null;
@@ -165,7 +166,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                         "Cannot authenticate with OAuth because no providers are available");
                 return null;
             }
-            final JWT jwt = JWTParser.parse(encodedOauthBearerToken);
+            final JWT jwt = JWTParser.parse(StringUtils.isNotEmpty(oauthIdToken) ? oauthIdToken : encodedOauthBearerToken);
             if (jwt instanceof PlainJWT) {
                 LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
                 return null;
@@ -251,7 +252,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             final OAuth2Principal principal = createOauthPrincipal(claims, keyInfo);
-            return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, keyFingerprint, keyInfo.getLabel());
+            return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, oauthIdToken, keyFingerprint, keyInfo.getLabel());
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;
@@ -316,11 +317,11 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String refreshToken) {
+    public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String oauthIdToken, final String refreshToken) {
         OAuthGrantResponseInfo oAuthGrantResponseInfo = null;
         try {
             OAuthKeyInfo keyInfo;
-            final JWT jwt = JWTParser.parse(encodedOauthBearerToken);
+            final JWT jwt = JWTParser.parse(StringUtils.isNotEmpty(oauthIdToken) ? oauthIdToken : encodedOauthBearerToken);
             if (jwt instanceof PlainJWT) {
                 LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
                 return null;

@@ -523,7 +523,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (getAdmin() instanceof OAuth2AuthenticationToken) {
             OAuth2AuthenticationToken currentAdminToken = (OAuth2AuthenticationToken) getAdmin();
             try {
-                SignedJWT signedJwt = SignedJWT.parse(currentAdminToken.getEncodedToken());
+                SignedJWT signedJwt = SignedJWT.parse(currentAdminToken.getEncodedAccessToken());
                 String adminTokenkeyId = signedJwt.getHeader().getKeyID();
                 if (adminTokenkeyId == null && (label == null || !label.equals(oAuthConfiguration.getDefaultOauthKey().getLabel()))) {
                     return false;

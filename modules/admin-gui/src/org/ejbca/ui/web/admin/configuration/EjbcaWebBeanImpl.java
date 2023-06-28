@@ -180,6 +180,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
         boolean isAuthenticatedWithToken; // a flag to detect authentication path used
         String oauthAuthenticationToken; // Keep token used for authentication so we can detect changes
+        String oauthIdToken;
         boolean initialized = false;
         boolean errorpage_initialized = false;
         AuthenticationToken administrator;
@@ -273,10 +274,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         final String oauthBearerToken = getBearerToken(httpServletRequest);
+        final String oauthIdToken = getOauthIdToken(httpServletRequest);
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
         if (!authState.initialized || !StringUtils.equals(authState.authenticationTokenTlsSessionId, currentTlsSessionId)
                 || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthAuthenticationToken, oauthBearerToken))
+                || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthIdToken, oauthIdToken))
                 || (!authState.isAuthenticatedWithToken && !StringUtils.equals(fingerprint, authState.certificateFingerprint))) {
             if (log.isDebugEnabled() && authState.initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
@@ -334,17 +337,18 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
             if (oauthBearerToken != null && stagingState.administrator == null) {
                 try {
-                    stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken);
+                    stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, oauthIdToken);
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
                     if (refreshToken != null) {
-                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, refreshToken);
+                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, oauthIdToken, refreshToken);
                         if (token != null) {
                             httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                             if (token.getRefreshToken() != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                             }
-                            stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), token.getAccessToken());
+                            stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(),
+                                    token.getAccessToken(), token.getIdToken());
                         }
                     }
                 }
@@ -353,6 +357,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
                 stagingState.isAuthenticatedWithToken = true;
                 stagingState.oauthAuthenticationToken = oauthBearerToken;
+                stagingState.oauthIdToken = oauthIdToken;
                 final Map<String, Object> details = new LinkedHashMap<>();
                 final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) stagingState.administrator;
                 final OAuth2Principal principal = oauth2Admin.getClaims();
@@ -441,6 +446,15 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             oauthBearerToken = (String) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
         }
         return oauthBearerToken;
+    }
+
+    private String getOauthIdToken(final HttpServletRequest httpServletRequest) {
+        final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+        if (oauthBearerToken != null) {
+            // Can't mix an ID Token with an access token from an HTTP header (it would be insecure)
+            return null;
+        }
+        return (String) httpServletRequest.getSession(true).getAttribute("ejbca.id.token");
     }
 
     /**
@@ -1400,6 +1414,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             conn.setRequestMethod("GET");
             conn.setSSLSocketFactory(context.getSocketFactory());
             conn.setHostnameVerifier(new HostnameVerifier() {
+                @Override
                 public boolean verify(String arg0, SSLSession arg1) {
                     return true;
                 }
