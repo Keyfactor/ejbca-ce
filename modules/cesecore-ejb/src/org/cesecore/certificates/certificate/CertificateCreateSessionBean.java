@@ -375,6 +375,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
         issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
         try {
+            // TODO: waht to do when whole cert is to be logged
             issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
         } catch (IOException e) {
             //Should not be able to happen at this point
@@ -408,6 +409,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
         // Audit log that we received the request
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        // TODO
         details.put("subjectdn", endEntityInformation.getDN());
         details.put("requestX500name", (request == null || request.getRequestX500Name() == null) ? "null" : request.getRequestX500Name().toString());
         details.put("subjectaltname", endEntityInformation.getSubjectAltName());
@@ -694,6 +696,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             
             // Audit log that we issued the certificate
             final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
+            // TODO
             issuedetails.put("subjectdn", endEntityInformation.getDN());
             issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
             issuedetails.put("issuancerevocationreason", revreason);
@@ -759,6 +762,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
                     issuedetails.put("ctprecert", true);
                     issuedetails.put("msg", intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
+                    // TODO
                     issuedetails.put("subjectdn", CertTools.getSubjectDN(precert));
                     issuedetails.put("certprofile", subject.getCertificateProfileId());
                     try {
