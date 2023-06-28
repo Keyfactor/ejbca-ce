@@ -32,7 +32,8 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
     private static final long serialVersionUID = 1L; 
 
     private final OAuth2Principal principal;
-    private final String encodedToken;
+    private final String encodedAccessToken;
+    private final String encodedIdToken;
     private final String base64Fingerprint;
     private final String providerLabel;
 
@@ -41,15 +42,17 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
      * the claims in the principal matches the one the in token.
      *
      * @param principal Principal containing claims (issuer, subject and audience)
-     * @param encodedToken Encoded JWT token. For an example see <a href="https://tools.ietf.org/html/rfc7519#section-3.1">RFC-7519 section 3.1</a>.
+     * @param encodedAccessToken Encoded JWT access token. For an example see <a href="https://tools.ietf.org/html/rfc7519#section-3.1">RFC-7519 section 3.1</a>.
+     * @param encodedIdToken Encoded JWT ID token, or null if absent.
      * @param base64Fingerprint Base64 encoded SHA-256 fingerprint of public key that was used to verify the JWT.
      */
-    public OAuth2AuthenticationToken(final OAuth2Principal principal, final String encodedToken, final String base64Fingerprint, final String providerLabel) {
-        super(Collections.singleton(principal), Collections.singleton(encodedToken));
+    public OAuth2AuthenticationToken(final OAuth2Principal principal, final String encodedAccessToken, final String encodedIdToken, final String base64Fingerprint, final String providerLabel) {
+        super(Collections.singleton(principal), Collections.singleton(encodedAccessToken));
         Objects.requireNonNull(principal, "principal may not be null");
-        Objects.requireNonNull(encodedToken, "encodedToken may not be null");
+        Objects.requireNonNull(encodedAccessToken, "encodedAccessToken may not be null");
         this.principal = principal;
-        this.encodedToken = encodedToken;
+        this.encodedAccessToken = encodedAccessToken;
+        this.encodedIdToken = encodedIdToken;
         this.base64Fingerprint = base64Fingerprint;
         this.providerLabel = providerLabel;
     }
@@ -107,17 +110,18 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
             return false;
         }
         final OAuth2AuthenticationToken other = (OAuth2AuthenticationToken) obj;
-        return StringUtils.equals(other.encodedToken, encodedToken);
+        return StringUtils.equals(other.encodedAccessToken, encodedAccessToken) &&
+                StringUtils.equals(other.encodedIdToken, encodedIdToken);
     }
 
     @Override
     public int hashCode() {
-        return encodedToken.hashCode();
+        return encodedAccessToken.hashCode() + 31*encodedIdToken.hashCode();
     }
 
     @Override
     protected String generateUniqueId() {
-        return generateUniqueId(super.isCreatedInThisJvm(), encodedToken) + ";" + super.generateUniqueId();
+        return generateUniqueId(super.isCreatedInThisJvm(), encodedAccessToken, encodedIdToken) + ";" + super.generateUniqueId();
     }
 
     @Override
@@ -147,7 +151,11 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
         return providerLabel;
     }
     
-    public String getEncodedToken() {
-        return encodedToken;
+    public String getEncodedAccessToken() {
+        return encodedAccessToken;
+    }
+
+    public String getEncodedIdToken() {
+        return encodedIdToken;
     }
 }

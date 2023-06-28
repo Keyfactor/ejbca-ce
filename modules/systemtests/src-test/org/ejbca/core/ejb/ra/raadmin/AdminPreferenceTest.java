@@ -76,7 +76,7 @@ public class AdminPreferenceTest extends CaTestCase {
                 .setOid("2.999.123")
                 .setAudience(Collections.emptyList())
                 .build();
-        authenticatedTokenOAuth = new OAuth2AuthenticationToken(principal, "", "", "Provider"); // using empty token for testing
+        authenticatedTokenOAuth = new OAuth2AuthenticationToken(principal, "", null, "", "Provider"); // using empty token for testing
         adminFingerprint = CertTools.getFingerprintAsString(authenticatedTokenCert.getCertificate());
         cleanup();
     }
