@@ -267,6 +267,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         entityManager.persist(certificateData);
         if (doAuditLog) {
             final String serialNo = CertTools.getSerialNumberAsString(incert);
+            // TODO
             final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateData.getFingerprint(), certificateData.getSubjectDnNeverNull(), 
                     certificateData.getIssuerDN(), serialNo, certificateData.getAccountBindingId());
             final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
@@ -360,6 +361,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         final String username = certificateData.getUsername();
         final String serialNo = CertTools.getSerialNumberAsString(certificate);
+        // TODO
         final String msg = INTRES.getLocalizedMessage("store.storecert", username, fingerprint, certificateData.getSubjectDnNeverNull(),
                 certificateData.getIssuerDN(), serialNo);
         Map<String, Object> details = new LinkedHashMap<>();
@@ -384,6 +386,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final String username = data.getUsername();
         final String serialNo = CertTools.getSerialNumberAsString(certificate);
         final int issuerHash = CertTools.getIssuerDN(certificate).hashCode();
+        // TODO
         final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateFingerprint, 
                 data.getSubjectDnNeverNull(), issuerHash, serialNo, accountBindingId);
         Map<String, Object> details = new LinkedHashMap<>();
@@ -1207,6 +1210,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             } else {
                 certificateData.setInvalidityDate(-1L);
             }
+            // TODO
             final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
@@ -1222,6 +1226,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (revokeDate != null) {
                 certificateData.setRevocationDate(revokeDate);
             }
+            // TODO
             final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
@@ -1230,6 +1235,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
             certificateData.setUpdateTime(now.getTime());
             certificateData.setInvalidityDate(invalidityDate);
+            // TODO
             final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), certificateData.getRevocationReason(), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
@@ -1245,6 +1251,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
 
+            // TODO
             final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
@@ -1448,6 +1455,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         } else {
             serialNo = CertTools.getSerialNumberAsString(certificate);
         }
+        // TODO
         final String msg = INTRES.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);

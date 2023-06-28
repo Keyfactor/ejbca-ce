@@ -171,6 +171,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             details.put("description", persistedRoleMember.getDescription());
         }
         final EventType eventType = addedRoleMember ? EventTypes.ROLE_ACCESS_USER_ADDITION : EventTypes.ROLE_ACCESS_USER_CHANGE;
+        // TODO
         securityEventsLoggerSession.log(eventType, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
         return persistedRoleMember;
     }
@@ -301,6 +302,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             details.put("nameSpace", role.getNameSpace());
             details.put("roleName", role.getRoleName());
             details.put("description", roleMember.getDescription());
+            // TODO:
             securityEventsLoggerSession.log(EventTypes.ROLE_ACCESS_USER_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
         }
