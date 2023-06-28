@@ -39,6 +39,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.oauth.TokenExpiredException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -203,6 +204,21 @@ public class WebAuthenticationProviderSessionUnitTest {
         return sb.toString();
     }
 
+    /** Encodes a fake JWE token. Uses dummy values, because EJBCA wouldn't have the key (and does not have support for decryption) */
+    private String encodeEncryptedToken() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(Base64URL.encode("{\"alg\":\"RSA-OAEP\",\"enc\":\"A256GCM\"}").toString()); // JWE Protected Header
+        sb.append('.');
+        sb.append(Base64URL.encode("foo123xx").toString()); // Dummy JWE Encrypted Key
+        sb.append('.');
+        sb.append(Base64URL.encode("foo123xx").toString()); // Dummy JWE IV
+        sb.append('.');
+        sb.append(Base64URL.encode("foo123xx").toString()); // Dummy JWE Ciphertext
+        sb.append('.');
+        sb.append(Base64URL.encode("foo123xx").toString()); // Dummy JWE Authentication Tag
+        return sb.toString();
+    }
+
     private String timestampFromNow(final long offset) {
         return String.valueOf((System.currentTimeMillis() + offset) / 1000);
     }
@@ -342,6 +358,39 @@ public class WebAuthenticationProviderSessionUnitTest {
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token, null));
         verify(securityEventsSessionMock);
         log.trace("<tamperedWithContents");
+    }
+
+    /**
+     * Tests authentication with an encrypted access_token, and no id_token.
+     * This will fail, because EJBCA cannot access the signature or the claims.
+     */
+    @Test
+    public void encryptedTokenWithoutIdToken() throws TokenExpiredException {
+        log.trace(">encryptedTokenWithoutIdToken");
+        final String accessToken = encodeEncryptedToken();
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, accessToken, null));
+        log.trace("<encryptedTokenWithoutIdToken");
+    }
+
+    /**
+     * Tests authentication with an encrypted access_token and a signed id_token.
+     * Verification will happen on the id_token, and it will succeed in this case.
+     */
+    @Test
+    public void encryptedTokenWithIdToken() throws TokenExpiredException {
+        log.trace(">encryptedTokenWithIdToken");
+        final String accessToken = encodeEncryptedToken();
+        final String idToken = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}", privKey);
+        final AuthenticationToken admin = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, accessToken, idToken);
+        assertNotNull("Authentication should succeed", admin);
+        final OAuth2AuthenticationToken oauthAdmin = (OAuth2AuthenticationToken) admin;
+        assertEquals(accessToken, oauthAdmin.getEncodedAccessToken());
+        assertEquals(idToken, oauthAdmin.getEncodedIdToken());
+        assertNotNull(oauthAdmin.getClaims());
+        final OAuth2Principal claims = oauthAdmin.getClaims();
+        assertEquals("johndoe", claims.getSubject());
+        assertEquals(Collections.singletonList("unittest"), claims.getAudience());
+        log.trace("<encryptedTokenWithIdToken");
     }
 
     private void expectAuditLog(final String messageKey, final Object... params) {
