@@ -159,11 +159,13 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                 }
             }
             if (doLogging) {
+                // TODO
                 internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL,
                         ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
             }
             return true;
         } catch (AuthenticationFailedException e) {
+            // TODO
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", InternalResources.getInstance().getLocalizedMessage("authentication.failed", e.getMessage()));
             internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION,
