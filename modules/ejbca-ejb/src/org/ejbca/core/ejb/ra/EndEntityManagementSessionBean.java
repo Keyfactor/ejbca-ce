@@ -421,6 +421,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         type.contains(EndEntityTypes.SENDNOTIFICATION), endEntity.getTokenType(), caId,
                         endEntity.getExtendedInformation(), certProfile, eabConfiguration);
             } catch (EndEntityProfileValidationException e) {
+                // TODO
                 logAuditEvent(
                         EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE,
                         authenticationToken, caId, null, username,
@@ -556,7 +557,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         authenticationToken, caId, null, username,
                         SecurityEventProperties.builder()
                                 .withMsg(intres.getLocalizedMessage("ra.addedentity", username))
-                                .withCustomMap(endEntity.getDetailMap())
+                                .withCustomMap(endEntity.getDetailMap()) // TODO
                                 .build()
                 );
             } catch (EndEntityExistsException e) {
@@ -959,7 +960,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE,
                         authenticationToken, caId, null, username,
                         SecurityEventProperties.builder()
-                                .withMsg(intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileId, dn, e.getMessage()))
+                                .withMsg(intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileId, dn, e.getMessage())) // TODO: + message from validation error
                                 .build()
                 );
                 throw e;
@@ -1115,6 +1116,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final Map<String, String[]> diff = originalCopy.getDiff(notificationEndEntityInformation);
             final Map<String, String> auditDiffCustomMap = new LinkedHashMap<>();
             for(String key : diff.keySet()) {
+                // TODO
                 auditDiffCustomMap.put(key, diff.get(key)[0] + " -> " + diff.get(key)[1]);
             }
             // Add the diff later on, in order to have it after the "msg"
@@ -1143,7 +1145,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     authenticationToken, caId, null, username,
                     SecurityEventProperties.builder()
                             .withMsg(intres.getLocalizedMessage("ra.erroreditentity", username))
-                            .withError(e.getMessage())
+                            .withError(e.getMessage()) // TODO
                             .build()
             );
             log.error("ChangeUser:", e);
@@ -1640,6 +1642,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 try {
                     profile.doesPasswordFulfillEndEntityProfile(password, true);
                 } catch (EndEntityProfileValidationException e) {
+                    // TODO
                     final String dn = data.getSubjectDnNeverNull();
                     auditSession.log(
                             EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE,
@@ -2536,6 +2539,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final AuthenticationToken authenticationToken, final Integer customId,
             final String searchDetail1, final String searchDetail2,
             final SecurityEventProperties securityEventProperties) {
+        // TODO
         auditSession.log(
                 eventType, eventStatus,
                 EjbcaModuleTypes.RA, ServiceTypes.CORE,
