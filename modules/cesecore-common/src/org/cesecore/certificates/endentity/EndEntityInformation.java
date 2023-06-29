@@ -28,6 +28,7 @@ import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.XmlSerializer;
 
@@ -193,6 +194,15 @@ public class EndEntityInformation implements Serializable {
         	this.subjectDN=StringTools.putBase64String(removedTrailingEmpties.toString());
     	}
     }
+    
+    public String getLogSafeSubjectDn() {
+        // TODO: what if endentityProfileId(0: default int, NO_END_ENTITY_PROFILE) is not there
+        // now it will redact it
+        if (getDN()==null || getDN().isEmpty()) {
+            return "";
+        }
+        return GdprRedactionUtils.getSubjectDnLogSafe(getDN(), endentityprofileid);
+    }
 
     /** User DN as stored in the database. If the registered DN has unused DN fields the empty ones are kept, i.e.
      * CN=Tomas,OU=,OU=PrimeKey,C=SE. See ECA-1841 for an explanation of this.
@@ -205,6 +215,16 @@ public class EndEntityInformation implements Serializable {
     public void setCAId(int caid){this.caid=caid;}
     public void setSubjectAltName( String subjectaltname) { this.subjectAltName=StringTools.putBase64String(subjectaltname); }
     public String getSubjectAltName() {return StringTools.getBase64String(subjectAltName);}
+    
+    public String getLogSafeSubjectAltName() {
+        // TODO: what if endentityProfileId(0: default int, NO_END_ENTITY_PROFILE) is not there
+        // now it will redact it
+        if (subjectAltName==null || subjectAltName.isEmpty()) {
+            return "";
+        }
+        return GdprRedactionUtils.getSubjectAltNameLogSafe(subjectAltName, endentityprofileid);
+    }
+    
     public void setEmail(String email) {this.subjectEmail = StringTools.putBase64String(email);}
     public String getEmail() {return StringTools.getBase64String(subjectEmail);}
     public void setCardNumber(String cardNumber) {this.cardNumber =  StringTools.putBase64String(cardNumber);}
@@ -425,8 +445,8 @@ public class EndEntityInformation implements Serializable {
             details.put("extendedInformation", extendedInformationDump.substring(2));
         }
         details.put("status", Integer.toString(status));
-        details.put("subjectAltName", subjectAltName);
-        details.put("subjectDN", subjectDN);
+        details.put("subjectAltName", getLogSafeSubjectAltName());
+        details.put("subjectDN", getLogSafeSubjectDn());
         details.put("subjectEmail", subjectEmail);
         if (timecreated != null) {
             details.put("timecreated", timecreated.toString());
@@ -448,7 +468,7 @@ public class EndEntityInformation implements Serializable {
      */
     public Map<String, String[]> getDiff(EndEntityInformation other) {
         Map<String, String[]> changedValues = new LinkedHashMap<>();
-        Map<String, String> thisValues = getDetailMap();
+        Map<String, String> thisValues = getDetailMap(); // receives redacted DN and SAN
         Map<String, String> otherValues = other.getDetailMap();
         List<String> thisKeySet = new ArrayList<>(thisValues.keySet());
         for (String key : thisKeySet) {

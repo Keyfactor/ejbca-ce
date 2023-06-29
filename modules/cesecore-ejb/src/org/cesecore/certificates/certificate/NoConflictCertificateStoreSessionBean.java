@@ -333,8 +333,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         entityManager.persist(newCertData);
         
         final String serialNo = certificateData.getSerialNumberHex();
-        // TODO
-        final String msg = intres.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
+        final String msg = intres.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getLogSafeSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, certificateData.getUsername(), details);

@@ -222,6 +222,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                             log.error("Authentication Certificate is revoked or expired: " + CertTools.getSubjectDN(certificate));
                             return new AuthorizationResult(new HashMap<String, Boolean>(), accessTreeUpdateSession.getAccessTreeUpdateNumber());
                         }
+                        // TODO: set redact and refer in toString()
                     }
                 }
            }
