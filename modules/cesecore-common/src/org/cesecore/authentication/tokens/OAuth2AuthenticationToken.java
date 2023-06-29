@@ -116,7 +116,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
 
     @Override
     public int hashCode() {
-        return encodedAccessToken.hashCode() + 31*encodedIdToken.hashCode();
+        return Objects.hash(encodedAccessToken, encodedIdToken);
     }
 
     @Override
