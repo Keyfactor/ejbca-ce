@@ -427,6 +427,14 @@ public class EndEntityInformation implements Serializable {
      * @return an information map about this end entity, listing all general fields.
      */
     public Map<String, String> getDetailMap() {
+        return getDetailMap(true);
+    }
+      
+    /**
+     * @return an information map about this end entity, listing all general fields
+     *  and redacting subjectDn and SAN based end entity profile settings
+     */
+    public Map<String, String> getDetailMap(boolean tryRedact) {
         @SuppressWarnings("unchecked")
         Map<String, String> details = new Base64GetHashMap();
         details.put("caid", Integer.toString(caid));
@@ -445,8 +453,8 @@ public class EndEntityInformation implements Serializable {
             details.put("extendedInformation", extendedInformationDump.substring(2));
         }
         details.put("status", Integer.toString(status));
-        details.put("subjectAltName", getLogSafeSubjectAltName());
-        details.put("subjectDN", getLogSafeSubjectDn());
+        details.put("subjectAltName", tryRedact ? getLogSafeSubjectAltName() : getSubjectAltName());
+        details.put("subjectDN", tryRedact ? getLogSafeSubjectDn(): getDN());
         details.put("subjectEmail", subjectEmail);
         if (timecreated != null) {
             details.put("timecreated", timecreated.toString());
@@ -467,8 +475,12 @@ public class EndEntityInformation implements Serializable {
      * @return the differences between this map and the parameter, as <key, [thisValue, otherValue]>
      */
     public Map<String, String[]> getDiff(EndEntityInformation other) {
+        return getDiff(other, false);
+    }
+    
+    public Map<String, String[]> getDiff(EndEntityInformation other, boolean tryRedact) {
         Map<String, String[]> changedValues = new LinkedHashMap<>();
-        Map<String, String> thisValues = getDetailMap(); // receives redacted DN and SAN
+        Map<String, String> thisValues = getDetailMap(tryRedact); // may receives non-redacted DN and SAN
         Map<String, String> otherValues = other.getDetailMap();
         List<String> thisKeySet = new ArrayList<>(thisValues.keySet());
         for (String key : thisKeySet) {

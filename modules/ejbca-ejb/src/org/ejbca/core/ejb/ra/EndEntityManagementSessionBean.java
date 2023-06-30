@@ -101,6 +101,7 @@ import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.keys.validation.ValidationResult;
 import org.cesecore.roles.member.RoleMemberData;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
@@ -421,12 +422,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         type.contains(EndEntityTypes.SENDNOTIFICATION), endEntity.getTokenType(), caId,
                         endEntity.getExtendedInformation(), certProfile, eabConfiguration);
             } catch (EndEntityProfileValidationException e) {
-                // TODO
                 logAuditEvent(
                         EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE,
                         authenticationToken, caId, null, username,
                         SecurityEventProperties.builder()
-                                .withMsg(intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileName, dn, e.getMessage()))
+                                .withMsg(intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileName, 
+                                        GdprRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileName), e.getMessage()))
                                 .build()
                 );
                 throw e;
@@ -557,7 +558,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         authenticationToken, caId, null, username,
                         SecurityEventProperties.builder()
                                 .withMsg(intres.getLocalizedMessage("ra.addedentity", username))
-                                .withCustomMap(endEntity.getDetailMap()) // TODO
+                                .withCustomMap(endEntity.getDetailMap())
                                 .build()
                 );
             } catch (EndEntityExistsException e) {
@@ -573,7 +574,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 logAuditEvent(
                         EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE,
                         authenticationToken, caId, null, username,
-                        SecurityEventProperties.builder().withMsg(msg).withError(e.getMessage()).build()
+                        SecurityEventProperties.builder().withMsg(msg).withError(e.getMessage(), endEntityProfileId).build()
                 );
                 throw new EJBException(e);
             }
@@ -960,7 +961,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE,
                         authenticationToken, caId, null, username,
                         SecurityEventProperties.builder()
-                                .withMsg(intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileId, dn, e.getMessage())) // TODO: + message from validation error
+                                .withMsg(intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileId, 
+                                        GdprRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId), e.getMessage()))
                                 .build()
                 );
                 throw e;
@@ -1113,10 +1115,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // i.e. diff the original to what we actually stored in the database
             notificationEndEntityInformation.setTimeModified(new Date(userData.getTimeModified()));
             notificationEndEntityInformation.setTimeCreated(new Date(userData.getTimeCreated()));
-            final Map<String, String[]> diff = originalCopy.getDiff(notificationEndEntityInformation);
+            final Map<String, String[]> diff = originalCopy.getDiff(notificationEndEntityInformation, true);
             final Map<String, String> auditDiffCustomMap = new LinkedHashMap<>();
             for(String key : diff.keySet()) {
-                // TODO
                 auditDiffCustomMap.put(key, diff.get(key)[0] + " -> " + diff.get(key)[1]);
             }
             // Add the diff later on, in order to have it after the "msg"
@@ -1145,7 +1146,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     authenticationToken, caId, null, username,
                     SecurityEventProperties.builder()
                             .withMsg(intres.getLocalizedMessage("ra.erroreditentity", username))
-                            .withError(e.getMessage()) // TODO
+                            .withError(e.getMessage(), endEntityProfileId) // uses updated end entity profile value
                             .build()
             );
             log.error("ChangeUser:", e);
@@ -1187,8 +1188,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check if administrator is authorized to delete user.
         Integer caId;
         final UserData data1 = endEntityAccessSession.findByUsername(trimmedUsername);
+        int endEntityProfileId = 0; 
         if (data1 != null) {
             caId = data1.getCaId();
+            endEntityProfileId = data1.getEndEntityProfileId();
             endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
             if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_END_ENTITY, caId);
@@ -1212,7 +1215,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             logAuditEvent(
                     EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE,
                     authenticationToken, caId, null, trimmedUsername,
-                    SecurityEventProperties.builder().withMsg(msg).withError(e.getMessage()).build()
+                    SecurityEventProperties.builder().withMsg(msg).withError(e.getMessage(), endEntityProfileId).build()
             );
             throw new CouldNotRemoveEndEntityException(msg);
         }
@@ -1643,7 +1646,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     profile.doesPasswordFulfillEndEntityProfile(password, true);
                 } catch (EndEntityProfileValidationException e) {
                     // TODO
-                    final String dn = data.getSubjectDnNeverNull();
+                    final String dn = GdprRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull(), data.getEndEntityProfileId());
                     auditSession.log(
                             EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE,
                             EjbcaModuleTypes.RA, ServiceTypes.CORE,
@@ -2539,7 +2542,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final AuthenticationToken authenticationToken, final Integer customId,
             final String searchDetail1, final String searchDetail2,
             final SecurityEventProperties securityEventProperties) {
-        // TODO
         auditSession.log(
                 eventType, eventStatus,
                 EjbcaModuleTypes.RA, ServiceTypes.CORE,
