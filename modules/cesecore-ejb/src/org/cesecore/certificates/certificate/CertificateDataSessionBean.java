@@ -106,7 +106,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     @Override
     public Long findQuantityOfTheActiveCertificates() {
         Query query = entityManager.createQuery("SELECT count(cd) FROM CertificateData cd WHERE cd.expireDate >= :now "
-                + "AND cd.expireDate>=:now AND (cd.status = :statusActive OR cd.status = :statusNotifiedAboutExpiration)");
+                + "AND (cd.status = :statusActive OR cd.status = :statusNotifiedAboutExpiration)");
         query.setParameter("now", System.currentTimeMillis());
         query.setParameter("statusActive", CertificateConstants.CERT_ACTIVE);
         query.setParameter("statusNotifiedAboutExpiration", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
