@@ -238,6 +238,12 @@ public class SecurityEventProperties {
             this.error = error;
             return this;
         }
+        
+        public SecurityEventPropertiesBuilder withError(String error, int endEntityProfileId) {
+            // TODO:
+            this.error = error;
+            return this;
+        }
 
         public SecurityEventPropertiesBuilder withMsg(final String msg) {
             this.msg = msg;
@@ -272,5 +278,6 @@ public class SecurityEventProperties {
         public SecurityEventProperties build() {
             return new SecurityEventProperties(certSignKey, crlSignKey, error, msg, oldproperties, oldsequence, properties, sequence, customMap);
         }
+
     }
 }
