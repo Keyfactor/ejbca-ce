@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -174,6 +175,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
     protected static final String AVAILABLEECCURVES = "availableeccurves";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
+    protected static final String AVAILABLESECURITYLEVEL = "availablesecuritylevel";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
     public static final String TYPE = "type";
@@ -488,6 +490,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
+        setAvailableSecurityLevelsAsList(new ArrayList<>(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU));
         setSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
@@ -1320,8 +1323,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return  doSelectedEcRequirebitLenths()
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)
-                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_NTRU)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
+    }
+
+    public boolean isKeyAlgorithmsRequireSecurityLevel() {
+        return  getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU);
     }
 
     public String[] getAvailableKeyAlgorithms() {
@@ -1360,6 +1366,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
     }
 
+
+    public int[] getAvailableSecurityLevels(){
+        final List<Integer> availableSecurityLevels = getAvailableSecurityLevelsAsList();
+        if (availableSecurityLevels != null) {
+            final int[] returnval = new int[availableSecurityLevels.size()];
+            for (int i = 0; i < availableSecurityLevels.size(); i++) {
+                returnval[i] = availableSecurityLevels.get(i);
+            }
+            return returnval;
+        }
+        return new int[]{};
+    }
+
     public int[] getAvailableBitLengths() {
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
         final int[] returnval = new int[availablebitlengths.size()];
@@ -1367,6 +1386,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             returnval[i] = availablebitlengths.get(i);
         }
         return returnval;
+    }
+
+
+    public List<Integer> getAvailableSecurityLevelsAsList() {
+        return (ArrayList<Integer>) data.get(AVAILABLESECURITYLEVEL);
+    }
+
+    public void setAvailableSecurityLevelsAsList(final List<Integer> availableSecurityLevels) {
+        data.put(AVAILABLESECURITYLEVEL, availableSecurityLevels);
+    }
+
+    public void setAvailableSecurityLevels(int[] availableSecurityLevelsArray) {
+        setAvailableSecurityLevelsAsList(Arrays.stream(availableSecurityLevelsArray).boxed().collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")
