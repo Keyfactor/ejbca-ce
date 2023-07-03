@@ -138,10 +138,6 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableBitLengths')}"
                         escape="false" />
                     <br/>
-                    <h:panelGroup styleClass="help">
-                        <h:outputText
-                            value="#{web.text.PQCMEANSSECURITYSTRENGTH}" />
-                    </h:panelGroup>
                 </h:panelGroup>
                 <h:selectManyListbox id="selectavailablebitlengths" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
                     value="#{certProfileBean.certificateProfile.availableBitLengths}"
@@ -150,7 +146,25 @@
                     <f:selectItems value="#{certProfileBean.availableBitLengthsAvailable}" />
                     <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectManyListbox>
-
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
+                    <h:outputLabel for="selectavailabSecurityLevel"
+                                   value="#{web.text.AVAILABLESECURILEVEL}" />
+                    <h:outputText
+                            value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableBitLengths')}"
+                            escape="false" />
+                    <br/>
+                    <h:panelGroup styleClass="help">
+                        <h:outputText
+                                value="#{web.text.PQCMEANSSECURITYLEVEL}" />
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:selectManyListbox id="selectavailabSecurityLevel" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
+                                     value="#{certProfileBean.certificateProfile.availableSecurityLevels}"
+                                     size="5" styleClass="number select-list"
+                                     disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsRequireSecurityLevel}">
+                    <f:selectItems value="#{certProfileBean.availableSecurityLevel}" />
+                    <f:ajax event="change" execute="@this" render="@none"/>
+                </h:selectManyListbox>
                 <h:outputLabel for="selectsignaturealgorithm"
                     value="#{web.text.SIGNATUREALGORITHM}" />
                 <h:selectOneMenu id="selectsignaturealgorithm"
