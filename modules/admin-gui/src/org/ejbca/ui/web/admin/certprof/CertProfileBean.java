@@ -194,6 +194,11 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 addErrorMessage("ONEAVAILABLEBITLENGTH");
                 success = false;
             }
+            if (prof.isKeyAlgorithmsRequireSecurityLevel() &&
+                    (prof.getAvailableSecurityLevelsAsList() == null || prof.getAvailableSecurityLevelsAsList().isEmpty())) {
+                addErrorMessage("ONEAVAILABLESECURITYLEVEL");
+                success = false;
+            }
             if (isCtEnabled()) {
                 final int numEnabledLabels = prof.getEnabledCtLabels().size();
                 final boolean isNumOfSctsCustom = prof.isNumberOfSctByCustom();
@@ -437,6 +442,22 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    public List<SelectItem> getAvailableSecurityLevel() {
+        Set<Integer> availableSecurityLevel = new TreeSet<>();
+        if (certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
+            availableSecurityLevel.addAll(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU);
+        }
+        final List<SelectItem> ret = new ArrayList<>();
+        if (!availableSecurityLevel.isEmpty() && certificateProfile.isKeyAlgorithmsRequireSecurityLevel()) {
+            for (final Integer current : availableSecurityLevel) {
+                ret.add(new SelectItem(current, current.toString()));
+            }
+        } else {
+            ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOALGORITHMWITHSELECTABLESECURITYLEVEL")));
+        }
+        return ret;
+    }
+
     // SelectItem<Integer, String>
     public List<SelectItem> getAvailableBitLengthsAvailable() {
         Set<Integer> availableBitLengths = new TreeSet<>();
@@ -452,9 +473,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSTU);
-        }
-        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
-            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_NTRU);
         }
         final List<SelectItem> ret = new ArrayList<>();
         if (availableBitLengths.size() > 0 && certificateProfile.isKeyAlgorithmsRequireKeySizes()) {
