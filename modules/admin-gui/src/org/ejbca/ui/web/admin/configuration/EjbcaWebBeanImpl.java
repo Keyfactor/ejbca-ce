@@ -344,6 +344,9 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                         OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, oauthIdToken, refreshToken);
                         if (token != null) {
                             httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                            if (token.getIdToken() != null) {
+                                httpServletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
+                            }
                             if (token.getRefreshToken() != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                             }
