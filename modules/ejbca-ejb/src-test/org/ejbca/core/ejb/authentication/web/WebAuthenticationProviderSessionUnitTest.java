@@ -393,6 +393,28 @@ public class WebAuthenticationProviderSessionUnitTest {
         log.trace("<encryptedTokenWithIdToken");
     }
 
+    /**
+     * Tests authentication with both an access_token and a signed id_token.
+     * Verification will happen on the access_token, since it is not encrypted.
+     */
+    @Test
+    public void bothAccessTokenAndIdToken() throws TokenExpiredException {
+        log.trace(">bothAccessTokenAndIdToken");
+        final String accessToken = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}", privKey);
+        // Limited ID token
+        final String idToken = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"aud\": \"unittest\"}", privKey);
+        final AuthenticationToken admin = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, accessToken, idToken);
+        assertNotNull("Authentication should succeed", admin);
+        final OAuth2AuthenticationToken oauthAdmin = (OAuth2AuthenticationToken) admin;
+        assertEquals(accessToken, oauthAdmin.getEncodedAccessToken());
+        assertEquals(idToken, oauthAdmin.getEncodedIdToken());
+        assertNotNull(oauthAdmin.getClaims());
+        final OAuth2Principal claims = oauthAdmin.getClaims();
+        assertEquals("johndoe", claims.getSubject());
+        assertEquals(Collections.singletonList("unittest"), claims.getAudience());
+        log.trace("<bothAccessTokenAndIdToken");
+    }
+
     private void expectAuditLog(final String messageKey, final Object... params) {
         final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", intres.getLocalizedMessage(messageKey, params));
