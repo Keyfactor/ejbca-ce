@@ -181,28 +181,32 @@ public final class EjbcaWebBeanImplUnitTest {
         expect(mockedRequest.getRemoteAddr()).andReturn(MOCKED_REMOTE_ADDR);
     }
 
+    private void expectAccessTokenCheckAndReturn(final String encodedToken) {
+        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
+        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
+        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(encodedToken);
+    }
+
+    private void expectIdTokenCheckAndReturn(final String encodedToken) {
+        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
+        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
+        expect(mockedSession.getAttribute("ejbca.id.token")).andReturn(encodedToken);
+    }
+
     private void expectExtractCertificate() {
         expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(new X509Certificate[] { adminCert });
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.id.token")).andReturn(null);
+        expectAccessTokenCheckAndReturn(null);
+        expectIdTokenCheckAndReturn(null);
     }
 
     private void expectExtractBearerToken() {
         expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(bearerToken);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.id.token")).andReturn(idToken);
+        expectAccessTokenCheckAndReturn(bearerToken);
+        expectIdTokenCheckAndReturn(idToken);
     }
 
     @SuppressWarnings("unchecked")
@@ -290,12 +294,8 @@ public final class EjbcaWebBeanImplUnitTest {
         expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.id.token")).andReturn(null);
+        expectAccessTokenCheckAndReturn(null);
+        expectIdTokenCheckAndReturn(null);
         expectRequestGetters();
         expectErrorPageInitiaization(true);
         replayAll();
@@ -445,12 +445,8 @@ public final class EjbcaWebBeanImplUnitTest {
         expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(new X509Certificate[] { adminCert });
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(bearerToken);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.id.token")).andReturn(null);
+        expectAccessTokenCheckAndReturn(bearerToken);
+        expectIdTokenCheckAndReturn(null);
         expectRequestGetters();
         // First, EJBCA tries to authenticate with client cert 
         expectCertAuthWithoutRole();
