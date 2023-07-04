@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.authentication.web;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.base.Preconditions;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -209,28 +210,11 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (LOG.isDebugEnabled()) {
                 LOG.debug("JWT Claims:" + claims);
             }
-            
-            // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
-            if (!keyInfo.isAudienceCheckDisabled()) {
-                final String expectedAudience = keyInfo.getAudience();
-                if (StringUtils.isBlank(expectedAudience)) {
-                    if (isAllowBlankAudience()) {
-                        LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
-                                + ".  This is supported for recent upgrades from versions before 7.8.0, but a value should be set IMMEDIATELY.");
-                    } else {
-                        LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
-                        return null;
-                    }
-                } else if (claims.getAudience() == null) {
-                    LOG.warn("No audience claim in JWT.  Can't confirm validity.");
-                    return null;
-                } else if (!claims.getAudience().contains(expectedAudience)) {
-                    logAuthenticationFailure(
-                            intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
-                    return null;
-                }
+
+            if (!verifyOauth2Audience(keyInfo, claims)) {
+                return null;
             }
-            
+
             final Date expiry = claims.getExpirationTime();
             final Date now = new Date();
             final String subject = keyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE) ?
@@ -280,6 +264,30 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         } else {
             LOG.info("Received unsupported OAuth2 JWT type.");
         }
+    }
+
+    private boolean verifyOauth2Audience(final OAuthKeyInfo keyInfo, final JWTClaimsSet claims) {
+        // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
+        if (!keyInfo.isAudienceCheckDisabled()) {
+            final String expectedAudience = keyInfo.getAudience();
+            if (StringUtils.isBlank(expectedAudience)) {
+                if (isAllowBlankAudience()) {
+                    LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
+                            + ".  This is supported for recent upgrades from versions before 7.8.0, but a value should be set IMMEDIATELY.");
+                } else {
+                    LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
+                    return false;
+                }
+            } else if (claims.getAudience() == null) {
+                LOG.warn("No audience claim in JWT.  Can't confirm validity.");
+                return false;
+            } else if (!claims.getAudience().contains(expectedAudience)) {
+                logAuthenticationFailure(
+                        intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
+                return false;
+            }
+        }
+        return true;
     }
 
     private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, OAuthKeyInfo keyInfo) {
