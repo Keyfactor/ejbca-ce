@@ -107,6 +107,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
+import org.cesecore.util.GdprRedactionUtils;
 
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.Base64;
@@ -375,6 +376,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
         issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
         try {
+            // TODO: what to do when whole cert is to be logged
             issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
         } catch (IOException e) {
             //Should not be able to happen at this point
@@ -408,11 +410,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
         // Audit log that we received the request
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("subjectdn", endEntityInformation.getDN());
+        details.put("subjectdn", endEntityInformation.getLogSafeSubjectDn());
         details.put("requestX500name", (request == null || request.getRequestX500Name() == null) ? "null" : request.getRequestX500Name().toString());
-        details.put("subjectaltname", endEntityInformation.getSubjectAltName());
+        details.put("subjectaltname", endEntityInformation.getLogSafeSubjectAltName());
         if (null != request) {
-            details.put("requestaltname", request.getRequestAltNames());
+            details.put("requestaltname", GdprRedactionUtils.getSubjectAltNameLogSafe(request.getRequestAltNames(), endEntityInformation.getEndEntityProfileId()));
         }
         details.put("certprofile", endEntityInformation.getCertificateProfileId());
         details.put("keyusage", keyusage);
@@ -694,7 +696,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             
             // Audit log that we issued the certificate
             final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
-            issuedetails.put("subjectdn", endEntityInformation.getDN());
+            issuedetails.put("subjectdn", endEntityInformation.getLogSafeSubjectDn());
             issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
             issuedetails.put("issuancerevocationreason", revreason);
             try {
@@ -759,6 +761,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
                     issuedetails.put("ctprecert", true);
                     issuedetails.put("msg", intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
+                    // TODO
                     issuedetails.put("subjectdn", CertTools.getSubjectDN(precert));
                     issuedetails.put("certprofile", subject.getCertificateProfileId());
                     try {
@@ -905,7 +908,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
      */
     private void auditFailure(final AuthenticationToken admin, final Exception e, final String extraDetails, final String tracelog, final int caid, final String username) {
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", e.getMessage());
+        details.put("msg", e.getMessage()); // TODO
         if (extraDetails != null) {
             details.put("details", extraDetails);
         }
