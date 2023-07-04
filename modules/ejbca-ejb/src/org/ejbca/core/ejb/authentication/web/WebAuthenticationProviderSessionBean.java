@@ -166,53 +166,45 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                         "Cannot authenticate with OAuth because no providers are available");
                 return null;
             }
-            final JWT jwt = JWTParser.parse(StringUtils.isNotEmpty(oauthIdToken) ? oauthIdToken : encodedOauthBearerToken);
-            if (jwt instanceof PlainJWT) {
-                LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
-                return null;
-            } else if (jwt instanceof EncryptedJWT) {
-                LOG.info("Received encrypted OAuth2 JWT, which is unsupported.");
-                return null;
-            } else if (jwt instanceof SignedJWT) {
-                final SignedJWT signedJwt = (SignedJWT) jwt;
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Signed JWT has key ID: " + signedJwt.getHeader().getKeyID());
-                }
-                keyInfo = getJwtKey(oauthConfiguration, signedJwt.getHeader().getKeyID());
-                if (keyInfo == null) {
-                    logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
-                    return null;
-                }
-                OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(signedJwt.getHeader().getKeyID());
-                if (oAuthPublicKey != null) {
-                    // Default provider (Key ID does not match)
-                    if (verifyJwt(oAuthPublicKey, signedJwt)) {
-                        keyFingerprint = oAuthPublicKey.getKeyFingerprint();
-                    } else {
-                        logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", oAuthPublicKey.getKeyFingerprint()));
-                        return null;
-                    }
-                } else {
-                    if (keyInfo.getKeys().isEmpty()) {
-                        logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
-                        return null;
-                    } else {
-                        for (OAuthPublicKey key : keyInfo.getKeys().values()) {
-                            if (verifyJwt(key, signedJwt)) {
-                                keyFingerprint = key.getKeyFingerprint();
-                                break;
-                            }
-                        }
-                        if (keyFingerprint == null) {
-                            logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature_provider", keyInfo.getLabel()));
-                            return null;
-                        }
-                    }
-                }
-            } else {
-                LOG.info("Received unsupported OAuth2 JWT type.");
+            final SignedJWT jwt = getSignedJwt(encodedOauthBearerToken, oauthIdToken);
+            if (jwt == null) {
+                return null; // Error has already been logged
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Signed JWT has key ID: " + jwt.getHeader().getKeyID());
+            }
+            keyInfo = getJwtKey(oauthConfiguration, jwt.getHeader().getKeyID());
+            if (keyInfo == null) {
+                logAuthenticationFailure(intres.getLocalizedMessage(jwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                 return null;
             }
+            OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(jwt.getHeader().getKeyID());
+            if (oAuthPublicKey != null) {
+                // Default provider (Key ID does not match)
+                if (verifyJwt(oAuthPublicKey, jwt)) {
+                    keyFingerprint = oAuthPublicKey.getKeyFingerprint();
+                } else {
+                    logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", oAuthPublicKey.getKeyFingerprint()));
+                    return null;
+                }
+            } else {
+                if (keyInfo.getKeys().isEmpty()) {
+                    logAuthenticationFailure(intres.getLocalizedMessage(jwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
+                    return null;
+                } else {
+                    for (OAuthPublicKey key : keyInfo.getKeys().values()) {
+                        if (verifyJwt(key, jwt)) {
+                            keyFingerprint = key.getKeyFingerprint();
+                            break;
+                        }
+                    }
+                    if (keyFingerprint == null) {
+                        logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature_provider", keyInfo.getLabel()));
+                        return null;
+                    }
+                }
+            }
+
             final JWTClaimsSet claims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("JWT Claims:" + claims);
@@ -259,6 +251,34 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         } catch (JOSEException e) {
             LOG.info("Configured not verify OAuth2 JWT signature: " + e.getMessage(), e);
             return null;
+        }
+    }
+
+    private SignedJWT getSignedJwt(String encodedOauthBearerToken, String oauthIdToken) throws ParseException {
+        final JWT accessJwt = JWTParser.parse(encodedOauthBearerToken);
+        if (accessJwt instanceof SignedJWT) {
+            LOG.debug("Using access_token");
+            return (SignedJWT) accessJwt;
+        }
+        if (StringUtils.isNotEmpty(oauthIdToken)) {
+            final JWT idJwt = JWTParser.parse(oauthIdToken);
+            if (idJwt instanceof SignedJWT) {
+                LOG.debug("Using id_token");
+                return (SignedJWT) idJwt;
+            }
+        }
+        reportUnsupportedJwtType(accessJwt);
+        return null;
+    }
+
+    private void reportUnsupportedJwtType(final JWT jwt) {
+        Preconditions.checkArgument(!(jwt instanceof SignedJWT));
+        if (jwt instanceof PlainJWT) {
+            LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
+        } else if (jwt instanceof EncryptedJWT) {
+            LOG.info("Received encrypted OAuth2 JWT, which is unsupported.");
+        } else {
+            LOG.info("Received unsupported OAuth2 JWT type.");
         }
     }
 
