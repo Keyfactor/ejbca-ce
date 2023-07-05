@@ -13,16 +13,15 @@
 
 package org.ejbca.config;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.keyfactor.util.StringTools;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.util.SlotList;
 import org.ejbca.util.URIUtil;
 
-import com.keyfactor.util.StringTools;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This file handles configuration from web.properties
@@ -111,6 +110,10 @@ public class WebConfiguration {
 			log.warn("\"httpserver.external.privhttps\" is not a decimal number. Using default value: " + value);
 		}
 		return value;
+	}
+
+	public static String getContentSecurityPolicy() {
+		return EjbcaConfigurationHolder.getString("web.header.content_security_policy");
 	}
 
 	/**
