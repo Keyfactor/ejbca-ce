@@ -21,6 +21,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,12 +45,15 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -64,6 +68,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -76,6 +81,8 @@ import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionProxyRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -84,6 +91,8 @@ import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.mock.publisher.MockedThrowAwayRevocationPublisher;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -140,8 +149,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);    
-    private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    protected static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
+    private final PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
+    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static final Logger log = Logger.getLogger(CaTestCase.class);
     
@@ -841,6 +855,42 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         return new AddEndEntityApprovalRequest(userdata, false, internalAdmin, null, caId,
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfileLongExpirationPeriod, null);
         
+    }
+    
+    protected CAInfo setUpThrowAwayPublishingTest(final boolean useQueue, final boolean useNoConflictCertificateData, 
+            final boolean userStorage,
+            int caId, String certificateProfile, String publisherName) throws Exception {
+        // Set up publishing
+        final CustomPublisherContainer publisher = new CustomPublisherContainer();
+        publisher.setClassPath(MockedThrowAwayRevocationPublisher.class.getName());
+        publisher.setDescription("Used in Junit Test, Remove this one");
+        publisher.setOnlyUseQueue(useQueue);
+        final int publisherId = publisherSession.addPublisher(roleMgmgToken, publisherName, publisher);
+        final CertificateProfile certProf = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
+        certProf.setPublisherList(new ArrayList<>(Collections.singletonList(publisherId)));
+        int certProfId = certificateProfileSession.addCertificateProfile(roleMgmgToken, certificateProfile, certProf);
+        // Set throw away flag on test CA
+        final CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, caId);
+        cainfo.setUseCertificateStorage(false);
+        cainfo.setUseUserStorage(userStorage);
+        cainfo.setAcceptRevocationNonExistingEntry(true);
+        cainfo.setUseNoConflictCertificateData(useNoConflictCertificateData);
+        cainfo.setDefaultCertificateProfileId(certProfId);
+        caAdminSession.editCA(roleMgmgToken, cainfo);
+        return cainfo;
+    }
+    
+    protected void cleanUpThrowAwayPublishingTest(int caId, String certificateProfile, String publisherName, BigInteger certificateSerial) 
+            throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
+        final CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, caId);
+        cainfo.setUseCertificateStorage(true);
+        cainfo.setUseUserStorage(true);
+        cainfo.setAcceptRevocationNonExistingEntry(false);
+        cainfo.setUseNoConflictCertificateData(false);
+        caAdminSession.editCA(roleMgmgToken, cainfo);
+        certificateProfileSession.removeCertificateProfile(roleMgmgToken, certificateProfile);
+        publisherProxySession.removePublisherInternal(roleMgmgToken, publisherName);
+        internalCertStoreSession.removeCertificate(certificateSerial);
     }
     
 }
