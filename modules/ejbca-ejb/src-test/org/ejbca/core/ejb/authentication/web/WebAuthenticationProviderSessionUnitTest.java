@@ -61,8 +61,10 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.same;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test of {@link WebAuthenticationProviderSessionBean}. See also WebAuthenticationProviderSessionBeanTest
@@ -386,6 +388,7 @@ public class WebAuthenticationProviderSessionUnitTest {
         final OAuth2AuthenticationToken oauthAdmin = (OAuth2AuthenticationToken) admin;
         assertEquals(accessToken, oauthAdmin.getEncodedAccessToken());
         assertEquals(idToken, oauthAdmin.getEncodedIdToken());
+        assertTrue("Should use default provider", oauthAdmin.isUsingDefaultProvider());
         assertNotNull(oauthAdmin.getClaims());
         final OAuth2Principal claims = oauthAdmin.getClaims();
         assertEquals("johndoe", claims.getSubject());
@@ -408,11 +411,21 @@ public class WebAuthenticationProviderSessionUnitTest {
         final OAuth2AuthenticationToken oauthAdmin = (OAuth2AuthenticationToken) admin;
         assertEquals(accessToken, oauthAdmin.getEncodedAccessToken());
         assertEquals(idToken, oauthAdmin.getEncodedIdToken());
+        assertTrue("Should use default provider", oauthAdmin.isUsingDefaultProvider());
         assertNotNull(oauthAdmin.getClaims());
         final OAuth2Principal claims = oauthAdmin.getClaims();
         assertEquals("johndoe", claims.getSubject());
         assertEquals(Collections.singletonList("unittest"), claims.getAudience());
         log.trace("<bothAccessTokenAndIdToken");
+    }
+
+    @Test
+    public void usingSpecificOAuthKeyId() throws TokenExpiredException {
+        final String accessToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}", privKey);
+        final AuthenticationToken admin = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, accessToken, null);
+        assertNotNull("Authentication should succeed", admin);
+        final OAuth2AuthenticationToken oauthAdmin = (OAuth2AuthenticationToken) admin;
+        assertFalse("Should NOT use default provider", oauthAdmin.isUsingDefaultProvider());
     }
 
     private void expectAuditLog(final String messageKey, final Object... params) {
