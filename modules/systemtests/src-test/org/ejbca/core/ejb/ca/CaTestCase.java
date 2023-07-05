@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -891,6 +892,24 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         certificateProfileSession.removeCertificateProfile(roleMgmgToken, certificateProfile);
         publisherProxySession.removePublisherInternal(roleMgmgToken, publisherName);
         internalCertStoreSession.removeCertificate(certificateSerial);
+    }
+    
+    // MapToStringConverter from adminweb
+    protected static String getAsString(final Map<String,Object> map) {
+        final StringBuilder sb = new StringBuilder();
+        if (map.size() == 1 && map.containsKey("msg")) {
+            final String ret = (String) map.get("msg");
+            if (ret != null) {
+                return ret;
+            }
+        }
+        for (final Object key : map.keySet()) {
+            if (sb.length()!=0) {
+                sb.append("; ");
+            }
+            sb.append(key).append('=').append(map.get(key));
+        }
+        return sb.toString();
     }
     
 }

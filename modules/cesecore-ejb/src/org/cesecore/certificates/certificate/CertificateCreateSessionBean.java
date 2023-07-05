@@ -100,6 +100,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.configuration.GdprConfigurationCache;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -376,8 +377,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
         issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
         try {
-            // TODO: what to do when whole cert is to be logged
-            issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
+            if (!GdprConfigurationCache.INSTANCE.
+                    getGdprConfiguration(endEntityInformation.getEndEntityProfileId()).isRedactSubjectDnAndSan()) {
+                issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
+            }
         } catch (IOException e) {
             //Should not be able to happen at this point
             throw new IllegalStateException();
