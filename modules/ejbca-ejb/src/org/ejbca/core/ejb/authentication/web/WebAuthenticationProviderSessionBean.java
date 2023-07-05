@@ -124,26 +124,34 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         this.globalConfigurationSession = globalConfigurationSession;
         this.securityEventsLoggerSession = securityEventsLoggerSession;
     }
-    
+
+    @PostConstruct
+    public void initialize() {
+        initializeAudienceCheck();
+        initializeCache();
+    }
+
     /**
      * OAuth audience ('aud') claim checking was not enforced until 7.8.0.  Allow a blank Audience value in the OAuth configuration to match any Bearer token until 
      * the database is post-upgraded to 7.8.0.  After that, it is expected that all OAuth provider configurations will have a configured Audience value and that Bearer 
      * token 'aud' claims will match that value to be considered valid.
      */
-    @PostConstruct
-    public void initializeAudienceCheck() {
+    private void initializeAudienceCheck() {
         GlobalUpgradeConfiguration upgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.8.0");
+        if (isAllowBlankAudience()) {
+            LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
+        }
+    }
+
+    private void initializeCache() {
         cache = Caffeine.newBuilder()
                 .maximumSize(10_000)
                 .refreshAfterWrite(12, TimeUnit.SECONDS)
                 .expireAfterAccess(60, TimeUnit.SECONDS)
                 .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(
                         key.getSubjectDn(), key.getSerialNumber()));
-        if (isAllowBlankAudience()) {
-            LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
-        }
     }
 
     @Override
@@ -348,29 +356,19 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String oauthIdToken, final String refreshToken) {
         OAuthGrantResponseInfo oAuthGrantResponseInfo = null;
         try {
-            OAuthKeyInfo keyInfo;
-            final JWT jwt = JWTParser.parse(StringUtils.isNotEmpty(oauthIdToken) ? oauthIdToken : encodedOauthBearerToken);
-            if (jwt instanceof PlainJWT) {
-                LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
-                return null;
-            } else if (jwt instanceof EncryptedJWT) {
-                LOG.info("Received encrypted OAuth2 JWT, which is unsupported.");
-                return null;
-            } else if (jwt instanceof SignedJWT) {
-                final SignedJWT signedJwt = (SignedJWT) jwt;
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Signed JWT has key ID: " + signedJwt.getHeader().getKeyID());
-                }
-                keyInfo = getJwtKey(oauthConfiguration, signedJwt.getHeader().getKeyID());
-                if (keyInfo == null) {
-                    logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
-                    return null;
-                }
-                String redirectUrl = getBaseUrl();
-                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
-                        internalKeyBindings, certificateStoreSession, cryptoToken));
-                oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            final SignedJWT jwt = getSignedJwt(encodedOauthBearerToken, oauthIdToken);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Signed JWT has key ID: " + jwt.getHeader().getKeyID());
             }
+            final OAuthKeyInfo keyInfo = getJwtKey(oauthConfiguration, jwt.getHeader().getKeyID());
+            if (keyInfo == null) {
+                logAuthenticationFailure(intres.getLocalizedMessage(jwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
+                return null;
+            }
+            String redirectUrl = getBaseUrl();
+            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
+                    internalKeyBindings, certificateStoreSession, cryptoToken));
+            oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;
