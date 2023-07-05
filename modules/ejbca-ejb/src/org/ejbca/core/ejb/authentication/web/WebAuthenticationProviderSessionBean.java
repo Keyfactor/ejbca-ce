@@ -169,7 +169,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             final String oauthIdToken) throws TokenExpiredException {
         try {
             String keyFingerprint = null;
-            OAuthKeyInfo keyInfo = null;
             if (oauthConfiguration == null || MapUtils.isEmpty(oauthConfiguration.getOauthKeys())) {
                 LOG.info(oauthConfiguration == null ? "Failed to get OAuth configuration. If using peers, the CA version may be too old." :
                         "Cannot authenticate with OAuth because no providers are available");
@@ -179,15 +178,16 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (jwt == null) {
                 return null; // Error has already been logged
             }
+            final String keyId = jwt.getHeader().getKeyID();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Signed JWT has key ID: " + jwt.getHeader().getKeyID());
+                LOG.debug("Signed JWT has key ID: " + keyId);
             }
-            keyInfo = getJwtKey(oauthConfiguration, jwt.getHeader().getKeyID());
+            final OAuthKeyInfo keyInfo = getJwtKey(oauthConfiguration, keyId);
             if (keyInfo == null) {
-                logAuthenticationFailure(intres.getLocalizedMessage(jwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
+                logAuthenticationFailure(intres.getLocalizedMessage(keyId != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                 return null;
             }
-            OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(jwt.getHeader().getKeyID());
+            final OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(keyId);
             if (oAuthPublicKey != null) {
                 // Default provider (Key ID does not match)
                 if (verifyJwt(oAuthPublicKey, jwt)) {
@@ -198,7 +198,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 }
             } else {
                 if (keyInfo.getKeys().isEmpty()) {
-                    logAuthenticationFailure(intres.getLocalizedMessage(jwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
+                    logAuthenticationFailure(intres.getLocalizedMessage(keyId != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                     return null;
                 } else {
                     for (OAuthPublicKey key : keyInfo.getKeys().values()) {
@@ -236,7 +236,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             final OAuth2Principal principal = createOauthPrincipal(claims, keyInfo);
-            return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, oauthIdToken, keyFingerprint, keyInfo.getLabel());
+            final boolean usingDefaultProvider = (keyId == null);
+            return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, oauthIdToken, keyFingerprint, keyInfo.getLabel(), usingDefaultProvider);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;

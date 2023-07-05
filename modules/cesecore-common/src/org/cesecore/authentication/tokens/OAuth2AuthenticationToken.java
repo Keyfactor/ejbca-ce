@@ -36,6 +36,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
     private final String encodedIdToken;
     private final String base64Fingerprint;
     private final String providerLabel;
+    private final boolean usingDefaultProvider;
 
     /**
      * Creates an OAuth2AuthenticationToken. No validation is performed that the token is valid, or that
@@ -46,7 +47,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
      * @param encodedIdToken Encoded JWT ID token, or null if absent.
      * @param base64Fingerprint Base64 encoded SHA-256 fingerprint of public key that was used to verify the JWT.
      */
-    public OAuth2AuthenticationToken(final OAuth2Principal principal, final String encodedAccessToken, final String encodedIdToken, final String base64Fingerprint, final String providerLabel) {
+    public OAuth2AuthenticationToken(final OAuth2Principal principal, final String encodedAccessToken, final String encodedIdToken, final String base64Fingerprint, final String providerLabel, final boolean usingDefaultProvider) {
         super(Collections.singleton(principal), Collections.singleton(encodedAccessToken));
         Objects.requireNonNull(principal, "principal may not be null");
         Objects.requireNonNull(encodedAccessToken, "encodedAccessToken may not be null");
@@ -55,6 +56,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
         this.encodedIdToken = encodedIdToken;
         this.base64Fingerprint = base64Fingerprint;
         this.providerLabel = providerLabel;
+        this.usingDefaultProvider = usingDefaultProvider;
     }
 
     @Override
@@ -157,5 +159,9 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
 
     public String getEncodedIdToken() {
         return encodedIdToken;
+    }
+
+    public boolean isUsingDefaultProvider() {
+        return usingDefaultProvider;
     }
 }
