@@ -161,25 +161,7 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
         super.tearDown();
         
     }
-    
-    // MapToStringConverter from adminweb
-    private String getAsString(final Map<String,Object> map) {
-        final StringBuilder sb = new StringBuilder();
-        if (map.size() == 1 && map.containsKey("msg")) {
-            final String ret = (String) map.get("msg");
-            if (ret != null) {
-                return ret;
-            }
-        }
-        for (final Object key : map.keySet()) {
-            if (sb.length()!=0) {
-                sb.append("; ");
-            }
-            sb.append(key).append('=').append(map.get(key));
-        }
-        return sb.toString();
-    }
-    
+        
     @Test
     public void testRedactEndEntity() throws Exception {
         testRedactEndEntity(redactedEepId, true);
