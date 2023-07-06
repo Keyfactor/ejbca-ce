@@ -378,7 +378,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
         try {
             if (!GdprConfigurationCache.INSTANCE.
-                    getGdprConfiguration(endEntityInformation.getEndEntityProfileId()).isRedactSubjectDnAndSan()) {
+                    getGdprConfiguration(endEntityInformation.getEndEntityProfileId()).isRedactPii()) {
                 issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
             }
         } catch (IOException e) {
