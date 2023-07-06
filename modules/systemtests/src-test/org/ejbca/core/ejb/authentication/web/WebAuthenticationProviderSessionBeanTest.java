@@ -326,11 +326,11 @@ public class WebAuthenticationProviderSessionBeanTest {
     @Test
     public void testBlankAudClaimAllowedUntil780() throws Exception {
         WebAuthenticationProviderSessionBean bean770 = new WebAuthenticationProviderSessionBean(null, createConfigForVersion("7.7.0"), null);
-        bean770.initializeAudienceCheck();
+        bean770.initialize();
         assertTrue(bean770.isAllowBlankAudience());
 
         WebAuthenticationProviderSessionBean bean780 = new WebAuthenticationProviderSessionBean(null, createConfigForVersion("7.8.0"), null);
-        bean780.initializeAudienceCheck();
+        bean780.initialize();
         assertFalse(bean780.isAllowBlankAudience());
     }
 
