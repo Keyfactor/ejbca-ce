@@ -21,6 +21,8 @@ import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.configuration.GdprConfiguration;
+import org.cesecore.configuration.GdprConfigurationCache;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -103,6 +105,10 @@ public enum EndEntityProfileCache {
         final Map<Integer, String> idNameCache = new HashMap<Integer, String>(idNameMapCacheTemplate);
         final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
+        
+        final Map<Integer, GdprConfiguration> idToGdprConfigCache = new HashMap<>();
+        final Map<String, GdprConfiguration> nameToGdprConfigCache = new HashMap<>();
+        
         try {
         	final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
         	for (final EndEntityProfileData next : result) {
@@ -110,7 +116,16 @@ public enum EndEntityProfileCache {
         		final String profileName = next.getProfileName();
         		idNameCache.put(id, profileName);
         		nameIdCache.put(profileName, id);
-        		profCache.put(id, next.getProfile());
+        		
+        		EndEntityProfile profile = next.getProfile();
+        		profCache.put(id, profile);
+        		
+        		// TODO: will be replaced with original value
+        		GdprConfiguration gdprConfig = new GdprConfiguration(
+                        profile.getDescription()!=null && profile.getDescription().contains("redact"));
+        		idToGdprConfigCache.put(id, gdprConfig);
+        		nameToGdprConfigCache.put(profileName, gdprConfig);
+        		
         	}
         } catch (Exception e) {
         	LOG.error(INTRES.getLocalizedMessage("ra.errorreadprofiles"), e);
@@ -118,6 +133,9 @@ public enum EndEntityProfileCache {
         idNameMapCache = idNameCache;
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
+        
+        GdprConfigurationCache.INSTANCE.updateGdprCache(idToGdprConfigCache, nameToGdprConfigCache);
+        
         if (LOG.isTraceEnabled()) {
             final long end = System.currentTimeMillis();
             LOG.trace("<updateProfileCache took: "+(end-now)+"ms");
