@@ -75,6 +75,7 @@ public class RaAuthenticationHelper implements Serializable {
             authenticationTokenTlsSessionId = currentTlsSessionId;
             final X509Certificate x509Certificate = getClientX509Certificate(httpServletRequest);
             final String oauthBearerToken = getBearerToken(httpServletRequest);
+            final String oauthIdToken = getOauthIdToken(httpServletRequest);
             if (x509Certificate == null && x509AuthenticationTokenFingerprint != null) {
                 log.warn("Suspected session hijacking attempt from " + httpServletRequest.getRemoteAddr() +
                         ". RA client presented no TLS certificate in HTTP session previously authenticated with client certificate.");
@@ -110,19 +111,23 @@ public class RaAuthenticationHelper implements Serializable {
              authenticationToken.matchTokenType(PublicAccessAuthenticationTokenMetaData.TOKEN_TYPE))) {
                 final OAuthConfiguration oauthConfiguration = raMasterApi.getGlobalConfiguration(OAuthConfiguration.class);
                 try {
-                    authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
+                    authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken, oauthIdToken);
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
                     if (refreshToken != null) {
                         OAuthGrantResponseInfo token = null;
                         try {
-                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthConfiguration, oauthBearerToken, refreshToken);
+                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthConfiguration, oauthBearerToken, oauthIdToken, refreshToken);
                             if (token != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                                if (token.getIdToken() != null) {
+                                    httpServletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
+                                }
                                 if (token.getRefreshToken() != null) {
                                     httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                                 }
-                                authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token.getAccessToken());
+                                authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration,
+                                        token.getAccessToken(), token.getIdToken());
                             }
                         } catch (TokenExpiredException tokenExpiredException) {
                             log.info("Authentication failed using OAuth Bearer Token. Token Expired");
@@ -169,6 +174,15 @@ public class RaAuthenticationHelper implements Serializable {
             oauthBearerToken = (String) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
         }
         return oauthBearerToken;
+    }
+
+    private String getOauthIdToken(final HttpServletRequest httpServletRequest) {
+        final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+        if (oauthBearerToken != null) {
+            // Can't mix an ID Token with an access token from an HTTP header (it would be insecure)
+            return null;
+        }
+        return (String) httpServletRequest.getSession(true).getAttribute("ejbca.id.token");
     }
 
     /**

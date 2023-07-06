@@ -38,8 +38,8 @@ public interface WebAuthenticationProviderSessionLocal extends AuthenticationPro
     AuthenticationToken authenticateUsingNothing(String principal, boolean confidentialTransport);
 
     /** @return an OAuth2AuthenticationToken based on the given encoded token.  Returns null if token not valid. */
-    AuthenticationToken authenticateUsingOAuthBearerToken(OAuthConfiguration oauthConfiguration, String encodedOauthBearerToken) throws TokenExpiredException;
+    AuthenticationToken authenticateUsingOAuthBearerToken(OAuthConfiguration oauthConfiguration, String encodedOauthBearerToken, String oauthIdToken) throws TokenExpiredException;
 
     /** @return new OAuthGrantResponseInfo from oauth provider based on the given refresh token */
-    OAuthGrantResponseInfo refreshOAuthBearerToken(OAuthConfiguration oauthConfiguration, String encodedOauthBearerToken, String refreshToken) throws TokenExpiredException;
+    OAuthGrantResponseInfo refreshOAuthBearerToken(OAuthConfiguration oauthConfiguration, String encodedOauthBearerToken, String oauthIdToken, String refreshToken) throws TokenExpiredException;
 }
