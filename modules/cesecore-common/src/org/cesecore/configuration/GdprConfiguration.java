@@ -15,23 +15,23 @@ package org.cesecore.configuration;
 // To allow future expansion
 public class GdprConfiguration {
     
-    private boolean redactSubjectDnAndSan;
+    private boolean redactPii;
 
-    public GdprConfiguration(boolean redactSubjectDnAndSan) {
-        this.setRedactSubjectDnAndSan(redactSubjectDnAndSan);
+    public GdprConfiguration(boolean redactPii) {
+        this.setRedactPii(redactPii);
     }
 
-    public boolean isRedactSubjectDnAndSan() {
-        return redactSubjectDnAndSan;
+    public boolean isRedactPii() {
+        return redactPii;
     }
 
-    public void setRedactSubjectDnAndSan(boolean redactSubjectDnAndSan) {
-        this.redactSubjectDnAndSan = redactSubjectDnAndSan;
+    public void setRedactPii(boolean redactPii) {
+        this.redactPii = redactPii;
     }
 
     @Override
     public String toString() {
-        return "GdprConfiguration [redactSubjectDnAndSan=" + redactSubjectDnAndSan + "]";
+        return "GdprConfiguration [redactPii=" + redactPii + "]";
     }
     
 }
