@@ -1117,8 +1117,23 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             notificationEndEntityInformation.setTimeCreated(new Date(userData.getTimeCreated()));
             final Map<String, String[]> diff = originalCopy.getDiff(notificationEndEntityInformation, true);
             final Map<String, String> auditDiffCustomMap = new LinkedHashMap<>();
+
             for(String key : diff.keySet()) {
-                auditDiffCustomMap.put(key, diff.get(key)[0] + " -> " + diff.get(key)[1]);
+                final String change;
+
+                // Redact PII if checked in the EEP, so it is not logged in the audit log.
+                if (key.equalsIgnoreCase("subjectDn")) {
+                    change = GdprRedactionUtils.getSubjectDnLogSafe(diff.get(key)[0], endEntityProfileId) + " -> " +
+                             GdprRedactionUtils.getSubjectDnLogSafe(diff.get(key)[1], endEntityProfileId);
+                } else if (key.equalsIgnoreCase("subjectAltName")) {
+                    change = GdprRedactionUtils.getSubjectAltNameLogSafe(diff.get(key)[0], endEntityProfileId) + " -> " +
+                             GdprRedactionUtils.getSubjectAltNameLogSafe(diff.get(key)[1], endEntityProfileId);
+                }
+                else {
+                    change = diff.get(key)[0] + " -> " + diff.get(key)[1];
+                }
+
+                auditDiffCustomMap.put(key, change);
             }
             // Add the diff later on, in order to have it after the "msg"
             if (newStatus != oldStatus) {
@@ -1141,6 +1156,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 );
             }
         } catch (Exception e) {
+            // TODO ECA-10985: Redacting/handling error messages
             logAuditEvent(
                     EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE,
                     authenticationToken, caId, null, username,
@@ -1212,6 +1228,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             );
         } catch (Exception e) {
             final String msg = intres.getLocalizedMessage("ra.errorremoveentity", trimmedUsername);
+            // TODO ECA-10985: Redacting/handling error messages
             logAuditEvent(
                     EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE,
                     authenticationToken, caId, null, trimmedUsername,
