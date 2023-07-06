@@ -86,6 +86,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.util.approval.ApprovalUtil;
 import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
@@ -164,21 +165,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 entityManager.persist(approvalData);
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
                 sendApprovalNotifications(approvalRequest, approvalProfile, approvalData, false);
+
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", requestId);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("type", approvalRequest.getApprovalType());
 
                 List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
-                final boolean redactPii = isRedactPii(texts);
-
-                for (ApprovalDataText text : texts) {
-                    if (text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_DN) || text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_ALT_NAME)) {
-                        details.put(text.getHeader(), redactPii ? GdprRedactionUtils.REDACTED_CONTENT : text.getData());
-                    } else {
-                        details.put(text.getHeader(), text.getData());
-                    }
-                }
+                details = ApprovalUtil.updateWithApprovalDataText(details, texts);
 
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
@@ -237,19 +231,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             approvalRequest.addEditedByAdmin(admin);
             updateApprovalData(ad, approvalRequest);
             String msg = intres.getLocalizedMessage("approval.edited", requestId);
-            final Map<String, Object> details = new LinkedHashMap<>();
+            Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
 
             List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
-            final boolean redactPii = isRedactPii(texts);
-
-            for (ApprovalDataText text : texts) {
-                if (text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_DN) || text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_ALT_NAME)) {
-                    details.put(text.getHeader(), redactPii ? GdprRedactionUtils.REDACTED_CONTENT : text.getData());
-                } else {
-                    details.put(text.getHeader(), text.getData());
-                }
-            }
+            details = ApprovalUtil.updateWithApprovalDataText(details, texts);
 
             auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
@@ -1020,16 +1006,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.warn("There is more than one approval request with approval ID " + approvalId);
         }
         return ads.get(0).getId();
-    }
-
-    private boolean isRedactPii(List<ApprovalDataText> approvalDataTexts) {
-        for (ApprovalDataText text : approvalDataTexts) {
-            if (text.getHeader().equalsIgnoreCase(ApprovalDataText.REDACT_PII) && text.getData().equalsIgnoreCase("TRUE")) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     @Override
