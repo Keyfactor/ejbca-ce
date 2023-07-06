@@ -18,9 +18,6 @@ import java.io.Serializable;
  * Class used in presenting approval data for the approving administrator
  * Contains a header and a data part and booleans if they should be
  * translated or not.
- * 
- *
- * @version $Id$
  */
 public class ApprovalDataText implements Serializable {
     /** Class is also used by the RA. Please keep serialization compatible (do not change the version number) */
@@ -30,7 +27,14 @@ public class ApprovalDataText implements Serializable {
     private String data;
     private boolean headerTranslateable;
     private boolean dataTranslatable;
-	
+
+	// TODO ECA-10985: Add other static strings used with ApprovalDataText... just for general improvement
+	public static String SUBJECT_DN = "SUBJECTDN";
+	public static String SUBJECT_ALT_NAME = "SUBJECTALTNAME";
+	public static String END_ENTITY_PROFILE_ID = "EEPID";
+	public static String END_ENTITY_PROFILE_NAME = "ENDENTITYPROFILE";
+	public static String REDACT_PII = "REDACTPII";
+
 	public ApprovalDataText(String header, String data, boolean headerTranslateable, boolean dataTranslatable) {
 		super();
 		this.header = header;
