@@ -53,6 +53,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ValueExtractor;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -167,10 +168,18 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("type", approvalRequest.getApprovalType());
+
                 List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
+                final boolean redactPii = isRedactPii(texts);
+
                 for (ApprovalDataText text : texts) {
-                    details.put(text.getHeader(), text.getData());                    
+                    if (text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_DN) || text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_ALT_NAME)) {
+                        details.put(text.getHeader(), redactPii ? GdprRedactionUtils.REDACTED_CONTENT : text.getData());
+                    } else {
+                        details.put(text.getHeader(), text.getData());
+                    }
                 }
+
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
             } catch (Exception e1) {
@@ -180,6 +189,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 details.put("msg", msg);
                 details.put("type", approvalRequest.getApprovalType());
                 details.put("Error", e1.getMessage());
+
+                // TODO ECA-10985: Redacting/handling error messages
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
             }
@@ -228,10 +239,18 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             String msg = intres.getLocalizedMessage("approval.edited", requestId);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
+
             List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
+            final boolean redactPii = isRedactPii(texts);
+
             for (ApprovalDataText text : texts) {
-                details.put(text.getHeader(), text.getData());                    
+                if (text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_DN) || text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_ALT_NAME)) {
+                    details.put(text.getHeader(), redactPii ? GdprRedactionUtils.REDACTED_CONTENT : text.getData());
+                } else {
+                    details.put(text.getHeader(), text.getData());
+                }
             }
+
             auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         } catch (Exception e) {
@@ -240,6 +259,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("Error", e.getMessage());
+
+            // TODO ECA-10985: Redacting/handling error messages
             auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         }
@@ -292,6 +313,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             String msg = intres.getLocalizedMessage("approval.errorremove", requestId);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
+
+            // TODO ECA-10985: Redacting/handling error messages
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.APPROVAL_REMOVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
@@ -997,6 +1020,16 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.warn("There is more than one approval request with approval ID " + approvalId);
         }
         return ads.get(0).getId();
+    }
+
+    private boolean isRedactPii(List<ApprovalDataText> approvalDataTexts) {
+        for (ApprovalDataText text : approvalDataTexts) {
+            if (text.getHeader().equalsIgnoreCase(ApprovalDataText.REDACT_PII) && text.getData().equalsIgnoreCase("TRUE")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
