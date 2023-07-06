@@ -19,7 +19,7 @@ public class GdprRedactionUtils {
     public static final String REDACTED_CONTENT = "<redact>";
     
     public static String getSubjectDnLogSafe(String subjectDn, int endEntityProfileId) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactSubjectDnAndSan()) {
+        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return subjectDn;
@@ -27,7 +27,7 @@ public class GdprRedactionUtils {
     }
     
     public static String getSubjectDnLogSafe(String subjectDn, String endEntityProfileName) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactSubjectDnAndSan()) {
+        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return subjectDn;
@@ -35,7 +35,7 @@ public class GdprRedactionUtils {
     }
     
     public static String getSubjectAltNameLogSafe(String san, int endEntityProfileId) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactSubjectDnAndSan()) {
+        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return san;
@@ -43,7 +43,7 @@ public class GdprRedactionUtils {
     }
     
     public static String getSubjectAltNameLogSafe(String san, String endEntityProfileName) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactSubjectDnAndSan()) {
+        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return san;
