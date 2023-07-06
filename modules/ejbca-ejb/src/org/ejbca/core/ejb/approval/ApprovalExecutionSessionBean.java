@@ -65,6 +65,7 @@ import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 import com.keyfactor.ErrorCode;
+import org.ejbca.util.approval.ApprovalUtil;
 
 /**
  * Handles execution of approved tasks. Separated from ApprovealSessionBean to avoid
@@ -178,18 +179,12 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             }
             // Notify all administrators affected by the work flow update
             approvalSession.sendApprovalNotifications(approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", intres.getLocalizedMessage("approval.approved", approvalData.getId()));
-            List<ApprovalDataText> texts = approvalData.getApprovalRequest().getNewRequestDataAsText(admin);
-            final boolean redactPii = isRedactPii(texts);
 
-            for (ApprovalDataText text : texts) {
-                if (text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_DN) || text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_ALT_NAME)) {
-                    details.put(text.getHeader(), redactPii ? GdprRedactionUtils.REDACTED_CONTENT : text.getData());
-                } else {
-                    details.put(text.getHeader(), text.getData());
-                }
-            }
+            List<ApprovalDataText> texts = approvalData.getApprovalRequest().getNewRequestDataAsText(admin);
+            details = ApprovalUtil.updateWithApprovalDataText(details, texts);
+
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
         } catch (ApprovalRequestExpiredException e) {
@@ -270,19 +265,11 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 approvalData.setExpiredate((new Date()).getTime() + approvalData.getApprovalRequest().getApprovalValidity());
             }
             approvalSession.sendApprovalNotifications(approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", intres.getLocalizedMessage("approval.rejected", approvalData.getId()));
 
             List<ApprovalDataText> texts = approvalData.getApprovalRequest().getNewRequestDataAsText(admin);
-            final boolean redactPii = isRedactPii(texts);
-
-            for (ApprovalDataText text : texts) {
-                if (text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_DN) || text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_ALT_NAME)) {
-                    details.put(text.getHeader(), redactPii ? GdprRedactionUtils.REDACTED_CONTENT : text.getData());
-                } else {
-                    details.put(text.getHeader(), text.getData());
-                }
-            }
+            details = ApprovalUtil.updateWithApprovalDataText(details, texts);
 
             auditSession.log(EjbcaEventTypes.APPROVAL_REJECT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
@@ -332,16 +319,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         if (approvalInformation.getApprovalRequest().isEditedByMe(admin) && !approvalData.getApprovalDataVO().getApprovalProfile().getAllowSelfEdit()) {
             throw new SelfApprovalException("Can not approve a request that was last edited by oneself");
         }
-    }
-
-    private boolean isRedactPii(List<ApprovalDataText> approvalDataTexts) {
-        for (ApprovalDataText text : approvalDataTexts) {
-            if (text.getHeader().equalsIgnoreCase(ApprovalDataText.REDACT_PII) && text.getData().equalsIgnoreCase("TRUE")) {
-                return true;
-            }
-        }
-
-        return false;
     }
     
     @Override
