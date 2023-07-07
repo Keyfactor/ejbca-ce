@@ -169,7 +169,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String MINPWDSTRENGTH    = "MINPWDSTRENGTH";
 
     /** CA/B Forum Organization Identifier extension */
-    private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";
+    private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";    
 
     // Default values
     // These must be in a strict order that can never change
@@ -266,6 +266,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String ALLOW_MERGEDN_WEBSERVICES = "ALLOW_MERGEDN_WEBSERVICES";
     private static final String ALLOW_MERGEDN = "ALLOW_MERGEDN";
     private static final String ALLOW_MULTI_VALUE_RDNS = "ALLOW_MULTI_VALUE_RDNS";
+    
+    /** Redact SubjectDn and SAN from server and audit log*/
+    public static final String REDACTPII   = "REDACTPII";
 
     @Deprecated //Since 8.0.0
     private static final String PRINTINGUSE            = "PRINTINGUSE";
@@ -1604,6 +1607,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setAllowMergeDn(final boolean merge){
         data.put(ALLOW_MERGEDN, merge);
+    }
+    
+    
+    public boolean isRedactPii() {
+        return getValueDefaultFalse(REDACTPII);
+    }
+    
+    public void setRedactPii(final boolean redactPii) {
+        data.put(REDACTPII, redactPii);
     }
 
     /** @return true if multi value RDNs should be supported, on a few specific RDNs. Default is false. */
