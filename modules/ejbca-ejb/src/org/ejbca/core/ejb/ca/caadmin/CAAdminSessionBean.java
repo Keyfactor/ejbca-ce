@@ -586,8 +586,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.trace(">createCA: " + cainfo.getName());
         }
         final int caid = cainfo.getCAId();
-        // Check that administrator has superadminstrator rights.
-        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAADD.resource())) {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.notauthorizedtocreateca", cainfo.getName());
             logAuditEvent(
                     EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
