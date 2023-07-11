@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import java.util.Date;
-import java.util.List;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+
+import java.util.Date;
+import java.util.List;
 
 /** Session bean storing and retrieving CRLs
  * 
@@ -38,7 +38,20 @@ public interface CrlStoreSession {
      * @return list of CRLData entities matching the given issuerDN 
      */
     List<CRLData> findByIssuerDN(final String issuerDN);
-    
+
+	/**
+	 * Find all expired CRL for a corresponding DN except the latest base or delta CRL.
+	 *
+	 * @param issuerDn issuer DN to search for.
+	 * @param maximumExpiredTime maximum expired time to search by
+	 * @param lastBaseCrlNumber last base CRL number
+	 * @param lastDeltaCrlNumber last delta CRL number
+	 * @param maxNumberOfResults maximum number of results to fetch.
+	 * @return expired CRL metadata.
+	 */
+	List<CrlMetadataHolderDto> findExpiredCrlByIssuerDn(String issuerDn, long maximumExpiredTime, int lastBaseCrlNumber,
+			int lastDeltaCrlNumber, int maxNumberOfResults);
+
     /**
      * Removes list of CRLDatas from DB based on the issuer DN provided.
      * 
@@ -46,6 +59,14 @@ public interface CrlStoreSession {
      * @return
      */
     void removeByIssuerDN(final String issuerDN);
+
+	/**
+	 * Delete CRL.
+	 *
+	 * @param crlMetadata corresponding CRL metadata.
+	 * @param adminForLogging an admin authentication token.
+	 */
+	void delete(CrlMetadataHolderDto crlMetadata, AuthenticationToken adminForLogging);
 
 	/**
 	 * Retrieves the latest CRL issued by this CA.

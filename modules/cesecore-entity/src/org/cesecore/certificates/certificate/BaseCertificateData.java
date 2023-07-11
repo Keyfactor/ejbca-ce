@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Transient;
@@ -443,7 +444,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     @Transient
     public String getSerialNumberHex() throws NumberFormatException {
         try {
-            return new BigInteger(getSerialNumber(), 10).toString(16).toUpperCase();
+            return new BigInteger(getSerialNumber(), 10).toString(16).toUpperCase(Locale.ROOT);
         } catch (NumberFormatException e) {
             return getSerialNumber();
         }
