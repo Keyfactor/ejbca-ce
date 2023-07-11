@@ -33,6 +33,8 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
+import org.cesecore.util.GdprRedactionUtils;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 
 /**
  * Servlet Filter for logging REST request and responses.
@@ -180,6 +182,16 @@ public class RestLoggingFilter implements Filter {
             };
             
             filterChain.doFilter(httpServletRequestWrapper, httpServletResponseWrapper);
+            
+            String url = httpServletRequest.getRequestURL().toString();
+            if(GdprRedactionUtils.isGlobalGdprRedactionEnabled() && // RA 
+                    (url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getUrl()) ||
+                     url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getUrl()) ||
+                     url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getUrl()) ||
+                     url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getUrl()) ||
+                     url.contains(AvailableProtocols.REST_SSH_V1.getUrl()))) {
+                return;
+            }
             
             sb.append("Request data:\n");
             final String requestData = new String(requestBaos.toByteArray(), StandardCharsets.UTF_8);

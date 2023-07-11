@@ -1044,6 +1044,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // Assert End Entity DN is used. CSR subject should be ignored.
         assertEquals("Returned certificate contained unexpected subject DN", "O=PrimeKey,CN=" + testUsername, cert.getSubjectDN().getName());
     }
+    
+    @Test
+    public void testGetCertificateAboutToExpireSmoke() throws Exception {
+        final Response actualResponse = newRequest("/v1/certificate/expire?days=1").request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final Object certificatesToExpire = actualJsonObject.get("certificates_rest_response");
+        assertNotNull(certificatesToExpire);
+    }
 
     @Test
     public void enrollPkcs10WithUnidFnr() throws Exception {

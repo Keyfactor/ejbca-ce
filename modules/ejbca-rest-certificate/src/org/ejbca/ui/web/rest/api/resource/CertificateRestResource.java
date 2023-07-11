@@ -58,6 +58,7 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -140,7 +141,11 @@ public class CertificateRestResource extends BaseRestResource {
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
-            log.info("exception during enrollPkcs10Certificate: ", e);
+            if(!GdprRedactionUtils.isGlobalGdprRedactionEnabled()) { // RA
+                log.info("exception during enrollPkcs10Certificate: ", e);
+            } else {
+                log.info("Exception during enrollPkcs10Certificate. Redacting exception of class: " + e.getClass().getSimpleName()); 
+            }
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
     }
