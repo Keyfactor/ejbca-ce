@@ -16,7 +16,7 @@ package org.ejbca.core.model.authorization;
 import org.cesecore.authorization.control.StandardRules;
 
 /**
- * @version $Id$
+ *
  */
 public abstract class AccessRulesConstants {
 
@@ -108,6 +108,8 @@ public abstract class AccessRulesConstants {
     // Standard Regular Access Rules
     public static final String[] STANDARDREGULARACCESSRULES = {StandardRules.CAFUNCTIONALITY.resource(), 
                                                            REGULAR_ACTIVATECA,
+                                                           StandardRules.CAADD.resource(),
+                                                           StandardRules.CAREMOVE.resource(),
                                                            StandardRules.CAEDIT.resource(),
                                                            StandardRules.CARENEW.resource(),
                                                            StandardRules.CAVIEW.resource(),
