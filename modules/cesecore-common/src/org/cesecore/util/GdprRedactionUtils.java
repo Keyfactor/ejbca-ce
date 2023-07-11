@@ -49,5 +49,9 @@ public class GdprRedactionUtils {
             return san;
         }
     }
+    
+    public static boolean isGlobalGdprRedactionEnabled() { // placeholder
+        return GdprConfigurationCache.INSTANCE.getGdprConfiguration("").isRedactPii();
+    }
 
 }
