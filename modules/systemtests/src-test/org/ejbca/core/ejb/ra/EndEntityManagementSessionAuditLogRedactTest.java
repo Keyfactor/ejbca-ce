@@ -22,7 +22,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -110,7 +109,7 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
         profile.addField(DnComponents.ORGANIZATIONALUNIT);
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.RFC822NAME);
-        profile.setDescription("redact_me"); // enable redaction
+        profile.setRedactPii(true); // enable redaction
         profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(admin, REDACTED_EEP, profile);
         redactedEepId = endEntityProfileSession.getEndEntityProfileId(REDACTED_EEP);
