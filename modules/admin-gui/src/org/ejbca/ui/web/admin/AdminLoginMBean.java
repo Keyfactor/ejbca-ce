@@ -232,6 +232,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                         if (token.getAccessToken() != null) {
                             log.debug("Successfully obtained oauth token, redirecting to main page.");
                             servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                            servletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
                             servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                             FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
                         } else {
