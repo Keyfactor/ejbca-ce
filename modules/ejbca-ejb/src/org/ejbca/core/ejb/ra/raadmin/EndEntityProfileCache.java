@@ -120,9 +120,7 @@ public enum EndEntityProfileCache {
         		EndEntityProfile profile = next.getProfile();
         		profCache.put(id, profile);
         		
-        		// TODO: will be replaced with original value
-        		GdprConfiguration gdprConfig = new GdprConfiguration(
-                        profile.getDescription()!=null && profile.getDescription().contains("redact"));
+        		GdprConfiguration gdprConfig = new GdprConfiguration(profile.isRedactPii());
         		idToGdprConfigCache.put(id, gdprConfig);
         		nameToGdprConfigCache.put(profileName, gdprConfig);
         		
