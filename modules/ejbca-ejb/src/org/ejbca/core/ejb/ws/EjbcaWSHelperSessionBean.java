@@ -155,7 +155,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             final AuthenticationToken admin;
             final OAuthConfiguration oauthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
             try {
-                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
+                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken, null);
                 if (admin == null) {
                     throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token.");
                 }

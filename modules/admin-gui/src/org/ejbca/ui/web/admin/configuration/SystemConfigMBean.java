@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -113,7 +112,6 @@ import org.primefaces.event.TabChangeEvent;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StreamSizeLimitExceededException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.nimbusds.jwt.SignedJWT;
 
 /**
  * Backing bean for the various system configuration pages.
@@ -521,16 +519,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
      */
     private boolean defaultOAuthKeySafeToChange(String label) {
         if (getAdmin() instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken currentAdminToken = (OAuth2AuthenticationToken) getAdmin();
-            try {
-                SignedJWT signedJwt = SignedJWT.parse(currentAdminToken.getEncodedToken());
-                String adminTokenkeyId = signedJwt.getHeader().getKeyID();
-                if (adminTokenkeyId == null && (label == null || !label.equals(oAuthConfiguration.getDefaultOauthKey().getLabel()))) {
-                    return false;
-                }
-            } catch (ParseException e) {
-                log.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
-            }    
+            final OAuth2AuthenticationToken currentAdminToken = (OAuth2AuthenticationToken) getAdmin();
+            if (currentAdminToken.isUsingDefaultProvider() && (label == null || !label.equals(oAuthConfiguration.getDefaultOauthKey().getLabel()))) {
+                return false;
+            }
         }
         return true;
     }
@@ -1492,7 +1484,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public void addEKU() {
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
         List<String> extKeyUsageNames = ekuConfig.getAllExtKeyUsageName();
-        List<String> translatedNames = new ArrayList<String>();
+        List<String> translatedNames = new ArrayList<>();
         for (String name : extKeyUsageNames) {
             translatedNames.add(getEjbcaWebBean().getText(name));
         }
