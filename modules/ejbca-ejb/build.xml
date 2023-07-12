@@ -22,6 +22,7 @@
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.caffeine.classpath"/>
+		<path refid="lib.guava.classpath"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
