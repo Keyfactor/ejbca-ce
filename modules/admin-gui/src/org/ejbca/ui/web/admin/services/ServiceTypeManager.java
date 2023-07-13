@@ -87,6 +87,7 @@ public class ServiceTypeManager implements Serializable {
                 }
             }
         }
+     
 	}
 	
 	/**
