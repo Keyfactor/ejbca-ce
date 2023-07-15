@@ -294,7 +294,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWs {
     public void test03CleanAddEndEntityWithApprovals() throws Exception {
         setupApprovals();
         
-        ApprovalRequest ar = createAddEndEntityApprovalRequest(approvalProfile, "WSTESTTOKENUSER1", caid);
+        ApprovalRequest ar = createAddEndEntityApprovalRequest(approvalProfile, "WSTESTTOKENUSER1", caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
 
         Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();

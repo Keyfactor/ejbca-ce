@@ -846,10 +846,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
     
     
-    protected static AddEndEntityApprovalRequest createAddEndEntityApprovalRequest(AccumulativeApprovalProfile approvalProfileLongExpirationPeriod, String userName, int caId) {
-        
+    protected static AddEndEntityApprovalRequest createAddEndEntityApprovalRequest(AccumulativeApprovalProfile approvalProfileLongExpirationPeriod, String userName, int caId, int eepId) {
+
         final EndEntityInformation userdata = new EndEntityInformation(userName, "C=SE, O=AnaTom, CN=" + userName, caId, null, null,
-                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eepId,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         
@@ -857,7 +857,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfileLongExpirationPeriod, null);
         
     }
-    
+
     protected CAInfo setUpThrowAwayPublishingTest(final boolean useQueue, final boolean useNoConflictCertificateData, 
             final boolean userStorage,
             int caId, String certificateProfile, String publisherName) throws Exception {
