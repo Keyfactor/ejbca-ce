@@ -646,7 +646,7 @@ public class CmpMessageHelper {
             pp = new ProofOfPossession();
             break;
         case 1:
-            o5 = POPOSigningKey.getInstance(o4.getObject());
+            o5 = POPOSigningKey.getInstance(o4.getBaseObject().toASN1Primitive());
             pp = new ProofOfPossession((POPOSigningKey) o5);
             break;
         case 2:
