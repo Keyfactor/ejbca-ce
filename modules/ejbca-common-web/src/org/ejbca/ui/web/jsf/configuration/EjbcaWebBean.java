@@ -116,11 +116,6 @@ public interface EjbcaWebBean extends Serializable {
     /* Returns the global configuration */
     GlobalConfiguration getGlobalConfiguration();
 
-    /**
-     * @return Public application base URL (e.g. 'http://localhost:8080/ejbca')
-     */
-    String getBaseUrlPublic();
-
     String getCurrentRemoteIp();
 
     /**
