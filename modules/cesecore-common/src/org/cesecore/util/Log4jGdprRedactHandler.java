@@ -12,30 +12,38 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.keyfactor.util.certificate.DnComponents;
 
 public class Log4jGdprRedactHandler extends Handler {
     
-    private static final List<String> SUBJECT_DN_COMPONENTS;
-    private static final List<String> SUBJECT_ALT_NAME_COMPONENTS;
+    private static final Pattern SUBJECT_DN_COMPONENTS;
+    private static final Pattern SUBJECT_ALT_NAME_COMPONENTS;
     
     static{
-        SUBJECT_DN_COMPONENTS = new ArrayList<>();
-        for(String dnPart: DnComponents.getDnObjects(true)) {
-            SUBJECT_DN_COMPONENTS.add(dnPart + "=");
+        SUBJECT_DN_COMPONENTS = Pattern.compile(getRegexPattern(DnComponents.getDnObjects(true)), Pattern.CASE_INSENSITIVE);
+        SUBJECT_ALT_NAME_COMPONENTS = Pattern.compile(getRegexPattern(
+                (String[]) DnComponents.getAltNameFields().toArray(), DnComponents.URI, DnComponents.URI1), 
+                Pattern.CASE_INSENSITIVE);
+    }
+    
+    private static String getRegexPattern(String[] dnParts, String ...extraDnParts) {
+        StringBuilder regex = new StringBuilder(); 
+        regex.append("(");
+        for(String dnPart: dnParts) {
+            regex.append("(" + dnPart + "=)|");
         }
-        SUBJECT_ALT_NAME_COMPONENTS = new ArrayList<>();
-        for(String sanPart: DnComponents.getAltNameFields()) {
-            SUBJECT_ALT_NAME_COMPONENTS.add(sanPart + "=");
+        for(String dnPart: extraDnParts) {
+            regex.append("(" + dnPart + "=)|");
         }
+        regex.deleteCharAt(regex.length()-1);
+        regex.append(").*");
+        return regex.toString();
     }
 
     @Override
@@ -58,22 +66,22 @@ public class Log4jGdprRedactHandler extends Handler {
         // TODO: check for global setting
         
         // for ERROR and above + TRACE
-        for(String dnPart: SUBJECT_DN_COMPONENTS) {
-            int matchIndex = StringUtils.indexOfIgnoreCase(logRecord.getMessage(), dnPart);
-            if(matchIndex>0) {
-                logRecord.setMessage(logRecord.getMessage().substring(0, matchIndex));
-                return;
-            }
+        logRecord.setMessage(getRedactedMessage(logRecord.getMessage()));
+                
+    }
+    
+    public static String getRedactedMessage(String message) {
+        Matcher matcher = SUBJECT_DN_COMPONENTS.matcher(message);
+        if(matcher.find()) {
+            return message.substring(0, matcher.start());
         }
         
-        for(String sanPart: SUBJECT_ALT_NAME_COMPONENTS) {
-            int matchIndex = StringUtils.indexOfIgnoreCase(logRecord.getMessage(), sanPart);
-            if(matchIndex>0) {
-                logRecord.setMessage(logRecord.getMessage().substring(0, matchIndex));
-                return;
-            }
+        matcher = SUBJECT_ALT_NAME_COMPONENTS.matcher(message);
+        if(matcher.find()) {
+            return message.substring(0, matcher.start());
         }
-                
+        
+        return message;
     }
 
 }
