@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -26,19 +29,23 @@ public class Log4jGdprRedactHandler extends Handler {
     private static final Pattern SUBJECT_ALT_NAME_COMPONENTS;
     
     static{
-        SUBJECT_DN_COMPONENTS = Pattern.compile(getRegexPattern(DnComponents.getDnObjects(true)), Pattern.CASE_INSENSITIVE);
-        SUBJECT_ALT_NAME_COMPONENTS = Pattern.compile(getRegexPattern(
-                (String[]) DnComponents.getAltNameFields().toArray(), DnComponents.URI, DnComponents.URI1), 
-                Pattern.CASE_INSENSITIVE);
+        SUBJECT_DN_COMPONENTS = Pattern.compile(getRegexPattern(
+                Arrays.asList(DnComponents.getDnObjects(true))), Pattern.CASE_INSENSITIVE);
+        
+        List<String> sanAttributes = new ArrayList<>();
+        sanAttributes.addAll(DnComponents.getAltNameFields());
+        sanAttributes.add(DnComponents.URI);
+        sanAttributes.add(DnComponents.URI1);
+        SUBJECT_ALT_NAME_COMPONENTS = Pattern.compile(getRegexPattern(sanAttributes), Pattern.CASE_INSENSITIVE);
+        
+        System.out.println("patterns: " + SUBJECT_DN_COMPONENTS.toString() + " :::: " + SUBJECT_ALT_NAME_COMPONENTS.toString());
+        
     }
     
-    private static String getRegexPattern(String[] dnParts, String ...extraDnParts) {
+    private static String getRegexPattern(List<String> dnParts) {
         StringBuilder regex = new StringBuilder(); 
         regex.append("(");
         for(String dnPart: dnParts) {
-            regex.append("(" + dnPart + "=)|");
-        }
-        for(String dnPart: extraDnParts) {
             regex.append("(" + dnPart + "=)|");
         }
         regex.deleteCharAt(regex.length()-1);
@@ -64,16 +71,22 @@ public class Log4jGdprRedactHandler extends Handler {
         }
         
         // check for global setting
-        if (!GdprRedactionUtils.isGlobalGdprRedactionEnabled()) {
+        if (!GdprRedactionUtils.redactPii()) {
             return;
         }
         
         // for ERROR and above + TRACE
         logRecord.setMessage(getRedactedMessage(logRecord.getMessage()));
+        
+        // TODO: redact the exception message but keep stack trace, attempt
+//        Throwable t = new Throwable(getRedactedMessage(logRecord.getThrown().getMessage()));
+//        t.setStackTrace(logRecord.getThrown().getStackTrace());
+//        logRecord.setThrown(t);
                 
     }
     
     public static String getRedactedMessage(String message) {
+        // print only till start of the PII string cause we can not detect end of a match as we allow whitespace in DN
         Matcher matcher = SUBJECT_DN_COMPONENTS.matcher(message);
         if(matcher.find()) {
             return message.substring(0, matcher.start());
