@@ -184,7 +184,7 @@ public class RestLoggingFilter implements Filter {
             filterChain.doFilter(httpServletRequestWrapper, httpServletResponseWrapper);
             
             String url = httpServletRequest.getRequestURL().toString();
-            if(GdprRedactionUtils.isGlobalGdprRedactionEnabled() && // RA 
+            if(GdprRedactionUtils.redactPii() && // RA 
                     (url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getUrl()) ||
                      url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getUrl()) ||
                      url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getUrl()) ||
