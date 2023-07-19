@@ -42,11 +42,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -68,7 +66,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -92,7 +89,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
@@ -101,7 +97,6 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
-import org.ejbca.mock.publisher.MockedThrowAwayRevocationPublisher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -1517,36 +1512,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         return userData;
     }
     
-    private CAInfo setUpThrowAwayPublishingTest(final boolean useQueue, final boolean useNoConflictCertificateData) throws Exception {
-        // Set up publishing
-        final CustomPublisherContainer publisher = new CustomPublisherContainer();
-        publisher.setClassPath(MockedThrowAwayRevocationPublisher.class.getName());
-        publisher.setDescription("Used in Junit Test, Remove this one");
-        publisher.setOnlyUseQueue(useQueue);
-        final int publisherId = publisherSession.addPublisher(admin, THROWAWAY_PUBLISHER, publisher);
-        final CertificateProfile certProf = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
-        certProf.setPublisherList(new ArrayList<>(Collections.singletonList(publisherId)));
-        int certProfId = certificateProfileSession.addCertificateProfile(admin, THROWAWAY_CERT_PROFILE, certProf);
-        // Set throw away flag on test CA
-        final CAInfo cainfo = caSession.getCAInfo(admin, caId);
-        cainfo.setUseCertificateStorage(false);
-        cainfo.setUseUserStorage(false);
-        cainfo.setAcceptRevocationNonExistingEntry(true);
-        cainfo.setUseNoConflictCertificateData(useNoConflictCertificateData);
-        cainfo.setDefaultCertificateProfileId(certProfId);
-        caAdminSession.editCA(admin, cainfo);
-        return cainfo;
+    protected CAInfo setUpThrowAwayPublishingTest(final boolean useQueue, final boolean useNoConflictCertificateData) throws Exception {
+        return super.setUpThrowAwayPublishingTest(useQueue, useNoConflictCertificateData, false, caId, THROWAWAY_CERT_PROFILE, THROWAWAY_PUBLISHER);
     }
     
-    private void cleanUpThrowAwayPublishingTest() throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
-        final CAInfo cainfo = caSession.getCAInfo(admin, caId);
-        cainfo.setUseCertificateStorage(true);
-        cainfo.setUseUserStorage(true);
-        cainfo.setAcceptRevocationNonExistingEntry(false);
-        cainfo.setUseNoConflictCertificateData(false);
-        caAdminSession.editCA(admin, cainfo);
-        certificateProfileSession.removeCertificateProfile(admin, THROWAWAY_CERT_PROFILE);
-        publisherProxySession.removePublisherInternal(admin, THROWAWAY_PUBLISHER);
-        internalCertStoreSession.removeCertificate(THROWAWAY_CERT_SERIAL);
+    protected void cleanUpThrowAwayPublishingTest() throws Exception {
+        super.cleanUpThrowAwayPublishingTest(caId, THROWAWAY_CERT_PROFILE, THROWAWAY_PUBLISHER, THROWAWAY_CERT_SERIAL);
     }
 }

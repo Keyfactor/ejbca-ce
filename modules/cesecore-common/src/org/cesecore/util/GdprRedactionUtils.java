@@ -14,10 +14,15 @@ package org.cesecore.util;
 
 import org.cesecore.configuration.GdprConfigurationCache;
 
+/**
+ * Utility methods for handling/checking PII redaction based on End Entity Profile.
+ * Log safe Subject DN and Subject Alt Name are used when logging PII that
+ * should be redacted for GDPR purposes.
+ */
 public class GdprRedactionUtils {
     
     public static final String REDACTED_CONTENT = "<redact>";
-    
+
     public static String getSubjectDnLogSafe(String subjectDn, int endEntityProfileId) {
         if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
             return REDACTED_CONTENT;
@@ -50,4 +55,7 @@ public class GdprRedactionUtils {
         }
     }
 
+    public static boolean isRedactPii(final int endEntityProfileId) {
+        return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii();
+    }
 }
