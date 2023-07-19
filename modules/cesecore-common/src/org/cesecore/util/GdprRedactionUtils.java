@@ -50,7 +50,7 @@ public class GdprRedactionUtils {
         }
     }
     
-    public static boolean isGlobalGdprRedactionEnabled() { // placeholder
+    public static boolean redactPii() { // placeholder
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration("").isRedactPii();
     }
 
