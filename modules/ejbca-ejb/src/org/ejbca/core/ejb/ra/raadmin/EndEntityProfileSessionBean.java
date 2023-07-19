@@ -516,6 +516,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             details.put("msg", msg);
         	// Log diff
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                // TODO ECA-10985: What if they have pre-defined values in SubjectDN and SAN?
                 details.put(entry.getKey().toString(), entry.getValue().toString());
             }
             auditSession.log(EjbcaEventTypes.RA_EDITEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(),

@@ -85,6 +85,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.util.approval.ApprovalUtil;
 import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
@@ -163,14 +164,15 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 entityManager.persist(approvalData);
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
                 sendApprovalNotifications(approvalRequest, approvalProfile, approvalData, false);
+
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", requestId);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("type", approvalRequest.getApprovalType());
+
                 List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
-                for (ApprovalDataText text : texts) {
-                    details.put(text.getHeader(), text.getData());                    
-                }
+                details = ApprovalUtil.updateWithApprovalDataText(details, texts);
+
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
             } catch (Exception e1) {
@@ -180,6 +182,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 details.put("msg", msg);
                 details.put("type", approvalRequest.getApprovalType());
                 details.put("Error", e1.getMessage());
+
+                // TODO ECA-10985: Redacting/handling error messages
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
             }
@@ -226,12 +230,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             approvalRequest.addEditedByAdmin(admin);
             updateApprovalData(ad, approvalRequest);
             String msg = intres.getLocalizedMessage("approval.edited", requestId);
-            final Map<String, Object> details = new LinkedHashMap<>();
+            Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
+
             List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
-            for (ApprovalDataText text : texts) {
-                details.put(text.getHeader(), text.getData());                    
-            }
+            details = ApprovalUtil.updateWithApprovalDataText(details, texts);
+
             auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         } catch (Exception e) {
@@ -240,6 +244,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("Error", e.getMessage());
+
+            // TODO ECA-10985: Redacting/handling error messages
             auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         }
@@ -292,6 +298,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             String msg = intres.getLocalizedMessage("approval.errorremove", requestId);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
+
+            // TODO ECA-10985: Redacting/handling error messages
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.APPROVAL_REMOVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
