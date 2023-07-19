@@ -63,7 +63,10 @@ public class Log4jGdprRedactHandler extends Handler {
             return;
         }
         
-        // TODO: check for global setting
+        // check for global setting
+        if (!GdprRedactionUtils.isGlobalGdprRedactionEnabled()) {
+            return;
+        }
         
         // for ERROR and above + TRACE
         logRecord.setMessage(getRedactedMessage(logRecord.getMessage()));
