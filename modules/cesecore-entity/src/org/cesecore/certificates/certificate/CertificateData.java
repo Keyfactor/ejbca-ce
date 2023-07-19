@@ -310,7 +310,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     }
     
     @Transient
-    public String getLogSafeSubjectAltNameNeverNull() {
+    public String getLogSafeSubjectAltName() {
         return GdprRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull(), endEntityProfileId);
     }
 

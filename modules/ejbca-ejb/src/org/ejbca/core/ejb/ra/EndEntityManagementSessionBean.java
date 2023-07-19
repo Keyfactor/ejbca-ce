@@ -1156,7 +1156,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 );
             }
         } catch (Exception e) {
-            // TODO ECA-10985: Redacting/handling error messages
+            // TODO ECA-11677: Redacting/handling error messages
             logAuditEvent(
                     EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE,
                     authenticationToken, caId, null, username,

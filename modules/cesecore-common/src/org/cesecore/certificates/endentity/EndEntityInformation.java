@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
@@ -196,9 +197,7 @@ public class EndEntityInformation implements Serializable {
     }
     
     public String getLogSafeSubjectDn() {
-        // TODO: what if endentityProfileId(0: default int, NO_END_ENTITY_PROFILE) is not there
-        // now it will redact it
-        if (getDN()==null || getDN().isEmpty()) {
+        if (StringUtils.isEmpty(getDN())) {
             return "";
         }
         return GdprRedactionUtils.getSubjectDnLogSafe(getDN(), endentityprofileid);
@@ -217,9 +216,7 @@ public class EndEntityInformation implements Serializable {
     public String getSubjectAltName() {return StringTools.getBase64String(subjectAltName);}
     
     public String getLogSafeSubjectAltName() {
-        // TODO: what if endentityProfileId(0: default int, NO_END_ENTITY_PROFILE) is not there
-        // now it will redact it
-        if (subjectAltName==null || subjectAltName.isEmpty()) {
+        if (StringUtils.isEmpty(subjectAltName)) {
             return "";
         }
         return GdprRedactionUtils.getSubjectAltNameLogSafe(subjectAltName, endentityprofileid);
@@ -427,7 +424,7 @@ public class EndEntityInformation implements Serializable {
      * @return an information map about this end entity, listing all general fields.
      */
     public Map<String, String> getDetailMap() {
-        return getDetailMap(true);
+        return getDetailMap(true); // TODO: EJBCAINTER-535 - use global redaction value
     }
       
     /**
@@ -481,7 +478,7 @@ public class EndEntityInformation implements Serializable {
     public Map<String, String[]> getDiff(EndEntityInformation other, boolean tryRedact) {
         Map<String, String[]> changedValues = new LinkedHashMap<>();
         Map<String, String> thisValues = getDetailMap(tryRedact); // may receives non-redacted DN and SAN
-        Map<String, String> otherValues = other.getDetailMap();
+        Map<String, String> otherValues = other.getDetailMap(tryRedact);
         List<String> thisKeySet = new ArrayList<>(thisValues.keySet());
         for (String key : thisKeySet) {
             String thisValue = thisValues.get(key);

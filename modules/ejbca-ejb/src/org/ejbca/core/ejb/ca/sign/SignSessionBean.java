@@ -299,7 +299,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final Map<String, Object> details = new LinkedHashMap<>();
             if (cert != null) {
                 final String logSafeSubjectDN = certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(cert))
-                                                                       .getCertificateData().getLogSafeSubjectDnNeverNull();
+                                                                       .getCertificateData().getLogSafeSubjectDn();
 
                 details.put("leafSubject", logSafeSubjectDN);
                 details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));

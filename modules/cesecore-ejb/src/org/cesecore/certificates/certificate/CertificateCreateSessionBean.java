@@ -764,7 +764,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
                     issuedetails.put("ctprecert", true);
                     issuedetails.put("msg", intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
-                    // TODO
+                    // Precertificate submission can not be used with GDPR log redaction as pre-certificate can always be used to get subjectDn or SAN
                     issuedetails.put("subjectdn", CertTools.getSubjectDN(precert));
                     issuedetails.put("certprofile", subject.getCertificateProfileId());
                     try {
@@ -911,7 +911,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
      */
     private void auditFailure(final AuthenticationToken admin, final Exception e, final String extraDetails, final String tracelog, final int caid, final String username) {
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", e.getMessage()); // TODO
+        details.put("msg", e.getMessage());
         if (extraDetails != null) {
             details.put("details", extraDetails);
         }

@@ -240,7 +240,7 @@ public class SecurityEventProperties {
         }
         
         public SecurityEventPropertiesBuilder withError(String error, int endEntityProfileId) {
-            // TODO:
+            // TODO: ECA-11677
             this.error = error;
             return this;
         }
