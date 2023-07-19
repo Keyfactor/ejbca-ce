@@ -236,7 +236,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     log.error("Return type from storeCertificateNonTransactionalInternal was not a Boolean but a " + result.getClass().getName() + ", this is an API error.");
                 }
 
-                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getLogSafeSubjectDnNeverNull(), name, result);
+                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getLogSafeSubjectDn(), name, result);
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
