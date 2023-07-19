@@ -468,7 +468,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     }
     
     @Transient
-    public String getLogSafeSubjectDnNeverNull() {
+    public String getLogSafeSubjectDn() {
         return GdprRedactionUtils.getSubjectDnLogSafe(getSubjectDnNeverNull(), getEndEntityProfileIdOrZero());
     }
     
