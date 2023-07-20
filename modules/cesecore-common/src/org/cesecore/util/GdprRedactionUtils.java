@@ -112,8 +112,17 @@ public class GdprRedactionUtils {
     }
     
     public static String getRedactedMessage(String message) {
+        return getRedactedMessage(message, redactPii());
+    }
+    
+    public static String getRedactedMessage(String message, int endEntityProfileId) {
+        return getRedactedMessage(message, 
+                GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
+    }
+    
+    public static String getRedactedMessage(String message, boolean redactPii) {
         
-        if(StringUtils.isEmpty(message) || !redactPii()) {
+        if(StringUtils.isEmpty(message) || !redactPii) {
             return message;
         }
         
@@ -121,12 +130,12 @@ public class GdprRedactionUtils {
         // need to compare SAN before subjectDN as 'name' subjectDN attribute matches with dnsName, rfc822Name etc
         Matcher matcher = SUBJECT_ALT_NAME_COMPONENTS.matcher(message);
         if(matcher.find()) {
-            return message.substring(0, matcher.start());
+            return message.substring(0, matcher.start()) + REDACTED_CONTENT;
         }
         
         matcher = SUBJECT_DN_COMPONENTS.matcher(message);
         if(matcher.find()) {
-            return message.substring(0, matcher.start());
+            return message.substring(0, matcher.start()) + REDACTED_CONTENT;
         }
                 
         return message;
@@ -141,11 +150,20 @@ public class GdprRedactionUtils {
      * @return
      */
     public static Throwable getRedactedThrowable(Throwable thrownException) {
+        return getRedactedThrowable(thrownException, redactPii());
+    }
+     
+    public static Throwable getRedactedThrowable(Throwable thrownException, int endEntityProfileId) {
+        return getRedactedThrowable(thrownException, 
+                GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
+    }
+    
+    private static Throwable getRedactedThrowable(Throwable thrownException, boolean redactPii) {
         if (thrownException==null) {
             return null;
         }
         
-        if(!redactPii()) {
+        if(!redactPii) {
             return thrownException;
         }
         
