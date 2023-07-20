@@ -45,6 +45,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.SshCertificateUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -318,7 +319,7 @@ public class RaEndEntityDetails implements Serializable {
                 keyTypeString = getAlgorithmUiRepresentationString(keyTypeString, extendedInformation.getKeyStoreAlgorithmSubType());
             }
             return keyTypeString;
-        } else if (extendedInformation.getCertificateRequest() != null && extendedInformation.getKeyStoreAlgorithmType() == null) {
+        } else if (extendedInformation != null && extendedInformation.getCertificateRequest() != null && extendedInformation.getKeyStoreAlgorithmType() == null) {
             return getKeysFromCsr();
         }
         return null; // null = hidden in UI
@@ -382,7 +383,11 @@ public class RaEndEntityDetails implements Serializable {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.info("Token " + filename + " could not be downloaded", e);
+            if (GdprRedactionUtils.isRedactPii(eepId)) {
+                log.info("Token " + GdprRedactionUtils.getSubjectDnLogSafe(filename, eepId) + " could not be downloaded", e);
+            } else {
+                log.info("Token " + filename + " could not be downloaded", e);
+            }
             callbacks.getRaLocaleBean().getMessage("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
