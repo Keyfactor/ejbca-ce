@@ -46,9 +46,6 @@ public class GdprRedactionUtils {
         sanAttributes.add(DnComponents.URI1);
         SUBJECT_ALT_NAME_COMPONENTS = Pattern.compile(getRegexPattern(sanAttributes), Pattern.CASE_INSENSITIVE);
         
-        // TODO: remove
-        System.out.println("patterns to redact: " + SUBJECT_DN_COMPONENTS.toString() + " :::: " + SUBJECT_ALT_NAME_COMPONENTS.toString());
-        
     }
     
     private static String getRegexPattern(List<String> dnParts) {
