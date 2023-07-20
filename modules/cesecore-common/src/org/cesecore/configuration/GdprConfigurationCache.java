@@ -19,10 +19,9 @@ import org.apache.log4j.Logger;
 public enum GdprConfigurationCache {
     INSTANCE;
     
-    // redact all if end entity profile is deleted or in RA??
-    // possibly populate from a cesecore-.properties file or system configuration in future
-    // what happens with EMPTY profle
-    private static final GdprConfiguration GDPR_CONFIG_GLOBAL = new GdprConfiguration(true);
+    // initialized with falsy values
+    private static GdprConfiguration REDACT_DEFAULT = new GdprConfiguration(false);
+    private static GdprConfiguration REDACT_ENFORCED = null;
 
     private final Logger LOG = Logger.getLogger(GdprConfigurationCache.class);
     
@@ -40,14 +39,34 @@ public enum GdprConfigurationCache {
         LOG.debug("Updated GdprConfigurationCache.");
     }
     
+    // keeping these as boolean to keep it simple and updating them needs limited change
+    public void updateGdprNodeLocalSettings(boolean redactByDefaultUpdate, boolean redactEnforcedUpdate) {
+        REDACT_DEFAULT = new GdprConfiguration(redactByDefaultUpdate || redactEnforcedUpdate);
+        if(redactEnforcedUpdate) {
+            REDACT_ENFORCED = new GdprConfiguration(true);
+        } else {
+            REDACT_ENFORCED = null;
+        }
+    }
+    
+    public GdprConfiguration getGdprConfiguration() {
+        return REDACT_DEFAULT;
+    }
+    
     public GdprConfiguration getGdprConfiguration(int endEntityProfileId) {
+        if (REDACT_ENFORCED!=null) {
+            return REDACT_ENFORCED;
+        }
         GdprConfiguration config = this.idToConfigCache.get(endEntityProfileId);
-        return config != null ? config :  GDPR_CONFIG_GLOBAL;
+        return config != null ? config :  REDACT_DEFAULT;
     }
     
     public GdprConfiguration getGdprConfiguration(String endEntityProfileName) {
+        if (REDACT_ENFORCED!=null) {
+            return REDACT_ENFORCED;
+        }
         GdprConfiguration config = this.nameToConfigCache.get(endEntityProfileName);
-        return config != null ? config :  GDPR_CONFIG_GLOBAL;
+        return config != null ? config :  REDACT_DEFAULT;
     }    
 
 }
