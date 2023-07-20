@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.LogManager;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -66,6 +67,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.util.Log4jGdprRedactHandler;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -203,7 +205,10 @@ public class StartupSingletonBean {
         //
         // Run all "safe" initializations first, 
         // i.e. those that does not depend on other running beans, components etc
-
+        LogManager.getLogManager().getLogger("com.keyfactor").addHandler(new Log4jGdprRedactHandler());
+        LogManager.getLogManager().getLogger("org.ejbca").addHandler(new Log4jGdprRedactHandler());
+        LogManager.getLogManager().getLogger("org.cesecore").addHandler(new Log4jGdprRedactHandler());
+        
         // Log a startup message
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
         log.info(iMsg);
