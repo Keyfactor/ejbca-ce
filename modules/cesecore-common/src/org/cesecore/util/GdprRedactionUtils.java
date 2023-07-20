@@ -104,8 +104,8 @@ public class GdprRedactionUtils {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii();
     }
     
-    public static boolean redactPii() { // placeholder
-        return GdprConfigurationCache.INSTANCE.getGdprConfiguration("").isRedactPii();
+    public static boolean redactPii() {
+        return GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii();
     }
     
     public static String getRedactedMessage(String message) {
