@@ -206,11 +206,13 @@ public class GdprRedactionUtilsTest {
     public void testRedactMessage() {
         // TODO: set redactPii true globally EJBCAINTER-535
         
-        assertEquals(GdprRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), "some message: ");
+        assertEquals(GdprRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), "some message: " + GdprRedactionUtils.REDACTED_CONTENT);
         assertEquals(GdprRedactionUtils.getRedactedMessage(null), null);
         assertEquals(GdprRedactionUtils.getRedactedMessage(""), "");
-        assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: uri=xyz.abc blah,dnsName=abcd.com"), "some other message: ");
-        assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: dnsName=abcd.com,uri=xyz.abc blah"), "some other message: ");
+        assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: uri=xyz.abc blah,dnsName=abcd.com"), 
+                "some other message: " + GdprRedactionUtils.REDACTED_CONTENT);
+        assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: dnsName=abcd.com,uri=xyz.abc blah"), 
+                "some other message: " + GdprRedactionUtils.REDACTED_CONTENT);
         
         // disable redaction
         setNoRedaction();
