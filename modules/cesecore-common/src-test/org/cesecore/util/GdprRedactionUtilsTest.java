@@ -51,20 +51,6 @@ public class GdprRedactionUtilsTest {
         GdprConfigurationCache.INSTANCE.updateGdprCache(idToGdprConfigCache, nameToGdprConfigCache);
     }
     
-    private void setNoRedaction() {
-        
-        final Map<Integer, GdprConfiguration> idToGdprConfigCache = new HashMap<>();
-        final Map<String, GdprConfiguration> nameToGdprConfigCache = new HashMap<>();
-        
-        GdprConfiguration logPlain = new GdprConfiguration(false);
-        
-        idToGdprConfigCache.put(0, logPlain);        
-        nameToGdprConfigCache.put("", logPlain);
-        
-        GdprConfigurationCache.INSTANCE.updateGdprCache(idToGdprConfigCache, nameToGdprConfigCache);
-        
-    }
-    
     @Test
     public void testRedactSubjectDnSanRedact() {
         
@@ -77,7 +63,11 @@ public class GdprRedactionUtilsTest {
     
     @Test
     public void testRedactSubjectDnSanEmpty() {
-        
+        assertEquals(GdprRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_EMPTY_ID), DUMMY_SDN);
+        assertEquals(GdprRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_EMPTY_NAME), DUMMY_SDN);
+        assertEquals(GdprRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_EMPTY_ID), DUMMY_SAN);
+        assertEquals(GdprRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_EMPTY_NAME), DUMMY_SAN);
+        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
         assertEquals(GdprRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_EMPTY_ID), GdprRedactionUtils.REDACTED_CONTENT);
         assertEquals(GdprRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_EMPTY_NAME), GdprRedactionUtils.REDACTED_CONTENT);
         assertEquals(GdprRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_EMPTY_ID), GdprRedactionUtils.REDACTED_CONTENT);
@@ -92,7 +82,12 @@ public class GdprRedactionUtilsTest {
         assertEquals(GdprRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_LOGPLAIN_NAME), DUMMY_SDN);
         assertEquals(GdprRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_LOGPLAIN_ID), DUMMY_SAN);
         assertEquals(GdprRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_LOGPLAIN_NAME), DUMMY_SAN);
-
+        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(false, true);
+        assertEquals(GdprRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_LOGPLAIN_ID), GdprRedactionUtils.REDACTED_CONTENT);
+        assertEquals(GdprRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_LOGPLAIN_NAME), GdprRedactionUtils.REDACTED_CONTENT);
+        assertEquals(GdprRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_LOGPLAIN_ID), GdprRedactionUtils.REDACTED_CONTENT);
+        assertEquals(GdprRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_LOGPLAIN_NAME), GdprRedactionUtils.REDACTED_CONTENT);
+        
     }
     
     @Test
@@ -122,7 +117,7 @@ public class GdprRedactionUtilsTest {
     
     @Test
     public void testRedactException() {
-        // TODO: set redactPii true globally EJBCAINTER-535
+        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
         
         try {
             throw new CesecoreException(DUMMY_MESSAGE_WITH_SDN);
@@ -186,7 +181,7 @@ public class GdprRedactionUtilsTest {
         }
         
         // disable redaction
-        setNoRedaction();
+        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(false, false);
         try {
             throw new CesecoreException(DUMMY_MESSAGE_WITH_SDN);
         } catch (CesecoreException e) {
@@ -204,7 +199,7 @@ public class GdprRedactionUtilsTest {
     
     @Test
     public void testRedactMessage() {
-        // TODO: set redactPii true globally EJBCAINTER-535
+        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
         
         assertEquals(GdprRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), "some message: " + GdprRedactionUtils.REDACTED_CONTENT);
         assertEquals(GdprRedactionUtils.getRedactedMessage(null), null);
@@ -215,7 +210,7 @@ public class GdprRedactionUtilsTest {
                 "some other message: " + GdprRedactionUtils.REDACTED_CONTENT);
         
         // disable redaction
-        setNoRedaction();
+        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(false, false);
         assertEquals(GdprRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), DUMMY_MESSAGE_WITH_SDN);
     }
 
