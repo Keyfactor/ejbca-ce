@@ -27,7 +27,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -92,8 +91,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.WebConfiguration;
@@ -116,8 +115,6 @@ import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -961,10 +958,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     private void populateRequestFields(final RequestFieldType type, final String subject, final Collection<FieldInstance> fieldInstances) {
         final List<String> subjectFieldsFromParsedCsr = CertTools.getX500NameComponents(subject);
+        
+        final int eepId = getEndEntityInformation().getEndEntityProfileId();
+        
         bothLoops:
         for (final String subjectField : subjectFieldsFromParsedCsr) {
             if (log.isDebugEnabled()) {
-                log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
+                if (GdprRedactionUtils.isRedactPii(eepId)) {
+                    if (RequestFieldType.DN.equals(type)) { 
+                        log.debug("Parsing the subject " + type + " field '" + GdprRedactionUtils.getSubjectDnLogSafe(subjectField, eepId) + "'...");
+                    } else if (RequestFieldType.AN.equals(type)) {
+                        log.debug("Parsing the subject " + type + " field '" + GdprRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId) + "'...");
+                    } else {
+                        log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
+                    }
+                } else {
+                    log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
+                }
             }
             final String[] nameValue = subjectField.split("=");
             if (nameValue != null && nameValue.length == 2) {
@@ -989,23 +999,42 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         if (DnComponents.profileIdToDnId(fieldInstance.getProfileId()) == dnId.intValue()) {
                             if (fieldInstance.isModifiable()) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
+                                    if (GdprRedactionUtils.isRedactPii(eepId)) {
+                                        logRedactedInfo(type, eepId, fieldInstance);
+                                    } else {
+                                        log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue="
+                                                + fieldInstance.getDefaultValue());
+                                    }
                                 }
                                 if (StringUtils.isEmpty(fieldInstance.getValue()) || fieldInstance.getValue().equals(fieldInstance.getDefaultValue())) {
                                     fieldInstance.setValue(nameValue[1]);
                                     if (log.isDebugEnabled()) {
-                                        log.debug("Modifiable subject field '" + subjectField + "' successfully parsed from CSR");
+                                        if (GdprRedactionUtils.isRedactPii(eepId)) {
+                                            log.debug("Modifiable subject field '" + GdprRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)  + "' successfully parsed from CSR");
+                                        } else {
+                                            log.debug("Modifiable subject field '" + subjectField + "' successfully parsed from CSR");
+                                        }
                                     }
                                     continue bothLoops;
                                 }
                             } else if (fieldInstance.isSelectable()) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
+                                    if (GdprRedactionUtils.isRedactPii(eepId)) {
+                                        logRedactedInfo(type, eepId, fieldInstance);
+                                    } else {
+                                        log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue="
+                                                + fieldInstance.getDefaultValue());
+                                    }
                                 }
                                 if (fieldInstance.getSelectableValues().contains(nameValue[1])) {
                                     fieldInstance.setValue(nameValue[1]);
                                     if (log.isDebugEnabled()) {
-                                        log.debug("Selectable subject field '" + subjectField + "' successfully parsed from CSR");
+                                        if (GdprRedactionUtils.isRedactPii(eepId)) {
+                                            log.debug("Modifiable subject field '" + GdprRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+                                                    + "' successfully parsed from CSR");
+                                        } else {
+                                            log.debug("Selectable subject field '" + subjectField + "' successfully parsed from CSR");
+                                        }
                                     }
                                     continue bothLoops;
                                 }
@@ -1015,13 +1044,46 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
             if (RequestFieldType.DN.equals(type) && getCertificateProfile().getAllowDNOverride()) {
-                raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField);
-                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
+                if (GdprRedactionUtils.isRedactPii(eepId)) {
+                    final String redactedSubject = GdprRedactionUtils.getSubjectDnLogSafe(subjectField, eepId);
+                    raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, redactedSubject);
+                    throw new ValidatorException(
+                            new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, redactedSubject)));
+                } else {
+                    raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField);
+                    throw new ValidatorException(
+                            new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
+                }
             }
             if (log.isDebugEnabled()) {
-                log.debug("Unparsable subject " + type + " field '" + subjectField +
-                        "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                if (GdprRedactionUtils.isRedactPii(eepId)) {
+                    if (RequestFieldType.DN.equals(type)) {
+                        log.debug("Unparsable subject " + type + " field '" + GdprRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+                                + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                    } else if (RequestFieldType.AN.equals(type)) {
+                        log.debug("Unparsable subject " + type + " field '" + GdprRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId)
+                                + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                    } else {
+                        log.debug("Unparsable subject " + type + " field '" + subjectField
+                                + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                    }
+                } else {
+                    log.debug("Unparsable subject " + type + " field '" + subjectField
+                            + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                }
             }
+        }
+    }
+
+    private void logRedactedInfo(final RequestFieldType type, final int eepId, final FieldInstance fieldInstance) {
+        if (RequestFieldType.DN.equals(type)) {
+            log.debug(" fieldInstance.value=" + GdprRedactionUtils.getSubjectDnLogSafe(fieldInstance.getValue(), eepId)
+                    + " fieldInstance.defaultValue=" + GdprRedactionUtils.getSubjectDnLogSafe(fieldInstance.getDefaultValue(), eepId));
+        } else if (RequestFieldType.AN.equals(type)) {
+            log.debug(" fieldInstance.value=" + GdprRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getValue(), eepId)
+                    + " fieldInstance.defaultValue=" + GdprRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getDefaultValue(), eepId));
+        } else {
+            log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
         }
     }
 
@@ -1384,13 +1446,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
             log.info("Request with ID " + requestId + " is still waiting for approval");
         } catch (EjbcaException e) {
             errorCode = EjbcaException.getErrorCode(e);
+
             if (errorCode != null) {
                 if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
                     raLocaleBean.addMessageError(ENROLL_USERNAME_ALREADY_EXISTS, endEntityInformation.getUsername());
                     log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
                 } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
-                    raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
-                    log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
+                    final int eepId = endEntityInformation.getEndEntityProfileId();
+                    if (GdprRedactionUtils.isRedactPii(eepId)) {
+                        raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user",
+                                GdprRedactionUtils.getSubjectDnLogSafe(subjectDn.getValue(), eepId));
+                        log.info("Subject DN " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDn.getValue(), eepId)
+                                + " already exists for another user", e);
+                    } else {
+                        raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
+                        log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
+                    }
                 } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
                     raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e));
                     log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
@@ -1459,6 +1530,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             sb.append(", ");
             sb.append(errorCode);
         }
+        // TODO: here we might have PII ino logged.
         log.info(sb.toString(), exception);
     }
 
@@ -1597,20 +1669,32 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Update the current state of the EE-holder and validate the subject DN via the RA API.
      */
     public final void checkSubjectDn() {
+        final EndEntityInformation eEInformation = getEndEntityInformation();
+        final int eepId = eEInformation.getEndEntityProfileId();
         try {
-            final EndEntityInformation endEntityInformation = getEndEntityInformation();
-            endEntityInformation.setCAId(getCAInfo().getCAId());
+            eEInformation.setCAId(getCAInfo().getCAId());
             if (log.isDebugEnabled()) {
-                log.debug("checkSubjectDn: '" + subjectDn.getUpdatedValue() + "'");
+                if (GdprRedactionUtils.isRedactPii(eepId)) {
+                    log.debug("checkSubjectDn: '" + GdprRedactionUtils.getSubjectDnLogSafe(subjectDn.getUpdatedValue(), eepId) + "'");
+                } else {
+                    log.debug("checkSubjectDn: '" + subjectDn.getUpdatedValue() + "'");
+                }
             }
-            endEntityInformation.setDN(subjectDn.getUpdatedValue());
-            raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            eEInformation.setDN(subjectDn.getUpdatedValue());
+            raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), eEInformation);
         } catch (AuthorizationDeniedException e) {
             log.error(e);
         } catch (EjbcaException e) {
             if (ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode())) {
-                FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists", subjectDn.getValue()), null));
+                if (GdprRedactionUtils.isRedactPii(eepId)) {
+                    FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(),
+                            new FacesMessage(FacesMessage.SEVERITY_WARN, raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists",
+                                    GdprRedactionUtils.getSubjectDnLogSafe(subjectDn.getUpdatedValue(), eepId)), null));
+                } else {
+                    FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(),
+                            new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                    raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists", subjectDn.getValue()), null));
+                }
             } else {
                 FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(),
                         new FacesMessage(FacesMessage.SEVERITY_WARN, raLocaleBean.getErrorCodeMessage(e.getErrorCode()), null));
@@ -1653,6 +1737,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             final UIComponent domainField = (UIComponent) components.findComponent("upnRfcDomain");
             if (domainField != null && domainField.isRendered()) {
                 if (log.isDebugEnabled()) {
+                    // TODO: should this be redacted?
                     log.debug("Validate SAN rfc822name e-mail user part: " + value);
                 }
                 if (!StringTools.isValidEmailUserPart(value)) {
@@ -1661,6 +1746,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             } else {
                 if (log.isDebugEnabled()) {
+                    // TODO: should this be redacted?
                     log.debug("Validate SAN rfc822name e-mail: " + value);
                 }
                 if (!StringTools.isValidEmail(value)) {
@@ -2835,16 +2921,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Split the clientId on ':', the second to last substring is the loop index
             String[] split = emailInput.getClientId().split(":");
             index = Integer.parseInt(split[split.length - 2]);
-            // log.debug("Index " + index + " for clientId '" + emailInput.getClientId() + "'.");
         }
         if (emailInput != null && emailInput.getValue() != null) {
             email = emailInput.getValue().toString();
-            log.debug("Index " + index + " mail part '" + email + "'.");
+            log.debug("Index " + index + " mail part '" + email + "'."); // TODO: should this be redacted?
         }
         String domain = "";
         if (domainInput != null && domainInput.getValue() != null) {
             domain = domainInput.getValue().toString();
-            log.debug("Index " + index + " domain part '" + domain + "'.");
+            log.debug("Index " + index + " domain part '" + domain + "'."); // TODO: should this be redacted?
         }
         String concatenated = "";
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
@@ -2867,6 +2952,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 fi.get(index).setValue(concatenated);
             }
         }
+        // TODO: should this be redacted?
         log.debug("Index " + index + " set to rfc822mail '" + email + "' / domain '" + domain + "' / conc. " + concatenated + ".");
     }
 
@@ -2904,7 +2990,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 if (log.isTraceEnabled()) {
                     String namespaces = String.join(",", eabNamespaces);
                     log.trace("Result set for EAB ID auto complete for namespaces '" + namespaces + "': "
-                            + eabIdAutoCompleteSelectItems.stream().map(e -> e.getValue()).toArray());
+                            + eabIdAutoCompleteSelectItems.stream().map(SelectItem::getValue).toArray());
                 }
             }
         }
@@ -3209,22 +3295,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private byte[] enrollSshCertificate() {
         
         if(StringUtils.isEmpty(getEndEntityInformation().getUsername())) {
-            return null;
+            return new byte[0];
         }
         
         if(sshPublicKey==null && getSelectedKeyPairGenerationEnum()!=KeyPairGeneration.POSTPONE) {
             raLocaleBean.addMessageError(ENROLL_INVALID_SSH_PUB_KEY);
-            return null;
+            return new byte[0];
         }
         
         if(StringUtils.isEmpty(getSshKeyId())) {
             raLocaleBean.addMessageError("enroll_ssh_keyid_required");
-            return null;
+            return new byte[0];
         }
         
         final Properties additionalExtensionDataParser = new Properties();
-        Map<String, String> criticalOptionsToAdd = new HashMap<String, String>();
-        Map<String, byte[]> additionalExtensionsToAdd = new HashMap<String, byte[]>();
+        Map<String, String> criticalOptionsToAdd = new HashMap<>();
+        Map<String, byte[]> additionalExtensionsToAdd = new HashMap<>();
 
         if(StringUtils.isNotEmpty(getCriticalOptionsForceCommand())) {
             criticalOptionsToAdd.put(
@@ -3297,7 +3383,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 raLocaleBean.addMessageInfo("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername());
                 //TODO approval
-                return null;
+                return new byte[0];
             }
         } catch (AuthorizationDeniedException e) {
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
@@ -3310,8 +3396,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
                 } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                     // TODO update error messages
-                    raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
-                    log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
+                    final int eepId = endEntityInformation.getEndEntityProfileId();
+                    if (GdprRedactionUtils.isRedactPii(eepId)) {
+                        raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", GdprRedactionUtils.getSubjectDnLogSafe(subjectDn.getValue(), eepId));
+                        log.info("Subject DN " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDn.getValue(), eepId) + " already exists for another user", e);
+                    } else {
+                        raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
+                        log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
+                    }
                 } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
                     raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e));
                     log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
@@ -3327,7 +3419,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             endEntityInformation.setUsername(StringUtils.EMPTY);
         }
         
-        return null;
+        return new byte[0];
     }
     
 }
