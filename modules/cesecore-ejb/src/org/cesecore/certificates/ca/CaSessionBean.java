@@ -48,6 +48,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.PKCS11CryptoToken;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -93,8 +94,6 @@ import static java.util.Objects.nonNull;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -808,7 +807,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
         } catch (CertificateNotYetValidException e) {
             // Signers Certificate is not yet valid.
-            log.warn(intres.getLocalizedMessage("caadmin.canotyetvalid", ca.getSubjectDN()) + " " + e.getMessage());
+            log.warn(intres.getLocalizedMessage("caadmin.canotyetvalid", ca.getSubjectDN()) + " " + GdprRedactionUtils.getRedactedMessage(e.getMessage()));
         }
         return expired;
     }
