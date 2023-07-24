@@ -12,18 +12,18 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.crl.RevocationReasons;
+
+import javax.ejb.Local;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
-import javax.ejb.Local;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.crl.RevocationReasons;
+import java.util.Set;
 
 /**
  * Local interface for CertificateStoreSession.
@@ -337,4 +337,36 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return List of all found entries.
      */
     List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, long expireDate, int limit, int offset);
+
+    /**
+     * Finds certificates expiring before the given date.
+     *
+     * @param issuerDns The issuer DNs, or null for all.
+     * @param expiredBefore Expiration date must be before this date.
+     * @param maxNumberOfResults Batch size.
+     * @return Collection of certificate metadata.
+     */
+    List<CertificateInfo> findExpiredCertificates(Collection<String> issuerDns, Date expiredBefore, int maxNumberOfResults);
+
+    /**
+     * Deletes an expired certificate. No authorization check is done.
+     *
+     * @param certInfo The certificate to delete.
+     * @param adminForLogging The administrator to use in the log message.
+     * @throws IllegalStateException if the certificate is not yet expired
+     */
+    void deleteExpiredCertificate(final CertificateInfo certInfo, final AuthenticationToken adminForLogging);
+
+    /**
+     * Deletes certificates expiring before the given date. All database operations run in separate transactions.
+     *
+     * @param issuerDns The issuer DNs, or null for all.
+     * @param maximumExpirationDate Expiration date must be before this date.
+     * @param batchSize Batch size.
+     * @param adminForLogging The administrator to use in the log message.
+     * @param previousDeletedFingerprints The certificates that were deleted in the previous execution. Used as a safety precaution to prevent an endless loop.
+     * @return The fingerprints of the certificates that were deleted.
+     */
+    Set<String> deleteExpiredCertificatesInSeparateTransactions(List<String> issuerDns, Date maximumExpirationDate, int batchSize,
+            AuthenticationToken adminForLogging, Set<String> previousDeletedFingerprints);
 }

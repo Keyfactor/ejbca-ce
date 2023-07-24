@@ -736,14 +736,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return globalconfiguration;
     }
 
-    /**
-     * @return Public application base URL (e.g. 'http://localhost:8080/ejbca')
-     */
-    @Override
-    public String getBaseUrlPublic() {
-        return globalconfiguration == null ? null : globalconfiguration.getBaseUrlPublic();
-    }
-
     @Override
     public String getCurrentRemoteIp() {
         return authState.currentRemoteIp;

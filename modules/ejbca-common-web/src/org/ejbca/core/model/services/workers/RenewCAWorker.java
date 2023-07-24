@@ -25,6 +25,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.util.PropertyTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
@@ -123,7 +124,7 @@ public class RenewCAWorker extends BaseWorker {
 	}
 	
 	protected boolean isRenewKeys() {
-		return properties.getProperty(PROP_RENEWKEYS,"FALSE").equalsIgnoreCase("TRUE");
+		return PropertyTools.get(properties, PROP_RENEWKEYS, false);
 	}
 
   
