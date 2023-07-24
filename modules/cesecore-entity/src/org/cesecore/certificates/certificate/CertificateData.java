@@ -38,6 +38,7 @@ import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.SshCertificateUtils;
 
 import com.keyfactor.util.Base64;
@@ -306,6 +307,11 @@ public class CertificateData extends BaseCertificateData implements Serializable
     public String getSubjectAltNameNeverNull() {
         final String subjectAltName = getSubjectAltName();
         return subjectAltName == null ? "" : subjectAltName;
+    }
+    
+    @Transient
+    public String getLogSafeSubjectAltName() {
+        return GdprRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull(), endEntityProfileId);
     }
 
     @Override

@@ -179,8 +179,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Creates and signs certificates.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SignSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -300,7 +298,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
             final Map<String, Object> details = new LinkedHashMap<>();
             if (cert != null) {
-                details.put("leafSubject", CertTools.getSubjectDN(cert));
+                final String logSafeSubjectDN = certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(cert))
+                                                                       .getCertificateData().getLogSafeSubjectDn();
+
+                details.put("leafSubject", logSafeSubjectDN);
                 details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
             }
             details.put("includeChain", Boolean.toString(includeChain));
