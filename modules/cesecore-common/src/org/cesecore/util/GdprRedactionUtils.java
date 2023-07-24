@@ -100,10 +100,6 @@ public class GdprRedactionUtils {
         }
     }
     
-    public static boolean redactPii() { // placeholder
-        return GdprConfigurationCache.INSTANCE.getGdprConfiguration("").isRedactPii();
-    }
-
     public static boolean isRedactPii(final int endEntityProfileId) {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii();
     }

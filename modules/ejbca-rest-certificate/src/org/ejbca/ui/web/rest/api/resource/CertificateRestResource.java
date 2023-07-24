@@ -141,11 +141,7 @@ public class CertificateRestResource extends BaseRestResource {
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
-            if(!GdprRedactionUtils.redactPii()) { // RA
-                log.info("exception during enrollPkcs10Certificate: ", e);
-            } else {
-                log.info("Exception during enrollPkcs10Certificate. Redacting exception of class: " + e.getClass().getSimpleName()); 
-            }
+            log.info("exception during enrollPkcs10Certificate: ", GdprRedactionUtils.getRedactedThrowable(e));
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
     }
