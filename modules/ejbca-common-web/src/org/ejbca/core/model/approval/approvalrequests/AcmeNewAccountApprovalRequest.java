@@ -89,7 +89,7 @@ public class AcmeNewAccountApprovalRequest extends ApprovalRequest {
 			retval.add(new ApprovalDataText("ACMEACCOUNTID", acmeAccountId, true, false));
 		}
 		retval.add(new ApprovalDataText("CAID", Integer.toString(caId), true, false));
-        retval.add(new ApprovalDataText("EEPID", Integer.toString(endEntityProfileId), true, false));
+        retval.add(new ApprovalDataText(ApprovalDataText.END_ENTITY_PROFILE_ID, Integer.toString(endEntityProfileId), true, false));
 		return retval;
 	}
 
