@@ -35,6 +35,7 @@ import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.util.NetworkTools;
+import org.cesecore.util.PropertyTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.model.services.BaseWorker;
@@ -151,7 +152,7 @@ public class CRLDownloadWorker extends BaseWorker {
                                          final CrlStoreSessionLocal crlStoreSession, final ImportCrlSessionLocal importCrlSession) throws ServiceExecutionFailedException {
         try {
             final String issuerDn = CertTools.getSubjectDN(caCertificate);
-            final boolean ignoreNextUpdate = Boolean.valueOf(properties.getProperty(PROP_IGNORE_NEXT_UPDATE, Boolean.FALSE.toString()));
+            final boolean ignoreNextUpdate = PropertyTools.get(properties, PROP_IGNORE_NEXT_UPDATE, false);
             // Get last known CRL (if any) and check when the next update will be
             final X509CRL lastFullCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false));
             final X509CRL newestFullCrl;
@@ -211,7 +212,7 @@ public class CRLDownloadWorker extends BaseWorker {
 
     private X509CRL getAndProcessCrl(final URL cdpUrl, final X509Certificate caCertificate, final CAInfo caInfo,
                                      final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, CrlImportException, ServiceExecutionFailedException {
-        final int maxSize = Integer.parseInt(properties.getProperty(PROP_MAX_DOWNLOAD_SIZE, String.valueOf(DEFAULT_MAX_DOWNLOAD_SIZE)));
+        final int maxSize = PropertyTools.get(properties, PROP_MAX_DOWNLOAD_SIZE, DEFAULT_MAX_DOWNLOAD_SIZE);
         X509CRL newCrl = null;
         final byte[] crlBytesNew = NetworkTools.downloadDataFromUrl(cdpUrl, maxSize);
         if (crlBytesNew == null) {

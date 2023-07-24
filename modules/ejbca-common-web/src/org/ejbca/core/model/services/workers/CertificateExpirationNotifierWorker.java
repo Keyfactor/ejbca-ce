@@ -66,11 +66,11 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         certificateStoreSession = ((CertificateStoreSessionLocal) ejbs.get(CertificateStoreSessionLocal.class));
         final EndEntityAccessSessionLocal endEntityAccessSession = ((EndEntityAccessSessionLocal) ejbs.get(EndEntityAccessSessionLocal.class));
 
-        List<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
-        List<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
+        List<EmailCertData> userEmailQueue = new ArrayList<>();
+        List<EmailCertData> adminEmailQueue = new ArrayList<>();
 
         // Build Query
-        Collection<String> cas = new ArrayList<String>();
+        Collection<String> cas = new ArrayList<>();
         Collection<Integer> caIds = getCAIdsToCheck(false);
         Collection<Integer> certificateProfileIds = getCertificateProfileIdsToCheck();
         if (!caIds.isEmpty()) {
@@ -261,7 +261,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
      */
     private Collection<Integer>getCertificateProfileIdsToCheck() {
         if (this.certificateProfileIds == null) {
-            this.certificateProfileIds = new ArrayList<Integer>();
+            this.certificateProfileIds = new ArrayList<>();
             String idString = properties.getProperty(PROP_CERTIFICATE_PROFILE_IDS_TO_CHECK);
             if (idString != null) {
                 for (String id : idString.split(";")) {
