@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <ui:remove>
+        <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+
+     $Id$
+     -->
+    </ui:remove>
+
+<body>
+<ui:composition>
+    <h:panelGroup>
+        <h:outputText value="#{web.text.DATABASEMAINTENANCEWORKERSETTINGS}"
+            style="font-weight:bold;" />
+    </h:panelGroup>
+    <h:panelGroup>
+        <h3>
+            <h:outputText styleClass="warning" value="#{web.text.DATABASEMAINTENANCEWORKER_WARNING}" />
+        </h3>
+        <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Database_maintenance_service.html')}" escape="false"/>
+    </h:panelGroup>
+    <h:panelGroup>
+        <h:outputText value="#{web.text.CASTOCHECK}" />
+    </h:panelGroup>
+    <h:panelGroup>
+        <h:selectManyListbox id="dbMaintenanceCASelect"
+            value="#{editService.baseWorkerType.selectedCANamesToCheck}"
+            size="10" disabled="#{not editService.hasEditRights}">
+            <f:selectItems
+                value="#{editService.availableCAs}" />
+        </h:selectManyListbox>
+    </h:panelGroup>
+
+    <h:panelGroup>
+        <h:outputText value="#{web.text.DATABASEMAINTENANCEWORKER_DELAY_AFTER_EXPIRATION}" />
+    </h:panelGroup>
+    <h:panelGroup>
+        <h:inputText id="databaseMaintenanceDelayValue"
+            value="#{editService.databaseMaintenanceWorkerType.delayTimeValue}" size="5"
+            title="#{web.text.FORMAT_INTEGER}"
+            disabled="#{not editService.hasEditRights}">
+            <f:validateLongRange minimum="0"/>
+        </h:inputText>
+        <f:verbatim>
+        </f:verbatim>
+        <h:selectOneMenu id="databaseMaintenanceDelayUnitSelect"
+            value="#{editService.databaseMaintenanceWorkerType.delayTimeUnit}"
+            disabled="#{not editService.hasEditRights}">
+            <f:selectItems value="#{editService.notifyingType.availableUnits}" />
+        </h:selectOneMenu>
+    </h:panelGroup>
+
+    <h:panelGroup>
+        <h:outputText value="#{web.text.DATABASEMAINTENANCEWORKER_DELETE_EXPIRED_CERTS}" />
+    </h:panelGroup>
+    <h:panelGroup>
+        <h:selectBooleanCheckbox id="databaseMaintenanceDeleteExpiredCerts"
+            value="#{editService.databaseMaintenanceWorkerType.deleteExpiredCertificates}"
+            disabled="#{!editService.hasEditRights}" />
+    </h:panelGroup>
+    <h:panelGroup>
+        <h:outputText value="#{web.text.DATABASEMAINTENANCEWORKER_DELETE_EXPIRED_CRLS}" />
+    </h:panelGroup>
+    <h:panelGroup>
+        <h:selectBooleanCheckbox id="databaseMaintenanceDeleteExpiredCrls"
+            value="#{editService.databaseMaintenanceWorkerType.deleteExpiredCrls}"
+            disabled="#{!editService.hasEditRights}" />
+    </h:panelGroup>
+
+    <h:panelGroup>
+        <h:outputText value="#{web.text.DATABASEMAINTENANCEWORKER_BATCH_SIZE}" />
+    </h:panelGroup>
+    <h:panelGroup>
+        <h:inputText id="databaseMaintenanceBatchSize"
+            value="#{editService.databaseMaintenanceWorkerType.batchSize}" size="5"
+            disabled="#{!editService.hasEditRights}" />
+    </h:panelGroup>
+</ui:composition>
+</body>
+</html>
