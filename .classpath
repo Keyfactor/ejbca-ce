@@ -215,6 +215,7 @@
 	<classpathentry kind="lib" path="lib/hibernate/FastInfoset-1.2.15.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/byte-buddy-1.10.17.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-5.4.25.Final.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-validator-6.2.5.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/easymock-4.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/cglib-nodep-3.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
@@ -243,6 +244,7 @@
 	<classpathentry kind="lib" path="lib/log4j-api-2.20.0.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-core-2.20.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
+	<classpathentry kind="lib" path="lib/el-impl-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javaee-api-8.0.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
 		<attributes>
