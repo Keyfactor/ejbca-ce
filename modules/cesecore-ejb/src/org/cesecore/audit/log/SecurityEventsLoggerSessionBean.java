@@ -78,7 +78,7 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
     @Override
     public void log(final EventType eventType, final EventStatus eventStatus, final ModuleType module, final ServiceType service, final String authToken, final String customId, final String searchDetail1, final String searchDetail2,
             final String additionalDetailsMsg) throws AuditRecordStorageException {
-        final Map<String, Object> additionalDetails = new LinkedHashMap<String, Object>();
+        final Map<String, Object> additionalDetails = new LinkedHashMap<>();
         additionalDetails.put("msg", additionalDetailsMsg);
         log(eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails);
     }

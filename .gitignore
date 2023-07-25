@@ -14,3 +14,4 @@ modules/ra-gui/resources/js/jquery.min.js
 /.tern-project
 *.iml
 .project
+/.idea

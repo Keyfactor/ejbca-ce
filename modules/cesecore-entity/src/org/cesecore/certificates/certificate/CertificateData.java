@@ -60,6 +60,7 @@ import com.keyfactor.util.keys.KeyTools;
                 @ColumnResult(name = "revocationReason"),
                 @ColumnResult(name = "invalidityDate")}),
         @SqlResultSetMapping(name = "CertificateInfoSubset", columns = {
+                @ColumnResult(name = "fingerprint"),
                 @ColumnResult(name = "issuerDN"),
                 @ColumnResult(name = "subjectDN"),
                 @ColumnResult(name = "cAFingerprint"),
