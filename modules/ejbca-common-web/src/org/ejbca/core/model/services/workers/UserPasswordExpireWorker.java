@@ -68,11 +68,11 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
         log.trace(">Worker started");
         final EndEntityManagementSessionLocal endEntityManagementSession = ((EndEntityManagementSessionLocal)ejbs.get(EndEntityManagementSessionLocal.class));
 
-        ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
-        ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
+        ArrayList<EmailCertData> userEmailQueue = new ArrayList<>();
+        ArrayList<EmailCertData> adminEmailQueue = new ArrayList<>();
        
         long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());   
-        List<EndEntityInformation> userDataList = endEntityManagementSession.findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
+        List<EndEntityInformation> userDataList = endEntityManagementSession.findUsers(new ArrayList<>(getCAIdsToCheck(false)),
                 timeModified, EndEntityConstants.STATUS_NEW);
         if(userDataList.isEmpty()) {
             return new ServiceExecutionResult(Result.NO_ACTION, "No end entities required password expiration.");
@@ -121,6 +121,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 	 * @param pk primary key of object to update
 	 * @param status status to update to 
 	 */
+    @Override
 	protected void updateStatus(String pk, int status) {
 		// Do nothing
 	}

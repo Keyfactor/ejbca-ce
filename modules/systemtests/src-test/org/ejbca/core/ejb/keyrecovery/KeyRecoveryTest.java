@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.keyrecovery;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -34,6 +35,8 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
+import org.cesecore.audit.AuditLogEntry;
+import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -76,6 +79,7 @@ import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -97,6 +101,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -119,6 +124,7 @@ public class KeyRecoveryTest extends CaTestCase {
     private static final String KEYRECOVERY_ROLE = "KEYRECOVERYROLE";
     private static final String KEYRECOVERY_EEP = "TEST_KEYRECOVERY_EEP";
     private static final String TEST_EMAIL = "test@test.se";
+    private static final String TEST_CA_NAME_PREFIX = "testcaname";
 
     private static final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
     private static final KeyStoreCreateSessionRemote keyStoreCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyStoreCreateSessionRemote.class);
@@ -134,11 +140,45 @@ public class KeyRecoveryTest extends CaTestCase {
     private static final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private static final GlobalConfigurationProxySessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
+    private final static String DEVICE_NAME = IntegrityProtectedDevice.class.getSimpleName();
+    private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     private AuthenticationToken admin;
+    private static long allTestsStartTime;
 
     @BeforeClass
     public static void beforeClass() {
+        allTestsStartTime = System.currentTimeMillis();
         CryptoProviderTools.installBCProvider();
+    }
+    
+    @AfterClass
+    public static void checkNoPiiLogged() throws Exception {
+        final List<Object> parameters = new ArrayList<>();
+        parameters.add(allTestsStartTime);
+        parameters.add("%KEYRECOVERY%");
+        List<? extends AuditLogEntry> auditLogsGenerated = 
+                ejbcaAuditorSession.selectAuditLog(internalAdmin, DEVICE_NAME, 0, 1000, 
+                        "a.timeStamp > ?0" +
+                        " and a.eventType LIKE ?1", null, parameters);
+        
+        boolean foundPii = false; 
+        StringBuilder matchString = new StringBuilder();
+        for(AuditLogEntry x: auditLogsGenerated) {
+            String auditLogEntry = getAsString(x.getMapAdditionalDetails()).toLowerCase();
+            auditLogEntry = auditLogEntry.replace("cn=test", "").replace("cn=testca", "");
+            log.error(x.getEventTypeValue());
+            log.error(auditLogEntry);
+            if(auditLogEntry.contains("cn=") || auditLogEntry.contains("rfc822name=")) {
+                foundPii = true;
+                matchString.append(x.getEventTypeValue() + ",");
+                matchString.append(x.getEventStatusValue() + ",");
+                matchString.append(auditLogEntry);
+                matchString.append("[[--- NEXT ---]]");
+            }
+        }
+        assertFalse("Found AUDIT logged PII data: " + matchString.toString(), foundPii);
+
     }
 
     @Override
@@ -274,7 +314,7 @@ public class KeyRecoveryTest extends CaTestCase {
     public void testECCDHNonCovariant() throws Exception {
         final String encryptionCipher =  "brainpoolP256t1";
         //Create a new CA with a EC crypto token
-        final String caName = "testAddAndRemoveKeyPairECEncryptWithECCDH_Ca";
+        final String caName = TEST_CA_NAME_PREFIX + "AddAndRemoveKeyPairECEncryptWithECCDH_Ca";
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "secp256r1", encryptionCipher, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
@@ -333,7 +373,7 @@ public class KeyRecoveryTest extends CaTestCase {
     @Test
     public void testAddAndRemoveKeyPairECEncryptWithECCDH() throws Exception {
         //Create a new CA with a EC crypto token
-        final String caName = "testAddAndRemoveKeyPairECEncryptWithECCDH_Ca";
+        final String caName = TEST_CA_NAME_PREFIX + "AddAndRemoveKeyPairECEncryptWithECCDH_Ca";
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "secp256r1", "secp256r1", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
@@ -670,8 +710,8 @@ public class KeyRecoveryTest extends CaTestCase {
     public void testRecoveryUsingCertificateRequestSession() throws Exception {
         log.trace(">testRecoveryWithChangedCA");
         final String testuser = genRandomUserName();
-        final String TESTCA1 = "TESTKEYRECCA1";
-        final String TESTCA2 = "TESTKEYRECCA2";
+        final String TESTCA1 = TEST_CA_NAME_PREFIX + "KEYRECCA1";
+        final String TESTCA2 = TEST_CA_NAME_PREFIX + "KEYRECCA2";
         X509Certificate usercert = null;
         String fp1 = null;
         try {
@@ -755,7 +795,7 @@ public class KeyRecoveryTest extends CaTestCase {
         final String eeProfileName = "TEST_PKCS12_REQ_WS";
         final String username = "testUserForPkcs12";
         final String password = "foo123";
-        final String testCaName = "TESTPKCS12CA";
+        final String testCaName = TEST_CA_NAME_PREFIX + "PKCS12CA";
         X509Certificate usercert = null;
         final String format = "PKCS12";
         String fingerprint = null;

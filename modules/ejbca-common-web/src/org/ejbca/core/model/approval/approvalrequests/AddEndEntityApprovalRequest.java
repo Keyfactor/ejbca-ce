@@ -35,6 +35,7 @@ import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.validation.ValidationResult;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -149,8 +150,9 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 	    ArrayList<ApprovalDataText> retval = new ArrayList<>();
         retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
-        retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
-        retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(GdprRedactionUtils.isRedactPii(userdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN,CertTools.stringToBCDNString(userdata.getDN()),true,false));
+        retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME,userdata.getSubjectAltName()));
         String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
         retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
         retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
@@ -163,8 +165,9 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
 			CertificateProfileSession certificateProfileSession) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
-		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
-		retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(GdprRedactionUtils.isRedactPii(userdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.stringToBCDNString(userdata.getDN()),true,false));
+		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, userdata.getSubjectAltName()));
 		String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));

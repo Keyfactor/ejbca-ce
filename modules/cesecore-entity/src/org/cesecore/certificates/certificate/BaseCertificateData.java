@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Transient;
@@ -25,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.util.GdprRedactionUtils;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
@@ -443,7 +445,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     @Transient
     public String getSerialNumberHex() throws NumberFormatException {
         try {
-            return new BigInteger(getSerialNumber(), 10).toString(16).toUpperCase();
+            return new BigInteger(getSerialNumber(), 10).toString(16).toUpperCase(Locale.ROOT);
         } catch (NumberFormatException e) {
             return getSerialNumber();
         }
@@ -464,6 +466,11 @@ public abstract class BaseCertificateData extends ProtectedData {
     public String getSubjectDnNeverNull() {
         final String subjectDn = getSubjectDN();
         return subjectDn == null ? "" : subjectDn;
+    }
+    
+    @Transient
+    public String getLogSafeSubjectDn() {
+        return GdprRedactionUtils.getSubjectDnLogSafe(getSubjectDnNeverNull(), getEndEntityProfileIdOrZero());
     }
     
     /**

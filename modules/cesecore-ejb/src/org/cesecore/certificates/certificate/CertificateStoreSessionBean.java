@@ -12,43 +12,12 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.math.BigInteger;
-import java.security.PublicKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
+import com.google.common.base.Preconditions;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -85,11 +54,41 @@ import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.cvc.PublicKeyEC;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.math.BigInteger;
+import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -267,7 +266,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         entityManager.persist(certificateData);
         if (doAuditLog) {
             final String serialNo = CertTools.getSerialNumberAsString(incert);
-            final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateData.getFingerprint(), certificateData.getSubjectDnNeverNull(), 
+            final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateData.getFingerprint(), 
+                    certificateData.getLogSafeSubjectDn(), 
                     certificateData.getIssuerDN(), serialNo, certificateData.getAccountBindingId());
             final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
             logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(), caId,
@@ -360,7 +360,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         final String username = certificateData.getUsername();
         final String serialNo = CertTools.getSerialNumberAsString(certificate);
-        final String msg = INTRES.getLocalizedMessage("store.storecert", username, fingerprint, certificateData.getSubjectDnNeverNull(),
+        final String msg = INTRES.getLocalizedMessage("store.storecert", username, fingerprint, 
+                certificateData.getLogSafeSubjectDn(),
                 certificateData.getIssuerDN(), serialNo);
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
@@ -384,8 +385,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final String username = data.getUsername();
         final String serialNo = CertTools.getSerialNumberAsString(certificate);
         final int issuerHash = CertTools.getIssuerDN(certificate).hashCode();
-        final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateFingerprint, 
-                data.getSubjectDnNeverNull(), issuerHash, serialNo, accountBindingId);
+        final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, 
+                certificateFingerprint, 
+                data.getLogSafeSubjectDn(), issuerHash, serialNo, accountBindingId);
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         final String caId = String.valueOf(issuerHash);
@@ -766,6 +768,50 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         return certificateDataSession.findUsernamesByExpireTimeWithLimit(new Date().getTime(), expiretime.getTime(),
                 getGlobalCesecoreConfiguration().getMaximumQueryCount());
+    }
+
+    @Override
+    public List<CertificateInfo> findExpiredCertificates(final Collection<String> issuerDns, final Date expiredBefore, final int maxNumberOfResults) {
+        Preconditions.checkArgument(!issuerDns.isEmpty(), "List of issuerDNs cannot be empty (but it can be null)");
+        Preconditions.checkArgument(expiredBefore.getTime() <= System.currentTimeMillis(), "expiredBefore must be in the past");
+        return certificateDataSession.findOldCertificates(issuerDns, expiredBefore, maxNumberOfResults);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void deleteExpiredCertificate(final CertificateInfo certInfo, final AuthenticationToken adminForLogging) {
+        if (certInfo.getExpireDate().getTime() >= System.currentTimeMillis()) {
+            throw new IllegalStateException("Certificate " + certInfo.getSerialNumberHex() + " is not yet expired");
+        }
+        final Query deleteQuery = entityManager.createQuery("DELETE FROM CertificateData a WHERE a.fingerprint = :fingerprint");
+        deleteQuery.setParameter("fingerprint", certInfo.getFingerprint());
+        deleteQuery.executeUpdate();
+
+        final String caIdString = (certInfo.getIssuerDN() != null ? String.valueOf(certInfo.getIssuerDN().hashCode()) : null);
+        final String detailsMsg = InternalResources.getInstance().getLocalizedMessage("store.deletedexpiredcert",
+                caIdString, certInfo.getSerialNumberHex());
+        logSession.log(EventTypes.CERT_CLEANUP, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(),
+                caIdString, certInfo.getSerialNumberHex(), certInfo.getUsername(), detailsMsg);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public Set<String> deleteExpiredCertificatesInSeparateTransactions(final List<String> issuerDns, final Date maximumExpirationDate, final int batchSize,
+            final AuthenticationToken adminForLogging, final Set<String> previousDeletedFingerprints) {
+        final Set<String> currentlyDeletedFingerprints = new HashSet<>();
+        final List<CertificateInfo> certInfos = certificateStoreSession.findExpiredCertificates(issuerDns, maximumExpirationDate, batchSize);
+        for (final CertificateInfo certInfo : certInfos) {
+            if (previousDeletedFingerprints.contains(certInfo.getFingerprint())) {
+                // This should never happen, because the previously deleted certificates should no be returned by findExpiredCertificates.
+                // But if it would happen, it would cause an endless loop. So abort to be safe.
+                throw new IllegalStateException("Certificate still exists after deletion! Certificate serial number: " + certInfo.getSerialNumberHex() +
+                        ", fingerprint: " + certInfo.getFingerprint());
+            } else {
+                certificateStoreSession.deleteExpiredCertificate(certInfo, adminForLogging);
+                currentlyDeletedFingerprints.add(certInfo.getFingerprint());
+            }
+        }
+        return currentlyDeletedFingerprints;
     }
 
     @Override
@@ -1207,7 +1253,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             } else {
                 certificateData.setInvalidityDate(-1L);
             }
-            final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, certificateData.getFingerprint(), reason, certificateData.getLogSafeSubjectDn(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1222,7 +1268,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (revokeDate != null) {
                 certificateData.setRevocationDate(revokeDate);
             }
-            final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), reason, certificateData.getLogSafeSubjectDn(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1230,7 +1276,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
             certificateData.setUpdateTime(now.getTime());
             certificateData.setInvalidityDate(invalidityDate);
-            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), certificateData.getRevocationReason(), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), certificateData.getRevocationReason(), certificateData.getLogSafeSubjectDn(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1245,7 +1291,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
 
-            final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), reason, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNumber);
+            final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, certificateData.getFingerprint(), reason, certificateData.getLogSafeSubjectDn(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1448,7 +1494,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         } else {
             serialNo = CertTools.getSerialNumberAsString(certificate);
         }
-        final String msg = INTRES.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
+        final String msg = INTRES.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getLogSafeSubjectDn(), certificateData.getIssuerDN(), serialNo);
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, certificateData.getUsername(), details);
