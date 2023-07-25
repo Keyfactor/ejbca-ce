@@ -29,7 +29,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.roles.Role;
-import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.Approval;
@@ -251,8 +250,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private final String caName;
     private final String type;
     private final String requesterName;
-    private String displayName = StringUtils.EMPTY;
-    private String detail = StringUtils.EMPTY;
+    private final String displayName;
+    private final String detail;
     private final String status;
     
     private final RaEndEntityDetails endEntityDetails;
@@ -365,17 +364,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
         if (endEntityInformation != null) {
             username = endEntityInformation.getUsername();
             subjectDN = endEntityInformation.getDN();
-            displayName = getCNOrFallback(subjectDN, username);
-            
-            // Personal Identification Information redaction
-            final int eepId = endEntityInformation.getEndEntityProfileId();
-            if (GdprRedactionUtils.isRedactPii(eepId)) {
-                detail = GdprRedactionUtils.getSubjectDnLogSafe(subjectDN, eepId);
-            } else {
-                detail = subjectDN;
-            }
         }
-               
+        displayName = getCNOrFallback(subjectDN, username);
+        detail = subjectDN;
+        
         switch (request.getStatus()) {
         case ApprovalDataVO.STATUS_APPROVED: status = raLocaleBean.getMessage("manage_requests_status_approved"); break;
         case ApprovalDataVO.STATUS_EXECUTED: status = raLocaleBean.getMessage("manage_requests_status_executed"); break;
@@ -480,12 +472,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private String getCNOrFallback(final String subjectDN, final String fallback) {
         final String cn = CertTools.getPartFromDN(subjectDN, "CN");
         if (cn != null) {
-            final int eepId = getEndEntityInformation().getEndEntityProfileId();
-            if (GdprRedactionUtils.isRedactPii(eepId)) {
-                return GdprRedactionUtils.getSubjectDnLogSafe(subjectDN, eepId);
-            } else {
-                return cn;
-            }
+            return cn;
         } else if (fallback != null) {
             return fallback;
         } else {
