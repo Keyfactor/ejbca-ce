@@ -17,16 +17,15 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.easymock.EasyMock;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.rest.api.resource.builder.SearchCertificatesRestRequestTestBuilder;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.ejbca.ui.web.rest.api.resource.builder.SearchCertificatesRestRequestTestBuilder;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResults;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.easymock.PowerMock;
-import org.junit.Ignore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -47,7 +46,7 @@ import static org.junit.Assert.assertEquals;
  * @version $Id: ValidSearchCertificateCriteriaRestRequestListUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({EjbLocalHelper.class, ValidSearchCertificateCriteriaRestRequestList.Validator.class, ValidSearchCertificateMaxNumberOfResults.Validator.class})
+@PrepareForTest({ EjbLocalHelper.class, ValidSearchCertificateCriteriaRestRequestList.Validator.class, ValidSearchCertificateMaxNumberOfResults.Validator.class })
 public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
 
     private static Logger log = Logger.getLogger(ValidSearchCertificateCriteriaRestRequestListUnitTest.class);
@@ -132,8 +131,6 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
     }
 
     @Test
-    @Ignore
-    //TODO FIXME
     public void validationShouldFailOn13StatusCriteria() {
         // given
         final String expectedMessage = "Invalid criteria value, 'STATUS' property repetition.";
@@ -150,6 +147,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest10 = SearchCertificateCriteriaRestRequest.builder().property("STATUS").value("CERT_ACTIVE").operation("EQUAL").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest11 = SearchCertificateCriteriaRestRequest.builder().property("STATUS").value("CERT_ACTIVE").operation("EQUAL").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest12 = SearchCertificateCriteriaRestRequest.builder().property("STATUS").value("CERT_ACTIVE").operation("EQUAL").build();
+        final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest13 = SearchCertificateCriteriaRestRequest.builder().property("STATUS").value("CERT_ACTIVE").operation("EQUAL").build();
         final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(
                         Arrays.asList(
@@ -157,7 +155,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
                                 querySearchCertificateCriteriaRestRequest3, querySearchCertificateCriteriaRestRequest4, querySearchCertificateCriteriaRestRequest5,
                                 querySearchCertificateCriteriaRestRequest6, querySearchCertificateCriteriaRestRequest7, querySearchCertificateCriteriaRestRequest8,
                                 querySearchCertificateCriteriaRestRequest9, querySearchCertificateCriteriaRestRequest10, querySearchCertificateCriteriaRestRequest11,
-                                querySearchCertificateCriteriaRestRequest12
+                                querySearchCertificateCriteriaRestRequest12, querySearchCertificateCriteriaRestRequest13
                         )
                 )
                 .build();
