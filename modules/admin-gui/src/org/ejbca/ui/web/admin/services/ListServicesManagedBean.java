@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorker;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
@@ -47,7 +48,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	private String selectedServiceName;
 	private String newServiceName = "";
 
-	public ListServicesManagedBean() { 
+	public ListServicesManagedBean() {
 	    super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.SERVICES_VIEW);
 	}
 	
@@ -62,9 +63,13 @@ public class ListServicesManagedBean extends BaseManagedBean {
     public List<SortableSelectItem> getAvailableServices() {
         List<SortableSelectItem> availableServices = new ArrayList<>();
         Collection<Integer> availableServicesIds = ejb.getServiceSession().getVisibleServiceIds();
-        for (Integer id : availableServicesIds) {
-            ServiceConfiguration serviceConfig = ejb.getServiceSession().getServiceConfiguration(id.intValue());
-            String serviceName = ejb.getServiceSession().getServiceName(id.intValue());
+		boolean isAuthorizedToDbMaintenanceService = isAuthorizedToDbMaintenanceService();
+		for (Integer id : availableServicesIds) {
+            ServiceConfiguration serviceConfig = ejb.getServiceSession().getServiceConfiguration(id);
+            String serviceName = ejb.getServiceSession().getServiceName(id);
+			if (!isAuthorizedToDbMaintenanceService && DatabaseMaintenanceWorker.class.getName().equals(serviceConfig.getWorkerClassPath())) {
+				continue;
+			}
             String hidden = "";
             if (serviceConfig.isHidden()) {
                 hidden = "<Hidden, Debug mode>";
@@ -175,6 +180,13 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	 */
 	public boolean getHasEditRights() {
 	    return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
+	}
+
+	/**
+	 * @return true if admin has access to /services/dbMaintenance
+	 */
+	private boolean isAuthorizedToDbMaintenanceService() {
+		return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_DB_MAINTENANCE);
 	}
 	
 	/**

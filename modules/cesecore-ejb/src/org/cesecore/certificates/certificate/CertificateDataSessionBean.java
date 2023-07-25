@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import static java.util.stream.Collectors.toList;
+
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -29,7 +31,9 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +48,12 @@ import java.util.TimeZone;
 public class CertificateDataSessionBean extends BaseCertificateDataSessionBean implements CertificateDataSessionLocal {
 
     private static final Logger log = Logger.getLogger(CertificateDataSessionBean.class);
+
+    /** A SELECT query that fetches certificate metadata, but not the actual certificates themselves */
+    private static final String SELECT_QUERY_FOR_CERTIFICATEINFO_SUBSET = "SELECT a.fingerprint as fingerprint, a.issuerDN as issuerDN, a.subjectDN as subjectDN, a.cAFingerprint as cAFingerprint, a.status as status, a.type as type, a.serialNumber as serialNumber, "
+            + "a.notBefore as notBefore, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, "
+            + "a.username as username, a.tag as tag, a.certificateProfileId as certificateProfileId, a.endEntityProfileId as endEntityProfileId, a.updateTime as updateTime, "
+            + "a.subjectKeyId as subjectKeyId, a.subjectAltName as subjectAltName, a.accountBindingId as accountBindingId FROM CertificateData a ";
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -106,7 +116,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     @Override
     public Long findQuantityOfTheActiveCertificates() {
         Query query = entityManager.createQuery("SELECT count(cd) FROM CertificateData cd WHERE cd.expireDate >= :now "
-                + "AND cd.expireDate>=:now AND (cd.status = :statusActive OR cd.status = :statusNotifiedAboutExpiration)");
+                + "AND (cd.status = :statusActive OR cd.status = :statusNotifiedAboutExpiration)");
         query.setParameter("now", System.currentTimeMillis());
         query.setParameter("statusActive", CertificateConstants.CERT_ACTIVE);
         query.setParameter("statusNotifiedAboutExpiration", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
@@ -442,54 +452,59 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     public CertificateInfo getCertificateInfo(final String fingerprint) {
         CertificateInfo ret = null;
         final Query query = entityManager.createNativeQuery(
-                "SELECT a.issuerDN as issuerDN, a.subjectDN as subjectDN, a.cAFingerprint as cAFingerprint, a.status as status, a.type as type, a.serialNumber as serialNumber, "
-                        + "a.notBefore as notBefore, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, "
-                        + "a.username as username, a.tag as tag, a.certificateProfileId as certificateProfileId, a.endEntityProfileId as endEntityProfileId, a.updateTime as updateTime, "
-                        + "a.subjectKeyId as subjectKeyId, a.subjectAltName as subjectAltName, a.accountBindingId as accountBindingId FROM CertificateData a WHERE a.fingerprint=:fingerprint",
-                "CertificateInfoSubset");        
+                SELECT_QUERY_FOR_CERTIFICATEINFO_SUBSET + "WHERE a.fingerprint=:fingerprint",
+                "CertificateInfoSubset");
         query.setParameter("fingerprint", fingerprint);
         @SuppressWarnings("unchecked")
         final List<Object[]> resultList = query.getResultList();
         if (!resultList.isEmpty()) {
             final Object[] fields = resultList.get(0);
-            // The order of the results are defined by the SqlResultSetMapping annotation
-            final String issuerDN = (String) fields[0];
-            final String subjectDN = (String) fields[1];
-            final String cafp = (String) fields[2];
-            final int status = ValueExtractor.extractIntValue(fields[3]);
-            final int type = ValueExtractor.extractIntValue(fields[4]);
-            final String serno = (String) fields[5];
-            final Long notBefore;
-            if (fields[6] == null) {
-                notBefore = null;
-            } else {
-                notBefore = ValueExtractor.extractLongValue(fields[6]);
-            }
-            final long expireDate = ValueExtractor.extractLongValue(fields[7]);
-            final long revocationDate = ValueExtractor.extractLongValue(fields[8]);
-            final int revocationReason = ValueExtractor.extractIntValue(fields[9]);
-            final String username = (String) fields[10];
-            final String tag = (String) fields[11];
-            final int certificateProfileId = ValueExtractor.extractIntValue(fields[12]);
-            final Integer endEntityProfileId;
-            if (fields[13] == null) {
-                endEntityProfileId = null;
-            } else {
-                endEntityProfileId = ValueExtractor.extractIntValue(fields[13]);
-            }
-            final long updateTime;
-            if (fields[14] == null) {
-                updateTime = 0; // Might be null in an upgraded installation
-            } else {
-                updateTime = ValueExtractor.extractLongValue(fields[14]);
-            }
-            final String subjectKeyId = (String)fields[15];
-            final String subjectAltName = (String)fields[16];
-            final String accountBindingId = (String)fields[17];
-            ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, notBefore, expireDate, revocationDate, revocationReason,
-                    username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName, accountBindingId);
+            ret = resultToCertificateData(fields);
         }
         return ret;
+    }
+
+    /**
+     * Converts a result to a CertificateData. The fields must be ordered exactly as in CertificateInfoSubset
+     */
+    private CertificateInfo resultToCertificateData(final Object[] fields) {
+        // The order of the results are defined by the SqlResultSetMapping annotation
+        final String fingerprint = (String) fields[0];
+        final String issuerDN = (String) fields[1];
+        final String subjectDN = (String) fields[2];
+        final String cafp = (String) fields[3];
+        final int status = ValueExtractor.extractIntValue(fields[4]);
+        final int type = ValueExtractor.extractIntValue(fields[5]);
+        final String serno = (String) fields[6];
+        final Long notBefore;
+        if (fields[7] == null) {
+            notBefore = null;
+        } else {
+            notBefore = ValueExtractor.extractLongValue(fields[7]);
+        }
+        final long expireDate = ValueExtractor.extractLongValue(fields[8]);
+        final long revocationDate = ValueExtractor.extractLongValue(fields[9]);
+        final int revocationReason = ValueExtractor.extractIntValue(fields[10]);
+        final String username = (String) fields[11];
+        final String tag = (String) fields[12];
+        final int certificateProfileId = ValueExtractor.extractIntValue(fields[13]);
+        final Integer endEntityProfileId;
+        if (fields[14] == null) {
+            endEntityProfileId = null;
+        } else {
+            endEntityProfileId = ValueExtractor.extractIntValue(fields[14]);
+        }
+        final long updateTime;
+        if (fields[15] == null) {
+            updateTime = 0; // Might be null in an upgraded installation
+        } else {
+            updateTime = ValueExtractor.extractLongValue(fields[15]);
+        }
+        final String subjectKeyId = (String)fields[16];
+        final String subjectAltName = (String)fields[17];
+        final String accountBindingId = (String)fields[18];
+        return new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, notBefore, expireDate, revocationDate, revocationReason,
+                username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName, accountBindingId);
     }
 
     @Override
@@ -558,5 +573,31 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         return query.getResultList();
     }
 
+    @Override
+    public List<CertificateInfo> findOldCertificates(final Collection<String> issuerDns, final Date expiredBefore, final int maxNumberOfResults) {
+        final StringBuilder sb = new StringBuilder(SELECT_QUERY_FOR_CERTIFICATEINFO_SUBSET);
+        sb.append("WHERE a.expireDate <= :expiredBefore ");
+        if (issuerDns != null) {
+            sb.append(" AND a.issuerDN IN (:issuerDns)");
+        }
+        // Use ABS to prevent the optimizer from using an index
+        sb.append(" AND ABS(a.type+1)-1 IN (:types)");
+
+        final String queryString = sb.toString();
+        if (log.isTraceEnabled()) {
+            log.trace("findOldCertificates query: " + queryString);
+        }
+        final Query query = entityManager.createNativeQuery(queryString, "CertificateInfoSubset");
+        query.setParameter("expiredBefore", expiredBefore.getTime());
+        query.setParameter("types", Arrays.asList(CertificateConstants.CERTTYPE_ENDENTITY, CertificateConstants.CERTTYPE_SSH));
+        if (issuerDns != null) {
+            query.setParameter("issuerDns", issuerDns);
+        }
+        query.setMaxResults(maxNumberOfResults);
+        final List<?> dbResults = query.getResultList();
+        return dbResults.stream()
+                .map(dbResult -> resultToCertificateData((Object[]) dbResult))
+                .collect(toList());
+    }
 
 }
