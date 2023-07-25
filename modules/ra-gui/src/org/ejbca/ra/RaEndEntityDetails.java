@@ -45,6 +45,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.SshCertificateUtils;
 import org.cesecore.util.ValidityDate;
@@ -383,18 +384,14 @@ public class RaEndEntityDetails implements Serializable {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            if (GdprRedactionUtils.isRedactPii(eepId)) {
-                log.info("Token " + GdprRedactionUtils.getSubjectDnLogSafe(filename, eepId) + " could not be downloaded", e);
-            } else {
-                log.info("Token " + filename + " could not be downloaded", e);
-            }
+                log.info("Token " + GdprRedactionUtils.getSubjectDnLogSafe(filename, eepId) + " could not be downloaded", GdprRedactionUtils.getRedactedThrowable(e, eepId));
             callbacks.getRaLocaleBean().getMessage("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    throw new IllegalStateException("Failed to close outputstream", e);
+                    throw new IllegalStateException("Failed to close outputstream", GdprRedactionUtils.getRedactedThrowable(e, eepId));
                 }
             }
         }
@@ -409,14 +406,14 @@ public class RaEndEntityDetails implements Serializable {
     }
 
     public boolean isEmailEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isEmailUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isEmailUsed();
     }
     public String getEmail() {
         return endEntityInformation.getEmail();
     }
 
     public boolean isLoginsMaxEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isMaxFailedLoginsUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isMaxFailedLoginsUsed();
     }
     public String getLoginsMax() {
         return Integer.toString(extendedInformation.getMaxLoginAttempts());
@@ -426,7 +423,7 @@ public class RaEndEntityDetails implements Serializable {
     }
 
     public boolean isSendNotificationEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isSendNotificationUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isSendNotificationUsed();
     }
     public boolean isSendNotificationDisabled(){
         return getEndEntityProfile().isSendNotificationRequired();
@@ -482,7 +479,7 @@ public class RaEndEntityDetails implements Serializable {
     }
 
     public boolean isCertificateSerialNumberOverrideEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isCustomSerialNumberUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isCustomSerialNumberUsed();
     }
     public String getCertificateSerialNumberOverride() {
         final BigInteger certificateSerialNumber = extendedInformation.certificateSerialNumber();
@@ -493,30 +490,30 @@ public class RaEndEntityDetails implements Serializable {
     }
 
     public boolean isOverrideNotBeforeEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isValidityStartTimeUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isValidityStartTimeUsed();
     }
     public String getOverrideNotBefore() {
         return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
     }
     public boolean isOverrideNotAfterEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isValidityEndTimeUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isValidityEndTimeUsed();
     }
     public String getOverrideNotAfter() {
         return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
     }
 
     public boolean isCardNumberEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isCardNumberUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isCardNumberUsed();
     }
     public String getCardNumber() {
         return endEntityInformation.getCardNumber();
     }
 
     public boolean isNameConstraintsPermittedEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isNameConstraintsPermittedUsed();
     }
     public boolean isNameConstraintsPermittedRequired() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedRequired() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isNameConstraintsPermittedRequired();
     }
     /**
      * Format permitted name constraints as user has entered earlier to create end 
@@ -542,10 +539,10 @@ public class RaEndEntityDetails implements Serializable {
     }
     
     public boolean isNameConstraintsExcludedEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isNameConstraintsExcludedUsed();
     }
     public boolean isNameConstraintsExcludedRequired() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedRequired() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isNameConstraintsExcludedRequired();
     }
     public String getNameConstraintsExcluded() {
         final List<String> value = extendedInformation.getNameConstraintsExcluded();
@@ -571,7 +568,7 @@ public class RaEndEntityDetails implements Serializable {
     
 
     public boolean isAllowedRequestsEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isAllowedRequestsUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isAllowedRequestsUsed();
     }
     public String getAllowedRequests() {
         return getEndEntityProfile() != null ? String.valueOf(getEndEntityProfile().getAllowedRequests()) : "";
@@ -582,7 +579,7 @@ public class RaEndEntityDetails implements Serializable {
     }
 
     public boolean isIssuanceRevocationReasonEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isIssuanceRevocationReasonUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isIssuanceRevocationReasonUsed();
     }
     public String getIssuanceRevocationReason() {
       final String reasonCode = String.valueOf(extendedInformation.getIssuanceRevocationReason());
@@ -735,7 +732,7 @@ public class RaEndEntityDetails implements Serializable {
      * @return true if the Revised Payment Service Directive (PSD2) Qualified Certificate statement field usage is enabled in End Entity profile.
      */
     public boolean isPsd2QcStatementEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isPsd2QcStatementUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isPsd2QcStatementUsed();
     }
 
     /**
@@ -759,7 +756,7 @@ public class RaEndEntityDetails implements Serializable {
         return Optional.ofNullable(extendedInformation.getQCEtsiPSD2RolesOfPSP())
                 .orElseGet(Collections::emptyList)
                 .stream()
-                .map(role -> role.getName())
+                .map(PSD2RoleOfPSPStatement::getName)
                 .collect(Collectors.toList());
     }
 
@@ -779,7 +776,7 @@ public class RaEndEntityDetails implements Serializable {
      * @return true if CA/B Forum Organization Identifier field usage is enabled in End Entity profile.
      */
     public boolean isCabfOrganizationIdentifierEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isCabfOrganizationIdentifierUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isCabfOrganizationIdentifierUsed();
     }
 
     /**
