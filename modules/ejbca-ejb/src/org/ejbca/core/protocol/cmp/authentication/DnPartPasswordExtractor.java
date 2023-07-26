@@ -19,6 +19,7 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 
@@ -63,7 +64,8 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         }
         
         if(log.isDebugEnabled()) {
-            log.debug("Extracting password from SubjectDN '" + dnString + "' and DN part '" + dnPart + "'");
+            // TODO: double check if this is fine or should the eepid be fetched and used in the redaction method.
+            log.debug("Extracting password from SubjectDN '" +  GdprRedactionUtils.getRedactedMessage(dnString) + "' and DN part '" + dnPart + "'");
         }
         if (dnString != null) {
             password = CertTools.getPartFromDN(dnString, dnPart);

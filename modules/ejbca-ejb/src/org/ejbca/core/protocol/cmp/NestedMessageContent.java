@@ -41,6 +41,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 
 import com.keyfactor.util.CertTools;
@@ -109,13 +110,14 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
             }
             for (final X509Certificate cert : racerts) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Trying to verifying the NestedMessageContent using the RA certificate with subjectDN '" + cert.getSubjectDN() + "'");
+                    log.debug("Trying to verifying the NestedMessageContent using the RA certificate with subjectDN '"
+                            + GdprRedactionUtils.getRedactedMessage(cert.getSubjectX500Principal().toString()) + "'");
                 }
                 try {
                     cert.checkValidity();
                 } catch (CertificateExpiredException | CertificateNotYetValidException e) {                  
                     if (log.isDebugEnabled()) {
-                        log.debug("Certificate with subjectDN '" + CertTools.getSubjectDN(cert) + "' is not valid: " + e.getMessage());
+                        log.debug("Certificate with subjectDN '" + GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(cert)) + "' is not valid: " + e.getMessage());
                     }
                     continue;
                 }
@@ -134,7 +136,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                     sig.update(CmpMessageHelper.getProtectedBytes(raSignedMessage));
                     ret = sig.verify(raSignedMessage.getProtection().getBytes());
                     if (log.isDebugEnabled()) {
-                        log.debug("Verifying the NestedMessageContent using the RA certificate with subjectDN '" + cert.getSubjectDN() + "' returned " + ret);
+                        log.debug("Verifying the NestedMessageContent using the RA certificate with subjectDN '" + GdprRedactionUtils.getRedactedMessage(cert.getSubjectX500Principal().toString()) + "' returned " + ret);
                     }
                 } else {
                     log.info("No signature was found in NestedMessageContent");

@@ -25,6 +25,7 @@ import org.bouncycastle.asn1.cmp.RevDetails;
 import org.bouncycastle.asn1.cmp.RevReqContent;
 import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 import com.keyfactor.util.CertTools;
@@ -32,7 +33,6 @@ import com.keyfactor.util.CertTools;
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * 
- * @version $Id$
  */
 public class GeneralCmpMessage extends BaseCmpMessage {
 
@@ -98,7 +98,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			final ASN1Integer serno = ct.getSerialNumber();
 			final X500Name issuer = ct.getIssuer();
 			if (serno != null && issuer != null) {
-				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
+				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", GdprRedactionUtils.getRedactedMessage(CertTools.stringToBCDNString(issuer.toString())), serno.getValue().toString(16));
 				log.info(errMsg);
 			} else {
 				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreqnoissuer");
