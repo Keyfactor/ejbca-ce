@@ -72,13 +72,6 @@
     </target>
 
     <target name="build" description="Build this module" depends="compile">
-    	<!--
-    	<copy file="${ejbca-rest-common.resources.dir}/WEB-INF/web.xml" tofile="${ejbca-rest-common.build.dir}/WEB-INF/web.xml"/>
-    	-->
-		<copy file="${ejbca-rest-common.resources.dir}/WEB-INF/ValidationMessages.properties" tofile="${ejbca-rest-common.build.dir}/WEB-INF/classes/ValidationMessages.properties"/>
-		<copy file="${ejbca-rest-common.resources.dir}/META-INF/validation.xml" tofile="${ejbca-rest-common.build.dir}/META-INF/validation.xml"/>
-		<copy file="${ejbca-rest-common.resources.dir}/META-INF/validation-mapping.xml" tofile="${ejbca-rest-common.build.dir}/META-INF/validation-mapping.xml"/>
-    	
         <jar destfile="${mod.ejbca-rest-common.lib}" basedir="${ejbca-rest-common.build.dir}" includes="**/*.class **/*.xml" />
     </target>
 
