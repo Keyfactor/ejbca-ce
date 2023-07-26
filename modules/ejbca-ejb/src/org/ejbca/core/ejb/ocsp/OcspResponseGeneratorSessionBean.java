@@ -914,7 +914,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         "for the signing service using an out-of-band mechanism. " + sigAlg);
             }
             return sigAlg;
-        }   
+        }
+        
+        // if CA is signing the response then get the algorithm from CA
+        if (CertTools.isCA(signerCert)) {
+            sigAlg = caSession.findBySubjectDN(CertTools.getSubjectDN(signerCert)).getCA().getCAToken().getSignatureAlgorithm();
+            if (log.isDebugEnabled()) {
+                log.debug("Using CA signing algorithm to sign OCSP response. " + sigAlg);
+            }
+            return sigAlg;
+        }
+        
+        // possibly unreachable as we rule out both OcspKeybinding and CA certificates before
         // The signature algorithm specified for the version of OCSP in use.
         String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
         sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
