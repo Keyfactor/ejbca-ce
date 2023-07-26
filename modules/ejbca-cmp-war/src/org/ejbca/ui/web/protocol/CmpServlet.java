@@ -60,6 +60,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ConcurrentCache;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -456,7 +457,7 @@ public class CmpServlet extends HttpServlet {
             } 
         } else {
             // CMP Client mode, get secret from end entity clear text password
-            final String requestDN = getSubjectDNFromPkiMessage(pkiMessage, cmpConfiguration, alias);
+            final String requestDN = getSubjectDNFromPkiMessage(pkiMessage);
             if (requestDN != null) {
                 String extractedUsername = CertTools.getPartFromDN(requestDN, cmpConfiguration.getExtractUsernameComponent(alias));
                 if (log.isDebugEnabled()) {
@@ -485,7 +486,7 @@ public class CmpServlet extends HttpServlet {
                 throw new CmpServletValidationError(errmsg);
             }
             try {
-                if (verifier.verify(passwd) == false) {
+                if (!verifier.verify(passwd)) {
                     String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret");
                     log.info(msg);
                     throw new CmpServletValidationError(msg);
@@ -536,14 +537,14 @@ public class CmpServlet extends HttpServlet {
                 if (log.isDebugEnabled()) {
                     log.debug("Using revocation status from the cache");
                 }
-                if (!invokerEntry.getValue()) { // 'true' value => certificate is OK => NOT revoked
+                if (Boolean.FALSE.equals(invokerEntry.getValue())) { // 'true' value => certificate is OK => NOT revoked
                     log.info(msg + " " + messageInformation);
                     throw new CmpServletValidationError(msg);
                 }
             } else {
                 CertificateStatus certificateStatus = null;
                 try {
-                    certificateStatus = raMasterApiProxyBean.getCertificateStatus(raCmpAuthCheckToken, cert.getIssuerDN().getName(), certSerialnumber);
+                    certificateStatus = raMasterApiProxyBean.getCertificateStatus(raCmpAuthCheckToken, cert.getIssuerX500Principal().getName(), certSerialnumber);
                 } catch (CADoesntExistsException | AuthorizationDeniedException e) {
                     log.info(e.getLocalizedMessage());
                     throw new CmpServletValidationError(msg);
@@ -641,11 +642,11 @@ public class CmpServlet extends HttpServlet {
             // If the CA cert is in the cache, use that CA cert
             if ((cacertEntry != null) && (cacertEntry.isInCache())) {
                 X509Certificate cacert = cacertEntry.getValue();
-                log.info("Found CA certificate with subject dn " + caSubjectDn + " in the cache");
+                log.info("Found CA certificate with subject dn " + GdprRedactionUtils.getRedactedMessage(caSubjectDn) + " in the cache");
                 return cacert;
             }
             if (log.isDebugEnabled()) {
-                log.debug("Did not find CA certificate with subject dn " + caSubjectDn + " in the cache. Asking from RaMasterApi");
+                log.debug("Did not find CA certificate with subject dn " + GdprRedactionUtils.getRedactedMessage(caSubjectDn) + " in the cache. Asking from RaMasterApi");
             }
 
             try {
@@ -657,7 +658,7 @@ public class CmpServlet extends HttpServlet {
                     return cacert;
                 }
             } catch (CADoesntExistsException | AuthorizationDeniedException | EJBException e) {
-                String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: " + caSubjectDn;
+                String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: " + GdprRedactionUtils.getRedactedMessage(caSubjectDn);
                 if (log.isDebugEnabled()) {
                     log.debug(msg + " - " + e.getLocalizedMessage());
                 }
@@ -669,7 +670,7 @@ public class CmpServlet extends HttpServlet {
                 cacertEntry.close();
             }
         }
-        String msg = intres.getLocalizedMessage("Failed to find Issuer CA " + caSubjectDn);
+        String msg = intres.getLocalizedMessage("Failed to find Issuer CA " + GdprRedactionUtils.getRedactedMessage(caSubjectDn));
         log.info(msg + " " + messageInformation);
         throw new CmpServletValidationError(msg);
     }
@@ -696,7 +697,7 @@ public class CmpServlet extends HttpServlet {
         return null;
      }
      
-     private String getSubjectDNFromPkiMessage(final PKIMessage pkiMessage, CmpConfiguration cmpConfiguration, String alias )  {
+     private String getSubjectDNFromPkiMessage(final PKIMessage pkiMessage)  {
          final int tagnr = pkiMessage.getBody().getType();
          if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST 
                  || tagnr==CmpPKIBodyConstants.CERTIFICATAIONREQUEST
