@@ -23,8 +23,8 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class AddEndEntityRestRequestValidatorUnitTest {
-    private static Logger log = Logger.getLogger(AddEndEntityRestRequestValidatorUnitTest.class);
+public class ValidAddEndEntityRestRequestUnitTest {
+    private static Logger log = Logger.getLogger(ValidAddEndEntityRestRequestUnitTest.class);
 
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
