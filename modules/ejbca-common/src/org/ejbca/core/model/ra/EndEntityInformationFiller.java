@@ -12,21 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
-import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.util.CertTools;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.Rdn;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,6 +21,22 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.Rdn;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /** This class gives facilities to populate user data with default values from profile.
  *
@@ -135,36 +136,40 @@ public class EndEntityInformationFiller {
 
 
     /**
-     * Gets the first Common Name value from subjectDn and sets this value to all dns's with "use from CN" checked
+     * Gets the first Common Name value from subjectDn and sets this value to all dns's or upn's with "use from CN" checked
      *
      * @param endEntityProfile EEP selected for end entity
      * @param subjectDn        provided subjectDn
      * @return String with comma separated DNSNames
      */
-    public static String copyDnsNameValueFromCn(final EndEntityProfile endEntityProfile, String subjectDn) {
+    public static String copyCnToAltName(final EndEntityProfile endEntityProfile, String subjectDn, String fieldType) {
         if (endEntityProfile == null) {
             return StringUtils.EMPTY;
         }
-        StringBuilder dnses = new StringBuilder();
+        StringBuilder specifiedSans = new StringBuilder();
         String commonName = CertTools.getCommonNameFromSubjectDn(subjectDn);
         if (StringUtils.isNotEmpty(commonName)) {
             int[] field = null;
             final int numberOfFields = endEntityProfile.getSubjectAltNameFieldOrderLength();
             for (int i = 0; i < numberOfFields; i++) {
                 field = endEntityProfile.getSubjectAltNameFieldsInOrder(i);
-                final boolean isDnsField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
+                final boolean isDnsorUpnField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], fieldType);
                 final boolean isCopy = endEntityProfile.getCopy(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
-                if (isDnsField && isCopy) {
-                    if (dnses.length() > 0) {
-                        dnses.append(", ");
+                if (isDnsorUpnField && isCopy) {
+                    if (specifiedSans.length() > 0) {
+                        specifiedSans.append(", ");
                     }
                     int dnId = DnComponents.profileIdToDnId(field[EndEntityProfile.FIELDTYPE]);
                     String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, DNFieldExtractor.TYPE_SUBJECTALTNAME) + commonName;
-                    dnses.append(nameValueDnPart);
+                    String fieldValue = endEntityProfile.getValue(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+                    if(fieldType.equals(DnComponents.UPN) && StringUtils.isNotEmpty(fieldValue)) {
+                        nameValueDnPart += "@" + fieldValue;
+                    }
+                    specifiedSans.append(nameValueDnPart);
                 }
             }
         }
-        return dnses.toString();
+        return specifiedSans.toString();
     }
     
     /**

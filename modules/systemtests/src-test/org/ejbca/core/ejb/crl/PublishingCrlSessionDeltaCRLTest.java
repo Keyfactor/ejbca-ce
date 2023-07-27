@@ -49,13 +49,9 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -65,10 +61,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+
 /**
  * Tests Delta CRLs.
- * 
- * @version $Id$
  */
 public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
 
@@ -174,7 +173,8 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         // Get number of last CRL
-        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), false, CertificateConstants.NO_CRL_PARTITION, x509crl.getThisUpdate().getTime());
+        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), false, CertificateConstants.NO_CRL_PARTITION, 
+                x509crl.getThisUpdate().getTime(), false);
         log.debug("Number of revoked certificates=" + revfp.size());
         crl = getLastCrl(testx509ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
@@ -195,7 +195,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         // Do some revoke
         X509Certificate cert = createCert();
         try {
-            internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             // Sleep 1 second so we don't issue the next CRL at the exact same time
             // as the revocation
             Thread.sleep(1000);
@@ -222,11 +222,11 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     @Test
     public void testRemoveFromCrl() throws Exception {
         X509Certificate cert = createCert();
-        internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 
         assertTrue(publishingCrlSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
         Thread.sleep(1000);
-        internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+        internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
         assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
         Thread.sleep(1000);
 
@@ -266,7 +266,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             } // If no revoked certificates exist at all, this test passed...
 
             Thread.sleep(1000);
-            internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             // Sleep 1 second so we don't issue the next CRL at the exact same time
             // as the revocation
             Thread.sleep(1000);
@@ -282,7 +282,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
 
             // Unrevoke the certificate that we just revoked
             // The revokeCertificate method will set the revocation date so the CRL generation code knows if it should be in the state "removeFromCRL" or not
-            revocationSession.revokeCertificate(roleMgmgToken, cert, null, RevokedCertInfo.NOT_REVOKED, null);
+            revocationSession.revokeCertificate(roleMgmgToken, cert, null, null, RevokedCertInfo.NOT_REVOKED, null);
             // Create a new Delta CRL again...
             assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS NOT present in the new CRL.
@@ -298,7 +298,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             // delta CRL
             // When we create a new full CRL it will be present there, and not on
             // the next delta CRL
-            internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+            internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), null, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
             // Sleep 1 second so we don't issue the next CRL at the exact same time
             // as the revocation
             Thread.sleep(1000);

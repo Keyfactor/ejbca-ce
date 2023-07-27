@@ -24,13 +24,14 @@ import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
@@ -75,7 +76,7 @@ public interface KeyStoreCreateSession {
      * @param username the unique username.
      * @param password the password sent with editUser call.
      * @param keySpecification that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
-     * @param keyAlgorithm that the generated key should have, RSA, ECDSA. Use one of the constants in {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
+     * @param keyAlgorithm that the generated key should have, RSA, ECDSA. Use one of the constants in {@link com.keyfactor.util.crypto.algorithm.AlgorithmConstants}.KEYALGORITHM_...
      * @return the generated or reused key store as byte array.
      * @throws CADoesntExistsException if a referenced CA does not exist.
      * @throws AuthorizationDeniedException if client isn't authorized to request.

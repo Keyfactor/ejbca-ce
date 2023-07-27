@@ -18,7 +18,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  *
@@ -62,7 +64,8 @@ public abstract class ConfigurationBase extends UpgradeableDataHashMap {
      * @return encrypted form of value 
      */
     public String getEncryptedValue(String value) {
-        return StringTools.pbeEncryptStringWithSha256Aes192(value);
+        char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
+        return StringTools.pbeEncryptStringWithSha256Aes192(value, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
     }
     /** gets a a decrypted value from the (encrypted) input string, typically a password, that was stored encrypted in the database 
      * @param value the string to decrypt

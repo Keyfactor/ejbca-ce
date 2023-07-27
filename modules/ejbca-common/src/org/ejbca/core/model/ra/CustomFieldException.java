@@ -13,8 +13,9 @@
 
 package org.ejbca.core.model.ra;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * Exception is cast when values of an end entity field does not match a specific rule in the function FieldValidator.validate()

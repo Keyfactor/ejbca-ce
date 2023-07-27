@@ -22,10 +22,12 @@ import java.io.ObjectOutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.PublicKey;
 
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * @version $Id$

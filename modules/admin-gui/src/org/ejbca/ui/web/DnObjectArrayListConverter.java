@@ -22,7 +22,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 
-import org.cesecore.certificates.util.DnComponents;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * A JSF converter that makes it possible to input a comma separated list of DN components (DN,O,OU,C etc) and store it into an ArrayList<String>.

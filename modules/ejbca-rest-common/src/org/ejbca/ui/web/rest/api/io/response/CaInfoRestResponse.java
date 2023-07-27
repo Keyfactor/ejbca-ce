@@ -19,7 +19,8 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * A class representing general information about CA certificate.
@@ -30,7 +31,7 @@ public class CaInfoRestResponse {
 
     @ApiModelProperty(value = "CA identifier", example = "12345678")
     private Integer id;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
     private String name;
     @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String subjectDn;

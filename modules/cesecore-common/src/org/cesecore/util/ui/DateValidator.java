@@ -18,8 +18,9 @@ import java.text.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * DynamicUIProperty Validator. Validating ISO8601 dates. 

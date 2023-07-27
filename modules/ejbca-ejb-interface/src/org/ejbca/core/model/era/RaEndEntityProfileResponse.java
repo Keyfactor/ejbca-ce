@@ -13,9 +13,10 @@
 package org.ejbca.core.model.era;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 import java.io.Serializable;
 import java.util.ArrayList;

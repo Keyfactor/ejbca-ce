@@ -25,7 +25,8 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.cesecore.keybind.InternalKeyBinding;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Represents the OCSP Archive Cutoff extension described in RFC6960, section 4.4.4.

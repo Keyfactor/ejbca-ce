@@ -25,8 +25,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.log.Admin;
+
+import com.keyfactor.util.CertTools;
 
 
 

@@ -22,7 +22,6 @@ import java.util.Set;
 import javax.ejb.EJBException;
 
 import org.bouncycastle.operator.OperatorCreationException;
-import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -40,19 +39,21 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * Administrates and manages CAs in EJBCA system.
@@ -186,7 +187,7 @@ public interface CAAdminSession {
      *
      * @param authenticationToken The administrator performing the action
      * @param caName              CA name.
-     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link com.keyfactor.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws AuthorizationDeniedException if the administrators isn't authorized
      * @throws CAExistsException            if the CA already exists
      * @throws IllegalCryptoTokenException  the certificate chain is incomplete
@@ -200,7 +201,7 @@ public interface CAAdminSession {
      *
      * @param authenticationToken The administrator performing the action
      * @param caName              CA name.
-     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link com.keyfactor.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @param caInfo              contains other custom CA fields including CA type in simplified format
      * @throws AuthorizationDeniedException if the administrators isn't authorized
      * @throws CAExistsException            if the CA already exists
@@ -218,7 +219,7 @@ public interface CAAdminSession {
      *
      * @param authenticationToken The administrator performing the action
      * @param caId                The caId (DN.hashCode()) of the CA
-     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link com.keyfactor.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws AuthorizationDeniedException       if the administrators isn't authorized
      * @throws CertificateImportException         in the case the certificate was already imported or the provided certificates could not be used.
      * @throws CmsCertificatePathMissingException An exception thrown when someone tries to activate the CMS Service for a CA that does not have a CMS certificate path

@@ -16,7 +16,6 @@ package org.ejbca.core.protocol.scep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -25,28 +24,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
 
 import javax.servlet.http.HttpServletResponse;
@@ -56,86 +41,32 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1PrintableString;
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.cms.Attribute;
-import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
-import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSProcessable;
-import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.cms.RecipientInformation;
-import org.bouncycastle.cms.RecipientInformationStore;
-import org.bouncycastle.cms.SignerId;
-import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationStore;
-import org.bouncycastle.cms.SignerInformationVerifier;
-import org.bouncycastle.cms.SignerInformationVerifierProvider;
-import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
-import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
-import org.bouncycastle.util.Store;
-import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
-import org.cesecore.certificates.certificate.CertificateData;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
-import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
-import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.certificates.certificate.request.X509ResponseMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
-import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
+import org.cesecore.junit.util.CryptoTokenRunner;
+import org.cesecore.junit.util.PKCS12TestRunner;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
-import org.cesecore.util.ValidityDate;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -143,30 +74,39 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
- * Tests http pages of scep
+ * Tests SCEP protocol in CA mode
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@RunWith(CryptoTokenTestRunner.class)
-public class ProtocolScepHttpTest {
+@RunWith(Parameterized.class)
+public class ProtocolScepHttpTest extends ScepTestBase {
 
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return Arrays.asList(new PKCS12TestRunner());
+    }
+    
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
     private static final String scepAlias = "ProtocolHttpTestScepAlias";
@@ -193,67 +133,60 @@ public class ProtocolScepHttpTest {
             + "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
 
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolScepHttpTest"));
-    private static X509CA x509ca;
-    private static X509Certificate cacert;
     private static KeyPair key1;
     private static KeyPair key2;
-    private static KeyPair keyTestRollover;
+
     private static final String userName1 = "sceptest1";
     private static final String userName2 = "sceptest2";
-    private static final String rolloverUser = "sceprolloveruser";
     private static final String userDN1 = "C=SE,O=PrimeKey,CN=" + userName1;
     private static final String userDN2 = "C=SE,O=PrimeKey,CN=" + userName2;
-    private static final String rolloverDN = "C=SE,O=PrimeKey,CN=" + rolloverUser;
-    private static final String ROLLOVER_SUB_CA = "RolloverSubCA";
-    private static final String ROLLOVER_SUB_CA_DN = "CN=RolloverSubCA";
-    private static String senderNonce = null;
-    private static String transId = null;
-    private static long rolloverStartTime;
+
+    private String senderNonce = null;
+    private String transId = null;
 
     private Random rand = new Random();
-    private String httpReqPath;
     private ScepConfiguration scepConfiguration;
+    private X509CAInfo x509ca;
+    private X509Certificate cacert;
 
-    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
-    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+
     private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final EndEntityAccessSessionRemote endEntityAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
    
-
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
     
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
     
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        // Pre-generate key for all requests to speed things up a bit
-        try {
-            key1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            key2 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            keyTestRollover = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        
-        x509ca = cryptoTokenRule.createX509Ca();
-        cacert = (X509Certificate) x509ca.getCACertificate();
+    @Rule
+    public TestName testName = new TestName();
+
+    private CryptoTokenRunner cryptoTokenRunner;
+
+    public ProtocolScepHttpTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+        super();
+        this.cryptoTokenRunner = cryptoTokenRunner;
+       
     }
 
     @Before
     public void setUp() throws Exception {
-        final String httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
-        final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
-        httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
-             
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
+        // Pre-generate key for all requests to speed things up a bit
+        try {
+            key1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            key2 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+        
+        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
+        cacert = (X509Certificate) x509ca.getCertificateChain().get(0);
+                     
         scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         scepConfiguration.addAlias(scepAlias);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
@@ -275,24 +208,20 @@ public class ProtocolScepHttpTest {
         } catch (Exception e) {
         	// NOPMD: ignore
         }
-        try {
-            endEntityManagementSession.deleteUser(admin, rolloverUser);
-            log.debug("deleted user: " + rolloverUser);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
         
         scepConfiguration.removeAlias(scepAlias);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        cryptoTokenRule.cleanUp();
+        
+        cryptoTokenRunner.cleanUp();
     }
     
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
+    }
+    
+    @Override
+    protected String getResourceScep() {
+        return resourceScep;
     }
 
     @Test
@@ -396,7 +325,7 @@ public class ProtocolScepHttpTest {
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC, key1);
     }
     
     @Test
@@ -415,7 +344,7 @@ public class ProtocolScepHttpTest {
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         //With legacy digest algorithm not allowed, response should default to SHA256
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
     }
 
     @Test
@@ -428,7 +357,7 @@ public class ProtocolScepHttpTest {
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
     }
 
     @Test
@@ -442,7 +371,23 @@ public class ProtocolScepHttpTest {
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         // When the request is encrypted with 3DES, the response should be as well.
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_EDE3_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_EDE3_CBC, key1);
+    }
+
+    @Test
+    public void test04ScepRequestOKSHA256RSAOAEPAES() throws Exception {
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);        
+        // Make user that we know...
+        createScepUser(userName1, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, key1, BouncyCastleProvider.PROVIDER_NAME,
+                PKCSObjectIdentifiers.id_RSAES_OAEP, SMIMECapability.aES128_CBC);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        // When the request is encrypted with AES, the response should be as well.
+        checkScepResponse(retMsg, userDN1, -1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, getCaCertificate(), key1, 
+                PKCSObjectIdentifiers.id_RSAES_OAEP, SMIMECapability.aES128_CBC);
     }
 
     @Test
@@ -455,7 +400,7 @@ public class ProtocolScepHttpTest {
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA512, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA512, false, SMIMECapability.dES_CBC, key1);
     }
 
     @Test
@@ -474,7 +419,7 @@ public class ProtocolScepHttpTest {
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false, SMIMECapability.dES_CBC, key1);
         
     }
 
@@ -491,7 +436,7 @@ public class ProtocolScepHttpTest {
         // Send message with POST
         byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
         
         // Send a message that is larger than LimitLengthASN1Reader.MAX_REQUEST_SIZE with POST
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -516,7 +461,7 @@ public class ProtocolScepHttpTest {
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, true, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, true, SMIMECapability.dES_CBC, key1);
         
     }
 
@@ -680,7 +625,7 @@ public class ProtocolScepHttpTest {
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC, key1);
     }
     
     @Test
@@ -693,7 +638,7 @@ public class ProtocolScepHttpTest {
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         //With legacy digest algorithm not allowed, response should default to SHA256
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
     }
 
     @Test
@@ -705,12 +650,12 @@ public class ProtocolScepHttpTest {
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
     }
 
     @Test
     public void test10ScepGetCACaps() throws Exception {
-        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
+        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard");
         sendGetCACapsRequest("NonExistent", 404);
     }
 
@@ -719,208 +664,78 @@ public class ProtocolScepHttpTest {
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         
-        // create new user for new DN.
-        createScepUser(userName2, userDN2);
-
-        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN2, SMIMECapability.dES_CBC);
+        //Create the initial user
+        createScepUser(userName1, userDN1);
+        final byte[] msgBytesUser1 = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
-        final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
-    
-        String returnMessageString = new String(retMsg);      
+        sendScep(true, msgBytesUser1, HttpServletResponse.SC_OK);
+        
+        // create new which is going to reuse the same key. 
+        createScepUser(userName2, userDN2);
+        
+        final byte[] msgBytesUser2 = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN2, SMIMECapability.dES_CBC);
+        // Send message with GET
+        final byte[] retMsgUser2 = sendScep(true, msgBytesUser2, HttpServletResponse.SC_BAD_REQUEST);
+
+        String returnMessageString = new String(retMsgUser2);      
         String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage("createcert.key_exists_for_another_user", userName2);
         if("createcert.key_exists_for_another_user".equals(localizedMessage)) {
             String currentDirectory = System.getProperty("user.dir");
-            throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
+            throw new IllegalStateException("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
         }
         assertTrue(returnMessageString+": should contain: "+localizedMessage, returnMessageString.indexOf(localizedMessage) >= 0);
      }
 
     @Test
-    public void test12EnforcementOfUniqueDN() throws Exception {
+    public void testEnforcementOfUniqueDN() throws Exception {
         
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         
-        createScepUser(userName2, userDN2);
-        // new user will have a DN of a certificate already issued for another
-        // user.
-        changeScepUser(userName2, userDN1);
-
-        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN2, key2, BouncyCastleProvider.PROVIDER_NAME, SMIMECapability.dES_CBC);
-        // Send message with GET
-        final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
-        String returnMessageString = new String(retMsg);      
-        String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage(
-                "createcert.subjectdn_exists_for_another_user", userName2, "'" + userName1 + "'");
+        final String first = "testEnforcementOfUniqueDN_user1";
+        final String second = "testEnforcementOfUniqueDN_user2";
+        final String firstUserDn = "CN="+first;
+        final String secondUserDn = "CN="+second;
         
-        if("createcert.subjectdn_exists_for_another_user".equals(localizedMessage)) {
-            String currentDirectory = System.getProperty("user.dir");
-            throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
-        }
-        assertTrue(returnMessageString+": should contain: "+localizedMessage, returnMessageString.indexOf(localizedMessage) >= 0);
-    }
-    
-    /**
-     * Tests creating and receiving a rollover certificate for a CA. Note that the subsequent tests depend on this one.
-     */
-    @Test
-    public void test13ScepGetNextCACertSubCA() throws Exception {
-        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
-                globalConfigSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        final boolean wasEnforceUniqueDn = x509ca.isDoEnforceUniqueDistinguishedName();
-        final CAInfo rootcainfo = x509ca.getCAInfo();
-        rootcainfo.setDoEnforceUniqueDistinguishedName(false);
-        x509ca.updateCA(null, rootcainfo, cceConfig);
-        caAdminSession.editCA(admin, rootcainfo);
         try {
-            rolloverStartTime = System.currentTimeMillis()+7L*24L*3600L*1000L;
-            
-            // Clean up old certificates first
-            internalCertificateStoreSession.removeCertificatesBySubject(ROLLOVER_SUB_CA_DN);
-            internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
-            
-            // Create sub CA
-            final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ROLLOVER_SUB_CA, "1024");
-            final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-            X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(ROLLOVER_SUB_CA_DN, ROLLOVER_SUB_CA, CAConstants.CA_ACTIVE,
-                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
-            cainfo.setDescription("JUnit Test Sub CA for SCEP GetNextCACert test");
-            cainfo.setSignedBy(x509ca.getCAId());
-            cainfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
-            cainfo.setEncodedValidity("14d");
-            cainfo.setDoEnforceUniqueDistinguishedName(false);
-            if (caSession.existsCa(ROLLOVER_SUB_CA)) {
-                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA));
-            }
-            caAdminSession.createCA(admin, cainfo);
-            assertEquals("Wrong state of test Sub CA", CAConstants.CA_ACTIVE, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getStatus());
-            assertEquals(ROLLOVER_SUB_CA_DN, cainfo.getSubjectDN());
-            
-            // CA should NOT have any rollover certificate yet
-            String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetNextCACert&message=" + URLEncoder.encode(ROLLOVER_SUB_CA, "UTF-8");
-            URL url = new URL(reqUrl);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.getDoOutput();
-            con.connect();
-            assertEquals("Should get an error response code if no rollover certificate exists", 403, con.getResponseCode());
-            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
-            
-            // Create a rollover certificate
-            final int subCAId = cainfo.getCAId();
-            final byte[] requestbytes = caAdminSession.makeRequest(admin, subCAId, null, null);
-            final CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            certProf.setAllowValidityOverride(true);
-            certProf.setEncodedValidity("14d");
-            final int certProfId = certificateProfileSession.addCertificateProfile(admin, "TestScepCARollover", certProf);
-            final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    certProfId, EndEntityConstants.TOKEN_USERGEN, null);
-            endentity.setStatus(EndEntityConstants.STATUS_NEW);
-            endentity.setPassword("foo123");
-            final ExtendedInformation ei = new ExtendedInformation();
-            ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(rolloverStartTime));
-            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, ValidityDate.formatAsUTC(rolloverStartTime+14L*24L*3600L*1000L));
-            endentity.setExtendedInformation(ei);
-            final PKCS10RequestMessage req = new PKCS10RequestMessage(requestbytes);
-            final X509ResponseMessage respmsg = (X509ResponseMessage)certificateCreateSession.createCertificate(admin, endentity, req, X509ResponseMessage.class, new CertificateGenerationParams());
-            internalCertificateStoreSession.removeCertificate(respmsg.getCertificate()); // Don't store this certificate. In a real world scenario it would have been generated by a different CA.
-            
-            cainfo = (X509CAInfo) caSession.getCAInfo(admin, subCAId);
-            final String nextKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
-            caAdminSession.receiveResponse(admin, subCAId, respmsg, null, nextKeyAlias, true/*rollover*/);
-            // Sub CA certificate is first
-            final Certificate currentCert = cainfo.getCertificateChain().iterator().next();
-            final Certificate rolloverCert = caSession.getFutureRolloverCertificate(subCAId);
-            assertNotNull("rollover cert was null", rolloverCert);
-            assertEquals("rollover cert has the wrong subject DN", ROLLOVER_SUB_CA_DN, CertTools.getSubjectDN(rolloverCert));
-            
-            // Check that the certificate has the correct status
-            final CertificateData certData = certificateStoreSession.getCertificateDataByIssuerAndSerno(CertTools.getIssuerDN(rolloverCert), CertTools.getSerialNumber(rolloverCert)).getCertificateData();
-            assertEquals("Rollover certificate should have status CERT_ROLLOVERPENDING", CertificateConstants.CERT_ROLLOVERPENDING, certData.getStatus());
-            
-            // Now we should get the certificate chain of the rollover cert
-            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
-            final List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA, currentCert);
-            assertEquals("should return a certificate chain with the rollover certificate", 2, nextChain.size());
-            final Certificate nextCert = nextChain.get(0);
-            final Certificate nextRootCert = nextChain.get(1);
-            assertEquals("should get the leaf CA certificate first in the chain", ROLLOVER_SUB_CA_DN, CertTools.getSubjectDN(nextCert));
-            assertEquals("should get the root CA certiticate second in the chain", x509ca.getSubjectDN(), CertTools.getSubjectDN(nextRootCert));
-            assertEquals("should get the rollover certificate", CertTools.getSerialNumberAsString(rolloverCert), CertTools.getSerialNumberAsString(nextCert));
-            
-            long certValidityStart = ((X509Certificate)rolloverCert).getNotBefore().getTime();
-            if (Math.abs(certValidityStart - rolloverStartTime) > 60L*1000L) {
-                assertEquals("rollover certificate has the wrong validity start time", rolloverStartTime, certValidityStart);
-            } else {
-                rolloverStartTime = certValidityStart;
-            }
-        } finally {
-            if (endEntityManagementSession.existsUser("TestScepCARollover")) {
-                endEntityManagementSession.deleteUser(admin, "TestScepCARollover");
-            }
-            
-            rootcainfo.setDoEnforceUniqueDistinguishedName(wasEnforceUniqueDn);
-            x509ca.updateCA(null, rootcainfo, cceConfig);
-            caAdminSession.editCA(admin, rootcainfo);
-            
-            // We will use the new sub CA in the next test, so we don't remove it yet
-        }
-    }
-    
-    /**
-     * Tests creating a rollover end-user certificate. Depends on the rollover CA being created, otherwise this test will be skipped.
-     */
-    @Test
-    public void test14ScepRequestRolloverCert() throws Exception {
-        try {
-            //FIXME: This test is dependend on the previous one running
-            final X509CAInfo subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
+            createScepUser(first, firstUserDn);
+            final byte[] firstMessage = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, firstUserDn, key1, BouncyCastleProvider.PROVIDER_NAME,
+                    PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
+            sendScep(true, firstMessage, HttpServletResponse.SC_OK);
+            createScepUser(second, secondUserDn);
+            changeScepUser(second, firstUserDn, x509ca.getCAId());
 
-            final int subCAId = subcainfo.getCAId();
-            final X509Certificate subcaRolloverCert = (X509Certificate) caSession.getFutureRolloverCertificate(subCAId);
-            final X509Certificate subcaCurrentCert = (X509Certificate) caSession.getCAInfo(admin, subCAId).getCertificateChain().iterator().next();
-            assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a rollover CA certificate", subcaRolloverCert != null);
-            
-            scepConfiguration.setIncludeCA(scepAlias, true);
-            scepConfiguration.setAllowLegacyDigestAlgorithm(scepAlias, true);
-            globalConfigSession.saveConfiguration(admin, scepConfiguration);
-            
-            // Clean up certificates first
-            internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
-            
-            // Make a request with the current CA certificate. Should work as usual
-            createScepUser(rolloverUser, rolloverDN, subCAId);
-            byte[] msgBytes = genScepRolloverCARequest(subcaCurrentCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
-            byte[] retMsg = sendScep(false, msgBytes);
-            assertNotNull(retMsg);
-            checkScepResponse(retMsg, rolloverDN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert, keyTestRollover, SMIMECapability.dES_CBC);
-            
-            // Clean up
+            final byte[] secondMessage = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, secondUserDn, key2, BouncyCastleProvider.PROVIDER_NAME,
+                    PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
+            // Send message with GET
+            final byte[] retMsg = sendScep(true, secondMessage, HttpServletResponse.SC_BAD_REQUEST);
+            String returnMessageString = new String(retMsg);
+            String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", second,
+                    "'" + first + "'");
+
+            if ("createcert.subjectdn_exists_for_another_user".equals(localizedMessage)) {
+                String currentDirectory = System.getProperty("user.dir");
+                throw new IllegalStateException("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
+            }
+            assertTrue(returnMessageString + ": should contain: " + localizedMessage, returnMessageString.indexOf(localizedMessage) >= 0);
+        } finally {
+            // remove user
             try {
-                endEntityManagementSession.deleteUser(admin, rolloverUser);
-                log.debug("deleted user: " + rolloverUser);
+                endEntityManagementSession.deleteUser(admin, first);
             } catch (Exception e) {
                 // NOPMD: ignore
             }
-            
-            // Now request a certificate signed by the roll over CA certificate
-            createScepUser(rolloverUser, rolloverDN, subCAId);
-            byte[] msgBytes2 = genScepRolloverCARequest(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA256, rolloverDN);
-            byte[] retMsg2 = sendScep(false, msgBytes2);
-            assertNotNull(retMsg2);
-            checkScepResponse(retMsg2, rolloverDN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, subcaRolloverCert, keyTestRollover, SMIMECapability.dES_CBC);
-            
-            
-        } finally {
-            // Done with all of the rollover tests
-            if (caSession.existsCa(ROLLOVER_SUB_CA)) {
-                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA));
+            try {
+                endEntityManagementSession.deleteUser(admin, second);
+            } catch (Exception e) {
+                // NOPMD: ignore
             }
-            internalCertificateStoreSession.removeCertificatesBySubject(ROLLOVER_SUB_CA_DN);
-            internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
-            certificateProfileSession.removeCertificateProfile(admin, "TestScepCARollover");       
-       }
+            internalCertificateStoreSession.removeCertificatesBySubject(firstUserDn);
+            internalCertificateStoreSession.removeCertificatesBySubject(secondUserDn);
+        }
     }
+    
+   
     
     /**
      * Regression test as part of ECA-10620, where it was found that enrolling a key over SCEP to the wrong CA led to that EE changing status.
@@ -934,7 +749,7 @@ public class ProtocolScepHttpTest {
         final String differentCaName = "testInvalidRequestDoesNotChangeStatus_ca";
         final String differentCaSubjectDn = "CN=" + differentCaName;
 
-        X509CA differentCa = cryptoTokenRule.createX509Ca(differentCaSubjectDn, differentCaName);
+        X509CAInfo differentCa = cryptoTokenRunner.createX509Ca(differentCaSubjectDn, differentCaName);
 
         // Create a user from a different CA than the one called from genScepRequest below
         createScepUser(username, subjectDn, differentCa.getCAId());
@@ -952,10 +767,38 @@ public class ProtocolScepHttpTest {
             //CA's are cleaned by the crypto token rule
         }
     }
-    
-    //
-    // Private helper methods
-    //
+
+    @Test
+    public void testDashesAndUnderscoresInAlias() throws Exception {
+        final String aliasName = "it-has_underscores_and-dashes";
+        final String scepUrl = createScepUrl(aliasName);
+
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+
+        if(!scepConfig.aliasExists(aliasName)) {
+            scepConfig.addAlias(aliasName);
+            globalConfigSession.saveConfiguration(admin, scepConfig);
+        }
+
+        HttpResponse response = WebTestUtils.sendGetRequest(scepUrl);
+        assertEquals("Wrong response code is returned", 200, response.getStatusLine().getStatusCode());
+
+        if(scepConfig.aliasExists(aliasName)) {
+            scepConfig.removeAlias(aliasName);
+            globalConfigSession.saveConfiguration(admin, scepConfig);
+        }
+    }
+
+    private String createScepUrl(final String aliasName) {
+        String resourceName = "/ejbca/publicweb/apply/scep/" + aliasName + "/pkiclient.exe?operation=GetCACert&message=" + x509ca.getName();
+
+        String httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        String httpBaseUrl = "http://" + httpHost + ":" + httpPort;
+
+        return httpBaseUrl + resourceName;
+    }
+
     /**
      * Sends a SCEP request with the alias requestAlias in the URL and expects a SCEP error message 
      * that can inform us about the alias extracted from the URL.
@@ -998,97 +841,18 @@ public class ProtocolScepHttpTest {
         }
     }
     
-    private List<Certificate> sendGetNextCACert(final String caName, Certificate currentCACert) throws Exception {
-        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetNextCACert&message=" + URLEncoder.encode(caName, "UTF-8");
-        URL url = new URL(reqUrl);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.getDoOutput();
-        con.connect();
-        assertEquals("Response code is not 200 (OK)", 200, con.getResponseCode());
-        assertTrue(con.getContentType().startsWith("application/x-x509-next-ca-cert"));
-        final ByteArrayOutputStream respBaos = new ByteArrayOutputStream();
-        // This works for small requests, and SCEP requests are small enough
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            respBaos.write(b);
-            b = in.read();
-        }
-        respBaos.flush();
-        in.close();
-        byte[] respBytes = respBaos.toByteArray();
-        assertNotNull("Response can not be null.", respBytes);
-        assertTrue("Response can not be empty.", respBytes.length > 0);
-        
-        // Verify PKCS7. It should be signed by the current CA
-        final ContentInfo ci = ContentInfo.getInstance(respBytes);
-        //System.out.println(ASN1Dump.dumpAsString(ci));
-        final CMSSignedData signedData = new CMSSignedData(ci);
-        // Check correct signer
-        Collection<SignerInformation> signers = signedData.getSignerInfos().getSigners();
-        assertEquals("Should be only one signer", 1, signers.size());
-        SignerInformation signer = signers.iterator().next();
-        // Verify that the CMS is signed by the current CA certificate
-        BigInteger sigSerno = signer.getSID().getSerialNumber();
-        BigInteger signerSerno = CertTools.getSerialNumber(currentCACert);
-        assertEquals("CMS message should be signed by current CA", signerSerno, sigSerno);
-        // Verify signature
-        assertTrue("CMS should be signed by rollover CA certificate", signedData.verifySignatures(new ScepVerifierProvider(currentCACert.getPublicKey())));        
-        final Store<?> certStore = signedData.getCertificates();
-        final List<Certificate> ret = new ArrayList<>();
-        for (final Object obj : certStore.getMatches(null)) {
-            log.debug("Received an item of type "+obj.getClass().getName()+": "+obj);
-            if (obj instanceof X509CertificateHolder) {
-                final byte[] certbytes = ((X509CertificateHolder)obj).getEncoded();
-                final Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
-                ret.add(cert);
-            }
-        }
-        return ret;
-    }
-    
-    private EndEntityInformation getEndEntityInformation(String userName, String userDN, int caId) {
-        final EndEntityInformation data = new EndEntityInformation(userName, userDN, caId, null, "sceptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
-        data.setPassword("foo123");
-        data.setStatus(EndEntityConstants.STATUS_NEW);
-        return data;
-    }
-
     private void createScepUser(String userName, String userDN)
             throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, EjbcaException, IllegalNameException, CertificateSerialNumberException, NoSuchEndEntityException {
         createScepUser(userName, userDN, x509ca.getCAId());
     }
     
-    private void createScepUser(String userName, String userDN, int caId)
-            throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, EjbcaException, IllegalNameException, CertificateSerialNumberException, NoSuchEndEntityException {
-        if(!endEntityManagementSession.existsUser(userName)) {
-            endEntityManagementSession.addUser(admin, getEndEntityInformation(userName, userDN, caId), false);
-        } else {
-            changeScepUser(userName, userDN, caId);
-        }
-    }
-
-    private void changeScepUser(String userName, String userDN) throws CADoesntExistsException, AuthorizationDeniedException,
-            EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException {
-        changeScepUser(userName, userDN, x509ca.getCAId());
-    }
-    
-    private void changeScepUser(String userName, String userDN, int caId) throws CADoesntExistsException, AuthorizationDeniedException,
-            EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException {
-        endEntityManagementSession.changeUser(admin, getEndEntityInformation(userName, userDN, caId), false);
-        log.debug("changing user: " + userName + ", foo123, " + userDN);
-    }
-
     private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, ASN1ObjectIdentifier encryptionAlg) throws IOException, CMSException,
-            IllegalStateException, OperatorCreationException, CertificateException {
-        return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME, encryptionAlg);
+    IllegalStateException, OperatorCreationException, CertificateException {
+        return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider, ASN1ObjectIdentifier encryptionAlg) throws
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws
             IOException, CMSException, OperatorCreationException, CertificateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keyPair, signatureProvider);
@@ -1104,321 +868,13 @@ public class ProtocolScepHttpTest {
         if (makeCrlReq) {
             msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keyPair.getPrivate(), encryptionAlg);
         } else {
-            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate(), encryptionAlg);
+            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate(), wrappingAlg, encryptionAlg);
         }
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
         byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
         assertTrue(nonceBytes.length == 16);
         return msgBytes;
-    }
-    
-    /** Makes a request to the Rollover CA, signed with the given CA certificate (current or next/rollover). */
-    private byte[] genScepRolloverCARequest(X509Certificate caRolloverCert, String digestoid, String userDN) throws
-            IOException, CMSException, OperatorCreationException, CertificateException {
-        assertNotNull(keyTestRollover);
-        assertNotNull(caRolloverCert);
-        
-        ScepRequestGenerator gen = new ScepRequestGenerator();
-        gen.setKeys(keyTestRollover, BouncyCastleProvider.PROVIDER_NAME);
-        gen.setDigestOid(digestoid);
-        // Create a transactionId
-        byte[] randBytes = new byte[16];
-        this.rand.nextBytes(randBytes);
-        byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
-        transId = new String(Base64.encode(digest));
-        final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
-                keyTestRollover.getPrivate(), keyTestRollover.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
-        final byte[] msgBytes = gen.generateCertReq(userDN, "foo123", transId, caRolloverCert, senderCertificate, keyTestRollover.getPrivate(), SMIMECapability.dES_CBC);
-        assertNotNull(msgBytes);
-        senderNonce = gen.getSenderNonce();
-        byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
-        assertTrue(nonceBytes.length == 16);
-        return msgBytes;
-    }
-    
-    private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca, ASN1ObjectIdentifier encryptionAlg)
-            throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
-            SignatureException, CertificateException {
-        checkScepResponse(retMsg, userDN, -1L, _senderNonce, transId, crlRep, digestOid, noca, cacert, key1, encryptionAlg);
-    }
-    
-    private void checkScepResponse(byte[] retMsg, String userDN, long startValidity, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca,
-                                   X509Certificate caCertToUse, KeyPair key, ASN1ObjectIdentifier encryptionAlg)
-            throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
-            SignatureException, CertificateException {
-
-        // Parse response message
-        //
-        CMSSignedData s = new CMSSignedData(retMsg);
-        // The signer, i.e. the CA, check it's the right CA
-        SignerInformationStore signers = s.getSignerInfos();
-        Collection<SignerInformation> col = signers.getSigners();
-        assertTrue(col.size() > 0);
-        Iterator<SignerInformation> iter = col.iterator();
-        SignerInformation signerInfo = iter.next();
-        // Check that the message is signed with the correct digest alg
-        assertEquals(signerInfo.getDigestAlgOID(), digestOid);
-        SignerId sinfo = signerInfo.getSID();
-        // Check that the signer is the expected CA
-        assertEquals(CertTools.stringToBCDNString(cacert.getIssuerDN().getName()), CertTools.stringToBCDNString(sinfo.getIssuer().toString()));
-        // Verify the signature
-        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build()).setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        boolean ret = signerInfo.verify(jcaSignerInfoVerifierBuilder.build(caCertToUse.getPublicKey()));
-        assertTrue("signature verification of response failed", ret);
-        // Get authenticated attributes
-        AttributeTable tab = signerInfo.getSignedAttributes();
-        // --Fail info
-        Attribute attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_failInfo));
-        // No failInfo on this success message
-        assertNull(attr);
-        // --Message type
-        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_messageType));
-        assertNotNull(attr);
-        ASN1Set values = attr.getAttrValues();
-        assertEquals(values.size(), 1);
-        ASN1String str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
-        String messageType = str.getString();
-        assertEquals("3", messageType);
-        // --Success status
-        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_pkiStatus));
-        assertNotNull(attr);
-        values = attr.getAttrValues();
-        assertEquals(values.size(), 1);
-        str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
-        assertEquals(ResponseStatus.SUCCESS.getStringValue(), str.getString());
-        // --SenderNonce
-        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce));
-        assertNotNull(attr);
-        values = attr.getAttrValues();
-        assertEquals(values.size(), 1);
-        ASN1OctetString octstr = ASN1OctetString.getInstance(values.getObjectAt(0));
-        // SenderNonce is something the server came up with, but it should be 16
-        // chars
-        assertTrue(octstr.getOctets().length == 16);
-        // --Recipient Nonce
-        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_recipientNonce));
-        assertNotNull(attr);
-        values = attr.getAttrValues();
-        assertEquals(values.size(), 1);
-        octstr = ASN1OctetString.getInstance(values.getObjectAt(0));
-        // recipient nonce should be the same as we sent away as sender nonce
-        assertEquals(_senderNonce, new String(Base64.encode(octstr.getOctets())));
-        // --Transaction ID
-        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_transId));
-        assertNotNull(attr);
-        values = attr.getAttrValues();
-        assertEquals(values.size(), 1);
-        str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
-        // transid should be the same as the one we sent
-        assertEquals(_transId, str.getString());
-
-        //
-        // Check different message types
-        //
-        if (messageType.equals("3")) {
-            // First we extract the encrypted data from the CMS enveloped data
-            // contained
-            // within the CMS signed data
-            final CMSProcessable sp = s.getSignedContent();
-            final byte[] content = (byte[]) sp.getContent();
-            final CMSEnvelopedData ed = new CMSEnvelopedData(content);
-            final RecipientInformationStore recipients = ed.getRecipientInfos();
-            @SuppressWarnings("rawtypes")
-            Store certstore;
-
-            Collection<RecipientInformation> c = recipients.getRecipients();
-            assertEquals(c.size(), 1);
-            Iterator<RecipientInformation> riIterator = c.iterator();
-            byte[] decBytes = null;
-            RecipientInformation recipient = riIterator.next();
-            JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(key.getPrivate());
-            rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
-            // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
-            // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
-            // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
-            rec.setMustProduceEncodableUnwrappedKey(true);            
-            decBytes = recipient.getContent(rec);
-            String encAlg = ed.getContentEncryptionAlgorithm().getAlgorithm().getId();
-            // Was it the expected encryption algo from the server?
-            log.debug("Encryption algorithm from the server is: " + encAlg);
-            assertEquals("The server did not encrypt with the expected encryption algorithm", encryptionAlg.getId(), encAlg);
-            // This is yet another CMS signed data
-            CMSSignedData sd = new CMSSignedData(decBytes);
-            // Get certificates from the signed data
-            certstore = sd.getCertificates();
-
-            if (crlRep) {
-                // We got a reply with a requested CRL
-                final Collection<X509CRLHolder> crls = sd.getCRLs().getMatches(null);
-                assertEquals(crls.size(), 1);
-                final Iterator<X509CRLHolder> it = crls.iterator();
-                // CRL is first (and only)
-                final X509CRL retCrl = new JcaX509CRLConverter().getCRL(it.next());
-                log.info("Got CRL with DN: " + retCrl.getIssuerDN().getName());
-
-                // check the returned CRL
-                assertEquals(CertTools.getSubjectDN(caCertToUse), CertTools.getIssuerDN(retCrl));
-                retCrl.verify(caCertToUse.getPublicKey());
-            } else {
-                // We got a reply with a requested certificate
-                @SuppressWarnings("unchecked")
-                final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
-                // EJBCA returns the issued cert and the CA cert (cisco vpn
-                // client requires that the ca cert is included)
-                if (noca) {
-                    assertEquals(certs.size(), 1);
-                } else {
-                    assertEquals(certs.size(), 2);
-                }
-                final Iterator<X509CertificateHolder> it = certs.iterator();
-                // Issued certificate must be first
-                boolean verified = false;
-                boolean gotcacert = false;
-                JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
-                while (it.hasNext()) {
-                    X509Certificate retcert = jcaX509CertificateConverter.getCertificate(it.next());
-                    log.info("Got cert with DN: " + retcert.getSubjectDN().getName());
-
-                    // check the returned certificate
-                    String subjectdn = CertTools.stringToBCDNString(retcert.getSubjectDN().getName());
-                    if (CertTools.stringToBCDNString(userDN).equals(subjectdn)) {
-                        // issued certificate
-                        assertEquals(CertTools.stringToBCDNString(userDN), subjectdn);
-                        assertEquals(CertTools.getSubjectDN(caCertToUse), CertTools.getIssuerDN(retcert));
-                        retcert.verify(caCertToUse.getPublicKey());
-                        assertTrue(checkKeys(key.getPrivate(), retcert.getPublicKey()));
-                        
-                        if (startValidity != -1L) {
-                            long certValidityStart = retcert.getNotBefore().getTime();
-                            if (Math.abs(certValidityStart - startValidity) > 60L*1000L) {
-                                assertEquals("wrong start validity time of issued user certificate", startValidity, certValidityStart);
-                            }
-                        }
-                        verified = true;
-                    } else {
-                        // ca certificate
-                        assertEquals(CertTools.getSubjectDN(caCertToUse), CertTools.getSubjectDN(retcert));
-                        gotcacert = true;
-                    }
-                }
-                assertTrue(verified);
-                if (noca) {
-                    assertFalse(gotcacert);
-                } else {
-                    assertTrue(gotcacert);
-                }
-            }
-        }
-
-    }
-
-    /**
-     * checks that a public and private key matches by signing and verifying a message
-     */
-    private boolean checkKeys(PrivateKey priv, PublicKey pub) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-        Signature signer = Signature.getInstance("SHA1WithRSA");
-        signer.initSign(priv);
-        signer.update("PrimeKey".getBytes());
-        byte[] signature = signer.sign();
-
-        Signature signer2 = Signature.getInstance("SHA1WithRSA");
-        signer2.initVerify(pub);
-        signer2.update("PrimeKey".getBytes());
-        return signer2.verify(signature);
-    }
-
-    private byte[] sendScep(boolean post, byte[] scepPackage) throws IOException {
-        return sendScep(post, scepPackage, HttpServletResponse.SC_OK);
-    }
-
-    private byte[] sendScep(boolean post, byte[] scepPackage, int responseCode) throws IOException {
-        // POST the SCEP request
-        // we are going to do a POST
-        String urlString = httpReqPath + '/' + resourceScep + "?operation=PKIOperation";
-        log.debug("UrlString =" + urlString);
-        final HttpURLConnection con;
-        if (post) {
-            URL url = new URL(urlString);
-            con = (HttpURLConnection) url.openConnection();
-            con.setDoOutput(true);
-            con.setRequestMethod("POST");
-            con.connect();
-            // POST it
-            OutputStream os = con.getOutputStream();
-            os.write(scepPackage);
-            os.close();
-        } else {
-            String reqUrl = urlString + "&message=" + URLEncoder.encode(new String(Base64.encode(scepPackage)), "UTF-8");
-            URL url = new URL(reqUrl);
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.getDoOutput();
-            con.connect();
-        }
-
-        assertEquals("Response code", responseCode, con.getResponseCode());
-        // Some appserver (Weblogic) responds with
-        // "application/x-pki-message; charset=UTF-8"
-        if (responseCode == HttpServletResponse.SC_OK) {
-            assertTrue(con.getContentType().startsWith("application/x-pki-message"));
-        } else {
-            assertTrue(con.getContentType().startsWith("text/html"));
-        }
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and SCEP requests are small enough
-        final InputStream in;
-        if (responseCode == HttpServletResponse.SC_OK) {
-            in = con.getInputStream();
-        } else {
-            in = con.getErrorStream();
-        }
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        assertNotNull("Response can not be null.", respBytes);
-        assertTrue(respBytes.length > 0);
-        return respBytes;
-    }
-    
-    
-    private byte[] sendGetCACapsRequest(final String caname, final int expectedStatusCode) throws IOException {
-        final String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(caname, "UTF-8");
-        final URL url = new URL(reqUrl);
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.getDoOutput();
-        con.connect();
-        assertEquals("Response code was wrong.", expectedStatusCode, con.getResponseCode());
-        if (expectedStatusCode != 200) {
-            return null;
-        }
-        // Some appserver (Weblogic) responds with "text/plain; charset=UTF-8"
-        assertTrue(con.getContentType().startsWith("text/plain"));
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and SCEP requests are small enough
-        try (final InputStream in = con.getInputStream()) {
-            int b = in.read();
-            while (b != -1) {
-                baos.write(b);
-                b = in.read();
-            }
-        }
-        return baos.toByteArray();
-    }
-
-    private void checkCACaps(String caname, String expectedCaps) throws IOException {
-        byte[] respBytes = sendGetCACapsRequest(caname, 200);
-        assertNotNull("Response can not be null.", respBytes);
-        assertTrue(respBytes.length > 0);
-        assertEquals(expectedCaps, new String(respBytes));
     }
 
     private void updatePropertyOnServer(String property, String value) {
@@ -1487,23 +943,17 @@ public class ProtocolScepHttpTest {
         }
 
     }
-    
-    private static class ScepVerifierProvider implements SignerInformationVerifierProvider {
-        
-        private final SignerInformationVerifier signerInformationVerifier;
-        
-        public ScepVerifierProvider(PublicKey publicKey) throws OperatorCreationException {
-            JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            JcaSignerInfoVerifierBuilder signerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build())
-            .setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            signerInformationVerifier = signerInfoVerifierBuilder.build(publicKey);
-        }
-                
-        @Override
-        public SignerInformationVerifier get(SignerId signerId) throws OperatorCreationException {
-            return signerInformationVerifier;
-        }
-        
+
+    @Override
+    protected String getTransactionId() {
+        return transId;
     }
+
+    @Override
+    protected X509Certificate getCaCertificate() {
+        return cacert;
+    }
+    
+   
 
 }

@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
-import org.cesecore.util.Base64;
+import com.keyfactor.util.Base64;
 
 
 /**

@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import org.cesecore.util.StringTools;
-
 import java.io.Serializable;
+
+import com.keyfactor.util.StringTools;
 
 public class RaSelfRenewCertificateData  implements Serializable {
 

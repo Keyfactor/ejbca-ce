@@ -13,7 +13,6 @@
 package org.cesecore.certificates.endentity;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -109,7 +108,7 @@ public final class EndEntityConstants {
         return STATUS_TEXT.get(status);
     }
 
-    public static Collection<Integer> getAllStatusCodes() {
+    public static List<Integer> getAllStatusCodes() {
         final List<Integer> statuses = new ArrayList<>(STATUS_TEXT.keySet());
         Collections.sort(statuses);
         return statuses;

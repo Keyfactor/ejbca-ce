@@ -126,9 +126,10 @@ public interface PublisherQueueSessionLocal {
      * 
      * @param admin the administrator that must be authorized for publishing
      * @param publisher the publisher to publish to
+     * @param maxNumberOfJobs a long value describing how many jobs to do as max. Hard capped at 200 000.
      * @return how many publishing operations that succeeded and failed 
      */
-    PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher);
+    PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher, final long maxNumberOfJobs);
 
     
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */

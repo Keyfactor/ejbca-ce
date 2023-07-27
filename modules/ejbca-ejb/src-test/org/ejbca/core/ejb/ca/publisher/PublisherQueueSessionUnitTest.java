@@ -27,6 +27,7 @@ import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLo
 import org.easymock.EasyMock;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -65,7 +66,7 @@ public class PublisherQueueSessionUnitTest {
     public void publishNothing() {
         expect(publisherQueueSessionMock.doChunk(same(adminMock), same(publisherMock))).andReturn(makePublishingResult(0, 0, 0, 0));
         replay(publisherQueueSessionMock);
-        assertResult(0, 0, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock));
+        assertResult(0, 0, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock, PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS));
         verify(publisherQueueSessionMock);
     }
 
@@ -74,7 +75,7 @@ public class PublisherQueueSessionUnitTest {
         expect(publisherQueueSessionMock.doChunk(same(adminMock), same(publisherMock))).andReturn(makePublishingResult(0, 5, 0, 2)); // 5 successes, 2 failures
         expect(publisherQueueSessionMock.doChunk(same(adminMock), same(publisherMock))).andReturn(makePublishingResult(0, 0, 0, 0));
         replay(publisherQueueSessionMock);
-        assertResult(5, 2, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock));
+        assertResult(5, 2, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock, PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS));
         verify(publisherQueueSessionMock);
     }
 
@@ -84,7 +85,7 @@ public class PublisherQueueSessionUnitTest {
         expect(publisherQueueSessionMock.doChunk(same(adminMock), same(publisherMock))).andReturn(makePublishingResult(5, 7, 0, 0)); // 2 successes
         expect(publisherQueueSessionMock.doChunk(same(adminMock), same(publisherMock))).andReturn(makePublishingResult(0, 0, 0, 0));
         replay(publisherQueueSessionMock);
-        assertResult(7, 2, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock));
+        assertResult(7, 2, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock, PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS));
         verify(publisherQueueSessionMock);
     }
 
@@ -95,7 +96,7 @@ public class PublisherQueueSessionUnitTest {
         expect(publisherQueueSessionMock.doChunk(same(adminMock), same(publisherMock))).andReturn(makePublishingResult(5, 7, 0, 0)); // 2 successes
         expect(publisherQueueSessionMock.doChunk(same(adminMock), same(publisherMock))).andReturn(makePublishingResult(0, 0, 2, 3)); // 1 failure
         replay(publisherQueueSessionMock);
-        assertResult(7, 3, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock));
+        assertResult(7, 3, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock, PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS));
         verify(publisherQueueSessionMock);
     }
 
@@ -104,7 +105,7 @@ public class PublisherQueueSessionUnitTest {
     public void tooMuchToPublish() {
         expect(publisherQueueSessionMock.doChunk(same(adminMock), same(publisherMock))).andReturn(makePublishingResult(0, 35_000, 0, 0)); // 35 000 successes
         replay(publisherQueueSessionMock);
-        assertResult(35_000, 0, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock));
+        assertResult(35_000, 0, publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(adminMock, publisherMock, PublishQueueProcessWorker.DEFAULT_QUEUE_WORKER_JOBS));
         verify(publisherQueueSessionMock);
     }
 

@@ -58,7 +58,6 @@
     <property file="${ejbca.home}/conf/ocsp.properties" />
     <property file="${ejbca.home}/conf/web.properties" />
     <property file="${ejbca.home}/conf/jaxws.properties" />
-    <property file="${ejbca.home}/conf/externalra.properties" />
     <property file="${ejbca.home}/conf/scepra.properties" />
     <property file="${ejbca.home}/conf/va.properties" />
     <property file="${ejbca.home}/conf/va-publisher.properties" />
@@ -148,9 +147,6 @@
 	<condition property="doc.war.enabled">
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
-	<condition property="renew.war.enabled">
-		<equals arg1="true" arg2="${web.renewalenabled}" casesensitive="false" trim="true" />
-	</condition>
 
 	<property name="ocsp.enabled" value="true" />
 	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
@@ -181,10 +177,6 @@
 	<condition property="ocsp-database.valid.connection.sql" value="select 1 from sysibm.sysdummy1"><contains string="${ocsp-database.driver}" substring="db2"/></condition>
 	<condition property="ocsp-database.valid.connection.sql" value="select 1 from dual"><contains string="${ocsp-database.driver}" substring="oracle"/></condition>
 	<property name="ocsp-database.valid.connection.sql" value="select 1" /> <!-- all other databases -->
-
-	<condition property="externalra-database.valid.connection.sql" value="select 1 from sysibm.sysdummy1"><contains string="${externalra-database.driver}" substring="db2"/></condition>
-	<condition property="externalra-database.valid.connection.sql" value="select 1 from dual"><contains string="${externalra-database.driver}" substring="oracle"/></condition>
-	<property name="externalra-database.valid.connection.sql" value="select 1" /> <!-- all other databases -->
 
 	<property name="unidfnr.enabled" value="false" /> <!-- by default unidfnr is not enabled, but can be in ocsp.properties -->
 	

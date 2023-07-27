@@ -38,7 +38,8 @@ import org.cesecore.certificates.ca.internal.CrlPartitionIndexGeneratorRandom;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 /** 
  * 

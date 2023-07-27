@@ -2,7 +2,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html;" %>
 <%@ page isErrorPage="true" import="org.ejbca.config.GlobalConfiguration, org.cesecore.authorization.AuthorizationDeniedException,
-                                   org.cesecore.authentication.AuthenticationFailedException, org.cesecore.keys.token.CryptoTokenOfflineException,
+                                   org.cesecore.authentication.AuthenticationFailedException,com.keyfactor.util.keys.token.CryptoTokenOfflineException,
                                    org.ejbca.ui.web.ParameterException, org.ejbca.config.WebConfiguration, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean"%>
 <jsp:useBean id="ejbcawebbean" scope="request" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 

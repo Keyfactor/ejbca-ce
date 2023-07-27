@@ -14,7 +14,7 @@ package org.cesecore.util.ui;
 
 import java.util.List;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * Action callback from the PSM (may be JSF 2 (JsfDynamicUiPsmFactory) back to the PIM {@link DynamicUiModel}.

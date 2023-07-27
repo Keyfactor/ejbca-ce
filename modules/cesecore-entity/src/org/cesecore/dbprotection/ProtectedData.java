@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.dbprotection;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.log4j.Logger;
 
 
@@ -88,18 +90,16 @@ public abstract class ProtectedData {
                     implClass = Class.forName(implClassName);
                     log.debug("ProtectedDataIntegrityImpl is available, and used, in this version of EJBCA.");
                 }
-                impl = (ProtectedDataImpl)implClass.newInstance();
+                impl = (ProtectedDataImpl)implClass.getDeclaredConstructor().newInstance();
                 impl.setTableName(getTableName());
             } catch (ClassNotFoundException e) {
                 // We only end up here once, if the class does not exist, we will never end up here again
                 integrityExists = false;
                 log.info("No database integrity protection available in this version of EJBCA.");
                 impl = new ProtectedDataNoopImpl();
-            } catch (InstantiationException e) {
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 log.error("Error intitilizing database integrity protection: ", e);
-            } catch (IllegalAccessException e) {
-                log.error("Error intitilizing database integrity protection: ", e);
-            }
+            }  
         } else {
             impl = new ProtectedDataNoopImpl();
         }

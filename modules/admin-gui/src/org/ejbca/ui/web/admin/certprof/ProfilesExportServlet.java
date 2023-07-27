@@ -43,11 +43,12 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.cainterface.BaseAdminServlet;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Servlet used to export certificate profiles and end entity profiles in a downloadable zip file.<br>

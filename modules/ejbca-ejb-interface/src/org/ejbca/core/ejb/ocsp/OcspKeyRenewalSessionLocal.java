@@ -16,7 +16,7 @@ import java.security.InvalidKeyException;
 
 import javax.ejb.Local;
 
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @version $Id$

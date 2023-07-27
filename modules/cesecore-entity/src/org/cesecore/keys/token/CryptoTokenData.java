@@ -29,7 +29,8 @@ import javax.persistence.Transient;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.Base64;
+
+import com.keyfactor.util.Base64;
 
 /**
  * Database representation of a CryptoToken.

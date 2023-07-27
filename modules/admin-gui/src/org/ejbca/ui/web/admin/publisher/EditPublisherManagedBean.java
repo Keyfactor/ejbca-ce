@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -63,7 +63,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * 
  *
  */
-@ManagedBean(name = "editPublisher")
+@Named("editPublisher")
 @ViewScoped
 public class EditPublisherManagedBean extends BaseManagedBean implements Serializable {
 
@@ -133,7 +133,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private boolean onlyUseQueue;
     private boolean safeDirectPublishing;
 
-    @ManagedProperty(value = "#{listPublishers}")
+    @Inject
     private ListPublishersManagedBean listPublishers;
 
     public ListPublishersManagedBean getListPublishers() {

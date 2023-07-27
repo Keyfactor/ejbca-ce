@@ -34,9 +34,10 @@ import org.cesecore.audit.enums.ServiceTypeHolder;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.GUIDGenerator;
 import org.cesecore.util.XmlSerializer;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * This class represents an audit log record.

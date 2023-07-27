@@ -71,7 +71,7 @@ public abstract class BaseWorker implements IWorker {
 		String actionClassPath = serviceConfiguration.getActionClassPath();
 		if(actionClassPath != null){
 			try {
-				action = (IAction) Thread.currentThread().getContextClassLoader().loadClass(actionClassPath).newInstance();
+				action = (IAction) Thread.currentThread().getContextClassLoader().loadClass(actionClassPath).getDeclaredConstructor().newInstance();
 				action.init(serviceConfiguration.getActionProperties(), serviceName);
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage(ERROR_ACTION_CLASSPATH_MISCONFIG, serviceName);
@@ -84,7 +84,7 @@ public abstract class BaseWorker implements IWorker {
 		String intervalClassPath = serviceConfiguration.getIntervalClassPath();
 		if(intervalClassPath != null){
 			try {
-				interval = (IInterval) Thread.currentThread().getContextClassLoader().loadClass(intervalClassPath).newInstance();
+				interval = (IInterval) Thread.currentThread().getContextClassLoader().loadClass(intervalClassPath).getDeclaredConstructor().newInstance();
 				interval.init(serviceConfiguration.getIntervalProperties(), serviceName);
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage("services.errorintervalclasspath", serviceName);
@@ -135,7 +135,16 @@ public abstract class BaseWorker implements IWorker {
 	    // Use default property keys
 	    return getTimeBeforeExpire(PROP_TIMEUNIT, PROP_TIMEBEFOREEXPIRING);
 	}
-	
+
+	protected int timeUnitToSeconds(final String timeUnit) throws ServiceExecutionFailedException {
+        for (int i = 0; i < AVAILABLE_UNITS.length; i++) {
+            if (AVAILABLE_UNITS[i].equalsIgnoreCase(timeUnit)) {
+                return AVAILABLE_UNITSVALUES[i];
+            }
+        }
+        throw new ServiceExecutionFailedException("Time unit in service '" + serviceName + "' is not correctly configured");
+	}
+
 	/**
 	 * @param propertyTimeUnit property key for time unit. E.g. IWorker.PROP_TIMEUNIT
 	 * @param propertyTimeValue property key for time value. E.g. IWorker.PROP_TIMEBEFOREEXPIRING
@@ -149,18 +158,6 @@ public abstract class BaseWorker implements IWorker {
                 String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, "UNIT");
                 throw new ServiceExecutionFailedException(msg);
             }
-            int unitval = 0;
-            for (int i = 0; i < AVAILABLE_UNITS.length; i++) {
-                if (AVAILABLE_UNITS[i].equalsIgnoreCase(unit)) {
-                    unitval = AVAILABLE_UNITSVALUES[i];
-                    break;
-                }
-            }
-            if (unitval == 0) {
-                String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, "UNIT");
-                throw new ServiceExecutionFailedException(msg);
-            }
-
 
             int intvalue = 0;
             try {
@@ -174,7 +171,7 @@ public abstract class BaseWorker implements IWorker {
                 String msg = intres.getLocalizedMessage("ERROR_EXPIRE_WORKER_MISCONFIG", serviceName, "VALUE");
                 throw new ServiceExecutionFailedException(msg);
             }
-            timeBeforeExpire = intvalue * unitval;
+            timeBeforeExpire = intvalue * timeUnitToSeconds(unit);
         }
 
         return timeBeforeExpire * 1000;
@@ -190,22 +187,20 @@ public abstract class BaseWorker implements IWorker {
 	 * @throws ServiceExecutionFailedException if a CA ID could not be parsed as an integer, which should not normally happen.
 	 */
 	protected Collection<Integer> getCAIdsToCheck(boolean includeAllCAsIfNull) throws ServiceExecutionFailedException {
-		if(cAIdsToCheck == null){
+		if (cAIdsToCheck == null){
 			cAIdsToCheck = new ArrayList<>();
-			String cas = properties.getProperty(PROP_CAIDSTOCHECK);
+			final String cas = properties.getProperty(PROP_CAIDSTOCHECK);
 		    if (log.isDebugEnabled()) {
 		    	log.debug("CAIds to check: "+cas);
 		    }
 			if (!StringUtils.isEmpty(cas)) {
-				String[] caids = cas.split(";");
-				for(int i=0;i<caids.length;i++ ){
+				for (final String caIdString : cas.split(";")) {
 					try {
-						Integer.valueOf(caids[i]);
+						cAIdsToCheck.add(Integer.valueOf(caIdString));
 					} catch (NumberFormatException e) {
 						String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, PROP_CAIDSTOCHECK);
 						throw new ServiceExecutionFailedException(msg, e);						
 					}
-					cAIdsToCheck.add(Integer.valueOf(caids[i]));
 				}				
 			} else if (includeAllCAsIfNull) {
 				cAIdsToCheck.add(SecConst.ALLCAS);

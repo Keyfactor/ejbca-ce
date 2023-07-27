@@ -47,27 +47,6 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-
-    <!-- Tomahawk filter for file uploads. Should be replaced by h:inputFile pattern when we can use JSF2.2. -->
-    <filter>
-        <filter-name>extensionsFilter</filter-name>
-        <filter-class>org.apache.myfaces.webapp.filter.ExtensionsFilter</filter-class>
-        <init-param>
-            <description>Maximum size of uploads</description>
-            <param-name>uploadMaxFileSize</param-name>
-            <param-value>101k</param-value>
-        </init-param>
-        <init-param>
-            <description>Maximum size of uploads before using disk</description>
-            <param-name>uploadThresholdSize</param-name>
-            <param-value>100k</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>extensionsFilter</filter-name>
-        <url-pattern>*.xhtml</url-pattern>
-    </filter-mapping>
-
     <filter>
         <filter-name>ContentSecurityPolicyFilter</filter-name>
         <filter-class>org.owasp.filters.ContentSecurityPolicyFilter</filter-class>
@@ -95,6 +74,12 @@
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <multipart-config>
+            <!-- Upload file size limit. 52428800 = 50 MB -->
+            <max-file-size>52428800</max-file-size>
+            <max-request-size>52428800</max-request-size>
+            <file-size-threshold>1048576</file-size-threshold>
+        </multipart-config>
     </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>

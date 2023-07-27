@@ -26,11 +26,12 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistAsciiLookalikeNormalizer;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistBaseDomainChecker;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Unit test of DomainBlacklistValidator

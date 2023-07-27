@@ -18,9 +18,10 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.SwaggerDefinition.Scheme;
-import org.cesecore.CesecoreException;
+
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -42,6 +43,8 @@ import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.resource.BaseRestResource;
 import org.ejbca.ui.web.rest.api.resource.CertificateRestResource;
+
+import com.keyfactor.CesecoreException;
 
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
@@ -170,10 +173,14 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
                     " Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.")
             @QueryParam("reason") String reason,
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
-            @QueryParam("date") String date)
+            @QueryParam("date") String date,
+            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
+            @QueryParam("invalidity_date") String invalidityDate)
+
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException {
-        return super.revokeCertificate(requestContext, issuerDN, serialNumber, reason, date);
+            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, CertificateProfileDoesNotExistException, 
+            WaitingForApprovalException {
+        return super.revokeCertificate(requestContext, issuerDN, serialNumber, reason, date, invalidityDate);
     }
 
     @GET

@@ -19,6 +19,8 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.CommonCache;
 import org.cesecore.internal.CommonCacheBase;
 
+import com.keyfactor.util.keys.token.CryptoToken;
+
 /**
  * CryptoToken Object cache.
  * 

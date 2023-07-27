@@ -13,11 +13,17 @@
 
 package org.ejbca.core.protocol.ws.objects;
 
+import javax.xml.bind.annotation.XmlType;
+
 /**
- * Deprecated class, kept for web service compatibility.
- * @deprecated
- * @version $Id$
+ * 
+ * @deprecated Deprecated class, kept for web service compatibility.
  */
+@XmlType(name = "pinDataWS", propOrder = {
+        "type",
+        "initialPIN",
+        "PUK"
+})
 @Deprecated
 public class PinDataWS {
 	

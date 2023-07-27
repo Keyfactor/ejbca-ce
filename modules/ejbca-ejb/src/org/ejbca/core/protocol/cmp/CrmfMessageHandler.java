@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -34,7 +35,6 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.ECNamedCurveTable;
 import org.bouncycastle.asn1.x9.X962Parameters;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSession;
@@ -53,11 +53,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
@@ -82,6 +77,13 @@ import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Message handler for certificate request messages in the CRMF format.
@@ -334,9 +336,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         //Only run if value hasn't been set in CAInfo, which should be done during the 7.4.0 upgrade
         if (!StringUtils.isEmpty(preProcessorClass) && StringUtils.isEmpty(cainfo.getRequestPreProcessor())) {
             try {
-                ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                 req = extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName);
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
                 throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
             }
         } else {
@@ -406,22 +409,39 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         crmfreq.setUsername(username);
         crmfreq.setPassword(pwd);
         // Set all protection parameters
-        CmpPbeVerifyer verifyer = null;
+        CmpMessageProtectionVerifyer verifyer = null;
         if (StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
             final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
-            verifyer = hmacmodule.getCmpPbeVerifyer();
-            final String pbeDigestAlg = verifyer.getOwfOid();
-            final String pbeMacAlg = verifyer.getMacOid();
-            final int pbeIterationCount = verifyer.getIterationCount();
-            final String raSecret = verifyer.getLastUsedRaSecret();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("responseProt=" + this.responseProt + ", pbeDigestAlg=" + pbeDigestAlg + ", pbeMacAlg=" + pbeMacAlg + ", keyId=" + keyId
-                        + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+            verifyer = hmacmodule.getPasswordBasedProtectionVerifyer();
+            if (verifyer instanceof CmpPbeVerifyer) { 
+                final CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
+                final String pbeDigestAlg = pbeVerifyer.getOwfOid();
+                final String pbeMacAlg = pbeVerifyer.getMacOid();
+                final int pbeIterationCount = pbeVerifyer.getIterationCount();
+                final String raSecret = pbeVerifyer.getLastUsedRaSecret();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("responseProt=" + this.responseProt + ", pbeDigestAlg=" + pbeDigestAlg + ", pbeMacAlg=" + pbeMacAlg + ", keyId=" + keyId
+                            + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+                }
+                if (StringUtils.equals(this.responseProt, "pbe")) {
+                    crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+                }
+            } else if (verifyer instanceof CmpPbmac1Verifyer) {
+                final CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
+                final String pbmac1PrfAlg = pbmac1Verifyer.getPrfOid();
+                final String pbmac1MacAlg = pbmac1Verifyer.getMacOid();
+                final int pbmac1IterationCount = pbmac1Verifyer.getIterationCount();
+                final int pbmac1DkLen = pbmac1Verifyer.getDkLen();
+                final String raSecret = pbmac1Verifyer.getLastUsedRaSecret();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("responseProt=" + this.responseProt + ", pbmac1PrfAlg=" + pbmac1PrfAlg + ", pbmac1MacAlg=" + pbmac1MacAlg
+                            + ", keyId=" + keyId + ", raSecret=" + (raSecret == null ? "null" : "not null"));
+                }
+                if (StringUtils.equals(this.responseProt, "pbe")) {
+                    crmfreq.setPbmac1Parameters(keyId, raSecret, pbmac1PrfAlg, pbmac1MacAlg, pbmac1IterationCount, pbmac1DkLen);
+                }
             }
 
-            if (StringUtils.equals(this.responseProt, "pbe")) {
-                crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
-            }
         }
         try {
             // Do we have a public key in the request? If not we may be trying to do server generated keys
@@ -548,9 +568,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                     } else {
                         try {
                             X962Parameters params = X962Parameters.getInstance(pkInfo.getAlgorithm().getParameters());
-                            if (params.isImplicitlyCA()) {
-                                LOG.debug("ECDSA key generation parameters is implicitlyCA, will try to use certificate profile parameters.");
-                            } else if (params.isNamedCurve()) {
+                            if (params.isNamedCurve()) {
                                 ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(params.getParameters());
                                 final String curveName = ECNamedCurveTable.getName(oid);
                                 if (curveName == null) {
@@ -578,7 +596,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                                 curves.clear();
                                 curves.add(curveName);
                             } else {
-                                final String msg = "ECDSA key generation requested, but X962Parameters is none of the supported options implicitlyCA or namedCurve";
+                                final String msg = "ECDSA key generation requested, but X962Parameters is not a namedCurve";
                                 throw new InvalidKeyException(msg);                                                                                                            
                             }
                         } catch (IllegalArgumentException e) {

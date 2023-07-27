@@ -29,7 +29,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -44,6 +43,8 @@ import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * @version $Id$
@@ -102,8 +103,8 @@ public class RenewCATest extends CaTestCase {
     public void testRenewSubCAWithRenewCAWorker() throws Exception {
         log.trace(">testRenewSubCAWithRenewCAWorker()");
         X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
-        final int cryptoTokenIdSubCa = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, "TestSubCaRenew", "1024");
-        final CAToken subCaToken = CaTestUtils.createCaToken(cryptoTokenIdSubCa, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        final int cryptoTokenIdSubCa = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, "TestSubCaRenew", "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        final CAToken subCaToken = CaTestUtils.createCaToken(cryptoTokenIdSubCa, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
             // Create sub CA to test renewal using Renew CA Worker
             X509CAInfo subCaInfo =  new X509CAInfo.X509CAInfoBuilder()

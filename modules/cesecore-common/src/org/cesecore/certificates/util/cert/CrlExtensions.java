@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Enumerated;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -164,5 +165,20 @@ public class CrlExtensions {
             }
         }
         return ret;
+    }
+
+    public static ASN1GeneralizedTime extractInvalidityDate(final X509CRLEntry crlEntry) {
+        if (crlEntry.hasExtensions()) {
+            byte[] extensionValue = crlEntry.getExtensionValue(Extension.invalidityDate.getId());
+            if (extensionValue != null) {
+                try {
+                    final ASN1GeneralizedTime invalidityDateExtension = ASN1GeneralizedTime.getInstance(JcaX509ExtensionUtils.parseExtensionValue(extensionValue));
+                    return invalidityDateExtension;
+                } catch (IOException e) {
+                    log.debug("Failed to parse invalidity date  of CRLEntry: " + e.getMessage());
+                }
+            }
+        }
+        return null;
     }
 }

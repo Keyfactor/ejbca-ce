@@ -20,9 +20,10 @@ import java.util.Map;
 
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * JSON output for certificate search.

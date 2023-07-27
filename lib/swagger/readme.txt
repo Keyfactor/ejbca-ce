@@ -1,0 +1,2 @@
+"Project";    "Library Name";      "License type(s)"; "License text";       "Source";                                    "Comment";
+"Swagger UI"; "swagger-ui-4.18.2"; "ALv2";            "LICENSE-APACHE-2.0"; "https://github.com/swagger-api/swagger-ui"; "Allows users to visualize and interact with EJBCA APIs. The standalone version of Swagger UI has been packaged together with EJBCA configuration into the swagger-ui.war file.";

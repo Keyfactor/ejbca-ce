@@ -12,16 +12,20 @@
 	<property name="ejbca-interface.src.dir" location="${ejbca-interface.dir}/src"/>
 
 	<path id="compile.classpath">
+		<path refid="lib.commons-lang.classpath"/>
+
 		<path refid="lib.ejbca-common.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
-		<pathelement location="${mod.ejbca-entity.lib}" />
-		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/>
+		<path location="${mod.ejbca-entity.lib}" />
+		<path location="${mod.ejbca-ws-cli.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-ws.lib}" />
 	</path>
 
     <target name="build" description="Build this module" depends="compile-ejb3">

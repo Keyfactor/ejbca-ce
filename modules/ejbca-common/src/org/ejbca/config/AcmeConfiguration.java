@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.config;
@@ -47,9 +50,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     protected static final InternalResources intres = InternalResources.getInstance();
     
     protected static final float LATEST_VERSION = 11;
-    
-    private String configurationId = null;
-    private List<String> caaIdentities = new ArrayList<>();
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
@@ -60,6 +60,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_PRE_AUTHORIZATION_ALLOWED = "preAuthorizationAllowed";
     private static final String KEY_END_ENTITY_PROFILE_ID = "endEntityProfileId";
     private static final String KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE = "valiationHttpCallbackUrlTemplate";
+    private static final String KEY_VALIDATION_TLS_ALPN_USE_LOCALHOST = "valiationTlsAlpnUseLocalhost";
+    private static final String KEY_VALIDATION_TLS_ALPN_PORT = "valiationTlsAlpnPort";
     private static final String KEY_TERMS_OF_SERVICE_URL = "termsOfServiceUrl";
     private static final String KEY_TERMS_OF_SERVICE_CHANGE_URL = "termsOfServiceChangeUrl";
     private static final String KEY_WEB_SITE_URL = "webSiteUrl";
@@ -107,7 +109,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public static final int DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID = -1;
     private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
     public static final String DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN = "default";
-
+    
+    private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[] { "TLSv1.2", "TLSv1.3" };
+    
+    private String configurationId = null;
+    private List<String> caaIdentities = new ArrayList<>();
+    
     public AcmeConfiguration() {}
 
     public AcmeConfiguration(final Object upgradeableDataHashMapData) {
@@ -119,6 +126,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         return LATEST_VERSION;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void upgrade() {
         if (Float.compare(getLatestVersion(), getVersion()) > 0) {
@@ -168,13 +176,13 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
                 setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_SCHEME);
             }
             if (data.get(KEY_RA_NAMEGENERATIONPARAMS) == null) {
-                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_PARAMS);
+                setRANameGenParams(DEFAULT_RA_USERNAME_GENERATION_PARAMS);
             }
             if (data.get(KEY_RA_NAMEGENERATIONPREFIX) == null) {
-                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_PREFIX);
+                setRANameGenPrefix(DEFAULT_RA_USERNAME_GENERATION_PREFIX);
             }
             if (data.get(KEY_RA_NAMEGENERATIONPOSTFIX) == null) {
-                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
+                setRANameGenPostfix(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
             }
             // v5. Added configurable order validity.
             if (data.get(KEY_ORDER_VALIDITY) == null) {
@@ -370,7 +378,41 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         return urlTemplate==null ? "http://{identifer}/.well-known/acme-challenge/{token}" : urlTemplate;
     }
     public void setValidationHttpCallBackUrlTemplate(final String urlTemplate) {
-        super.data.put(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE, urlTemplate);
+        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+            super.data.put(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE, urlTemplate);
+        }
+    }
+    
+    /** 
+     * For testing purposes only, the identifier can be set to 'localhost', if you want to issue certificates 
+     * for arbitrary DNS names on your host -> https://localhost:1443
+     **/
+    public void setValidationTlsAlpnLocalhost(final boolean useLocalhost) {
+        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+            super.data.put(KEY_VALIDATION_TLS_ALPN_USE_LOCALHOST, useLocalhost);
+        }
+    }
+    
+    /** @return true if the tls-alpn-01 challenge validation is done against localhost */
+    public boolean isValidationTlsAlpnLocalhost() {
+        final Boolean useLocalhost = (Boolean) super.data.get(KEY_VALIDATION_TLS_ALPN_USE_LOCALHOST);
+        return useLocalhost == null ? false: useLocalhost;
+    }
+    
+    /** @return the port for the tls-alpn-01 challenge validation or the default SSL port if not set. */
+    public int getValidationTlsAlpnPort() {
+        final Integer port = (Integer) super.data.get(KEY_VALIDATION_TLS_ALPN_PORT);
+        return port == null ? 443 : port;
+    }
+    
+    /** 
+     * For testing purposes only, the port can be set i.e. to an unprivileged port like 1443.
+     * See AcmeInMemoryTlsAlpServer.PORT.
+     **/
+    public void setValidationTlsAlpnPort(final int port) {
+        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+            super.data.put(KEY_VALIDATION_TLS_ALPN_PORT, port);
+        }
     }
 
     /** @return an URL of where the current Terms Of Services can be located. */
@@ -459,7 +501,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         return result;
     }
     
-    public void setDnsIdentifiersChallengeTypes(String types) throws Exception {
+    public void setDnsIdentifiersChallengeTypes(String types) throws AcmeChallengeTypeException {
         if (types != null && !types.trim().isEmpty()) {
             // Remove duplicates.
             Set<String> challengeTypes = Stream.of(types.trim().split(",")).collect(Collectors.toSet());
@@ -467,7 +509,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             final List<String> availableChallengeTypes = AcmeChallenge.AcmeChallengeType.getDnsIdentifierChallengeTypes(AcmeIdentifier.AcmeIdentifierTypes.DNS);
             availableChallengeTypes.add(DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
             if (!availableChallengeTypes.containsAll(challengeTypes)) {
-                throw new Exception("Invalid ACME DNS identifier challenge type. Use one of: " + availableChallengeTypes);
+                throw new AcmeChallengeTypeException("Invalid ACME DNS identifier challenge type. Use one of: " + availableChallengeTypes);
             }
             // Normalize selection any.
             if (challengeTypes.size() >= availableChallengeTypes.size() - 1) {
@@ -607,6 +649,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, preferredRootCaSubjectDn);
     }
     
+    public String[] getTlsAlpnProtocolsEnabled() {
+        return DEFAULT_TLS_APLN_PROTOCOLS_ENABLED;
+    }
+    
     /** Initializes a new acme configuration with default values. */
     public void initialize(String alias) {
         alias += ".";
@@ -616,11 +662,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setRANameGenPostfix(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
         setEndEntityProfileId(DEFAULT_END_ENTITY_PROFILE_ID);
         setRequireExternalAccountBinding(DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING);
-//        try {
-//            setExternalAccountBinding(Collections.singletonList(AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation()));
-//        } catch (AccountBindingException e) {
-//            // NOOP
-//        }
+
         setPreAuthorizationAllowed(DEFAULT_PRE_AUTHORIZATION_ALLOWED);
         setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL);
         setTermsOfServiceChangeUrl(DEFAULT_TERMS_OF_SERVICE_CHANGE_URL);

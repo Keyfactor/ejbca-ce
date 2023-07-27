@@ -36,7 +36,8 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.SecureXMLDecoder;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Database representation of an InternalKeyBinding.

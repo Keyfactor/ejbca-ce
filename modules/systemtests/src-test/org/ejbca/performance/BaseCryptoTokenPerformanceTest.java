@@ -16,11 +16,12 @@ import java.util.Properties;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.ejbca.performance.legacy.LegacySoftCryptoToken;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * @version $Id$

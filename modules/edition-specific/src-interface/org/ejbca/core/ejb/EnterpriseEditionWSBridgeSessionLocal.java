@@ -26,12 +26,13 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignedByExternalCANotSupportedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.ejbca.util.KeyValuePair;
+
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * JEE5 Lookup helper implementation for optional (enterprise edition) WS methods.

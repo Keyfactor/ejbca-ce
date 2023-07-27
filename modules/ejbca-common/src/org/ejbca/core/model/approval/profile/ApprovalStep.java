@@ -28,7 +28,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleInformation;
-import org.cesecore.util.Base64;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -37,6 +36,8 @@ import org.cesecore.util.ui.DynamicUiPropertyValidator;
 import org.cesecore.util.ui.MultiLineString;
 import org.cesecore.util.ui.RadioButton;
 import org.cesecore.util.ui.UrlString;
+
+import com.keyfactor.util.Base64;
 
 /**
  * This class represents an approval step, to sum of which is a collective series of events, in serial order, which must occur for an approval

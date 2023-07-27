@@ -31,9 +31,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -46,6 +43,10 @@ import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.pub.ServletUtils;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Servlet used to handle certificate requests between CAs.<br>
@@ -70,6 +71,7 @@ public class CACertReqServlet extends BaseAdminServlet {
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_PROPERTY_CAID = "caid";
+    private static final String COMMAND_PROPERTY_CATYPE = "caType";
     private static final String COMMAND_CERTREQ = "certreq";
 	private static final String COMMAND_CERT           = "cert";    
 	private static final String COMMAND_CERTPKCS7 = "certpkcs7";
@@ -114,7 +116,8 @@ public class CACertReqServlet extends BaseAdminServlet {
             	String filename = null;
                 CVCertificate cvccert = null;
                 boolean isx509cert = false;
-                if(caBean.getRequestInfo().getCAType()!=CAInfo.CATYPE_CITS) {
+                final int caType = Integer.parseInt(req.getParameter(COMMAND_PROPERTY_CATYPE));
+                if(caType != CAInfo.CATYPE_CITS) {
                     try {
                         CVCObject parsedObject = CertificateParser.parseCVCObject(request);
                         // We will handle both the case if the request is an

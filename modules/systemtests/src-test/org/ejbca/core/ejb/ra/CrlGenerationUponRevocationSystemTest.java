@@ -49,14 +49,10 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -76,6 +72,11 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Tests CRL generation upon revocation (CA setting).
@@ -480,11 +481,11 @@ public class CrlGenerationUponRevocationSystemTest extends CaTestCase {
     }
  
     private final X509CAInfo createTestCAWithGenerateCrlUponRevocation(final String caName, final long deltaCrlPeriod) throws Exception {
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, caName, "2048");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, caName, "2048", "2048", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
 
         log.debug("Creating CryptoToken with ID " + cryptoTokenId + " to be used by CA " + caName);
         final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN=" + caName, caName, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
         caInfo.setDescription("JUnit RSA CA");

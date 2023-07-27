@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.exception;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * Exception used in order to catch the error that we are trying to use custom certificate serial numbers, but are not using a unique
