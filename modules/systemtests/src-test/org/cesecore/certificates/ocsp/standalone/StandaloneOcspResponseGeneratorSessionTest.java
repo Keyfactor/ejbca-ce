@@ -136,6 +136,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.KeyGenParams;
 
@@ -176,10 +177,14 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASSNAME);
     
     private X509CAInfo x509ca;
+    private X509CAInfo x509EcCa;
     private int internalKeyBindingId;
+    private int internalKeyBindingEccId;
     private int cryptoTokenId;
     private X509Certificate ocspSigningCertificate;
+    private X509Certificate ocspSigningEccCertificate;
     private X509Certificate caCertificate;   
+    private X509Certificate ecCaCertificate;
     private static String originalDefaultResponder;
     
     private X509CAInfo x509CaSignBehalf;
@@ -241,6 +246,16 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(x509CaSignBehalf.getCAId(), null, "behalf entry1"));
             signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(externalCaInfo.getCAId(), null, "behalf entry external"));
             OcspTestUtils.addSignOnBehalfEntries(authenticationToken, internalKeyBindingId, signOnBehalfEntry);
+            
+            String caName = testName.getMethodName() + "EC";
+            x509EcCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+caName,  caName, "7300d",
+                    "secp384r1", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA); 
+            ecCaCertificate = (X509Certificate) x509EcCa.getCertificateChain().get(0);
+            internalKeyBindingEccId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                    TESTCLASSNAME + "EC", "secp384r1", AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
+            signerDN = "CN=ocspTestEcSigner";
+            ocspSigningEccCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME + "EC", signerDN, internalKeyBindingEccId, x509EcCa.getCAId());
+
         }
     }
 
@@ -255,6 +270,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 //Ignore any failures.
             }
             internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingEccId);
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
             // Make sure default responder is restored
             setOcspDefaultResponderReference(originalDefaultResponder);
@@ -394,13 +410,27 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     public void testStandAloneOcspResponseSanity() throws Exception {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        OcspTestUtils.deleteCa(authenticationToken, x509EcCa);
         activateKeyBinding(internalKeyBindingId);
+        activateKeyBinding(internalKeyBindingEccId, ocspSigningEccCertificate);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
-        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
-        final OCSPResp response = sendRequest(ocspRequest);
+        OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+        OCSPResp response = sendRequest(ocspRequest);
         assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
         validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
+        BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, 
+                AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+        
+        ocspRequest = buildOcspRequest(null, null, ecCaCertificate, ocspSigningEccCertificate.getSerialNumber());
+        response = sendRequest(ocspRequest);
+        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+        validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningEccCertificate.getPublicKey(), ocspSigningEccCertificate, null);
+        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, 
+                AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+        
     }
     
     /** Tests that the certhash extension, if activated in key binding, is always returned whether or not it was included in the request*/
@@ -1656,6 +1686,10 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     
     /** Ask the OcspKeyBinding to search the database for the latest certificate matching its public key and set the status to ACTIVE */
     private void activateKeyBinding(int internalKeyBindingId) throws Exception {
+        activateKeyBinding(internalKeyBindingId, ocspSigningCertificate);
+    }
+    /** Ask the OcspKeyBinding to search the database for the latest certificate matching its public key and set the status to ACTIVE */
+    private void activateKeyBinding(int internalKeyBindingId, X509Certificate ocspSigningCertificate) throws Exception {
         // Ask the key binding to search the database for a new certificate matching its public key
         final String ocspSigningCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(authenticationToken,
                 internalKeyBindingId);
