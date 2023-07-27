@@ -894,6 +894,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         }
+        
+        // if CA is signing the response then get the algorithm from CA
+        if (CertTools.isCA(signerCert)) {
+            sigAlg = caSession.findBySubjectDN(CertTools.getSubjectDN(signerCert)).getCA().getCAToken().getSignatureAlgorithm();
+            if (log.isDebugEnabled()) {
+                log.debug("Using CA signing algorithm to sign OCSP response. " + sigAlg);
+            }
+            return sigAlg;
+        }
+        
         // the signature algorithm used to sign the OCSPRequest
         if(req.getSignatureAlgOID() != null) {
             sigAlg = AlgorithmTools.getAlgorithmNameFromOID(req.getSignatureAlgOID());
@@ -912,15 +922,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (log.isDebugEnabled()) {
                 log.debug("OCSP response signature algorithm: the signature algorithm that has been advertised as being the default signature algorithm " +
                         "for the signing service using an out-of-band mechanism. " + sigAlg);
-            }
-            return sigAlg;
-        }
-        
-        // if CA is signing the response then get the algorithm from CA
-        if (CertTools.isCA(signerCert)) {
-            sigAlg = caSession.findBySubjectDN(CertTools.getSubjectDN(signerCert)).getCA().getCAToken().getSignatureAlgorithm();
-            if (log.isDebugEnabled()) {
-                log.debug("Using CA signing algorithm to sign OCSP response. " + sigAlg);
             }
             return sigAlg;
         }
