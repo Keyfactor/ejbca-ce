@@ -309,8 +309,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public int getEndEntityProfileID(String alias) {
         String key = alias + "." + CONFIG_EEPROFILE;
         try {
-            Integer id = Integer.valueOf(getValue(key, alias));
-            return id;
+            return Integer.valueOf(getValue(key, alias));
         } catch (NumberFormatException e) {
             log.error("Invalid End Entity Profile ID stored in EST alias, returning 0: "+alias, e);
             return 0;
