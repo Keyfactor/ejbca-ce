@@ -37,7 +37,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
 /**
  * Helper class to verify PBE of CMP messages, also extracts owf, mac Oids and iteration count.
  * 
- * @version $Id$
  */
 public class CmpPbeVerifyer implements CmpMessageProtectionVerifyer {
 	private static final Logger LOG = Logger.getLogger(CmpPbeVerifyer.class);

@@ -107,7 +107,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 /**
  * Helper class to create different standard parts of CMP messages
  * 
- * @version $Id$
  */
 public class CmpMessageHelper {
     private static Logger LOG = Logger.getLogger(CmpMessageHelper.class);
