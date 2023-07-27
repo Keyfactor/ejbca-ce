@@ -192,14 +192,18 @@ public interface ResponseMessage extends Serializable {
      *
      * @param reqtype which type of request message this response is in response to
      */
-    void setRequestType(int reqtype);
+    default void setRequestType(int reqtype) {
+        throw new UnsupportedOperationException("Method is not supported by the implementation!");
+    }
 
     /**
      * For some types of request-responses there is a need for a requetsId to match the request and the
      * response together.
      * @param reqId the id from the request matching to this response
      */
-    void setRequestId(int reqId);
+    default void setRequestId(int reqId) {
+        throw new UnsupportedOperationException("Method is not supported by the implementation!");
+    }
 
     /**
      * For some types of requests, the protection used depends on parameters from the request,

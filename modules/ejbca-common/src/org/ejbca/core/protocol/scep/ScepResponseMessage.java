@@ -76,6 +76,7 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.util.GdprRedactionUtils;
 
 /**
  * A response message for SCEP (pkcs7).
@@ -278,7 +279,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                 // Add the issued certificate to the signed portion of the CMS (as signer, degenerate case)
-                List<X509Certificate> certList = new ArrayList<X509Certificate>();
+                List<X509Certificate> certList = new ArrayList<>();
                 if (cert != null) {
                     log.debug("Adding certificates to response message");
                     addIntuneFields((X509Certificate) cert);
@@ -322,7 +323,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 if (recipientKeyInfo != null) {
                     try {
                         X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo, X509Certificate.class);
-                        log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
+                        log.debug("Added recipient information - issuer: '" + GdprRedactionUtils.getRedactedMessage(CertTools.getIssuerDN(rec)) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
                         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec, aid).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                     } catch (CertificateParsingException e) {
                         throw new IllegalArgumentException("Can not decode recipients self signed certificate!", e);
@@ -342,7 +343,6 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 }
             } else {
                 // Create an empty message here
-                //msg = new CMSProcessableByteArray("PrimeKey".getBytes());
                 msg = new CMSProcessableByteArray(new byte[0]);
             }
 
@@ -350,7 +350,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
 
             // add authenticated attributes...status, transactionId, sender- and recipientNonce and more...
-            Hashtable<ASN1ObjectIdentifier, Attribute> attributes = new Hashtable<ASN1ObjectIdentifier, Attribute>();
+            Hashtable<ASN1ObjectIdentifier, Attribute> attributes = new Hashtable<>();
             ASN1ObjectIdentifier oid;
             Attribute attr;
             DERSet value;
@@ -404,7 +404,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
             // Add our signer info and sign the message
             Certificate cacert = signCertChain.iterator().next();
-            log.debug("Signing SCEP message with cert: "+CertTools.getSubjectDN(cacert));
+            log.debug("Signing SCEP message with cert: "+ GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(cacert)));
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, signKey.getAlgorithm());
             try {
                 ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(signKey);
@@ -483,14 +483,6 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setRequestType(int reqtype) {
-	}
-
-    @Override
-    public void setRequestId(int reqid) {
-    }
-
-    @Override
     public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
         if (reqMsg instanceof ScepRequestMessage) {
             ScepRequestMessage scep = (ScepRequestMessage) reqMsg;
@@ -503,16 +495,6 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 log.debug("Setting " + (this.keyEncAlg != null ? this.keyEncAlg.getId() : "null") + " as preferred key encryption algorithm in SCEP response.");
             }
         }
-    }
-    
-    @Override
-    public void addAdditionalCaCertificates(final List<Certificate> certificates) {
-        // NOOP. Only for CMP.
-    }
-
-    @Override
-    public void addAdditionalResponseExtraCertsCertificates(List<Certificate> certificates) {
-        // NOOP. Only for CMP.
     }
 
     public Instant getNotAfter() {

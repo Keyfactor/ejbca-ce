@@ -27,7 +27,6 @@ import org.ejbca.config.CmpConfiguration;
  * the cache variable is null or not, the using class must ensure that it does not try to use a null value. 
  * Only the method "needsUpdate will return true of the cache variable is null. 
  * 
- * @version $Id$
  */
 public final class CMPConfigurationCache implements ConfigurationCache {
 
