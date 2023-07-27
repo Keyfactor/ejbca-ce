@@ -80,7 +80,7 @@ public class RaEndEntityTools {
             }
         };
         for (CertificateDataWrapper cdw : response.getCdws()) {
-            certificates.add(new RaCertificateDetails(cdw, callbacks, null, null, null, null, null));
+            certificates.add(new RaCertificateDetails(cdw, callbacks, null, null, null, null, null, null));
         }
         // Sort by date created (descending)
         certificates.sort((cert1, cert2) -> cert1.getCreated().compareTo(cert2.getCreated()) * -1);

@@ -47,7 +47,8 @@ import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /** QCStatement (rfc3739)
  * 

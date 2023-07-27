@@ -27,12 +27,13 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.validation.BlacklistEntry;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * Representation of a public key blacklist entry.

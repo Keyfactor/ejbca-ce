@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -38,25 +39,29 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SshCertificateUtils;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * UI representation of a result set item from the back end.
  *
  * For printing user data fields.
  */
-public class RaEndEntityDetails {
+public class RaEndEntityDetails implements Serializable {
+
+    private static final long serialVersionUID = -7607596829535211817L;
 
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
@@ -81,6 +86,9 @@ public class RaEndEntityDetails {
     private final String created;
     private final String modified;
     private final int status;
+    
+    private boolean clearPasswordDirty;
+    private boolean useClearPassword;
 
     // SSH End entity fields
     private final boolean sshTypeEndEntity;
@@ -89,6 +97,7 @@ public class RaEndEntityDetails {
     private final String sshComment;
     private final String sshForceCommand;
     private final String sshSourceAddress;
+    private final boolean sshVerifyRequired;
 
     private EndEntityProfile endEntityProfile = null;
     private SubjectDn subjectDistinguishedName = null;
@@ -130,8 +139,14 @@ public class RaEndEntityDetails {
             this.sshPrincipals = SshCertificateUtils.getPrincipalsAsString(this.subjectAn);
             this.sshComment = SshCertificateUtils.getComment(this.subjectAn);
             Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
-            this.sshForceCommand = sshCriticalOptions.containsKey("force-command") ? sshCriticalOptions.get("force-command") : null;
-            this.sshSourceAddress = sshCriticalOptions.containsKey("source-address") ? sshCriticalOptions.get("source-address") : null;
+            this.sshForceCommand = sshCriticalOptions.containsKey(
+                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP) ?
+                    sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP) : null;
+            this.sshSourceAddress = sshCriticalOptions.containsKey(
+                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) ?
+                    sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) : null;
+            this.sshVerifyRequired = sshCriticalOptions.containsKey(
+                SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
         } else {
             this.sshTypeEndEntity = false;
             this.sshKeyId = null;
@@ -139,6 +154,7 @@ public class RaEndEntityDetails {
             this.sshComment = null;
             this.sshForceCommand = null;
             this.sshSourceAddress = null;
+            this.sshVerifyRequired = false;
         }
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
@@ -210,6 +226,11 @@ public class RaEndEntityDetails {
     public String getSshComment() { return sshComment; }
     public String getSshForceCommand() { return sshForceCommand; }
     public String getSshSourceAddress() { return sshSourceAddress; }
+    public boolean getSshVerifyRequired() { return sshVerifyRequired; }
+    public String getSshVerifyRequiredString() {
+        return getSshVerifyRequired() ? callbacks.getRaLocaleBean().getMessage("enroll_ssh_critical_verify_required_enabled") :
+                callbacks.getRaLocaleBean().getMessage("enroll_ssh_critical_verify_required_disabled");
+    }
 
     public boolean isSshForceCommandRequired() {
         return this.endEntityProfile.isSshForceCommandRequired();
@@ -225,6 +246,14 @@ public class RaEndEntityDetails {
 
     public boolean isSshSourceAddressModifiable() {
         return this.endEntityProfile.isSshSourceAddressModifiable();
+    }
+
+    public boolean isSshVerifyRequiredModifiable() {
+        return this.endEntityProfile.isSshVerifyRequiredModifiable();
+    }
+
+    public boolean isSshVerifyRequiredRequired() {
+        return this.endEntityProfile.isSshVerifyRequiredRequired();
     }
 
     public String getCreated() { return created; }
@@ -286,12 +315,11 @@ public class RaEndEntityDetails {
         if (extendedInformation != null && extendedInformation.getKeyStoreAlgorithmType() != null) {
             String keyTypeString = extendedInformation.getKeyStoreAlgorithmType();
             if (extendedInformation.getKeyStoreAlgorithmSubType() != null) {
-                keyTypeString += " " + extendedInformation.getKeyStoreAlgorithmSubType();
+                keyTypeString = getAlgorithmUiRepresentationString(keyTypeString, extendedInformation.getKeyStoreAlgorithmSubType());
             }
             return keyTypeString;
         } else if (extendedInformation.getCertificateRequest() != null && extendedInformation.getKeyStoreAlgorithmType() == null) {
             return getKeysFromCsr();
-
         }
         return null; // null = hidden in UI
     }
@@ -303,7 +331,7 @@ public class RaEndEntityDetails {
                 final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
                 final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
                 final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
-                return keyAlgorithm + " " + keySpecification;
+                return getAlgorithmUiRepresentationString(keyAlgorithm, keySpecification);
             } catch (InvalidKeyException e) {
                 log.info("Failed to retrieve public key from CSR attached to end entity " + username + ". Key is either uninitialized or corrupted", e);
             } catch (IOException e) {
@@ -314,6 +342,10 @@ public class RaEndEntityDetails {
         }
         log.info("No CSR found for end entity with username " + username);
         return null;
+    }
+   
+    private String getAlgorithmUiRepresentationString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + " " + spec;
     }
 
     /** Download CSR attached to end entity in .pem format */
@@ -396,6 +428,52 @@ public class RaEndEntityDetails {
     }
     public boolean isSendNotification() {
         return endEntityInformation.getSendNotification();
+    }
+    
+    public boolean isClearPasswordAllowed() {
+        EndEntityProfile profile = getEndEntityProfile();
+        if (profile != null) {
+            boolean allowClearPwd = profile.isClearTextPasswordUsed() && !isTokenTypeUserGenerated();
+            if(!clearPasswordDirty) {
+                if(!allowClearPwd) {
+                    useClearPassword = false;
+                } else {
+                    useClearPassword = StringUtils.isNotEmpty(endEntityInformation.getPassword());
+                }
+            }
+            return allowClearPwd;
+        }
+        return false;
+    }
+    
+    public boolean isClearPasswordRequired() {
+        EndEntityProfile profile = getEndEntityProfile();
+        if (profile != null) {
+            boolean requireClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordRequired();
+            if(requireClearPwd && !clearPasswordDirty) {
+                useClearPassword = profile.isClearTextPasswordDefault() && StringUtils.isNotEmpty(endEntityInformation.getPassword());
+                clearPasswordDirty = true;
+            }
+            return requireClearPwd;
+        }
+        return false;
+    }
+    
+    public boolean getClearPassword() {
+        if(!clearPasswordDirty) {
+            isClearPasswordAllowed();
+            isClearPasswordRequired();
+        }
+        return useClearPassword;
+    }
+    
+    public boolean getClearPasswordViewMode() {
+        return StringUtils.isNotEmpty(endEntityInformation.getPassword());
+    }
+    
+    public void setClearPassword(boolean clearPwd) {
+        clearPasswordDirty = true;
+        useClearPassword = clearPwd;
     }
 
     public boolean isCertificateSerialNumberOverrideEnabled() {

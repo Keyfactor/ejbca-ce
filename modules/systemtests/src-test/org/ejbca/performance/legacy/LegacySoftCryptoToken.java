@@ -39,13 +39,14 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.BaseCryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.PrivateKeyNotExtractableException;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * Handles maintenance of the soft devices producing signatures and handling the private key and stored in database.

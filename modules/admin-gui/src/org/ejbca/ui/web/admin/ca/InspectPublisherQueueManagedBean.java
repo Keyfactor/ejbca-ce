@@ -13,31 +13,8 @@
 
 package org.ejbca.ui.web.admin.ca;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
-import org.cesecore.certificates.certificate.CertificateInfo;
-import org.cesecore.certificates.crl.CRLInfo;
-import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.services.ServiceDataSessionLocal;
-import org.ejbca.core.ejb.services.ServiceSessionLocal;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ca.publisher.PublisherConst;
-import org.ejbca.core.model.ca.publisher.PublisherQueueData;
-import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import static java.util.stream.Collectors.toSet;
 
-import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -50,12 +27,37 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toSet;
+import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
+import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.services.ServiceDataSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
+import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
+import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Backing bean for the "Inspect Publisher Queue" page.
  */
-@ManagedBean(name = "inspectPublisherQueue")
+@Named("inspectPublisherQueue")
 @ViewScoped
 public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(InspectPublisherQueueManagedBean.class);
@@ -138,7 +140,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
             } else if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CRL) {
                 final CRLInfo crlInfo = crlSession.getCRLInfo(getFingerprint());
                 if (isAuthorizedToViewCrl(crlInfo)) {
-                    return String.format("%spublicweb/webdist/certdist?cmd=crl&issuer=%s&crlnumber=%d", getEjbcaWebBean().getBaseUrlPublic(),
+                    return String.format("%spublicweb/webdist/certdist?cmd=crl&issuer=%s&crlnumber=%d", getEjbcaWebBean().getBaseUrl(),
                             StringEscapeUtils.escapeHtml(crlInfo.getSubjectDN()), crlInfo.getLastCRLNumber());
                 }
             }

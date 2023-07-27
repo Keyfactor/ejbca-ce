@@ -23,8 +23,10 @@ public class CRLUpdateWorkerType extends BaseWorkerType {
 	
 	public static final String NAME = "CRLUPDATEWORKER";
 	
+	private static final String CRLUPDATEWORKER_SUB_PAGE = "crlupdateworker.xhtml";
+	
 	public CRLUpdateWorkerType() {
-		super(ServiceTypeUtil.CRLUPDATEWORKER_SUB_PAGE, NAME, true, CRLUpdateWorker.class.getName());
+		super(CRLUPDATEWORKER_SUB_PAGE, NAME, true, CRLUpdateWorker.class.getName());
 
 		// No action available for this worker
 		addCompatibleActionTypeName(NoActionType.NAME);		

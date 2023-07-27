@@ -22,7 +22,8 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.keys.token.CryptoToken;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * @version $Id$

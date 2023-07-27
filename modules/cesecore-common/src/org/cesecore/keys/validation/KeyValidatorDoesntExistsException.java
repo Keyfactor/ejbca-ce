@@ -15,7 +15,7 @@ package org.cesecore.keys.validation;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * An exception thrown when someone tries to access a key validator that doesn't exits.

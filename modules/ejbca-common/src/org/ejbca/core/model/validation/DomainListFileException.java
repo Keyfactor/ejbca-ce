@@ -13,8 +13,8 @@
  *************************************************************************/
 package org.ejbca.core.model.validation;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 /**
  * An exception thrown when trying to parse a malformed blacklist file.

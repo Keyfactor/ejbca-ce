@@ -46,17 +46,12 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -71,6 +66,12 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -321,8 +322,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             
             // 1.2 Test 1 available CAs for this EEP
             // Create first CA.
-            cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName1 + "_token", "1024");
-            catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName1 + "_token", "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caInfo1 = getNewCAInfo(caName1, catoken1);
             caAdminSession.createCA(alwaysAllowToken, caInfo1);
             eeProfile.setAvailableCAs(Collections.singletonList(caInfo1.getCAId()));
@@ -333,8 +334,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                         
             // 1.3 Test 2 available CAs for this EEP.
             // Create second CA.
-            cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName2 + "_token", "1024");
-            catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName2 + "_token", "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             caInfo2 = getNewCAInfo(caName2, catoken2);
             caAdminSession.createCA(alwaysAllowToken, caInfo2);
             eeProfile.setAvailableCAs(Arrays.asList(caInfo1.getCAId(), caInfo2.getCAId()));

@@ -7,7 +7,7 @@ Code signing:
 sign-verify.sh - used to sign a file. Creates a signature file, that can later be verified using the same program. 
  Uses a private key to sign and a public key to verify.
  It is actually recommended, for security reasons, that the signing and verification is done on another machine
- than the file being signed. This protects againsy someone gaining privileges and using a key stored on disk to 
+ than the file being signed. This protects against someone gaining privileges and using a key stored on disk to 
  sign a bad version of the file.
  
  Create a new user 'Batch' in EJBCA, check 'Batch' processing and choose P12 keystore.

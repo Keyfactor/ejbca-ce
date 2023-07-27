@@ -23,7 +23,8 @@ import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
-import org.cesecore.keys.util.KeyTools;
+
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Represents a Certificate Transparency log

@@ -17,7 +17,8 @@ import java.io.Serializable;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.roles.Role;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Value object for the RoleMemberData entity bean, so that we don't have to pass information like row protection remotely.
@@ -54,15 +55,6 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
     public RoleMember(final String tokenType, final int tokenIssuerId, final int tokenProviderId, final int tokenMatchKey, final int tokenMatchOperator,
             final String tokenMatchValue, final int roleId, final String description) {
         this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
-    }
-
-    /**
-     * @deprecated Since EJBCA 7.5.0. Please use the constructor with tokenProviderId instead, and set the parameter to {@link #NO_PROVIDER}.
-     */
-    @Deprecated
-    public RoleMember(final String tokenType, final int tokenIssuerId, final int tokenMatchKey, final int tokenMatchOperator,
-            final String tokenMatchValue, final int roleId, final String description) {
-        this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, NO_PROVIDER, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
     }
 
     /**

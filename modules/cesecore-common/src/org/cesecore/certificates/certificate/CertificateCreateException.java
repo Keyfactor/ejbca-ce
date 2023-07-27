@@ -14,8 +14,8 @@ package org.cesecore.certificates.certificate;
 
 import javax.ejb.ApplicationException;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 /**
  * An exception thrown when a serious error happens creating a certificate. 

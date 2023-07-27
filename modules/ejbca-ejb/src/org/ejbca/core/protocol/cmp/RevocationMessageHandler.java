@@ -45,12 +45,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -65,6 +60,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Message handler for the CMP revocation request messages
@@ -257,18 +258,36 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 
 		if (StringUtils.equals(responseProtection, "pbe")) {
 		    final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
-		    final String owfAlg = hmacmodule.getCmpPbeVerifyer().getOwfOid();
-		    final String macAlg = hmacmodule.getCmpPbeVerifyer().getMacOid();
-		    final int iterationCount = 1024;
-		    final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
-		    
-		    if (owfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
-		        // Set all protection parameters
-		        if (LOG.isDebugEnabled()) {
-		            LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
-		        }
-		        rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
-		    }
+			CmpMessageProtectionVerifyer verifyer = hmacmodule.getPasswordBasedProtectionVerifyer();
+			if (verifyer instanceof CmpPbeVerifyer) {
+				final CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
+				final String owfAlg = pbeVerifyer.getOwfOid();
+				final String macAlg = pbeVerifyer.getMacOid();
+				final int iterationCount = CmpMessageHelper.DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT;
+				final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
+				
+				if (owfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
+					// Set all protection parameters
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
+					}
+					rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
+				}
+			} else if (verifyer instanceof CmpPbmac1Verifyer) {
+				final CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
+				final String prfAlg = pbmac1Verifyer.getPrfOid();
+				final String macAlg = pbmac1Verifyer.getMacOid();
+				final int iterationCount = CmpMessageHelper.DEFAULT_PBMAC1_ITERATION_COUNT;
+				final int dkLen = CmpMessageHelper.DEFAULT_PBMAC1_DERIVED_KEY_LENGTH;
+				final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
+				if (prfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
+					// Set protection parameters
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(responseProtection + ", " + prfAlg + ", " + macAlg+", " + keyId + ", " + cmpRaAuthSecret);
+					}
+					rresp.setPbmac1Parameters(keyId, cmpRaAuthSecret, prfAlg, macAlg, iterationCount, dkLen);
+				}
+			}
 		} else if(StringUtils.equals(responseProtection, "signature")) {
 		    try {
 		        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());

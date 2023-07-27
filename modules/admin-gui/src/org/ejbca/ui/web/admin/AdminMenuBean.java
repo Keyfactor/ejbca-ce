@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import java.io.Serializable;
-
-import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
-
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
@@ -30,12 +24,17 @@ import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
+import javax.ejb.EJB;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
+import java.io.Serializable;
+
 /**
  * Backing bean for the menu on the left (in the default theme) in the AdminWeb.
  * @version $Id$
  */
 @RequestScoped
-@ManagedBean
+@Named
 public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     private static final long serialVersionUID = 1L;
@@ -111,7 +110,24 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
                 || isAuthorizedToViewEndEntity()
                 || isAuthorizedToEditUserDataSources());
     }
-    
+
+    public boolean isAuthorizedToViewVAHeader() {
+        return isAuthorizedViewInternalKeyBindings()
+                && isAuthorizedToViewVA();
+    }
+
+    private boolean isAuthorizedToViewVA() {
+        return getEjbcaErrorWebBean().isRunningBuildWithVA()
+                || getEjbcaErrorWebBean().isRunningBuildWithCA()
+                || isRunningBuildInFullMode();
+    }
+
+    private boolean isRunningBuildInFullMode() {
+        return getEjbcaErrorWebBean().isRunningBuildWithVA()
+                && getEjbcaErrorWebBean().isRunningBuildWithCA()
+                && getEjbcaErrorWebBean().isRunningBuildWithRA();
+    }
+
     /*===SUPERVISION FUNCTIONS===*/
     
     public boolean isAuthorizedToViewApprovalProfiles() {
@@ -218,14 +234,6 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.ROLE_ADMINISTRATOR);
     }
     
-    public boolean isAuthorizedToViewPublicWeb() {
-        return getEjbcaErrorWebBean().isRunningBuildWithCA();
-    }
-
-    public boolean isPublicWebHidden() {
-        return getEjbcaWebBean().getGlobalConfiguration().getHidePublicWeb();
-    }
-    
     public boolean isAuthorizedToViewRaWeb() {
         return getEjbcaErrorWebBean().isRunningBuildWithRAWeb();
     }
@@ -253,7 +261,11 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     public String getLogoUrl() {
         return getEjbcaWebBean().getImagePath(getEjbcaWebBean().getEditionFolder() + "/keyfactor-"+ InternalConfiguration.getAppNameLower() +"-logo.png");
     }
-    
+
+    public String getFaviconUrl() {
+        return getEjbcaWebBean().getImagePath(getEjbcaWebBean().getEditionFolder() + "/favicon.png");
+    }
+
     /** 
      * @return the URL to EJBCA Admin UI, i.e. https://hostname:8443/ejbca/adminweb/, always ends with a '/'
      */

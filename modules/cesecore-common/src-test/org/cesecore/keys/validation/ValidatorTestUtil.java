@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.validation;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,11 +39,15 @@ public final class ValidatorTestUtil {
      * @return the concrete key validator instance.
      * @throws IllegalAccessException 
      * @throws InstantiationException 
+     * @throws SecurityException 
+     * @throws NoSuchMethodException 
+     * @throws InvocationTargetException 
+     * @throws IllegalArgumentException 
      */
     public static final KeyValidator createKeyValidator(Class<? extends KeyValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
-            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
-        KeyValidator result = type.newInstance();
+            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        KeyValidator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);

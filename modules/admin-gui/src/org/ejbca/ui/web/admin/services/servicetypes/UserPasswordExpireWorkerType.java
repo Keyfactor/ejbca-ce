@@ -25,7 +25,9 @@ public class UserPasswordExpireWorkerType extends BaseEmailNotifyingWorkerType {
 	private static final long serialVersionUID = -3242483317114929799L;
     public static final String NAME = "USERPASSWORDEXPIREWORKER";
 	
+    private static final String USERPASSWORDEXPIREWORKER_SUB_PAGE = "userpasswordexpireworker.xhtml";
+    
 	public UserPasswordExpireWorkerType(){
-		super(NAME, ServiceTypeUtil.USERPASSWORDEXPIREWORKER_SUB_PAGE, UserPasswordExpireWorker.class.getName());
+		super(NAME, USERPASSWORDEXPIREWORKER_SUB_PAGE, UserPasswordExpireWorker.class.getName());
 	}
 }

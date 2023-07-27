@@ -14,9 +14,10 @@ import org.cesecore.certificate.ca.its.region.IdentifiedRegionCountryRegions;
 import org.cesecore.certificate.ca.its.region.ItsGeographicElement;
 import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificate.ca.its.region.RectangularRegions;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 public class ItsGeographicRegionTest {
     

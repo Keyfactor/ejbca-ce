@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -50,7 +50,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * 
  *
  */
-@ManagedBean(name = "listPublishers")
+@Named("listPublishers")
 @SessionScoped
 public class ListPublishersManagedBean extends BaseManagedBean implements Serializable {
 

@@ -13,8 +13,9 @@
 package org.cesecore.authentication.oauth;
 
 import org.bouncycastle.util.encoders.Base64;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyTools;
 
 import java.io.Serializable;
 import java.security.PublicKey;

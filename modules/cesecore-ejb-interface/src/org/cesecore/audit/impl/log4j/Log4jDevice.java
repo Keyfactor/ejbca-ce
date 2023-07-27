@@ -36,10 +36,11 @@ import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.log.AuditLogResetException;
 import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.time.TrustedTime;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.query.QueryCriteria;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Simple implementation of (secure) audit that writes all log to Log4J.

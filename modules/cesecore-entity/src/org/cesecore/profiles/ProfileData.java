@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -172,8 +173,8 @@ public class ProfileData extends ProtectedData implements Serializable {
         }
         Profile returnValue;
         try {     
-            returnValue = implementationClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            returnValue = implementationClass.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw new IllegalStateException("Could not instansiate class of type " + implementationClass.getCanonicalName()+" for profile '"+profileName+"'", e);
         }
         returnValue.setProfileName(profileName);

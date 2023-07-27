@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.profiles;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 
 /**

@@ -22,7 +22,8 @@ import javax.servlet.http.Part;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.StringTools;
 
 /**
  * Utility methods for working with HTTP related things (file uploads, headers etc.)

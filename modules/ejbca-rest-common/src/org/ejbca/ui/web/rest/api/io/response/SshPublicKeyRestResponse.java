@@ -20,7 +20,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class SshPublicKeyRestResponse {
 
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
     private final String caName;
     @ApiModelProperty(value = "CA’s public key", example = "ssh-rsa AAAAB...QxLwx SshCA")
     private final String response;

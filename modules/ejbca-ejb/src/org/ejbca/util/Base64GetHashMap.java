@@ -16,7 +16,7 @@ package org.ejbca.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cesecore.util.StringTools;
+import com.keyfactor.util.StringTools;
 
 
 /**  Only used for backwards compatibility with earlier versions of EJBCA

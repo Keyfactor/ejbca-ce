@@ -45,11 +45,11 @@ public interface AcmeExternalAccountBinding extends AccountBinding, ConfigDumpIt
      * @param request the ACME protected request.
      * @param requestUrl the ACME newAccount URL.
      * @param jwk the base64 encoded account key in JWK form.
+     * @param algorithmName JWS hash algorithm. I.e. HS256, HS384 or HS512. See {@link AcmeJwsHelper#getAvailableMacAlgorithms()}. Only used for EAB with HMAC protection.
      * @return the external account identifier.
      * @throws AcmeProblemException if the message could not be verified (technically, well-formed or by content).
      */
-    // ECA-9474 Refactor method signature.
-    String parseEabRequestMessage(Object request, String requestUrl, String jwk) throws AcmeProblemException;
+    String parseEabRequestMessage(Object request, String requestUrl, String jwk, String algorithmName) throws AcmeProblemException;
     
     /**
      * Clone has to be implemented instead of a copy constructor due to the 

@@ -25,7 +25,6 @@ import java.util.List;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
@@ -35,6 +34,8 @@ import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Adds a user to the database and issues a certificate, all in one CLI call but using two WS calls in the background.

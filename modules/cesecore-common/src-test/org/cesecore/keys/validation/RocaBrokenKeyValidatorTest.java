@@ -21,9 +21,10 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * @version $Id$

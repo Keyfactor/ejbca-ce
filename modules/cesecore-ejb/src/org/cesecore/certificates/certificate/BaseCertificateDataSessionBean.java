@@ -27,8 +27,6 @@ import org.cesecore.util.ValueExtractor;
 
 /**
  * Contains common function for CertificateDataSessionBean and NoConflictCertificateDataSessionBean.
- * 
- * @version $Id$
  */
 public abstract class BaseCertificateDataSessionBean {
 
@@ -37,7 +35,7 @@ public abstract class BaseCertificateDataSessionBean {
     /** Returns the entity manager to use. */
     protected abstract EntityManager getEntityManager();
     
-    protected Collection<RevokedCertInfo> getRevokedCertInfosInternal(final Query query) {
+    protected Collection<RevokedCertInfo> getRevokedCertInfosInternal(final Query query, final boolean allowInvalidityDate) {
         final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
         query.setMaxResults(maxResults);
         int firstResult = 0;
@@ -62,7 +60,12 @@ public abstract class BaseCertificateDataSessionBean {
                 if (revocationReason == -1) {
                     revocationReason = RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
                 }
-                revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
+                if (allowInvalidityDate) {
+                    final Long invalidityDate = ValueExtractor.extractLongValue(current[5]) == -1L ? null : ValueExtractor.extractLongValue(current[5]);
+                    revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate, invalidityDate));
+                } else {
+                    revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
+                }
             }
             firstResult += maxResults;
         }

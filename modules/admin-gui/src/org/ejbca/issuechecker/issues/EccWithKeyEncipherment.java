@@ -25,7 +25,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.TicketDescription;
@@ -69,7 +68,7 @@ public class EccWithKeyEncipherment extends ConfigurationIssue {
                 .stream()
                 .map(mapEntry -> new CertificateProfileEntry(mapEntry))
                 .filter(entry -> isCertificateProfileCreatedByUser(entry.certificateProfileId))
-                .filter(entry -> AlgorithmTools.isEccCapable(entry.certificateProfile))
+                .filter(entry -> entry.certificateProfile.isEccCapable())
                 .filter(entry -> entry.certificateProfile.getKeyUsage(CertificateConstants.KEYENCIPHERMENT))
                 .map(entry -> Ticket
                         .builder(this, TicketDescription.fromResource("ECC_WITH_KEY_ENCIPHERMENT_TICKET_DESCRIPTION", entry.certificateProfileName))
@@ -78,6 +77,8 @@ public class EccWithKeyEncipherment extends ConfigurationIssue {
                 .collect(Collectors.toList());
     }
 
+    
+    
     /**
      * Determine if the certificate profile is created by the user, i.e. not one of the fixed certificate
      * profiles built into EJBCA, e.g. ROOTCA, SERVER or ENDUSER.

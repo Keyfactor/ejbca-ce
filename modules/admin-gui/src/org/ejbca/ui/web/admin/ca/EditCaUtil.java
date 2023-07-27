@@ -21,7 +21,6 @@ import javax.faces.context.FacesContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.certificate.ca.its.region.CircularRegion;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegionCountryRegions;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegions;
@@ -32,7 +31,6 @@ import org.cesecore.certificate.ca.its.region.RectangularRegions;
 
 /**
  * 
- * @version $Id$
  *
  */
 public final class EditCaUtil {
@@ -45,7 +43,6 @@ public final class EditCaUtil {
     public static final String DISPLAY_RESULT_NAV = "displayresult";
     public static final int CERTREQGENMODE = 0;
     public static final int CERTGENMODE = 1;
-    public static final String DEFAULT_KEY_SIZE = "2048";
     public static final String LINK_CERT_BASE_URI = "cacertreq?cmd=linkcert&";
     public static final String CA_EXPORT_PATH = "/ca/exportca";
     public static final String TEXTFIELD_EXPORTCA_PASSWORD = org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD;
@@ -67,18 +64,6 @@ public final class EditCaUtil {
                 throw new FacesException("Cannot redirect to " + EditCaUtil.MANAGE_CA_NAV + " due to IO exception.", e);
             }
         }         
-    }
-    
-    public static byte[] getUploadedFileBuffer(final UploadedFile uploadedFile) {
-        byte[] fileBuffer = null;
-        if (uploadedFile != null) {
-            try {
-                fileBuffer = uploadedFile.getBytes();
-            } catch (IOException e) {
-                throw new FacesException("Can not get uploaded file buffer due to IO exception.", e);
-            }
-        }
-        return fileBuffer;
     }
     
     public static List<String> getAllGeographicRegionTypes(){

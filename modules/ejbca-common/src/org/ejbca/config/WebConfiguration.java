@@ -13,15 +13,15 @@
 
 package org.ejbca.config;
 
+import com.keyfactor.util.StringTools;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.ejbca.util.SlotList;
+import org.ejbca.util.URIUtil;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.util.StringTools;
-import org.ejbca.util.SlotList;
-import org.ejbca.util.URIUtil;
 
 /**
  * This file handles configuration from web.properties
@@ -110,6 +110,10 @@ public class WebConfiguration {
 			log.warn("\"httpserver.external.privhttps\" is not a decimal number. Using default value: " + value);
 		}
 		return value;
+	}
+
+	public static String getContentSecurityPolicy() {
+		return EjbcaConfigurationHolder.getString("web.header.content_security_policy");
 	}
 
 	/**
@@ -341,6 +345,11 @@ public class WebConfiguration {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("awskms.cryptotoken.enabled"));
     }
 
+    /** @return true if we have Fortanix DSM Crypto Token enabled in the Admin GUI. */
+    public static boolean isFortanixEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("fortanix.cryptotoken.enabled"));
+    }
+
     /** @return true if we have SunP11 Crypto Token enabled in the Admin GUI. */
     public static boolean isSunP11Enabled(){
         return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("sunp11.cryptotoken.enabled")); // default true
@@ -354,6 +363,11 @@ public class WebConfiguration {
     /** @return true if we have P11NG Utimaco CP5 specific Crypto Token functions enabled in the Admin GUI. */
     public static boolean isP11NGUtimacoCP5Enabled(){
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("p11ng.utimacocp5.enabled"));
+    }
+
+    /** @return true if we enabled usage of PQC algorithms (for testing) in the Admin GUI. */
+    public static boolean isPQCEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("cryptotoken.pqc.enabled"));
     }
 
     public static String getStatedumpTemplatesBasedir() {

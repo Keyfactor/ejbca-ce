@@ -32,7 +32,8 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Cache holding performance sensitive CA configuration required by OCSP lookups
@@ -96,6 +97,8 @@ public enum OcspDataConfigCache {
             final List<CertificateID> ret = new ArrayList<>();
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha384)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha512)), certificate, certificate.getSerialNumber()));
             return ret;
         } catch (OCSPException | CertificateEncodingException | OperatorCreationException e) {
             throw new OcspFailureException(e);

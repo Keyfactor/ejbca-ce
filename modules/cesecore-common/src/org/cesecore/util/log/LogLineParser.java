@@ -20,8 +20,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * <p>Parses contents from log lines produced by the application server.

@@ -31,13 +31,14 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameAccessMatchValue;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * @see SimpleAuthenticationProvider

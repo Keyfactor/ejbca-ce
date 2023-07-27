@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 import org.apache.log4j.Level;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * dispatched to {@link ConfigurationCheckerSessionBean}.
  *
  */
-@ManagedBean(name = "configurationChecker")
+@Named("configurationChecker")
 @SessionScoped
 public class ConfigurationCheckerManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1L;

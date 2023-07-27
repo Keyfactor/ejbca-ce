@@ -14,7 +14,7 @@ package org.cesecore.certificates.ca;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 
 /**

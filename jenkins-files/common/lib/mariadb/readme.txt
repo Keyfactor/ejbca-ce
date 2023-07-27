@@ -1,2 +1,0 @@
-"Project";              "Library Name";             "License type(s)";              "License text";             "Source";                                                                           "Comment";
-"MariaDB Java Client";  "mariadb-java-client.jar";  "LGPL-2.1";                     "LGPL-2.1";                 "https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client/2.1.0";    "Version: 2.1.0. MariaDB Connector/J";

@@ -14,6 +14,8 @@ package org.cesecore.keys.token;
 
 import javax.ejb.Local;
 
+import com.keyfactor.util.keys.token.CryptoToken;
+
 /**
  * @see CryptoTokenManagementSession
  * @version $Id$

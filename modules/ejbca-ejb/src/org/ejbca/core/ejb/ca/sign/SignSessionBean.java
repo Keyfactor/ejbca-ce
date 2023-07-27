@@ -13,6 +13,40 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -38,8 +72,6 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.CollectionStore;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
@@ -70,7 +102,6 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -92,19 +123,12 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.ECAUtils;
-import org.cesecore.util.EJBTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -142,38 +166,16 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Creates and signs certificates.
@@ -250,7 +252,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (cainfo != null) {
             return cainfo.getCertificateChain();
         } else {
-            return new ArrayList<Certificate>();
+            return new ArrayList<>();
         }
     }
 
@@ -421,7 +423,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throws AuthorizationDeniedException, NoSuchEndEntityException, CertificateCreateException, CertificateRevokeException,
             InvalidAlgorithmException, ApprovalException, WaitingForApprovalException {
         final String username = req.getUsername();
-        EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
+        final EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
+        endEntityManagementSession.initializeEndEntityTransaction(username);
         if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
         }
@@ -520,7 +523,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         postCreateCertificate(admin, endEntityInformation, ca,
                                 new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false, certGenParams);
                         // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
-                        if (ca.isUseUserStorage() && endEntityInformation != null) {
+                        if (ca.isUseUserStorage()) {
                             finishUser(ca, endEntityInformation);
                         }
                     }
@@ -843,15 +846,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             log.trace("<cvcRequest");
             return EJBTools.wrapCertCollection(result);
-        } catch (CADoesntExistsException | CertificateCreateException | NoSuchEndEntityException e) {
-            ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
-            if (e.getErrorCode() != null) {
-                throw new EjbcaException(e.getErrorCode(), e.getMessage());
-            } else {
-                throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
-            }
-        } catch (ParseException | ConstructionException | NoSuchFieldException| InvalidKeyException | CertificateException // | CertificateEncodingException
-                | CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException | IOException e) {
+        } catch ( NoSuchEndEntityException | ParseException | ConstructionException | NoSuchFieldException
+                | InvalidKeyException | CertificateException // | CertificateEncodingException
+                | CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
+                | IOException e) {
             ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
@@ -889,7 +887,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     // Do the magic adding of parameters, if they don't exist in the public key.
                     final Certificate cvcaCertificate = caCertificates.get(caCertificates.size() - 1);
                     try {
-                        publicKey = KeyTools.getECPublicKeyWithParams(publicKey, cvcaCertificate.getPublicKey());
+                        publicKey = CvcKeyTools.getECPublicKeyWithParams(publicKey, cvcaCertificate.getPublicKey());
                     } catch (InvalidKeySpecException e) {
                         String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(certificate), e.getMessage());
                         log.warn(msg, e);
@@ -1252,6 +1250,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         
         if (!ca.getCAInfo().getFinishUser()) {
             cleanSerialnumberAndCsrFromUserData(data);
+            endEntityManagementSession.suppressUnwantedUserDataChanges(data.getUsername());
             return;
         }
         

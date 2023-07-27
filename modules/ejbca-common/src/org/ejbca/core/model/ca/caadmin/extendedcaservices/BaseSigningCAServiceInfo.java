@@ -18,7 +18,8 @@ import java.security.cert.Certificate;
 import java.util.List;
 
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.util.AlgorithmConstants;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * Base class for CAServiceInfo used by extended services that does signing 

@@ -21,8 +21,9 @@ import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.StringTools;
 
 import java.text.ParseException;
 
@@ -41,14 +42,23 @@ public class DateValidator implements Validator<Object> {
         
         if (!StringUtils.isEmpty(dateInString)) {
             if (StringTools.hasSqlStripChars(dateInString).isEmpty()) {
-                try {
-                    ValidityDate.parseAsIso8601(dateInString);
-                } catch (ParseException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Validating ISO8601 date component with value '" + value + "' failed.");
-                    }        
-                    throw new ValidatorException(new FacesMessage("Incorrectly formatted or invalid date!"));
-                }            
+                if (ValidityDate.isRelativeTime(dateInString)) {
+                    if (!ValidityDate.isValidRelativeTime(dateInString)) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Validating relative date component with value '" + value + "' failed.");
+                        }
+                        throw new ValidatorException(new FacesMessage("Incorrectly formatted or invalid relative date"));
+                    }
+                } else {
+                    try {
+                        ValidityDate.parseAsIso8601(dateInString);
+                    } catch (ParseException e) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Validating ISO8601 date component with value '" + value + "' failed.");
+                        }
+                        throw new ValidatorException(new FacesMessage("Incorrectly formatted or invalid date"));
+                    }
+                }
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Date component contains offending SQL strip characters: '" + value + "'");

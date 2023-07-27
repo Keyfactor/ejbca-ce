@@ -20,8 +20,9 @@ import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Limited CA implementation containing necessary functionality for CA operations on external instances.

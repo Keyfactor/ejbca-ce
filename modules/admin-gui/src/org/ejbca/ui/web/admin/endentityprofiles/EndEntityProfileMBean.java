@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentityprofiles;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,13 +29,11 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.Part;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -50,8 +46,6 @@ import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrg
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -62,24 +56,24 @@ import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
-import org.ejbca.util.HttpTools;
-import org.ejbca.util.PrinterManager;
 import org.ejbca.util.mail.MailSender;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  *
  * JSF MBean backing end entity profile page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EndEntityProfileMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EndEntityProfileMBean.class);
 
     public static final String PARAMETER_PROFILE_ID = "id";
-    private static final int MAX_TEMPLATE_FILESIZE = 2*1024*1024;
-
+    
     /** Minimum and maximum options to show for password length restriction */
     private static final int PASSWORD_LIMIT_MIN = 4;
     private static final int PASSWORD_LIMIT_MAX = 16;
@@ -96,7 +90,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private final EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
     private EndEntityProfile profiledata;
     private List<UserNotification> userNotifications;
-    private String[] printerNames = null;
     private Integer profileId;
     private String profileName;
     private boolean viewOnly;
@@ -110,8 +103,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private List<NameComponentGuiWrapper> subjectAltNameComponentList;
     private List<NameComponentGuiWrapper> sshFieldList = null;
 
-    private Part templateFileUpload;
-
     public EndEntityProfileMBean() {
         super(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
     }
@@ -124,16 +115,19 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         private final String name;
         private final boolean emailField;
         private final boolean dnsField;
+        private final boolean upnField; // upn fields also needs to have email like format eg xxx@yyy
         /** Corresponds to the removal checkboxes on the left */
         private boolean shouldRemove = false;
         /** Stores the last used validation regex in case the user mis-clicks and wants to undo */
         private String lastUsedValidationString = "";
 
-        public NameComponentGuiWrapper(final String name, final int[] field, final boolean emailField, final boolean dnsField) {
+        public NameComponentGuiWrapper(final String name, final int[] field, final boolean emailField, 
+                final boolean dnsField, final boolean upnField) {
             this.name = name;
             this.field = field;
             this.emailField = emailField;
             this.dnsField = dnsField;
+            this.upnField = upnField;
             lastUsedValidationString = getValidationString();
         }
         
@@ -180,6 +174,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
         public boolean isDnsField() {
             return dnsField;
+        }
+        
+        public boolean isUpnField() {
+            return upnField;
         }
 
         public String getName() {
@@ -238,6 +236,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
         public boolean getUseEndEntityDns() {
             return dnsField && isCopy();
+        }
+        
+        public boolean getUseEndEntityUpn() {
+            return upnField && isCopy();
         }
 
         public boolean isRequired() {
@@ -634,7 +636,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
                 final boolean isEmailField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS);
-                components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField, false));
+                components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField, false, false));
             }
             subjectDnComponentList = components;
         }
@@ -651,7 +653,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
             for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(SshEndEntityProfileFields.getLanguageKey(field[EndEntityProfile.FIELDTYPE]));
-                principals.add(new NameComponentGuiWrapper(fieldName, field, false, false));
+                principals.add(new NameComponentGuiWrapper(fieldName, field, false, false, false));
             }
             sshFieldList = principals;
         }
@@ -696,6 +698,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
         }
         sshFieldList = null; // reload state from profile
+    }
+
+    public List<SelectItem> getSshVerifyRequiredOptions() {
+        final List<SelectItem> options = new ArrayList<>();
+        options.add(new SelectItem(true, ejbcaWebBean.getText("BOOL_TRUE")));
+        options.add(new SelectItem(false, ejbcaWebBean.getText("BOOL_FALSE")));
+        return options;
     }
 
     // OTHER SUBJECT ATTRIBUTES
@@ -755,7 +764,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
                 final boolean isEmailField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
                 final boolean isDnsField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
-                final NameComponentGuiWrapper guiWrapper = new NameComponentGuiWrapper(fieldName, field, isEmailField, isDnsField);
+                final boolean isUpnField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.UPN);
+                final NameComponentGuiWrapper guiWrapper = new NameComponentGuiWrapper(fieldName, field, isEmailField, isDnsField, isUpnField);
                 if (EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
                     guiWrapper.setHelpText(ejbcaWebBean.getText("ALT_MS_UPN_HELP"));
                 }
@@ -814,7 +824,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
             for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
-                components.add(new NameComponentGuiWrapper(fieldName, field, false, false));
+                components.add(new NameComponentGuiWrapper(fieldName, field, false, false, false));
             }
             subjectDirectoryAttributesComponentList = components;
         }
@@ -1224,118 +1234,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setSendNotificationRequired(isRequired);
     }
 
-    public boolean isUsePrintUserData() {
-        return profiledata.getUsePrinting();
-    }
-
-    public void setUsePrintUserData(boolean use) {
-        profiledata.setUsePrinting(use);
-    }
-
-    public boolean isPrintUserDataDefault() {
-        return profiledata.getPrintingDefault();
-    }
-
-    public void setPrintUserDataDefault(boolean printDefault) {
-        profiledata.setPrintingDefault(printDefault);
-    }
-
-    public boolean isPrintUserDataRequired() {
-        return profiledata.getPrintingRequired();
-    }
-
-    public void setPrintUserDataRequired(boolean printRequired) {
-        profiledata.setPrintingRequired(printRequired);
-    }
-
-    public List<SelectItem> getPrinters() {
-        if (printerNames == null) {
-            printerNames = PrinterManager.listPrinters();
-        }
-        final List<SelectItem> printersReturned = new ArrayList<>();
-        if (printerNames.length == 0) {
-            printersReturned.add(new SelectItem(null, ejbcaWebBean.getText("ERRORNOPRINTERFOUND")));
-        } else {
-            for (final String printerName : printerNames) {
-                printersReturned.add(new SelectItem(printerName, printerName));
-            }
-        }
-        return printersReturned;
-    }
-
-    public String getCurrentPrinter() {
-        return profiledata.getPrinterName();
-    }
-
-    public void setCurrentPrinter(final String printerName) {
-        profiledata.setPrinterName(StringUtils.defaultString(printerName));
-    }
-
-    public List<SelectItem> getNumberOfCopies() {
-        final List<SelectItem> numberOfCopiesReturned = new ArrayList<>();
-        for (int copyInt = 0; copyInt < 5; copyInt++) {
-            numberOfCopiesReturned.add(new SelectItem(copyInt, String.valueOf(copyInt)));
-        }
-        return numberOfCopiesReturned;
-    }
-
-    public int getCurrentNumberCopies() {
-        return profiledata.getPrintedCopies();
-    }
-
-    public void setCurrentNumberCopies(int numberOfCopies) {
-        profiledata.setPrintedCopies(numberOfCopies);
-    }
-
-    public String getCurrentTemplate() {
-        final String currentTemplate = profiledata.getPrinterSVGFileName();
-        if (StringUtils.isEmpty(currentTemplate)) {
-            return ejbcaWebBean.getText("NOTEMPLATEUPLOADED");
-        } else {
-            return currentTemplate;
-        }
-    }
-
-    public Part getTemplateFileUpload() {
-        return templateFileUpload;
-    }
-
-    public void setTemplateFileUpload(final Part templateFileUpload) {
-        this.templateFileUpload = templateFileUpload;
-    }
-
-    public void uploadTemplate() {
-        log.trace(">uploadTemplate");
-        if (templateFileUpload == null) {
-            log.debug("Template file was null");
-            addErrorMessage("YOUMUSTSELECT");
-            return;
-        }
-        byte[] contents = null;
-        if (templateFileUpload.getSize() > MAX_TEMPLATE_FILESIZE) {
-            addErrorMessage("TEMPLATEUPLOADFAILED");
-            return;
-        }
-        try {
-            contents = IOUtils.toByteArray(templateFileUpload.getInputStream(), templateFileUpload.getSize());
-        } catch (IOException e) {
-            log.info("Caught exception when trying to get template file upload", e);
-        }
-        final String filename = HttpTools.getUploadFilename(templateFileUpload);
-        if (contents == null || contents.length == 0 || StringUtils.isEmpty(filename)) {
-            log.info("No template file uploaded, or empty file.");
-            addErrorMessage("TEMPLATEUPLOADFAILED");
-            return;
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Uploaded template of " + contents.length + " bytes");
-        }
-        final String contentsString = new String(contents, StandardCharsets.UTF_8);
-        profiledata.setPrinterSVGData(contentsString);
-        profiledata.setPrinterSVGFileName(filename);
-        log.trace("<uploadTemplate");
-    }
-
     /**
      * Performs validation for fields that cannot be validated using JSF validators or required attributes.
      */
@@ -1346,11 +1244,18 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (profiledata.isEmailUsed() && !profiledata.isEmailModifiable() && StringUtils.isEmpty(profiledata.getEmailDomain())) {
             editerrors.add(ejbcaWebBean.getText("EMAILEMPTYNONMODIFIABLE"));
         }
+        
+        // Password strength
+        if (profiledata.useAutoGeneratedPasswd() && (profiledata.getAutoGenPwdStrength() < profiledata.getMinPwdStrength())) {
+            editerrors.add(ejbcaWebBean.getText("AUTOGENPWTOOWEAK"));
+        }
+        
         // Subject DN, SAN and Subject Directory Attributes
         validateNameComponents(getSubjectDnComponentList());
         validateNameComponents(getSubjectAltNameComponentList());
         validateNameComponents(getSubjectDirectoryAttributeComponentList());
         validateUseCnForDnsName(getSubjectAltNameComponentList(), getSubjectDnComponentList());
+        validateUpnCopy();
         
         // Ssh fields
         if(profiledata.isProfileTypeSsh()) {
@@ -1377,12 +1282,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (!ejbcaWebBean.getGlobalConfiguration().getEnableKeyRecovery()) {
             profiledata.setKeyRecoverableUsed(false);
             profiledata.setKeyRecoverableRequired(false);
-        }
-        // Printing
-        if (profiledata.getUsePrinting()) {
-            if (StringUtils.isEmpty(profiledata.getPrinterName())) {
-                editerrors.add(ejbcaWebBean.getText("MUSTSELECTPRINTER"));
-            }
         }
         // Validity time
         final String startTime = profiledata.getValidityStartTime();
@@ -1443,6 +1342,15 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP);
         }
         
+    }
+    
+    private void validateUpnCopy() {
+        for(int i=0; i<profiledata.getNumberOfField(DnComponents.UPN); i++) {
+            if(profiledata.getCopy(DnComponents.UPN, i) && profiledata.getValue(DnComponents.UPN, i).contains(";")) {
+                editerrors.add( "UPN with copy CN should not contain multiple possible values "
+                        + "separate by ';': " + profiledata.getValue(DnComponents.UPN, i));
+            }
+        }
     }
 
     private void validateNameComponents(final List<NameComponentGuiWrapper> list) {
@@ -1538,10 +1446,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (!profiledata.isSendNotificationUsed()) {
             profiledata.setSendNotificationRequired(false);
             profiledata.setSendNotificationDefault(false);
-        }
-        if (!profiledata.getUsePrinting()) {
-            profiledata.setPrintingRequired(false);
-            profiledata.setPrintingDefault(false);
         }
     }
 

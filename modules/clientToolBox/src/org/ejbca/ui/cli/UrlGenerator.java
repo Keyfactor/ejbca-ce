@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cesecore.util.CertTools;
+import com.keyfactor.util.CertTools;
 
 /**
  * Generate URLs for URL rewriting given a set of issuers.

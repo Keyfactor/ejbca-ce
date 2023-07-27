@@ -22,11 +22,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
+import org.cesecore.keys.util.CvcKeyTools;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -41,6 +37,12 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.keys.KeyTools;
 
 
 /**
@@ -161,7 +163,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 						// Test to verify it yourself first
 						if (authCert != null) {
 							getPrintStream().println("Verifying the request before sending it...");
-							PublicKey pk = KeyTools.getECPublicKeyWithParams(authCert.getCertificateBody().getPublicKey(), keySpec);
+							PublicKey pk = CvcKeyTools.getECPublicKeyWithParams(authCert.getCertificateBody().getPublicKey(), keySpec);
 							authRequest.verify(pk);							
 						}
 						der = authRequest.getDEREncoded();						

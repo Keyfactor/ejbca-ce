@@ -30,7 +30,6 @@ import org.cesecore.certificates.certificatetransparency.CertificateTransparency
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
@@ -43,6 +42,8 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Session bean for clearing all caches of the local EJBCA instance.

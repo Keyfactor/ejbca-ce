@@ -24,11 +24,11 @@ import javax.xml.datatype.XMLGregorianCalendar;
 /**
  * Deprecated class, kept for web service compatibility. It was used for Hard Tokens, which is a removed feature.
  * @deprecated
- * @version $Id$
  */
 @Deprecated
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "hardTokenDataWS", propOrder = {
+@XmlType(name = "hardTokenDataWS", 
+    propOrder = {
     "certificates",
     "copies",
     "copyOfSN",

@@ -25,9 +25,11 @@ import java.util.List;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Holder for a modified Pkcs10RequestMessage
@@ -104,6 +106,10 @@ public class Pkcs10RequestDnAdapter implements RequestMessage {
 			NoSuchAlgorithmException, NoSuchProviderException {
 		return this.original.getRequestPublicKey();
 	}
+    @Override
+    public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
+        return this.original.getRequestSubjectPublicKeyInfo();
+    }
 	@Override
 	public boolean verify() throws InvalidKeyException,
 			NoSuchAlgorithmException, NoSuchProviderException {

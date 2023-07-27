@@ -35,8 +35,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
 import org.ejbca.ui.web.rest.api.io.request.Pagination;
@@ -44,6 +42,9 @@ import org.ejbca.ui.web.rest.api.io.request.PaginationSummary;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 /**
  * A unit test class for SearchCertificatesRestResponseV2 conversion.
@@ -187,6 +188,48 @@ public class SearchCertificatesRestResponseV2UnitTest {
             assertArrayEquals("Certificate does not match.", Base64.encode(certificate.getEncoded()), payload.getCertificate());
             assertEquals("Username does not match.", username, payload.getUsername());
         }
+    }
+
+    @Test
+    public void testMergeSearchResponsesWithSuccessStatus() {
+        final RaCertificateSearchResponseV2 search1 = new RaCertificateSearchResponseV2();
+        search1.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
+        final RaCertificateSearchResponseV2 search2 = new RaCertificateSearchResponseV2();
+        search2.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
+        search1.merge(search2);
+        assertEquals("After merging status should still be SUCCESS", search1.getStatus(), search2.getStatus());
+    }
+
+    @Test
+    public void testMergeSearchResponsesWithError() {
+        final RaCertificateSearchResponseV2 search1 = new RaCertificateSearchResponseV2();
+        search1.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
+        final RaCertificateSearchResponseV2 search2 = new RaCertificateSearchResponseV2();
+        search2.setStatus(RaCertificateSearchResponseV2.Status.ERROR);
+        search1.merge(search2);
+        assertEquals("After merging status should be ERROR", search1.getStatus(), RaCertificateSearchResponseV2.Status.ERROR);
+        final RaCertificateSearchResponseV2 search3 = new RaCertificateSearchResponseV2();
+        search3.setStatus(RaCertificateSearchResponseV2.Status.ERROR);
+        final RaCertificateSearchResponseV2 search4 = new RaCertificateSearchResponseV2();
+        search4.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
+        search3.merge(search4);
+        assertEquals("After merging status should be ERROR", search3.getStatus(), RaCertificateSearchResponseV2.Status.ERROR);
+    }
+
+    @Test
+    public void testMergeSearchResponsesWithTimeout() {
+        final RaCertificateSearchResponseV2 search1 = new RaCertificateSearchResponseV2();
+        search1.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
+        final RaCertificateSearchResponseV2 search2 = new RaCertificateSearchResponseV2();
+        search2.setStatus(RaCertificateSearchResponseV2.Status.TIMEOUT);
+        search1.merge(search2);
+        assertEquals("After merging status should be ERROR", search1.getStatus(), RaCertificateSearchResponseV2.Status.TIMEOUT);
+        final RaCertificateSearchResponseV2 search3 = new RaCertificateSearchResponseV2();
+        search3.setStatus(RaCertificateSearchResponseV2.Status.TIMEOUT);
+        final RaCertificateSearchResponseV2 search4 = new RaCertificateSearchResponseV2();
+        search4.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
+        search3.merge(search4);
+        assertEquals("After merging status should be ERROR", search3.getStatus(), RaCertificateSearchResponseV2.Status.TIMEOUT);
     }
 
 }

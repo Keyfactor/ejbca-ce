@@ -71,7 +71,6 @@ import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSession;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
-import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -154,7 +153,6 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public CrlStoreSessionLocal getCrlStoreSession() { return getEjbLocal().getCrlStoreSession(); }
     @Override public EjbcaAuditorSessionLocal getEjbcaAuditorSession() { return getEjbLocal().getEjbcaAuditorSession(); }
     @Override public EjbcaRestHelperSessionLocal getEjbcaRestHelperSession() { return getEjbLocal().getEjbcaRestHelperSession(); }
-    @Override public EjbcaWSHelperSessionLocal getEjbcaWSHelperSession() { return getEjbLocal().getEjbcaWSHelperSession(); }
 	@Override public EndEntityAccessSessionLocal getEndEntityAccessSession() { return getEjbLocal().getEndEntityAccessSession(); }
 	@Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return getEjbLocal().getEndEntityAuthenticationSession(); }
 	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return getEjbLocal().getEndEntityProfileSession(); }

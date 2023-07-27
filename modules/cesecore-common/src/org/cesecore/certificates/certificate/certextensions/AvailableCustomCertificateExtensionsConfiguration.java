@@ -78,7 +78,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             final boolean required, Properties properties) throws CertificateExtentionConfigurationException {
         try {
             Class<?> implClass = Class.forName(classPath);
-            CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();
+            CertificateExtension certificateExtension = (CertificateExtension) implClass.getDeclaredConstructor().newInstance();
             certificateExtension.init(id, oid.trim(), displayName, critical, required, properties);
             data.put(id, certificateExtension);
         } catch (ReflectiveOperationException e) {
@@ -199,7 +199,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             if(used){
                 if(oid != null && classPath != null && displayName != null){
                     Class<?> implClass = Class.forName(classPath);
-                    CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();
+                    CertificateExtension certificateExtension = (CertificateExtension) implClass.getDeclaredConstructor().newInstance();
                     Properties extensionProperties = getExtensionProperties(id, propertiesInFile);
                     if(translatable) {
                         extensionProperties.put("translatable", true);

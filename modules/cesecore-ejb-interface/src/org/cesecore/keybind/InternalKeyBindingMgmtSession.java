@@ -22,8 +22,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Generic Management interface for InternalKeyBinding.

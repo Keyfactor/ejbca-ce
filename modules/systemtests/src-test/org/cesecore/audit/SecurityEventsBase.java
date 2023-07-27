@@ -17,11 +17,12 @@ import java.util.Properties;
 
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authorization.control.AuditLogRules;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.junit.After;
 import org.junit.Before;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * 
