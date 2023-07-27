@@ -21,13 +21,13 @@ import java.util.Locale;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,7 +40,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * Together with preferrences.xhtml it is used to produce the Preferences menu in RA web GUI.
  */
 @SuppressWarnings("rawtypes") // we can't parameterize this class - it confuses Weld 3.0.
-@ManagedBean
+@Named
 @ViewScoped
 public class RaPreferencesBean implements Converter, Serializable {
 
@@ -51,14 +51,14 @@ public class RaPreferencesBean implements Converter, Serializable {
     @EJB
     private AdminPreferenceSessionLocal adminPreferenceSession;
 
-    @ManagedProperty(value = "#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
 
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
         this.raLocaleBean = raLocaleBean;
     }
 
-    @ManagedProperty(value = "#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
 
     public void setRaAuthenticationBean(RaAuthenticationBean raAuthenticationBean) {

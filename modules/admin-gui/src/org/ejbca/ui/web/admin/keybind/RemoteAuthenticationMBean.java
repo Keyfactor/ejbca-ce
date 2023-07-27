@@ -19,8 +19,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -33,14 +35,17 @@ import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  *
  */
+@Named("remoteAuthenticationMBean")
+@SessionScoped
 public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
 
     private static final long serialVersionUID = 1L;
@@ -147,6 +152,11 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
                 }
             }
             internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData());
+            final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties =
+                    (List<DynamicUiProperty<? extends Serializable>>) getInternalKeyBindingPropertyList().getWrappedData();
+            for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
+                internalKeyBinding.setProperty(property.getName(), property.getValue());
+            }
 
             setCurrentInternalKeybindingId(
                     String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding)));

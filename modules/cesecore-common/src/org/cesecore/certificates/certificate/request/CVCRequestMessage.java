@@ -28,8 +28,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.cesecore.util.CertTools;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -38,6 +38,8 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
+
+import com.keyfactor.util.CertTools;
 
 
 /**
@@ -133,6 +135,10 @@ public class CVCRequestMessage implements RequestMessage {
 			throw new InvalidKeyException(e);
 		}
         return pk;
+    }
+    @Override
+    public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
+        return null;
     }
 
     @Override

@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -42,8 +43,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.CaTestUtils;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -78,10 +77,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.EccKeyValidator;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorSessionRemote;
@@ -89,9 +85,6 @@ import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
 import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -102,6 +95,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Tests creating certificate with extended key usage.
@@ -1107,7 +1110,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             //Fourth certificate. Should be revoked but on hold. 
             responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
-            internalCertStoreSession.setRevokeStatus(alwaysAllowToken, responseMessage.getCertificate(), new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            internalCertStoreSession.setRevokeStatus(alwaysAllowToken, responseMessage.getCertificate(), new Date(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             onhold = CertTools.getSerialNumber(responseMessage.getCertificate());
             
             //Update the profile with the new constraint
@@ -1233,7 +1236,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 assertTrue("Should not create new certificate for this user with the same key", false);
             } catch (CesecoreException e) {
                 assertEquals("User 'enforceKeyRenewalTestUser' is not allowed to use same key as another certificate is using.", e.getMessage());
-                assertEquals(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS, e.getErrorCode());
+                assertEquals(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS, e.getErrorCode());
             }
         } finally {
             // Configure the CA as it was before the test
@@ -1245,8 +1248,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         }
     }
 
-    private Validator createKeyValidator(Class<? extends Validator> type, final String name, final String description) throws InstantiationException, IllegalAccessException {
-        Validator result = type.newInstance();
+    private Validator createKeyValidator(Class<? extends Validator> type, final String name, final String description) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        Validator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);

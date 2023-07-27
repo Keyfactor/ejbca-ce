@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.ca.publisher.custpubl1;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPEntry;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -29,8 +31,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

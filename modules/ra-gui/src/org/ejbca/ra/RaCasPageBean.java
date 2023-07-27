@@ -25,9 +25,9 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
@@ -35,21 +35,23 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Backing bean for Certificate and CRLs download page.
  *
- * @version $Id$
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaCasPageBean implements Serializable {
 
     /** Representation of a CA in a chain with links to CRL download locations. */
-    public class CaAndCrl {
+    public class CaAndCrl implements Serializable {
+        private static final long serialVersionUID = 3589243870801789694L;
+
         private final String name;
         private final String subjectDn;
         private final int caId;
@@ -58,13 +60,16 @@ public class RaCasPageBean implements Serializable {
         private final int position;
         private final List<String> chainNames;
         private boolean x509 = false;
+        private final boolean sshType;
 
-        CaAndCrl(final String name, final String subjectDn, final int caId, final int position, final List<String> chainNames) {
+        CaAndCrl(final String name, final String subjectDn, final int caId, final int position, final List<String> chainNames,
+                final boolean sshType) {
             this.name = name;
             this.subjectDn = subjectDn;
             this.caId = caId;
             this.position = position;
             this.chainNames = chainNames;
+            this.sshType = sshType;
             crlLinks = new ArrayList<>();
         }
 
@@ -75,6 +80,7 @@ public class RaCasPageBean implements Serializable {
         public String getDeltaCrlLink() { return deltaCrlLink; }
         public int getPosition() { return position; }
         public boolean isX509() { return x509; }
+        public boolean isSsh() { return sshType; }
         public boolean isPartitionedCrl() { 
             return crlLinks.size() > 1;
         }
@@ -91,6 +97,10 @@ public class RaCasPageBean implements Serializable {
             } else {
                 return subjectDn;
             }
+        }
+
+        public final String getSshPublicKeyDownloadLink() {
+            return "/ejbca/ssh?name=" + name;
         }
     }
 
@@ -121,13 +131,9 @@ public class RaCasPageBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
-
-    @ManagedProperty(value="#{raLocaleBean}")
-    private RaLocaleBean raLocaleBean;
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
     private List<CaAndCrl> casAndCrlItems = null;
     private boolean atLeastOneCrlLinkPresent = false;
@@ -154,6 +160,7 @@ public class RaCasPageBean implements Serializable {
                 Collections.reverse(chain);
                 final List<String> chainNames = new ArrayList<>();
                 final int caId = caInfo.getCAId();
+                final boolean sshType = caInfo.getCAType() == CAInfo.CATYPE_SSH ? true : false;
                 for (final Certificate caCertificate : chain) {
                     final String subjectDn = CertTools.getSubjectDN(caCertificate);
                     String name = caSubjectToNameMap.get(subjectDn);
@@ -161,13 +168,14 @@ public class RaCasPageBean implements Serializable {
                         name = subjectDn;
                     }
                     chainNames.add(name);
-                    final CaAndCrl caAndCrl = new CaAndCrl(name, subjectDn, chainNames.size()==chain.size()?caId:NO_CAID_AVAILABLE, chainNames.size()-1, new ArrayList<>(chainNames));
+                    final CaAndCrl caAndCrl = new CaAndCrl(name, subjectDn, chainNames.size()==chain.size()?caId:NO_CAID_AVAILABLE,
+                            chainNames.size()-1, new ArrayList<>(chainNames), sshType);
                     // Construct links to RFC4387 CRL Download Servlet
                     if (caCertificate instanceof X509Certificate) {
                         caAndCrl.x509 = true;
                         final int numberOfPartitions = caInfo.getAllCrlPartitionIndexes() == null ? 1 : caInfo.getAllCrlPartitionIndexes().getMaximumInteger();
                         for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
-                            final CRLInfo currentCrlInfo = crlSession.getLastCRLInfo(subjectDn, currentPartitionIndex, false);
+                            final CRLInfo currentCrlInfo = crlSession.getLastCRLInfoLightWeight(subjectDn, currentPartitionIndex, false);
                             if (currentCrlInfo != null) {
                                 atLeastOneCrlLinkPresent = true;
                                 String crlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64(((X509Certificate)caCertificate)); 
@@ -178,7 +186,7 @@ public class RaCasPageBean implements Serializable {
                             }
                         }
 
-                        final CRLInfo crlInfoDelta = crlSession.getLastCRLInfo(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
+                        final CRLInfo crlInfoDelta = crlSession.getLastCRLInfoLightWeight(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
                         if (crlInfoDelta!=null) {
                             caAndCrl.deltaCrlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate) + "&delta=";
                         }

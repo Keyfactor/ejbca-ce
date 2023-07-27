@@ -24,12 +24,13 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.util.KeyPairWrapper;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.keys.KeyPairWrapper;
 
 /**
  */

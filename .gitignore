@@ -1,7 +1,8 @@
 out/
 /p12/
 dist/
-build*/
+build/
+build-*/
 tmp/
 conf/*.properties
 velocity.log
@@ -12,3 +13,6 @@ modules/ra-gui/resources/js/jquery.min.js
 /.DS_Store
 .vscode/
 /.tern-project
+*.iml
+.project
+/.idea

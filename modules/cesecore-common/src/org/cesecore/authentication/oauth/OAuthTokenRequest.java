@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import com.keyfactor.util.FileTools;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -49,7 +50,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.log4j.Logger;
-import org.cesecore.util.FileTools;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -217,6 +217,7 @@ public class OAuthTokenRequest {
                 final JSONObject json = (JSONObject) parser.parse(new String(responseBytes, StandardCharsets.UTF_8));
                 final OAuthGrantResponseInfo token = new OAuthGrantResponseInfo();
                 token.setAccessToken((String) json.get("access_token"));
+                token.setIdToken((String) json.get("id_token"));
                 token.setTokenType((String) json.get("token_type"));
                 if (json.containsKey("expires_in")) {
                     token.setExpiresIn(((Number) json.get("expires_in")).longValue());
@@ -265,7 +266,7 @@ public class OAuthTokenRequest {
 
         try {
             JWSHeader.Builder builder = new Builder(JWSAlgorithm.RS256);
-            List<com.nimbusds.jose.util.Base64> certs = new ArrayList<com.nimbusds.jose.util.Base64>();
+            List<com.nimbusds.jose.util.Base64> certs = new ArrayList<>();
             certs.add(new com.nimbusds.jose.util.Base64(java.util.Base64.getEncoder().encodeToString(certificate.getEncoded())));
             builder.x509CertChain(certs);
             String certHash = java.util.Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1").digest(certificate.getEncoded()));

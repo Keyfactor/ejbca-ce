@@ -12,10 +12,12 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ra;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -30,13 +32,8 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -48,6 +45,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -58,6 +61,8 @@ public class RevokeCertificateCommandTest {
 
     private static final String TESTCLASS_NAME = KeyRecoveryNewestCommandTest.class.getSimpleName();
     private static final String END_ENTITY_SUBJECT_DN = "C=SE, O=PrimeKey, CN=" + TESTCLASS_NAME;
+
+    private static final Logger log = Logger.getLogger(RevokeCertificateCommandTest.class);
 
     private RevokeCertificateCommand command = new RevokeCertificateCommand();
 
@@ -77,7 +82,8 @@ public class RevokeCertificateCommandTest {
 
     private static X509CA x509ca = null;
 
-    private String serialNumber;
+    private String serialNumberHex;
+    private String serialNumberDec;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -101,8 +107,10 @@ public class RevokeCertificateCommandTest {
         endEntityManagementSession.addUser(authenticationToken, userdata, false);
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), userdata.getUsername(), userdata.getPassword());
-        serialNumber = CertTools.getSerialNumberAsString(certificateCreateSession.createCertificate(authenticationToken, userdata, req,
+        serialNumberHex = CertTools.getSerialNumberAsString(certificateCreateSession.createCertificate(authenticationToken, userdata, req,
                 X509ResponseMessage.class, signSession.fetchCertGenParams()).getCertificate());
+        serialNumberDec = CertTools.getSerialNumberAsString(certificateCreateSession.createCertificate(authenticationToken, userdata, req,
+            X509ResponseMessage.class, signSession.fetchCertGenParams()).getCertificate());
         if (null == endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME)) {
             throw new RuntimeException("Could not create end entity.");
         }
@@ -119,10 +127,18 @@ public class RevokeCertificateCommandTest {
     }
 
     @Test
-    public void testRevokeCertificate() {
-        final String args[] = new String[] { x509ca.getSubjectDN(), serialNumber, "0" };
+    public void testRevokeCertificateHex() {
+        final String args[] = new String[] { x509ca.getSubjectDN(), serialNumberHex, "0" };
         command.execute(args);
         assertTrue("Certificate was not revoked.",
-                certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumberFromString(serialNumber)));
+                certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumberFromString(serialNumberHex)));
+    }
+
+    @Test
+    public void testRevokeCertificateDecimal() {
+        final String args[] = new String[] { x509ca.getSubjectDN(), serialNumberDec, "0" };
+        command.execute(args);
+        assertTrue("Certificate was not revoked.",
+            certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumberFromString(serialNumberDec)));
     }
 }

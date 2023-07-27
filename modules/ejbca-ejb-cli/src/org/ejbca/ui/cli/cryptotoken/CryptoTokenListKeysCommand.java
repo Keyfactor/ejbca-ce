@@ -17,11 +17,12 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.

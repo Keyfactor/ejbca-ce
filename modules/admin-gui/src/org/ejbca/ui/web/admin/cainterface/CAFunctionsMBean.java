@@ -28,13 +28,14 @@ import java.util.List;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
@@ -48,19 +49,20 @@ import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -76,9 +78,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private PublishingCrlSessionLocal publishingCrlSession;
 
     private final GlobalConfiguration globalConfiguration;
-    List<CAGuiInfo> caGuiInfos = null;
-    private UploadedFile uploadFile;
-    List<String> extCaNameList;
+    private List<CAGuiInfo> caGuiInfos = null;
+    private transient Part uploadFile;
+    private final List<String> extCaNameList;
     private String crlImportCaName;
 
     public CAFunctionsMBean() {
@@ -89,7 +91,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     /** GUI representation of a CA for the CA Structure page */
-    public class CAGuiInfo {
+    public class CAGuiInfo implements Serializable {
+        private static final long serialVersionUID = -555096060949439122L;
+
         private final String name;
         private final int caId;
         private final String subjectdn;
@@ -251,7 +255,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
-        final TreeMap<String, Integer> caNames = getEjbcaWebBean().getCANames();
+        final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
         final List<String> caNameList = new ArrayList<>(caNames.keySet());
         caNameList.sort(String::compareToIgnoreCase);
         for (final String caName : caNameList) {
@@ -265,19 +269,19 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             if (cainfo instanceof X509CAInfo) {
                 final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null ? 1 : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
                 for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
-                    final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
+                    final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
                     if (currentCrlInfo != null) {
                         crlInfos.add(new CRLGuiInfo(currentCrlInfo));
                     }
                 }
             } else {
-                final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+                final CRLInfo crlinfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
                 if (crlinfo != null) {
                     crlInfos.add(new CRLGuiInfo(crlinfo));
                 }
             }
 
-            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
+            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
             final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), 
                     cainfo.getCAType()!=CAInfo.CATYPE_PROXY ? cainfo.getCertificateChain() : null, 
@@ -323,7 +327,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("No CRL file uploaded");
             return;
         }
-        final byte[] bytes = uploadFile.getBytes();
+        
+        final byte[] bytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
+
         if (bytes == null || bytes.length == 0) {
             addNonTranslatedErrorMessage("No CRL file uploaded, or file is empty");
             return;
@@ -390,11 +396,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         this.crlImportCaName = crlImportCaName;
     }
 
-    public UploadedFile getUploadFile() {
+    public Part getUploadFile() {
         return uploadFile;
     }
 
-    public void setUploadFile(final UploadedFile uploadFile) {
+    public void setUploadFile(final Part uploadFile) {
         this.uploadFile = uploadFile;
     }
 

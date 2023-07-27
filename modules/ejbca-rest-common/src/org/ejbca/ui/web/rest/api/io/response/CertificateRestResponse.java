@@ -13,8 +13,10 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.keyfactor.util.CertTools;
+
 import io.swagger.annotations.ApiModelProperty;
-import org.cesecore.util.CertTools;
+
 import org.ejbca.core.model.SecConst;
 
 import java.security.cert.Certificate;
@@ -33,7 +35,7 @@ public class CertificateRestResponse {
     private String serialNumber;
     @ApiModelProperty(value = "Response format", example = "DER")
     private String responseFormat;
-    @ApiModelProperty(value = "Certificate chain", example = "[ “ABC123efg...345xyz0=“ ]")
+    @ApiModelProperty(value = "Certificate chain", example = "[\"ABC123efg...345xyz0=\"]")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<byte[]> certificateChain;
     @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")

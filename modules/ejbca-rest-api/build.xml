@@ -25,18 +25,18 @@
         <path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
-        <path refid="lib.json-smart.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.swagger.classpath"/>
 		<path refid="lib.jackson2.classpath"/>
         <path refid="lib.jboss-logging.classpath"/>
-        <path refid="lib.commons-fileupload.classpath"/>
+        <path refid="lib.commons-fileupload.classpath"/><!-- only for FileUploadException -->
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
         <path location="${mod.ejbca-rest-common.lib}"/>
         <path location="${mod.ejbca-rest-certificate.lib}"/>
+		<path location="${mod.ejbca-rest-coap.lib}"/>
         <path location="${mod.ejbca-rest-configdump.lib}"/>
         <path location="${mod.ejbca-rest-ca.lib}"/>
         <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
@@ -44,6 +44,7 @@
         <path location="${mod.ejbca-rest-endentity.lib}"/>
 		<path location="${mod.ejbca-rest-ssh.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
+		<path refid="lib.ldap.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -51,7 +52,7 @@
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path location="${ejbca-rest-api.build.dir}/WEB-INF/classes"/>
-		<path location="${mod.p11ng.lib}" />
+		<path refid="lib.p11ng.classpath" />
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-interfaces.jar"/>
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-common.jar"/>
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-ejb.jar"/>
@@ -59,6 +60,8 @@
 		<path refid="lib.easymock.classpath"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
+		<path refid="lib.hibernate.validator"/>
+		<path refid="lib.test.powermock.classpath"/>
 	</path>
 
 	<path id="test.classpath">
@@ -74,10 +77,16 @@
     </target>
 
     <target name="build" description="Build this module" depends="compile">
+
+		<copy file="${ejbca-rest-api.resources.dir}/WEB-INF/ValidationMessages.properties" tofile="${ejbca-rest-api.build.dir}/WEB-INF/classes/ValidationMessages.properties"/>
+		<copy file="${ejbca-rest-api.resources.dir}/META-INF/validation.xml" tofile="${ejbca-rest-api.build.dir}/META-INF/validation.xml"/>
+		<copy file="${ejbca-rest-api.resources.dir}/META-INF/validation-mapping.xml" tofile="${ejbca-rest-api.build.dir}/META-INF/validation-mapping.xml"/>
+
 		<war destfile="${mod.ejbca-rest-api.war}" webxml="${ejbca-rest-api.resources.dir}/WEB-INF/web.xml" basedir="${ejbca-rest-api.build.dir}">
             <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
 			<lib file="${mod.ejbca-rest-common.lib}"/>
 			<lib file="${mod.ejbca-rest-certificate.lib}"/>
+			<lib file="${mod.ejbca-rest-coap.lib}"/>
 			<lib file="${mod.ejbca-rest-configdump.lib}"/>
 			<lib file="${mod.ejbca-rest-ca.lib}"/>
 			<lib file="${mod.ejbca-rest-cryptotoken.lib}"/>
@@ -90,7 +99,7 @@
 	<target name="compile" depends="setup">
         <javac srcdir="${ejbca-rest-api.src.dir}" destdir="${ejbca-rest-api.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
-    </target>
+	</target>
 
 	<target name="setup">
 		<mkdir dir="${ejbca-rest-api.build.dir}/WEB-INF/classes"/>

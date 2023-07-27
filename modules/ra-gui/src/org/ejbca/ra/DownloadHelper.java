@@ -18,7 +18,7 @@ import java.io.OutputStream;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 
-import org.cesecore.util.StringTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Helper function for sending downloads to the client.

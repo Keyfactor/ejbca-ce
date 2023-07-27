@@ -52,9 +52,10 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.LookAheadObjectInputStream;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Entity Bean for database persisted configurations
@@ -165,7 +166,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
         try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(getDataUnsafe()));) {
             laois.setEnabledMaxObjects(false);
             laois.setAcceptedClasses(ACCEPTED_SERIALIZATION_CLASSES_SET);
-            laois.setEnabledSubclassing(true, "org.cesecore", "org.ejbca");
+            laois.setEnabledSubclassing(true, "org.cesecore", "org.ejbca", "com.keyfactor");
             return (Serializable) laois.readObject();
         } catch (IOException e) {
             log.error("Failed to load Global Configuration as byte[].", e);

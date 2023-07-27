@@ -51,13 +51,9 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.Role;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.easymock.EasyMock;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -70,6 +66,11 @@ import org.ejbca.util.HttpTools;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  *
@@ -113,6 +114,7 @@ public final class EjbcaWebBeanImplUnitTest {
     private boolean alreadyFetchedOauthConfig;
     private String bearerToken;
     private String bearerTokenFingerprint;
+    private String idToken;
     
     
     @BeforeClass
@@ -143,6 +145,7 @@ public final class EjbcaWebBeanImplUnitTest {
         alreadyFetchedOauthConfig = false;
         setClientCertNumber(1);
         setBearerTokenNumber(1);
+        idToken = null;
         dummyOAuthConfig = new OAuthConfiguration();
     }
     
@@ -177,25 +180,35 @@ public final class EjbcaWebBeanImplUnitTest {
         expect(mockedRequest.getServerName()).andReturn(MOCKED_SERVER_NAME);
         expect(mockedRequest.getRemoteAddr()).andReturn(MOCKED_REMOTE_ADDR);
     }
-    
+
+    private void expectAccessTokenCheckAndReturn(final String encodedToken) {
+        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
+        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
+        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(encodedToken);
+    }
+
+    private void expectIdTokenCheckAndReturn(final String encodedToken) {
+        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
+        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
+        expect(mockedSession.getAttribute("ejbca.id.token")).andReturn(encodedToken);
+    }
+
     private void expectExtractCertificate() {
         expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(new X509Certificate[] { adminCert });
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(null);
+        expectAccessTokenCheckAndReturn(null);
+        expectIdTokenCheckAndReturn(null);
     }
-    
+
     private void expectExtractBearerToken() {
         expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(bearerToken);
+        expectAccessTokenCheckAndReturn(bearerToken);
+        expectIdTokenCheckAndReturn(idToken);
     }
-    
+
     @SuppressWarnings("unchecked")
     private void expectCertAuthWithoutRole() {
         mockedAuthToken = EasyMock.createStrictMock(X509CertificateAuthenticationToken.class);
@@ -233,7 +246,7 @@ public final class EjbcaWebBeanImplUnitTest {
             expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
             alreadyFetchedOauthConfig = true;
         }
-        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken))).andReturn(oauthToken);
+        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken), eq(idToken))).andReturn(oauthToken);
         expect(oauthToken.getProviderLabel()).andReturn(OAUTH_PROVIDER_NAME).anyTimes();
         expect(ejbs.getRoleSession().getRolesAuthenticationTokenIsMemberOf(oauthToken)).andReturn(ADMIN_ROLES);
         ejbs.getSecurityEventsLoggerSession().log(same(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN), same(EventStatus.SUCCESS), same(EjbcaModuleTypes.ADMINWEB), 
@@ -281,9 +294,8 @@ public final class EjbcaWebBeanImplUnitTest {
         expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(null);
+        expectAccessTokenCheckAndReturn(null);
+        expectIdTokenCheckAndReturn(null);
         expectRequestGetters();
         expectErrorPageInitiaization(true);
         replayAll();
@@ -319,7 +331,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectExtractBearerToken();
         expectRequestGetters();
         expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
-        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken))).andReturn(null);
+        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken), isNull())).andReturn(null);
         expectErrorPageInitiaization(true);
         replayAll();
         try {
@@ -412,15 +424,29 @@ public final class EjbcaWebBeanImplUnitTest {
         assertNull("Certificate fingerprint should be null", ejbcaWebBean.getCertificateFingerprint());
         assertEquals("Admin should have an authentication token", mockedAuthToken, ejbcaWebBean.getAdminObject());
     }
-    
+
+    /** Tests successful authentication without client certificate but with OAuth2 token with an ID token */
+    @Test
+    public void oauthIdToken() throws Exception {
+        idToken = "dummy id token";
+        expectExtractBearerToken();
+        expectRequestGetters();
+        expectSuccessfulBearerTokenAuth();
+        expectSuccessfulAuthInitialization(true);
+        replayAll();
+        ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
+        verifyAll();
+        assertNull("Certificate fingerprint should be null", ejbcaWebBean.getCertificateFingerprint());
+        assertEquals("Admin should have an authentication token", mockedAuthToken, ejbcaWebBean.getAdminObject());
+    }
+
     @Test
     public void certWithoutRoleButAuthorizedBearerToken() throws Exception {
         expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(new X509Certificate[] { adminCert });
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
-        expect(mockedRequest.getHeader(HttpTools.AUTHORIZATION_HEADER)).andReturn(null);
-        expect(mockedRequest.getSession(true)).andReturn(mockedSession);
-        expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(bearerToken);
+        expectAccessTokenCheckAndReturn(bearerToken);
+        expectIdTokenCheckAndReturn(null);
         expectRequestGetters();
         // First, EJBCA tries to authenticate with client cert 
         expectCertAuthWithoutRole();

@@ -16,11 +16,14 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMeta
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.roles.member.RoleMember;
 
+import java.io.Serializable;
+
 /**
  * @version $Id$
  */
-public final class RaRoleMemberGUIInfo {
-    
+public final class RaRoleMemberGUIInfo implements Serializable {
+    private static final long serialVersionUID = -2750018121395209815L;
+
     public final RoleMember roleMember;
     public final String caName;
     public final String providerLabel;

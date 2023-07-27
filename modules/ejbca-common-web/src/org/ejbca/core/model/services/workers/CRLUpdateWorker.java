@@ -20,13 +20,14 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
@@ -35,6 +36,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.collections4.SetUtils;
 
 /**
  * Class managing the updating of CRLs. Loops through the list of CAs to check and generates CRLs and deltaCRLs if needed.
@@ -46,7 +50,7 @@ public class CRLUpdateWorker extends BaseWorker {
     /** Semaphore that tries to make sure that this CRL creation job does not run several times on the same machine.
      * Since CRL generation can sometimes take a lot of time, this is needed.
      */
-	private static boolean running = false;
+    private static Set<Integer> lockedCas = ConcurrentHashMap.newKeySet();
 
     /**
      * <p>Check if the {@link CRLUpdateWorker} can run on this node.
@@ -76,8 +80,12 @@ public class CRLUpdateWorker extends BaseWorker {
                 cryptoTokenSession.testKeyPair(getAdmin(),
                         caInfo.getCAToken().getCryptoTokenId(),
                         caInfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
-            } catch (CryptoTokenOfflineException | AuthorizationDeniedException | InvalidKeyException e) {
+            } catch (AuthorizationDeniedException | InvalidKeyException e) {
                 throw new ServiceExecutionFailedException(e);
+            } catch (CryptoTokenOfflineException e) {
+                // handled gracefully in publishCrlSessionBean
+                log.warn("Crytotoken is offline for CA with CA id " + caId + ".");
+                continue;
             }
         }
     }
@@ -96,20 +104,19 @@ public class CRLUpdateWorker extends BaseWorker {
         // A semaphore used to not run parallel CRL generation jobs if it is slow in generating CRLs, and this job runs very often
         Set<Integer> updatedCas = new HashSet<>();
         Set<Integer> updatedCasDelta = new HashSet<>();
-		if (!running) {
-			try {
-				running = true;
-			    long polltime = getNextInterval();
-			    // Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
-			    // selecting CAs did not exist, no CA = Any CA.
-			    Collection<Integer> caids = getAllCAIdsToCheck(caSession, true);
-			    updatedCas.addAll(publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000));
-			    updatedCasDelta.addAll(publishingCrlSession.createDeltaCRLs(getAdmin(), caids, polltime*1000));
-			} catch (AuthorizationDeniedException e) {
-			    log.error("Internal authentication token was denied access to importing CRLs or revoking certificates.", e);
-			} finally {
-				running = false;
-			}	
+        Set<Integer> caids = new HashSet<>(getAllCAIdsToCheck(caSession, true));
+        if (lock(caids)) {
+            try {
+                long polltime = getNextInterval();
+                // Use true here so the service works the same as before upgrade from 3.9.0 when this function of
+                // selecting CAs did not exist, no CA = Any CA.
+                updatedCas.addAll(publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000));
+                updatedCasDelta.addAll(publishingCrlSession.createDeltaCRLs(getAdmin(), caids, polltime*1000));
+            } catch (AuthorizationDeniedException e) {
+                log.error("Internal authentication token was denied access to importing CRLs or revoking certificates.", e);
+            } finally {
+                releaseLock(caids);
+            }
             if (updatedCas.isEmpty() && updatedCasDelta.isEmpty()) {
                 return new ServiceExecutionResult(Result.NO_ACTION, "CRL Update Worker " + serviceName + " ran, but no CAs needed updating.");
             } else {
@@ -130,13 +137,34 @@ public class CRLUpdateWorker extends BaseWorker {
                     stringBuilder.append(" The following CA generated new delta CRLs: " + constructNameList(deltaCaNames) + ".");
                 }
                 return new ServiceExecutionResult(Result.SUCCESS, stringBuilder.toString());
-                
+
             }
-        } else {
-            String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", CRLUpdateWorker.class.getName());
+        }else {
+            String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.caconflict", serviceName);
             log.info(msg);
             return new ServiceExecutionResult(Result.NO_ACTION, msg);
         }
-
 	}
+
+    /**
+     * Mark a set of CAs for CRL generation.
+     *
+     * @param casToLock a set of CAs to generate CRLs for
+     * @return true if a lock could be obtained for all CAs
+     */
+    private static synchronized boolean lock(final Set<Integer> casToLock) {
+        if (SetUtils.intersection(lockedCas, casToLock).isEmpty()) {
+            return lockedCas.addAll(casToLock);
+        }
+        return false;
+    }
+
+    /**
+     * Release the lock for a set of CAs.
+     *
+     * @param casToUnlock a set of CAs for which CRL generation has completed.
+     */
+    private static synchronized void releaseLock(final Set<Integer> casToUnlock) {
+        lockedCas.removeAll(casToUnlock);
+    }
 }

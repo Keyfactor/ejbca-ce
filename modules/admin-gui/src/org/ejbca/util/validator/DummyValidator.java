@@ -14,15 +14,16 @@ package org.ejbca.util.validator;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 /**
  * Dummy validator used as a placeholder in cases where we require no validation but must specify a validator.
  * 
- * @version $Id$
  *
  */
+@FacesValidator("dummyValidator")
 public class DummyValidator implements Validator<Object> {
 
     @Override

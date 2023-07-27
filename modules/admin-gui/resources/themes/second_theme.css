@@ -115,11 +115,11 @@ body#menu {
 #navigation {
 	margin: 0em;
 	padding: .75em .75em .75em 1.25em;
+	box-sizing: content-box;
 	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
 	font-size: 9pt;
 	font-weight: bold;
-	
-	width: 17em;
+	width: 18em;
 	float: left;
 }
 
@@ -1091,6 +1091,17 @@ table#config tr td:first-child {
 	vertical-align: top;
 }
 
+.protocolStatus {
+	white-space: nowrap;
+}
+
+.protocolStatus img {
+	width: 16px;
+	height: 16px;
+	border-width: 0;
+	margin: 0 0.2em 0.1em 0.2em;
+	vertical-align: middle;
+}
 
 /* --- Login page */
 .loginPage {
@@ -1268,8 +1279,8 @@ body.popup {
 
 /*--------------------------------------------------------------------------*/
 
-.alert, .errorMessage { color: red; font-size: 11pt; font-weight: bold; background-color: white; }
-.info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
+.alert, .errorMessage { color: red; font-size: 11pt; font-weight: bold; background-color: white; white-space: pre-line; }
+.info { color: black; font-size: 11pt; font-weight: bold; background-color: white; white-space: pre-line; }
 
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
 .commandButton { font-size: 9pt; vertical-align: bottom; margin-left: .5em; margin-right: .5em; }
@@ -1414,6 +1425,10 @@ a.button:active {
 .card.prio-info { background-color: #b3ecff; }
 .card.prio-warn { background-color: #ffcc00; }
 .card.prio-error { background-color: #ff8566; }
+
+/* Set on document.documentElement */
+.waiting { cursor: wait; opacity: 0.5; }
+.waiting input { cursor: wait; }
 
 /*--------------------------------------------------------------------------*/
 /* EOF */

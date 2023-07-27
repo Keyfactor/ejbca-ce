@@ -14,8 +14,9 @@ package org.cesecore.certificates.ca;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
+
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;

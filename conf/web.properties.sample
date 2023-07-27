@@ -193,20 +193,31 @@ httpsserver.tokentype=JKS
 # Default: false
 #web.log.adminforwardedip=true
 
+# Allows to provide an alternative Content-Security-Policy header's value
+#web.header.content_security_policy=default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block
+
 # Available PKCS#11 CryptoToken libraries and their display names
 # If a library file's presence is not detected it will not show up in the Admin GUI.
 # Default values (see src/java/defaultvalues.properties for most up to date values):
-#cryptotoken.p11.lib.10.name=SafeNet ProtectServer Gold Emulator
+#cryptotoken.p11.lib.10.name=Thales ProtectServer 2 Emulator
 #cryptotoken.p11.lib.10.file=/opt/ETcpsdk/lib/linux-x86_64/libctsw.so
-#cryptotoken.p11.lib.11.name=SafeNet ProtectServer Gold
+#cryptotoken.p11.lib.11.name=Thales ProtectServer 2
 #cryptotoken.p11.lib.11.file=/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so
-#cryptotoken.p11.lib.20.name=SafeNet Luna SA
+#cryptotoken.p11.lib.12.name=Thales ProtectServer 2 Emulator
+#cryptotoken.p11.lib.12.file=/opt/safenet/protecttoolkit5/ptk/lib/libctsw.so
+#cryptotoken.p11.lib.13.name=Thales ProtectServer 2
+#cryptotoken.p11.lib.13.file=/opt/safenet/protecttoolkit5/ptk/lib/libcryptoki.so
+#cryptotoken.p11.lib.14.name=Thales ProtectServer 3 Emulator
+#cryptotoken.p11.lib.14.file=/opt/safenet/protecttoolkit7/ptk/lib/libctsw.so
+#cryptotoken.p11.lib.15.name=Thales ProtectServer 3
+#cryptotoken.p11.lib.15.file=/opt/safenet/protecttoolkit7/ptk/lib/libcryptoki.so
+#cryptotoken.p11.lib.20.name=Thales Luna SA
 #cryptotoken.p11.lib.20.file=/usr/lunasa/lib/libCryptoki2_64.so
-#cryptotoken.p11.lib.21.name=SafeNet Luna PCI
+#cryptotoken.p11.lib.21.name=Thales Luna PCI
 #cryptotoken.p11.lib.21.file=/usr/lunapci/lib/libCryptoki2_64.so
-#cryptotoken.p11.lib.22.name=SafeNet Luna PCI
+#cryptotoken.p11.lib.22.name=Thales Luna PCI
 #cryptotoken.p11.lib.22.file=/Program Files/LunaPCI/cryptoki.dll
-#cryptotoken.p11.lib.23.name=SafeNet Luna Client
+#cryptotoken.p11.lib.23.name=Thales Luna Client
 #cryptotoken.p11.lib.23.file=/usr/safenet/lunaclient/lib/libCryptoki2_64.so
 #cryptotoken.p11.lib.24.name=Thales DPoD
 #cryptotoken.p11.lib.24.file=/opt/thales/dpodclient/libs/64/libCryptoki2.so
@@ -262,8 +273,6 @@ httpsserver.tokentype=JKS
 #cryptotoken.p11.lib.112.file=/etc/utimaco/libcs_pkcs11_R2.so
 #cryptotoken.p11.lib.113.name=Cavium Nitrox III
 #cryptotoken.p11.lib.113.file=/home/liquidsec_bin/lib/libliquidsec_pkcs11.so
-#cryptotoken.p11.lib.114.name=AWS CloudHSM PrimeKey
-#cryptotoken.p11.lib.114.file=/opt/PrimeKey/cloudhsm/lib/libliquidsec_pkcs11.so
 #cryptotoken.p11.lib.115.name=AWS CloudHSM
 #cryptotoken.p11.lib.115.file=/opt/cloudhsm/lib/libcloudhsm_pkcs11.so
 #cryptotoken.p11.lib.120.name=YubiHSM2
@@ -278,6 +287,8 @@ httpsserver.tokentype=JKS
 #cryptotoken.p11.lib.133.file=/opt/primus/lib/libprimusP11.so
 #cryptotoken.p11.lib.135.name=GCP KMS P11
 #cryptotoken.p11.lib.135.file=/opt/gcp/libkmsp11-1.1-linux-amd64/libkmsp11.so
+#cryptotoken.p11.lib.140.name=IBM HPCS P11
+#cryptotoken.p11.lib.140.file=/opt/grep11/pkcs11-grep11-amd64.so
 
 
 
@@ -297,8 +308,6 @@ httpsserver.tokentype=JKS
 # If you would like to restrict the capabilities, you can use the following property:
 # (for a capability that is disabled you have the chance to specify a message that may be displayed in the GUI)
 # canGenerateKey can be used to disable key generation in the Web UI, if this does not work properly (typically due to limited p11 support)
-#cryptotoken.p11.lib.114.canGenerateKey=false
-#cryptotoken.p11.lib.114.canGenerateKeyMsg=ClientToolBox must be used to generate keys on AWS CloudHSM
 #cryptotoken.p11.lib.135.canGenerateKey=false
 #cryptotoken.p11.lib.135.canGenerateKeyMsg=The GCP Console must be used to generate keys on GCP Cloud KMS
 
@@ -310,19 +319,29 @@ httpsserver.tokentype=JKS
 #cryptotoken.p11.attr.255.name=
 #cryptotoken.p11.attr.255.file=
 
+# PQC algorithms can be enabled in the Admin UI
+# Only for testing until officially standardized
+# Default: true (enabled)
+#cryptotoken.pqc.enabled=true
+
 #
 # Enable usage of Azure Key Vault Crypto Token in the Admin UI
-# Default: false (not enabled)
+# Default: true (enabled)
 #keyvault.cryptotoken.enabled=true
 
 #
 # Enable usage of AWS KMS Crypto Token in the Admin UI
-# Default: false (not enabled)
+# Default: true (enabled)
 #awskms.cryptotoken.enabled=true
 
 #
+# Enable usage of Fortanix DSM Crypto Token in the Admin UI
+# Default: true  (enabled)
+#fortanix.cryptotoken.enabled=true
+
+#
 # Enable usage of P11NG Crypto Token in the Admin UI
-# Default: false (not enabled)
+# Default: true (enabled)
 #p11ng.cryptotoken.enabled=true
 
 #

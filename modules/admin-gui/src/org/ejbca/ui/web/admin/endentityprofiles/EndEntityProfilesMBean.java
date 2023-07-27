@@ -33,10 +33,10 @@ import java.util.zip.ZipInputStream;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
@@ -49,10 +49,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
-import org.cesecore.util.StreamSizeLimitExceededException;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -64,11 +61,15 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StreamSizeLimitExceededException;
+import com.keyfactor.util.StringTools;
+
 /**
  * JSF MBean backing edit end entity profiles page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EndEntityProfilesMBean extends BaseManagedBean implements Serializable {
 

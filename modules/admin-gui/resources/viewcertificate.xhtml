@@ -159,7 +159,7 @@
                     <strong><h:outputLabel value="#{web.text.CERT_SUBJECTDN}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCertificateMBean.subjectDnEscapedWithLanguageConsideration}"/></strong>
+                    <strong><h:outputLabel escape="false" value="#{viewCertificateMBean.subjectDnEscapedWithLanguageConsideration}"/></strong>
                 </h:panelGroup>
                 
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">

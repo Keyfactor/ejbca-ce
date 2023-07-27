@@ -15,8 +15,9 @@ package org.ejbca.ui.web.protocol;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * Thrown when a string is not a valid date

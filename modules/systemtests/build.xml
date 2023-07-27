@@ -28,18 +28,21 @@
 	     and in the case of JBoss 6 it pulls in apache cxf that does not work with client certificates, at least the same way as sun ws does -->
 	<path id="systemtests.classpath.nojee">
 		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.commons-io.classpath" />
 		<path refid="lib.ctlog.classpath"/>
 		<path refid="lib.guava.classpath"/>
+		<path refid="lib.caffeine.classpath"/>
 		<path refid="lib.servlet.classpath"/>
-		<path refid="lib.mail.classpath"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.utils.classpath"/>
+		<path refid="lib.javassist.classpath"/>
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
 		<path location="${mod.ejbca-common.lib}" />
+		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<!-- Use by ? -->
 		<path refid="lib.commons-logging.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
@@ -71,12 +74,15 @@
 	<path id="systemtests.classpath">
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
+		<path refid="lib.javax.activaton.classpath"/>
+		<path refid="lib.javax.mail.classpath"/>
+		<path refid="lib.jaxws-api.classpath"/>
+		<path refid="lib.javax.xml.soap-api.classpath"/>
         <path refid="systemtests.classpath.nojee"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
-		<path refid="lib.json-smart.classpath"/>
-		<path location="${mod.p11ng.lib}" />
+		<path refid="lib.p11ng.classpath" />
 		<path refid="lib.jackson2.classpath"/>
 		<pathelement location="${mod.ejbca-rest-common.lib}"/>
 		<path refid="lib.resteasy-jaxrs.classpath"/>
@@ -91,6 +97,7 @@
         <path refid="lib.bouncycastle.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 	<path id="interfaces.classpath">
@@ -116,11 +123,8 @@
 		<path refid="lib.commons-config.classpath" />
 		<path refid="lib.commons-collections4.classpath" />
 		<path refid="lib.commons-logging.classpath" />
-		<path refid="lib.commons-io.classpath" />
 		<path refid="lib.servlet.classpath" />
 		<path refid="lib.ldap.classpath" />
-		<path refid="lib.mail.classpath" />
-		<path refid="lib.batik.classpath" />
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.ejbca-common-web.classpath" />
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
@@ -260,10 +264,10 @@
 	<target name="assert-appserverrunning" description="Check that the server is running">
 		<echo message="Verifying that the application server is up and running..."/>
 		<echo message="If it is not running at ${target.hostname}:${target.port.http}, then please change in systemtests.properties." level="verbose"/>
-		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="appserver.notrunning.publicweb">
-			<http url="http://${target.hostname}:${target.port.http}/ejbca/index.jsp"/>
+		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="appserver.notrunning.adminweb">
+			<http url="http://${target.hostname}:${target.port.http}/ejbca/publicweb/healthcheck/ejbcahealth"/>
 		</waitfor>
-		<fail message="Please start application server before running this script" if="appserver.notrunning.publicweb"/>
+		<fail message="Please start application server before running this script" if="appserver.notrunning.adminweb"/>
 	</target>
 
 	<target name="assert-appserverrunning-ocsp" description="Check that the server is at least running the OCSP service">

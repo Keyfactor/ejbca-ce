@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.cesecore.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Class for printing properties (for debug purposes) without revealing any pin properties in the log file

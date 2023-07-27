@@ -10,8 +10,8 @@
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator, org.cesecore.certificates.endentity.EndEntityConstants,
                  org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, javax.ejb.CreateException, java.io.Serializable, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, 
-                 org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils,
-                 org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants,
+                 org.ejbca.core.model.SecConst,com.keyfactor.util.StringTools,com.keyfactor.util.certificate.DnComponents,org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils,
+                 org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,com.keyfactor.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants,
                  org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.standard.QcStatement, org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier, org.cesecore.certificates.certificate.certextensions.CertificateExtensionException, org.cesecore.certificates.ca.IllegalNameException, org.ejbca.util.HTMLTools" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
@@ -795,7 +795,7 @@ function isKeyRecoveryPossible(){
      <% }else{ %>
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=false;
      <%}
-       if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE)){ %>
+       if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE) || profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0)){ %>
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=true;
    <% }else{ %>  
      document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=false;
@@ -1153,39 +1153,16 @@ function checkallfields(){
   <div class="container">
   <h1><c:out value="<%= ejbcawebbean.getText(\"ADDENDENTITY\") %>"/></h1>
 
-  <% 
-  String formAction = "listendentities.jsp";
-  %>
+
   <% if(noprofiles){ %>
     <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"NOTAUTHORIZEDTOCREATEENDENTITY\") %>"/></div>
   <% }else{
        if(userexists){ %>
   <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"ENDENTITYALREADYEXISTS\") %>"/></div>
-  <div class="message alert">
-    <form action="<%=formAction%>" method="post">
-      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
-      <input type="hidden" name="action" value="listusers"/>
-      <input type="hidden" name="buttonfind" value="value"/>
-      <input type="hidden" name="textfieldusername" value="<%=request.getParameter(TEXTFIELD_USERNAME)%>"/>
-      <input type="submit" class="commandLink" value="See existing user">
-    </form>  
-  </div>
+  
   <% } %>
     <% if(approvalmessage != null){ %>
       <div class="message alert"><c:out value="<%= approvalmessage%>"/></div>
-  		<% if(approvalmessage.equals(ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS"))){ %>
-	  <div class="message alert">
-	    <form action="<%=formAction%>" method="post">
-	      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
-	      <input type="hidden" name="action" value="listusers"/>
-	      <input type="hidden" name="buttonadvancedlist" value="value"/>
-	      <input type="hidden" name="selectmatchwithrow1" value="<%=UserMatch.MATCH_WITH_DNSERIALNUMBER%>"/>
-	      <input type="hidden" name="selectmatchtyperow1" value="<%=BasicMatch.MATCH_TYPE_EQUALS%>"/>
-	      <input type="hidden" name="textfieldmatchvaluerow1" value="serialnumber%>"/>
-	      <input type="submit" class="commandLink" value="See existing user">
-	    </form>  
-	  </div>
-  		<% } %>
   <% } %>
   <% if(useradded){ %>
   <div class="message info"><c:out value="<%= ejbcawebbean.getText(\"ENDENTITY\")+ \" \" + addedusername + \" \" + ejbcawebbean.getText(\"ADDEDSUCCESSFULLY\") %>"/></div>

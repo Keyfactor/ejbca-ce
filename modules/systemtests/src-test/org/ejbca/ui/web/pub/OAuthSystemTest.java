@@ -49,6 +49,11 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.handler.MessageContext;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.nimbusds.jose.util.Base64URL;
 
 import org.bouncycastle.jce.X509KeyUsage;
@@ -66,19 +71,14 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -232,7 +232,7 @@ public class OAuthSystemTest {
         ), null));
         // Add the second RA role
         roleMember = new RoleMember(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE,
-                adminca.getCAId(), OAuth2AccessMatchValue.CLAIM_SUBJECT.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                adminca.getCAId(), RoleMember.NO_PROVIDER, OAuth2AccessMatchValue.CLAIM_SUBJECT.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 OAUTH_SUB, role1.getRoleId(), null);
         roleMember.setTokenProviderId(oAuthKeyInfo.getInternalId());
         roleMember = roleMemberSession.persist(authenticationToken, roleMember);
@@ -367,16 +367,16 @@ public class OAuthSystemTest {
 
     @Test
     public void testJspPage() throws IOException {
-        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/listendentities.jsp");
+        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/addendentity.jsp");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Search End Entities page should be accessible. Actual response was: " + response, response.contains("<h1>Search End Entities</h1>"));
+        assertTrue("Search End Entities page should be accessible. Actual response was: " + response, response.contains("<h1>Add End Entity</h1>"));
     }
 
     @Test
     public void testJspPageWithExpiredToken() throws IOException {
-        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/listendentities.jsp");
+        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/addendentity.jsp");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());

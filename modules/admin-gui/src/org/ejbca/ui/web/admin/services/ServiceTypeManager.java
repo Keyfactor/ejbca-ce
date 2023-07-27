@@ -24,6 +24,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifie
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.DatabaseMaintenanceWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.PreCertificateRevocationWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
@@ -72,6 +73,7 @@ public class ServiceTypeManager implements Serializable {
         registerServiceType(new RolloverWorkerType());
         registerServiceType(new PublishQueueWorkerType());
         registerServiceType(new HsmKeepAliveWorkerType());
+        registerServiceType(new DatabaseMaintenanceWorkerType());
         // Enterprise Edition workers that don't use the custom worker framework
         final ServiceType[] eeWorkerTypes = { new PreCertificateRevocationWorkerType() };
         for (final ServiceType eeWorkerType : eeWorkerTypes) {
@@ -85,6 +87,7 @@ public class ServiceTypeManager implements Serializable {
                 }
             }
         }
+     
 	}
 	
 	/**

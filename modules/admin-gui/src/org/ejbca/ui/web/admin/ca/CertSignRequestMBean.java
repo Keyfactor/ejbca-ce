@@ -16,13 +16,14 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
-import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.apache.commons.io.IOUtils;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -35,7 +36,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * JSF MBean backing the ca cert sign page.
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class CertSignRequestMBean extends BaseManagedBean implements Serializable {
 
@@ -44,7 +45,8 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     private CAInterfaceBean caBean;
     private String selectedCaName;
     private int selectedCaId;
-    private UploadedFile uploadedFile;
+    private int selectedCaType;
+    private Part uploadedFile;
     
     public CertSignRequestMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
@@ -64,6 +66,7 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         selectedCaName = (String) requestMap.get("selectedCaName");
         selectedCaId = (Integer) requestMap.get("selectedCaId");
+        selectedCaType = (Integer) requestMap.get("selectedCaType");
 
     }
     
@@ -71,22 +74,23 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
         return getEjbcaWebBean().getText("CANAME") + " : " + selectedCaName;
     }
 
-    public UploadedFile getUploadedFile() {
+    public Part getUploadedFile() {
         return uploadedFile;
     }
 
-    public void setUploadedFile(final UploadedFile uploadedFile) {
+    public void setUploadedFile(final Part uploadedFile) {
         this.uploadedFile = uploadedFile;
     }
     
-    public String signRequest() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
+    public String signRequest() {     
         try {
+            final byte[] fileBuffer = IOUtils.toByteArray(uploadedFile.getInputStream(), uploadedFile.getSize());
             if (caBean.createAuthCertSignRequest(selectedCaId, fileBuffer)) {
                 final Map<String, Object> facesContextRequestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
                 facesContextRequestMap.put("filemode", EditCaUtil.CERTREQGENMODE);
                 facesContextRequestMap.put(SESSION.CA_INTERFACE_BEAN, caBean);
                 facesContextRequestMap.put("caname", selectedCaName);
+                facesContextRequestMap.put("caType", selectedCaType);
                 return EditCaUtil.DISPLAY_RESULT_NAV;
             }
             return "";

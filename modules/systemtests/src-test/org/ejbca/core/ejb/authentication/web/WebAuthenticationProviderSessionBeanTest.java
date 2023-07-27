@@ -67,16 +67,10 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationData;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
@@ -86,6 +80,13 @@ import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -267,7 +268,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         } else if (pubKey instanceof ECPublicKey) {
             ECPublicKey ecpk = (ECPublicKey) pubKey;
             try {
-                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
+                ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); 
                 publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
             } catch (InvalidKeySpecException e) {
                 publicKey = pubKey;
@@ -325,11 +326,11 @@ public class WebAuthenticationProviderSessionBeanTest {
     @Test
     public void testBlankAudClaimAllowedUntil780() throws Exception {
         WebAuthenticationProviderSessionBean bean770 = new WebAuthenticationProviderSessionBean(null, createConfigForVersion("7.7.0"), null);
-        bean770.initializeAudienceCheck();
+        bean770.initialize();
         assertTrue(bean770.isAllowBlankAudience());
 
         WebAuthenticationProviderSessionBean bean780 = new WebAuthenticationProviderSessionBean(null, createConfigForVersion("7.8.0"), null);
-        bean780.initializeAudienceCheck();
+        bean780.initialize();
         assertFalse(bean780.isAllowBlankAudience());
     }
 

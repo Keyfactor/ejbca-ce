@@ -40,39 +40,45 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final Logger log = Logger.getLogger(MSAutoEnrollmentConfiguration.class);
     
     // Aliases 
-    private final String ALIAS_LIST = "aliaslist";
+    private static final String ALIAS_LIST = "aliaslist";
     private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
     
     // MSAE Kerberos
-    public static final String MSAE_FOREST_ROOT = "msaeForestRoot";
-    public static final String MSAE_DOMAIN = "msaeDomain";
-    public static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
-    public static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
-    public static final String POLICY_NAME = "policyName";
-    public static final String POLICY_UID = "policyUid";
-    public static final String SPN = "servicePrincipalName";
+    private static final String MSAE_FOREST_ROOT = "msaeForestRoot";
+    private static final String MSAE_DOMAIN = "msaeDomain";
+    private static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
+    private static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
+    private static final String POLICY_NAME = "policyName";
+    private static final String POLICY_UID = "policyUid";
+    private static final String SPN = "servicePrincipalName";
 
     
     // MSAE Krb5Conf
-    public static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
-    public static final Object MSAE_KRB5_CONF_FILENAME = "msaeKrb5ConfFilename";
+    private static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
+    private static final Object MSAE_KRB5_CONF_FILENAME = "msaeKrb5ConfFilename";
 
     // MSAE Settings
-    public static final String IS_USE_SSL = "isUseSSL";
-    public static final String IS_FOLLOW_LDAP_REFERRAL = "isFollowLdapReferral";
-    public static final String AD_CONNECTION_PORT = "adConnectionPort";
-    public static final String AD_LOGIN_DN = "adLoginDN";
-    public static final String AD_LOGIN_PASSWORD = "adLoginPassword";
-    public static final String AUTH_KEY_BINDING = "authKeyBinding";
+    private static final String IS_USE_SSL = "isUseSSL";
+    private static final String IS_FOLLOW_LDAP_REFERRAL = "isFollowLdapReferral";
+    private static final String AD_CONNECTION_PORT = "adConnectionPort";
+    private static final String LDAP_READ_TIMEOUT = "ldapReadTimeout";
+    private static final String LDAP_CONNECT_TIMEOUT = "ldapConnectTimeout";
+    private static final String AD_LOGIN_DN = "adLoginDN";
+    private static final String AD_LOGIN_PASSWORD = "adLoginPassword";
+    private static final String AUTH_KEY_BINDING = "authKeyBinding";
 
     // MS Enrollment Servlet Settings
-    public static final String CA_NAME = "caName";
+    private static final String CA_NAME = "caName";
 
     // Template to Settings
-    public static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
+    private static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
 
-    private static int DEFAULT_AD_CONNECTION_PORT = 389;
+    private static final int DEFAULT_AD_CONNECTION_PORT = 389;
+    
+    private static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds
+    
+    private static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
 
     public MSAutoEnrollmentConfiguration() {
         super();
@@ -89,7 +95,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
      */
     public MSAutoEnrollmentConfiguration(MSAutoEnrollmentConfiguration autoenrollmentConfiguration) {
         super();
-        setAliasList(new LinkedHashSet<String>());
+        setAliasList(new LinkedHashSet<>());
         for(String alias : autoenrollmentConfiguration.getAliasList()) {
             addAlias(alias);
             for(String key : getAllAliasKeys(alias)) {
@@ -99,7 +105,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         }
     }
 
-    public void initWithDefaults(String alias) {
+    private void initWithDefaults(String alias) {
         if(StringUtils.isNotEmpty(alias)) {
             alias = alias + ".";
             data.put(alias + MSAE_FOREST_ROOT, "");
@@ -260,7 +266,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public boolean isUseSSL(String alias) {
         String key = alias + "." + IS_USE_SSL;
         String value = getValue(key, alias);
-        return StringUtils.equals(value, "true") ? true : false;
+        return StringUtils.equals(value, "true");
     }
 
     public void setIsUseSsl(String alias, final boolean isUseSsl) {
@@ -271,7 +277,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public boolean isFollowLdapReferral(String alias) {
         String key = alias + "." + IS_FOLLOW_LDAP_REFERRAL;
         String value = getValue(key, alias);
-        return StringUtils.equals(value, "true") ? true : false;
+        return StringUtils.equals(value, "true");
     }
 
     public void setFollowLdapReferral(String alias, final boolean followLdapReferral) {
@@ -288,6 +294,28 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public void setAdConnectionPort(String alias, final int port) {
         String key = alias + "." + AD_CONNECTION_PORT;
         setValue(key, String.valueOf(port), alias);
+    }
+    
+    public int getLdapReadTimeout(String alias) {
+        String key = alias + "." + LDAP_READ_TIMEOUT;
+        String value = getValue(key, alias);
+        return value == null ? DEFAULT_LDAP_READ_TIMEOUT : Integer.valueOf(value);
+    }
+
+    public void setLdapReadTimeout(String alias, final int ldapReadTimeout) {
+        String key = alias + "." + LDAP_READ_TIMEOUT;
+        setValue(key, String.valueOf(ldapReadTimeout), alias);
+    }
+    
+    public int getLdapConnectTimeout(String alias) {
+        String key = alias + "." + LDAP_CONNECT_TIMEOUT;
+        String value = getValue(key, alias);
+        return value == null ? DEFAULT_LDAP_CONNECT_TIMEOUT : Integer.valueOf(value);
+    }
+
+    public void setLdapConnectTimeout(String alias, final int ldapConnectTimeout) {
+        String key = alias + "." + LDAP_CONNECT_TIMEOUT;
+        setValue(key, String.valueOf(ldapConnectTimeout), alias);
     }
 
     public String getAdLoginDN(String alias) {
@@ -375,7 +403,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         } else {
             log.info("Autoenrollment alias '" + alias + "' does not exist");
         }
-        return null;
+        return new byte[0];
     }
 
     public void setValueBytes(String key, byte[] value, String alias) {

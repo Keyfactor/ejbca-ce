@@ -73,7 +73,8 @@ public class LogOutServlet extends HttpServlet {
             OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
                     .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
             try {
-                AuthenticationToken authenticationToken = authenticationSession.authenticateUsingOAuthBearerToken(oAuthConfiguration, bearerToken);
+                AuthenticationToken authenticationToken = authenticationSession.authenticateUsingOAuthBearerToken(oAuthConfiguration, bearerToken,
+                        getOauthIdToken(request));
                 if (authenticationToken == null) {
                     logger.debug("Bearer token authentication failed in logout.");
                 } else {
@@ -119,6 +120,15 @@ public class LogOutServlet extends HttpServlet {
             oauthBearerToken = (String) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
         }
         return oauthBearerToken;
+    }
+
+    private String getOauthIdToken(final HttpServletRequest httpServletRequest) {
+        final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+        if (oauthBearerToken != null) {
+            // Can't mix an ID Token with an access token from an HTTP header (it would be insecure)
+            return null;
+        }
+        return (String) httpServletRequest.getSession(true).getAttribute("ejbca.id.token");
     }
 
     private String getRedirectUri() {

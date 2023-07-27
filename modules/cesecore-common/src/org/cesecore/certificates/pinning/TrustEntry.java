@@ -17,7 +17,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Optional;
 
-import org.cesecore.util.CertTools;
+import com.keyfactor.util.CertTools;
 
 /**
  * Restricts trust of a certificate chain.

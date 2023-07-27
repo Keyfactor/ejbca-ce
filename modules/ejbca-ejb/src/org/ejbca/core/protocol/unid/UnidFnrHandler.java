@@ -26,12 +26,13 @@ import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
 
 /**
  * FNR is the Norwegian equivalent of a SSN or personal number, i.e, a unique numerical identifier for a Norwegian national. Norwegian regulation 

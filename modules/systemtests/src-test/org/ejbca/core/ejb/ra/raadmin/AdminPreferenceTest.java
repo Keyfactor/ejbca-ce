@@ -29,7 +29,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.AdminPreferenceProxySessionRemote;
@@ -38,6 +37,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Tests the admin preference entity bean.
@@ -75,7 +76,7 @@ public class AdminPreferenceTest extends CaTestCase {
                 .setOid("2.999.123")
                 .setAudience(Collections.emptyList())
                 .build();
-        authenticatedTokenOAuth = new OAuth2AuthenticationToken(principal, "", "", "Provider"); // using empty token for testing
+        authenticatedTokenOAuth = new OAuth2AuthenticationToken(principal, "", null, "", "Provider", false); // using empty token for testing
         adminFingerprint = CertTools.getFingerprintAsString(authenticatedTokenCert.getCertificate());
         cleanup();
     }

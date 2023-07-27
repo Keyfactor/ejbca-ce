@@ -13,28 +13,6 @@
 
 package org.cesecore.certificates.certificate.request;
 
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.pkcs.Attribute;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
-import org.bouncycastle.asn1.x500.DirectoryString;
-import org.bouncycastle.asn1.x500.RDN;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.operator.ContentVerifierProvider;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.PKCSException;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.math.BigInteger;
@@ -48,6 +26,30 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1IA5String;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.pkcs.Attribute;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.DirectoryString;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCSException;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
 
 /**
  * <p>Class to handle PKCS10 request messages sent to the CA.
@@ -139,6 +141,10 @@ public class PKCS10RequestMessage implements RequestMessage {
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException {
         return Objects.isNull(pkcs10) ? null : pkcs10.getPublicKey();
     }
+    @Override
+    public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
+        return Objects.isNull(pkcs10) ? null : pkcs10.getSubjectPublicKeyInfo();
+    }
 
     @Override
     public void setPassword(String pwd) {
@@ -190,7 +196,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             } catch (IllegalArgumentException ie) {
                 // This was not a DirectoryString type, it could then be IA5string, breaking pkcs#9 v2.0
                 // but some version of openssl have been known to produce IA5strings
-                str = DERIA5String.getInstance((obj));
+                str = ASN1IA5String.getInstance((obj));
             }
 
             if (str != null) {
@@ -559,4 +565,5 @@ public class PKCS10RequestMessage implements RequestMessage {
             return false;
         return true;
     }
+
 }

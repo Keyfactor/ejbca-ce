@@ -80,23 +80,6 @@ public class WebdistHttpTest {
     }
 
     @Test
-    public void testPublicWeb() throws Exception {
-        log.trace(">testPublicWeb");
-        // We hit the pages and see that they return a 200 value, so we know
-        // they at least compile correctly
-        String httpReqPath = "http://"+remoteHost+":" + httpPort + "/ejbca";
-        String[] resourceNames = {
-                "retrieve/ca_crls.jsp", "retrieve/ca_certs.jsp", "retrieve/latest_cert.jsp", "retrieve/list_certs.jsp", "retrieve/check_status.jsp",
-                "enrol/server.jsp", "enrol/keystore.jsp"
-        };
-
-        for (final String resourceName : resourceNames) {
-            assertEquals("Response code", 200, WebTestUtils.sendGetRequest(httpReqPath + '/' + resourceName).getStatusLine().getStatusCode());
-        }
-        log.trace("<testPublicWeb");
-    }
-
-    @Test
     public void testPublicWebChainDownload() throws Exception {
         log.trace(">testPublicWebChainDownload");
         String httpReqPathPem = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=pem";        

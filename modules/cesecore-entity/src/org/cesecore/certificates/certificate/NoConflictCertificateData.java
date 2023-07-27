@@ -29,8 +29,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * Representation of a revoked throw-away certificate and related information.
@@ -41,12 +42,11 @@ import org.cesecore.util.StringTools;
 @Table(name = "NoConflictCertificateData")
 @SqlResultSetMappings(value = {
         @SqlResultSetMapping(name = "RevokedNoConflictCertInfoSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "serialNumber"),
-                @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason") }),
+                @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason"), @ColumnResult(name = "invalidityDate") }),
         @SqlResultSetMapping(name = "NoConflictCertificateInfoSubset", columns = { @ColumnResult(name = "issuerDN"), @ColumnResult(name = "subjectDN"),
                 @ColumnResult(name = "cAFingerprint"), @ColumnResult(name = "status"), @ColumnResult(name = "type"),
                 @ColumnResult(name = "serialNumber"),
-                @ColumnResult(name = "notBefore"), @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"),
-                @ColumnResult(name = "revocationReason"), @ColumnResult(name = "username"), @ColumnResult(name = "tag"),
+                @ColumnResult(name = "notBefore"), @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason"), @ColumnResult(name = "username"), @ColumnResult(name = "tag"),
                 @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"),
                 @ColumnResult(name = "subjectKeyId"), @ColumnResult(name = "subjectAltName"), @ColumnResult(name = "accountBindingId") }),
         @SqlResultSetMapping(name = "NoConflictCertificateInfoSubset2", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "subjectDN"),
@@ -62,7 +62,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
 
     private static final Logger log = Logger.getLogger(NoConflictCertificateData.class);
 
-    private static final int LATEST_PROTECT_VERSON = 5;
+    private static final int LATEST_PROTECT_VERSON = 7;
 
     private String id;
     private String issuerDN;
@@ -75,6 +75,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     private String serialNumber;
     private Long notBefore = null;  // @since EJBCA 6.6.0
     private long expireDate = 0;
+    private Long invalidityDate = null; // @since EJBCA 7.12.0
     private long revocationDate = 0;
     private int revocationReason = 0;
     private String base64Cert;
@@ -108,6 +109,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         setCaFingerprint(copy.getCaFingerprint());
         setNotBefore(copy.getNotBefore());
         setExpireDate(copy.getExpireDate());
+        setInvalidityDate(copy.getInvalidityDate());
         setRevocationDate(copy.getRevocationDate());
         setRevocationReason(copy.getRevocationReason());
         setUpdateTime(copy.getUpdateTime());
@@ -249,6 +251,16 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     @Override
     public void setExpireDate(long expireDate) {
         this.expireDate = expireDate;
+    }
+
+    @Override
+    public Long getInvalidityDate() {
+        return invalidityDate;
+    }
+
+    @Override
+    public void setInvalidityDate(Long invalidityDate) {
+        this.invalidityDate = invalidityDate;
     }
 
     @Override
@@ -536,6 +548,9 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         if (expireDate != certificateData.expireDate) {
             return false;
         }
+        if (!ObjectUtils.equals(invalidityDate, certificateData.invalidityDate)) {    
+            return false;
+        }
         if (revocationDate != certificateData.revocationDate) {
             return false;
         }
@@ -603,6 +618,10 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getFingerprint()).append(getIssuerDN());
+        if (version >= 7 ) {
+            // In version 7 (EJBCA 7.12.0) the invalidityDate column is added
+               build.append(getInvalidityDate());
+           }
         if (version > 6) {
             // In version 6 (EJBCA 7.5.0) the accountBindingId column is added
             build.append(getAccountBindingId());

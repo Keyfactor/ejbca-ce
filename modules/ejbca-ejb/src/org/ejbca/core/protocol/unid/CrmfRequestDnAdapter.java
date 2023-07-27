@@ -28,8 +28,9 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Holder for a modified ICrmfRequestMessage
@@ -230,4 +231,28 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
     public void setRequestValidityNotAfter(Date notAfter) {
         this.original.setRequestValidityNotAfter(notAfter);
     }
+	@Override
+	public String getPbmac1PrfAlg() {
+		return this.original.getPbmac1PrfAlg();
+	}
+	@Override
+	public String getPbmac1Key() {
+		return this.original.getPbmac1Key();
+	}
+	@Override
+	public String getPbmac1KeyId() {
+		return this.original.getPbmac1KeyId();
+	}
+	@Override
+	public String getPbmac1MacAlg() {
+		return this.original.getPbmac1MacAlg();
+	}
+	@Override
+	public int getPbmac1IterationCount() {
+		return this.original.getPbmac1IterationCount();
+	}
+	@Override
+	public int getPbmac1DkLen() {
+		return this.original.getPbmac1DkLen();
+	}
 }

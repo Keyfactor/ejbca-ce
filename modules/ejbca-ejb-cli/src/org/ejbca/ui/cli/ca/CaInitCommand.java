@@ -50,25 +50,13 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -76,6 +64,18 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * CLI command for creating a CA and its first CRL. Publishes the CRL and CA certificate if it should.
@@ -189,10 +189,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 ParameterMode.ARGUMENT,
                 "catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal."));
         registerParameter(new Parameter(KEY_SPEC_KEY, "Key Specification", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key specification for CA signing key (soft crypto token) and OCSP/CMS service keys. Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192). " + "Keyspec for DSA keys is size of DSA keys (1024). "
-                        + "Keyspec for ECDSA keys is name of curve or 'implicitlyCA'' (see docs)."));
+                "Key specification for CA signing key (soft crypto token) and OCSP service keys. Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192). " + "Keyspec for DSA keys is size of DSA keys (1024). "
+                        + "Keyspec for ECDSA keys is name of curve."));
         registerParameter(new Parameter(KEY_TYPE_KEY, "Key Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key type for CA signing key (soft crypto token) and OCSP/CMS service keys. Keytype is RSA, DSA, ECDSA, Ed25519 or Ed448"));
+                "Key type for CA signing key (soft crypto token) and OCSP service keys. Keytype is RSA, DSA, ECDSA, Ed25519 or Ed448"));
         registerParameter(new Parameter(VALIDITY_KEY, "Validity", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Validity of the CA in days."));
         //Policy ID keyt as mandatory parameter for legacy reasons.
@@ -436,9 +436,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
             }
             getLogger().info(signedByStr);
 
-            if (superAdminCN != null) {
-                initAuthorizationModule(getAuthenticationToken(), dn.hashCode(), superAdminCN);
-            }
+            initAuthorizationModule(getAuthenticationToken(), dn.hashCode(), superAdminCN);
+            
             // Transform our mixed properties into CA Token properties and cryptoTokenProperties
             final Properties caTokenProperties = new Properties();
             final String defaultAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);
@@ -602,8 +601,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         extendedServiceKeySpec = "2048";
                     }
                 }
-                extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CmsCertificate, " + dn, "",
-                        extendedServiceKeySpec, keytype));
                 extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                 cainfo = createX509CaInfo(dn, subjectAltName, caname, certificateProfileId, encodedValidity, signedByCAId, caToken, policies, extendedcaservices);
                 break;

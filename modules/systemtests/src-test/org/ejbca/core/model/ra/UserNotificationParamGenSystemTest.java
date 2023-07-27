@@ -2,6 +2,8 @@ package org.ejbca.core.model.ra;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -16,10 +18,8 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -28,6 +28,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /** Tests variables for user notifications
  * @version $Id$
@@ -92,9 +96,10 @@ public class UserNotificationParamGenSystemTest {
         final UserNotificationParamGen paramGen = new UserNotificationParamGen(userdata, X_509_CERTIFICATE);
         assertNotNull("paramGen is null", paramGen);
         //when
-        final String msg = paramGen.interpolate("${USERNAME} ${user.USERNAME} ${user.EE.EMAIL} ${user.SAN.EMAIL} ${expiringCert.CERTSUBJECTDN}");
+        final String msg = paramGen.interpolate("${USERNAME} ${user.USERNAME} ${user.EE.EMAIL} ${user.SAN.EMAIL} ${expiringCert.CERTSUBJECTDN} ${expiringCert.CERTSERIAL} ${expiringCert.CERTSERIALDECIMAL}");
         //then
         assertFalse("Interpolate message failed", (msg==null || msg.length()==0));
-        assertEquals("UserNotificationCertExpirationEmailTestUser UserNotificationCertExpirationEmailTestUser fooee@foo.se fooalt@foo.se CN=cnfoo,O=orgfoo,C=SE", msg);
+        assertEquals("UserNotificationCertExpirationEmailTestUser UserNotificationCertExpirationEmailTestUser fooee@foo.se fooalt@foo.se CN=cnfoo,O=orgfoo,C=SE " 
+                + CertTools.getSerialNumberAsString(X_509_CERTIFICATE).toUpperCase() + " " + CertTools.getSerialNumber(X_509_CERTIFICATE).toString(10), msg);
     }
 }

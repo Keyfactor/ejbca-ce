@@ -13,8 +13,12 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -22,64 +26,74 @@ import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.junit.util.CryptoTokenRule;
-import org.cesecore.junit.util.CryptoTokenTestRunner;
-import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-import static org.junit.Assert.assertNotNull;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * This test runs in 'normal' CMP mode
  * 
- * @version $Id$
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@RunWith(CryptoTokenTestRunner.class)
+@RunWith(Parameterized.class)
 public class CmpConfirmMessageTest extends CmpTestCase {
 
-    private static final Logger log = Logger.getLogger(CrmfRequestTest.class);
+    private static final Logger log = Logger.getLogger(CmpConfirmMessageTest.class);
 
     private static final String user = "TestUser";
     private static final X500Name userDN = new X500Name("CN=" + user + ", O=PrimeKey Solutions AB, C=SE");
-    private final X509Certificate cacert;
-    private final CA testx509ca;
+    private X509Certificate cacert;
+    private X509CAInfo testx509ca;
     private final CmpConfiguration cmpConfiguration;
     private static final String cmpAlias = "CmpConfirmMessageTestConfAlias";
+    private CryptoTokenRunner cryptoTokenRunner;
 
+    
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
-    @ClassRule
-    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    @Rule
+    public TestName testName = new TestName();
+    
+    @Parameters(name = "{0}")
+    public static Collection<CryptoTokenRunner> runners() {
+       return CryptoTokenRunner.defaultRunners;
+       
+    }
      
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
 
-    public CmpConfirmMessageTest() throws Exception {
-        this.testx509ca = cryptoTokenRule.createX509Ca();
-        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
+    public CmpConfirmMessageTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+        this.cryptoTokenRunner = cryptoTokenRunner;
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
+    
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        //this.caSession.addCA(ADMIN, this.testx509ca);
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
+        testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
+        this.cacert = (X509Certificate) this.testx509ca.getCertificateChain().get(0);
         log.debug("this.testx509ca.getSubjectDN(): " + this.testx509ca.getSubjectDN());
         log.debug("caid: " + this.testx509ca.getCAId());
         
@@ -91,7 +105,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        cryptoTokenRule.cleanUp();
+        cryptoTokenRunner.cleanUp();
         this.cmpConfiguration.removeAlias(cmpAlias);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
@@ -130,7 +144,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null,
+                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test01ConfRespSignedByRecepient");
@@ -163,7 +178,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null,
+                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test02ConfRespSignedByDefaultCA");
@@ -180,6 +196,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public void test03ConfRespPbeProtectedByGlobalSharedSecret() throws Exception {
         log.trace(">test03ConfRespPbeProtected");
 
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+        
         this.cmpConfiguration.setRAMode(cmpAlias, true);
         this.cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
         this.cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
@@ -201,7 +219,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "password", null /*response is not signed*/);
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "password",
+                null /*response is not signed*/, false);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");
@@ -217,6 +236,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public void test04ConfRespPbeProtectedByCACmpSecret() throws Exception {
         log.trace(">test03ConfRespPbeProtected");
 
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+        
         this.cmpConfiguration.setRAMode(cmpAlias, true);
         this.cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
         this.cmpConfiguration.setCMPDefaultCA(cmpAlias, this.testx509ca.getSubjectDN());
@@ -238,7 +259,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "foo123", null /*response is not signed*/);
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "foo123",
+                null /*response is not signed*/, false);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");

@@ -34,11 +34,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -46,6 +42,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -176,7 +177,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
-            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             if (sFailMessage == null) {
             	ret = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
                 // verify if custom cert serial number was used
@@ -199,7 +200,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
         }
         return ret;

@@ -28,9 +28,6 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.util.KeyStoreTools;
-import org.cesecore.util.CertTools;
 import org.ejbca.util.keystore.KeyStoreToolsFactory;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -43,6 +40,10 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;
@@ -170,6 +171,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @After
     public void afterTest() {
+        System.setErr(originalSystemError);
         System.err.println(errStream.toString());
         errStream.reset();
     }
@@ -270,6 +272,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testA7Rsa3IsNowExistingOnToken2() {
+        assertTrue("pkcs11.token2_number is not configured in systemtests.properties", StringUtils.isNotBlank(SLOT2_ID));
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
         int numberOfTests = 35;
@@ -545,6 +548,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testC25TestKeyOnTokenByIndex() {
+        assertTrue("pkcs11.token_index is not configured in systemtests.properties", StringUtils.isNotBlank(SLOT_INDEX));
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
         int numberOfTests = 35;
@@ -555,6 +559,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testC26TestKeyOnToken2ByIndex() {
+        assertTrue("pkcs11.token2_index is not configured in systemtests.properties", StringUtils.isNotBlank(SLOT2_INDEX));
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
         int numberOfTests = 35;

@@ -15,8 +15,9 @@ package org.cesecore.keybind.impl;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.pinning.TrustEntry;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
+
+import com.keyfactor.util.CertTools;
 
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;

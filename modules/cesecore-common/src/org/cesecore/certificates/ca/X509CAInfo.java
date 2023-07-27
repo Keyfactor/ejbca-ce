@@ -12,15 +12,32 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathBuilder;
+import java.security.cert.CertPathBuilderException;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.PKIXBuilderParameters;
+import java.security.cert.PKIXCertPathBuilderResult;
+import java.security.cert.PKIXCertPathValidatorResult;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
+import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -29,13 +46,15 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
+
+import com.keyfactor.util.CertTools;
 
 
 /**
@@ -158,7 +177,7 @@ public class X509CAInfo extends CAInfo {
     /** Constructor that should be used when updating CA data. */
     private X509CAInfo(final String encodedValidity, final CAToken catoken, final String description, final int caSerialNumberOctetSize,
                       final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
-                      final boolean generateCrlUponRevocation, final boolean allowChangingRevocationReason, final Collection<Integer> crlpublishers,
+                      final boolean generateCrlUponRevocation, final boolean allowChangingRevocationReason, final boolean allowInvalidityDate, final Collection<Integer> crlpublishers,
                       final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
                       final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
                       final String defaultocspservicelocator, final List<String> crlAuthorityInformationAccess,
@@ -183,6 +202,7 @@ public class X509CAInfo extends CAInfo {
         this.deltacrlperiod = deltacrlperiod;
         this.generateCrlUponRevocation = generateCrlUponRevocation;
         this.allowChangingRevocationReason = allowChangingRevocationReason;
+        this.allowInvalidityDate = allowInvalidityDate;
         this.crlpublishers = crlpublishers;
         this.validators = keyValidators;
         this.msCaCompatible = msCaCompatible;
@@ -629,6 +649,7 @@ public class X509CAInfo extends CAInfo {
         private long deltaCrlPeriod = 0L;
         private boolean generateCrlUponRevocation = false;
         private boolean allowChangingRevocationReason = false;
+        private boolean allowInvalidityDate = false;
         private Collection<Integer> crlPublishers = new ArrayList<>();
         private Collection<Integer> validators = new ArrayList<>();
         private boolean msCaCompatible = false;
@@ -865,6 +886,11 @@ public class X509CAInfo extends CAInfo {
          */
         public X509CAInfoBuilder setAllowChangingRevocationReason(boolean allow) {
             allowChangingRevocationReason = allow;
+            return this;
+        }
+
+        public X509CAInfoBuilder setAllowInvalidityDate(boolean allowInvalidityDate) {
+            this.allowInvalidityDate = allowInvalidityDate;
             return this;
         }
 
@@ -1118,7 +1144,7 @@ public class X509CAInfo extends CAInfo {
         }
 
         public X509CAInfo build() {
-            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, allowChangingRevocationReason, crlPublishers, validators,
+            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, allowChangingRevocationReason, allowInvalidityDate, crlPublishers, validators,
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
@@ -1157,7 +1183,7 @@ public class X509CAInfo extends CAInfo {
         }
 
         public X509CAInfo buildForUpdate() {
-            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, allowChangingRevocationReason, crlPublishers, validators,
+            X509CAInfo caInfo = new X509CAInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, generateCrlUponRevocation, allowChangingRevocationReason, allowInvalidityDate, crlPublishers, validators,
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
@@ -1172,4 +1198,75 @@ public class X509CAInfo extends CAInfo {
 
         public X509CAInfo buildDefault () { return null;}
     }
+    
+    public static boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs, Collection<Certificate> trustedCertificates) throws InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException, CertPathBuilderException, CertPathValidatorException {
+        if (certs == null || certs.isEmpty()) {
+            throw new IllegalArgumentException("extraCerts must contain at least one certificate.");
+        }
+        // What we got in extraCerts can be different things
+        // - An end entity certificate only, signed by a SubCA or a RootCA
+        // -- We need to find both SubCA and RootCA here, should be in cainfo?
+        // - An end entity certificate and a SubCA certificate
+        // -- We need to find the RootCA certificate only, should be in cainfo?
+        // - An end entity certificate a SubCA certificate and a RootCA certificate
+        // -- We need to remove the CA certificates that are not part of cainfo
+        // Create CertPath
+        List<Certificate> certlist = new ArrayList<>(certs);
+        // Move CA certificates into cert path, except root certificate which is the trust anchor
+        X509Certificate rootcert = null;
+        final Iterator<Certificate> itr = trustedCertificates.iterator();
+        while (itr.hasNext()) {
+            // Trust anchor is last, so if this is the last element, don't add it
+            Certificate crt = itr.next();
+            if (itr.hasNext()) {
+                if (!certlist.contains(crt)) {
+                    certlist.add(crt);
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Certlist already contains certificate with subject "+CertTools.getSubjectDN(crt)+", not adding to list");
+                    }
+                }
+            } else {
+                rootcert = (X509Certificate)crt;
+                if (log.isDebugEnabled()) {
+                    log.debug("Using certificate with subject "+CertTools.getSubjectDN(crt)+", as trust anchor, removing from certlist if it is there");
+                }
+                // Don't have the trust anchor in the cert path, remove doesn't do anything if rootcert doesn't exist in certlist
+                certlist.remove(rootcert);
+            }
+        }
+        // Get a CertPath that can order certificate chains well...
+        CollectionCertStoreParameters storeParams = new CollectionCertStoreParameters(certlist);
+        CertStore store = CertStore.getInstance("Collection", storeParams, BouncyCastleProvider.PROVIDER_NAME);
+        // build the path
+        CertPathBuilder  builder = CertPathBuilder.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
+        X509CertSelector pathConstraints = new X509CertSelector();
+        //pathConstraints.setCertificate(endCert);
+        TrustAnchor anchor = new TrustAnchor(rootcert, null);
+        PKIXBuilderParameters buildParams = new PKIXBuilderParameters(Collections.singleton(anchor), pathConstraints);
+        buildParams.addCertStore(store);
+        buildParams.setDate(new Date());
+        buildParams.setRevocationEnabled(false);
+        PKIXCertPathBuilderResult pathresult = (PKIXCertPathBuilderResult)builder.build(buildParams);
+        CertPath cp = pathresult.getCertPath();
+
+        // The end entity cert is the first one in the CertPath according to javadoc
+        // - "By convention, X.509 CertPaths (consisting of X509Certificates), are ordered starting with the target
+        //    certificate and ending with a certificate issued by the trust anchor.
+        //    That is, the issuer of one certificate is the subject of the following one."
+        // Note: CertPath above will most likely not sort the path, at least if there is a root cert in certlist
+        // the cp will fail verification if it was not in the right order in certlist to start with
+        PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
+        params.setRevocationEnabled(false);
+        params.setSigProvider(BouncyCastleProvider.PROVIDER_NAME);
+        CertPathValidator cpv = CertPathValidator.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
+        PKIXCertPathValidatorResult result = (PKIXCertPathValidatorResult) cpv.validate(cp, params);
+        if (log.isDebugEnabled()) {
+            log.debug("Certificate verify result: " + result.toString());
+        }
+        // No CertPathValidatorException thrown means it passed
+        return true;
+    }
+
 }

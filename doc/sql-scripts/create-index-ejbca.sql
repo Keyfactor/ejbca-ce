@@ -1,5 +1,3 @@
--- version: $Id$
-
 -- Note: For MySQL's NDB engine add 'USING HASH' to all UNIQUE indexes.
 
 -- Selecting log entries when verifying/exporting IntegrityProtectedDevice logs:
@@ -49,6 +47,26 @@ CREATE UNIQUE INDEX certificatedata_idx12 ON CertificateData (serialNumber, issu
 -- Keyfactor Gateway Connector for Keyfactor Remote trying to query/page through 1.5 mill certs with the REST Api on a Hardware Appliance (even 2020XL)
 CREATE INDEX certificatedata_idx15 ON CertificateData (issuerDN,notBefore);
 CREATE INDEX certificatedata_idx16 ON CertificateData (issuerDN,revocationDate);
+-- Index for base CRL generation
+CREATE INDEX certificatedata_idx17 ON CertificateData (issuerDN, status, crlPartitionIndex);
+-- Index for delta CRL generation
+CREATE INDEX certificatedata_idx18 ON CertificateData (issuerDN, status, crlPartitionIndex, revocationDate);
+-- Optimized index for CRL generation on Microsoft SQL Server (should be used instead of certificatedata_idx17 and certificatedata_idx18).
+-- CREATE NONCLUSTERED INDEX certificatedata_idx19 ON CertificateData (issuerDN, status, revocationDate, fingerprint, crlPartitionIndex) INCLUDE (expireDate, revocationReason, serialNumber);
+-- Index useful when searching for certificates with an invalidity date.
+-- CREATE INDEX certificatedata_idx20 ON CertificateData (invalidityDate);
+-- The following indexes can be beneficial to perfomance for certificate search in RA web and REST AAPI
+CREATE INDEX certificatedata_idx_serial ON CertificateData (serialNumber);
+-- The accountBindingId is often not used, but even if it is not used, it is necessary to have an index (EJBCA will still search by this column)
+CREATE INDEX certificatedata_idx_eab ON CertificateData (accountBindingId);
+-- The subjectAltName index could be configured either to match only the first 750 characters, or to match the full row, using a slower full-text index.
+CREATE INDEX certificatedata_idx_san ON CertificateData (subjectAltName(750));
+-- or, for slower full-text querying: CREATE FULLTEXT INDEX certificatedata_idx_san ON CertificateData (subjectAltName);
+-- Next indexes are useful when searching for certificates by dates and intervals in REST API and RA web.
+-- CREATE INDEX certificatedata_idx_nbef ON CertificateData (notBefore);
+-- CREATE INDEX certificatedata_idx_exp ON CertificateData (expireDate);
+-- CREATE INDEX certificatedata_idx_rev ON CertificateData (revocationDate);
+-- CREATE INDEX certificatedata_idx_upd ON CertificateData (updateTime);
 
 CREATE INDEX historydata_idx1 ON CertReqHistoryData (username);
 CREATE INDEX historydata_idx3 ON CertReqHistoryData (serialNumber);
@@ -56,6 +74,9 @@ CREATE INDEX historydata_idx3 ON CertReqHistoryData (serialNumber);
 CREATE INDEX userdata_idx10 ON UserData (subjectDN);
 -- Increase lookup speed of a small subset of users with a specific status
 CREATE INDEX userdata_idx11 ON UserData (status);
+
+-- Increase speed while selecting all the user data while looking for end entities
+CREATE INDEX userdata_idx12 ON UserData(timeCreated);
 
 CREATE INDEX publisherqueue_idx3 ON PublisherQueueData (publisherId, publishStatus, timeCreated);
 
@@ -65,34 +86,40 @@ CREATE INDEX rolemember_idx1 ON RoleMemberData (tokenType,roleId);
 -- When using a blocklist with many entries
 CREATE INDEX blocklist_idx1 ON BlacklistData (type,value);
 
--- indices for NoConflictCertificateData (we don't need username, subjectDN, type, subjectKeyId indexes for revoked throw away certificates)
+-- Indexes for NoConflictCertificateData (we don't need username, subjectDN, type, subjectKeyId indexes for revoked throw away certificates)
 CREATE INDEX noconflictcertificatedata_idx1 ON NoConflictCertificateData (serialNumber, issuerDN);
 CREATE INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData (fingerprint);
 CREATE INDEX noconflictcertificatedata_idx3 ON NoConflictCertificateData (issuerDN,status);
 CREATE INDEX noconflictcertificatedata_idx4 ON NoConflictCertificateData (certificateProfileId);
+-- Index for base CRL generation
+CREATE INDEX noconflictcertificatedata_idx5 ON NoConflictCertificateData (issuerDN, status, crlPartitionIndex);
+-- Index for delta CRL generation
+CREATE INDEX noconflictcertificatedata_idx6 ON NoConflictCertificateData (issuerDN, status, crlPartitionIndex, revocationDate);
+-- Optimized index for CRL generation on Microsoft SQL Server (should be used instead of noconflictcertificatedata_idx5 and noconflictcertificatedata_idx6).
+-- CREATE NONCLUSTERED INDEX noconflictcertificatedata_idx7 ON NoConflictCertificateData (issuerDN, status, revocationDate, fingerprint, crlPartitionIndex) INCLUDE (expireDate, revocationReason, serialNumber);
 
--- index for searching for ACME accounts by public key
+-- Index for searching for ACME accounts by public key
 CREATE INDEX acmeaccountdata_idx1 ON AcmeAccountData (currentKeyId);
 
--- index for searching for ACME orders by account id
+-- Index for searching for ACME orders by account id
 CREATE INDEX acmeorderdata_idx1 ON AcmeOrderData (accountId);
 
--- index for searching for ACME orders by fingerprint and status
+-- Index for searching for ACME orders by fingerprint and status
 CREATE INDEX acmeorderdata_idx2 ON AcmeOrderData (fingerprint, status);
 
--- index for searching for ACME authorizations by account id
+-- Index for searching for ACME authorizations by account id
 CREATE INDEX acmeauthorizationdata_idx1 ON AcmeAuthorizationData (orderId,accountId,expires,status);
 
--- index for searching for ACME authorizations by order id
+-- Index for searching for ACME authorizations by order id
 CREATE INDEX acmeauthorizationdata_idx2 ON AcmeAuthorizationData (orderId);
 
--- index for searching for ACME challenges by authorization id
+-- Index for searching for ACME challenges by authorization id
 CREATE INDEX acmechallengedata_idx1 ON AcmeChallengeData (authorizationId);
 
--- index for searching for Signed Certificate Timestamps by fingerprint
+-- Index for searching for Signed Certificate Timestamps by fingerprint
 CREATE INDEX sctdata_idx1 ON SctData (fingerprint);
 
--- indexes for searching for OCSP responses by cAId, serialNumber or nextUpdate.
+-- Indexes for searching for OCSP responses by cAId, serialNumber or nextUpdate.
 CREATE INDEX ocspresponsedata_idx1 ON OcspResponseData (cAId);
 CREATE INDEX ocspresponsedata_idx2 ON OcspResponseData (serialNumber);
 CREATE INDEX ocspresponsedata_idx3 ON OcspResponseData (producedAt);

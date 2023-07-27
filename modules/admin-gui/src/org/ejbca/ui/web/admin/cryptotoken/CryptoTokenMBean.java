@@ -22,8 +22,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
@@ -32,26 +30,15 @@ import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.AvailableCryptoToken;
 import org.cesecore.keys.token.AzureAuthenticationType;
 import org.cesecore.keys.token.AzureCryptoToken;
-import org.cesecore.keys.token.BaseCryptoToken;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSession;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.KeyGenParams;
-import org.cesecore.keys.token.KeyGenParams.KeyGenParamsBuilder;
-import org.cesecore.keys.token.KeyGenParams.KeyPairTemplate;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -60,6 +47,21 @@ import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -233,6 +235,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isAzureType() {
             return AzureCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType());
         }
+
+        public boolean isFortanixType() {
+            return CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
+        }
+
         public boolean isAWSKMSType() {
             return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
         }
@@ -271,6 +278,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String keyVaultName = "ejbca-keyvault";
         private String keyVaultClientID = "";
         private String keyVaultKeyBinding = "";
+        private String fortanixBaseAddress =  "https://apps.smartkey.io"; // default value
         private String awsKMSRegion = "us-east-1"; // default value
         private String awsKMSAccessKeyID = ""; // default value
         private AzureAuthenticationType azureAuthenticationType = AzureAuthenticationType.APP_ID_AND_SECRET;
@@ -463,6 +471,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return keyVaultClientID;
         }
 
+        public String getFortanixBaseAddress() {
+            return fortanixBaseAddress;
+        }
         public boolean isShowSoftCryptoToken() {
             return SoftCryptoToken.class.getSimpleName().equals(getType());
         }
@@ -482,6 +493,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public boolean isShowAWSKMSCryptoToken() {
             return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getType());
+        }
+
+        public boolean isShowFortanixCryptoToken() {
+            return CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getType());
         }
 
         public boolean isSlotOfTokenLabelType() {
@@ -533,6 +548,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         
         public boolean getShowClientId() {
             return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType != AzureAuthenticationType.MANAGED_IDENTITY;
+        }
+
+        public void setFortanixBaseAddress(String fortanixBaseAddress) {
+            this.fortanixBaseAddress = fortanixBaseAddress;
         }
     }
 
@@ -953,8 +972,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     final List<AcmeExternalAccountBinding> eabs = acmeAlias.getExternalAccountBinding();
                     if (eabs != null) {
                         for (AcmeExternalAccountBinding eab :eabs) {
-                            if (eab.getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
-                                    && (Boolean) eab.getDataMap().get("encryptKey")
+                            final Object encryptKey = eab.getDataMap().get("encryptKey");
+                            if ("ACME_EAB_RFC_COMPLIANT".equals(eab.getAccountBindingTypeIdentifier())
+                                    && encryptKey != null && (Boolean)encryptKey
                                     && Integer.toString(cryptoTokenId).equals(eab.getDataMap().get("encryptionKeyId"))) {
                                 result.add(acmeAlias.getConfigurationId());
                             }
@@ -1116,6 +1136,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 String keyid = getCurrentCryptoToken().getAWSKMSAccessKeyID().trim();
                 properties.setProperty(CryptoTokenConstants.AWSKMS_REGION, region);
                 properties.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, keyid);
+            } else if (CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
+                className = CryptoTokenFactory.FORTANIX_NAME;
+                final String fortanixBaseAddress = getCurrentCryptoToken().getFortanixBaseAddress().trim();
+                properties.setProperty(CryptoTokenConstants.FORTANIX_BASE_ADDRESS, fortanixBaseAddress);
             }
             if (getCurrentCryptoToken().isAllowExportPrivateKey()) {
                 properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, String.valueOf(getCurrentCryptoToken().isAllowExportPrivateKey()));
@@ -1334,6 +1358,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     continue;
                 }
             }
+            if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.FORTANIX_NAME)) {
+                // Don't expose the FortanixCryptoToken when creating new tokens if it is not enabled in web.properties
+                if (!WebConfiguration.isFortanixEnabled()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Fortanix DSM Crypto Token support is not enabled in GUI. See web.properties for enabling Fortanix DSM.");
+                    }
+                    continue;
+                }
+            }
             // Use one the class's simpleName
             final String fullClassName = availableCryptoToken.getClassPath();
             ret.add(new SelectItem(fullClassName.substring(fullClassName.lastIndexOf('.') + 1), availableCryptoToken.getName()));
@@ -1421,6 +1454,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setAWSKMSRegion(cryptoTokenInfo.getAWSKMSRegion());
                     currentCryptoToken.setAWSKMSAccessKeyID(cryptoTokenInfo.getAWSKMSAccessKeyID());
                 }
+                if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.FORTANIX_SIMPLE_NAME)) {
+                    currentCryptoToken.setFortanixBaseAddress(cryptoTokenInfo.getFortanixBaseAddress());
+                }
                 currentCryptoToken.setActive(cryptoTokenInfo.isActive());
                 currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(cryptoTokenId));
             }
@@ -1489,7 +1525,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmConstants.KEYALGORITHM_ED448));
-        for (String alg : CesecoreConfiguration.getExtraAlgs()) {
+        if (WebConfiguration.isPQCEnabled()) {
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+        }
+        for (String alg : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
             for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
                 final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
                 final String name = CesecoreConfiguration.getExtraAlgSubAlgName(alg, subalg);

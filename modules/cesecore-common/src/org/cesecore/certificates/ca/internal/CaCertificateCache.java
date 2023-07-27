@@ -29,8 +29,9 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.config.OcspConfiguration;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
 
 
 /**

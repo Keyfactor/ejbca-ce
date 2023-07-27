@@ -12,25 +12,22 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
-import java.io.IOException;
-import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
-import java.security.Key;
-import java.security.cert.X509Certificate;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.base.Preconditions;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jwt.EncryptedJWT;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.PlainJWT;
+import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,27 +52,37 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConstants;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
-import com.nimbusds.jwt.EncryptedJWT;
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
-import com.nimbusds.jwt.PlainJWT;
-import com.nimbusds.jwt.SignedJWT;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.Key;
+import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -98,10 +105,14 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoToken;
+
+    private LoadingCache<CertificateStatusCacheKey, Integer> cache;
 
     private boolean allowBlankAudience = false;
-
-    private OauthRequestHelper oauthRequestHelper; 
 
     public WebAuthenticationProviderSessionBean() { }
 
@@ -113,20 +124,34 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         this.globalConfigurationSession = globalConfigurationSession;
         this.securityEventsLoggerSession = securityEventsLoggerSession;
     }
-    
+
+    @PostConstruct
+    public void initialize() {
+        initializeAudienceCheck();
+        initializeCache();
+    }
+
     /**
      * OAuth audience ('aud') claim checking was not enforced until 7.8.0.  Allow a blank Audience value in the OAuth configuration to match any Bearer token until 
      * the database is post-upgraded to 7.8.0.  After that, it is expected that all OAuth provider configurations will have a configured Audience value and that Bearer 
      * token 'aud' claims will match that value to be considered valid.
      */
-    @PostConstruct
-    public void initializeAudienceCheck() {
+    private void initializeAudienceCheck() {
         GlobalUpgradeConfiguration upgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.8.0");
         if (isAllowBlankAudience()) {
             LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
+    }
+
+    private void initializeCache() {
+        cache = Caffeine.newBuilder()
+                .maximumSize(10_000)
+                .refreshAfterWrite(12, TimeUnit.SECONDS)
+                .expireAfterAccess(60, TimeUnit.SECONDS)
+                .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(
+                        key.getSubjectDn(), key.getSerialNumber()));
     }
 
     @Override
@@ -140,88 +165,64 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public AuthenticationToken authenticateUsingOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken) throws TokenExpiredException {
+    public AuthenticationToken authenticateUsingOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken,
+            final String oauthIdToken) throws TokenExpiredException {
         try {
             String keyFingerprint = null;
-            OAuthKeyInfo keyInfo = null;
             if (oauthConfiguration == null || MapUtils.isEmpty(oauthConfiguration.getOauthKeys())) {
                 LOG.info(oauthConfiguration == null ? "Failed to get OAuth configuration. If using peers, the CA version may be too old." :
                         "Cannot authenticate with OAuth because no providers are available");
                 return null;
             }
-            final JWT jwt = JWTParser.parse(encodedOauthBearerToken);
-            if (jwt instanceof PlainJWT) {
-                LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
-                return null;
-            } else if (jwt instanceof EncryptedJWT) {
-                LOG.info("Received encrypted OAuth2 JWT, which is unsupported.");
-                return null;
-            } else if (jwt instanceof SignedJWT) {
-                final SignedJWT signedJwt = (SignedJWT) jwt;
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Signed JWT has key ID: " + signedJwt.getHeader().getKeyID());
-                }
-                keyInfo = getJwtKey(oauthConfiguration, signedJwt.getHeader().getKeyID());
-                if (keyInfo == null) {
-                    logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
-                    return null;
-                }
-                OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(signedJwt.getHeader().getKeyID());
-                if (oAuthPublicKey != null) {
-                    // Default provider (Key ID does not match)
-                    if (verifyJwt(oAuthPublicKey, signedJwt)) {
-                        keyFingerprint = oAuthPublicKey.getKeyFingerprint();
-                    } else {
-                        logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", oAuthPublicKey.getKeyFingerprint()));
-                        return null;
-                    }
-                } else {
-                    if (keyInfo.getKeys().isEmpty()) {
-                        logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
-                        return null;
-                    } else {
-                        for (OAuthPublicKey key : keyInfo.getKeys().values()) {
-                            if (verifyJwt(key, signedJwt)) {
-                                keyFingerprint = key.getKeyFingerprint();
-                                break;
-                            }
-                        }
-                        if (keyFingerprint == null) {
-                            logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature_provider", keyInfo.getLabel()));
-                            return null;
-                        }
-                    }
-                }
-            } else {
-                LOG.info("Received unsupported OAuth2 JWT type.");
+            final SignedJWT jwt = getSignedJwt(encodedOauthBearerToken, oauthIdToken);
+            if (jwt == null) {
+                return null; // Error has already been logged
+            }
+            final String keyId = jwt.getHeader().getKeyID();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Signed JWT has key ID: " + keyId);
+            }
+            final OAuthKeyInfo keyInfo = getJwtKey(oauthConfiguration, keyId);
+            if (keyInfo == null) {
+                logAuthenticationFailure(intres.getLocalizedMessage(keyId != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                 return null;
             }
+            final OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(keyId);
+            if (oAuthPublicKey != null) {
+                // Default provider (Key ID does not match)
+                if (verifyJwt(oAuthPublicKey, jwt)) {
+                    keyFingerprint = oAuthPublicKey.getKeyFingerprint();
+                } else {
+                    logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", oAuthPublicKey.getKeyFingerprint()));
+                    return null;
+                }
+            } else {
+                if (keyInfo.getKeys().isEmpty()) {
+                    logAuthenticationFailure(intres.getLocalizedMessage(keyId != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
+                    return null;
+                } else {
+                    for (OAuthPublicKey key : keyInfo.getKeys().values()) {
+                        if (verifyJwt(key, jwt)) {
+                            keyFingerprint = key.getKeyFingerprint();
+                            break;
+                        }
+                    }
+                    if (keyFingerprint == null) {
+                        logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature_provider", keyInfo.getLabel()));
+                        return null;
+                    }
+                }
+            }
+
             final JWTClaimsSet claims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("JWT Claims:" + claims);
             }
-            
-            // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
-            if (!keyInfo.isAudienceCheckDisabled()) {
-                final String expectedAudience = keyInfo.getAudience();
-                if (StringUtils.isBlank(expectedAudience)) {
-                    if (isAllowBlankAudience()) {
-                        LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
-                                + ".  This is supported for recent upgrades from versions before 7.8.0, but a value should be set IMMEDIATELY.");
-                    } else {
-                        LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
-                        return null;
-                    }
-                } else if (claims.getAudience() == null) {
-                    LOG.warn("No audience claim in JWT.  Can't confirm validity.");
-                    return null;
-                } else if (!claims.getAudience().contains(expectedAudience)) {
-                    logAuthenticationFailure(
-                            intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
-                    return null;
-                }
+
+            if (!verifyOauth2Audience(keyInfo, claims)) {
+                return null;
             }
-            
+
             final Date expiry = claims.getExpirationTime();
             final Date now = new Date();
             final String subject = keyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE) ?
@@ -235,7 +236,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             final OAuth2Principal principal = createOauthPrincipal(claims, keyInfo);
-            return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, keyFingerprint, keyInfo.getLabel());
+            final boolean usingDefaultProvider = (keyId == null);
+            return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, oauthIdToken, keyFingerprint, keyInfo.getLabel(), usingDefaultProvider);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;
@@ -243,6 +245,58 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             LOG.info("Configured not verify OAuth2 JWT signature: " + e.getMessage(), e);
             return null;
         }
+    }
+
+    private SignedJWT getSignedJwt(String encodedOauthBearerToken, String oauthIdToken) throws ParseException {
+        final JWT accessJwt = JWTParser.parse(encodedOauthBearerToken);
+        if (accessJwt instanceof SignedJWT) {
+            LOG.debug("Using access_token");
+            return (SignedJWT) accessJwt;
+        }
+        if (StringUtils.isNotEmpty(oauthIdToken)) {
+            final JWT idJwt = JWTParser.parse(oauthIdToken);
+            if (idJwt instanceof SignedJWT) {
+                LOG.debug("Using id_token");
+                return (SignedJWT) idJwt;
+            }
+        }
+        reportUnsupportedJwtType(accessJwt);
+        return null;
+    }
+
+    private void reportUnsupportedJwtType(final JWT jwt) {
+        Preconditions.checkArgument(!(jwt instanceof SignedJWT));
+        if (jwt instanceof PlainJWT) {
+            LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
+        } else if (jwt instanceof EncryptedJWT) {
+            LOG.info("Received encrypted OAuth2 JWT, which is unsupported.");
+        } else {
+            LOG.info("Received unsupported OAuth2 JWT type.");
+        }
+    }
+
+    private boolean verifyOauth2Audience(final OAuthKeyInfo keyInfo, final JWTClaimsSet claims) {
+        // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
+        if (!keyInfo.isAudienceCheckDisabled()) {
+            final String expectedAudience = keyInfo.getAudience();
+            if (StringUtils.isBlank(expectedAudience)) {
+                if (isAllowBlankAudience()) {
+                    LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
+                            + ".  This is supported for recent upgrades from versions before 7.8.0, but a value should be set IMMEDIATELY.");
+                } else {
+                    LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
+                    return false;
+                }
+            } else if (claims.getAudience() == null) {
+                LOG.warn("No audience claim in JWT.  Can't confirm validity.");
+                return false;
+            } else if (!claims.getAudience().contains(expectedAudience)) {
+                logAuthenticationFailure(
+                        intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
+                return false;
+            }
+        }
+        return true;
     }
 
     private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, OAuthKeyInfo keyInfo) {
@@ -300,30 +354,22 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String refreshToken) {
+    public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String oauthIdToken, final String refreshToken) {
         OAuthGrantResponseInfo oAuthGrantResponseInfo = null;
         try {
-            OAuthKeyInfo keyInfo;
-            final JWT jwt = JWTParser.parse(encodedOauthBearerToken);
-            if (jwt instanceof PlainJWT) {
-                LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
-                return null;
-            } else if (jwt instanceof EncryptedJWT) {
-                LOG.info("Received encrypted OAuth2 JWT, which is unsupported.");
-                return null;
-            } else if (jwt instanceof SignedJWT) {
-                final SignedJWT signedJwt = (SignedJWT) jwt;
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Signed JWT has key ID: " + signedJwt.getHeader().getKeyID());
-                }
-                keyInfo = getJwtKey(oauthConfiguration, signedJwt.getHeader().getKeyID());
-                if (keyInfo == null) {
-                    logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
-                    return null;
-                }
-                String redirectUrl = getBaseUrl();
-                oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            final SignedJWT jwt = getSignedJwt(encodedOauthBearerToken, oauthIdToken);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Signed JWT has key ID: " + jwt.getHeader().getKeyID());
             }
+            final OAuthKeyInfo keyInfo = getJwtKey(oauthConfiguration, jwt.getHeader().getKeyID());
+            if (keyInfo == null) {
+                logAuthenticationFailure(intres.getLocalizedMessage(jwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
+                return null;
+            }
+            String redirectUrl = getBaseUrl();
+            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
+                    internalKeyBindings, certificateStoreSession, cryptoToken));
+            oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;
@@ -369,35 +415,39 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 LOG.debug("certificateArray contains "+certs.size()+" certificates, instead of 1 that is required.");
             }
             return null;
-        } else {
-            final X509Certificate certificate = certs.iterator().next();
-            // Check Validity
-            try {
-                certificate.checkValidity();
-            } catch (Exception e) {
-                logAuthenticationFailure(intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString()));
-            	return null;
-            }
-            // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
-            // Database integrity protection verification not performed running this query
-            final int status = certificateStoreSession.getFirstStatusByIssuerAndSerno(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
-            if (status != -1) {
-                // The certificate is present in the database.
-                if (!(status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
-                    // The certificate is neither active, nor active (but user is notified of coming revocation)
-                    logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
-                    return null;
-                }
-            } else {
-                // The certificate is not present in the database.
-                if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                    logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
-                    return null;
-                }
-                // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
-            }
-            return new X509CertificateAuthenticationToken(certificate);
         }
+        final X509Certificate certificate = certs.iterator().next();
+        // Check Validity
+        try {
+            certificate.checkValidity();
+        } catch (Exception e) {
+            logAuthenticationFailure(intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString()));
+            return null;
+        }
+        // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
+        // Database integrity protection verification not performed running this query
+        final int status = getCachedStatus(certificate);
+        if (status != -1) {
+            // The certificate is present in the database.
+            if (!(status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
+                // The certificate is neither active, nor active (but user is notified of coming revocation)
+                logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
+                return null;
+            }
+        } else {
+            // The certificate is not present in the database.
+            if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+                logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
+                return null;
+            }
+            // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
+        }
+        return new X509CertificateAuthenticationToken(certificate);
+    }
+
+    private int getCachedStatus(X509Certificate certificate) {
+        return cache.get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
+                CertTools.getSerialNumber(certificate)));
     }
 
     private void logAuthenticationFailure(final String msg) {
@@ -418,5 +468,41 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     public boolean isAllowBlankAudience() {
         return allowBlankAudience;
+    }
+
+    private static class CertificateStatusCacheKey {
+
+        private final String subjectDn;
+        private final BigInteger serialNumber;
+
+        public CertificateStatusCacheKey(String subjectDn, BigInteger serialNumber) {
+            this.subjectDn = subjectDn;
+            this.serialNumber = serialNumber;
+        }
+
+        public String getSubjectDn() {
+            return subjectDn;
+        }
+
+        public BigInteger getSerialNumber() {
+            return serialNumber;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            CertificateStatusCacheKey that = (CertificateStatusCacheKey) obj;
+            return Objects.equals(subjectDn, that.subjectDn) && Objects.equals(serialNumber, that.serialNumber);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(subjectDn, serialNumber);
+        }
     }
 }

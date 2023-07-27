@@ -12,8 +12,9 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import com.keyfactor.util.keys.token.CryptoToken;
+
 /**
- * @version $Id$
  *
  */
 public interface CryptoTokenSession {

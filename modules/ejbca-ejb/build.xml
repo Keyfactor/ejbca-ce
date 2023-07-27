@@ -19,10 +19,10 @@
 	
 	<path id="compile-ejbca-ejb.classpath">
 		<path refid="lib.jee.classpath"/>
-		<path refid="lib.mail.classpath"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
-		<path refid="lib.json-smart.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
+		<path refid="lib.caffeine.classpath"/>
+		<path refid="lib.guava.classpath"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
@@ -37,6 +37,7 @@
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-ws.lib}"/>
+		<path location="${mod.ejbca-ws-client-gen.lib}" />
 	</path>
 
 	<path id="servicemanifest-ejbca-ejb.classpath">
@@ -47,6 +48,7 @@
 
 	<path id="compile-test.classpath">
 		<path refid="compile-ejbca-ejb.classpath"/>
+		<path refid="lib.caffeine.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>

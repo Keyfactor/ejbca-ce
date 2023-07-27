@@ -13,6 +13,15 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,12 +59,10 @@ import javax.ejb.ObjectNotFoundException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -122,23 +129,15 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -158,7 +157,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceIn
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
 import org.junit.Before;
@@ -168,14 +166,14 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 
 /**
@@ -307,8 +305,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes, X509Certificate.class);
         helper.reloadKeys();
         log.debug("httpReqPath=" + httpReqPath);
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
         cacert = (X509Certificate) CaTestCase.getTestCACert();
         caid = CaTestCase.getTestCAId();
         
@@ -376,7 +372,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.trace(">test03OcspRevoked()");
         loadUserCert(this.caid);
         // Now revoke the certificate and try again
-        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         this.helper.reloadKeys();
         this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), 
                             RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
@@ -388,7 +384,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.trace(">testOcspRevokedUnespecifiedReason()");
         loadUserCert(this.caid);
         // Now revoke the certificate and try again
-        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
         this.helper.reloadKeys();
         this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), 
                             RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
@@ -417,9 +413,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
     @Test
     public void test07SignedOcsp() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
         // change status of cert to bad status
@@ -510,8 +503,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test08OcspEcdsaGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.",
-                ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
         final int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
         final CAInfo caInfo = addECDSACA("CN=OCSPECDSATEST", "secp256r1");
         final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
@@ -525,30 +516,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
         }
     } // test08OcspEcdsaGood
-
-    /**
-     * Tests ocsp message
-     *
-     * @throws Exception
-     *           error
-     */
-    @Test
-    public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-        int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
-        final CAInfo caInfo = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
-        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-        helper.reloadKeys();
-        try {
-            // Make user and ocspTestCert that we know...
-            createUserCert(ecdsacaid);
-            this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
-        } finally {
-            endEntityManagementSession.deleteUser(admin, "ocsptest");
-            CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
-        }
-    } // test09OcspEcdsaImplicitlyCAGood
 
     @Override
     @Test
@@ -627,9 +594,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test16OcspDsaGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-
         int dsacaid = DSA_DN.hashCode();
         X509Certificate ecdsacacert = addDSACA(DSA_DN, "DSA1024");
         helper.reloadKeys();
@@ -1283,7 +1247,7 @@ Content-Type: text/html; charset=iso-8859-1
             assertNotNull("Failed to create new certificate", xcert);
            
             // Revoke the certificate with unspecified reason
-            this.revocationSession.revokeCertificate(admin, xcert, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+            this.revocationSession.revokeCertificate(admin, xcert, null, null, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
             
             // -------- Testing without an internal key binding the revocatin will be present in the response.  
             OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -1723,8 +1687,6 @@ Content-Type: text/html; charset=iso-8859-1
      *           error
      */
     public void removeDSACA() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
         try {
             if (caSession.existsCa(DSA_DN.hashCode())) {
                 final int cryptoTokenId = caSession.getCAInfo(admin, DSA_DN.hashCode()).getCAToken().getCryptoTokenId();
@@ -1756,8 +1718,6 @@ Content-Type: text/html; charset=iso-8859-1
      *           error
      */
     public void removeECDSACA() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
         CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPECDSATEST".hashCode()));
         CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPECDSAIMPCATEST".hashCode()));
     }
@@ -1876,8 +1836,8 @@ Content-Type: text/html; charset=iso-8859-1
         int cryptoTokenId = 0;
         CAInfo info = null;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec);
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec, keySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             // Create and active OSCP CA Service.
             List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1903,20 +1863,12 @@ Content-Type: text/html; charset=iso-8859-1
                 JCEECPublicKey ecpk = (JCEECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                    assertNull("ImplicitlyCA must have null spec", spec);
-                } else {
-                    assertNotNull("secp256r1 must not have null spec", spec);
-                }
+                assertNotNull("secp256r1 must not have null spec", spec);                
             } else if (pk instanceof BCECPublicKey) {
                 BCECPublicKey ecpk = (BCECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                if (StringUtils.equals(keySpec, "implicitlyCA")) {
-                    assertNull("ImplicitlyCA must have null spec", spec);
-                } else {
-                    assertNotNull("secp256r1 must not have null spec", spec);
-                }               
+                assertNotNull("secp256r1 must not have null spec", spec);          
             } else {
                 assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
             }
@@ -1944,8 +1896,8 @@ Content-Type: text/html; charset=iso-8859-1
         X509Certificate cacert = null;
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec);
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec, keySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             // Create and active OSCP CA Service.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1982,8 +1934,8 @@ Content-Type: text/html; charset=iso-8859-1
                     CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException, 
                     CADoesntExistsException, CAExistsException {
         try {
-            int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, subcaDN, "1024");
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, subcaDN, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             // Create and active OSCP CA Service.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));

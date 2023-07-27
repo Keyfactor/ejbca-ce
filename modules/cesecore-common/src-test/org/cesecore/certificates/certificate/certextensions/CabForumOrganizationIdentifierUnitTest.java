@@ -12,11 +12,18 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.certextensions;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1PrintableString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.ASN1TaggedObject;
@@ -34,20 +41,17 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.util.Base64;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Tests of {@link CabForumOrganizationIdentifier}
- * @version $Id$
  */
 public class CabForumOrganizationIdentifierUnitTest extends X509CAUnitTestBase {
 
@@ -64,6 +68,8 @@ public class CabForumOrganizationIdentifierUnitTest extends X509CAUnitTestBase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
         cryptoToken = getNewCryptoToken();
         ca = createTestCA(cryptoToken, CADN);
     }
@@ -90,7 +96,7 @@ public class CabForumOrganizationIdentifierUnitTest extends X509CAUnitTestBase {
         assertAsn1String("Registration Country", DERPrintableString.class, "US", seqIter.next());
         final ASN1TaggedObject tagged = ASN1TaggedObject.getInstance(seqIter.next());
         assertEquals("Wrong tag number for 'Registration State or Province'", 0, tagged.getTagNo());
-        assertAsn1String("Registration State or Province", DERPrintableString.class, "CA", DERPrintableString.getInstance(tagged, false));
+        assertAsn1String("Registration State or Province", DERPrintableString.class, "CA", ASN1PrintableString.getInstance(tagged, false));
         assertAsn1String("Registration Reference", DERUTF8String.class, "123456", seqIter.next());
         assertFalse("Extranous items in sequence", seqIter.hasNext());
     }

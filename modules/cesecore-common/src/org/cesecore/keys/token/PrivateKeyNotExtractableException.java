@@ -12,7 +12,7 @@
  *************************************************************************/ 
 package org.cesecore.keys.token;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * An exception thrown when someone tries to extract a Private Key from a Crypto Token that doesn't allow it.

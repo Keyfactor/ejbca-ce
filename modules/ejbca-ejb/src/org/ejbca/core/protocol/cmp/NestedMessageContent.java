@@ -38,10 +38,12 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Nested Message Content according to RFC4210. The PKI message is signed by an RA authority.
@@ -250,6 +252,10 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException {
+        return null;
+    }
+    @Override
+    public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
         return null;
     }
 

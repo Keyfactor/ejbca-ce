@@ -20,6 +20,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -28,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +45,11 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 import javax.ejb.EJBException;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -66,7 +72,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -78,11 +83,9 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -116,6 +119,12 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.HttpTools;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.KeyTools;
+
+import static org.primefaces.util.Constants.SEMICOLON;
+
 /**
  * The main bean for the web interface, it contains all basic functions.
  * <p>
@@ -127,6 +136,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private static final long serialVersionUID = 1L;
 
     private static Logger log = Logger.getLogger(EjbcaWebBeanImpl.class);
+
+    private static final char SINGLE_SPACE_CHAR = ' ';
 
     private final EjbBridgeSessionLocal ejbLocalHelper;
     private final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
@@ -169,6 +180,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
         boolean isAuthenticatedWithToken; // a flag to detect authentication path used
         String oauthAuthenticationToken; // Keep token used for authentication so we can detect changes
+        String oauthIdToken;
         boolean initialized = false;
         boolean errorpage_initialized = false;
         AuthenticationToken administrator;
@@ -262,10 +274,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         final String oauthBearerToken = getBearerToken(httpServletRequest);
+        final String oauthIdToken = getOauthIdToken(httpServletRequest);
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
         if (!authState.initialized || !StringUtils.equals(authState.authenticationTokenTlsSessionId, currentTlsSessionId)
                 || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthAuthenticationToken, oauthBearerToken))
+                || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthIdToken, oauthIdToken))
                 || (!authState.isAuthenticatedWithToken && !StringUtils.equals(fingerprint, authState.certificateFingerprint))) {
             if (log.isDebugEnabled() && authState.initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
@@ -323,17 +337,21 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
             if (oauthBearerToken != null && stagingState.administrator == null) {
                 try {
-                    stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken);
+                    stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, oauthIdToken);
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
                     if (refreshToken != null) {
-                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, refreshToken);
+                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, oauthIdToken, refreshToken);
                         if (token != null) {
                             httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                            if (token.getIdToken() != null) {
+                                httpServletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
+                            }
                             if (token.getRefreshToken() != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                             }
-                            stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), token.getAccessToken());
+                            stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(),
+                                    token.getAccessToken(), token.getIdToken());
                         }
                     }
                 }
@@ -342,6 +360,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
                 stagingState.isAuthenticatedWithToken = true;
                 stagingState.oauthAuthenticationToken = oauthBearerToken;
+                stagingState.oauthIdToken = oauthIdToken;
                 final Map<String, Object> details = new LinkedHashMap<>();
                 final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) stagingState.administrator;
                 final OAuth2Principal principal = oauth2Admin.getClaims();
@@ -356,7 +375,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 stagingState.usercommonname = principal.getDisplayName();
             }
             if (stagingState.administrator == null) {
-                stagingState.administrator = authenticationSession.authenticateUsingNothing(stagingState.currentRemoteIp, currentTlsSessionId!=null);
+                stagingState.administrator = authenticationSession.authenticateUsingNothing(stagingState.currentRemoteIp, httpServletRequest.isSecure());
                 final Map<String, Object> details = new LinkedHashMap<>();
                 if (!checkRoleMembershipAndLog(httpServletRequest, "AuthenticationToken", null, null, details)) {
                     throw new AuthenticationFailedException("Authentication failed for certificate with no access");
@@ -432,6 +451,15 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return oauthBearerToken;
     }
 
+    private String getOauthIdToken(final HttpServletRequest httpServletRequest) {
+        final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+        if (oauthBearerToken != null) {
+            // Can't mix an ID Token with an access token from an HTTP header (it would be insecure)
+            return null;
+        }
+        return (String) httpServletRequest.getSession(true).getAttribute("ejbca.id.token");
+    }
+
     /**
      * Gets refresh token from session
      * @param httpServletRequest
@@ -474,7 +502,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
-    public synchronized GlobalConfiguration initialize_errorpage(final HttpServletRequest request) throws Exception {
+    public synchronized GlobalConfiguration initialize_errorpage(final HttpServletRequest request) {
         if (!authState.errorpage_initialized) {
             stagingState = new AuthState();
             initializeErrorPageInternal(request);
@@ -484,7 +512,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return globalconfiguration;
     }
 
-    private void initializeErrorPageInternal(final HttpServletRequest request) throws Exception {
+    private void initializeErrorPageInternal(final HttpServletRequest request) {
         if (stagingState.administrator == null) {
             final String remoteAddr = request.getRemoteAddr();
             stagingState.administrator = new PublicAccessAuthenticationToken(remoteAddr, true);
@@ -708,14 +736,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return globalconfiguration;
     }
 
-    /**
-     * @return Public application base URL (e.g. 'http://localhost:8080/ejbca')
-     */
-    @Override
-    public String getBaseUrlPublic() {
-        return globalconfiguration == null ? null : globalconfiguration.getBaseUrlPublic();
-    }
-
     @Override
     public String getCurrentRemoteIp() {
         return authState.currentRemoteIp;
@@ -927,7 +947,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /**
      * Save the given MSAutoEnrollmentConfiguration configuration.
      *
-     * @param msAutoenrollmentConfig A MSAutoEnrollmentConfiguration
+     * @param msAutoEnrollmentConfiguration A MSAutoEnrollmentConfiguration
      * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
      */
     @Override
@@ -1146,16 +1166,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public Map<Integer, String> getPublisherIdToNameMapByValue() {
         final Map<Integer,String> publisheridtonamemap = publisherSession.getPublisherIdToNameMap();
         final List<Map.Entry<Integer, String>> publisherIdToNameMapList = new LinkedList<>(publisheridtonamemap.entrySet());
-        publisherIdToNameMapList.sort(new Comparator<Entry<Integer, String>>() {
-            @Override
-            public int compare(final Entry<Integer, String> o1, final Entry<Integer, String> o2) {
-                if (o1 == null) {
-                    return o2 == null ? 0 : -1;
-                } else if (o2 == null) {
-                    return 1;
-                }
-                return o1.getValue().compareToIgnoreCase(o2.getValue());
+        publisherIdToNameMapList.sort((o1, o2) -> {
+            if (o1 == null) {
+                return o2 == null ? 0 : -1;
+            } else if (o2 == null) {
+                return 1;
             }
+            return o1.getValue().compareToIgnoreCase(o2.getValue());
         });
         final Map<Integer, String> sortedMap = new LinkedHashMap<>();
         for (final Map.Entry<Integer, String> entry : publisherIdToNameMapList) {
@@ -1317,19 +1334,19 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     localhostName = host;
                 } else {
                     if (checkHost(host, excludeActiveCryptoTokens)) {
-                        succeededHost.append(' ').append(host);
+                        succeededHost.append(SINGLE_SPACE_CHAR).append(host);
                     } else {
-                        failedHosts.append(' ').append(host);
+                        failedHosts.append(SINGLE_SPACE_CHAR).append(host);
                     }
                 }
             }
         }
-        succeededHost.append(' ').append(localhostName);
+        succeededHost.append(SINGLE_SPACE_CHAR).append(localhostName);
         // Invalidate local GUI cache
         authState.initialized = false;
         if (failedHosts.length() > 0) {
             // The below will print hosts starting with a blank (space), but it's worth it to not have to consider error handling if toString is empty
-            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts.toString() + "), but succeeded on (" + succeededHost.toString() + ").");
+            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts + "), but succeeded on (" + succeededHost + ").");
         }
         if (log.isTraceEnabled()) {
             log.trace("<clearClusterCache");
@@ -1356,6 +1373,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 final int responseCode = con.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     return true;
+                } else if(responseCode == HttpURLConnection.HTTP_MOVED_TEMP || 
+                        responseCode == HttpURLConnection.HTTP_MOVED_PERM) { 
+                    // only happens if redirect is https
+                    // https redirects may be setup by wildfly filters or (reverse-)proxies
+                    return followHttpsRedirect(con.getHeaderField("Location"), 0, hostname);
                 }
                 log.info("Failed to clear caches for host: " + hostname + ", responseCode=" + responseCode);
             } catch (final IOException e) {
@@ -1365,6 +1387,51 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             log.info("Not clearing cache for host with empty hostname.");
         }
         return false;
+    }
+    
+    private boolean followHttpsRedirect(String redirectUri, int redirectAttempt, String hostname) {
+        
+        if(StringUtils.isBlank(redirectUri)) {
+            return false;
+        }
+        SSLContext context = null;
+        try {
+            context = SSLContext.getInstance("TLS");
+            context.init(null, new TrustManager[] { new X509TrustManagerAcceptAll() }, null);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new IllegalStateException(e);
+        }
+        
+        HttpsURLConnection conn = null;
+        try {
+            URL url = new URL(redirectUri);
+            conn = (HttpsURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setSSLSocketFactory(context.getSocketFactory());
+            conn.setHostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String arg0, SSLSession arg1) {
+                    return true;
+                }
+            });
+            conn.connect();
+            
+            int responseCode = conn.getResponseCode();
+            log.info("Cache clearance redirect attempt: " + redirectAttempt  + " at: " + redirectUri + 
+                                    " response: " + responseCode);
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                return true;
+            } else if((responseCode == HttpURLConnection.HTTP_MOVED_TEMP || 
+                responseCode == HttpURLConnection.HTTP_MOVED_PERM) && redirectAttempt < 3) {
+                return followHttpsRedirect(conn.getHeaderField("Location"), redirectAttempt+1, hostname);
+            }
+        } catch (IOException e) {
+            log.error("Cache clearance redirect attempt failed with exception: " + e.getMessage());
+        }
+        
+        log.info("Failed to clear caches for host: " + hostname);
+        return false;
+        
     }
 
     /** @return true if the provided hostname matches the name reported by the system for localhost */
@@ -1416,7 +1483,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         reloadCmpConfiguration();
         cmpConfigForEdit = new CmpConfiguration();
-        cmpConfigForEdit.setAliasList(new LinkedHashSet<String>());
+        cmpConfigForEdit.setAliasList(new LinkedHashSet<>());
         cmpConfigForEdit.addAlias(alias);
         for(final String key : CmpConfiguration.getAllAliasKeys(alias)) {
             final String value = cmpconfiguration.getValue(key, alias);
@@ -1610,12 +1677,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      * @param endEntityProfileId the id of an end entity profile
      * @return a sorted list of certificate authorities for the specified end entity profile
      * @throws NumberFormatException if the end entity profile id is not a number
-     * @throws CADoesntExistsException if the certificate authority pointed to by an end entity profile does not exist
      * @throws AuthorizationDeniedException if we were denied access control
      */
     @Override
     public Collection<String> getAvailableCAsOfEEProfile(final String endEntityProfileId)
-            throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
+            throws NumberFormatException, AuthorizationDeniedException {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
             final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
             return addKeyIdAndSort(certificateAuthorities);
@@ -1724,14 +1790,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      * @param idString the semicolon separated list of CA IDs.
      * @return the list of CA names as semicolon separated String.
      * @throws NumberFormatException if a CA ID could not be parsed.
-     * @throws AuthorizationDeniedException if authorization was denied.
      */
     @Override
-    public String getCaNamesString(final String idString) throws NumberFormatException, AuthorizationDeniedException {
+    public String getCaNamesString(final String idString) throws NumberFormatException {
         final TreeMap<String, Integer> availableCas = getCAOptions();
         final List<String> result = new ArrayList<>();
         if (StringUtils.isNotBlank(idString)) {
-            for (final String id : idString.split(";")) {
+            for (final String id : idString.split(SEMICOLON)) {
                 if (availableCas.containsValue(Integer.valueOf(id))) {
                     for (final Entry<String,Integer> entry : availableCas.entrySet()) {
                         if (entry.getValue() != null && entry.getValue().equals( Integer.valueOf(id))) {
@@ -1741,7 +1806,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
             }
         }
-        return StringUtils.join(result, ";");
+        return StringUtils.join(result, SEMICOLON);
     }
 
     /** @return true if we are running in the enterprise mode otherwise false. */
@@ -1753,12 +1818,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /** @return true if we are running an EJBCA build that has CA functionality enabled. */
     @Override
     public boolean isRunningBuildWithCA() {
-        try {
-            Class.forName("org.cesecore.certificates.ca.X509CAImpl");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+        return isRunningBuildWith("org.cesecore.certificates.ca.X509CAImpl");
+    }
+
+    /** @return true if we are running EJBCA build that has VA functionality enabled. */
+    @Override
+    public boolean isRunningBuildWithVA() {
+        return isRunningBuildWith("org.ejbca.ui.web.protocol.OCSPServlet");
     }
 
     /** @return true if we are running an EJBCA build that has RA functionality enabled.
@@ -1769,8 +1835,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      * */
     @Override
     public boolean isRunningBuildWithRA() {
+        return isRunningBuildWith("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
+    }
+
+    private static boolean isRunningBuildWith(String className) {
         try {
-            Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
+            Class.forName(className);
             return true;
         } catch (ClassNotFoundException e) {
             return false;

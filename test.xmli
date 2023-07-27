@@ -50,8 +50,8 @@
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/p11ng" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/plugins-ee" target="runsa" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -59,7 +59,6 @@
         <antcall target="optionaltestconfigdump-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestct" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestcmpproxy" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestcits-unit" inheritall="true" inheritrefs="true"/>
@@ -120,11 +119,6 @@
     <target name="optionaltestest" if="${est.exists}">
         <ant antfile="build.xml" dir="modules/est" target="test" inheritall="true" inheritrefs="true"/>
     </target>
-    <condition property="cmpproxy.exists"><available file="modules/cmpProxy" /></condition>
-    <target name="optionaltestcmpproxy" if="${cmpproxy.exists}">
-        <antcall target="externalra-library" inheritall="true" inheritrefs="true"/>
-        <ant antfile="build-http.xml" dir="modules/cmpProxy" target="test" inheritall="true" inheritrefs="true"/>
-    </target>
     <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
     <target name="optionaltestcaa" if="${caa.exists}">
         <ant antfile="build.xml" dir="modules/caa" target="test" inheritall="true" inheritrefs="true"/>
@@ -157,7 +151,6 @@
 					<include name="modules/ejbca-ejb/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-entity/src-test/**/${test.runone}.java" />
 					<include name="modules/systemtests/src-test/**/${test.runone}.java" />
-					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 					<include name="modules/statedump/src-test/**/${test.runone}.java" />
 					<include name="modules/clientToolBox/src-test/**/${test.runone}.java" />
 					<include name="modules/configdump/src-test/**/${test.runone}.java" />
@@ -174,7 +167,6 @@
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-common-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
-					<include name="modules/ejbca-webtest/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-common/src-test/**/${test.runone}.java" />
@@ -186,7 +178,6 @@
                     <include name="modules/ssh/src-test/**/${test.runone}.java" />
                     <include name="modules/msae/src-test/**/${test.runone}.java" />
                     <include name="modules/cits/src-test/**/${test.runone}.java" />
-                    <include name="modules/p11ng/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -197,9 +188,6 @@
     	</condition>
     	<condition property="module" value="modules/ejbca-entity">
     		<matches string="${test-fullname}" pattern="^modules/ejbca-entity/.*$"/>
-    	</condition>
-    	<condition property="module" value="modules/externalra">
-    		<matches string="${test-fullname}" pattern="^modules/externalra/.*$"/>
     	</condition>
     	<condition property="module" value="modules/statedump">
     		<matches string="${test-fullname}" pattern="^modules/statedump/.*$"/>
@@ -258,9 +246,6 @@
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
         </condition>
-        <condition property="module" value="modules/ejbca-webtest">
-            <matches string="${test-fullname}" pattern="^modules/ejbca-webtest/.*$"/>
-        </condition>
     	<condition property="module" value="modules/ejbca-ws-cli">
     	    <matches string="${test-fullname}" pattern="^modules/ejbca-ws-cli/.*$"/>
     	</condition>
@@ -290,9 +275,6 @@
         </condition>
         <condition property="module" value="modules/cits">
             <matches string="${test-fullname}" pattern="^modules/cits/.*$"/>
-        </condition>
-        <condition property="module" value="modules/p11ng">
-            <matches string="${test-fullname}" pattern="^modules/p11ng/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>
@@ -329,22 +311,6 @@
 
     <target name="test:runws" description="Run web service tests." depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runws" inheritall="true" inheritrefs="true"/>
-    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:externalra" description="run JUnit External RA test." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/externalra" target="test" inheritall="true" inheritrefs="true"/>
-    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:externalra-scep" description="run JUnit stand-alone SCEP External RA tests" depends="deleteDirectories">
-    	<echo message="Hint: use the ant-target 'test:externalra-scep.setuptest' to setup a proper testing environment for this test."/>
-    	<ant antfile="build.xml" dir="modules/externalra-scep" target="test" inheritall="true" inheritrefs="true"/>
-    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:externalra-scep.setuptest" description="setup some a basic environment for the stand-alone SCEP External RA tests" depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/externalra-scep" target="setuptest" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
@@ -407,14 +373,6 @@
     <target name="test:vapub" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/va" target="test" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:webtest:jenkins" description="run all JUnit web tests without JUnit reporting." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/ejbca-webtest" target="test" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:webtest" description="run all JUnit web tests with report." depends="deleteDirectories, test:webtest:jenkins">
-        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:unit:ejbca-rest-api" description="run all JUnit tests for ejbca-rest-api." depends="deleteDirectories">

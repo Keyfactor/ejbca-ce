@@ -13,6 +13,12 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -38,15 +44,9 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
@@ -65,6 +65,8 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
+import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
+import org.ejbca.ui.web.rest.api.resource.util.TestEndEntityParamHolder;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -103,15 +105,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
-import static org.cesecore.certificates.crl.RevocationReasons.*;
+import static org.cesecore.certificates.crl.RevocationReasons.AACOMPROMISE;
+import static org.cesecore.certificates.crl.RevocationReasons.AFFILIATIONCHANGED;
+import static org.cesecore.certificates.crl.RevocationReasons.CACOMPROMISE;
+import static org.cesecore.certificates.crl.RevocationReasons.CERTIFICATEHOLD;
+import static org.cesecore.certificates.crl.RevocationReasons.CESSATIONOFOPERATION;
+import static org.cesecore.certificates.crl.RevocationReasons.KEYCOMPROMISE;
+import static org.cesecore.certificates.crl.RevocationReasons.NOT_REVOKED;
+import static org.cesecore.certificates.crl.RevocationReasons.PRIVILEGESWITHDRAWN;
+import static org.cesecore.certificates.crl.RevocationReasons.SUPERSEDED;
+import static org.cesecore.certificates.crl.RevocationReasons.UNSPECIFIED;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -121,10 +134,11 @@ import static org.junit.Assume.assumeTrue;
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
 
-    //private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
     private static final String CRL_FILENAME = "CertificateRestSystemTestCrlFile";
     private static final String ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE = "Certificate with issuer: {0} and serial " +
             "number: {1} has previously been revoked. Revocation reason could not be changed or was not allowed.";
+    private static final String INVALIDITY_DATE_NOT_ALLOWED_BY_CA = "Invalidity date was given but not allowed by CA, {0}, {1}";
+    
     private static final JSONParser jsonParser = new JSONParser();
 
     private static final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -135,7 +149,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
-    private static final Random random = new Random();
+    private static final Random RANDOM = new Random();
     private X509CA x509TestCa;
     private String testCaName = "CertificateRestSystemTestCa";
     private String testIssuerDn = "C=SE,CN=" + testCaName;
@@ -143,7 +157,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private String testCertProfileName = "CertificateRestSystemTestCertProfile";
     private String testEeProfileName = "CertificateRestSystemTestEeProfile";
 
-    private final String csr = "-----BEGIN CERTIFICATE REQUEST-----\n"
+    private static final String CSR = "-----BEGIN CERTIFICATE REQUEST-----\n"
             + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
             + "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\n"
             + "ZWxsbzEyM3NlcnZlcjYwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDe\n"
@@ -176,7 +190,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Before
     public void setUp() throws Exception {
-        final int randomSuffix = random.nextInt();
+        final int randomSuffix = RANDOM.nextInt();
         testCaName += randomSuffix;
         testIssuerDn += randomSuffix;
         testUsername += randomSuffix;
@@ -247,6 +261,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertJsonContentType(actualResponse);
     }
 
+
     @Test
     public void shouldRevokeCertificate() throws Exception {
         // Create test user & generate certificate
@@ -276,6 +291,245 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("KEY_COMPROMISE", databaseReason);
     }
 
+    @Test
+    public void shouldRevokeCertificateWithInvalidityDate() throws Exception {
+        // given
+        enableInvalidityDate();
+        // Create test user & generate certificate
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
+        final String invalidityDateString = getRevocationRequestDate();
+        final long invalidityDatelong = DatatypeConverter.parseDateTime(invalidityDateString).getTime().getTime();
+        
+        // when
+        // Attempt revocation through REST with invalidity date
+        final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE&invalidity_date=" + invalidityDateString).request().put(null);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
+        final String responseSerialNr = (String) actualJsonObject.get("serial_number");
+        final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
+        final String responseInvalidityDate = (String) actualJsonObject.get("invalidity_date");
+
+        // then
+        // Verify rest response
+        assertEquals(testIssuerDn, responseIssuerDn);
+        assertEquals(serialNr, responseSerialNr);
+        assertEquals(true, responseStatus);
+        assertEquals(invalidityDateString, responseInvalidityDate);
+        // Verify actual database value
+        CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        final long databaseInvalidityDate = certificateData.getInvalidityDate();
+        assertEquals(invalidityDatelong, databaseInvalidityDate);
+    }
+    
+    @Test
+    public void shouldAddInvalidityDateToRevokedCertificate() throws Exception {
+        // given
+        enableInvalidityDate();
+        // Create test user & generate certificate
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
+        final String invalidityDateString = getRevocationRequestDate();
+        final long invalidityDatelong = DatatypeConverter.parseDateTime(invalidityDateString).getTime().getTime();
+        
+        // when
+        // We must first revoke the certificate to be able to use invalidity date without sending a revocation reason at the same time...
+        newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
+        // Verify we are allowed to add / change invalidity date when change of revocation reason is not allowed
+        disableRevocationReasonChange(); 
+        final Response actualResponse2 = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?invalidity_date=" + invalidityDateString).request().put(null);
+        final String actualJsonString = actualResponse2.readEntity(String.class);
+        assertJsonContentType(actualResponse2);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
+        final String responseSerialNr = (String) actualJsonObject.get("serial_number");
+        final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
+        final String responseInvalidityDate = (String) actualJsonObject.get("invalidity_date");
+
+        // then
+        // Verify rest response
+        assertEquals(testIssuerDn, responseIssuerDn);
+        assertEquals(serialNr, responseSerialNr);
+        assertEquals(true, responseStatus);
+        assertEquals(invalidityDateString, responseInvalidityDate);
+        // Verify actual database value
+        CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        final long databaseInvalidityDate = certificateData.getInvalidityDate();
+        assertEquals(invalidityDatelong, databaseInvalidityDate);
+    }
+    
+    @Test
+    public void shouldAllowInvalidityDateChange() throws Exception {
+        // given
+        enableInvalidityDate();
+        // Create test user & generate certificate
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        final String invalidityDateString = getRevocationRequestDate();
+        TimeUnit.MILLISECONDS.sleep(1200);        
+        final String invalidityDateUpdateString = getRevocationRequestDate();
+
+        // when
+        // We must first revoke the certificate with initial invalidity date
+        final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE&invalidity_date=" + invalidityDateString).request().put(null);
+        // Verify we are allowed to add / change invalidity date, even when change of revocation reason is not allowed
+        final Response actualResponse2 = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?invalidity_date=" + invalidityDateUpdateString).request().put(null);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final String actualJsonString2 = actualResponse2.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        assertJsonContentType(actualResponse2);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONObject actualJsonObject2 = (JSONObject) jsonParser.parse(actualJsonString2);
+        final String responseSerialNr = (String) actualJsonObject.get("serial_number");
+        final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
+        final String responseRevocationDate = (String) actualJsonObject.get("revocation_date");
+        final String responseInvalidityDate = (String) actualJsonObject.get("invalidity_date");
+        
+        // Get invalidity date and revocation date from 2nd response 
+        final String responseInvalidityDateUpdate = (String) actualJsonObject2.get("invalidity_date");
+        final String responseRevocationDateAfterUpdate = (String) actualJsonObject2.get("revocation_date");
+        
+        // then
+        // Verify 1st rest response
+        assertEquals(serialNr, responseSerialNr);
+        assertEquals(true, responseStatus);
+        assertEquals(invalidityDateString, responseInvalidityDate);
+        assertEquals(responseRevocationDate, responseRevocationDateAfterUpdate);
+        // Assert that we have given different dates at revoke and update
+        assertNotEquals(invalidityDateString, invalidityDateUpdateString);
+        // Assert that the date from the 1st response is not the same date as the date from the 2nd response 
+        assertNotEquals(responseInvalidityDate, responseInvalidityDateUpdate);
+        // Assert that the date we wanted to update to is the same as the date in the response
+        assertEquals(invalidityDateUpdateString, responseInvalidityDateUpdate);
+    }
+
+    @Test
+    public void shouldPreventRevocationWithAFutureInvalidityDate() throws Exception {
+        // given
+        final String serialNumber = generateTestSerialNumber();
+        final String invalidityDate = "3000-01-01T00:00:00Z";
+        final int expectedErrorCode = 400;
+        final String expectedErrorMessage = MessageFormat.format("Date in the future: ''{0}''.", invalidityDate);
+        // when
+        final Response response = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNumber + "/revoke/?reason=KEY_COMPROMISE&invalidity_date=" + invalidityDate).request().put(null);
+        // then
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.readEntity(String.class));
+    }
+    
+    @Test
+    public void shouldPreventRevocationWithInvalidityDateIfDisabledOnCaLevel() throws Exception {
+        // given
+        disableInvalidityDate();
+        final String invalidityDate = "2023-01-01T00:00:00Z";
+        final String serialNumber = generateTestSerialNumber();
+        final int expectedErrorCode = 409;
+        final String expectedErrorMessage = MessageFormat.format(INVALIDITY_DATE_NOT_ALLOWED_BY_CA, testIssuerDn, serialNumber.toLowerCase());
+        
+        // when
+        // try perform revocation
+        final Response response = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNumber + "/revoke/?reason=KEY_COMPROMISE&invalidity_date=" + invalidityDate).request().put(null);
+        
+        // then
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.readEntity(String.class));
+    }
+
+    @Test
+    public void shouldPreserveInvalidityDateWhenOnlyRevocationReasonIsChanged() throws Exception {
+        // given
+        enableInvalidityDate();
+        // Create test user & generate certificate
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
+        final String invalidityDateString = getRevocationRequestDate();
+        TimeUnit.MILLISECONDS.sleep(1200);        
+        
+        // when
+        final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&invalidity_date=" + invalidityDateString).request().put(null);
+        // Get invalidity date value from data base
+        CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        long dataBaseInvalidityDate = certificateData.getInvalidityDate();
+        // Now change reason
+        final Response actualResponse2 = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final String actualJsonString2 = actualResponse2.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        assertJsonContentType(actualResponse2);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONObject actualJsonObject2 = (JSONObject) jsonParser.parse(actualJsonString2);
+        final String responseSerialNr = (String) actualJsonObject.get("serial_number");
+        final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
+        //final String responseInvalidityDate = (String) actualJsonObject.get("invalidity_date");
+        // Get invalidity date from 2nd response 
+        final String responseInvalidityDateUpdate = (String) actualJsonObject2.get("invalidity_date");
+        // Get invalidity date value from database
+        CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        long dataBaseInvalidityDateAfterRevocationReasonChange = certificateData2.getInvalidityDate();
+
+        // then
+        // verify rest response
+        assertEquals(serialNr, responseSerialNr);
+        assertEquals(true, responseStatus);
+        assertEquals(null, responseInvalidityDateUpdate);// we have not updated invalidity date...
+        // verify actual database value of invalidity date not changed after only revocation reason change
+        assertEquals(dataBaseInvalidityDate, dataBaseInvalidityDateAfterRevocationReasonChange);
+    }
+
+    @Test
+    public void shouldPreventAnyInvalidityDateChangeWhenRevocationReasonChangeFails() throws Exception {
+        // given
+        enableInvalidityDate();
+        // Create test user & generate certificate
+        createTestEndEntity();
+        final KeyStore keyStore = createKeystore();
+        String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
+        String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
+        final int expectedErrorCode = 409;
+        final String expectedErrorMessage = MessageFormat.format(ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE, testIssuerDn, serialNr.toLowerCase());
+        final String invalidityDateString = getRevocationRequestDate();
+        TimeUnit.MILLISECONDS.sleep(1200);        
+        final String invalidityDateUpdateString = getRevocationRequestDate();
+        
+        // when
+        final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&invalidity_date=" + invalidityDateString).request().put(null);
+        // Verify actual database value
+        CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        long dataBaseInvalidityDate = certificateData.getInvalidityDate();
+        disableRevocationReasonChange();
+        
+        // Try to update revocation reason, it is not allowed and should fail
+        final Response actualResponse2 = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE&invalidity_date=" + invalidityDateUpdateString).request().put(null);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final String actualJsonString2 = actualResponse2.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        assertJsonContentType(actualResponse2);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONObject actualJsonObject2 = (JSONObject) jsonParser.parse(actualJsonString2);
+
+        // then
+        // Verify expected failure         
+        assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, actualJsonObject2.toJSONString());        
+        CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
+        long dataBasenvalidityDateAfterFailedRevocationReasonChange = certificateData2.getInvalidityDate();
+        final String responseSerialNr = (String) actualJsonObject.get("serial_number");
+        final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
+        String responseReason = (String) actualJsonObject2.get("revocation_reason");
+        assertNotEquals("KEY_COMPROMISE", responseReason);
+        assertNotEquals(invalidityDateString, invalidityDateUpdateString);
+        // Verify no change to invalidity date in database since change of revocation reason failed
+        assertEquals(dataBaseInvalidityDate, dataBasenvalidityDateAfterFailedRevocationReasonChange);
+        assertEquals(serialNr, responseSerialNr);
+        assertEquals(true, responseStatus);
+    }
+    
     @Test
     public void shouldAllowRevocationReasonChange() throws Exception {
         enableRevocationReasonChange();
@@ -350,7 +604,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String serialNumber = generateTestSerialNumber();
         final String revocationDate = "3000-01-01T00:00:00Z";
         final int expectedErrorCode = 400;
-        final String expectedErrorMessage = MessageFormat.format("Revocation date in the future: ''{0}''.", revocationDate);
+        final String expectedErrorMessage = MessageFormat.format("Date in the future: ''{0}''.", revocationDate);
         // when
         final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, KEYCOMPROMISE.getStringValue(), revocationDate);
         // then
@@ -382,7 +636,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String revocationDate = "2000-01-01T00:00:00Z";
         final int expectedErrorCode = 422;
         final String expectedErrorMessage = MessageFormat.format("Back dated revocation not allowed for certificate profile ''{0}''." +
-                " Certificate serialNumber ''{1}'', issuerDN ''{2}''.", testCertProfileName, serialNumber.toLowerCase(), testIssuerDn);
+                " Certificate serialNumber ''{1}'', issuerDN ''{2}''.", testCertProfileName, serialNumber.toLowerCase(),
+                testIssuerDn);
         // when
         final JSONObject response = revokeCertificate(testIssuerDn, serialNumber, KEYCOMPROMISE.getStringValue(), revocationDate);
         // then
@@ -731,7 +986,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 endEntityProfileName("EMPTY").
                 username(testUsername).
                 password("foo123").email(email).
-                certificateRequest(csr).build();
+                certificateRequest(CSR).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
@@ -770,7 +1025,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateAuthorityName(testCaName).
                 username(testUsername).
                 password("foo123").
-                certificateRequest(csr).build();
+                certificateRequest(CSR).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
@@ -986,6 +1241,25 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     /**
+     * Enables "Allow Invalidity Date" for test CA 
+     */
+    private void enableInvalidityDate() throws Exception {
+        X509CAInfo caInfo = (X509CAInfo) x509TestCa.getCAInfo();
+        caInfo.setAllowInvalidityDate(true);
+        caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, caInfo);
+    }
+
+    /**
+     * Disables "Allow Invalidity Date" for test CA 
+     */
+    private void disableInvalidityDate() throws Exception {
+        X509CAInfo caInfo = (X509CAInfo) x509TestCa.getCAInfo();
+        caInfo.setAllowInvalidityDate(false);
+        caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, caInfo);
+    }
+
+    
+    /**
      * Disables "Allow changing revocation reason" setting for test CA
      */
     private void disableRevocationReasonChange() throws Exception {
@@ -1050,30 +1324,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      * Creates a test End Entity
      */
     private EndEntityInformation createTestEndEntity() throws Exception {
-        final int certificateProfileId = createCertificateProfile();
-        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
-        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
-        endEntityProfile.setAvailableCAs(Arrays.asList(x509TestCa.getCAId()));
-        endEntityProfile.setDefaultCA(x509TestCa.getCAId());
-        final int endEntityProfileId = endEntityProfileSessionRemote.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileName, endEntityProfile);
-        final EndEntityInformation userdata = new EndEntityInformation(
-                testUsername,
-                "CN=" + testUsername,
-                x509TestCa.getCAId(),
-                null,
-                null,
-                new EndEntityType(EndEntityTypes.ENDUSER),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                certificateProfileId,
-                SecConst.TOKEN_SOFT_P12,
-                new ExtendedInformation());
-        userdata.setPassword("foo123");
-        userdata.setStatus(EndEntityConstants.STATUS_NEW);
-        userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-        userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-        userdata.setEndEntityProfileId(endEntityProfileId);
-        return endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+        return new CertificateRestResourceSystemTestUtil()
+                .createTestEndEntity(TestEndEntityParamHolder.newBuilder()
+                .withX509TestCa(x509TestCa)
+                .withTestUsername(testUsername)
+                .withTestCertProfileName(testCertProfileName)
+                .withTestEeProfileName(testEeProfileName)
+                .withInternalAdminToken(INTERNAL_ADMIN_TOKEN)
+                .withCertificateProfileSession(certificateProfileSession)
+                .withEndEntityManagementSession(endEntityManagementSession)
+                .withEndEntityProfileSessionRemote(endEntityProfileSessionRemote)
+                .build());
     }
 
     /**

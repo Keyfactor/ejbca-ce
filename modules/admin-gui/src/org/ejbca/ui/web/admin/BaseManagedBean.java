@@ -45,7 +45,6 @@ import org.ejbca.util.SelectItemComparator;
 /**
  * Base EJBCA JSF Managed Bean, all managed beans of EJBCA should inherit this class
  *
- * @version $Id$
  */
 public abstract class BaseManagedBean implements Serializable {
 

@@ -12,7 +12,7 @@
  *************************************************************************/  
 package org.cesecore.certificates.ocsp.exception;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * Error due to an invalid Nonce value in request.

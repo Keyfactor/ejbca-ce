@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.application.ViewExpiredException;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.era.RaMasterBackendUnavailableException;
@@ -29,16 +29,15 @@ import org.ejbca.ra.jsfext.RaExceptionHandlerFactory;
 /**
  * Bean used to display a summary of unexpected errors and debug log the cause.
  * 
- * @version $Id$
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaErrorBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaErrorBean.class);
 
-    @ManagedProperty(value="#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 

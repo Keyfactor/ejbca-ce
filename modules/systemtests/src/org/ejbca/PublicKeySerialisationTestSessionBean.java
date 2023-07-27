@@ -19,9 +19,10 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.util.KeyTools;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * @version $Id$

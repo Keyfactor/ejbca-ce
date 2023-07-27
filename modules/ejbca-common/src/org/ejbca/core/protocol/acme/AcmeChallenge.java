@@ -21,10 +21,12 @@ import org.ejbca.core.protocol.acme.AcmeIdentifier.AcmeIdentifierTypes;
 /**
  * An ACME Challenge is a proof a client needs to provide in order to be authorized to get a certificate for an identifier.
  * 
- * PROCESSING constant in AcmeChallengeStatus ENUM is a requirement imposed by draft-ietf-acme-acme-12 and is preserved for
- * future use.
+ * PROCESSING constant in AcmeChallengeStatus ENUM is a requirement by 
+ * <a href="https://www.rfc-editor.org/rfc/rfc8555.html#section-7.1.6">RFC8555 ch. 7.1.6</a>, whereas the challenge retry 
+ * by the ACME server is optional.
  * 
- * Includes RFC8738 Automated Certificate Management Environment (ACME) IP Identifier Validation Extension
+ * Includes <a href="https://www.rfc-editor.org/rfc/rfc8737.html">RFC8737 Automated Certificate Management Environment (ACME) IP Identifier Validation Extension</a>
+ * Includes <a href="https://www.rfc-editor.org/rfc/rfc8738.html">RFC8738 Automated Certificate Management Environment (ACME) TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension</a>
  */
 public interface AcmeChallenge {
 
@@ -70,6 +72,7 @@ public interface AcmeChallenge {
 
         DNS_HTTP_01(AcmeIdentifierTypes.DNS, "http-01"),
         DNS_DNS_01(AcmeIdentifierTypes.DNS, "dns-01"),
+        DNS_TLS_ALPN_01(AcmeIdentifierTypes.DNS, "tls-alpn-01"),
         IP_HTTP_01(AcmeIdentifierTypes.IP, "http-01");
 
         private final AcmeIdentifierTypes acmeIdentifierType;

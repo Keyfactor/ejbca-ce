@@ -33,7 +33,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -43,6 +42,8 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.LinkView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Class representing the view of one ApprovalDataVO data
@@ -155,12 +156,7 @@ public class ApprovalDataVOView implements Serializable {
                         final String ipAddress = principal.toString();
                         retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("RAWEB", true) + ": " + ipAddress;;
                         break;
-                    } else if (principal instanceof PublicWebPrincipal) {
-                        // Mostly self-registration in the Public Web
-                        final String ipAddress = ((PublicWebPrincipal) principal).getClientIPAddress();
-                        retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PUBLICWEB", true) + ": " + ipAddress;
-                        break;
-                    } else if (principal instanceof WebPrincipal) {
+                    }  else if (principal instanceof WebPrincipal) {
                         // Other things, such as CMP, SCEP, etc. We can get here of requests require approval, such as PENDING and GETCERTINITIAL in SCEP
                         retval = principal.toString(); // e.g. "NameOfServlet: 198.51.100.123"
                         break;

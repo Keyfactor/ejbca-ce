@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.cryptotoken;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -23,6 +22,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
@@ -54,7 +56,7 @@ public class CryptoTokenGenerateCommand extends BaseCryptoTokenCommand {
         final String keyPairSpecification = parameters.get(KEY_SPECIFICATION_KEY);
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class).createKeyPair(getAdmin(), cryptoTokenId,
-                    keyPairAlias, keyPairSpecification);
+                    keyPairAlias, KeyGenParams.builder(keyPairSpecification).build());
             getLogger().info("Key pair generated successfully.");
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {

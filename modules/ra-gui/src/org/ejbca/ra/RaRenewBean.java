@@ -26,14 +26,14 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -41,24 +41,26 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaCertificateDataOnRenew;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaSelfRenewCertificateData;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 
 /**
  * Backing bean for the Renew Certificate page
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaRenewBean implements Serializable {
 
@@ -68,15 +70,11 @@ public class RaRenewBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value="#{raAccessBean}")
-    private RaAccessBean raAccessBean;
-    public void setRaAccessBean(final RaAccessBean raAccessBean) { this.raAccessBean = raAccessBean; }
-
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
-    @ManagedProperty(value="#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
@@ -207,7 +205,7 @@ public class RaRenewBean implements Serializable {
             username = certificateDataForRenew.getUsername();
             if (certificateDataForRenew.isRevoked()) {
                 raLocaleBean.addMessageInfo("renewcertificate_page_certificate_revoked_message", currentSerialNumber, currentIssuerDn);
-                return true;
+                return false;
             }
             caName = certificateDataForRenew.getCaName();
             endEntityProfileName = certificateDataForRenew.getEndEntityProfileName();
@@ -344,13 +342,13 @@ public class RaRenewBean implements Serializable {
                             + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                 }
             }
-            for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-                if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+            for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
+                if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
                     for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
                         final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
                         final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
                         if (availableBitLengths.contains(bitLength)) {
-                            availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
+                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
                                     CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
                         } else {
                             if (log.isTraceEnabled()) {
