@@ -37,7 +37,15 @@ public class RaCertificateSearchResponse implements Serializable {
 
     public boolean isMightHaveMoreResults() { return mightHaveMoreResults; }
     public void setMightHaveMoreResults(boolean mightHaveMoreResults) { this.mightHaveMoreResults = mightHaveMoreResults; }
-    
+
+    public RaCertificateSearchResponse() {
+    }
+
+    public RaCertificateSearchResponse(final RaCertificateSearchResponseV2 responseV2, final boolean mightHaveMoreResults) {
+        cdws = responseV2.getCdws();
+        this.mightHaveMoreResults = mightHaveMoreResults;
+    }
+
     public void merge(final RaCertificateSearchResponse other) {
         final Map<String,CertificateDataWrapper> cdwMap = new HashMap<>();
         for (final CertificateDataWrapper cdw : cdws) {

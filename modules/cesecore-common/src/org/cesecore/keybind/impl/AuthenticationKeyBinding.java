@@ -28,8 +28,9 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Used when this EJBCA instance authenticates to other instances.

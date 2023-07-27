@@ -34,14 +34,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.EstConfiguration;
@@ -54,7 +48,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -177,6 +179,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
             config.setExtractUsernameComponent(alias, "CN");
+            config.setServerKeyGenerationEnabled(alias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             
             // First make request without any EE created
@@ -214,7 +217,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             assertEquals("EST simpleenroll should return a single certificate", 1, certs.size());
             final X509Certificate testcacert = (X509Certificate)getTestCACert(TESTCA_NAME);
             final X509CertificateHolder certHolder = certs.iterator().next();
-            final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+            X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
             assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
             try {
                 cert.verify(testcacert.getPublicKey());
@@ -222,7 +225,9 @@ public class EstClientModeBasicTest extends EstTestCase {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
             assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",requestDN, CertTools.getSubjectDN(cert));
-            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));  
+            
+            testServerKeyGen(alias, reqmsg, testcacert, endEntityInfo);
         } finally {
             // Remove the certificates
             internalCertStoreSession.removeCertificatesByUsername(CN);
@@ -253,6 +258,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD);
             config.setExtractDnPwdComponent(alias, "SN"); // SN == SERIALNUMBER 
             config.setExtractUsernameComponent(alias, "CN");
+            config.setServerKeyGenerationEnabled(alias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             
             // First make request without any EE created
@@ -302,7 +308,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             assertEquals("EST simpleenroll should return a single certificate", 1, certs.size());
             final X509Certificate testcacert = (X509Certificate)getTestCACert(TESTCA_NAME);
             final X509CertificateHolder certHolder = certs.iterator().next();
-            final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+            X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
             assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
             try {
                 cert.verify(testcacert.getPublicKey());
@@ -310,7 +316,9 @@ public class EstClientModeBasicTest extends EstTestCase {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
             assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",endEntityInfo.getDN(), CertTools.getSubjectDN(cert));
-            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));   
+            
+            testServerKeyGen(alias, reqmsg, testcacert, endEntityInfo);
         } finally {
             // Remove the certificates
             internalCertStoreSession.removeCertificatesByUsername(CN);
@@ -343,6 +351,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
             config.setExtractUsernameComponent(alias, "UID");
+            config.setServerKeyGenerationEnabled(alias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
 
             // Create EE
@@ -381,6 +390,8 @@ public class EstClientModeBasicTest extends EstTestCase {
             }
             assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",dn, CertTools.getSubjectDN(cert));
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
+            
+            testServerKeyGen(alias, reqmsg, testcacert, endEntityInfo);
         } finally {
             // Remove the certificates
             internalCertStoreSession.removeCertificatesByUsername(username);
@@ -393,6 +404,25 @@ public class EstClientModeBasicTest extends EstTestCase {
             } catch (NoSuchEndEntityException e) {} // NOPMD
         }
         log.trace("<testSimpleEnrollWithChallengePwdAndUsernameInDn()");
+    }
+    
+    private void testServerKeyGen(String alias, byte[] reqmsg,  X509Certificate testcacert, EndEntityInformation endEntityInfo) throws Exception {
+        endEntityInfo.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.changeUser(ADMIN, endEntityInfo, false);
+        
+        byte[] resp = sendEstRequest(alias, "serverkeygen", reqmsg, 200, null); 
+        // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
+        assertNotNull("There must be response data to serverkeygen request", resp);
+        X509Certificate cert = getCertFromKeygenResponse(resp);
+        assertEquals("serverkeygen response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
+        try {
+            cert.verify(testcacert.getPublicKey());
+        } catch (SignatureException e) {
+            fail("serverkeygen response certifciate must verify with CA certificate");                
+        }
+        assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", endEntityInfo.getDN(), CertTools.getSubjectDN(cert));
+        assertNotEquals("serverkeygen response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
+        
     }
 
     /**
@@ -411,6 +441,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
             config.setExtractUsernameComponent(alias, "CN");
             config.setKurAllowSameKey(alias, false);
+            config.setDefaultCAID(alias, getTestCAId(TESTCA_NAME));
             // In order to re-enroll we need to be able to establish a TLS connection with client authentication, which means
             // that we need a client certificate issued from ManagementCA, which is an accepted CA for TLS client certs
             // We also need to enroll against port 8443
@@ -488,6 +519,16 @@ public class EstClientModeBasicTest extends EstTestCase {
             }
             assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256New.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
+            
+            // Make EST cacerts request with client keystore
+            resp = sendEstRequest(true, alias, "cacerts", null, 200, null, null, null);
+            // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.1.3
+            assertNotNull("There must be response data to cacerts request", resp);
+            final CMSSignedData msg = new CMSSignedData(Base64.decode(resp));
+            final Store<X509CertificateHolder> cacertstore = msg.getCertificates();
+            final Collection<X509CertificateHolder> cacerts = cacertstore.getMatches(null);
+            assertEquals("EST test CA has a single CA certificate", 1, cacerts.size());
+            
             // Checking for enrollment with the same public key only compares the TLS cert (reenroll authentication) with the CSR, it does not loop through all existing client certificates
             // so a failed reenroll can be retried with the same CSR, therefore it should work to reenroll with the same (new) CSR as long as we use the old key for TLS authentication
             resp = sendEstRequest(true, alias, "simplereenroll", reqmsgNew, 200, null, null, null);

@@ -24,8 +24,6 @@ import org.junit.Test;
 
 /**
  * Tests crypto token manager
- * 
- * @version $Id$
  */
 public class CryptoTokenFactoryTest {
 
@@ -38,7 +36,7 @@ public class CryptoTokenFactoryTest {
         try {
             Class.forName("org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken");
             log.debug("Assuming we are running Enterprise Edition");
-            numBuiltinCryptoTokenTypes = 5;
+            numBuiltinCryptoTokenTypes = 6;
         } catch (ClassNotFoundException e) {
             log.debug("Assuming we are running Community Edition");
             numBuiltinCryptoTokenTypes = 4;

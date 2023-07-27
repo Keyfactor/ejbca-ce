@@ -15,8 +15,9 @@ package org.ejbca.core.model.ra;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * Exception thrown when a revocation request for an already revoked object is requested.

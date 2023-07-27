@@ -35,9 +35,10 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * The model representation of Extended Information about a user. It's used for non-searchable data about a user,
@@ -644,6 +645,18 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      */
     public void setCustomData(String key, String value) {
         data.put(CUSTOMDATA + key, value);
+    }
+
+    /**
+     * Special method used to set string fields directly, should be used with care, use the specific methods for fields in first hand.
+     * When retrieving values, the specific methods are used which may convert the string into a BigInteger for example as in 
+     * getCertificateSerialNumber, the string data better match that, or there will be trouble
+     *
+     * @param key key to store the data with
+     * @param value the string representation of the data
+     */
+    public void setStringKeyData(String key, String value) {
+        data.put(key, value);
     }
 
     /** Function required by XMLEncoder to do a proper serialization. */

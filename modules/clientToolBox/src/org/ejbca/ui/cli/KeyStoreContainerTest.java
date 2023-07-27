@@ -40,18 +40,18 @@ import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.token.p11.PKCS11Utils;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
-import org.cesecore.keys.util.KeyStoreTools;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.util.ISignOperation;
-import org.cesecore.keys.util.SignWithWorkingAlgorithm;
-import org.cesecore.keys.util.TaskWithSigningException;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.keystore.KeyStoreToolsFactory;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.ISignOperation;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.SignWithWorkingAlgorithm;
+import com.keyfactor.util.keys.TaskWithSigningException;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  *
@@ -506,11 +506,6 @@ class KeyStoreContainerTest {
                 termOut.println("Private part:"); termOut.println(this.keyPair.getPrivate());
             }
             KeyTools.printPublicKeyInfo(this.keyPair.getPublic(), termOut);
-            {
-                final StringBuilder sb = new StringBuilder("Security related private key attributes:  ");
-                PKCS11Utils.getInstance().securityInfo(this.keyPair.getPrivate(), this.providerName, sb);
-                termOut.println(sb.toString());
-            }
             boolean isCryptoAvailable = true;
             try {
                 this.totalDecryptTime += test(new Crypto());

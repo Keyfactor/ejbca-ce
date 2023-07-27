@@ -29,9 +29,15 @@ import java.util.Properties;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -64,7 +70,6 @@ import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -72,11 +77,8 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.CertTools;
 import org.easymock.EasyMock;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionBean;
@@ -84,6 +86,7 @@ import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.anyObject;
@@ -94,7 +97,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.runners.MethodSorters;
 
 /**
  * Tests for the OcspResponseGenerator that don't involve creating a CA.
@@ -309,7 +311,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         boolean caught = false;
         TransactionCounter.INSTANCE.getTransactionNumber();
         try {
-            ocspResponseGeneratorSession.getOcspResponse(fakeRequest, null, null, null, null, auditLogger, transactionLogger, false, false);
+            ocspResponseGeneratorSession.getOcspResponse(fakeRequest, null, null, null, null, auditLogger, transactionLogger, false, false, false);
         } catch (MalformedRequestException e) {
             caught = true;
         }
@@ -318,8 +320,8 @@ public class OcspResponseGeneratorSessionUnitTest {
     }
 
     @Test
-    public void getOCSPResponseWichExistingMsCompatibleCA() throws Exception {
-        log.trace(">getOCSPResponseWichExistingMsCompatibleCA");
+    public void getOCSPResponseWithExistingMsCompatibleCA() throws Exception {
+        log.trace(">getOCSPResponseWithExistingMsCompatibleCA");
         OcspDataConfigCache.INSTANCE.setCaModeCompatiblePresent(true);
         OcspDataConfigCache.INSTANCE.stagingCommit();
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
@@ -329,31 +331,83 @@ public class OcspResponseGeneratorSessionUnitTest {
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock, ocspDataSessionMock);
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertGoodResponse(respInfo);
-        log.trace("<getOCSPResponseWichExistingMsCompatibleCA");
+        log.trace("<getOCSPResponseWithExistingMsCompatibleCA");
     }
 
     @Test(expected = MalformedRequestException.class)
     public void emptyRequest() throws Exception {
         log.trace(">emptyRequest");
-        ocspResponseGeneratorSession.getOcspResponse(new byte[0], null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        ocspResponseGeneratorSession.getOcspResponse(new byte[0], null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         log.trace("<emptyRequest");
     }
 
     @Test
-    public void basicCachedRequest() throws Exception {
-        log.trace(">basicRequest");
+    public void basicCachedRequestSHA1() throws Exception {
+        log.trace(">basicCachedRequestSHA1");
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
         replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertGoodResponse(respInfo);
-        log.trace("<basicRequest");
+        log.trace("<basicCachedRequestSHA1");
     }
-    
+
+    @Test
+    public void basicCachedRequestSHA224() throws Exception {
+        log.trace(">basicCachedRequestSHA224");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha224, null);
+        expectLoggerChecks();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
+        assertEquals(OCSPResp.MALFORMED_REQUEST, respInfo.getStatus());
+        log.trace("<basicCachedRequestSHA224");
+    }
+
+    @Test
+    public void basicCachedRequestSHA256() throws Exception {
+        log.trace(">basicCachedRequestSHA256");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha256, null);
+        expectLoggerChecks();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<basicCachedRequestSHA256");
+    }
+
+    @Test
+    public void basicCachedRequestSHA384() throws Exception {
+        log.trace(">basicCachedRequestSHA256");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha384, null);
+        expectLoggerChecks();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<basicCachedRequestSHA256");
+    }
+
+    @Test
+    public void basicCachedRequestSHA512() throws Exception {
+        log.trace(">basicCachedRequestSHA512");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha512, null);
+        expectLoggerChecks();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<basicCachedRequestSHA512");
+    }
+
     private void setupOcspResponseCache() {
         ConfigurationHolder.updateConfiguration(OcspConfiguration.UNTIL_NEXT_UPDATE, "60000");
         OcspDataConfigCacheEntry entry = new OcspDataConfigCacheEntry(getIssuerCert(), ISSUER_CAID, true, false, false);
@@ -375,7 +429,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     
     @Test
     public void zzza_basicCachedRequestWithPresigning() throws Exception {
-        log.trace(">basicRequest");
+        log.trace(">zzza_basicCachedRequestWithPresigning");
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
@@ -383,15 +437,15 @@ public class OcspResponseGeneratorSessionUnitTest {
         setupOcspResponseCache();
         replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false, false);
         assertGoodResponse(respInfo);
         verify(ocspDataSessionMock);
-        log.trace("<basicRequest");
+        log.trace("<zzza_basicCachedRequestWithPresigning");
     }
     
     @Test
     public void zzzb_basicCachedRequestWithPresigningExpiredCert() throws Exception {
-        log.trace(">basicRequest");
+        log.trace(">zzzb_basicCachedRequestWithPresigningExpiredCert");
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         status.setExpirationDate(System.currentTimeMillis() - 3600 * 1000); // expired
@@ -400,9 +454,27 @@ public class OcspResponseGeneratorSessionUnitTest {
         setupOcspResponseCache();
         replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false, false);
         assertNull(respInfo);
-        log.trace("<basicRequest");
+        log.trace("<zzzb_basicCachedRequestWithPresigningExpiredCert");
+    }
+
+    @Test
+    public void zzzc_basicCachedRequestWithPresigningExpiredCertIncluded() throws Exception {
+        log.trace(">zzzc_basicCachedRequestWithPresigningExpiredCertIncluded");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
+        expectLoggerChecks();
+        status.setExpirationDate(System.currentTimeMillis() - 3600 * 1000); // expired
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+
+        setupOcspResponseCache();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false, true);
+
+        assertNotNull("If presigning and includeExpiredCerts selected, a response should be returned.", respInfo);
+        assertGoodResponse(respInfo);
+        log.trace("<zzzc_basicCachedRequestWithPresigningExpiredCertIncluded");
     }
 
     @Test
@@ -415,7 +487,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertGoodResponse(respInfo);
         log.trace("<uncachedRequest");
     }
@@ -430,7 +502,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertGoodResponse(respInfo);
         log.trace("<uncachedIkbRequestWithSameSubjectDn");
     }
@@ -445,7 +517,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertGoodResponse(respInfo);
         log.trace("<nonceOk");
     }
@@ -460,7 +532,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertEquals(OCSPResp.MALFORMED_REQUEST, respInfo.getStatus());
         log.trace("<tooLargeNonce");
     }
@@ -476,7 +548,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertGoodResponse(respInfo);
         log.trace("<badNonceEncodingOk");
     }
@@ -492,7 +564,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
         prepareOcspCache();
-        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         assertEquals(OCSPResp.MALFORMED_REQUEST, respInfo.getStatus());
         log.trace("<badNonceEncodingTooLarge");
     }

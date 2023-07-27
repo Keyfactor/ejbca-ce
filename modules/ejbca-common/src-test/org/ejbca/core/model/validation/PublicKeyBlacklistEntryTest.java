@@ -20,8 +20,9 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 
-import org.cesecore.util.CertTools;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Unit tests for {@link PublicKeyBlacklistEntry}.

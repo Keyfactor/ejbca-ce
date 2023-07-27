@@ -10,6 +10,7 @@
 	<property name="cesecore-ejb.src-test.dir" location="${cesecore-ejb.dir}/src-test"/>
 
 	<path id="compile.classpath">
+		<path refid="lib.javassist.classpath"/>
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
@@ -20,10 +21,12 @@
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.guava.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-ejb-interface/dist/cesecore-ejb-interface.jar"/>
+		<path refid="lib.x509-common-util.classpath" />
 	</path>
 
 	<path id="test.classpath">

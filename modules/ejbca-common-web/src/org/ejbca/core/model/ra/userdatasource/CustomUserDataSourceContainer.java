@@ -15,6 +15,7 @@ package org.ejbca.core.model.ra.userdatasource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -98,12 +99,12 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 			try{
 				@SuppressWarnings("unchecked")
                 Class<? extends ICustomUserDataSource> implClass = (Class<? extends ICustomUserDataSource>) Class.forName( getClassPath() );
-				this.customuserdatasource = implClass.newInstance();
+				this.customuserdatasource = implClass.getDeclaredConstructor().newInstance();
 				this.customuserdatasource.init(getProperties());				
 			}catch(ClassNotFoundException e){
 				throw new EJBException(e);
 			}
-			catch(IllegalAccessException iae){
+			catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException iae){
 				throw new EJBException(iae);
 			}
 			catch(IOException ioe){

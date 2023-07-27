@@ -19,8 +19,12 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.PublicKeyWrapper;
+
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * CryptoToken management operations that require authorization and/or security events audit logging.
@@ -168,21 +172,6 @@ public interface CryptoTokenManagementSession {
 
     /** @return a List of all the key pair aliases present in the specified CryptoToken. */
     List<String> getKeyPairAliases(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException, CryptoTokenOfflineException;
-
-    /**
-     * Generate a new key pair in the specified CryptoToken with the requested alias and key specification.
-     * 
-     * @deprecated use createKeyPair method with org.cesecore.keys.token.KeyGenParams parameter instead (providing more flexibility).
-     * @see org.cesecore.keys.token.KeyGenParams
-     * @param keySpecification should be in the form "RSAnnnn", "DSAnnnn" or an known EC curve name.
-     * 
-     * @throws CryptoTokenOfflineException if the CryptoToken is unavailable or inactive.
-     * @throws InvalidKeyException if key generation failed.
-     * @throws InvalidAlgorithmParameterException if the keySpecification is not available for this CryptoToken.
-     */
-    @Deprecated
-    void createKeyPair(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
 
     /**
      * Generate a new key pair in the specified CryptoToken with the requested alias and key parameters

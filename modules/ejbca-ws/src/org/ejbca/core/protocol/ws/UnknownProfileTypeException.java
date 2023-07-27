@@ -15,8 +15,9 @@ package org.ejbca.core.protocol.ws;
 
 import javax.xml.ws.WebFault;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.ErrorCode;
 
 /**
  * Thrown when the profile type is neither an end entity profile nor a certificate profile

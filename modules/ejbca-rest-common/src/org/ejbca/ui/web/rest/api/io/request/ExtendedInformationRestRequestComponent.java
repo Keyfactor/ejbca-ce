@@ -19,9 +19,9 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class ExtendedInformationRestRequestComponent {
 
-    @ApiModelProperty(value = "Certificate Extension Object Identifier (OID)", example = "1.3.6.1.5.5.7.1.24")
+    @ApiModelProperty(value = "For extension_data a certificate extension object identifier (OID), for custom_data a string variable and value see ExtendedInformation class", example = "1.3.6.1.5.5.7.1.24/customdata_STARTTIME")
 	private String name;
-    @ApiModelProperty(value = "OID value", example = "3003020105")
+    @ApiModelProperty(value = "OID value", example = "3003020105/2022-12-13 00:00:00")
     private String value;
 
     private ExtendedInformationRestRequestComponent() {}

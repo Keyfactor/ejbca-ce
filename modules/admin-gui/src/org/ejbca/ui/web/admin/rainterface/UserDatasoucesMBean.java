@@ -20,22 +20,25 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+import com.keyfactor.util.StringTools;
+
 /**
  */
-//@ManagedBean
-//@ViewScoped
+@Named("userDatasoucesMBean")
+@SessionScoped
 public class UserDatasoucesMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     //private static final Logger log = Logger.getLogger(UserDatasoucesMBean.class);

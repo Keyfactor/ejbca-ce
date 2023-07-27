@@ -23,14 +23,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.protocol.crlstore.CRLCache;
 import org.ejbca.util.HTMLTools;
+
+import com.keyfactor.util.StringTools;
 
 /** 
  * Servlet implementing server side of the CRL Store.
@@ -40,7 +42,6 @@ import org.ejbca.util.HTMLTools;
  * Addition to RFC 4387 is the ability to specify a CRL partition number with the parameter "partition=<number>"
  * 
  * 
- * @version  $Id$
  */
 public class CRLStoreServlet extends StoreServletBase {
 
@@ -53,14 +54,14 @@ public class CRLStoreServlet extends StoreServletBase {
 	private static final String PARAM_PARTITION = "partition";
 
 	@EJB
-	private CrlStoreSessionLocal crlSession;
+	private CrlStoreSessionLocal crlStoreSession;
 	
 	private CRLCache crlCache;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		this.crlCache = CRLCache.getInstance(crlSession, certCache);		
+		this.crlCache = CRLCache.getInstance(crlStoreSession, certCache);		
 	}
 
 	@Override
@@ -122,8 +123,8 @@ public class CRLStoreServlet extends StoreServletBase {
         return CertificateConstants.NO_CRL_PARTITION;
     }
 
-	private void returnCrl( byte crl[], HttpServletResponse resp, String name, final int crlPartitionIndex, boolean isDelta) throws IOException {
-		if ( crl==null || crl.length<1 ) {
+	private void returnCrl(final byte[] crl, HttpServletResponse resp, String name, final int crlPartitionIndex, boolean isDelta) throws IOException {
+		if (ArrayUtils.isEmpty(crl)) {
 		    if (log.isDebugEnabled()) {
 		        log.debug("CRL was not found. Hash=" + name + ", DeltaCRL=" + isDelta + ", Partition=" + crlPartitionIndex);
 		    }

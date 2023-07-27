@@ -12,33 +12,22 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import javax.annotation.PostConstruct;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Random;
-
-import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 
 /**
  * Example of JSF Managed Bean for backing a page. 
  * 
  * @version $Id$
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class RaExampleBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(RaExampleBean.class);
-
-    @ManagedProperty(value="#{raAuthenticationBean}")
-    private RaAuthenticationBean raAuthenticationBean;
-    public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
-
-    @ManagedProperty(value="#{raLocaleBean}")
-    private RaLocaleBean raLocaleBean;
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
     @PostConstruct
     private void postContruct() { }

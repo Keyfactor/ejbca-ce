@@ -17,9 +17,6 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Restricts CryptoTokenRunner to only running one implementation. 
- * 
- * @version $Id$
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RunOnly {

@@ -18,6 +18,9 @@ import javax.ejb.Remote;
 
 import org.cesecore.keys.util.PublicKeyWrapper;
 
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 /**
  * Bridge for local EJB calls that we only want to expose to in test deployments.
  * 

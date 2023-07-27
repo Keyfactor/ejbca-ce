@@ -37,8 +37,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.query.QueryCriteria;
+
+import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * This class handles secure logs auditing. This class is responsible for checking

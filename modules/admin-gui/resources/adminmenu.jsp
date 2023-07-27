@@ -38,7 +38,7 @@ org.ejbca.util.HTMLTools
        final String RA_EDITUSERDATASOURCESLINK =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/edituserdatasources/userdatasourcespage.xhtml";
        final String RA_EDITPROFILESLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/editendentityprofiles/editendentityprofiles.xhtml";
        final String RA_ADDENDENTITYLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/addendentity.jsp";
-       final String RA_LISTENDENTITIESLINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
+       final String RA_LISTENDENTITIESLINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/searchendentities.xhtml";
        
        final String AUDIT_LINK                 =  ejbcawebbean.getAdminWebBaseUrl() + "audit/search.xhtml";
        final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath()  + "/systemconfiguration.xhtml";
@@ -58,7 +58,6 @@ org.ejbca.util.HTMLTools
        
        final String ESTCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/estconfigurations.xhtml";
        
-	   final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl();
 	   final String RAWEB_LINK          = ejbcawebbean.getBaseUrl() + "ra/";
        
        final String MYPREFERENCES_LINK     =  ejbcawebbean.getAdminWebBaseUrl() + "mypreferences.xhtml";
@@ -423,10 +422,6 @@ if(configheaderprinted){
 		</li>
 <% } %>
 
-<% if (!globalconfiguration.getHidePublicWeb() && ejbcawebbean.isRunningBuildWithCA()) { %>
-		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" rel="noopener noreferer"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
-		</li>
-<% } %>
 
 <% if (ejbcawebbean.isHelpEnabled()) { %>
 		<li id="cat10"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>" rel="noopener noreferer"

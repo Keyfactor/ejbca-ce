@@ -18,11 +18,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 import static org.junit.Assert.assertEquals;
 

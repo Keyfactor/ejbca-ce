@@ -13,8 +13,8 @@
 
 package org.cesecore.keys.validation;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 /**
  * An exception thrown when validation fails for some reason and the certificate issuance has to be aborted.

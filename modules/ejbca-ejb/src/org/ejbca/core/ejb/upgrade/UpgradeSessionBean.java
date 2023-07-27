@@ -13,12 +13,15 @@
 
 package org.ejbca.core.ejb.upgrade;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -52,7 +55,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+
 import org.apache.commons.configuration2.Configuration;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -112,12 +117,8 @@ import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
@@ -153,6 +154,12 @@ import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
+
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StringTools;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -620,6 +627,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+        if (isLesserThan(oldVersion, "8.0.0")) {
+            try {
+                upgradeSession.migrateDatabase800();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -699,7 +713,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     private boolean postMigrateDatabase781() {
         log.info("Starting post upgrade to 7.8.1");
-        List<Integer> ids;
+        List<?> ids;
         try {
             Query query = entityManager.createQuery("SELECT eepd.id FROM EndEntityProfileData eepd");
             ids = query.getResultList();
@@ -708,7 +722,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             return false;
         }
 
-        for(Integer id: ids) {
+        for(Object idObject: ids) {
+            Integer id = (Integer) idObject;
             final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
             try {
                 EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
@@ -1042,14 +1057,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         Map<Integer, String> publisherNames = publisherSession.getPublisherIdToNameMap();
         BasePublisherConverter publisherFactory;
         try {
-            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").newInstance();
-        } catch (InstantiationException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        } catch (IllegalAccessException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        } catch (ClassNotFoundException e) {
+            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             //Shouldn't happen since we've already checked that we're running Enterprise
             throw new IllegalStateException(e);
         }
@@ -1515,6 +1524,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Upgrade to EJBCA 6.10.1. 
      * Upgrading System configuration and certificate profiles with CT log label system
      */
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6101() throws UpgradeFailedException {
@@ -1725,6 +1735,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * setting was global previously, it should be fair to add each extension to every OCSP key binding.
      */
     private void importOcspExtensions() {
+        @SuppressWarnings("deprecation")
         final List<String> ocspExtensionOids = OcspConfiguration.getExtensionOids();
         if (ocspExtensionOids.isEmpty()) {
             log.debug("No OCSP extensions for import were found in ocsp.properties");
@@ -1752,7 +1763,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         List<X509Certificate> trustedCerts = new ArrayList<>();
         Certificate cacert = null;
         boolean isUnidFnrEnabled = OcspConfiguration.isUnidEnabled();
+        @SuppressWarnings("deprecation")
         String trustDir = OcspConfiguration.getUnidTrustDir();
+        @SuppressWarnings("deprecation")
         String cacertfile = OcspConfiguration.getUnidCaCert();
         if (StringUtils.isEmpty(trustDir)) {
             // This installation is probably not using UnidFnr at all.
@@ -1904,6 +1917,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return true;  
     }
 
+    @SuppressWarnings("deprecation")
     private boolean postMigrateDatabase7110() {
         log.info("Starting post upgrade to 7.11.0");
         try {
@@ -2385,6 +2399,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             return !data.keySet().contains(FIELDBOUNDRARY);
         }
 
+        @SuppressWarnings("unchecked")
         static void update(EndEntityProfile eep) {
             LinkedHashMap<Object, Object> data = eep.getRawData();
             LinkedHashMap<Object, Object> upgradedData = new LinkedHashMap<>();
@@ -2470,6 +2485,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         for (final String cmpAlias : cmpConfiguration.getAliasList()) {
             log.debug("Converting vendor CA list for CMP alias: " + cmpAlias);
+            @SuppressWarnings("deprecation")
             final String cmpVendorCaNameString = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_VENDORCA, cmpAlias);
             if (StringUtils.isEmpty(cmpVendorCaNameString)) {
                 continue;
@@ -2502,6 +2518,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         for (final String estAlias : estConfiguration.getAliasList()) {
             log.debug("Converting vendor CA list for EST alias: " + estAlias);
+            @SuppressWarnings("deprecation")
             final String estVendorCaNamesString = estConfiguration.getValue(estAlias + "." + EstConfiguration.CONFIG_VENDORCA, estAlias);
             if (StringUtils.isEmpty(estVendorCaNamesString)) {
                 continue;
@@ -2531,6 +2548,23 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
+    @Override
+    public void migrateDatabase800() throws UpgradeFailedException {
+        log.debug(">migrateDatabase800");
+        // New extended key usage ECA-11201
+        final AvailableExtendedKeyUsagesConfiguration config =
+                (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
+        if (!config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36")) {
+            config.addExtKeyUsage("1.3.6.1.5.5.7.3.36", "EKU_DOCUMENT_SIGNING_RFC9336");
+        }
+        log.debug("Added RFC9336 Extended Key USage to availabe key usages list");
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, config);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+    }
+    
     /**
      * Checks if the column cAId column exists in AdminGroupData
      *

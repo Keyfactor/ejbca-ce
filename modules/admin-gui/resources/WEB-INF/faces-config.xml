@@ -12,8 +12,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
- version: $Id$
  -->
 <faces-config version="2.2"
     metadata-complete="false"
@@ -21,142 +19,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                         http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd">
-
-  <managed-bean>
-    <managed-bean-name>web</managed-bean-name>
-    <managed-bean-class>org.ejbca.ui.web.admin.configuration.EjbcaJSFHelperImpl</managed-bean-class>
-    <managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    <managed-bean-name>approvalActionRequest</managed-bean-name>
-    <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionRequestBean</managed-bean-class>
-    <managed-bean-scope>request</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>auditor</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.audit.AuditorManagedBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>certProfilesBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.certprof.CertProfilesBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>certProfileBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.certprof.CertProfileBean</managed-bean-class>
-    	<managed-bean-scope>view</managed-bean-scope>
-  </managed-bean>
-
-  <managed-bean>
-    	<managed-bean-name>validatorsBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.keys.validation.ValidatorsBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>validatorBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.keys.validation.ValidatorBean</managed-bean-class>
-    	<managed-bean-scope>view</managed-bean-scope>
-    	<managed-property>
-    	    <property-name>validatorsBean</property-name>
-    	    <value>#{validatorsBean}</value>
-    	</managed-property>
-  </managed-bean>
-    <managed-bean>
-        <managed-bean-name>userDatasoucesMBean</managed-bean-name>
-        <managed-bean-class>org.ejbca.ui.web.admin.rainterface.UserDatasoucesMBean</managed-bean-class>
-        <managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-        <managed-bean-name>editUserDatasoucesMBean</managed-bean-name>
-        <managed-bean-class>org.ejbca.ui.web.admin.rainterface.EditUserDatasoucesMBean</managed-bean-class>
-        <managed-bean-scope>view</managed-bean-scope>
-        <managed-property>
-            <property-name>userDatasoucesMBean</property-name>
-            <value>#{userDatasoucesMBean}</value>
-        </managed-property>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>ocspResponderMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.keybind.OcspResponderMBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-    <managed-bean>
-    	<managed-bean-name>remoteAuthenticationMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.keybind.RemoteAuthenticationMBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>peerConnectorsMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.peerconnector.PeerConnectorsMBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>peerConnectorMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.peerconnector.PeerConnectorMBean</managed-bean-class>
-    	<managed-bean-scope>request</managed-bean-scope>
-    	<managed-property>
-    	    <property-name>peerConnectorsMBean</property-name>
-    	    <value>#{peerConnectorsMBean}</value>
-    	</managed-property>
-  </managed-bean>
-
-  <managed-bean>
-        <managed-bean-name>myPreferencesMBean</managed-bean-name>
-        <managed-bean-class>org.ejbca.ui.web.admin.mypreferences.MyPreferencesMBean</managed-bean-class>
-        <managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-
-
-  <validator>
-        <validator-id>dummyValidator</validator-id>
-        <validator-class>org.ejbca.util.validator.DummyValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>legalCharsValidator</validator-id>
-        <validator-class>org.ejbca.ui.web.admin.LegalCharsValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>multiLineFreeTextValidator</validator-id>
-        <validator-class>org.ejbca.ui.web.admin.MultiLineFreeTextValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>urlValidator</validator-id>
-        <validator-class>org.ejbca.ui.web.admin.UrlValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>hexSerialNumberValidator</validator-id>
-        <validator-class>org.ejbca.ui.web.admin.HexSerialNumberValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>noNegativeNumbersValidator</validator-id>
-        <validator-class>org.ejbca.util.validator.NoNegativeNumbersValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>optionalHexSerialNumberValidator</validator-id>
-        <validator-class>org.ejbca.ui.web.admin.OptionalHexSerialNumberValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>positiveIntegerValidator</validator-id>
-        <validator-class>org.ejbca.util.validator.PositiveIntegerValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>simpleTimeValidator</validator-id>
-        <validator-class>org.ejbca.ui.web.admin.SimpleTimeValidator</validator-class>
-  </validator>
-  <validator>
-        <validator-id>validityDateValidator</validator-id>
-        <validator-class>org.ejbca.ui.web.admin.ValidityDateValidator</validator-class>
-  </validator>
-    <validator>
-        <validator-id>minSmallerThanMaxValidator</validator-id>
-        <validator-class>org.ejbca.util.validator.MinSmallerThanMaxValidator</validator-class>
-  </validator>
-
-  <converter>
-        <converter-id>mapToStringConverter</converter-id>
-        <converter-class>org.ejbca.ui.web.admin.audit.MapToStringConverter</converter-class>
-  </converter>
 
   <navigation-rule>
   	<from-view-id>/approval/approvalaction.xhtml</from-view-id>
@@ -348,6 +210,18 @@
     <navigation-case>
       <from-action>#{validatorsBean.actionEdit}</from-action>
       <from-outcome>edit</from-outcome>
+      <to-view-id>/ca/editvalidators/editvalidator.xhtml</to-view-id>
+      <redirect include-view-params="true"></redirect>
+    </navigation-case>
+    <navigation-case>
+      <from-action>#{validatorsBean.actionAddFromTemplate}</from-action>
+      <from-outcome>clone</from-outcome>
+      <to-view-id>/ca/editvalidators/editvalidator.xhtml</to-view-id>
+      <redirect include-view-params="true"></redirect>
+    </navigation-case>
+    <navigation-case>
+      <from-action>#{validatorsBean.actionAdd}</from-action>
+      <from-outcome>add</from-outcome>
       <to-view-id>/ca/editvalidators/editvalidator.xhtml</to-view-id>
       <redirect include-view-params="true"></redirect>
     </navigation-case>

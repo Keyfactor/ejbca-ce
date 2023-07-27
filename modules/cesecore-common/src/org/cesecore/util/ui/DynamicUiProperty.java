@@ -37,8 +37,9 @@ import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.util.Base64;
 import org.cesecore.util.LookAheadObjectInputStream;
+
+import com.keyfactor.util.Base64;
 
 /**
  * Allows creation of dynamic properties for display in the UI.

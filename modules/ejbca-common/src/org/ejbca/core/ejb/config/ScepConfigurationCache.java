@@ -26,11 +26,9 @@ import org.ejbca.config.ScepConfiguration;
  * This is a trivial cache, too trivial, it needs manual handling of setting the cache variable, this class does not keep track on if
  * the cache variable is null or not, the using class must ensure that it does not try to use a null value. 
  * Only the method "needsUpdate will return true of the cache variable is null. 
- * 
- * @version $Id$
  */
 public final class ScepConfigurationCache implements ConfigurationCache  {
-
+    
     /**
      * Cache variable containing the scep configuration. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
@@ -43,7 +41,6 @@ public final class ScepConfigurationCache implements ConfigurationCache  {
     public ScepConfigurationCache() {
         // Do nothing
     }
-
 
     @Override
     public boolean needsUpdate() {
@@ -75,8 +72,12 @@ public final class ScepConfigurationCache implements ConfigurationCache  {
     @SuppressWarnings("rawtypes")
     @Override
     public ConfigurationBase getConfiguration(HashMap data) {
-        ConfigurationBase returnval = new ScepConfiguration();
+        ScepConfiguration returnval = new ScepConfiguration();
         returnval.loadData(data);
+        for (String alias : returnval.getAliasList()) {
+            // Decrypt Intune secrets on CA if not done already.
+            returnval.getIntuneAadAppKey(alias);
+        }
         return returnval;
     }
 

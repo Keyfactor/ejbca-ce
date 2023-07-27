@@ -16,7 +16,7 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
-import org.cesecore.certificates.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
  * @version $Id$

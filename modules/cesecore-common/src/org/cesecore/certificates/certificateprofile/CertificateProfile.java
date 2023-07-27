@@ -12,31 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.cesecore.certificate.ca.its.ITSApplicationIds;
-import org.cesecore.certificate.ca.its.ITSCertificateType;
-import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
-import org.cesecore.certificates.certificate.ssh.SshCertificateType;
-import org.cesecore.certificates.certificate.ssh.SshExtension;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.internal.InternalResources;
-import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.ValidityDate;
-
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -53,6 +28,33 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
+import org.cesecore.certificate.ca.its.ITSCertificateType;
+import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
+import org.cesecore.certificates.certificate.ssh.SshCertificateType;
+import org.cesecore.certificates.certificate.ssh.SshExtension;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.internal.InternalResources;
+import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -63,7 +65,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 49.0;
+    public static final float LATEST_VERSION = (float) 50.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -173,6 +175,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
     protected static final String AVAILABLEECCURVES = "availableeccurves";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
+    protected static final String AVAILABLESECURITYLEVEL = "availablesecuritylevel";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
     public static final String TYPE = "type";
@@ -220,8 +223,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String PATHLENGTHCONSTRAINT = "pathlengthconstraint";
     protected static final String USEKEYUSAGE = "usekeyusage";
     protected static final String KEYUSAGECRITICAL = "keyusagecritical";
+    protected static final String KEYUSAGE_FORBIDENCRYPTIONUSAGEFORECC = "keyusageforbidencyrptionusageforecc";
     protected static final String KEYUSAGE = "keyusage";
     protected static final String USESUBJECTKEYIDENTIFIER = "usesubjectkeyidentifier";
+    protected static final String USETRUNCATEDSUBJECTKEYIDENTIFIER = "usetruncatedsubjectkeyidentifier";
     protected static final String SUBJECTKEYIDENTIFIERCRITICAL = "subjectkeyidentifiercritical";
     protected static final String USEAUTHORITYKEYIDENTIFIER = "useauthoritykeyidentifier";
     protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
@@ -485,6 +490,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
+        setAvailableSecurityLevelsAsList(new ArrayList<>(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU));
         setSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
@@ -980,12 +986,34 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(KEYUSAGECRITICAL, keyusagecritical);
     }
 
+    public boolean getKeyUsageForbidEncryptionUsageForECC() {
+        return (Boolean) data.getOrDefault(KEYUSAGE_FORBIDENCRYPTIONUSAGEFORECC, false);
+    }
+
+    public void setKeyUsageForbidEncryptionUsageForECC(boolean keyUsageForbidEncryptionUsageForECC) {
+        data.put(KEYUSAGE_FORBIDENCRYPTIONUSAGEFORECC, keyUsageForbidEncryptionUsageForECC);
+    }
+
     public boolean getUseSubjectKeyIdentifier() {
         return (Boolean) data.get(USESUBJECTKEYIDENTIFIER);
     }
-
+    
     public void setUseSubjectKeyIdentifier(boolean usesubjectkeyidentifier) {
         data.put(USESUBJECTKEYIDENTIFIER, usesubjectkeyidentifier);
+    }
+
+    /**
+     * If the truncated version (method 2 in RFC5280) of key identifier should be used.
+     * It is uncommon, only few known (EV charging as of march 2023) used method 2
+     * @return true if truncated method should be used, default false if not set to true explicitly
+     */
+    public boolean getUseTruncatedSubjectKeyIdentifier() {
+        Object d = data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER);
+        return d != null && (Boolean) d;
+    }
+
+    public void setUseTruncatedSubjectKeyIdentifier(boolean usetruncatedsubjectkeyidentifier) {
+        data.put(USETRUNCATEDSUBJECTKEYIDENTIFIER, usetruncatedsubjectkeyidentifier);
     }
 
     public boolean getSubjectKeyIdentifierCritical() {
@@ -1298,6 +1326,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
+    public boolean isKeyAlgorithmsRequireSecurityLevel() {
+        return  getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU);
+    }
+
     public String[] getAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
@@ -1334,6 +1366,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
     }
 
+
+    public int[] getAvailableSecurityLevels(){
+        final List<Integer> availableSecurityLevels = getAvailableSecurityLevelsAsList();
+        if (availableSecurityLevels != null) {
+            final int[] returnval = new int[availableSecurityLevels.size()];
+            for (int i = 0; i < availableSecurityLevels.size(); i++) {
+                returnval[i] = availableSecurityLevels.get(i);
+            }
+            return returnval;
+        }
+        return new int[]{};
+    }
+
     public int[] getAvailableBitLengths() {
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
         final int[] returnval = new int[availablebitlengths.size()];
@@ -1341,6 +1386,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             returnval[i] = availablebitlengths.get(i);
         }
         return returnval;
+    }
+
+
+    public List<Integer> getAvailableSecurityLevelsAsList() {
+        return (ArrayList<Integer>) data.get(AVAILABLESECURITYLEVEL);
+    }
+
+    public void setAvailableSecurityLevelsAsList(final List<Integer> availableSecurityLevels) {
+        data.put(AVAILABLESECURITYLEVEL, availableSecurityLevels);
+    }
+
+    public void setAvailableSecurityLevels(int[] availableSecurityLevelsArray) {
+        setAvailableSecurityLevelsAsList(Arrays.stream(availableSecurityLevelsArray).boxed().collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")
@@ -1412,7 +1470,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns the chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
      * algorithm used to sign the CA certificate).
      *
-     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      * @return JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used to
      *         sign the CA certificate).
      */
@@ -1428,7 +1486,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param signAlg
      *            JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
      *            to sign the CA certificate).
-     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      */
     public void setSignatureAlgorithm(String signAlg) {
         data.put(SIGNATUREALGORITHM, signAlg);
@@ -3141,7 +3199,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // Verify that the key algorithm is compliant with the certificate profile
         if (!getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
             if(log.isDebugEnabled()) {
-                log.debug("List of available algorithms " + getAvailableKeyAlgorithmsAsList() + " does not contain the on of the public key: " + keyAlgorithm);
+                log.debug("Algorithm " + keyAlgorithm + " is not among the list of available algorithms: " + getAvailableKeyAlgorithmsAsList());
             }
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
         }
@@ -3166,10 +3224,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegaleccurve", keySpecification));
             }
         }
+        if (AlgorithmTools.isPQC(keyAlgorithm) && !AlgorithmConstants.KEYALGORITHM_NTRU.equals(keyAlgorithm)) {
+            //We implicitly allow a specific key length when configuring FALCON and/or DILITHIUM algorithms, 
+            //hence we don't need to check for key length compliancy with the certificate profile.
+            //NTRU allow for the configuration of 128, 192, 256 bits
+            return;
+        }
         // Verify key length that it is compliant with certificate profile
         if (keyLength == -1) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", publicKey.getClass().getName()));
         }
+        // This can look a bit illogical from a configuration perspective, it checks if the requested key length/strength is
+        // in in interval. I.e. if you select 2048 and 4096 for RSA keys in a certificate profile, but does not select 3072
+        // 3072 is still allowed because it is within the interval configured in the certificate profile
         if ((keyLength < (getMinimumAvailableBitLength() - 1)) || (keyLength > (getMaximumAvailableBitLength()))) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", keyLength));
         }
@@ -3190,7 +3257,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);
         // We need to make a deep copy of the hashmap here
-        clone.data = new LinkedHashMap<>(data.size());
+        clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR));
         for (final Entry<Object,Object> entry : data.entrySet()) {
                 Object value = entry.getValue();
                 if (value instanceof ArrayList<?>) {
@@ -3519,9 +3586,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setQCCountriesString("");
             }
             
+            // v50 truncated subject key identifier
+            if (data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER) == null) {
+                setUseTruncatedSubjectKeyIdentifier(false);
+            }
+            
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
+    }
+    
+    /**
+     * Determine if the certificate profile supports Elliptic Curve Cryptography (ECC).
+     *
+     * @param certificateProfile the certificate profile to check.
+     * @return true if the certificate profile supports a key algorithm which utilises ECC, false otherwise.
+     */
+    public boolean isEccCapable() {
+        return getAvailableKeyAlgorithmsAsList().contains("ECDSA")
+                || getAvailableKeyAlgorithmsAsList().contains("ECGOST3410")
+                || getAvailableKeyAlgorithmsAsList().contains("DSTU4145");
     }
 
 }

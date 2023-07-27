@@ -31,9 +31,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
+
+import com.keyfactor.util.CertTools;
 
 /** Class used to construct validity times based on a range of different input parameters and configuration. 
  * 

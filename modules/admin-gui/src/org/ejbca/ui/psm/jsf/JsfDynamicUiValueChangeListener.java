@@ -21,9 +21,10 @@ import javax.faces.component.UIInput;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.event.ValueChangeListener;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -79,10 +80,12 @@ public class JsfDynamicUiValueChangeListener implements Serializable, ValueChang
             log.debug("Registered UIComponent " + eventSource + " for dynamic UI property " + property.getName() + " single value changed from "
                     + property.getValue() + " to " + value + ".");
         }
-        if (value instanceof UploadedFile) {
-            final String fileName = ((UploadedFile) value).getName();
+        if (value instanceof Part) {
+            Part part = (Part) value;
+            final String fileName = part.getName();
             try {
-                property.setValueGenericIncludeNull(((UploadedFile) value).getBytes());
+                final byte[] partBytes =  IOUtils.toByteArray(part.getInputStream(), part.getSize());           
+                property.setValueGenericIncludeNull(partBytes);
             } catch (IOException e) {
                 if (log.isTraceEnabled()) {
                 	log.trace("Could not delete temp. file " + fileName + ": " + e.getMessage(), e);

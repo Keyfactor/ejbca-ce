@@ -13,8 +13,9 @@
  
 package org.ejbca.core.model.ca;
 
-import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+
+import com.keyfactor.ErrorCode;
 
 
 

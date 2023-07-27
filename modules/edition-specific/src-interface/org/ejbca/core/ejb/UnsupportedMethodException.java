@@ -13,8 +13,8 @@
 
 package org.ejbca.core.ejb;
 
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 
 /**
  * Thrown when accessing enterprise-edition-only features in the community version

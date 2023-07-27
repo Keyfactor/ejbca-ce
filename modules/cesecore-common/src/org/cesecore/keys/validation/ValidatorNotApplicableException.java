@@ -15,7 +15,7 @@ package org.cesecore.keys.validation;
 
 import javax.ejb.ApplicationException;
 
-import org.cesecore.CesecoreException;
+import com.keyfactor.CesecoreException;
 
 /**
  * An exception thrown when someone tries validate with input that is not applicable for a specific validator.

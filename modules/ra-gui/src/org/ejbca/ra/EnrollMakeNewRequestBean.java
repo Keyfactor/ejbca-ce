@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -43,9 +44,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.component.html.HtmlSelectOneMenu;
@@ -55,18 +53,21 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.Part;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.ErrorCode;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
@@ -90,18 +91,12 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.TokenDownloadType;
@@ -114,8 +109,17 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.cert.OID;
+
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page.
@@ -130,7 +134,7 @@ import org.ejbca.util.cert.OID;
  * all permutations that could potentially be affected down the line.)
  *
  */
-@ManagedBean
+@Named
 @ViewScoped
 public class EnrollMakeNewRequestBean implements Serializable {
 
@@ -139,6 +143,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
+    private static final String ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD = "enroll_invalid_certificate_request_not_parsable_subject_dn_field";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
     
     private static final String ENROLL_INVALID_SSH_PUB_KEY = "enroll_invalid_ssh_pub_key";
@@ -152,14 +157,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @ManagedProperty(value = "#{raAuthenticationBean}")
+    @Inject
     private RaAuthenticationBean raAuthenticationBean;
 
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
 
-    @ManagedProperty(value = "#{raLocaleBean}")
+    @Inject
     private RaLocaleBean raLocaleBean;
 
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
@@ -184,11 +189,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private byte[] sshPublicKey;
     private String sshPublicKeyString;
     private String sshPubKeyFileName;
-    List<EndEntityProfile.FieldInstance> sshPrincipals;
+    private List<EndEntityProfile.FieldInstance> sshPrincipals;
     private String criticalOptionsForceCommand;
     private String criticalOptionsSourceAddress;
+    private transient Optional<Boolean> criticalOptionsVerifyRequired = Optional.empty();
     private String sshAdditionalExtensions;
     private String sshPubKeyDescription;
+    private boolean useClearPassword;
+    private boolean clearPasswordDirty;
 
     /**
      * Is private key generated by the server (CA) or is the key provided by the user (usually in the form of a CSR)
@@ -214,9 +222,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String cabfOrganizationIdentifier;
     private String selectedAlgorithm; //GENERATED ON SERVER
     private String algorithmFromCsr; //PROVIDED BY USER
+    private String algorithmFromCsrUiRepresentation;
     private int selectedTokenType;
 
-    private UploadedFile uploadFile;
+    private Part uploadFile;
     private String certificateRequest;
     private String publicKeyModulus;
     private String publicKeyExponent;
@@ -1005,6 +1014,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     }
                 }
             }
+            if (RequestFieldType.DN.equals(type) && getCertificateProfile().getAllowDNOverride()) {
+                raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField);
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
+            }
             if (log.isDebugEnabled()) {
                 log.debug("Unparsable subject " + type + " field '" + subjectField +
                         "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
@@ -1237,11 +1250,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // Corrections for SAN rfc822name and UPN (which might be a valid e-mail)
         for (EndEntityProfile.FieldInstance field : getSubjectAlternativeName().getOptionalFieldInstances()) {
             // An optional and modifiable SAN rfc822name or UPN field with a domain or list of domains can be left blank.
-            if(field.isUpnRfc() && field.isSelectableValuesUpnRfcDomainOnly() && field.getSelectableValuesUpnRfc().contains(field.getValue())) {
+            if (field.isUpnRfc() && field.isSelectableValuesUpnRfcDomainOnly() && field.getSelectableValuesUpnRfc().contains(field.getValue())
+                    && !field.getValue().contains("@")) {
                 field.setValue("");
             }
             // An optional (or modifiable) SAN rfc822name and UPN using the EE e-mail can be disabled.  
-            if(field.isUpnRfc() && field.isUsed() && !field.getRfcEmailUsed()) {
+            if (field.isUpnRfc() && field.isUsed() && !field.getRfcEmailUsed() && !field.getValue().contains("@")) {
                 field.setValue("");
             }
         }
@@ -1268,7 +1282,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
         endEntityInformation.setKeyRecoverable(getKeyRecoverableUse());
         endEntityInformation.setSendNotification(getSendNotification());
-        endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
         
         // Fill end-entity information (Username and Password)
@@ -1320,8 +1333,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Add end-entity
             // Generates a keystore token if user has specified "ON SERVER" key pair generation.
             // Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
-            boolean isClearPwd = isClearPassword();
-
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 ret = raMasterApiProxyBean.addUserAndGenerateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 if (ret == null) {
@@ -1347,13 +1358,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     ret = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
                 } else if (tokenDownloadType == TokenDownloadType.PEM) {
                     final Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, Certificate.class);
-                    ret = CertTools.getPemFromCertificateChain(Arrays.asList(certificate));
+                    ret = CertTools.getPemFromCertificateChain(List.of(certificate));
                 } else {
                     ret = certificateDataToDownload;
                 }
             } else if (KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
                 endEntityInformation.setTokenType(selectedTokenType);
-                raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, isClearPwd);
+                boolean canUseClearPwd = useClearPassword;
+                log.info("canUseClearPwd: " + canUseClearPwd + ", " + selectedTokenType + ", " + getEndEntityProfile().useAutoGeneratedPasswd());
+                if (selectedTokenType < 2 || getEndEntityProfile().useAutoGeneratedPasswd()) { // for clearPwd: selected token type and not generated by user
+                    canUseClearPwd = false;
+                }
+                raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, canUseClearPwd);
                 if (!isRequestIdInfoRendered()) {
                     raLocaleBean.addMessageInfo("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername());
                 }
@@ -1663,13 +1679,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         byte[] fileContents;
         String pemEncodedCsr;
         try {
-            fileContents = uploadFile.getBytes();
+            fileContents = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
             String fileContentString = new String(fileContents);
             if (fileContentString.startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)||
                     fileContentString.startsWith(CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST)) {
-                pemEncodedCsr = new String(uploadFile.getBytes());
+                pemEncodedCsr = new String(fileContents);
             } else {
-                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(uploadFile.getBytes()));
+                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(fileContents));
             }
         } catch (IOException e) {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
@@ -1700,21 +1716,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
-        //Get public key algorithm from CSR and check if it's allowed in certificate profile
+        //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
         try {
             final PublicKey publicKey = certRequest.getRequestPublicKey();
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-
+            if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
+                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", getKeyAlgorithmMessageString(keyAlgorithm, keySpecification))));
+            }
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
                 raLocaleBean.addMessageError("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification);
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
-
+            algorithmFromCsrUiRepresentation = getAlgorithmUiRepresentationString(keyAlgorithm, keySpecification);
             publicKeyModulus = KeyTools.getKeyModulus(publicKey);
-
             publicKeyExponent = KeyTools.getKeyPublicExponent(publicKey);
             sha256Fingerprint = KeyTools.getSha256Fingerprint(csrValue);
             signature = extractSignatureFromCsr(certRequest);
@@ -1725,6 +1742,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException(e);
         }
+    }
+    
+    private String getKeyAlgorithmMessageString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + "_" + spec;
+    }
+
+    private String getAlgorithmUiRepresentationString(String alg, String spec ) {
+        return alg.equals(spec)? alg : alg + " " + spec;
     }
 
     private String extractSignatureFromCsr(final RequestMessage certRequest) {
@@ -1885,6 +1910,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } else {
             return algorithmFromCsr;
         }
+    }
+    
+    /**
+     * @return the current key algorithm as UI representation
+     */
+    public String getAlgorithmUiRepresentation() {
+        return algorithmFromCsrUiRepresentation;
     }
 
     /**
@@ -2175,81 +2207,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public List<SelectItem> getAvailableAlgorithmSelectItems() {
         if (this.availableAlgorithmSelectItems == null) {
-            final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
-            final CertificateProfile certificateProfile = getCertificateProfile();
-            if (certificateProfile != null) {
-                final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
-                final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                    for (final int availableBitLength : availableBitLengths) {
-                        if (availableBitLength == 1024) {
-                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                    AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                        }
-                    }
-                }
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                    for (final int availableBitLength : availableBitLengths) {
-                        if (availableBitLength >= 1024) {
-                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
-                                    AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
-                        }
-                    }
-                }
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED25519)) {
-                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519,
-                            AlgorithmConstants.KEYALGORITHM_ED25519));
-                }
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED448)) {
-                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448,
-                            AlgorithmConstants.KEYALGORITHM_ED448));
-                }
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-                    final Set<String> ecChoices = new HashSet<>();
-                    if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
-                        for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap(false).keySet()) {
-                            if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
-                                continue;
-                            }
-                            final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                            if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                                ecChoices.add(ecNamedCurve);
-                            }
-                        }
-                    }
-                    ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
-                    ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
-                    final List<String> ecChoicesList = new ArrayList<>(ecChoices);
-                    Collections.sort(ecChoicesList);
-                    for (final String ecNamedCurve : ecChoicesList) {
-                        if (!AlgorithmTools.isKnownAlias(ecNamedCurve)) {
-                            log.warn("Ignoring unknown curve " + ecNamedCurve + " from being displayed in the RA web.");
-                            continue;
-                        }
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                                + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
-                    }
-                }
-                for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-                    if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
-                        for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
-                            final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
-                            final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                            if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                                availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
-                                        CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
-                            } else {
-                                if (log.isTraceEnabled()) {
-                                    log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
-                                }
-                            }
-                        }
-                    }
-                }
-                if (availableAlgorithmSelectItems.size() > 1 && StringUtils.isEmpty(getSelectedAlgorithm(availableAlgorithmSelectItems))) {
-                    availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage(ENROLL_SELECT_KA_NOCHOICE), raLocaleBean.getMessage(ENROLL_SELECT_KA_NOCHOICE), true));
-                }
-            }
+            final List<SelectItem> availableAlgorithmSelectItems =  RaAvailableAlgorithmsTool
+                    .getAvailableAlgorithmSelectItems(getCertificateProfile(), raLocaleBean.getMessage("ENROLL_SELECT_KA_NOCHOICE"));
             EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
             this.availableAlgorithmSelectItems = availableAlgorithmSelectItems;
         }
@@ -2260,7 +2219,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Sort the provided list by label with the exception of any item with null value that ends up first.
      */
     protected static void sortSelectItemsByLabel(final List<SelectItem> items) {
-        Collections.sort(items, new Comparator<SelectItem>() {
+        items.sort(new Comparator<SelectItem>() {
             @Override
             public int compare(final SelectItem item1, final SelectItem item2) {
                 if (item1.getValue() == null || (item1.getValue() instanceof String && ((String) item1.getValue()).isEmpty())) {
@@ -2463,12 +2422,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
+
+    public boolean isKeyRecoveryRequired() {
+        if (getEndEntityProfile() != null && getEndEntityProfile().isKeyRecoverableUsed()) {
+            return getEndEntityProfile().isKeyRecoverableRequired();
+        }
+        return false;
+    }
     
     public boolean getKeyRecoverableUse() {
         if (useKeyRecoverable != null) {
             return useKeyRecoverable;
         } else if (getEndEntityProfile() != null) {
-            return (getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault());
+            return (getEndEntityProfile().isKeyRecoverableUsed() || getEndEntityProfile().isKeyRecoverableDefault());
         }
         return false;
     }
@@ -2610,14 +2576,45 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return subjectAlternativeName;
     }
 
-    public boolean isClearPassword() {
+    public boolean isClearPasswordAllowed() {
         EndEntityProfile profile = getEndEntityProfile();
-
         if (profile != null) {
-            return profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+            boolean allowClearPwd = profile.isClearTextPasswordUsed() && (selectedTokenType > 1);
+            if(!clearPasswordDirty) {
+                if(!allowClearPwd) {
+                    useClearPassword = false;
+                } else {
+                    useClearPassword = profile.isClearTextPasswordDefault();
+                }
+            }
+            return allowClearPwd;
         }
-
         return false;
+    }
+    
+    public boolean isClearPasswordRequired() {
+        EndEntityProfile profile = getEndEntityProfile();
+        if (profile != null) {
+            boolean requireClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordRequired();
+            if(requireClearPwd && !clearPasswordDirty) {
+                useClearPassword = profile.isClearTextPasswordDefault();
+                clearPasswordDirty = true;
+            }
+            return requireClearPwd;
+        }
+        return false;
+    }
+    
+    public boolean getClearPassword() {
+         if(!clearPasswordDirty) {
+            isClearPasswordAllowed();
+        }
+        return useClearPassword;
+    }
+    
+    public void setClearPassword(boolean clearPwd) {
+        clearPasswordDirty = true;
+        useClearPassword = clearPwd;
     }
 
     /**
@@ -2654,7 +2651,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         // For the email fields "used" means use EE email address
         if (fieldInstance.isUsed() || DnComponents.DNEMAILADDRESS.equals(fieldInstance.getName()) || DnComponents.RFC822NAME.equals(fieldInstance.getName())
-                || DnComponents.DNSNAME.equals(fieldInstance.getName())) {
+                || DnComponents.DNSNAME.equals(fieldInstance.getName()) || DnComponents.UPN.equals(fieldInstance.getName())) {
             if (isRenderNonModifiableFields()) {
                 return true;
             }
@@ -2666,11 +2663,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return false;
     }
 
-    public UploadedFile getUploadFile() {
+    public Part getUploadFile() {
         return uploadFile;
     }
 
-    public void setUploadFile(UploadedFile uploadFile) {
+    public void setUploadFile(Part uploadFile) {
         this.uploadFile = uploadFile;
     }
 
@@ -2762,7 +2759,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         requestPreview.updateSubjectDn(getSubjectDn());
         requestPreview.updateSubjectAlternativeName(getSubjectAlternativeName(), getEndEntityProfile());
         requestPreview.updateSubjectDirectoryAttributes(getSubjectDirectoryAttributes());
-        requestPreview.setPublicKeyAlgorithm(getAlgorithm());
+        requestPreview.setPublicKeyAlgorithm(getAlgorithmUiRepresentation());
         requestPreview.updateCA(getCAInfo());
         requestPreview.updateCertificateProfile(getCertificateProfile());
         requestPreview.setMore(requestPreviewMoreDetails);
@@ -3053,6 +3050,37 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setCriticalOptionsSourceAddress(String criticalOptionsSourceAddress) {
         this.criticalOptionsSourceAddress = criticalOptionsSourceAddress;
     }
+
+    public List<SelectItem> getSshVerifyRequiredOptions() {
+        final List<SelectItem> options = new ArrayList<>();
+        options.add(new SelectItem(true, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_enabled")));
+        options.add(new SelectItem(false, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_disabled")));
+        return options;
+    }
+
+    public boolean isModifiableCriticalOptionsVerifyRequired() {
+        EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
+        return eeProfile!=null ? eeProfile.isSshVerifyRequiredModifiable() : false;
+    }
+    
+    public boolean isRequiredCriticalOptionsVerifyRequired() {
+        EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
+        return eeProfile!=null ? eeProfile.isSshVerifyRequiredRequired() : false;
+    }
+
+    public boolean getCriticalOptionsVerifyRequired() {
+        if (criticalOptionsVerifyRequired.isEmpty() && StringUtils.isNotEmpty(getSelectedEndEntityProfile())) {
+            criticalOptionsVerifyRequired = Optional.of(getSelectedEndEntityProfileContent().getSshVerifyRequired());
+        }
+        if (criticalOptionsVerifyRequired.isPresent()) {
+            return criticalOptionsVerifyRequired.get();
+        }
+        return false;
+    }
+
+    public void setCriticalOptionsVerifyRequired(final boolean criticalOptionsVerifyRequired) {
+        this.criticalOptionsVerifyRequired = Optional.of(criticalOptionsVerifyRequired);
+    }
     
     public boolean isRenderedSshAdditionalExtensions() {
         return true; // will change soon
@@ -3107,7 +3135,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void uploadSshPubKey() {
         if(uploadFile!=null) {
             try {
-                sshPublicKeyString = new String(uploadFile.getBytes());
+                final byte[] fileBytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
+                sshPublicKeyString = new String(fileBytes);
                 updateSshPublicKey();
                 return;
             } catch (IOException e) {
@@ -3207,6 +3236,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, getCriticalOptionsSourceAddress());
         }
 
+        if (criticalOptionsVerifyRequired.isPresent() && criticalOptionsVerifyRequired.get()) {
+            criticalOptionsToAdd.put(
+                SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
+        }
+
         if (getSshAdditionalExtensions() != null) {
             try {
                 additionalExtensionDataParser.load(new StringReader(getSshAdditionalExtensions()));
@@ -3259,7 +3293,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         raAuthenticationBean.getAuthenticationToken(), endEntityInformation, requestMessage);
             } else {                
                 requestMessage.populateEndEntityData(endEntityInformation, getSelectedCertificateProfileContent());
-                raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, isClearPassword());
+                // for SSH enroll we do not need clearPwd as public key is always generated by client(POSTPONE case)
+                raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 raLocaleBean.addMessageInfo("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername());
                 //TODO approval
                 return null;

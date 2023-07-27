@@ -23,7 +23,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
-import org.cesecore.util.CertTools;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * A response message consisting of a single X509 or CVC Certificate. Name is nowadays slightly misleading since the class can

@@ -47,7 +47,8 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
-import org.cesecore.certificates.util.AlgorithmTools;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * CMS utils.

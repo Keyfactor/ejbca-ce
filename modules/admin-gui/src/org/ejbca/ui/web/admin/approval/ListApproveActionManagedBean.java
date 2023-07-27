@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.inject.Named;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -40,7 +40,7 @@ import org.ejbca.util.query.TimeMatch;
  * Managed bean in the approvalactions.xhtml page.
  * 
  */
-@ManagedBean
+@Named
 @SessionScoped
 public class ListApproveActionManagedBean extends BaseManagedBean {
   

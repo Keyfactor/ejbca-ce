@@ -20,7 +20,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import com.keyfactor.util.CryptoProviderTools;
 
 /**
  * Wrapper class for serializing PublicKey objects. 
@@ -49,7 +49,7 @@ public class PublicKeyWrapper implements Serializable {
     public PublicKey getPublicKey() {
         if (publicKey == null) {
             try {
-                KeyFactory keyFactory = KeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+                KeyFactory keyFactory = KeyFactory.getInstance(algorithm, CryptoProviderTools.getProviderNameFromAlg(algorithm));
                 X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKey);
                 publicKey = keyFactory.generatePublic(keySpec);
             } catch (NoSuchProviderException e) {

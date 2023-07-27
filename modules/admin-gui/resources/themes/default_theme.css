@@ -115,6 +115,7 @@ body#menu {
 #navigation {
 	margin: 0em;
 	padding: .75em .75em .75em 1.25em;
+	box-sizing: content-box;
 	background-color: #EEE;
 	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
 	font-size: 9pt;
@@ -124,8 +125,7 @@ body#menu {
 	-moz-border-radius: 0em 1em 1em 0em;
 	-khtml-border-radius: 0em 1em 1em 0em;
 	-webkit-border-radius: 0em 1em 1em 0em;
-	
-	width: 17em;
+	width: 18em;
 	float: left;
 }
 
@@ -1016,6 +1016,12 @@ table#endentityprofile.edit tr td input[name="textfieldpassword"] {
 	margin-bottom: .1em;
 }
 
+.missingEmailConfiguration {
+	display: block;
+	max-width: 250px;
+	word-wrap: break-word;
+}
+
 /* --- Page: RA > Add End-Entity */
 table#addendentity tr td {
 	padding: .15em .3em;
@@ -1160,6 +1166,17 @@ table#config tr td:first-child {
 	vertical-align: top;
 }
 
+.protocolStatus {
+	white-space: nowrap;
+}
+
+.protocolStatus img {
+	width: 16px;
+	height: 16px;
+	border-width: 0;
+	margin: 0 0.2em 0.1em 0.2em;
+	vertical-align: middle;
+}
 
 /* --- Login page */
 .loginPage {
@@ -1178,6 +1195,11 @@ table#config tr td:first-child {
 .oauthProviderTable {
 	border-spacing: 0;
 	margin-top: 3ex;
+}
+
+/* --- Search end entity page */
+.searchEndEntityTable button {
+	margin-right: .5em;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1371,8 +1393,8 @@ body.popup {
 	color: rgba(0,0,0,.6);
 }
 
-.alert, .errorMessage { color: red; font-size: 11pt; font-weight: bold; background-color: white; }
-.info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
+.alert, .errorMessage { color: red; font-size: 11pt; font-weight: bold; background-color: white; white-space: pre-line; }
+.info { color: black; font-size: 11pt; font-weight: bold; background-color: white; white-space: pre-line; }
 
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
 .commandButton { font-size: 9pt; margin-top: 2em; margin-bottom: 2em; vertical-align: bottom;}
@@ -1525,6 +1547,10 @@ a.button:active {
 .preformatted {
     white-space: pre-wrap;
 }
+
+/* Set on document.documentElement */
+.waiting { cursor: wait; opacity: 0.5; }
+.waiting input { cursor: wait; }
 
 /*--------------------------------------------------------------------------*/
 /* EOF */

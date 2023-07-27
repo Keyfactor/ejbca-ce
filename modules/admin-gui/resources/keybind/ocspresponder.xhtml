@@ -211,12 +211,12 @@
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_DESCRIPTION}"/></f:facet>
 					<h:outputText value="#{otherCa.trustEntryDescription}"/>
 					<f:facet name="footer">
-						<h:inputText id="trustEntryDescription" rendered="#{ocspResponderMBean.inEditMode}" required="false"
+						<h:inputText id="trustEntryDescriptionOcsp" rendered="#{ocspResponderMBean.inEditMode}" required="false"
 									 value="#{ocspResponderMBean.currentTrustEntryDescriptionOcspRespToSign}"
 									 size="18" maxlength="255"
 									 title="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_TITLE}">
 						</h:inputText>
-						<h:message for="trustEntryDescription" rendered="#{ocspResponderMBean.inEditMode}"/>
+						<h:message for="trustEntryDescriptionOcsp" rendered="#{ocspResponderMBean.inEditMode}"/>
 					</f:facet>
 				</h:column>
 				<h:column>

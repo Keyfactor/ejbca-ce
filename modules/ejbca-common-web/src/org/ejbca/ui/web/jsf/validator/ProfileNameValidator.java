@@ -13,8 +13,9 @@
 package org.ejbca.ui.web.jsf.validator;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import com.keyfactor.util.StringTools;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
