@@ -29,7 +29,7 @@ public class ValidEndEntityStatusRestRequestTest {
     @Test
     public void errorToken() {
         // given
-        final String expectedMessage = "Invalid edit end entity request, token cannot be null or empty.";
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, token cannot be null or empty.";
         final SetEndEntityStatusRestRequest testClass = new SetEndEntityStatusRestRequest();
         // when
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
@@ -41,7 +41,7 @@ public class ValidEndEntityStatusRestRequestTest {
     @Test
     public void errorTokenValue() {
         // given
-        final String expectedMessage = "Invalid edit end entity request, unrecognized token.";
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, unrecognized token.";
         final SetEndEntityStatusRestRequest testClass = new SetEndEntityStatusRestRequest();
         testClass.setToken("Token");
         // when
@@ -54,7 +54,7 @@ public class ValidEndEntityStatusRestRequestTest {
     @Test
     public void errorStatus() {
         // given
-        final String expectedMessage = "Invalid edit end entity request, status cannot be null or empty.";
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, status cannot be null or empty.";
         final SetEndEntityStatusRestRequest testClass = new SetEndEntityStatusRestRequest();
         testClass.setToken("P12");
         // when
@@ -67,7 +67,7 @@ public class ValidEndEntityStatusRestRequestTest {
     @Test
     public void errorStatusValue() {
         // given
-        final String expectedMessage = "Invalid edit end entity request, unrecognized status.";
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, unrecognized status.";
         final SetEndEntityStatusRestRequest testClass = new SetEndEntityStatusRestRequest();
         testClass.setToken("P12");
         testClass.setStatus("Status");
