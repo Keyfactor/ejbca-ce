@@ -642,11 +642,11 @@ public class CmpServlet extends HttpServlet {
             // If the CA cert is in the cache, use that CA cert
             if ((cacertEntry != null) && (cacertEntry.isInCache())) {
                 X509Certificate cacert = cacertEntry.getValue();
-                log.info("Found CA certificate with subject dn " + GdprRedactionUtils.getRedactedMessage(caSubjectDn) + " in the cache");
+                log.info("Found CA certificate with subject dn " + caSubjectDn + " in the cache");
                 return cacert;
             }
             if (log.isDebugEnabled()) {
-                log.debug("Did not find CA certificate with subject dn " + GdprRedactionUtils.getRedactedMessage(caSubjectDn) + " in the cache. Asking from RaMasterApi");
+                log.debug("Did not find CA certificate with subject dn " + caSubjectDn + " in the cache. Asking from RaMasterApi");
             }
 
             try {
@@ -658,7 +658,7 @@ public class CmpServlet extends HttpServlet {
                     return cacert;
                 }
             } catch (CADoesntExistsException | AuthorizationDeniedException | EJBException e) {
-                String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: " + GdprRedactionUtils.getRedactedMessage(caSubjectDn);
+                String msg = "Issuer ca form CMP alias does not exist or is not accessible. CA subject Dn: " + caSubjectDn;
                 if (log.isDebugEnabled()) {
                     log.debug(msg + " - " + e.getLocalizedMessage());
                 }
@@ -670,7 +670,7 @@ public class CmpServlet extends HttpServlet {
                 cacertEntry.close();
             }
         }
-        String msg = intres.getLocalizedMessage("Failed to find Issuer CA " + GdprRedactionUtils.getRedactedMessage(caSubjectDn));
+        String msg = intres.getLocalizedMessage("Failed to find Issuer CA " + caSubjectDn);
         log.info(msg + " " + messageInformation);
         throw new CmpServletValidationError(msg);
     }
