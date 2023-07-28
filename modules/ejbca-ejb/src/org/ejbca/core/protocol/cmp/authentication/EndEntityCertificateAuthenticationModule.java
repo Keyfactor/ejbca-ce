@@ -310,7 +310,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             log.debug("CMP is operating in Vendor mode: " + vendormode);
             log.debug("CMP message already been authenticated: " + authenticated);
             log.debug("Omitting some verifications: " + omitVerifications);
-            log.debug("CMP message (claimed to be) signed by (cert from extraCerts): SubjectDN '" + CertTools.getSubjectDN(extraCert)+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
+            log.debug("CMP message (claimed to be) signed by (cert from extraCerts): SubjectDN '" + 
+                   GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(extraCert))+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
         }
 
         //----------------------------------------------------------------------------------------
@@ -576,11 +577,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 if (log.isDebugEnabled()) {
                     log.debug("Received a CMP KeyUpdateRequest for an endentity with SubjectDN '"
                             + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN, userdata.getEndEntityProfileId()) + "' and issuerDN '"
-                            + GdprRedactionUtils.getRedactedMessage(issuerDN)
+                            + issuerDN
                             + "'");
                 }
             } else if (userdataList.size() > 1) {
-                log.warn("Multiple end entities with subject DN and issuer DN" + GdprRedactionUtils.getRedactedMessage(issuerDN)
+                log.warn("Multiple end entities with subject DN and issuer DN" + issuerDN
                         + " were found. This may lead to unexpected behavior.");
             }
         }
@@ -889,13 +890,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         } catch (CertPathValidatorException e) {
             this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid - " + getCertPathValidatorExceptionMessage(e);
             if(log.isDebugEnabled()) {
-                // TODO: double check if redaction is handled in CertTools or should be handled here
-                log.debug(this.errorMessage + ": SubjectDN=" + CertTools.getSubjectDN(endentitycert));
+                log.debug(this.errorMessage + ": SubjectDN=" + GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(endentitycert)));
             }
         } catch (CertPathBuilderException e) {
             this.errorMessage = "The certificate chain attached to the PKIMessage in the extraCert field is not valid - " + e.getMessage();
             if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + ": SubjectDN=" + CertTools.getSubjectDN(endentitycert));
+                log.debug(this.errorMessage + ": SubjectDN=" + GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(endentitycert)));
             }
             log.warn("CertPathBuilderException", e);
         } catch (NoSuchProviderException e) {
