@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource.validator;
 
-import org.apache.log4j.Logger;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
 import org.junit.Test;
 
@@ -24,7 +23,6 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 
 public class ValidAddEndEntityRestRequestUnitTest {
-    private static Logger log = Logger.getLogger(ValidAddEndEntityRestRequestUnitTest.class);
 
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -37,7 +35,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals(1, constraintViolations.size());
-        assertEquals( expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -51,7 +49,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals(1, constraintViolations.size());
-        assertEquals( expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -65,7 +63,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals(1, constraintViolations.size());
-        assertEquals( expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -80,7 +78,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals(1, constraintViolations.size());
-        assertEquals( expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -96,7 +94,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals(1, constraintViolations.size());
-        assertEquals( expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -113,7 +111,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals(1, constraintViolations.size());
-        assertEquals( expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -131,7 +129,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals(1, constraintViolations.size());
-        assertEquals( expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
