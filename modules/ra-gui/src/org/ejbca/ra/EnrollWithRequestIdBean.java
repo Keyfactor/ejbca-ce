@@ -59,6 +59,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
@@ -476,7 +477,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                     log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
                 } else {
                     raLocaleBean.addMessageError(errorCode);
-                    log.info("Exception generating keystore. Error Code: " + errorCode, e);
+                    log.info("Exception generating keystore. Error Code: " + errorCode, GdprRedactionUtils.getRedactedThrowable(e));
                 }
             } else {
                 raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
@@ -484,7 +485,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
             return;
         } catch (Exception e){
-            raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+            raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(),  e.getMessage());
             log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
         }
         
