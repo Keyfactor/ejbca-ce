@@ -155,7 +155,7 @@ public class CaRestResource extends BaseRestResource {
             }
         } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException e) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
-                    e.getMessage());
+                    e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
         }
         response.setAllSuccess(result);
         response.setLatestCrlVersion(crlStoreSession.getLastCRLNumber(issuerDn,
