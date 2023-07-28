@@ -480,7 +480,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                     log.info("Exception generating keystore. Error Code: " + errorCode, GdprRedactionUtils.getRedactedThrowable(e));
                 }
             } else {
-                raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+                raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
                 log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
             }
             return;
