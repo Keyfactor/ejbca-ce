@@ -19,7 +19,16 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
+import org.apache.log4j.Logger;
+import org.cesecore.configuration.GdprConfigurationCache;
+import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.GdprRedactionUtilsTest;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 
 /**
  * Tests the static EjbcaException.getErrorCode(Throwable). Although it is placed in the EjbcaException
@@ -31,6 +40,8 @@ import static org.junit.Assert.assertNull;
  * @version $Id$
  */
 public class GetErrorCodeTest {
+    
+    private static final Logger log = Logger.getLogger(GetErrorCodeTest.class);
 
 	@Test
     public void testEjbcaExceptionDefaultConstructor() {
@@ -85,5 +96,52 @@ public class GetErrorCodeTest {
     @Test
     public void testNestedExceptions() {
         assertNull("EjbcaException.getErrorCode of the Exception(new Exception()) is not null", EjbcaException.getErrorCode(new Exception(new Exception())));
+    }
+    
+    @Test
+    public void testRedactException() {
+        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
+        String exceptionMessageWithPii = "some message: CN=abcd,OU=xyz blah";
+        
+        try {
+            throw new EjbcaException(ErrorCode.BAD_REQUEST, exceptionMessageWithPii);
+        } catch (EjbcaException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    EjbcaException.getErrorCode(e), ErrorCode.BAD_REQUEST);
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            GdprRedactionUtilsTest.assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
+        
+        try {
+            throw new EjbcaException(ErrorCode.BAD_REQUEST, 
+                    new IllegalArgumentException(exceptionMessageWithPii));
+        } catch (EjbcaException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    EjbcaException.getErrorCode(e), ErrorCode.BAD_REQUEST);
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            assertNull("Inner cause is not redacted", t.getCause());
+            GdprRedactionUtilsTest.assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
+        
+        try {
+            throw new ApprovalException(ErrorCode.BAD_REQUEST, exceptionMessageWithPii,
+                    new AlreadyRevokedException(exceptionMessageWithPii));
+        } catch (EjbcaException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    EjbcaException.getErrorCode(e), ErrorCode.BAD_REQUEST);
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            // does not trim this message
+            assertNotNull("Inner cause is trimmed", t.getCause().getMessage());
+            GdprRedactionUtilsTest.assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
     }
 }
