@@ -2873,12 +2873,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         if (emailInput != null && emailInput.getValue() != null) {
             email = emailInput.getValue().toString();
-            log.debug("Index " + index + " mail part '" + email + "'."); // TODO: should this be redacted?
+            if (!GdprRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+                log.debug("Index " + index + " mail part '" + email + "'.");
+            }
         }
         String domain = "";
         if (domainInput != null && domainInput.getValue() != null) {
             domain = domainInput.getValue().toString();
-            log.debug("Index " + index + " domain part '" + domain + "'."); // TODO: should this be redacted?
+            if (!GdprRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+                log.debug("Index " + index + " domain part '" + domain + "'."); 
+            }
         }
         String concatenated = "";
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
