@@ -1,6 +1,5 @@
 package org.ejbca.ui.web.rest.api.resource.validator;
 
-import org.apache.log4j.Logger;
 import org.ejbca.ui.web.rest.api.io.request.SetEndEntityStatusRestRequest;
 import org.junit.Test;
 
@@ -13,7 +12,6 @@ import static org.junit.Assert.assertEquals;
 
 public class ValidEndEntityStatusRestRequestTest {
 
-    private static Logger log = Logger.getLogger(ValidEndEntityStatusRestRequestTest.class);
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Test
