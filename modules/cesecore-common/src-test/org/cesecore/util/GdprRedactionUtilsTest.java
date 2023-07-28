@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.configuration.GdprConfiguration;
 import org.cesecore.configuration.GdprConfigurationCache;
 import org.junit.Before;
@@ -108,7 +110,7 @@ public class GdprRedactionUtilsTest {
         throw new CesecoreException(DUMMY_MESSAGE_WITH_SDN);
     }
     
-    private void assertStackTraceEquals(StackTraceElement[] stackTraceExpected, StackTraceElement[] stackTraceOriginal) {
+    public static void assertStackTraceEquals(StackTraceElement[] stackTraceExpected, StackTraceElement[] stackTraceOriginal) {
         assertEquals("Stack trace length mismatch", stackTraceExpected.length, stackTraceOriginal.length);
         for (int i=0; i<stackTraceExpected.length; i++) {
             assertEquals("Stack trace mismatch at index: " + i, stackTraceExpected[i].toString(), stackTraceOriginal[i].toString());
@@ -155,10 +157,49 @@ public class GdprRedactionUtilsTest {
             Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
             log.error("logged: ", t);
             assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    CesecoreException.getErrorCode(e), ErrorCode.BAD_REQUEST);
             assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
             assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
         }
         
+        try {
+            throw new CesecoreException(ErrorCode.BAD_REQUEST, DUMMY_MESSAGE_WITH_SDN);
+        } catch (CesecoreException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    CesecoreException.getErrorCode(e), ErrorCode.BAD_REQUEST);
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
+        
+        try {
+            throw new CertificateCreateException(ErrorCode.BAD_REQUEST, new IllegalArgumentException(DUMMY_MESSAGE_WITH_SDN));
+        } catch (CesecoreException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    CesecoreException.getErrorCode(e), ErrorCode.BAD_REQUEST);
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            assertNull("Inner cause exception message is not redacted", t.getCause());
+            assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
+        
+        try {
+            throw new CertificateCreateException(DUMMY_MESSAGE_WITH_SDN,
+                    new CADoesntExistsException(DUMMY_MESSAGE_WITH_SDN));
+        } catch (CesecoreException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            assertFalse("Inner cause message is not redacted", t.getCause().getMessage().contains("OU="));
+            assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
+                
         // EJBCA external exceptions
         try {
             throw new IllegalArgumentException(DUMMY_MESSAGE_WITH_SDN);

@@ -13,6 +13,7 @@
 package org.cesecore.util;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +23,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.cesecore.configuration.GdprConfigurationCache;
 
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
@@ -139,9 +142,8 @@ public class GdprRedactionUtils {
     }
     
     /**
-     * Redacts the exception message if needed and creates a new exception with redacted message and same stack trace<br>
-     * <strong>NOT to be rethrown</strong>, other properties like ErrorCode etc are ignored<br>
-     * Always uses String constructor of Exception class
+     * Redacts the exception message if needed and creates a new exception with redacted message 
+     * and same stack trace, ErrorCode in case of EjbcaException and CesecoreException
      * 
      * @param thrownException
      * @return
@@ -166,16 +168,59 @@ public class GdprRedactionUtils {
         
         Throwable redactedException;
         try {
+            Throwable wrappedException = thrownException.getCause();
+            if (wrappedException!=null) {
+                // EjbcaExceptions are redacted already, only CesecoreException coming from x509-common-utils need to be redacted
+                if (wrappedException instanceof CesecoreException) {
+                    Throwable wrappedException2 = new CesecoreException(
+                            ((CesecoreException) wrappedException).getErrorCode(), 
+                            getRedactedMessage(wrappedException.getMessage()));
+                    wrappedException2.setStackTrace(wrappedException.getStackTrace());
+                    wrappedException = wrappedException2;
+                } else if (!checkIfExtendsEjbcaException(wrappedException) && 
+                        (SUBJECT_ALT_NAME_COMPONENTS.matcher(wrappedException.getMessage()).find() || 
+                                SUBJECT_DN_COMPONENTS.matcher(wrappedException.getMessage()).find())) {
+                    wrappedException = null;
+                }
+            }
+            
+            // redact the current exception
             redactedException = thrownException.getClass().getConstructor(String.class)
-                    .newInstance((getRedactedMessage(thrownException.getMessage())));
+                    .newInstance(getRedactedMessage(thrownException.getMessage()));
+            redactedException.initCause(wrappedException);
         } catch (InstantiationException | IllegalAccessException | 
                 IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException e) {
             return thrownException;
         }
         redactedException.setStackTrace(thrownException.getStackTrace());
+        
+        if (thrownException instanceof CesecoreException) {
+            ((CesecoreException) redactedException).setErrorCode(((CesecoreException) thrownException).getErrorCode());
+        }
+        
+        if (checkIfExtendsEjbcaException(thrownException)) {
+            try {
+                Class c = thrownException.getClass();
+                Method getErrorCodeMethod = c.getDeclaredMethod("getErrorCode");
+                Method setErrorCodeMethod = c.getDeclaredMethod("setErrorCode", ErrorCode.class);
+                setErrorCodeMethod.invoke(redactedException, (ErrorCode) getErrorCodeMethod.invoke(thrownException));
+            } catch (Exception e) {
+                // should never happen
+            }
+        }
+        
         return redactedException;
     }
     
+    private static boolean checkIfExtendsEjbcaException(Throwable t) {
+        try {
+            if (Class.forName("org.ejbca.core.EjbcaException").isAssignableFrom(t.getClass())) {
+                return true;
+            }
+        } catch (Exception e) {
+        }
+        return false;
+    }
 
 }
