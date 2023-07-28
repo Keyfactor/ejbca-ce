@@ -31,7 +31,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
     @Test
     public void errorUsername() {
         // given
-        final String expectedMessage = "Invalid add end entity content, username cannot be null or empty.";
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, username cannot be null or empty.";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
         // when
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
@@ -43,7 +43,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
     @Test
     public void errorSubjectDn() {
         // given
-        final String expectedMessage = "Invalid add end entity content, subjectDn cannot be null or empty.";
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, subjectDn cannot be null or empty.";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
         testClass.setUsername("username");
         testClass.setSubjectDn("something wrong");
@@ -57,7 +57,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
     @Test
     public void errorCaName() {
         // given
-        final String expectedMessage = "Invalid add end entity content, caName cannot be null or empty.";
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, caName cannot be null or empty.";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
         testClass.setUsername("username");
         testClass.setSubjectDn("CN=abc");
@@ -71,7 +71,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
     @Test
     public void errorCertificateProfileName() {
         // given
-        final String expectedMessage = "Invalid add end entity content, certificateProfileName cannot be null or empty.";
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, certificateProfileName cannot be null or empty.";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
         testClass.setUsername("username");
         testClass.setSubjectDn("CN=abc");
@@ -86,7 +86,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
     @Test
     public void errorEndEntityProfileName() {
         // given
-        final String expectedMessage = "Invalid add end entity content, endEntityProfileName cannot be null or empty.";
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, endEntityProfileName cannot be null or empty.";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
         testClass.setUsername("username");
         testClass.setSubjectDn("CN=abc");
@@ -102,7 +102,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
     @Test
     public void errorToken() {
         // given
-        final String expectedMessage = "Invalid add end entity content, token cannot be null or empty.";
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, token cannot be null or empty.";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
         testClass.setUsername("username");
         testClass.setSubjectDn("CN=abc");
@@ -119,7 +119,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
     @Test
     public void errorTokenType() {
         // given
-        final String expectedMessage = "Invalid add end entity property, unrecognized token.";
+        final String expectedMessage = "Invalid AddEndEntityRestRequest property, unrecognized token.";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
         testClass.setUsername("username");
         testClass.setSubjectDn("CN=abc");
