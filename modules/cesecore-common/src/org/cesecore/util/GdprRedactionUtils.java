@@ -67,6 +67,14 @@ public class GdprRedactionUtils {
     protected static String getSubjectAltNameRedactionPattern() {
         return SUBJECT_ALT_NAME_COMPONENTS.toString();
     }
+    
+    public static String getSubjectDnLogSafe(String subjectDn) {
+        if(redactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return subjectDn;
+        }
+    }
 
     public static String getSubjectDnLogSafe(String subjectDn, int endEntityProfileId) {
         if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
@@ -81,6 +89,14 @@ public class GdprRedactionUtils {
             return REDACTED_CONTENT;
         } else {
             return subjectDn;
+        }
+    }
+    
+    public static String getSubjectAltNameLogSafe(String san) {
+        if(redactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return san;
         }
     }
     
