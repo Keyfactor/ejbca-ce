@@ -1918,28 +1918,45 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      * @return          redacted subjectDN
      */
     private String getLogSafeSubjectDn(final String subjectDn) {
-        List<CertificateDataWrapper> certificateDataWrappers = certificateStoreSession.getCertificateDatasBySubject(subjectDn);
+        final List<CertificateDataWrapper> certificateDataWrappers = certificateStoreSession.getCertificateDatasBySubject(subjectDn);
 
         return getLogSafeSubjectDn(subjectDn, certificateDataWrappers);
     }
 
     /**
      * Get log safe subjectDN for PII redaction.
-     * @param subjectDn SubjectDN
-     * @param cdw       Certificate Datas
-     * @return          redacted SubjectDN
+     * @param subjectDn                     SubjectDN
+     * @param certificateDataWrappers       Certificate Datas
+     * @return redacted SubjectDN
      */
-    private String getLogSafeSubjectDn(final String subjectDn, List<CertificateDataWrapper> cdw) {
-        Integer eepId = null;
-
-        for (CertificateDataWrapper cd : cdw) {
-            eepId = cd.getCertificateData().getEndEntityProfileId();
-        }
-
-        if (eepId == null) {
+    private String getLogSafeSubjectDn(final String subjectDn, List<CertificateDataWrapper> certificateDataWrappers) {
+        if (certificateDataWrappers.isEmpty()) {
             return GdprRedactionUtils.getSubjectDnLogSafe(subjectDn);
-        } else {
-            return GdprRedactionUtils.getSubjectDnLogSafe(subjectDn, eepId);
         }
+
+        final CertificateDataWrapper latestCertificateDataWrapper = getLatestCertificateDataWrapper(certificateDataWrappers);
+        final int eepId = latestCertificateDataWrapper.getCertificateData().getEndEntityProfileId();
+
+        return GdprRedactionUtils.getSubjectDnLogSafe(subjectDn, eepId);
+    }
+
+    /**
+     * Get the CertificateDataWrapper that contains the latest certificate.
+     *
+     * @param certificateDataWrappers   List of CertificateDataWrapper
+     * @return CertificateDataWrapper with the latest certificate
+     */
+    private CertificateDataWrapper getLatestCertificateDataWrapper(List<CertificateDataWrapper> certificateDataWrappers) {
+        CertificateDataWrapper latest = null;
+
+        for (CertificateDataWrapper cdw : certificateDataWrappers) {
+            final Certificate currentCert = cdw.getCertificate();
+
+            if (latest == null || CertTools.getNotBefore(currentCert).after(CertTools.getNotBefore(latest.getCertificate()))) {
+                latest = cdw;
+            }
+        }
+
+        return latest;
     }
 }

@@ -168,6 +168,11 @@ public class GdprRedactionUtils {
         return getRedactedThrowable(thrownException, 
                 GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Exception> T getRedactedException(T exception, final int endEntityProfileId) {
+        return (T) GdprRedactionUtils.getRedactedThrowable(exception, endEntityProfileId);
+    }
     
     private static Throwable getRedactedThrowable(Throwable thrownException, boolean redactPii) {
         if (thrownException==null) {
