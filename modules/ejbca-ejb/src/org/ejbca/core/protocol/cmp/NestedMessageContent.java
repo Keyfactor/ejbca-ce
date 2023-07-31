@@ -111,13 +111,13 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
             for (final X509Certificate cert : racerts) {
                 if (log.isDebugEnabled()) {
                     log.debug("Trying to verifying the NestedMessageContent using the RA certificate with subjectDN '"
-                            + GdprRedactionUtils.getRedactedMessage(cert.getSubjectX500Principal().toString()) + "'");
+                            + GdprRedactionUtils.getSubjectDnLogSafe(cert.getSubjectX500Principal().toString()) + "'");
                 }
                 try {
                     cert.checkValidity();
                 } catch (CertificateExpiredException | CertificateNotYetValidException e) {                  
                     if (log.isDebugEnabled()) {
-                        log.debug("Certificate with subjectDN '" + GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(cert)) + "' is not valid: " + e.getMessage());
+                        log.debug("Certificate with subjectDN '" + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(cert)) + "' is not valid: " + e.getMessage());
                     }
                     continue;
                 }
@@ -136,7 +136,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                     sig.update(CmpMessageHelper.getProtectedBytes(raSignedMessage));
                     ret = sig.verify(raSignedMessage.getProtection().getBytes());
                     if (log.isDebugEnabled()) {
-                        log.debug("Verifying the NestedMessageContent using the RA certificate with subjectDN '" + GdprRedactionUtils.getRedactedMessage(cert.getSubjectX500Principal().toString()) + "' returned " + ret);
+                        log.debug("Verifying the NestedMessageContent using the RA certificate with subjectDN '" + GdprRedactionUtils.getSubjectDnLogSafe(cert.getSubjectX500Principal().toString()) + "' returned " + ret);
                     }
                 } else {
                     log.info("No signature was found in NestedMessageContent");

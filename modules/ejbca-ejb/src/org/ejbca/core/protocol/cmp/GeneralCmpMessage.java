@@ -98,7 +98,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			final ASN1Integer serno = ct.getSerialNumber();
 			final X500Name issuer = ct.getIssuer();
 			if (serno != null && issuer != null) {
-				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", GdprRedactionUtils.getRedactedMessage(CertTools.stringToBCDNString(issuer.toString())), serno.getValue().toString(16));
+				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 				log.info(errMsg);
 			} else {
 				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreqnoissuer");

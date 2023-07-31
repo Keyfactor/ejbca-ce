@@ -29,17 +29,11 @@ import org.ejbca.config.CmpConfiguration;
  */
 public interface CmpVendorMode {
 
-    default void setCertificateDataSession(CertificateStoreSession certificateDataSession) {
-        throw new UnsupportedOperationException("Method not supported by this implementation");
-    }
+    default void setCertificateDataSession(CertificateStoreSession certificateDataSession) {};
 
-    default void setCaSession(final CaSession caSession) {
-        throw new UnsupportedOperationException("Method not supported by this implementation");
-    }
+    default void setCaSession(final CaSession caSession) {};
 
-    default void setCmpConfiguration(final CmpConfiguration cmpConfiguration) {
-        throw new UnsupportedOperationException("Method not supported by this implementation");
-    }
+    default void setCmpConfiguration(final CmpConfiguration cmpConfiguration) {};
     
     /** Checks if the certificate is issued by a configured Vendor CA, and that it can be verified using that Vendor CA certificate
      * @param admin administrator making the call, must have access to get CAInfo for the Vendor CA

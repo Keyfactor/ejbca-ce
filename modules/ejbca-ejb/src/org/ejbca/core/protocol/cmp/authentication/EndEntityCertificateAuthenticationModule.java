@@ -563,7 +563,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 if (log.isDebugEnabled()) {
                     log.debug("Received a CMP KeyUpdateRequest for an endentity with SubjectDN '"
                             + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN, userdata.getEndEntityProfileId()) + "' and issuerDN '"
-                            + GdprRedactionUtils.getRedactedMessage(issuerDN)
+                            + issuerDN
                             + "'");
                 }
             } else if (userdataList.size() > 1) {

@@ -334,7 +334,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 							if (log.isDebugEnabled()) {
 								log.debug("requestKeyInfo is SubjectDN: " + GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(signercert)) +
 										", Serial=" + CertTools.getSerialNumberAsString(signercert) +
-										"; IssuerDN: "+ GdprRedactionUtils.getRedactedMessage(CertTools.getIssuerDN(signercert)));								
+										"; IssuerDN: "+ CertTools.getIssuerDN(signercert));								
 							}
 						} catch (CertificateException e) {
 							log.error("Error parsing requestKeyInfo : ", e);
