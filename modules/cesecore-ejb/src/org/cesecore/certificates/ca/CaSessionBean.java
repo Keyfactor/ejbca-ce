@@ -48,7 +48,6 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -807,7 +806,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
         } catch (CertificateNotYetValidException e) {
             // Signers Certificate is not yet valid.
-            log.warn(intres.getLocalizedMessage("caadmin.canotyetvalid", ca.getSubjectDN()) + " " + GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+            log.warn(intres.getLocalizedMessage("caadmin.canotyetvalid", ca.getSubjectDN()) + " " + e.getMessage());
         }
         return expired;
     }
