@@ -149,12 +149,20 @@ public class GdprRedactionUtils {
      * @return
      */
     public static Throwable getRedactedThrowable(Throwable thrownException) {
-        return getRedactedThrowable(thrownException, redactPii());
+        try {
+            return getRedactedThrowable(thrownException, redactPii());
+        } catch (Exception e) {
+            return thrownException; // fallback in case something goes wrong
+        }
     }
      
     public static Throwable getRedactedThrowable(Throwable thrownException, int endEntityProfileId) {
-        return getRedactedThrowable(thrownException, 
-                GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
+        try {
+            return getRedactedThrowable(thrownException, 
+                    GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
+        } catch (Exception e) {
+            return thrownException; // fallback in case something goes wrong
+        }
     }
     
     private static Throwable getRedactedThrowable(Throwable thrownException, boolean redactPii) {
