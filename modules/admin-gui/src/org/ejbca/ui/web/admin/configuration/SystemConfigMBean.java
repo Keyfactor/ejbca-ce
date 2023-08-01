@@ -160,6 +160,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         //Database preferences
         private int maximumQueryCount;
         private long maximumQueryTimeout;
+        
+        //redact pii
+        private boolean redactPiiByDefault;
+        private boolean redactPiiEnforced;
 
         private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
             if(globalConfig == null) {
@@ -200,6 +204,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 this.maximumQueryCount = globalCesecoreConfiguration.getMaximumQueryCount();
                 this.maximumQueryTimeout= globalCesecoreConfiguration.getMaximumQueryTimeout();
+                
+                this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
+                this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -269,6 +276,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setMaximumQueryCount(int maximumQueryCount) { this.maximumQueryCount = maximumQueryCount; }
         public long getMaximumQueryTimeout() { return maximumQueryTimeout; }
         public void setMaximumQueryTimeout(final long maximumQueryTimeout) { this.maximumQueryTimeout = maximumQueryTimeout; }
+
+        public boolean isRedactPiiByDefault() { return redactPiiByDefault; }
+        public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
+        public boolean isRedactPiiEnforced() { return redactPiiEnforced; }
+        public void setRedactPiiEnforced(boolean redactPiiEnforced) { this.redactPiiEnforced = redactPiiEnforced; }
+        
     }
 
     public class EKUInfo {
@@ -1034,6 +1047,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
+                globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
+                globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
                 // Purge access rule for key recovery from all roles if key recovery is disabled
                 // This is done after the configuration has been saved successfully, thus making
