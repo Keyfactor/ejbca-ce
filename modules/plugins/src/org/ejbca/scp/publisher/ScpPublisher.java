@@ -51,12 +51,10 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 /**
  * This class is used for publishing certificates and CRLs to a remote destination over scp. 
@@ -70,9 +68,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     public static final String SIGNING_CA_PROPERTY_NAME = "signing.ca.id";
     public static final String SSH_USERNAME = "ssh.username";
     public static final String CRL_SCP_DESTINATION_PROPERTY_NAME = "crl.scp.destination";
-    public static final String CRL_SCP_HOST_KEY_PROPERTY_NAME = "crl.scp.hostkey";
     public static final String CERT_SCP_DESTINATION_PROPERTY_NAME = "cert.scp.destination";
-    public static final String CERT_SCP_HOST_KEY_PROPERTY_NAME = "cert.scp.hostkey";
     public static final String SCP_PRIVATE_KEY_PASSWORD_NAME = "scp.privatekey.password";
     public static final String SCP_PRIVATE_KEY_PROPERTY_NAME = "scp.privatekey";
 
@@ -86,35 +82,13 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     private boolean anonymizeCertificates;
 
     private String crlSCPDestination = null;
-    private String crlSCPHostKey = "";
     private String certSCPDestination = null;
-    private String certSCPHostKey = "";
     private String scpPrivateKey = null;
     private String scpKnownHosts = null;
     private String sshUsername = null;
     private String privateKeyPassword = null;
     
     private  Map<String, CustomPublisherProperty> properties = new LinkedHashMap<>();
-
-    private enum HostKey {
-        DEFAULT("", "Default"),
-        SSH_DSS("ssh-dss","ssh-dss [deprecated]"),
-        SSH_RSA("ssh-rsa","ssh-rsa [deprecated]"),
-        RSA_SHA2_256("rsa-sha2-256","rsa-sha2-256"),
-        RSA_SHA2_512("rsa-sha2-512","rsa-sha2-512"),
-        ECDSA_SHA_2_NISTP_256("ecdsa-sha2-nistp256","ecdsa-sha2-nistp256"),
-        ECDSA_SHA_2_NISTP_384("ecdsa-sha2-nistp384","ecdsa-sha2-nistp384"),
-        ECDSA_SHA_2_NISTP_521("ecdsa-sha2-nistp521","ecdsa-sha2-nistp521");
-
-        public final String value;
-        public final String label;
-
-        HostKey(String value, String label) {
-            this.value = value;
-            this.label = label;
-        }
-
-    }
 
 
     public ScpPublisher() {
@@ -136,9 +110,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         signingCaId = getIntProperty(properties, SIGNING_CA_PROPERTY_NAME);
         anonymizeCertificates = getBooleanProperty(properties, ANONYMIZE_CERTIFICATES_PROPERTY_NAME);
         crlSCPDestination = getProperty(properties, CRL_SCP_DESTINATION_PROPERTY_NAME);
-        crlSCPHostKey = getProperty(properties, CRL_SCP_HOST_KEY_PROPERTY_NAME);
         certSCPDestination = getProperty(properties, CERT_SCP_DESTINATION_PROPERTY_NAME);
-        certSCPHostKey = getProperty(properties, CERT_SCP_HOST_KEY_PROPERTY_NAME);
         scpPrivateKey = getProperty(properties, SCP_PRIVATE_KEY_PROPERTY_NAME);
         scpKnownHosts = getProperty(properties, SCP_KNOWN_HOSTS_PROPERTY_NAME);
         sshUsername = getProperty(properties, SSH_USERNAME);
@@ -154,9 +126,6 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             privateKeyPassword = "";
         }
         
-        List<String> hostKeyOptions = Arrays.stream(HostKey.values()).map(x -> x.value).collect(Collectors.toUnmodifiableList());
-        List<String> hostKeyLabels = Arrays.stream(HostKey.values()).map(x -> x.label).collect(Collectors.toUnmodifiableList());
-
         this.properties.put(SIGNING_CA_PROPERTY_NAME, new CustomPublisherProperty(SIGNING_CA_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, null,
                 null, Integer.valueOf(signingCaId).toString()));
         this.properties.put(ANONYMIZE_CERTIFICATES_PROPERTY_NAME, new CustomPublisherProperty(ANONYMIZE_CERTIFICATES_PROPERTY_NAME,
@@ -164,12 +133,8 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         this.properties.put(SSH_USERNAME, new CustomPublisherProperty(SSH_USERNAME, CustomPublisherProperty.UI_TEXTINPUT, sshUsername));
         this.properties.put(CRL_SCP_DESTINATION_PROPERTY_NAME,
                 new CustomPublisherProperty(CRL_SCP_DESTINATION_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, crlSCPDestination));
-        this.properties.put(CRL_SCP_HOST_KEY_PROPERTY_NAME,
-                new CustomPublisherProperty(CRL_SCP_HOST_KEY_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, hostKeyOptions, hostKeyLabels, crlSCPHostKey));
         this.properties.put(CERT_SCP_DESTINATION_PROPERTY_NAME,
                 new CustomPublisherProperty(CERT_SCP_DESTINATION_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, certSCPDestination));
-        this.properties.put(CERT_SCP_HOST_KEY_PROPERTY_NAME,
-                new CustomPublisherProperty(CERT_SCP_HOST_KEY_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, hostKeyOptions, hostKeyLabels, certSCPHostKey));
         this.properties.put(SCP_PRIVATE_KEY_PROPERTY_NAME,
                 new CustomPublisherProperty(SCP_PRIVATE_KEY_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, scpPrivateKey));
         this.properties.put(SCP_PRIVATE_KEY_PASSWORD_NAME,
@@ -357,9 +322,6 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             try {
                 Destination destination = extractDestination(certSCPDestination);
                 session = jsch.getSession(sshUsername, destination.host, destination.port);
-                if (!certSCPHostKey.isEmpty()) {
-                    session.setConfig("server_host_key", certSCPHostKey);
-                }
                 session.connect();
             } catch (JSchException e) {
                 String msg = "Could not connect to certificate destination.";
@@ -381,9 +343,6 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             try {
                 Destination destination = extractDestination(crlSCPDestination);
                 session = jsch.getSession(sshUsername, destination.host, destination.port);
-                if (!crlSCPHostKey.isEmpty()) {
-                    session.setConfig("server_host_key", crlSCPHostKey);
-                }
                 session.connect();
             } catch (JSchException e) {
                 String msg = "Could not connect to CRL destination. ";
