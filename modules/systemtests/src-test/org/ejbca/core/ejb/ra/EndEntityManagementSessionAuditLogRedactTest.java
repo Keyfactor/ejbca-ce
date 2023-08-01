@@ -38,6 +38,8 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -81,6 +83,7 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
     private final PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private final PublisherTestSessionRemote publisherTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    protected static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     private static final String THROWAWAY_CERT_PROFILE = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationProfileRedactTest";
     private static final String THROWAWAY_PUBLISHER = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationPublisherRedactTest";
@@ -103,6 +106,7 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         
+        setRedactEnfoced(false);
         EndEntityProfile profile = new EndEntityProfile();
         profile.removeField(DnComponents.COMMONNAME, 0);
         profile.addField(DnComponents.COMMONNAME);
@@ -160,6 +164,13 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
         super.tearDown();
         
     }
+    
+    private static void setRedactEnfoced(boolean enforceRedaction) throws Exception {
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+       globalCesecoreConfiguration.setRedactPiiEnforced(enforceRedaction);
+       globalConfigurationSession.saveConfiguration(admin, globalCesecoreConfiguration);
+    }
         
     @Test
     public void testRedactEndEntity() throws Exception {
@@ -169,7 +180,27 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
     @Test
     public void testNonRedactEndEntity() throws Exception {
         testRedactEndEntity(nonRedactedEepId, false);
-    }    
+    } 
+    
+    @Test
+    public void testRedactEndEntityRedactEnforced() throws Exception {
+        setRedactEnfoced(true);
+        try {
+            testRedactEndEntity(redactedEepId, true);
+        } finally {
+            setRedactEnfoced(false);
+        }
+    }
+    
+    @Test
+    public void testNonRedactEndEntityRedactEnforced() throws Exception {
+        setRedactEnfoced(true);
+        try {
+            testRedactEndEntity(nonRedactedEepId, true);
+        } finally {
+            setRedactEnfoced(false);
+        }
+    } 
     
     private void testRedactEndEntity(int endEntityProfileId, boolean redact) throws Exception {
         
