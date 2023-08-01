@@ -311,7 +311,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             log.debug("CMP message already been authenticated: " + authenticated);
             log.debug("Omitting some verifications: " + omitVerifications);
             log.debug("CMP message (claimed to be) signed by (cert from extraCerts): SubjectDN '" + 
-                   GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(extraCert))+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
+                   GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(extraCert))+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
         }
 
         //----------------------------------------------------------------------------------------
