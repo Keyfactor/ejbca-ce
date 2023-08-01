@@ -184,23 +184,28 @@ public class RestLoggingFilter implements Filter {
             filterChain.doFilter(httpServletRequestWrapper, httpServletResponseWrapper);
             
             String url = httpServletRequest.getRequestURL().toString();
+            boolean logRequestAndResponseBody = true;
             if(GdprRedactionUtils.redactPii() && // RA 
                     (url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getUrl()) ||
                      url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getUrl()) ||
                      url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getUrl()) ||
                      url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getUrl()) ||
                      url.contains(AvailableProtocols.REST_SSH_V1.getUrl()))) {
-                return;
+                logRequestAndResponseBody = false;
             }
             
-            sb.append("Request data:\n");
-            final String requestData = new String(requestBaos.toByteArray(), StandardCharsets.UTF_8);
-            sb.append("  ").append(requestData).append("\n");
-            
-            
-            final String responseData = new String(responseBaos.toByteArray(), StandardCharsets.UTF_8);
-            sb.append("Response data:\n");
-            sb.append(responseData).append("\n");
+            if (logRequestAndResponseBody) {
+                sb.append("Request data:\n");
+                final String requestData = new String(requestBaos.toByteArray(), StandardCharsets.UTF_8);
+                sb.append("  ").append(requestData).append("\n");
+                
+                
+                final String responseData = new String(responseBaos.toByteArray(), StandardCharsets.UTF_8);
+                sb.append("Response data:\n");
+                sb.append(responseData).append("\n");
+            } else {
+                sb.append("Request and response data is redacted.\n");
+            }
             
             final long endTime = System.currentTimeMillis();
             sb.append("Time taken: ").append(endTime-startTime).append("ms").append("\n");;
