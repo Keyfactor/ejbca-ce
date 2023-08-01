@@ -64,8 +64,7 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         }
         
         if(log.isDebugEnabled()) {
-            // TODO: double check if this is fine or should the eepid be fetched and used in the redaction method.
-            log.debug("Extracting password from SubjectDN '" +  GdprRedactionUtils.getRedactedMessage(dnString) + "' and DN part '" + dnPart + "'");
+            log.debug("Extracting password from SubjectDN '" +  GdprRedactionUtils.getSubjectDnLogSafe(dnString) + "' and DN part '" + dnPart + "'");
         }
         if (dnString != null) {
             password = CertTools.getPartFromDN(dnString, dnPart);

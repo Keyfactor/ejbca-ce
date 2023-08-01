@@ -20,7 +20,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -514,7 +513,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             issuerDN = X500Name.getInstance(derSequence.getObjectAt(0)).toString();                     
             getCertInitialSubject = X500Name.getInstance(derSequence.getObjectAt(1)).toString();
             if (log.isDebugEnabled()) {
-                log.debug("Successfully extracted IssuerAndName: '" + GdprRedactionUtils.getRedactedMessage(issuerDN) + "', '" + getCertInitialSubject + "'.");
+                log.debug("Successfully extracted IssuerAndName: '" + issuerDN + "', '" + getCertInitialSubject + "'.");
             }
         }
         if (log.isTraceEnabled()) {

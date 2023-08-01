@@ -76,7 +76,6 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.util.GdprRedactionUtils;
 
 /**
  * A response message for SCEP (pkcs7).
@@ -323,7 +322,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 if (recipientKeyInfo != null) {
                     try {
                         X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo, X509Certificate.class);
-                        log.debug("Added recipient information - issuer: '" + GdprRedactionUtils.getRedactedMessage(CertTools.getIssuerDN(rec)) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
+                        log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
                         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec, aid).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                     } catch (CertificateParsingException e) {
                         throw new IllegalArgumentException("Can not decode recipients self signed certificate!", e);
@@ -404,7 +403,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
             // Add our signer info and sign the message
             Certificate cacert = signCertChain.iterator().next();
-            log.debug("Signing SCEP message with cert: "+ GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(cacert)));
+            log.debug("Signing SCEP message with cert: "+ CertTools.getSubjectDN(cacert));
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, signKey.getAlgorithm());
             try {
                 ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(signKey);
