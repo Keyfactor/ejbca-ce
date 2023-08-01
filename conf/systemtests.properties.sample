@@ -59,3 +59,6 @@
 #pkcs11.token2_number=2
 #pkcs11.token2_label=TEST1
 #pkcs11.token2_index=i1
+
+# Uncomment the following line to redact logs generated during test runs. The default value is false.
+#enable.log.redact=true
