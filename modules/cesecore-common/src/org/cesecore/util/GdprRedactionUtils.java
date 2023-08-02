@@ -107,6 +107,10 @@ public class GdprRedactionUtils {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii();
     }
     
+    public static boolean isRedactPii(final String endEntityProfileName) {
+        return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii();
+    }
+    
     public static boolean redactPii() {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii();
     }
@@ -118,6 +122,11 @@ public class GdprRedactionUtils {
     public static String getRedactedMessage(String message, int endEntityProfileId) {
         return getRedactedMessage(message, 
                 GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
+    }
+    
+    public static String getRedactedMessage(String message, String endEntityProfileName) {
+        return getRedactedMessage(message, 
+                GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii());
     }
     
     public static String getRedactedMessage(String message, boolean redactPii) {
@@ -160,6 +169,15 @@ public class GdprRedactionUtils {
         try {
             return getRedactedThrowable(thrownException, 
                     GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
+        } catch (Exception e) {
+            return thrownException; // fallback in case something goes wrong
+        }
+    }
+    
+    public static Throwable getRedactedThrowable(Throwable thrownException, String endEntityProfileName) {
+        try {
+            return getRedactedThrowable(thrownException, 
+                    GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii());
         } catch (Exception e) {
             return thrownException; // fallback in case something goes wrong
         }
