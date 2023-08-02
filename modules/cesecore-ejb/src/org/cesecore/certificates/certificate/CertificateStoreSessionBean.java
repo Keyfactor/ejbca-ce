@@ -482,7 +482,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN +
-                      "' and subject DN(transformed) '" + getLogSafeSubjectDn(transformedSubjectDN) + "'.");
+                      "' and subject DN(transformed) '" + GdprRedactionUtils.getSubjectDnLogSafe(transformedSubjectDN) + "'.");
         }
 
         try {
@@ -546,7 +546,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN +
-                      "' and SubjectKeyId '" + sSubjectKeyId + "' OR subject DN(transformed) '" + getLogSafeSubjectDn(transformedSubjectDN) + "'.");
+                      "' and SubjectKeyId '" + sSubjectKeyId + "' OR subject DN(transformed) '" + GdprRedactionUtils.getSubjectDnLogSafe(transformedSubjectDN) + "'.");
         }
 
         try {
@@ -1910,17 +1910,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.debug("Deleted "+deletedRows+" rows with fingerprint " + fingerprint);
         }
         return deletedRows == 1;
-    }
-
-    /**
-     * Get log safe subjectDN for PII redaction.
-     * @param subjectDn subjectDN
-     * @return          redacted subjectDN
-     */
-    private String getLogSafeSubjectDn(final String subjectDn) {
-        final List<CertificateDataWrapper> certificateDataWrappers = certificateStoreSession.getCertificateDatasBySubject(subjectDn);
-
-        return getLogSafeSubjectDn(subjectDn, certificateDataWrappers);
     }
 
     /**
