@@ -102,7 +102,7 @@ public class GdprRedactionUtils {
             return san;
         }
     }
-
+    
     public static boolean isRedactPii(final int endEntityProfileId) {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii();
     }
