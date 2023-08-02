@@ -304,6 +304,7 @@ public class NameConstraint extends StandardCertificateExtension {
                 return (String)data;
             }
         case GeneralName.directoryName:
+            return (String)data;
         case GeneralName.uniformResourceIdentifier:
             return URI_PREFIX.concat((String) data);
         case GeneralName.iPAddress:
