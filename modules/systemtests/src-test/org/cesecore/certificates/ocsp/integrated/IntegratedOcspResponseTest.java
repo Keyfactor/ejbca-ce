@@ -221,6 +221,12 @@ public class IntegratedOcspResponseTest {
     @Test
     public void testOcspSigningAlgorithm() throws Exception {
         
+        if (!cryptoTokenRunner.getSimpleName().equals("PKCS12TestRunner")) {
+            // Hard tokens try to use same keys with different cryptotoken name and cause errors
+            // this test only verifies selection of algorithm
+            return;
+        }
+        
         String caName;
         X509CAInfo testCa;
         X509Certificate caCert;
