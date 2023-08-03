@@ -375,7 +375,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 
                                 final String signatureProviderName = cryptoToken.getSignProviderName();
                                 if (!caCertificateChain.isEmpty()) {
-                                    generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration);
+                                    generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
                                 } else {
                                     log.warn("CA with ID " + caId
                                             + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
@@ -404,13 +404,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             final String signatureProviderName = cryptoToken.getSignProviderName();
                             if (!caCertificateChain.isEmpty()) {
-                                generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration);
+                                generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
                                 generateOcspConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible);
 
                             } else {
                                 log.warn("CA with ID " + caId
                                         + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
                             }
+                            
+                            
                         }
                     } else if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
                         // If set, all external CA's without a keybinding (set below) will be responded to by the default responder. 
@@ -573,12 +575,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     private void generateOcspSigningCacheEntries(List<X509Certificate> caCertificateChain, String signatureProviderName, PrivateKey privateKey,
-            GlobalOcspConfiguration ocspConfiguration) {
+            GlobalOcspConfiguration ocspConfiguration, CAToken caToken) {
         X509Certificate caCertificate = caCertificateChain.get(0);
         final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
 
-        OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
-                signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
+        OcspSigningCacheEntry signingCacheEntry = new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
+                signatureProviderName, null, ocspConfiguration.getOcspResponderIdType());
+        signingCacheEntry.setCrlSigningAlgorithm(caToken.getSignatureAlgorithm());
+        
+        OcspSigningCache.INSTANCE.stagingAdd(signingCacheEntry);
         checkWarnings(caCertificateStatus, caCertificate);
     }
 
@@ -896,8 +901,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         
         // if CA is signing the response then get the algorithm from CA
-        if (CertTools.isCA(signerCert)) {
-            sigAlg = caSession.findBySubjectDN(CertTools.getSubjectDN(signerCert)).getCA().getCAToken().getSignatureAlgorithm();
+        if (CertTools.isCA(signerCert) && ocspSigningCacheEntry.getCrlSigningAlgorithm()!=null) {
+            sigAlg = ocspSigningCacheEntry.getCrlSigningAlgorithm();
             if (log.isDebugEnabled()) {
                 log.debug("Using CA signing algorithm to sign OCSP response. " + sigAlg);
             }
