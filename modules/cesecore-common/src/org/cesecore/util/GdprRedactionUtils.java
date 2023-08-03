@@ -86,6 +86,20 @@ public class GdprRedactionUtils {
             return subjectDn;
         }
     }
+
+    /**
+     * Redact SubjectDN using global setting, if used.
+     *
+     * @param subjectDn SubjectDN
+     * @return  redacted SubjectDn
+     */
+    public static String getSubjectDnLogSafe(String subjectDn) {
+        if (redactPii()) {
+            return REDACTED_CONTENT;
+        }
+
+        return subjectDn;
+    }
     
     public static String getSubjectAltNameLogSafe(String san, int endEntityProfileId) {
         if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
@@ -163,6 +177,11 @@ public class GdprRedactionUtils {
         } catch (Exception e) {
             return thrownException; // fallback in case something goes wrong
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Exception> T getRedactedException(T exception, final int endEntityProfileId) {
+        return (T) GdprRedactionUtils.getRedactedThrowable(exception, endEntityProfileId);
     }
     
     private static Throwable getRedactedThrowable(Throwable thrownException, boolean redactPii) {

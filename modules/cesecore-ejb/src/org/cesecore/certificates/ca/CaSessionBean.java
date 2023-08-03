@@ -93,8 +93,6 @@ import static java.util.Objects.nonNull;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
