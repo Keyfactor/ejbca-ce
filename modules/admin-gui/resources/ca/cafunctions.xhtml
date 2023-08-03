@@ -95,11 +95,15 @@
 				<h:dataTable value="#{caGuiInfo.certificatechain}" var="certificatechain" binding="#{table}"
 							 styleClass="outline-buttons-table" rowClasses="RowAlt0,RowAlt1">
 					<h:column>
-						<h:panelGroup rendered="#{table.rowIndex == 0}">
+						<h:panelGroup>
 							<h:panelGrid columns="2">
-								<h:outputText value="#{web.text.ROOTCA}: "/>
+								<h:outputText value="#{web.text.ROOTCA}:" rendered="#{caGuiInfo.rootExists and cAFunctionsMBean.isRoot(certificatechain)}"/>
+								<h:outputText value="#{web.text.SUBORDINATECA} #{table.rowIndex}: " rendered="#{caGuiInfo.rootExists and !cAFunctionsMBean.isRoot(certificatechain)}"/>
+								<h:outputText value="#{web.text.ISSUINGCA} #{table.rowIndex + 1}: " rendered="#{!caGuiInfo.rootExists and !cAFunctionsMBean.isRoot(certificatechain)}"/>
 								<h:outputText value="#{cAFunctionsMBean.getUnescapedRdnValue(certificatechain)}"/>
 							</h:panelGrid>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{table.rowIndex == 0}">
 							<h:panelGrid columns="6">
 								<h:outputText/>
 								<h:outputLink
@@ -126,10 +130,6 @@
 							</h:panelGrid>
 						</h:panelGroup>
 						<h:panelGroup rendered="#{table.rowIndex != 0}">
-							<h:panelGrid columns="2" >
-								<h:outputText value="#{web.text.SUBORDINATECA} #{table.rowIndex}: "/>
-								<h:outputText value="#{cAFunctionsMBean.getUnescapedRdnValue(certificatechain)}"/>
-							</h:panelGrid>
 							<h:panelGrid columns="5" >
 								<h:outputText />
 								<h:outputLink
