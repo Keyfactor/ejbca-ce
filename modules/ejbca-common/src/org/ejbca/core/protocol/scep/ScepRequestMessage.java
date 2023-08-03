@@ -331,7 +331,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         try {
 							signercert = CertTools.getCertfromByteArray(requestKeyInfo, X509Certificate.class);
 							if (log.isDebugEnabled()) {
-								log.debug("requestKeyInfo is SubjectDN: " + GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(signercert)) +
+								log.debug("requestKeyInfo is SubjectDN: " + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(signercert)) +
 										", Serial=" + CertTools.getSerialNumberAsString(signercert) +
 										"; IssuerDN: "+ CertTools.getIssuerDN(signercert));								
 							}
@@ -415,7 +415,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                             issuerDN = iasn.getName().toString();
                             serialNo = iasn.getSerialNumber().getValue();
                             if (log.isDebugEnabled()) {
-                            	log.debug("IssuerDN: " + GdprRedactionUtils.getRedactedMessage(issuerDN));
+                            	log.debug("IssuerDN: " + issuerDN);
                             	log.debug("SerialNumber: " + iasn.getSerialNumber().getValue().toString(16));
                             	// Encryption algorithms can not be null here, since we were able to decrypt the message
                             	log.debug("Key encryption algorithm: " + recipientInfo.getKeyEncryptionAlgorithm().getAlgorithm().getId());
