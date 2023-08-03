@@ -142,7 +142,7 @@
 	<classpathentry kind="lib" path="lib/kerb-core-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/kerby-asn1-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/kerb-crypto-2.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
+	<classpathentry kind="lib" path="lib/jsch-0.2.11.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-3.5.2.jar"/>
 	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.activation-api-2.1.0.jar"/>
