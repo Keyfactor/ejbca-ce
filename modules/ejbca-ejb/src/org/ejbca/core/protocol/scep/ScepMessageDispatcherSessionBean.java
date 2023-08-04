@@ -556,7 +556,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.debug("Found " + approvals.size() + " approvals with approvalID: " + approvalId);
                 }
                 ApprovalDataVO approval = null;
-                if (approvals.size() > 0) {
+                if (!approvals.isEmpty()) {
                     // Sort the list, find the last approval available. We don't care if it's expired in this context.
                     Collections.sort(approvals, new Comparator<ApprovalDataVO>() {
                         @Override
@@ -728,7 +728,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             throw new CertificateCreateException("Intune enrollment failed because no license.");
         }
 
-        final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
+        final ScepConfiguration scepConfig = raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
         ScepRequestMessage reqmsg = null;
         String transactionId = null;
         try {
@@ -916,9 +916,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         PrivateKey signingKey = caCryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         if (ret.requireSignKeyInfo()) {
             if (log.isDebugEnabled()) {
-                log.debug("Signing message with cert: " + signingCertificate.getSubjectDN().getName());
+                log.debug("Signing message with cert: " + signingCertificate.getSubjectX500Principal().getName());
             }
-            Collection<Certificate> racertColl = new ArrayList<Certificate>();
+            Collection<Certificate> racertColl = new ArrayList<>();
             racertColl.add(signingCertificate);
             ret.setSignKeyInfo(racertColl, signingKey, caCryptoToken.getSignProviderName());
         }
@@ -969,9 +969,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         PrivateKey signingKey = caCryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         if (ret.requireSignKeyInfo()) {
             if (log.isDebugEnabled()) {
-                log.debug("Signing message with cert: " + signingCertificate.getSubjectDN().getName());
+                log.debug("Signing message with cert: " + signingCertificate.getSubjectX500Principal().getName());
             }
-            Collection<Certificate> racertColl = new ArrayList<Certificate>();
+            Collection<Certificate> racertColl = new ArrayList<>();
             racertColl.add(signingCertificate);
             ret.setSignKeyInfo(racertColl, signingKey, BouncyCastleProvider.PROVIDER_NAME);
         }

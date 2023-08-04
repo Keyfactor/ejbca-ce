@@ -42,7 +42,6 @@ import com.keyfactor.util.CertTools;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id$
  */
 public class CmpConfirmResponseMessage extends BaseCmpMessage implements ResponseMessage {
 
@@ -133,7 +132,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 			responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, getPbmac1KeyId(),
 					getPbmac1Key(), getPbmac1MacAlg(), getPbmac1IterationCount(), getPbmac1DkLen(), getPbmac1PrfAlg()));
 		} else {
-			if ((signCertChain != null) && (signCertChain.size() > 0) && (signKey != null)) {
+			if ((signCertChain != null) && (!signCertChain.isEmpty()) && (signKey != null)) {
 				try {
 				    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digestAlg)));
 			        if (CollectionUtils.isNotEmpty(signCertChain)) {
@@ -143,13 +142,9 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 			        }
 				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
-				} catch (CertificateEncodingException e) {
+				} catch (CertificateEncodingException | SecurityException | SignatureException e) {
 					log.error("Error creating CmpConfirmMessage: ", e);
-				} catch (SecurityException e) {
-					log.error("Error creating CmpConfirmMessage: ", e);
-				} catch (SignatureException e) {
-					log.error("Error creating CmpConfirmMessage: ", e);
-				}				
+				} 		
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Not signing CMP Confirm Response, because signCert or signKey is not set.");

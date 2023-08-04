@@ -28,9 +28,23 @@ import com.keyfactor.ErrorCode;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
- * Utility methods for handling/checking PII redaction based on End Entity Profile.
+ * Utility methods for handling/checking PII redaction based on End Entity Profile.  
  * Log safe Subject DN and Subject Alt Name are used when logging PII that
  * should be redacted for GDPR purposes.
+ *   
+ * Rule of thumb:  
+ * 1. For SubjectDn or SubjectAltName:  
+ *    i.   getSubjectDnLogSafe(String subjectDn, int endEntityProfileId): for the core classes where EndEntityInformation or CertificateData is available which has End entity profile(EEP) id.  
+ *    ii.  getSubjectDnLogSafe(String subjectDn, String endEntityProfileName): for the clent facing places e.g. REST or SOAP api where name of the EEEP name is available.   
+ *    iii. getSubjectDnLogSafe(String subjectDn): when EEP is not available to fall back to node level configuration  
+ *    iv.  Equivalent methods for SubjectAltName is also present. These different set of methods will allow forward compatibility if we need to redact in different manner.  
+ * 2. For generic messages and exceptions:  
+ *    i.  getRedactedMessage(String message): to redact based on node level configuration  
+ *    ii. getRedactedMessage(String message, int endEntityProfileId): to redact based on EEP id  
+ *    iii. This methods perform <b>regex search</b> and should be limited only to exceptions messages or rare code paths  
+ *    iv. Equivalent methods for exceptions: getRedactedException(recommended) and getRedactedThrowable  
+ * 3. boolean redactPii() may be used to retrieve node level configuration  
+ * 4. boolean isRedactPii(final int endEntityProfileId) may be used to retrieve EEP level settings. This method also combines node level settings as they supersede EEP level settings.
  */
 public class GdprRedactionUtils {
     
@@ -70,6 +84,14 @@ public class GdprRedactionUtils {
     protected static String getSubjectAltNameRedactionPattern() {
         return SUBJECT_ALT_NAME_COMPONENTS.toString();
     }
+    
+    public static String getSubjectDnLogSafe(String subjectDn) {
+        if(redactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return subjectDn;
+        }
+    }
 
     public static String getSubjectDnLogSafe(String subjectDn, int endEntityProfileId) {
         if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
@@ -101,6 +123,14 @@ public class GdprRedactionUtils {
         return subjectDn;
     }
     
+    public static String getSubjectAltNameLogSafe(String san) {
+        if(redactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return san;
+        }
+    }
+    
     public static String getSubjectAltNameLogSafe(String san, int endEntityProfileId) {
         if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
             return REDACTED_CONTENT;
@@ -125,6 +155,14 @@ public class GdprRedactionUtils {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii();
     }
     
+    /**
+     * Redact any generic messages based on node level configuration. For SubjectDn or SubjectAltName, corresponding methods e.g.
+     * getSubjectDnLogSafe or getSubjectAltNameLogSafe should be used as they do not perform regex search. These are helpful 
+     * while setting exception messages or logging messages from caught exceptions.
+     * 
+     * @param message
+     * @return
+     */
     public static String getRedactedMessage(String message) {
         return getRedactedMessage(message, redactPii());
     }

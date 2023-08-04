@@ -17,10 +17,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.certificates.certificate.CertificateStoreSession;
-import org.ejbca.config.CmpConfiguration;
 
 /**
  * NoOperation implementation of CMP Vendor mode
@@ -28,18 +25,6 @@ import org.ejbca.config.CmpConfiguration;
  *
  */
 public class CmpVendorModeNoopImpl implements CmpVendorMode {
-
-    @Override
-    public void setCertificateDataSession(CertificateStoreSession certificateDataSession) {
-    }
-
-    @Override
-    public void setCaSession(final CaSession caSession) {
-    }
-
-    @Override
-    public void setCmpConfiguration(final CmpConfiguration cmpConfiguration) {
-    }
 
     @Override
     public X509CAInfo isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final List<X509Certificate> extraCerts) {
