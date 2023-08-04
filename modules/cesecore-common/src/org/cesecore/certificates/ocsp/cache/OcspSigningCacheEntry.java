@@ -61,6 +61,9 @@ public class OcspSigningCacheEntry {
     private final X509Certificate[] responseCertChain;
     private final boolean signingCertificateForOcspSigning;
     
+    // only relevant if CA itself signs the OCSP response
+    private String crlSigningAlgorithm;
+    
     // we flatten the CertificateIds SHA(1/256/384/512) for simpler lookup
     // references to each CA X509Certificate is stored for each hash mechanism
     // CertificateID is used to maintain similar convention to top level OCSP signing cache
@@ -282,6 +285,14 @@ public class OcspSigningCacheEntry {
 
     public Map<CertificateID, CertificateStatus> getSignedBehalfOfCaStatus() {
         return signedBehalfOfCaStatus;
+    }
+
+    public String getCrlSigningAlgorithm() {
+        return crlSigningAlgorithm;
+    }
+
+    public void setCrlSigningAlgorithm(String crlSigningAlgorithm) {
+        this.crlSigningAlgorithm = crlSigningAlgorithm;
     }
 
 }

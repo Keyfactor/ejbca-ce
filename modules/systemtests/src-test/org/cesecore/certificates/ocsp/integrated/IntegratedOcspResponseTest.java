@@ -26,9 +26,11 @@ import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
@@ -125,6 +127,7 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.KeyGenParams;
@@ -163,6 +166,8 @@ public class IntegratedOcspResponseTest {
     private X509Certificate ocspCertificate;
     private X509CAInfo testx509ca;
     private String originalDefaultResponder;
+    
+    private List<String> createdCertificateSerialNumbers = new ArrayList<>();
 
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal Admin"));
 
@@ -204,6 +209,132 @@ public class IntegratedOcspResponseTest {
         }
         // Restore the default value
         setOcspDefaultResponderReference(originalDefaultResponder);
+        
+        for (String eeCertificateSerial : createdCertificateSerialNumbers) {
+            try {
+                internalCertificateStoreSession.removeCertificate(eeCertificateSerial);
+            } catch (Exception e) {}
+        }
+        
+    }
+    
+    @Test
+    public void testOcspSigningAlgorithm() throws Exception {
+        
+        if (!cryptoTokenRunner.getSimpleName().equals("PKCS12TestRunner")) {
+            // Hard tokens try to use same keys with different cryptotoken name and cause errors
+            // this test only verifies selection of algorithm
+            return;
+        }
+        
+        String caName;
+        X509CAInfo testCa;
+        X509Certificate caCert;
+        String caNamePrefix = "IntegOcspResTest." + testName.getMethodName();
+        
+        // EcRootCa
+        caName = caNamePrefix+"Ec256";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+caName, caNamePrefix + caName, "7300d",
+                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA); 
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        
+        // EcSubCa
+        String rootCaName = caName;
+        caName = caNamePrefix+"Ec256Subca";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
+                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA); 
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        
+        //  RsaSubCa
+        caName = caNamePrefix+"Ec256RsaSubca";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
+                "2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA); 
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        
+        caName = caNamePrefix+"Ec256RsaMgf1Subca";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
+                "2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1); 
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        
+        // EcRootCaSha384 
+        caName = caNamePrefix+"Ec384";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+caName, caNamePrefix + caName, "7300d",
+                "secp384r1", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA); 
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+        
+        rootCaName = caName;
+        caName = caNamePrefix+"Ec256Subca";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
+                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA); 
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        
+        // CAs are removed automatically
+    }
+    
+    private void createUserAndGetEndEntityResponse(X509Certificate caCert, 
+            X509Certificate ocspSignerCert, String expectedSigningAlgorithm) throws Exception {
+        String username = "IntegOcspResTestUser" + new Random().nextLong();
+        
+        EndEntityInformation user = new EndEntityInformation(username, "CN=" + username, 
+                CertTools.getSubjectDN(caCert).hashCode(), 
+                "rfc822Name=" + username + "@user.com", username + "@user.com",
+                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+        user.setPassword("foo123");
+        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        SimpleRequestMessage reqMsg = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        X509Certificate eeCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(internalAdmin, user, reqMsg,
+                X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
+        createdCertificateSerialNumbers.add(CertTools.getSerialNumberAsString(eeCertificate));
+        
+        // ocsp request
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCert, eeCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
+        gen.setRequestExtensions(new Extensions(extensions));
+
+        OCSPReq req = gen.build();
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
+        assertNotNull("OCSP responder replied null", responseBytes);
+
+        OCSPResp response = new OCSPResp(responseBytes);
+        assertEquals("Response status not zero.", response.getStatus(), 0);
+        BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(
+                        ocspSignerCert.getPublicKey())));
+        SingleResp[] singleResponses = basicOcspResponse.getResponses();
+        assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+        assertEquals("Response cert did not match up with request cert", eeCertificate.getSerialNumber(),
+                singleResponses[0].getCertID().getSerialNumber());
+        assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
+        
+        if (expectedSigningAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
+            assertEquals("Signature algorithm is wrong", "1.2.840.113549.1.1.10", 
+                    basicOcspResponse.getSignatureAlgOID().toString());
+        } else {
+            assertEquals("Signature algorithm is wrong", expectedSigningAlgorithm, 
+                AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+        }
+        
     }
 
     @Test
@@ -893,21 +1024,15 @@ public class IntegratedOcspResponseTest {
                     ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
             // Erase the cert. It should still exist in the cache.
             caSession.removeCA(internalAdmin, testx509ca.getCAId());
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             responseBytes = ocspResponseGeneratorSession
                     .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
-            // Initial assert that status is null, i.e. "good"
-            assertNull("Test could not run because cache changed before the entire test could run.",
-                    ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
-            // Now sleep and try again, Glassfish has a default "minimum-delivery-interval-in-millis" of 7 seconds, so we have
-            // to wait that long, make it 8 seconds. We have set the timer to 2 seconds above.
-            Thread.sleep(8 * 1000);
             // Since the CA is gone, expect an unauthorized response
-            responseBytes = ocspResponseGeneratorSession
-                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             OCSPResp response = new OCSPResp(responseBytes);
             assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", OCSPRespBuilder.UNAUTHORIZED, response.getStatus());
             assertNull("Response should not have contained a response object.", response.getResponseObject());
+            
         } finally {
             // Reset sign trust valid time.
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_CERTD_VALID_TIME,

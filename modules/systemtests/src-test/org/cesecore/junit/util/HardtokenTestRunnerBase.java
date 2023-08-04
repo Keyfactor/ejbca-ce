@@ -74,5 +74,18 @@ public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
         return x509ca;
     }
     
+    @Override
+    public X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity, 
+            String keySpec, String signingAlgorithm) throws Exception {
+        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), true,
+                getTokenImplementation(), subjectDn.equalsIgnoreCase(issuerDn) ? CAInfo.SELFSIGNED: issuerDn.hashCode(), 
+                keySpec, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, validity, signingAlgorithm);
+
+        setCaForRemoval(x509ca.getCAId(), x509ca);
+        return x509ca;
+    }
+    
+    
 
 }
