@@ -376,7 +376,7 @@ public abstract class BaseCertificateData extends ProtectedData {
                     " found with fingerprint " + 
                     getFingerprint() + 
                     " for '" + 
-                    getSubjectDN() + 
+                    GdprRedactionUtils.getSubjectDnLogSafe(getSubjectDN()) +
                     "' issued by '" +  
                     getIssuerDN() + 
                     "'.";
