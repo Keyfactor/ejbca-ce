@@ -76,7 +76,6 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     public static final String SCP_KNOWN_HOSTS_PROPERTY_NAME = "scp.knownhosts";
 
     private static final String EKU_PKIX_OCSPSIGNING = "1.3.6.1.5.5.7.3.9";
-    public static final int DEFAULT_SCP_PORT = 22;
 
     private int signingCaId = -1;
 
@@ -134,7 +133,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         this.properties.put(ANONYMIZE_CERTIFICATES_PROPERTY_NAME, new CustomPublisherProperty(ANONYMIZE_CERTIFICATES_PROPERTY_NAME,
                 CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(anonymizeCertificates).toString()));
         this.properties.put(SSH_USERNAME, new CustomPublisherProperty(SSH_USERNAME, CustomPublisherProperty.UI_TEXTINPUT, sshUsername));
-        this.properties.put(SSH_PORT, new CustomPublisherProperty(SSH_PORT, CustomPublisherProperty.UI_TEXTINPUT, sshPort));
+        this.properties.put(SSH_PORT, new CustomPublisherProperty(SSH_PORT, CustomPublisherProperty.UI_TEXTINPUT, sshPort != null ? sshPort : ""));
         this.properties.put(CRL_SCP_DESTINATION_PROPERTY_NAME,
                 new CustomPublisherProperty(CRL_SCP_DESTINATION_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, crlSCPDestination));
         this.properties.put(CERT_SCP_DESTINATION_PROPERTY_NAME,
@@ -325,7 +324,9 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             Session session = null;
             try {
                 Destination destination = buildDestination(certSCPDestination, sshPort);
-                session = jsch.getSession(sshUsername, destination.host, destination.port);
+                session = destination.port != null
+                    ? jsch.getSession(sshUsername, destination.host, destination.port)
+                    : jsch.getSession(sshUsername, destination.host);
                 session.connect();
             } catch (JSchException e) {
                 String msg = "Could not connect to certificate destination.";
@@ -346,7 +347,9 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             Session session = null;
             try {
                 Destination destination = buildDestination(crlSCPDestination, sshPort);
-                session = jsch.getSession(sshUsername, destination.host, destination.port);
+                session = destination.port != null
+                    ? jsch.getSession(sshUsername, destination.host, destination.port)
+                    : jsch.getSession(sshUsername, destination.host);
                 session.connect();
             } catch (JSchException e) {
                 String msg = "Could not connect to CRL destination. ";
@@ -453,10 +456,14 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         Channel channel = null;
         OutputStream out = null;
         try {
-            session = jsch.getSession(username, destination.host, destination.port);
+            session = destination.port != null
+                ? jsch.getSession(username, destination.host, destination.port)
+                : jsch.getSession(username, destination.host);
             session.connect();
-            // exec 'scp -P port -t path' remotely
-            String command = "scp -P " + destination.port + " -p -t " + destination.path;
+            // exec 'scp [-P port] -t path' remotely
+            String command = destination.port != null
+                ? String.format("scp -P %d -p -t %s", destination.port, destination.path)
+                : String.format("scp -p -t %s", destination.path);
             channel = session.openChannel("exec");
             ((ChannelExec) channel).setCommand(command);
             // get I/O streams for remote scp
@@ -518,7 +525,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         return new Destination(host, path, parsePort(port));
     }
 
-    private static int parsePort(String portInput) throws PublisherException {
+    private static Integer parsePort(String portInput) throws PublisherException {
         if (portInput.matches("0*\\d{1,5}")) {
             int port = Integer.parseInt(portInput);
 
@@ -527,10 +534,10 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             }
 
         } else if (portInput.isBlank()) {
-            return DEFAULT_SCP_PORT;
+            return null;
         }
 
-        throw new PublisherException("Port need to be an integer between 1 and 65535");
+        throw new PublisherException("Port needs to be a whole number between 1 and 65535");
     }
 
     // TODO: use the following instead when possible (Java 14+/17) or apply for Lombok:
