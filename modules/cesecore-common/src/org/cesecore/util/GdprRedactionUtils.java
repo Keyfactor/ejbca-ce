@@ -13,12 +13,15 @@
 package org.cesecore.util;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.cesecore.configuration.GdprConfigurationCache;
 
@@ -75,12 +78,28 @@ public class GdprRedactionUtils {
             return subjectDn;
         }
     }
-    
+
     public static String getSubjectDnLogSafe(String subjectDn, String endEntityProfileName) {
         if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return subjectDn;
+        }
+    }
+
+    public static String getSubjectDnLogSafe(String subjectDn) {
+        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return subjectDn;
+        }
+    }
+
+    public static String getSubjectDnLogSafe(final Certificate cert) {
+        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return CertTools.getSubjectDN(cert);
         }
     }
     
@@ -97,6 +116,14 @@ public class GdprRedactionUtils {
             return REDACTED_CONTENT;
         } else {
             return san;
+        }
+    }
+
+    public static String getLogSafe(final int id) {
+        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return String.valueOf(id);
         }
     }
 
