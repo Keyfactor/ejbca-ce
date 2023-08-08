@@ -135,6 +135,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             // 400
             case ApprovalException:
             case KeyStoreGeneralRaException:
+            case PublisherException:
                 return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.BAD_REQUEST.getStatusCode())
                         .errorMessage(ejbcaException.getMessage())
