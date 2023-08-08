@@ -120,18 +120,14 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         } catch (PublisherException e) {
             sshPort = null;
         }
-        String encryptedPassword = getProperty(properties, SCP_PRIVATE_KEY_PASSWORD_NAME);
-        // Password is encrypted on the database, using the key password.encryption.key
-        if (StringUtils.isNotEmpty(encryptedPassword)) {
-            try {
-                privateKeyPassword = StringTools.pbeDecryptStringWithSha256Aes192(encryptedPassword);
-            } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException e) {
-                throw new IllegalStateException("Could not decrypt encoded private key password.", e);
-            }
-        } else {
-            privateKeyPassword = "";
+        try {
+            privateKeyPassword = decryptPassword(getProperty(properties, SCP_PRIVATE_KEY_PASSWORD_NAME));
+        } catch (PublisherException e) {
+            // TODO: could go for passing with `privateKeyPassword = null` if validation was in place
+            //       telling that password being stored is wrong; but that needs a little bit more work
+            throw new IllegalStateException("Could not decrypt encoded private key password.", e);
         }
-        
+
         this.properties.put(SIGNING_CA_PROPERTY_NAME, new CustomPublisherProperty(SIGNING_CA_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, null,
                 null, Integer.valueOf(signingCaId).toString()));
         this.properties.put(ANONYMIZE_CERTIFICATES_PROPERTY_NAME, new CustomPublisherProperty(ANONYMIZE_CERTIFICATES_PROPERTY_NAME,
@@ -150,8 +146,20 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 new CustomPublisherProperty(SCP_KNOWN_HOSTS_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, scpKnownHosts));
 
     }
-    
-    
+
+    private String decryptPassword(String encryptedPassword) throws PublisherException {
+        // Password is encrypted on the database, using the key password.encryption.key
+        if (StringUtils.isNotEmpty(encryptedPassword)) {
+            try {
+                return StringTools.pbeDecryptStringWithSha256Aes192(encryptedPassword);
+            } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException |
+                     InvalidKeySpecException e) {
+                throw new PublisherException("Could not decrypt encoded private key password.", e);
+            }
+        }
+        return "";
+    }
+
     @Override
     public List<CustomPublisherProperty> getCustomUiPropertyList(AuthenticationToken authenticationToken) {
         List<CustomPublisherProperty> customProperties = new ArrayList<>();
