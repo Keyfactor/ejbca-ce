@@ -86,7 +86,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     private String scpPrivateKey = null;
     private String scpKnownHosts = null;
     private String sshUsername = null;
-    private String sshPort = null;
+    private Integer sshPort = null;
     private String privateKeyPassword = null;
     
     private  Map<String, CustomPublisherProperty> properties = new LinkedHashMap<>();
@@ -115,7 +115,11 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         scpPrivateKey = getProperty(properties, SCP_PRIVATE_KEY_PROPERTY_NAME);
         scpKnownHosts = getProperty(properties, SCP_KNOWN_HOSTS_PROPERTY_NAME);
         sshUsername = getProperty(properties, SSH_USERNAME);
-        sshPort = getProperty(properties, SSH_PORT);
+        try {
+            sshPort = parsePort(getProperty(properties, SSH_PORT));
+        } catch (PublisherException e) {
+            sshPort = null;
+        }
         String encryptedPassword = getProperty(properties, SCP_PRIVATE_KEY_PASSWORD_NAME);
         // Password is encrypted on the database, using the key password.encryption.key
         if (StringUtils.isNotEmpty(encryptedPassword)) {
@@ -133,7 +137,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         this.properties.put(ANONYMIZE_CERTIFICATES_PROPERTY_NAME, new CustomPublisherProperty(ANONYMIZE_CERTIFICATES_PROPERTY_NAME,
                 CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(anonymizeCertificates).toString()));
         this.properties.put(SSH_USERNAME, new CustomPublisherProperty(SSH_USERNAME, CustomPublisherProperty.UI_TEXTINPUT, sshUsername));
-        this.properties.put(SSH_PORT, new CustomPublisherProperty(SSH_PORT, CustomPublisherProperty.UI_TEXTINPUT, sshPort != null ? sshPort : ""));
+        this.properties.put(SSH_PORT, new CustomPublisherProperty(SSH_PORT, CustomPublisherProperty.UI_TEXTINPUT, sshPort != null ? Integer.toString(sshPort) : ""));
         this.properties.put(CRL_SCP_DESTINATION_PROPERTY_NAME,
                 new CustomPublisherProperty(CRL_SCP_DESTINATION_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, crlSCPDestination));
         this.properties.put(CERT_SCP_DESTINATION_PROPERTY_NAME,
@@ -415,7 +419,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
      * @throws PublisherException is signing was required by failed for whatever reason
      */
     private void performScp(final int signingCaId, final String destinationFileName,
-            final String username, final String port, final byte[] data, String destinationPath, final String privateKeyPath, final String privateKeyPassword,
+            final String username, final Integer port, final byte[] data, String destinationPath, final String privateKeyPath, final String privateKeyPassword,
             final String knownHostsFile) throws JSchException, IOException, PublisherException {
         if(!(new File(privateKeyPath)).exists()) {
             throw new IllegalArgumentException("Private key file " + privateKeyPath + " was not found");
@@ -515,14 +519,14 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         throw new IOException("SCP error: " + sb.toString());
     }
 
-    private Destination buildDestination(String destination, String port) throws PublisherException {
+    private Destination buildDestination(String destination, Integer port) throws PublisherException {
         // clean out any usernames which may have been added to the destination by mistake
         destination = destination.substring(destination.indexOf('@') + 1);
         int firstColonIndex = destination.indexOf(':');
         String host = firstColonIndex < 0 ? destination : destination.substring(0, firstColonIndex);
         String path = firstColonIndex < 0 ? "" : destination.substring(firstColonIndex + 1);
 
-        return new Destination(host, path, parsePort(port));
+        return new Destination(host, path, port);
     }
 
     private static Integer parsePort(String portInput) throws PublisherException {
