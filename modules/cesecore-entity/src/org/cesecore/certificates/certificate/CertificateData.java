@@ -178,7 +178,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
                 setSubjectAltName(SshCertificateUtils.createSanForStorage((SshCertificate) certificate));
             }
             if (log.isDebugEnabled()) {
-                log.debug("Creating CertificateData, subjectDN=" + getSubjectDnNeverNull() + ", subjectAltName=" + getSubjectAltNameNeverNull() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp+", storeSubjectAltName="+storeSubjectAltName);
+                log.debug("Creating CertificateData, subjectDN=" + GdprRedactionUtils.getSubjectDnLogSafe(getSubjectDnNeverNull(), endEntityProfileId)  + ", subjectAltName=" + GdprRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull(), endEntityProfileId) + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp+", storeSubjectAltName="+storeSubjectAltName);
             }
             setSerialNumber(CertTools.getSerialNumber(certificate).toString());
 

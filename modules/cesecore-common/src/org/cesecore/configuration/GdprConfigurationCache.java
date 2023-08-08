@@ -44,10 +44,14 @@ public enum GdprConfigurationCache {
         GdprConfiguration config = this.idToConfigCache.get(endEntityProfileId);
         return config != null ? config :  GDPR_CONFIG_GLOBAL;
     }
-    
+
     public GdprConfiguration getGdprConfiguration(String endEntityProfileName) {
         GdprConfiguration config = this.nameToConfigCache.get(endEntityProfileName);
         return config != null ? config :  GDPR_CONFIG_GLOBAL;
-    }    
+    }
+
+    public GdprConfiguration getGdprConfiguration() {
+        return GDPR_CONFIG_GLOBAL;
+    }
 
 }

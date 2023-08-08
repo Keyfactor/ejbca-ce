@@ -46,7 +46,7 @@ public class ProfileID {
 			if ( db.isFree(id) ) {
 				return id;
 			}
-			log.info("ID "+id+" already exist in DB generating a new random ID.");
+			log.info("ID "+GdprRedactionUtils.getLogSafe(id)+" already exist in DB generating a new random ID.");
 		}
 		// this throw is indicating an implementation error of the DB class and should never occur. If it does the code must be fixed.
 		throw new RuntimeException("Impossible to find a spare ID in the database for the class: "+db.getClass().getCanonicalName());
