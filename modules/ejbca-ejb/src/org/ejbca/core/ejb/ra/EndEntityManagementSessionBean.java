@@ -1228,11 +1228,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             );
         } catch (Exception e) {
             final String msg = intres.getLocalizedMessage("ra.errorremoveentity", trimmedUsername);
-            // TODO ECA-10985: Redacting/handling error messages
+            final String errorMessage = GdprRedactionUtils.getRedactedMessage(e.getMessage());
             logAuditEvent(
                     EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE,
                     authenticationToken, caId, null, trimmedUsername,
-                    SecurityEventProperties.builder().withMsg(msg).withError(e.getMessage(), endEntityProfileId).build()
+                    SecurityEventProperties.builder().withMsg(msg).withError(errorMessage, endEntityProfileId).build()
             );
             throw new CouldNotRemoveEndEntityException(msg);
         }

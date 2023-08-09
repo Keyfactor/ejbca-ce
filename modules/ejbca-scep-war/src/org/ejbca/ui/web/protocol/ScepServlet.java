@@ -76,7 +76,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id$
  */
 public class ScepServlet extends HttpServlet {
     private static final long serialVersionUID = -6776853218419335240L;

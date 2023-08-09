@@ -55,7 +55,6 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @param scepConfigurationAlias name of alias containing SCEP configuration
      * @return byte array containing dispatch response. Content depends on operation
      * @throws NoSuchAliasException 
-     * @throws CertificateEncodingException 
      * @throws AuthorizationDeniedException 
      * @throws CADoesntExistsException 
      * @throws CertificateRenewalException 
@@ -79,7 +78,7 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws NoSuchEndEntityException 
      */
     byte[] dispatchRequest(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
-        CertificateEncodingException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
+        CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
         CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
         CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
         SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException;
@@ -127,7 +126,6 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @param scepConfigurationAlias name of alias containing SCEP configuration
      * @return byte array containing dispatch response. Content depends on operation
      * @throws NoSuchAliasException 
-     * @throws CertificateEncodingException 
      * @throws AuthorizationDeniedException 
      * @throws CADoesntExistsException 
      * @throws CertificateRenewalException 
@@ -151,7 +149,7 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws NoSuchEndEntityException 
      */
     ScepResponseInfo dispatchRequestIntune(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
-        CertificateEncodingException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
+        CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
         CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
         CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
         SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException;

@@ -33,7 +33,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
  * 
  * The authentication modules are specified as properties in the CmpConfiguration.
  * 
- * @version $Id$
  */
 public class VerifyPKIMessage {
     

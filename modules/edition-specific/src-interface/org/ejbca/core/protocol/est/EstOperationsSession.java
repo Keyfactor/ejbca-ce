@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.est;
 
-/**
- * @version $Id: EstDispatcherSession.java 25797 2017-05-04 15:52:00Z jeklund $
- */
 public interface EstOperationsSession {
     
 }
