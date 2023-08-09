@@ -16,11 +16,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.protocol.HttpContext;
+
 import org.cesecore.configuration.GdprConfigurationCache;
 
 import com.keyfactor.CesecoreException;
@@ -48,7 +52,7 @@ import com.keyfactor.util.certificate.DnComponents;
  */
 public class GdprRedactionUtils {
     
-    public static final String REDACTED_CONTENT = "<redact>";
+    public static final String REDACTED_CONTENT = "<redacted>";
     
     private static final Pattern SUBJECT_DN_COMPONENTS;
     private static final Pattern SUBJECT_ALT_NAME_COMPONENTS;
@@ -108,20 +112,6 @@ public class GdprRedactionUtils {
             return subjectDn;
         }
     }
-
-    /**
-     * Redact SubjectDN using global setting, if used.
-     *
-     * @param subjectDn SubjectDN
-     * @return  redacted SubjectDn
-     */
-    public static String getSubjectDnLogSafe(String subjectDn) {
-        if (redactPii()) {
-            return REDACTED_CONTENT;
-        }
-
-        return subjectDn;
-    }
     
     public static String getSubjectAltNameLogSafe(String san) {
         if(redactPii()) {
@@ -147,6 +137,71 @@ public class GdprRedactionUtils {
         }
     }
     
+    public static String getLogSafe(final String string, final String identifier, final int endEntityProfileId) {
+        return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii() ? 
+                string.replace(identifier, GdprRedactionUtils.REDACTED_CONTENT) : string;
+    }
+    
+    public static String getLogSafe(String string, final List<String> identifiers, final int endEntityProfileId) {
+        if (GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
+            for (String identifier : identifiers) {
+                string = string.replace(identifier, GdprRedactionUtils.REDACTED_CONTENT);
+            }
+        }
+        return string;
+    }
+    
+    public static Integer getEndEntityProfileId(final HttpServletRequest request) {
+        if (request.getAttribute("redact-eepid") instanceof Integer) {
+            return (Integer) request.getAttribute("redact-eepid");
+        } else {
+            return null;
+        }
+    }
+    
+    public static void setEndEntityProfileId(final HttpServletRequest request, final int id) {
+        request.setAttribute("redact-eepid", id);
+    }
+    
+    public static Integer getEndEntityProfileId(final HttpContext context) {
+        if (context.getAttribute("redact-eepid") instanceof Integer) {
+            return (Integer) context.getAttribute("redact-eepid");
+        } else {
+            return null;
+        }
+    }
+    
+    public static void setEndEntityProfileId(final HttpContext context, final int id) {
+        context.setAttribute("redact-eepid", id);
+    }
+    
+    
+    @SuppressWarnings("unchecked")
+    public static List<String> getToBeRedacted(final HttpServletRequest request) {
+        if (request.getAttribute("redact") instanceof List) {
+            return (List<String>) request.getAttribute("redact");
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
+    public static void setToBeRedacted(final HttpServletRequest request, final List<String> toBeRedacted) {
+        request.setAttribute("redact", toBeRedacted);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static List<String> getToBeRedacted(final HttpContext context) {
+        if (context.getAttribute("redact") instanceof List) {
+            return (List<String>) context.getAttribute("redact");
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
+    public static void setToBeRedacted(final HttpContext context, final List<String> toBeRedacted) {
+        context.setAttribute("redact", toBeRedacted);
+    }
+
     public static boolean isRedactPii(final int endEntityProfileId) {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii();
     }
