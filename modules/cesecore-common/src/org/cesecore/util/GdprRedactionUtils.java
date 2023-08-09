@@ -77,20 +77,12 @@ public class GdprRedactionUtils {
     }
     
     // only for testing
-    protected static String getSubjectDnRedactionPattern() {
+    public static String getSubjectDnRedactionPattern() {
         return SUBJECT_DN_COMPONENTS.toString();
     }
     
-    protected static String getSubjectAltNameRedactionPattern() {
+    public static String getSubjectAltNameRedactionPattern() {
         return SUBJECT_ALT_NAME_COMPONENTS.toString();
-    }
-    
-    public static String getSubjectDnLogSafe(String subjectDn) {
-        if(redactPii()) {
-            return REDACTED_CONTENT;
-        } else {
-            return subjectDn;
-        }
     }
 
     public static String getSubjectDnLogSafe(String subjectDn, int endEntityProfileId) {
