@@ -249,8 +249,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
 
-                // TODO ECA-10985: Redacting/handling error messages
-                details.put("error", ((PublisherException) publisherResult).getMessage());
+                details.put("error", GdprRedactionUtils.getRedactedMessage(((PublisherException) publisherResult).getMessage()));
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
                         EjbcaServiceTypes.EJBCA, admin.toString(), null, certSerno, username, details);
                 if (publ.getUseQueueForCertificates()) {
@@ -359,8 +358,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                             final Map<String, Object> details = new LinkedHashMap<>();
                             details.put("msg", msg);
 
-                            // TODO ECA-10985: Redacting/handling error messages
-                            details.put("error", pe.getMessage());
+                            details.put("error", GdprRedactionUtils.getRedactedMessage(pe.getMessage()));
                             auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                         }
