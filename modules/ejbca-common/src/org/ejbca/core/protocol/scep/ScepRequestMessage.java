@@ -20,7 +20,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -78,6 +77,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
@@ -282,10 +282,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             Collection<SignerInformation> signers = infoStore.getSigners();
             Iterator<SignerInformation> iter = signers.iterator();
             if (iter.hasNext()) {
-            	SignerInformation si = (SignerInformation)iter.next();
+            	SignerInformation si = iter.next();
             	final String reqAlg = si.getDigestAlgOID();
             	originalDigestAlgorithm = reqAlg;
-            	if (reqAlg == CMSSignedGenerator.DIGEST_SHA1 || reqAlg == CMSSignedGenerator.DIGEST_MD5){
+            	if (reqAlg.equals(CMSSignedGenerator.DIGEST_SHA1) || reqAlg.equals(CMSSignedGenerator.DIGEST_MD5)){
             	    // If the request use any of these without explicitly configured to allow them in the SCEP alias, keep using the default instead.
             	    log.debug("Legacy request digest algorithm will only be used if explicitly allowed in SCEP alias, defaulting to " + preferredDigestAlg);
             	} else {
@@ -331,9 +331,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         try {
 							signercert = CertTools.getCertfromByteArray(requestKeyInfo, X509Certificate.class);
 							if (log.isDebugEnabled()) {
-								log.debug("requestKeyInfo is SubjectDN: " + CertTools.getSubjectDN(signercert) +
+								log.debug("requestKeyInfo is SubjectDN: " + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(signercert)) +
 										", Serial=" + CertTools.getSerialNumberAsString(signercert) +
-										"; IssuerDN: "+ CertTools.getIssuerDN(signercert).toString());								
+										"; IssuerDN: "+ CertTools.getIssuerDN(signercert));								
 							}
 						} catch (CertificateException e) {
 							log.error("Error parsing requestKeyInfo : ", e);
@@ -446,7 +446,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         log.trace("<init");
     } // init
 
-    private void decrypt() throws CMSException, NoSuchProviderException, GeneralSecurityException, IOException {
+    private void decrypt() throws CMSException, IOException {
         if (log.isTraceEnabled()) {
         	log.trace(">decrypt");
         }
@@ -473,7 +473,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         byte[] decBytes = null;
 
         while (it.hasNext()) {
-            RecipientInformation recipient = (RecipientInformation) it.next();
+            RecipientInformation recipient = it.next();
             if (log.isDebugEnabled()) {
             	log.debug("Privatekey : " + privateKey.getAlgorithm());
             }
@@ -560,8 +560,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             ret = super.getRequestAltNames();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-        } catch (GeneralSecurityException e) {
-            log.error("Error in PKCS7:", e);
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
@@ -585,11 +583,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             ret = super.verify();
         } catch (IOException e) {
             log.error("PKCS7 not initialized!");
-        } catch (GeneralSecurityException e) {
+        } catch (GeneralSecurityException | CMSException e) {
             log.error("Error in PKCS7:", e);
-        } catch (CMSException e) {
-            log.error("Error in PKCS7:", e);
-        }
+        } 
+        
         if (log.isTraceEnabled()) {
         	log.trace("<verify()");
         }
@@ -610,8 +607,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             ret = super.getPassword();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-        } catch (GeneralSecurityException e) {
-            log.error("Error in PKCS7:", e);
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
@@ -637,7 +632,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 // For Cisco boxes they can sometimes send DN as SN instead of CN
                 String name = CertTools.getPartFromDN(getRequestDN(), "SN");
                 if (name == null) {
-                    log.error("No SN in DN: " + getRequestDN());
+                    log.error("No SN in DN: " + GdprRedactionUtils.getRedactedMessage(getRequestDN()));
                     return null;
                 }
                 // Special if the DN contains unstructuredAddress where it becomes: 
@@ -657,8 +652,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             }
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-        } catch (GeneralSecurityException e) {
-            log.error("Error in PKCS7:", e);
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
@@ -683,7 +676,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             log.error("PKCS7 not inited!");
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<getIssuerDN(): " + ret);
+        	log.trace("<getIssuerDN(): " + GdprRedactionUtils.getRedactedMessage(ret));
         }
         return ret;
     }
@@ -721,13 +714,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             ret = CertTools.stringToBCDNString(issuerAndSerno.getName().toString());
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-        } catch (GeneralSecurityException e) {
-            log.error("Error in PKCS7:", e);
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<getCRLIssuerDN(): " + ret);
+        	log.trace("<getCRLIssuerDN(): " + GdprRedactionUtils.getRedactedMessage(ret));
         }
         return ret;
     }
@@ -746,8 +737,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             ret = issuerAndSerno.getSerialNumber().getValue();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-        } catch (GeneralSecurityException e) {
-            log.error("Error in PKCS7:", e);
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
@@ -776,13 +765,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             }
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-        } catch (GeneralSecurityException e) {
-            log.error("Error in PKCS7:", e);
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<getRequestDN(): " + ret);
+        	log.trace("<getRequestDN(): " + GdprRedactionUtils.getRedactedMessage(ret));
         }
         return ret;
     }

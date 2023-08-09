@@ -40,7 +40,6 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 /**
  * A very simple error message, no protection, or PBE protection
  *
- * @version $Id$
  */
 public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseMessage {
 
