@@ -65,6 +65,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -309,7 +310,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             log.debug("CMP is operating in Vendor mode: " + vendormode);
             log.debug("CMP message already been authenticated: " + authenticated);
             log.debug("Omitting some verifications: " + omitVerifications);
-            log.debug("CMP message (claimed to be) signed by (cert from extraCerts): SubjectDN '" + CertTools.getSubjectDN(extraCert)+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
+            log.debug("CMP message (claimed to be) signed by (cert from extraCerts): SubjectDN '" + 
+                   GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(extraCert))+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
         }
 
         //----------------------------------------------------------------------------------------
@@ -490,25 +492,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 this.errorMessage = "Failed to verify the signature in the PKIMessage";
                 return false;
             }
-        } catch (InvalidKeyException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
-            }
-            this.errorMessage = e.getLocalizedMessage();
-            return false;
-        } catch (NoSuchAlgorithmException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
-            }
-            this.errorMessage = e.getLocalizedMessage();
-            return false;
-        } catch (NoSuchProviderException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
-            }
-            this.errorMessage = e.getLocalizedMessage();
-            return false;
-        } catch (SignatureException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
             if(log.isDebugEnabled()) {
                 log.debug(e.getLocalizedMessage());
             }
@@ -530,7 +514,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
 
     private EndEntityInformation getEndEntityFromKeyUpdateRequest(final PKIMessage pkimessage) throws AuthorizationDeniedException {
-        String subjectDN="", issuerDN="";
+        String subjectDN="";
+        String issuerDN="";
 
         if(cmpConfiguration.getRAMode(confAlias)) {
             CertReqMessages kur = (CertReqMessages) pkimessage.getBody().getContent();
@@ -565,33 +550,41 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             subjectDN = CertTools.getSubjectDN(extraCert);
             issuerDN = CertTools.getIssuerDN(extraCert);
         }
-        if(log.isDebugEnabled()) {
-            log.debug("Received a CMP KeyUpdateRequest for an endentity with SubjectDN '" + subjectDN + "' and issuerDN '" + issuerDN + "'");
-        }
+
 
         EndEntityInformation userdata = null;
-        if(StringUtils.isEmpty(issuerDN)) {
-            if(log.isDebugEnabled()) {
+        if (StringUtils.isEmpty(issuerDN)) {
+            if (log.isDebugEnabled()) {
                 log.debug("The CMP KeyUpdateRequest did not specify an issuer");
             }
             List<EndEntityInformation> userdataList = eeAccessSession.findUserBySubjectDN(admin, subjectDN);
-            if (userdataList.size() > 0) {
+            if (!userdataList.isEmpty() && userdataList.size() == 1) {
                 userdata = userdataList.get(0);
+                if (log.isDebugEnabled()) {
+                    log.debug("Received a CMP KeyUpdateRequest for an endentity with SubjectDN '"
+                            + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN, userdata.getEndEntityProfileId()) + "' and issuerDN '"
+                            + issuerDN
+                            + "'");
+                }
+            } else if (userdataList.size() > 1) {
+                log.warn("Multiple end entities with subject DN were found. This may lead to unexpected behavior.");
             }
-            if (userdataList.size() > 1) {
-                log.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
-            }
+
         } else {
             List<EndEntityInformation> userdataList = eeAccessSession.findUserBySubjectAndIssuerDN(admin, subjectDN, issuerDN);
-            if (userdataList.size() > 0) {
+            if (!userdataList.isEmpty() && userdataList.size() == 1) {
                 userdata = userdataList.get(0);
-            }
-            if (userdataList.size() > 1) {
-                log.warn("Multiple end entities with subject DN " + subjectDN + " and issuer DN" + issuerDN
+                if (log.isDebugEnabled()) {
+                    log.debug("Received a CMP KeyUpdateRequest for an endentity with SubjectDN '"
+                            + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN, userdata.getEndEntityProfileId()) + "' and issuerDN '"
+                            + issuerDN
+                            + "'");
+                }
+            } else if (userdataList.size() > 1) {
+                log.warn("Multiple end entities with subject DN and issuer DN" + issuerDN
                         + " were found. This may lead to unexpected behavior.");
             }
         }
-
         return userdata;
     }
 
@@ -615,7 +608,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private boolean isAuthorizedAdmin(final PKIMessage msg, final EndEntityInformation endentity) {
 
         X509Certificate x509cert = (X509Certificate) extraCert;
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(x509cert);
 
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
@@ -897,12 +890,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         } catch (CertPathValidatorException e) {
             this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid - " + getCertPathValidatorExceptionMessage(e);
             if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + ": SubjectDN=" + CertTools.getSubjectDN(endentitycert));
+                log.debug(this.errorMessage + ": SubjectDN=" + GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(endentitycert)));
             }
         } catch (CertPathBuilderException e) {
             this.errorMessage = "The certificate chain attached to the PKIMessage in the extraCert field is not valid - " + e.getMessage();
             if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + ": SubjectDN=" + CertTools.getSubjectDN(endentitycert));
+                log.debug(this.errorMessage + ": SubjectDN=" + GdprRedactionUtils.getRedactedMessage(CertTools.getSubjectDN(endentitycert)));
             }
             log.warn("CertPathBuilderException", e);
         } catch (NoSuchProviderException e) {

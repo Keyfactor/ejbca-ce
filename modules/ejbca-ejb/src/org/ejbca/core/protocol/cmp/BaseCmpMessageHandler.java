@@ -16,7 +16,6 @@ package org.ejbca.core.protocol.cmp;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -73,7 +72,7 @@ public class BaseCmpMessageHandler {
     }
 
 	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. */
-	protected int getUsedCaId(final String keyId, final int eeProfileId) throws CADoesntExistsException, AuthorizationDeniedException {
+	protected int getUsedCaId(final String keyId, final int eeProfileId) throws CADoesntExistsException {
 		int ret = 0;
 		final String caName = cmpConfiguration.getRACAName(this.confAlias);
 		if (StringUtils.equals(caName, "ProfileDefault")) {
