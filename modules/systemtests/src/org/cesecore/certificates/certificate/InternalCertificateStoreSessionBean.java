@@ -240,7 +240,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 
             data.setStatus(status);
             final String serialNo = CertTools.getSerialNumberAsString(data.getCertificate(this.entityManager));
-            final String msg = INTRES.getLocalizedMessage("store.setstatus", data.getUsername(), fingerprint, status, data.getSubjectDnNeverNull(), data.getIssuerDN(), serialNo);
+            final String msg = INTRES.getLocalizedMessage("store.setstatus", data.getUsername(), fingerprint, status, data.getLogSafeSubjectDn(), data.getIssuerDN(), serialNo);
             logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, data.getUsername(), msg);
         } else {
             if (log.isDebugEnabled()) {

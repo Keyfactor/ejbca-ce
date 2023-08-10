@@ -69,6 +69,9 @@ public class GdprRedactionUtils {
         StringBuilder regex = new StringBuilder(); 
         regex.append("(");
         for(String dnPart: dnParts) {
+            if (dnPart.equals("e") || dnPart.equals("t")) {
+                continue;
+            }
             regex.append("(" + dnPart + "=)|");
         }
         regex.deleteCharAt(regex.length()-1);

@@ -16,8 +16,10 @@ package org.ejbca.core.ejb.ra;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,7 @@ import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** 
@@ -58,14 +61,22 @@ public class EnableGlobalPiiDataRedactionTest {
     private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static final String CUSTOM_LOG_MESSAGE = "EnableGlobalPiiDataRedactionTest_CustomLogMessage";
+    
+    @BeforeClass
+    public static void isEnabledAuditLogRedactionTest() {
+        // set enable.log.redact=true in conf/systemtest.properties
+        assumeTrue("Skipping this test as it is not meant for normal system tests", SystemTestsConfiguration.getEnableLogRedact());
+    }
         
     @Test
     public void setRedactEnfoced() throws Exception {
-        if (!SystemTestsConfiguration.getEnableLogRedact()) {
-            return;
-        }
+        
        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration)
                 globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+       if (globalCesecoreConfiguration.getRedactPiiEnforced()) {
+           return;
+       }
+       
        globalCesecoreConfiguration.setRedactPiiEnforced(true);
        globalConfigurationSession.saveConfiguration(admin, globalCesecoreConfiguration);
        
@@ -79,18 +90,30 @@ public class EnableGlobalPiiDataRedactionTest {
     public void testAuditLogPiiDataWithCompulsoryRedaction() throws Exception {
         
         String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern(),
-                GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "\\WMI[a-zA-Z0-9]{10}"}; // TODO: hex
+                GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIM]{1}[a-zA-Z0-9]{12}"}; // TODO: hex
+//        matches all -> ".*MI[EIM]{1}[a-zA-Z0-9]{12}.*" for wildfly filter
+//        finds all -> "MI[EIM]{1}[a-zA-Z0-9]{12}" without .* at both end
+//        "asdaMIIowe345ht11asdadqw" -> bad match
+//        "MIIowe345ht11asdadqw"
+//        " MIIowe345ht11asdadqw"
+//        "xxx MIIowe345ht11asdadqw"
+//        "xxx:MIIowe345ht11asdadqw"
+//        "yyy xxx : MIIowe345ht11asdadqw"
+//        "yyy xxx:MIIowe345ht11asdadqw"
         List<Pattern> compiledPatterns =  new ArrayList<>();
-        Stream.of(patternsToMatch).map(Pattern::compile).map(compiledPatterns::add);
+        for (String p: patternsToMatch) {
+            compiledPatterns.add(Pattern.compile(p, Pattern.CASE_INSENSITIVE));
+        }
         
         final List<Object> startMarkerParams = new ArrayList<>();
         startMarkerParams.add("CUSTOMLOG_INFO");
         startMarkerParams.add("%" + CUSTOM_LOG_MESSAGE + "%");
-        List<? extends AuditLogEntry> customMessageOccurences = ejbcaAuditorSession.selectAuditLog(admin, DEVICE_NAME, 0, 10, 
+        List<? extends AuditLogEntry> customMessageOccurences = ejbcaAuditorSession.selectAuditLogNoAuth(admin, DEVICE_NAME, 0, 10, 
                 " a.eventType=?0 and a.additionalDetails LIKE ?1", "a.timeStamp DESC", startMarkerParams);
         if (customMessageOccurences.isEmpty()) {
             fail("failed to detect SystemTest starting marker");
         }
+        log.error("Detected marker at: " + new Date(customMessageOccurences.get(0).getTimeStamp()));
         
         long allTestsStartTime = customMessageOccurences.get(0).getTimeStamp();
         String[] auditEventPatternsToVerify = new String[] { 
@@ -114,9 +137,9 @@ public class EnableGlobalPiiDataRedactionTest {
                  
             int offset = 0;
             while (true && offset < 100_000) {
-                auditLogsGenerated =  ejbcaAuditorSession.selectAuditLog(admin, DEVICE_NAME, offset, 1000, 
+                auditLogsGenerated =  ejbcaAuditorSession.selectAuditLogNoAuth(admin, DEVICE_NAME, offset, 1000, 
                         "a.timeStamp > ?0" +
-                        " and a.eventType LIKE ?1 and a.eventType NOT LIKE ?2", null, parameters);
+                        " and a.eventType LIKE ?1 and a.eventType NOT LIKE ?2", "a.timeStamp DESC", parameters);
                 if(auditLogsGenerated.isEmpty()) {
                     break;
                 }
@@ -125,7 +148,7 @@ public class EnableGlobalPiiDataRedactionTest {
             }
         }
         
-        assertTrue("Found AUDIT logged PII data in: " + detectedEventTypes, detectedEventTypes.isEmpty());
+        assertTrue("Found audit logged PII data in: " + detectedEventTypes, detectedEventTypes.isEmpty());
     }
     
     private void detectPiiLogging(List<? extends AuditLogEntry> auditLogsGenerated, 
@@ -133,15 +156,17 @@ public class EnableGlobalPiiDataRedactionTest {
         
         
         for(AuditLogEntry auditEntry: auditLogsGenerated) {
-            String auditedAdditionalDetails = getAsString(auditEntry.getMapAdditionalDetails()).toLowerCase();
+            String auditedAdditionalDetails = getAsString(auditEntry.getMapAdditionalDetails());
             for (Pattern p: compiledPatterns) {
-                if(p.matcher(auditedAdditionalDetails).find()) {
+                Matcher m = p.matcher(auditedAdditionalDetails);
+                if(m.find()) {
                     detectedEventTypes.add(auditEntry.getEventTypeValue().toString());
                     StringBuilder sb = new StringBuilder();
                     sb.append("type: " + auditEntry.getEventTypeValue().toString());
                     sb.append(", detail1: " + auditEntry.getSearchDetail1()); // may contain test name
                     sb.append(", detail2: " + auditEntry.getSearchDetail2());
                     sb.append(", additional_detail: " + auditedAdditionalDetails);
+                    sb.append(", matched with: " + p.toString().substring(0, 10) + ", at index: " + m.start() );
                     log.error("PII logged: " + sb.toString());
                     break;
                 }
@@ -151,17 +176,27 @@ public class EnableGlobalPiiDataRedactionTest {
     
     private static String getAsString(final Map<String,Object> map) {
         final StringBuilder sb = new StringBuilder();
-        if (map.size() == 1 && map.containsKey("msg")) {
-            final String ret = (String) map.get("msg");
-            if (ret != null) {
-                return ret;
-            }
-        }
+        // we need to validate all keys as Log4jDevice logs all keys too
         for (final Object key : map.keySet()) {
             if (sb.length()!=0) {
                 sb.append("; ");
             }
-            sb.append(key).append('=').append(map.get(key));
+            if (((String)key).equalsIgnoreCase("msg")) {
+                String content = (String) map.get(key);
+                content = content.toLowerCase();
+                if (content.contains("issuerdn")) {
+                    int issuerdnStartIndex = content.indexOf("'", content.indexOf("issuerdn"));
+                    int issuerdnEndIndex = content.indexOf("'", issuerdnStartIndex+1);
+                    content = content.substring(0, issuerdnStartIndex) + content.substring(issuerdnEndIndex, content.length());
+                }
+                content = content.replace("serialno", "serial:");
+                sb.append(key).append(':').append(content);
+                continue;
+            }
+            if (((String)key).equalsIgnoreCase("publickey")) {
+                continue;
+            }
+            sb.append(key).append(':').append(map.get(key));
         }
         return sb.toString();
     }
