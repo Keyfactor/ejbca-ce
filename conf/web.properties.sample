@@ -125,25 +125,7 @@ httpsserver.tokentype=JKS
 # Default: true
 #(Read the warning!)web.reqauth=true
 
-# Allow users to self-register on public web, by entering their information.
-# This creates an approval request for the admin.
-# Default = false
-#web.selfreg.enabled=false
-
-# Certificate types to make available for the user
-#web.selfreg.defaultcerttype=1
-#web.selfreg.certtypes.1.description=User certificate
-#web.selfreg.certtypes.1.eeprofile=SOMEPROFILE
-#web.selfreg.certtypes.1.certprofile=ENDUSER
-
-# Optional: Instead of asking the user for a username, EJBCA can generate
-# the username from a field in the subject DN
-#web.selfreg.certtypes.1.usernamemapping=CN
-
-# Optional: Prefix to add before the username
-#web.selfreg.certtypes.1.usernameprefix=Example_
-
-# Deploy the request browser certificate renewal web application and show a 
+# Deploy the request browser certificate renewal web application and show a
 # link to it from the EJBCA public web.
 # Default = false
 #web.renewalenabled=false
