@@ -49,7 +49,8 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
     private static final Logger log = Logger.getLogger(LookAheadObjectInputStream.class);
     private Set<Class<? extends Serializable>> acceptedClasses = null;
     private Set<Class<? extends Serializable>> acceptedClassesDynamically = null;
-    
+    private Map<String, String> renamedClasses = null;
+
     private boolean enabledSubclassing = false;
     private boolean enabledInterfaceImplementations = false;
     private int maxObjects = 1;
@@ -137,6 +138,10 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
         this.acceptedClassesDynamically = null;
     }
 
+    public void setRenamedClasses(final Map<String, String> renamedClassMap) {
+        this.renamedClasses = renamedClassMap;
+    }
+
     /**
      * Get maximum amount of objects that can be read with this LookAheadObjectInputStream.
      * @return 
@@ -169,6 +174,19 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
     }
 
     /**
+     * Looks up a Class given a ObjectStreamClass description. The result can be an array.
+     */
+    private Class<?> findClassInternal(final ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+        if (renamedClasses != null) {
+            final String newName = renamedClasses.get(desc.getName());
+            if (newName != null) {
+                return Class.forName(newName, false, getClass().getClassLoader());
+            }
+        }
+        return super.resolveClass(desc);
+    }
+
+    /**
      * Overrides resolveClass to check Class type of serialized object before deserializing readObject.
      * @throws SecurityException if serialized object is not one of following:
      *      1) a String
@@ -178,7 +196,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
      */
     @Override
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-        Class<?> resolvedClass = super.resolveClass(desc); //can be an array
+        Class<?> resolvedClass = findClassInternal(desc); // Can be an array
         Class<?> resolvedClassType = resolvedClass.isArray() ? resolvedClass.getComponentType() : resolvedClass;
         if (isClassAlwaysWhiteListed(resolvedClassType)) {
             return resolvedClass;
