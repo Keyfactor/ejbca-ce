@@ -60,6 +60,7 @@ import org.bouncycastle.asn1.x509.Time;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.Arrays;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
 
 import com.keyfactor.util.CeSecoreNameStyle;
@@ -271,7 +272,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             }
             String name = CertTools.getPartFromDN(getRequestDN(), component);
             if (name == null) {
-                log.error("No component " + component + " in DN: " + getRequestDN());
+                log.error("No component " + component + " in DN: " + GdprRedactionUtils.getSubjectDnLogSafe(getRequestDN()));
             } else {
                 ret = name;
             }
@@ -347,7 +348,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             ret = CertTools.stringToBCDNString(name.toString());
         }
         if (log.isDebugEnabled()) {
-            log.debug("Request DN is: " + ret);
+            log.debug("Request DN is: " + GdprRedactionUtils.getSubjectDnLogSafe(ret));
         }
         return ret;
     }
@@ -360,7 +361,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             name = X500Name.getInstance(new CeSecoreNameStyle(), name);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Request X500Name is: " + name);
+            log.debug("Request X500Name is: " + GdprRedactionUtils.getSubjectDnLogSafe(name.toString()));
         }
         return name;
     }
@@ -377,7 +378,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Request altName is: " + ret);
+            log.debug("Request altName is: " + GdprRedactionUtils.getSubjectAltNameLogSafe(ret));
         }
         return ret;
     }
@@ -501,7 +502,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                     // If subject is present in cert template it must be the same as in POPOSigningKeyInput
                     final X500Name subject = req.getCertTemplate().getSubject();
                     if (subject != null && !subject.toString().equals(pski.getSender().getName().toString())) {
-                        log.info("Subject '" + subject.toString() + "', is not equal to '" + pski.getSender().toString() + "'.");
+                        log.info("Subject '" + GdprRedactionUtils.getSubjectDnLogSafe(subject.toString()) + "', is not equal to '" + GdprRedactionUtils.getSubjectDnLogSafe(pski.getSender().toString()) + "'.");
                         protObject = null; // pski is not a valid protection object
                     }
                     // If public key is present in cert template it must be the same as in POPOSigningKeyInput
