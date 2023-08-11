@@ -119,6 +119,8 @@ public class AcmeOrderData extends ProtectedData implements Serializable {
         } catch (IOException e) {
             final String msg = "Failed to parse AcmeOrderData data map in database: " + e.getMessage();
             if (log.isDebugEnabled()) {
+                final String data = getRawData();   
+                // TODO PII Redact AcmeOrder identifier values
                 log.debug(msg + ". Data:\n" + getRawData());
             }
             throw new IllegalStateException(msg, e);
