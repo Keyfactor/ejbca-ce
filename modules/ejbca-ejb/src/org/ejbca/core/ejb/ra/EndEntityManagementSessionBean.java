@@ -350,6 +350,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         String cnAppendedSan = copyCnToAltName(endEntity.getDN(), endEntity.getSubjectAltName(), profile, DnComponents.DNSNAME);
         cnAppendedSan = copyCnToAltName(endEntity.getDN(), cnAppendedSan, profile, DnComponents.UPN);
         endEntity.setSubjectAltName(cnAppendedSan);
+        if (profile == null) {
+            throw new AuthorizationDeniedException("End entity profile is null");
+        }
 
         if( profile.getAllowMergeDn()) {
             endEntity = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntity, profile);
