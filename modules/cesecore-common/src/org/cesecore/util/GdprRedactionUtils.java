@@ -117,7 +117,7 @@ public class GdprRedactionUtils {
     }
 
     public static String getSubjectDnLogSafe(final Certificate cert) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii()) {
+        if(redactPii()) {
             return REDACTED_CONTENT;
         } else {
             return CertTools.getSubjectDN(cert);
@@ -145,6 +145,14 @@ public class GdprRedactionUtils {
             return REDACTED_CONTENT;
         } else {
             return san;
+        }
+    }
+
+    public static String getLogSafe(final int id) {
+        if(redactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return String.valueOf(id);
         }
     }
 
@@ -211,14 +219,6 @@ public class GdprRedactionUtils {
 
     public static void setToBeRedacted(final HttpContext context, final List<String> toBeRedacted) {
         context.setAttribute("redact", toBeRedacted);
-    }
-
-    public static String getLogSafe(final int id) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii()) {
-            return REDACTED_CONTENT;
-        } else {
-            return String.valueOf(id);
-        }
     }
 
     public static boolean isRedactPii(final int endEntityProfileId) {
