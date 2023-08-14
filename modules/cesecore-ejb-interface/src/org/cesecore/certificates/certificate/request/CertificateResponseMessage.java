@@ -52,11 +52,11 @@ public interface CertificateResponseMessage extends ResponseMessage {
      * Adds a list of additional CA certificates to be appended to the user certificates CA certificate returned in the CMP response message caPubs field.
      * @param certificates the CA certificates to add.
      */
-    void addAdditionalCaCertificates(final List<Certificate> certificates);
+    default void addAdditionalCaCertificates(final List<Certificate> certificates) {};
     
     /**
      * Adds a list of additional CA certificates to be appended to the outer PKI message signing CA in its extraCerts field).
      * @param certificates the CA certificates to add.
      */
-    void addAdditionalResponseExtraCertsCertificates(final List<Certificate> certificates);
+    default void addAdditionalResponseExtraCertsCertificates(final List<Certificate> certificates) {};
 }
