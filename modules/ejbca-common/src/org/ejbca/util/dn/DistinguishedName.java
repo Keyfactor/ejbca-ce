@@ -15,6 +15,7 @@ package org.ejbca.util.dn;
 import org.apache.log4j.Logger;
 
 import com.keyfactor.util.certificate.DnComponents;
+import org.cesecore.util.GdprRedactionUtils;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -34,7 +35,6 @@ import java.util.Map;
  * This class is ripe for rewriting. It is overly complex, as well as limited. 
  * See https://jira.primekey.se/browse/ECA-9108
  * 
- * @version $Id$
  */
 public class DistinguishedName extends LdapName {
 
@@ -100,7 +100,7 @@ public class DistinguishedName extends LdapName {
         boolean useEntityEmailField = (dnMap == null ? false : (dnMap.size() > 0));
 
         if (log.isDebugEnabled()) {
-            log.debug("Trying to merge \n'" + this.toString() + "'\n with \n'" + dn.toString() + "': useEntityEmailField=" + useEntityEmailField);
+            log.debug("Trying to merge \n'" + GdprRedactionUtils.getSubjectDnLogSafe(this.toString()) + "'\n with \n'" + GdprRedactionUtils.getSubjectDnLogSafe(dn.toString()) + "': useEntityEmailField=" + useEntityEmailField);
         }
 
         // This list will enclose the resulting list of RDNs.
