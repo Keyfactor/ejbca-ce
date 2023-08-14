@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme;
 
+import java.util.List;
+
 import javax.ws.rs.core.Response.Status;
 
 import org.cesecore.NonSensitiveException;
@@ -31,8 +33,17 @@ public class AcmeProblemException extends Exception {
     private final int httpStatusCode;
     private final AcmeProblemResponse acmeProblemResponse;
 
+    private List<String> identifiers;
+    private Integer endEntityProfileId;
+    
     public AcmeProblemException(final Status httpStatus, final AcmeProblem acmeProblem, final String acmeProblemDetails) {
         this(httpStatus, new AcmeProblemResponse(acmeProblem, acmeProblemDetails));
+    }
+    
+    public AcmeProblemException(final Status httpStatus, final AcmeProblem acmeProblem, final String acmeProblemDetails, final List<String> identifiers, final int endEntityProfileId) {
+        this(httpStatus, new AcmeProblemResponse(acmeProblem, acmeProblemDetails));
+        this.identifiers = identifiers;
+        this.endEntityProfileId = endEntityProfileId;
     }
 
     public AcmeProblemException(final Status httpStatus, final AcmeProblem acmeProblem) {
@@ -46,4 +57,7 @@ public class AcmeProblemException extends Exception {
 
     public int getHttpStatusCode() { return httpStatusCode; }
     public AcmeProblemResponse getAcmeProblemResponse() { return acmeProblemResponse; }
+    public List<String> getIdentifiers() { return identifiers; }
+    public Integer getEndEntityProfileId() { return endEntityProfileId; }
+    
 }

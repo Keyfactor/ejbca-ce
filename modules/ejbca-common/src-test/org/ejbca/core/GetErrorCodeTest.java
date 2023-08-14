@@ -19,7 +19,15 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
+import org.apache.log4j.Logger;
+import org.cesecore.configuration.GdprConfigurationCache;
+import org.cesecore.util.GdprRedactionUtils;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 
 /**
  * Tests the static EjbcaException.getErrorCode(Throwable). Although it is placed in the EjbcaException
@@ -31,6 +39,8 @@ import static org.junit.Assert.assertNull;
  * @version $Id$
  */
 public class GetErrorCodeTest {
+    
+    private static final Logger log = Logger.getLogger(GetErrorCodeTest.class);
 
 	@Test
     public void testEjbcaExceptionDefaultConstructor() {
@@ -85,5 +95,59 @@ public class GetErrorCodeTest {
     @Test
     public void testNestedExceptions() {
         assertNull("EjbcaException.getErrorCode of the Exception(new Exception()) is not null", EjbcaException.getErrorCode(new Exception(new Exception())));
+    }
+    
+    @Test
+    public void testRedactException() {
+        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
+        String exceptionMessageWithPii = "some message: CN=abcd,OU=xyz blah";
+        
+        try {
+            throw new EjbcaException(ErrorCode.BAD_REQUEST, exceptionMessageWithPii);
+        } catch (EjbcaException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    EjbcaException.getErrorCode(e), ErrorCode.BAD_REQUEST);
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
+        
+        try {
+            throw new EjbcaException(ErrorCode.BAD_REQUEST, 
+                    new IllegalArgumentException(exceptionMessageWithPii));
+        } catch (EjbcaException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    EjbcaException.getErrorCode(e), ErrorCode.BAD_REQUEST);
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            assertNull("Inner cause is not redacted", t.getCause());
+            assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
+        
+        try {
+            throw new ApprovalException(ErrorCode.BAD_REQUEST, exceptionMessageWithPii,
+                    new AlreadyRevokedException(exceptionMessageWithPii));
+        } catch (EjbcaException e) {
+            Throwable t = GdprRedactionUtils.getRedactedThrowable(e);
+            log.error("logged: ", t);
+            assertEquals("Expected same class for both redacted and original exception", e.getClass(), t.getClass());
+            assertEquals("Expected same error code in both redacted and original exception", 
+                    EjbcaException.getErrorCode(e), ErrorCode.BAD_REQUEST);
+            assertFalse("Exception message is not redacted", t.getMessage().contains("OU="));
+            // does not trim this message
+            assertNotNull("Inner cause is trimmed", t.getCause().getMessage());
+            assertStackTraceEquals(e.getStackTrace(), GdprRedactionUtils.getRedactedThrowable(e).getStackTrace());
+        }
+    }
+    
+    public static void assertStackTraceEquals(StackTraceElement[] stackTraceExpected, StackTraceElement[] stackTraceOriginal) {
+        assertEquals("Stack trace length mismatch", stackTraceExpected.length, stackTraceOriginal.length);
+        for (int i=0; i<stackTraceExpected.length; i++) {
+            assertEquals("Stack trace mismatch at index: " + i, stackTraceExpected[i].toString(), stackTraceOriginal[i].toString());
+        }
     }
 }

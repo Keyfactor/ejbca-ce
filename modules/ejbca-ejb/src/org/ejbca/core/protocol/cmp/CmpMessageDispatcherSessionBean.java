@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -307,7 +306,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 try {
                     cainfo = caSession.getCAInfo(admin, caId);
                     if (cainfo != null && CollectionUtils.isNotEmpty(cainfo.getCertificateChain())) {
-                        cacert = (X509Certificate) cainfo.getCertificateChain().get(0);
+                        cacert = cainfo.getCertificateChain().get(0);
                         if (!result.contains(cacert)) {
                             result.add(cacert);
                         }

@@ -51,7 +51,6 @@ import com.keyfactor.util.CertTools;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id$
  */
 public class CmpRevokeResponseMessage extends BaseCmpMessage implements ResponseMessage {
 
@@ -173,15 +172,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
             try {
                 responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
-            } catch (CertificateEncodingException e) {
-                log.error("Failed to sign CMPRevokeResponseMessage");
-                log.error(e.getLocalizedMessage(), e);
-                responseMessage = getUnprotectedResponseMessage(myPKIMessage);
-            } catch (SecurityException e) {
-                log.error("Failed to sign CMPRevokeResponseMessage");
-                log.error(e.getLocalizedMessage(), e);
-                responseMessage = getUnprotectedResponseMessage(myPKIMessage);
-            } catch (SignatureException e) {
+            } catch (CertificateEncodingException | SecurityException | SignatureException e) {
                 log.error("Failed to sign CMPRevokeResponseMessage");
                 log.error(e.getLocalizedMessage(), e);
                 responseMessage = getUnprotectedResponseMessage(myPKIMessage);

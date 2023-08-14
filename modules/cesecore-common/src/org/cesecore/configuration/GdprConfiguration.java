@@ -18,15 +18,11 @@ public class GdprConfiguration {
     private boolean redactPii;
 
     public GdprConfiguration(boolean redactPii) {
-        this.setRedactPii(redactPii);
+        this.redactPii = redactPii;
     }
 
     public boolean isRedactPii() {
         return redactPii;
-    }
-
-    public void setRedactPii(boolean redactPii) {
-        this.redactPii = redactPii;
     }
 
     @Override

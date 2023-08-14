@@ -15,9 +15,7 @@ package org.ejbca.core.protocol.est;
 
 import javax.ejb.Remote;
 
-/**
- * @version $Id$
- */
+
 @Remote
 public interface EstOperationsSessionRemote extends EstOperationsSession {
 }
