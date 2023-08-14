@@ -676,7 +676,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             log.error("PKCS7 not inited!");
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<getIssuerDN(): " + GdprRedactionUtils.getRedactedMessage(ret));
+        	log.trace("<getIssuerDN(): " + ret);
         }
         return ret;
     }
@@ -718,7 +718,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             log.error("Error in PKCS7:", e);
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<getCRLIssuerDN(): " + GdprRedactionUtils.getRedactedMessage(ret));
+        	log.trace("<getCRLIssuerDN(): " + ret);
         }
         return ret;
     }
@@ -769,7 +769,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             log.error("Error in PKCS7:", e);
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<getRequestDN(): " + GdprRedactionUtils.getRedactedMessage(ret));
+        	log.trace("<getRequestDN(): " + GdprRedactionUtils.getSubjectDnLogSafe(ret));
         }
         return ret;
     }
