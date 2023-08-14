@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
@@ -55,51 +56,48 @@ import com.novell.ldap.LDAPAttributeSet;
  * 5. Save and test connection
  * 
  * A normal configuration that should work in most cases (just change values to match your LDAP server) looks like:
+ *  hostname localhost
+ *  port 1389
+ *  baswdn dc=example,dc=com
+ *  logindn cn=Directory Manager
+ *  loginpassword foo123
+ *  usefieldsinldapdn 1
  * 
-hostname localhost
-port 1389
-baswdn dc=example,dc=com
-logindn cn=Directory Manager
-loginpassword foo123
-usefieldsinldapdn 1
- * 
- * usefieldsinldapdn uses decimal values from DNFieldExtractor where the most important are: 1=UID, 2=CN, 8=OU, 9=O
+ *  usefieldsinldapdn uses decimal values from DNFieldExtractor where the most important are: 1=UID, 2=CN, 8=OU, 9=O
  * 
  * With the configuration above certificate entries with LDAP DN "UID=123456789,dc=example,dc=com" (where 123456789 is the certificate serial number in decimal format)
  * will be added to the LDAP directory. The tree of the base DN (dc=example,dc=com) must exist already.
  * 
  * If you want to use a custom LDAP schema, such as the inetOrgPersonWithCertSerno, you can set this property, for example:
- * 
-userobjectclass top;person;organizationalPerson;inetOrgPerson;inetOrgPersonWithCertSerno
+ *  userobjectclass top;person;organizationalPerson;inetOrgPerson;inetOrgPersonWithCertSerno
  * 
  * Possible options for the properties field are (default values in parenthesis):
- * 
-baswdn (misspelled, but it must be like this)
-logindn
-loginpassword
-hostname
-port (389)
-connectionsecurity (STARTTLS)
-timeout (5000)
-readtimeout (30000)
-storetimeout (60000)
-createnonexisting (true)
-modifyexisting (true)
-addnonexistingattr (true)
-modifyexistingattr (false)
-userobjectclass (top;person;organizationalPerson;inetOrgPerson)
-caobjectclass (top;applicationProcess;certificationAuthority-V2)
-usercertattribute (userCertificate;binary)
-cacertattribute (cACertificate;binary)
-crlattribute (certificateRevocationList;binary)
-deltacrlattribute (deltaRevocationList;binary)
-arlattribute (authorityRevocationList;binary)
-addmultiplecertificates (false)
-removerevoked (true)
-removeusersoncertrevoke (false)
-createintermediatenodes (false)
-setuserpasssword (false)
-usefieldsinldapdn
+ *  baswdn (misspelled, but it must be like this)
+ *  logindn
+ *  loginpassword
+ *  hostname
+ *  port (389)
+ *  connectionsecurity (STARTTLS)
+ *  timeout (5000)
+ *  readtimeout (30000)
+ *  storetimeout (60000)
+ *  createnonexisting (true)
+ *  modifyexisting (true)
+ *  addnonexistingattr (true)
+ *  modifyexistingattr (false)
+ *  userobjectclass (top;person;organizationalPerson;inetOrgPerson)
+ *  caobjectclass (top;applicationProcess;certificationAuthority-V2)
+ *  usercertattribute (userCertificate;binary)
+ *  cacertattribute (cACertificate;binary)
+ *  crlattribute (certificateRevocationList;binary)
+ *  deltacrlattribute (deltaRevocationList;binary)
+ *  arlattribute (authorityRevocationList;binary)
+ *  addmultiplecertificates (false)
+ *  removerevoked (true)
+ *  removeusersoncertrevoke (false)
+ *  createintermediatenodes (false)
+ *  setuserpasssword (false)
+ *  usefieldsinldapdn
  *
  * In most cases default values are good. 
  */
@@ -157,7 +155,7 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
     public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
         userDN = getUidCertSernoDN(incert, username, userDN);
         if (log.isDebugEnabled()) {
-            log.debug("storeCertificate: "+userDN);
+            log.debug("storeCertificate: " + GdprRedactionUtils.getSubjectDnLogSafe(userDN));
         }
         return super.storeCertificate(admin, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
     }
@@ -184,7 +182,7 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
     public void revokeCertificate(AuthenticationToken admin, Certificate cert, String username, int reason, String userDN) throws PublisherException {
         userDN = getUidCertSernoDN(cert, username, userDN);
         if (log.isDebugEnabled()) {
-            log.debug("revokeCertificate: "+userDN);
+            log.debug("revokeCertificate: " + GdprRedactionUtils.getSubjectDnLogSafe(userDN));
         }
         super.revokeCertificate(admin, cert, username, reason, userDN);
     }
