@@ -56,7 +56,6 @@ import com.keyfactor.util.CertTools;
  *     <li>Validation messages.</li>
  * </ul>
  *
- * @version $Id$
  */
 // Suppressing deprecation due to backwards compatibility
 @SuppressWarnings("deprecation")
