@@ -1,0 +1,10 @@
+{
+  "packages": ["org.cesecore.certificates.ca", "org.cesecore.keybind"],
+  "classes": ["CertificateProfileSessionBean", "CAAdminSessionBean"],
+  "methods": [
+    {
+      "class": "CertificateCreateSessionBean",
+      "ignoredMethods": ["createItsCertificate"]
+    }
+  ]
+}
