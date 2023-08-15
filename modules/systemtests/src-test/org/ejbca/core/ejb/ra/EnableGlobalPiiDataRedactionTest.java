@@ -13,11 +13,14 @@
 
 package org.ejbca.core.ejb.ra;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -26,11 +29,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.audit.AuditLogEntry;
+import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.GlobalCesecoreConfiguration;
@@ -38,6 +41,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.GdprRedactionUtils;
+import org.ejbca.ServerLogCheckUtil;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -64,6 +68,9 @@ public class EnableGlobalPiiDataRedactionTest {
     
     @BeforeClass
     public static void isEnabledAuditLogRedactionTest() {
+        assertEquals("New cesecore audit event may need to tested for PII redaction.", EventTypes.values().length, 71);
+        assertEquals("New ejbca audit event may need to tested for PII redaction.", EjbcaEventTypes.values().length, 65);
+        
         // set enable.log.redact=true in conf/systemtest.properties
         assumeTrue("Skipping this test as it is not meant for normal system tests", SystemTestsConfiguration.getEnableLogRedact());
     }
@@ -93,6 +100,7 @@ public class EnableGlobalPiiDataRedactionTest {
                 GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIM]{1}[a-zA-Z0-9]{12}"}; // TODO: hex
 //        matches all -> ".*MI[EIM]{1}[a-zA-Z0-9]{12}.*" for wildfly filter
 //        finds all -> "MI[EIM]{1}[a-zA-Z0-9]{12}" without .* at both end
+//        examples returning true:        
 //        "asdaMIIowe345ht11asdadqw" -> bad match
 //        "MIIowe345ht11asdadqw"
 //        " MIIowe345ht11asdadqw"
@@ -199,6 +207,44 @@ public class EnableGlobalPiiDataRedactionTest {
             sb.append(key).append(':').append(map.get(key));
         }
         return sb.toString();
+    }
+    
+    @Test
+    public void testServerLogPiiDataWithCompulsoryRedaction() throws Exception {
+        String logFilePath = SystemTestsConfiguration.getServerLogFilePath();
+        log.error("configs: " + ServerLogCheckUtil.whiteListedClasses);
+        log.error("configs: " + ServerLogCheckUtil.whiteListedMethods);
+        log.error("configs: " + ServerLogCheckUtil.whiteListedPackages);
+        
+        int linesRead = 0;
+        int linesReadEjbca = 0;
+        int linesReadCesecore = 0;
+        
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(logFilePath));
+            String line = reader.readLine();
+
+            while (line != null) {
+                linesRead++;
+                if (line.contains("org.ejbca")) {
+                    linesReadEjbca++;
+                }
+                if (line.contains("org.cesecore")) {
+                    linesReadCesecore++;
+                }
+                line = reader.readLine();
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        log.error("read lines: " + linesRead);
+        log.error("read lines: " + linesReadCesecore);
+        log.error("read lines: " + linesReadEjbca);
+        
     }
     
 }
