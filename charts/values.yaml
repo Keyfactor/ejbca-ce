@@ -71,7 +71,7 @@ ingress:
     ## Pass client certificates to upstream server
     nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
     ## Verification depth of the client certificates chain
-    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+    #nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
     ## Configure sticky sessions if using more than one replica
     #nginx.ingress.kubernetes.io/affinity: "cookie"
     #nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"
