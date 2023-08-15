@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ra;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -105,6 +107,8 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        assumeFalse("Skipping this test as it is not meant to run during system-wide redaction tests", 
+                                                    SystemTestsConfiguration.getEnableLogRedact());
         
         setRedactEnfoced(false);
         EndEntityProfile profile = new EndEntityProfile();
