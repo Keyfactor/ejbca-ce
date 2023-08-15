@@ -62,3 +62,4 @@
 
 # Uncomment the following line to redact logs generated during test runs. The default value is false.
 #enable.log.redact=true
+#server.log.path=
