@@ -1,33 +1,41 @@
 package org.ejbca;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-//import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.GdprRedactionUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class ServerLogCheckUtil {
 
     private static final Logger log = Logger.getLogger(ServerLogCheckUtil.class);
     private static final String[] LOG_LEVELS = {"INFO", "DEBUG", "ERROR", "TRACE", "WARN", "FATAL"};
     
+    // case insensitive: do not use 'CA' here as too short
+    private static final String[] IGNORED_ON_LOWERCASE_PREFIXES = 
+                        {"issuerdn", "issuer", "cadn", "admin", "administrator"};
+    // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6
+    private static final int PREFIXES_SLACK = 10;
+    
+    private static Pattern SUBJECT_DN_COMPONENTS;
     public static List<String> whiteListedPackages;
     public static List<String> whiteListedClasses;
-    // class -> method, beware of methods with same name
+    // class -> method, beware of whitelisting methods with same name
+    // we might need lineNo with some slack in config later
     public static Map<String, List<String>> whiteListedMethods;
+    
+    // may have multiple entries for same class but only one with both class+method
+    public static Map<String, List<String>> whiteListedConditionalMethods;
     
     static {
         loadConfigs();
@@ -37,8 +45,11 @@ public class ServerLogCheckUtil {
         whiteListedPackages = new ArrayList<>();
         whiteListedClasses = new ArrayList<>();
         whiteListedMethods = new HashMap<>();
+        whiteListedConditionalMethods =  new HashMap<>();
         
         new ServerLogCheckUtil().loadWhiteListPiiConfiguration();
+        
+        SUBJECT_DN_COMPONENTS = Pattern.compile(GdprRedactionUtils.getSubjectDnRedactionPattern(), Pattern.CASE_INSENSITIVE);
     }
         
     public static class ServerLogRecord {
@@ -87,28 +98,63 @@ public class ServerLogCheckUtil {
 
         public Boolean isWhiteListed() {
             
-            if (isWhiteListed==null) {
-                String packageName = className.substring(0, className.lastIndexOf("."));
-                String classSimpleName = className.substring(className.lastIndexOf("."));
-                List<String> methods = whiteListedMethods.getOrDefault(classSimpleName, whiteListedMethods.get(className));
+            if (isWhiteListed!=null) {
+                return isWhiteListed;
+            }
+            String packageName = className.substring(0, className.lastIndexOf("."));
+            String classSimpleName = className.substring(className.lastIndexOf(".")+1);
+            List<String> methods = whiteListedMethods.getOrDefault(classSimpleName, whiteListedMethods.get(className));
 
-                if (whiteListedPackages.contains(packageName) || 
-                        whiteListedClasses.contains(classSimpleName) ||
-                        whiteListedClasses.contains(className) || 
-                        (methods!=null && methods.contains(methodName) )) {
-                    isWhiteListed = true;
-                } else {
-                    isWhiteListed = false;
-                }
-
+            if (whiteListedPackages.contains(packageName) || 
+                    whiteListedClasses.contains(classSimpleName) ||
+                    whiteListedClasses.contains(className) || 
+                    (methods!=null && methods.contains(methodName) )) {
+                isWhiteListed = true;
+                return isWhiteListed;
             }
             
+            // check if says issuerDn with lower
+            Matcher m = SUBJECT_DN_COMPONENTS.matcher(message);
+            if(m.find()) { // always true if Wildfly filter is enabled
+                String wholePrefix = message.substring(0, m.start()).trim().toLowerCase();
+                for (String p: IGNORED_ON_LOWERCASE_PREFIXES) {
+                    int detected = wholePrefix.lastIndexOf(p);
+                    if (detected > 0 && 
+                            (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
+                        isWhiteListed = true;
+                        return isWhiteListed;
+                    }
+                }
+                
+                if (whiteListedConditionalMethods.containsKey(classSimpleName + ":" +  methodName)) {
+                    for (String p: whiteListedConditionalMethods.get(classSimpleName + ":" +  methodName)) {
+                        int detected = wholePrefix.lastIndexOf(p);
+                        if (detected > 0 && 
+                                (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
+                            isWhiteListed = true;
+                            return isWhiteListed;
+                        }
+                    }
+                }
+            }
+            
+            isWhiteListed = false;
             return isWhiteListed;
         }
                         
     }
     
     public static ServerLogRecord parseServerLogRecord(String loggedLine) {
+        try {
+            return unwrappedParseServerLogRecord(loggedLine);
+        } catch (Exception e) {
+            // may be a exception stacktrace or external log
+            log.error("Failed parsing, " + loggedLine); 
+            return null;
+        }
+    }
+    
+    private static ServerLogRecord unwrappedParseServerLogRecord(String loggedLine) {
         
         if (StringUtils.isEmpty(loggedLine) || loggedLine.length() < 15 
                 || loggedLine.contains("org.jboss")
@@ -148,14 +194,19 @@ public class ServerLogCheckUtil {
         return new ServerLogRecord(level, className, methodName, lineNo, loggedLine.substring(lineNoEnd+1));
     }
     
-    public void loadWhiteListPiiConfiguration() {
-        
+    
+    protected void loadWhiteListPiiConfiguration() {
         String config = null;
         try {
             config = Files.readString(Paths.get(getClass().getClassLoader().getResource("white_listed_pii_logging_config.json").toURI()));
         } catch (Exception e) {
             // skip
         }
+        
+        loadWhiteListPiiConfiguration(config);
+    }
+    
+    protected void loadWhiteListPiiConfiguration(String config) {
         
         if (config==null) {
             log.error("Could not load white list config for PII log test");
@@ -174,9 +225,20 @@ public class ServerLogCheckUtil {
                 JSONArray readIgnoredMethods = (JSONArray)((JSONObject)readWhiteListedMethods.get(i)).get("ignoredMethods");
                 List<String> methods = new ArrayList<>();
                 readIgnoredMethods.forEach(x -> methods.add((String) x));
-                whiteListedMethods.put(
+                
+                JSONArray readPrefixes = (JSONArray)((JSONObject)readWhiteListedMethods.get(i)).get("prefixes");
+                if (readPrefixes!=null) {
+                    List<String> prefixes = new ArrayList<>();
+                    readPrefixes.forEach(x -> prefixes.add((String) x));
+                    String className = (String)((JSONObject)readWhiteListedMethods.get(i)).get("class");
+                    for (String m : methods) {
+                        whiteListedConditionalMethods.put(className+":"+m, prefixes);
+                    }
+                } else {
+                    whiteListedMethods.put(
                         (String)((JSONObject)readWhiteListedMethods.get(i)).get("class"), 
                         methods);
+                }
             }
 
         } catch (Exception e) {
