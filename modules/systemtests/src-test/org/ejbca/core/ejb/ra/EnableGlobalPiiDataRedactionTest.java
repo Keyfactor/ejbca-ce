@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.ServerLogCheckUtil;
+import org.ejbca.ServerLogCheckUtil.ServerLogRecord;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -212,13 +214,12 @@ public class EnableGlobalPiiDataRedactionTest {
     @Test
     public void testServerLogPiiDataWithCompulsoryRedaction() throws Exception {
         String logFilePath = SystemTestsConfiguration.getServerLogFilePath();
-        log.error("configs: " + ServerLogCheckUtil.whiteListedClasses);
-        log.error("configs: " + ServerLogCheckUtil.whiteListedMethods);
-        log.error("configs: " + ServerLogCheckUtil.whiteListedPackages);
         
         int linesRead = 0;
         int linesReadEjbca = 0;
         int linesReadCesecore = 0;
+        int linesReadKeyFactor = 0;
+        Map<String, Set<String>> loggedPiiLines = new HashMap<>();
         
         BufferedReader reader;
         try {
@@ -233,7 +234,21 @@ public class EnableGlobalPiiDataRedactionTest {
                 if (line.contains("org.cesecore")) {
                     linesReadCesecore++;
                 }
+                if (line.contains("com.keyfactor")) {
+                    linesReadKeyFactor++;
+                }
                 line = reader.readLine();
+                
+                ServerLogRecord logRecord = ServerLogCheckUtil.parseServerLogRecord(line);
+                if (logRecord==null || logRecord.isWhiteListed()) {
+                    continue;
+                }
+                
+                if (!loggedPiiLines.containsKey(logRecord.getClassName())) {
+                    loggedPiiLines.put(logRecord.getClassName(), new HashSet<>());
+                }
+                loggedPiiLines.get(logRecord.getClassName()).add(logRecord.getMethodName() + " : " + logRecord.getLineNo());
+                
             }
 
             reader.close();
@@ -241,9 +256,27 @@ public class EnableGlobalPiiDataRedactionTest {
             e.printStackTrace();
         }
         
-        log.error("read lines: " + linesRead);
-        log.error("read lines: " + linesReadCesecore);
-        log.error("read lines: " + linesReadEjbca);
+        log.error("processed log lines: " + linesRead);
+        log.error("processed log lines from keyfactor packages: " + linesReadKeyFactor);
+        log.error("processed log lines from cesecore packages: " + linesReadCesecore);
+        log.error("processed log lines from ejbca packages: " + linesReadEjbca);
+        
+        StringBuilder sb = new StringBuilder();
+        for (String key: loggedPiiLines.keySet()) {
+            sb.append("    " + key + "\n");
+            for (String entry: loggedPiiLines.get(key)) {
+                sb.append("        " + entry + "\n");
+            }
+        }
+        String piiLogged = sb.toString();
+        if (!piiLogged.isEmpty()) {
+            log.error("Detected PII instances: ");
+            log.error(piiLogged);
+        } else {
+            log.error("Detected no PII instances");
+        }
+        
+        assertTrue("Expected no PII to be logged after ignoring whitelisted ones.", loggedPiiLines.isEmpty());
         
     }
     
