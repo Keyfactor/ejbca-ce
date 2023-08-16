@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.protocol.HttpContext;
 
