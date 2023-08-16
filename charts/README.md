@@ -65,6 +65,153 @@ Deploy `ejbca-community-helm` on the Kubernetes cluster with custom configuratio
 helm install ejbca keyfactor/ejbca-community-helm --namespace ejbca --create-namespace --values ejbca.yaml
 ```
 
+### Example Custom Deployment
+
+This section contains examples for how to customize the deployment for common scenarios.
+
+## Connecting EJBCA to an external database
+
+All serious deployments of EJBCA should use an external database for data persistence.
+EJBCA supports Microsoft SQL Server, MariaDB/MySQL, PostgreSQL and Oracle databases. 
+
+The following example shows modifications to the helm chart values file used to connect EJBCA to a MariaDB database with server name `mariadb-server` and database name `ejbcadb` using username `ejbca` and password `foo123`:
+
+```yaml
+ejbca:
+  useEphemeralH2Database: false
+  env:
+    DATABASE_JDBC_URL: jdbc:mariadb://mariadb-server:3306/ejbcadb?characterEncoding=UTF-8
+    DATABASE_USER: ejbca
+    DATABASE_PASSWORD: foo123
+```
+
+This example connects EJBCA to an PostgreSQL database and uses a Kubernetes secret for storing the database username and password:
+
+```yaml
+ejbca:
+  useEphemeralH2Database: false
+  env:
+    DATABASE_JDBC_URL: jdbc:postgresql://postgresql-server:5432/ejbcadb
+  envRaw:
+    - name: DATABASE_PASSWORD
+      valueFrom:
+       secretKeyRef:
+         name: ejbca-db-credentials
+         key: database_password
+    - name: DATABASE_USER
+      valueFrom:
+       secretKeyRef:
+         name: ejbca-db-credentials
+         key: database_user
+```
+
+Helm charts can be used to deploy a database in Kubernetes, for example the following by Bitnami:
+
+- https://artifacthub.io/packages/helm/bitnami/postgresql
+- https://artifacthub.io/packages/helm/bitnami/mariadb
+
+### Connecting EJBCA to SMTP server for sending notifications
+
+The following exmaple shows variables that need to be set in order to prepare a deployment for send e-mail notifications:
+
+```yaml
+ejbca:
+  env:
+    SMTP_DESTINATION: smtp-server
+    SMTP_PORT: 25
+    SMTP_FROM: noreply@ejbca.org
+    SMTP_TLS_ENABLED: false
+    SMTP_SSL_ENABLED: false
+```
+
+For information on how to configure EJBCA for sending notifications, see https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/end-entities-overview/end-entity-profiles-overview/e-mail-notifications
+
+### Deploying a reverse proxy server in front of EJBCA
+
+It is best practise to place EJBCA behind a reverse proxy server that handles TLS termination and/or load balancing.
+
+The following example shows how to configure a deployment to expose an AJP proxy port as a ClusterIP service:
+
+```yaml
+services:
+  directHttp:
+    enabled: false
+  proxyAJP:
+    enabled: true
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    port: 8009
+  proxyHttp:
+    enabled: false
+```
+
+This example exposes two proxy HTTP ports, where port 8082 will accept the SSL_CLIENT_CERT HTTP header to enable mTLS:
+
+```yaml
+services:
+  directHttp:
+    enabled: false
+  proxyAJP:
+    enabled: false
+  proxyHttp:
+    enabled: true
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    httpPort: 8081
+    httpsPort: 8082
+```
+
+This helm chart can deploy Nginx as a reverse proxy in front of EJBCA and expose it as a service. A local EJBCA management CA will be used to issue TLS certificate for the DNS name specified in `nginx.host`. The Nginx server can be configured in the variable `nginx.conf`.
+
+```yaml
+nginx:
+  enabled: true
+  host: "ejbca.minikube.local"
+  service:
+    type: NodePort
+    httpPort: 30080
+    httpsPort: 30443
+  conf: |
+    <nginx configurations>
+```
+
+### Enabling Ingress in front of EJBCA
+
+Ingress is a Kubernetes native way of exposing HTTP and HTTPS routes from outside to Kubernetes services.
+
+The following example shows how Ingress can be enabled with this helm chart using proxy AJP. Note that a TLS secret containing `tls.crt` and `tls.key` with certificate and private key would need to be prepared in advance.
+
+
+```yaml
+services:
+  directHttp:
+    enabled: false
+  proxyAJP:
+    enabled: true
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    port: 8009
+  proxyHttp:
+    enabled: false
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional_no_ca"
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+  hosts:
+    - host: "ejbca.minikube.local"
+      paths:
+        - path: /ejbca
+          pathType: Prefix
+  tls:
+    - hosts:
+        - ejbca.minikube.local
+      secretName: ingress-tls
+```
+
 ## Parameters
 
 ### EJBCA Deployment Parameters
@@ -146,6 +293,7 @@ helm install ejbca keyfactor/ejbca-community-helm --namespace ejbca --create-nam
 | nginx.service.type      | Type of service to create for NGINX reverse proxy                      | NodePort |
 | nginx.service.httpPort  | HTTP port to use for NGINX reverse proxy                               | 30080    |
 | nginx.service.httpsPort | HTTPS port to use for NGINX reverse proxy                              | 30443    |
+| nginx.conf              | NGINX server configuration parameters                                  |          |
 
 ### Ingress Parameters
 
