@@ -1024,7 +1024,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public byte[] createRequest(final CryptoToken cryptoToken, final Collection<ASN1Encodable> attributes, final String signAlg, final Certificate cacert,
             final int signatureKeyPurpose, final CertificateProfile certificateProfile, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
                     throws CryptoTokenOfflineException, CertificateExtensionException {
-        log.trace(">createRequest: " + signAlg + ", " + GdprRedactionUtils.getSubjectDnLogSafe(cacert) + ", " + signatureKeyPurpose);
+        log.trace(">createRequest: " + signAlg + ", " + CertTools.getSubjectDN(cacert) + ", " + signatureKeyPurpose);
         ASN1Set attrset = new DERSet();
         if (attributes != null) {
             log.debug("Adding attributes in the request");
@@ -1092,7 +1092,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 final String provider = cryptoToken.getSignProviderName();
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
                         certProfile, null, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
-                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", GdprRedactionUtils.getSubjectDnLogSafe(cadata.getDN()), ((X509Certificate)retcert).getIssuerDN().getName()));
+                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
                 throw e;
@@ -1808,7 +1808,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if ((issuerDN != null) && (caSubjectDN != null)) {
                 final boolean eq = issuerDN.equals(caSubjectDN);
                 if (!eq) {
-                    final String msg = intres.getLocalizedMessage("createcert.errorpathverifydn", issuerDN.getName(), GdprRedactionUtils.getSubjectDnLogSafe(caSubjectDN.getName(), subject.getEndEntityProfileId()));
+                    final String msg = intres.getLocalizedMessage("createcert.errorpathverifydn", issuerDN.getName(), caSubjectDN.getName());
                     log.error(msg);
                     throw new CertificateCreateException(msg);
                 }
