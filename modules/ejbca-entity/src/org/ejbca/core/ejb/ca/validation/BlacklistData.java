@@ -89,7 +89,7 @@ public class BlacklistData extends ProtectedData implements Serializable {
             // Redact DNS names and IPs.
             String valueToLog = entry.getValue();
             if (valueToLog != null && (StringTools.isIpAddress(valueToLog) || StringTools.isValidSanDnsName(valueToLog))) {
-                valueToLog = GdprRedactionUtils.getRedactedMessage(valueToLog);
+                valueToLog = GdprRedactionUtils.REDACTED_CONTENT;
             }
             log.debug("Setting BlacklistData '" + valueToLog + "' (" + entry.getID() + ")");
         }
