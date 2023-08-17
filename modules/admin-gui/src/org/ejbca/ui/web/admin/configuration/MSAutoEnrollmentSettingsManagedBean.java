@@ -593,7 +593,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             }
 
             final byte[] fileBytes =  IOUtils.toByteArray(keyTabFile.getInputStream(), keyTabFile.getSize());      
-            setKeyTabFilename(keyTabFile.getName());
+            setKeyTabFilename(keyTabFile.getSubmittedFileName());
             setKeyTabFileBytes(fileBytes);
 
             saveKeyTabFile();
@@ -616,7 +616,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 return;
             }
             final byte[] fileBytes =  IOUtils.toByteArray(krb5ConfFile.getInputStream(), krb5ConfFile.getSize());      
-            setKrb5ConfFilename(krb5ConfFile.getName());
+            setKrb5ConfFilename(krb5ConfFile.getSubmittedFileName());
             setKrb5ConfFileContent(fileBytes);
 
             saveKrb5ConfFile();
