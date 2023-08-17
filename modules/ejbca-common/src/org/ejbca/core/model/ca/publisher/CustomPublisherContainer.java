@@ -108,9 +108,23 @@ public class CustomPublisherContainer extends BasePublisher {
 	}
 
     /**
-     *  Sets the propertyData used to configure this custom publisher.
+     *  Sets the propertyData used to configure this custom publisher without validation.
      */
     public void setPropertyData(String propertyData) throws PublisherException {
+        setPropertyData(propertyData, false);
+    }
+
+    /**
+     *  Sets the propertyData used to configure this custom publisher with validation.
+     */
+    public void assignPropertyData(String propertyData) throws PublisherException {
+        setPropertyData(propertyData, true);
+    }
+
+    /**
+     *  Sets the propertyData used to configure this custom publisher.
+     */
+    private void setPropertyData(String propertyData, boolean validate) throws PublisherException {
         if (isCustomUiRenderingSupported()) {
             CustomPublisherUiSupport publisher = (CustomPublisherUiSupport) getCustomPublisher();
 
@@ -124,7 +138,9 @@ public class CustomPublisherContainer extends BasePublisher {
                 String propertyValue = properties.getProperty(propertyName);
                 String value = parsePropertyValue(propertyType, propertyName, propertyValue);
 
-                validateProperty(propertyName, propertyValue);
+                if (validate) {
+                    validateProperty(propertyName, propertyValue);
+                }
 
                 rawPropertyData.append(propertyName).append("=").append(value).append("\n");
             }
@@ -160,7 +176,8 @@ public class CustomPublisherContainer extends BasePublisher {
     }
 
     public void validateProperty(String name, String value) throws PublisherException {
-        getCustomPublisher().validateProperty(name, value);
+        ICustomPublisher customPublisher = getCustomPublisher();
+        if (customPublisher != null) customPublisher.validateProperty(name, value);
     }
 
     public boolean isCustomAccessRulesSupported() {
