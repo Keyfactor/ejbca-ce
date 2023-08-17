@@ -34,8 +34,6 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /**
  * Representation of admin's preferences.
- * 
- * @version $Id$
  */
 @Entity
 @Table(name="AdminPreferencesData")
@@ -58,7 +56,9 @@ public class AdminPreferencesData extends ProtectedData implements Serializable 
 	public AdminPreferencesData(String id, AdminPreference adminpreference) {
 		setId(id);
 		setAdminPreference(adminpreference);
-		log.debug("Created admin preference " + id);
+		if (log.isDebugEnabled()) {
+		    log.debug("Created admin preference " + id);
+		}
 	}
 	
 	public AdminPreferencesData() { }
