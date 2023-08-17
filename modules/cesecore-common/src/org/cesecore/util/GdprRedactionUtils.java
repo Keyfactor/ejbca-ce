@@ -108,20 +108,6 @@ public class GdprRedactionUtils {
             return subjectDn;
         }
     }
-
-    /**
-     * Redact SubjectDN using global setting, if used.
-     *
-     * @param subjectDn SubjectDN
-     * @return  redacted SubjectDn
-     */
-    public static String getSubjectDnLogSafe(String subjectDn) {
-        if (redactPii()) {
-            return REDACTED_CONTENT;
-        }
-
-        return subjectDn;
-    }
     
     public static String getSubjectAltNameLogSafe(String san) {
         if(redactPii()) {
