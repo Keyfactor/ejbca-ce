@@ -122,7 +122,7 @@ public class AcmeOrderData extends ProtectedData implements Serializable {
             if (log.isDebugEnabled()) {
                 // Redact the ACME identifiers.
                 if (GdprRedactionUtils.redactPii()) {
-                    log.debug(msg + ". Data:\n" + GdprRedactionUtils.getRedactedMessage(getRawData()));
+                    log.debug(msg + ". Data:\n" + GdprRedactionUtils.REDACTED_CONTENT);
                 } else {
                     log.debug(msg + ". Data:\n" + getRawData());
                 }
