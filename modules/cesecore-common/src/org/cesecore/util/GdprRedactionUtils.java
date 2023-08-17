@@ -147,14 +147,6 @@ public class GdprRedactionUtils {
         }
     }
 
-    public static String getLogSafe(final int id) {
-        if(redactPii()) {
-            return REDACTED_CONTENT;
-        } else {
-            return String.valueOf(id);
-        }
-    }
-
     public static String getLogSafe(final String string, final String identifier, final int endEntityProfileId) {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii() ?
                 string.replace(identifier, GdprRedactionUtils.REDACTED_CONTENT) : string;
