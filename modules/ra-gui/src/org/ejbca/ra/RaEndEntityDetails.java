@@ -12,27 +12,9 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
-
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -50,9 +32,28 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
+
+import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP;
+import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP;
 
 /**
  * UI representation of a result set item from the back end.
@@ -139,12 +140,10 @@ public class RaEndEntityDetails implements Serializable {
             this.sshPrincipals = SshCertificateUtils.getPrincipalsAsString(this.subjectAn);
             this.sshComment = SshCertificateUtils.getComment(this.subjectAn);
             Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
-            this.sshForceCommand = sshCriticalOptions.containsKey(
-                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP) ?
-                    sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP) : null;
-            this.sshSourceAddress = sshCriticalOptions.containsKey(
-                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) ?
-                    sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) : null;
+            this.sshForceCommand = sshCriticalOptions
+                    .getOrDefault(SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, null);
+            this.sshSourceAddress = sshCriticalOptions
+                    .getOrDefault(SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, null);
             this.sshVerifyRequired = sshCriticalOptions.containsKey(
                 SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
         } else {
@@ -159,13 +158,13 @@ public class RaEndEntityDetails implements Serializable {
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
         } else {
-            this.created = "";
+            this.created = StringUtils.EMPTY;
         }
         final Date timeModified = endEntity.getTimeModified();
         if(timeModified != null) {
             this.modified = ValidityDate.formatAsISO8601ServerTZ(timeModified.getTime(), TimeZone.getDefault());
         } else {
-            this.modified = "";
+            this.modified = StringUtils.EMPTY;
         }
         this.status = endEntity.getStatus();
     }
@@ -227,6 +226,7 @@ public class RaEndEntityDetails implements Serializable {
     public String getSshForceCommand() { return sshForceCommand; }
     public String getSshSourceAddress() { return sshSourceAddress; }
     public boolean getSshVerifyRequired() { return sshVerifyRequired; }
+
     public String getSshVerifyRequiredString() {
         return getSshVerifyRequired() ? callbacks.getRaLocaleBean().getMessage("enroll_ssh_critical_verify_required_enabled") :
                 callbacks.getRaLocaleBean().getMessage("enroll_ssh_critical_verify_required_disabled");
