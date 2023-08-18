@@ -118,6 +118,8 @@
                     </h:selectOneMenu>
                 </h:panelGroup>
 
+                <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
                 <h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}"
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                     rendered="#{cc.attrs.editMode}" />
@@ -267,10 +269,6 @@
 			
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <!--<h:outputLabel for="email" value="#{msg.component_eedetails_field_email}" rendered="#{cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="email" value="#{cc.attrs.raEndEntityDetails.email}" rendered="#{cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>-->
             <h:outputLabel for="notification" value="#{msg.component_eedetails_field_notification}" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled and (not cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
@@ -309,17 +307,36 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
             <h:outputLabel for="overridenotbefore" value="#{msg.component_eedetails_field_overridenotbefore}"
-                rendered="#{cc.attrs.raEndEntityDetails.overrideNotBeforeEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotBefore}"
+                rendered="#{cc.attrs.raEndEntityDetails.overrideNotBeforeEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="overridenotbefore" value="#{cc.attrs.raEndEntityDetails.overrideNotBefore}"
-                rendered="#{cc.attrs.raEndEntityDetails.overrideNotBeforeEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotBefore}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:outputText id="overridenotbefore" value="#{cc.attrs.raEndEntityDetails.overrideNotBefore}"
+                    rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityDetails.overrideNotBeforeEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotBefore}"
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:inputText id="certValidityStartTime" rendered="#{cc.attrs.editMode and cc.attrs.editMode and cc.attrs.raEndEntityBean.validityStartTimeUsed and cc.attrs.raEndEntityBean.certValidityStartTimeModifiable}"
+                             pt:placeholder="(ISO 8601 date: [yyyy-MM-dd HH:mm:ssZZ]: or days:hours:minutes)"
+                             value="#{cc.attrs.raEndEntityBean.certValidityStartTime}">
+                    <f:validator validatorId="dateValidator"/>
+                </h:inputText>
+                <h:message for="certValidityStartTime" id="certValidityStartTimeMessage" styleClass="validationErrorMessage showErrorMessage"/>
+            </h:panelGroup>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
             <h:outputLabel for="overridenotafter" value="#{msg.component_eedetails_field_overridenotafter}"
-                rendered="#{cc.attrs.raEndEntityDetails.overrideNotAfterEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotAfter}"
+                rendered="#{cc.attrs.raEndEntityDetails.overrideNotAfterEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="overridenotafter" value="#{cc.attrs.raEndEntityDetails.overrideNotAfter}"
-                rendered="#{cc.attrs.raEndEntityDetails.overrideNotAfterEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotAfter}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:outputText id="overridenotafter" value="#{cc.attrs.raEndEntityDetails.overrideNotAfter}"
+                    rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityDetails.overrideNotAfterEnabled and not empty cc.attrs.raEndEntityDetails.overrideNotAfter}"
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:inputText id="certValidityEndTime" rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityBean.validityEndTimeUsed and cc.attrs.raEndEntityBean.certValidityEndTimeModifiable}"
+                             pt:placeholder="(ISO 8601 date: [yyyy-MM-dd HH:mm:ssZZ]: or days:hours:minutes)"
+                             value="#{cc.attrs.raEndEntityBean.certValidityEndTime}">
+                    <f:validator validatorId="dateValidator"/>
+                </h:inputText>
+                <h:message for="certValidityEndTime" id="certValidityEndTimeMessage" styleClass="validationErrorMessage showErrorMessage"/>
+            </h:panelGroup>
 
             <h:outputLabel for="cardnumber" value="#{msg.component_eedetails_field_cardnumber}"
                 rendered="#{cc.attrs.raEndEntityDetails.cardNumberEnabled and not empty cc.attrs.raEndEntityDetails.cardNumber}"
