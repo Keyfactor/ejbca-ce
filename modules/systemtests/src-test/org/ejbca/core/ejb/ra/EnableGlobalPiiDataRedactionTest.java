@@ -99,7 +99,7 @@ public class EnableGlobalPiiDataRedactionTest {
     public void testAuditLogPiiDataWithCompulsoryRedaction() throws Exception {
         
         String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern(),
-                GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIM]{1}[a-zA-Z0-9]{12}"}; // TODO: hex
+                GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIM]{1}[a-zA-Z0-9]{12}"};
 //        matches all -> ".*MI[EIM]{1}[a-zA-Z0-9]{12}.*" for wildfly filter
 //        finds all -> "MI[EIM]{1}[a-zA-Z0-9]{12}" without .* at both end
 //        examples returning true:        
