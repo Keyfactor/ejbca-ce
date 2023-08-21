@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +79,17 @@ public class ConfigdumpSetting implements Serializable {
         public String getName() {
             return name;
         }
+
+        public static Optional<ItemType> fromSubdirectory(final String subdirectory) {
+            return Arrays.stream(values())
+                    .filter(itemType -> subdirectory.equals(itemType.getSubdirectory()))
+                    .findAny();
+        }
+
+        public static ItemType fromSubdirectoryOrName(final String itemTypeString){
+            return ItemType.fromSubdirectory(itemTypeString).orElseGet(() -> ItemType.valueOf(itemTypeString));
+        }
+
     }
 
     public enum ProcessingMode {
