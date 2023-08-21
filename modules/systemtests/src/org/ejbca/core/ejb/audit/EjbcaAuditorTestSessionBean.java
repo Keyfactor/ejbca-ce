@@ -12,10 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.audit;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -25,22 +22,18 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditLogEntry;
-import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 
 /**
  * Proxy to make EjbcaAuditorSessionLocal testable over RMI.
  * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaAuditorTestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

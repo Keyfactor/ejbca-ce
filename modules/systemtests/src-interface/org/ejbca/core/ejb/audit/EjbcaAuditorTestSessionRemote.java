@@ -22,7 +22,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 
 /**
  * @see EjbcaAuditorSession
- * @version $Id$
  */
 @Remote
 public interface EjbcaAuditorTestSessionRemote extends EjbcaAuditorSession {
