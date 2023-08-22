@@ -207,6 +207,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         public boolean isDisplayPartitions() {
             return crlinfo.size() > 1;
         }
+
+        public boolean isCrlSupported() {
+            return "X.509".equals(getCaType());
+        }
+
     }
 
     public class CRLGuiInfo {
