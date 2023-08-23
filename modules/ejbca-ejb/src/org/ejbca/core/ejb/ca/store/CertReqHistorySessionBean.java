@@ -33,6 +33,7 @@ import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 
@@ -42,7 +43,7 @@ import com.keyfactor.util.CertTools;
  * Stores and manages CertReqHistory entries in the database.
  * CertReqHistory keeps a snapshot of the user data that was used to issue a specific certificate.
  *
- * @version $Id$
+ *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertReqHistorySessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -70,7 +71,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
         	log.info(intres.getLocalizedMessage("store.storehistory", username));
         } catch (Exception e) {
         	log.error(intres.getLocalizedMessage("store.errorstorehistory", endEntityInformation.getUsername()));
-            throw new EJBException(e);
+            throw new EJBException(GdprRedactionUtils.getRedactedException(e));
         }
     	if (log.isTraceEnabled()) {
     		log.trace("<addCertReqHistoryData()");
