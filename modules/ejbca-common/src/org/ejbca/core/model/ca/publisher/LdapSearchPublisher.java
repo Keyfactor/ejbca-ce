@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.TCPTool;
 
@@ -27,12 +28,6 @@ import com.novell.ldap.LDAPConnection;
 import com.novell.ldap.LDAPEntry;
 import com.novell.ldap.LDAPException;
 import com.novell.ldap.LDAPSearchResults;
-
-/**
- * 
- * @version $Id$
- *
- */
 
 public class LdapSearchPublisher extends LdapPublisher {
 	
@@ -104,7 +99,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 				//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
 				String searchFilter = getSearchFilter();
 				if (log.isDebugEnabled()) {
-					log.debug("Compiling search filter: " +searchFilter+", from certDN '"+certDN+"' and userDN '"+userDN+"'.");
+					log.debug("Compiling search filter: " +searchFilter+", from certDN '"+certDN+"' and userDN '"+ GdprRedactionUtils.getSubjectDnLogSafe(userDN) +"'.");
 				}
 				if (username != null) {
 					Pattern USER = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
@@ -156,29 +151,29 @@ public class LdapSearchPublisher extends LdapPublisher {
 					ldapDN = oldEntry.getDN();
 					if (searchResults.hasMore()) {
 						log.debug("Found more than one matches with filter '" + searchFilter +
-								"'. Using the first match with LDAP entry with DN: " +oldEntry.getDN());
+								"'. Using the first match with LDAP entry with DN: " + GdprRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
 					} else {
-						log.debug("Found one match with filter: '"+searchFilter+"', match with DN: " + oldEntry.getDN());
+						log.debug("Found one match with filter: '"+searchFilter+"', match with DN: " + GdprRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
 					}
 				} else {
 					ldapDN = constructLDAPDN(certDN, userDN);
-					log.debug("No matches found using filter: '" +searchFilter + "'. Using DN: " + ldapDN);
+					log.debug("No matches found using filter: '" +searchFilter + "'. Using DN: " + GdprRedactionUtils.getSubjectDnLogSafe(ldapDN));
 				}
 				// try to read the old object
 				try {
 					oldEntry = lc.read(ldapDN, ldapSearchConstraints);
 				} catch (LDAPException e) {
 					if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-						String msg = intres.getLocalizedMessage("publisher.noentry", ldapDN);
+						String msg = intres.getLocalizedMessage("publisher.noentry", GdprRedactionUtils.getSubjectDnLogSafe(ldapDN));
 						log.info(msg);
 					} else {
-						String msg = intres.getLocalizedMessage("publisher.infoexists", ldapDN);
+						String msg = intres.getLocalizedMessage("publisher.infoexists", GdprRedactionUtils.getSubjectDnLogSafe(ldapDN));
 						log.info(msg);
 					}
 				}
 			} catch (LDAPException e) {
 				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-					String msg = intres.getLocalizedMessage("publisher.noentry", certDN +", "+userDN);
+					String msg = intres.getLocalizedMessage("publisher.noentry", certDN +", " + GdprRedactionUtils.getSubjectDnLogSafe(userDN));
 					log.info(msg);
 				} else {
 					connectionFailed = true;
