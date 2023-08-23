@@ -48,11 +48,11 @@ public enum GdprConfigurationCache {
             REDACT_ENFORCED = null;
         }
     }
-    
+
     public GdprConfiguration getGdprConfiguration() {
         return REDACT_DEFAULT;
     }
-    
+
     public GdprConfiguration getGdprConfiguration(int endEntityProfileId) {
         if (REDACT_ENFORCED!=null) {
             return REDACT_ENFORCED;
@@ -60,7 +60,7 @@ public enum GdprConfigurationCache {
         GdprConfiguration config = this.idToConfigCache.get(endEntityProfileId);
         return config != null ? config :  REDACT_DEFAULT;
     }
-    
+
     public GdprConfiguration getGdprConfiguration(String endEntityProfileName) {
         if (REDACT_ENFORCED!=null) {
             return REDACT_ENFORCED;
