@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ra;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -45,7 +43,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
@@ -108,8 +105,6 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        assumeFalse("Skipping this test as it is not meant to run during system-wide redaction tests", 
-                          SystemTestsConfiguration.getEnableLogRedact() || GdprRedactionUtils.redactPii());
         
         setRedactEnfoced(false);
         EndEntityProfile profile = new EndEntityProfile();
