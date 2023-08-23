@@ -163,6 +163,7 @@ import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.ECAUtils;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.CmpConfiguration;
@@ -785,7 +786,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
                         cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
                 if (log.isDebugEnabled()) {
-                    log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
+                    log.debug("CAAdminSessionBean : " + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(cacertificate)));
                 }
                 // Build Certificate Chain
                 certificatechain = new ArrayList<>();
