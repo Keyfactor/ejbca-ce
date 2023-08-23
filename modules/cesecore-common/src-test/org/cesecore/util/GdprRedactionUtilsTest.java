@@ -99,7 +99,7 @@ public class GdprRedactionUtilsTest {
                 + "(role=)|(street=)|(pseudonym=)|(telephonenumber=)|(postaladdress=)|(businesscategory=)|(postalcode=)|"
                 + "(unstructuredaddress=)|(unstructuredname=)|(emailaddress=)|(email=)|(dn=)|(uniqueidentifier=)|"
                 + "(uid=)|(pid=)|(vid=)|(cn=)|(name=)|(sn=)|(serialnumber=)|(gn=)|(givenname=)|(initials=)|(surname=)|"
-                + "(ou=)|(organizationidentifier=)|(o=)|(l=)|(st=)|(dc=)|(c=)).*");
+                + "(ou=)|(organizationidentifier=)|(st=)|(dc=)|(c=)).*");
         assertEquals("SubjectAltName redaction pattern mismatch", GdprRedactionUtils.getSubjectAltNameRedactionPattern(), 
                 "((OTHERNAME=)|(RFC822NAME=)|(DNSNAME=)|(IPADDRESS=)|(X400ADDRESS=)|(DIRECTORYNAME=)|(EDIPARTYNAME=)|"
                 + "(UNIFORMRESOURCEID=)|(REGISTEREDID=)|(UPN=)|(GUID=)|(KRB5PRINCIPAL=)|(PERMANENTIDENTIFIER=)|(XMPPADDR=)|"
@@ -249,6 +249,8 @@ public class GdprRedactionUtilsTest {
                 "some other message: " + GdprRedactionUtils.REDACTED_CONTENT);
         assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: dnsName=abcd.com,uri=xyz.abc blah"), 
                 "some other message: " + GdprRedactionUtils.REDACTED_CONTENT);
+        assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: serialno=123456 subjectemail=asd@we.com"), 
+                "some other message: serialno=123456 subject" + GdprRedactionUtils.REDACTED_CONTENT);
         
         // disable redaction
         GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(false, false);
