@@ -15,6 +15,7 @@ package org.cesecore.keybind.impl;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.pinning.TrustEntry;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 
 import com.keyfactor.util.CertTools;
@@ -72,7 +73,8 @@ public class ClientX509TrustManager implements X509TrustManager {
             String subjectAltName = CertTools.getSubjectAlternativeName(leafCertificate);
             String issuerdn = CertTools.getIssuerDN(leafCertificate);
             String sn = CertTools.getSerialNumberAsString(leafCertificate);
-            String errmsg = "Certificate with serial number '0x" + sn + "' and SAN '" + subjectAltName + "' issued by '" + issuerdn +
+            String errmsg = "Certificate with serial number '0x" + sn + "' and SAN '" + GdprRedactionUtils.getSubjectAltNameLogSafe(subjectAltName) +
+                    "' issued by '" + issuerdn +
                     "' is NOT trusted. Ensure the certificate is a TLS server certificate issued by a CA known to EJBCA, and permitted by " +
                     "your authentication key binding.";
             throw new CertificateException(errmsg);
