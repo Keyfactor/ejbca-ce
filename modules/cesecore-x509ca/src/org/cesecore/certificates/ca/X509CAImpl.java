@@ -146,6 +146,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
@@ -1291,7 +1292,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     subjectDNName = subjectDNNameFromEei;
                     if (log.isDebugEnabled()) {
                         log.debug("Using X500Name from end entity information instead of user's registered subject DN fields.");
-                        log.debug("ExtendedInformation.getRawSubjectDn(): " + ei.getRawSubjectDn() + " will use: " + CeSecoreNameStyle.INSTANCE.toString(subjectDNName));
+                        log.debug("ExtendedInformation.getRawSubjectDn(): " + GdprRedactionUtils.getSubjectDnLogSafe(ei.getRawSubjectDn(), subject.getEndEntityProfileId()) + " will use: " + GdprRedactionUtils.getSubjectDnLogSafe(CeSecoreNameStyle.INSTANCE.toString(subjectDNName), subject.getEndEntityProfileId()));
                     }
                 } else {
                     subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
@@ -1303,13 +1304,13 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         // Make sure the DN does not contain dangerous characters
         if (!StringTools.hasStripChars(subjectDNName.toString()).isEmpty()) {
             if (log.isTraceEnabled()) {
-                log.trace("DN with illegal name: "+subjectDNName);
+                log.trace("DN with illegal name: " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDNName.toString(), subject.getEndEntityProfileId()));
             }
             final String msg = intres.getLocalizedMessage("createcert.illegalname");
             throw new IllegalNameException(msg);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Using subjectDN: " + subjectDNName.toString());
+            log.debug("Using subjectDN: " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDNName.toString(), subject.getEndEntityProfileId()));
         }
 
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
@@ -1819,7 +1820,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             request.setResponseKeyInfo(caPrivateKey, provider);
         }
         if (log.isDebugEnabled()) {
-            log.debug("X509CA: generated certificate, CA " + this.getCAId() + " for DN: " + subject.getCertificateDN());
+            log.debug("X509CA: generated certificate, CA " + this.getCAId() + " for DN: " + GdprRedactionUtils.getSubjectDnLogSafe(subject.getCertificateDN(), subject.getEndEntityProfileId()) );
         }
         return cert;
     }

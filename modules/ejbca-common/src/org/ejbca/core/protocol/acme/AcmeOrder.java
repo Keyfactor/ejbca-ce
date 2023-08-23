@@ -39,6 +39,8 @@ public interface AcmeOrder {
     void setFinalize(String finalize);
 
     List<AcmeIdentifier> getIdentifiers();
+    
+    List<String> getIdentifiersAsString();
 
     void setIdentifiers(List<AcmeIdentifier> identifiers);
 
