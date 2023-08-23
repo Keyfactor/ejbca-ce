@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.keyfactor.util.StringTools;
+import org.cesecore.util.GdprRedactionUtils;
 
 /**
  * A class used to produce advanced queries from the user data and approval tables.
@@ -27,7 +28,6 @@ import com.keyfactor.util.StringTools;
  * It's main function is getQueryString which returns a string which should be placed in the 'WHERE' clause of a SQL
  * statement.
  *
- * @version $Id$
  */
 public class Query implements Serializable {
 
@@ -206,7 +206,7 @@ public class Query implements Serializable {
         for (final BasicMatch match : matches) {
             returnval &= match.isLegalQuery();
             if (!returnval) {
-                log.info("Query is illegal due to match: " + match.getQueryString());
+                log.info("Query is illegal due to match: " + GdprRedactionUtils.getRedactedMessage(match.getQueryString()));
             }
         }
         returnval &= (matches.size() - 1) == connectors.size();

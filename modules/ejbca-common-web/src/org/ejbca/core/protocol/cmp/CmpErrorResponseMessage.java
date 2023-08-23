@@ -129,7 +129,9 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 		}
 		
 		PKIBody myPKIBody = null;
-		log.debug("Create error message from requestType: "+requestType);
+		if (log.isDebugEnabled()) {
+		    log.debug("Create error message from requestType: " + requestType);
+		}
 		if (requestType==0 || requestType==2) {
 			myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIStatusInfo, requestId, requestType);
 		} else {

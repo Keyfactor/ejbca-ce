@@ -56,8 +56,6 @@ import com.keyfactor.util.StringTools;
  * the information is currently used to:
  * - list request history for a user
  * - find issuing User DN (EndEntityInformation) when republishing a certificate (in case the userDN for the user changed)
- * 
- * @version $Id$
  */ 
 @SuppressWarnings("deprecation")
 @Entity
@@ -327,6 +325,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 		final PrintWriter pw = new PrintWriter(sw);
 		pw.println(sComment);
 		pw.println("XMLDATA start on next line:");
+		// Nothing to redact in the XML data.
 		pw.print(sXML);
 		pw.println("| end of XMLDATA. The char before '|' was the last XML.");
 		pw.println();
