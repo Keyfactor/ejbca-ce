@@ -1866,7 +1866,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    private void importCACertUpdate(int caId, byte[] certbytes, String fileName) throws CertificateParsingException, CADoesntExistsException,
+    private void importCACertUpdate(int caId, byte[] certbytes, String fileName) throws CertificateParsingException,
             AuthorizationDeniedException, CertificateImportException, CmsCertificatePathMissingException {
         Collection<Certificate> certs;
         try {
