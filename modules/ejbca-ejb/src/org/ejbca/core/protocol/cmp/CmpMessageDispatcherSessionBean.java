@@ -39,6 +39,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -140,7 +141,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         "Body is of type: " + tagno + System.lineSeparator() +
                         "Transaction ID: " + pkiHeader.getTransactionID();
                 log.debug(message);
-                if (log.isTraceEnabled()) {
+                if (log.isTraceEnabled() && !GdprRedactionUtils.redactPii()) {
                     log.trace(ASN1Dump.dumpAsString(pkiMessage));
                 }
             }
@@ -202,7 +203,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         return dispatch(authenticationToken, nestedPkiMessage, pkiHeader, cmpConfiguration, cmpConfigurationAlias, levelOfNesting+1);
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getMessage();
-                        log.info(errMsg, e);
+                        log.info(GdprRedactionUtils.getRedactedMessage(errMsg), GdprRedactionUtils.getRedactedException(e));
                         return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, errMsg);
                     }
                 }

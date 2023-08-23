@@ -90,6 +90,7 @@ import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.ScepConfiguration;
@@ -420,7 +421,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         try {
             reqmsg = new ScepRequestMessage(msg, includeCACert);
         } catch (IOException e) {
-            log.info("Error receiving ScepMessage: ", e);
+            log.info("Error receiving ScepMessage: ", GdprRedactionUtils.getRedactedException(e));
             return null;
         }
 
@@ -631,7 +632,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                                 resp.create();
                             } catch (InvalidKeyException | CertificateEncodingException | NoSuchAlgorithmException | NoSuchProviderException
                                     | CRLException e) {
-                                throw new IllegalStateException("Could not recreate response with proper recipient nonce.", e);
+                                throw new IllegalStateException("Could not recreate response with proper recipient nonce.",
+                                        GdprRedactionUtils.getRedactedException(e));
                             }
                             ret = resp.getResponseMessage();
                         }
@@ -736,8 +738,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             reqmsg = new ScepRequestMessage(Base64.decode(message), includeCACert);
             transactionId = reqmsg.getTransactionId();
         } catch (Exception e) {
-            log.info("Error receiving ScepMessage: ", e);
-            throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, e);
+            log.info("Error receiving ScepMessage: ", GdprRedactionUtils.getRedactedException(e));
+            throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, GdprRedactionUtils.getRedactedException(e));
         }
 
         try {
@@ -751,13 +753,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             return true;
         } catch (AzureException e) {
             final String msg = "MS Intune validation failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ";
-            log.info(msg, e);
-            throw new CertificateCreateException(msg, e);
+            log.info(msg, GdprRedactionUtils.getRedactedException(e));
+            throw new CertificateCreateException(msg, GdprRedactionUtils.getRedactedException(e));
         } catch (Exception e) {
             // See https://github.com/microsoft/Intune-Resource-Access/blob/master/src/CsrValidation/java/lib/src/main/java/com/microsoft/intune/scepvalidation/IntuneScepServiceClient.java
             // ValidateRequest(String transactionId, String certificateRequest) throws IntuneScepServiceException, Exception
             throw new CertificateCreateException("MS Intune enrollment failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ",
-                    e);
+                    GdprRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -840,8 +842,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             final boolean includeCACert = scepConfig.getIncludeCA(alias);
             reqmsg = new ScepRequestMessage(Base64.decode(message), includeCACert);
         } catch (Exception e) {
-            log.info("Error receiving ScepMessage: ", e);
-            throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, e);
+            log.info("Error receiving ScepMessage: ", GdprRedactionUtils.getRedactedException(e));
+            throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, GdprRedactionUtils.getRedactedException(e));
         }
 
         String caName = null;
@@ -865,7 +867,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             reqmsg.verify();
             return reqmsg.getCertificationRequest().getEncoded();
         } catch (Exception e) {
-            throw new CertificateCreateException("SCEP PKCS10 message verification failed for alias " + alias + "'.", e);
+            throw new CertificateCreateException("SCEP PKCS10 message verification failed for alias " + alias + "'.",
+                    GdprRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -946,7 +949,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         try {
             ret.create();
         } catch (CertificateEncodingException | CRLException e) {
-            throw new IllegalStateException("Response message could not be created.", e);
+            throw new IllegalStateException("Response message could not be created.", GdprRedactionUtils.getRedactedException(e));
         }
         return ret;
     }
@@ -1001,7 +1004,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         try {
             ret.create();
         } catch (CertificateEncodingException | CRLException e) {
-            throw new IllegalStateException("Response message could not be created.", e);
+            throw new IllegalStateException("Response message could not be created.", GdprRedactionUtils.getRedactedException(e));
         }
         return ret;
     }
@@ -1050,7 +1053,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs10Request());
                 log.debug("Logging SCEP success for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
                 log.debug("scep id = " + transactionId);
-                log.debug("scep base64Message = " + base64Message);
+                if (!GdprRedactionUtils.redactPii()) {
+                    log.debug("scep base64Message = " + base64Message);
+                }
                 final String thumbprint = toMicrosoftHex(response.getThumbprint());
                 log.debug("scep thumbprint = " + thumbprint);
                 final String hexSerialNumber = response.getSerialNumber().toString(16);
@@ -1067,11 +1072,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.info("MS Intune status update succeeded for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
         } catch (AzureException e) {
             final String msg = "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ";
-            log.info(msg, e);
-            throw new CertificateCreateException(msg, e);
+            log.info(msg, GdprRedactionUtils.getRedactedException(e));
+            throw new CertificateCreateException(msg, GdprRedactionUtils.getRedactedException(e));
         } catch (Exception e) {
             throw new CertificateCreateException(
-                    "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ", e);
+                    "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ", GdprRedactionUtils.getRedactedException(e));
         }
 
     }
@@ -1133,7 +1138,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 try {
                     pkcs10Request = certificationRequest.getEncoded();
                 } catch (IOException e) {
-                    log.debug("No readable original pkcs10 request in original request.", e);
+                    log.debug("No readable original pkcs10 request in original request.", GdprRedactionUtils.getRedactedException(e));
                     pkcs10Request = null;
                 }
             }

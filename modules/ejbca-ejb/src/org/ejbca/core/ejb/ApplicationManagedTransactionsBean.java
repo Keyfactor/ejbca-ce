@@ -28,6 +28,7 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.ejb.ra.UserData;
 
 /**
@@ -68,17 +69,19 @@ public class ApplicationManagedTransactionsBean {
             userTransaction.commit();
         } catch (RollbackException | HeuristicRollbackException | HeuristicMixedException | OptimisticLockException e) {
             if (log.isTraceEnabled()) {
-                log.trace("Caught rollback exception: " + e.getMessage(), e);
+                log.trace("Caught rollback exception: " + GdprRedactionUtils.getRedactedMessage(e.getMessage()),
+                        GdprRedactionUtils.getRedactedException(e));
             }
             log.info("Skipped update of '" + newUserData.getUsername() + "' due to concurrent transaction.");
             try {
                 userTransaction.rollback();
             } catch (IllegalStateException | SecurityException | SystemException rollbackException) {
-                log.warn("An exception happened during transaction rollback: " + rollbackException.getClass() + ": " + rollbackException.getMessage());
+                log.warn("An exception happened during transaction rollback: " + rollbackException.getClass() + ": "
+                        + GdprRedactionUtils.getRedactedMessage(rollbackException.getMessage()));
                 log.debug("Rollback exception stacktrace: ", rollbackException);
             }
         } catch (SecurityException | SystemException | NotSupportedException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(GdprRedactionUtils.getRedactedException(e));
         } finally {
             em.close();
         }

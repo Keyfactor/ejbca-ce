@@ -42,6 +42,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -549,9 +550,9 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         	} catch (IOException e) {
                 final String msg = "Failed to parse AcmeOrderData data map in database: " + e.getMessage();
                 if (log.isDebugEnabled()) {
-                    log.debug(msg + ". Data:\n" + udsData.getData());
+                    log.debug(msg + ". Data:\n" + GdprRedactionUtils.getRedactedMessage(udsData.getData()));
                 }
-                throw new IllegalStateException(msg, e);
+                throw new IllegalStateException(msg, GdprRedactionUtils.getRedactedException(e));
             }
         	// Handle Base64 encoded string values
         	HashMap<?, ?> data = new Base64GetHashMap(h);

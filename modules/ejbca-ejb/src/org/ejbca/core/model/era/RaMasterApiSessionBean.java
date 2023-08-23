@@ -143,6 +143,7 @@ import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
+import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
@@ -1736,7 +1737,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         sb.append(additionalConstraintQuery);
         sb.append(sortingOperation);
-        log.info("formed query: " + sb.toString());
+        log.info("formed query: " + GdprRedactionUtils.getRedactedMessage(sb.toString()));
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("caId", authorizedLocalCaIds);
         if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
@@ -1810,7 +1811,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (queryTimeout>0L) {
             query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
         }
-        log.info("query:" + query.toString());
+        log.info("query:" + GdprRedactionUtils.getRedactedMessage(query.toString()));
         final List<String> usernames;
         try {
             usernames = query.getResultList();
@@ -1819,13 +1820,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             response.setMightHaveMoreResults(usernames.size()==maxResults);
             if (log.isDebugEnabled()) {
-                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " \u2192 " + usernames.size() + " results. queryTimeout=" + queryTimeout + "ms");
+                log.debug("Certificate search query: " + GdprRedactionUtils.getRedactedMessage(sb.toString()) + " LIMIT " + maxResults + " \u2192 "
+                        + usernames.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
-            log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
+            log.info("Requested search query by " + authenticationToken +  " took too long. Query was " +
+                    GdprRedactionUtils.getRedactedMessage(e.getQuery().toString()) + ". " + GdprRedactionUtils.getRedactedMessage(e.getMessage()));
             response.setMightHaveMoreResults(true);
         } catch (PersistenceException e) {
-            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
+            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " +
+                    GdprRedactionUtils.getRedactedMessage(e.getMessage()));
             response.setMightHaveMoreResults(true);
         }
         return response;
@@ -1926,13 +1930,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             response.setMightHaveMoreResults(roleMemberDatas.size()==maxResults);
             if (log.isDebugEnabled()) {
-                log.debug("Role Member search query: " + sb.toString() + " LIMIT " + maxResults + " \u2192 " + roleMemberDatas.size() + " results. queryTimeout=" + queryTimeout + "ms");
+                log.debug("Role Member search query: " + GdprRedactionUtils.getRedactedMessage(sb.toString()) + " LIMIT " + maxResults + " \u2192 "
+                        + roleMemberDatas.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
-            log.info("Requested search query by " + authenticationToken +  " took too long. Query was " + e.getQuery().toString() + ". " + e.getMessage());
+            log.info("Requested search query by " + authenticationToken +  " took too long. Query was "
+                    + GdprRedactionUtils.getRedactedMessage(e.getQuery().toString()) + ". " + GdprRedactionUtils.getRedactedMessage(e.getMessage()));
             response.setMightHaveMoreResults(true);
         } catch (PersistenceException e) {
-            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
+            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " +
+                    GdprRedactionUtils.getRedactedMessage(e.getMessage()));
             response.setMightHaveMoreResults(true);
         }
         return response;
@@ -2041,7 +2048,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             certificateCreateSession.assertSubjectEnforcements(caInfoEntry.getValue(), endEntity);
         } catch (CertificateCreateException e) {
             // Wrapping the CesecoreException.errorCode
-            throw new EjbcaException(e);
+            throw new EjbcaException(GdprRedactionUtils.getRedactedException(e));
         }
     }
     
@@ -2108,10 +2115,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             endEntityManagementSession.addUser(admin, endEntity, isClearPwd);
         } catch (CesecoreException e) {
             //Wrapping the CesecoreException.errorCode
-            throw new EjbcaException(e);
+            throw new EjbcaException(GdprRedactionUtils.getRedactedException(e));
         } catch (EndEntityProfileValidationException e) {
             //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
-            throw new EndEntityProfileValidationRaException(e);
+            throw new EndEntityProfileValidationRaException(GdprRedactionUtils.getRedactedException(e));
         }
         return endEntityAccessSession.findUser(endEntity.getUsername()) != null;
     }
@@ -2214,7 +2221,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                         new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
             }
         } catch (NoSuchEndEntityException | EndEntityProfileValidationException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(GdprRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -2265,14 +2272,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
             } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
-                log.error(e); //should never happen if keyStore is valid object
+                log.error(GdprRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         } else{
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 keyStore.store(outputStream, endEntity.getPassword().toCharArray());
                 return outputStream.toByteArray();
             } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
-                log.error(e); //should never happen if keyStore is valid object
+                log.error(GdprRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         }
         return null;
@@ -2325,14 +2332,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
             } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
-                log.error(e); //should never happen if keyStore is valid object
+                log.error(GdprRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         } else {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 keyStore.store(outputStream, endEntity.getPassword().toCharArray());
                 return outputStream.toByteArray();
             } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
-                log.error(e); //should never happen if keyStore is valid object
+                log.error(GdprRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         }
         return null;
@@ -2389,7 +2396,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CADoesntExistsException | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
                 | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
                 | InvalidAlgorithmException | CertificateExtensionException e) {
-            throw new EjbcaException(e);
+            throw new EjbcaException(GdprRedactionUtils.getRedactedException(e));
         } catch (CertificateParsingException | CertificateEncodingException e) {
             throw new IllegalStateException("Internal error with creating Certificate from CertificateResponseMessage");
         }
@@ -2435,10 +2442,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (CesecoreException e) {
             log.debug("EJBCA REST exception", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
-            throw new EjbcaException(e.getErrorCode(), e);
+            throw new EjbcaException(e.getErrorCode(), GdprRedactionUtils.getRedactedException(e));
         } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException e) {
-            log.debug("EJBCA REST exception", e);
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+            log.debug("EJBCA REST exception", GdprRedactionUtils.getRedactedException(e));
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
 
@@ -2490,10 +2497,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (CesecoreException e) {
             log.debug("EJBCA WebService error", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
-            throw new EjbcaException(e.getErrorCode(), e);
+            throw new EjbcaException(e.getErrorCode(), GdprRedactionUtils.getRedactedException(e));
         } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException | RuntimeException e) {  // EJBException, ClassCastException, ...
-            log.debug("EJBCA WebService error", e);
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+            log.debug("EJBCA WebService error", GdprRedactionUtils.getRedactedException(e));
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
 
@@ -2524,10 +2531,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (CesecoreException e) {
             log.debug("EJBCA WebService error", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
-            throw new EjbcaException(e.getErrorCode(), e);
+            throw new EjbcaException(e.getErrorCode(), GdprRedactionUtils.getRedactedException(e));
         } catch (KeyStoreException| NoSuchAlgorithmException | CertificateException |  RuntimeException e) {  // EJBException, ClassCastException, ...
-            log.debug("EJBCA WebService error", e);
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+            log.debug("EJBCA WebService error", GdprRedactionUtils.getRedactedException(e));
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
     
@@ -2556,12 +2563,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("EJBCA SSH enrollment error", e);
             throw new EjbcaException(e.getMessage());
         } catch (CesecoreException e) {
-            log.debug("EJBCA SSH enrollment error", e);
+            log.debug("EJBCA SSH enrollment error", GdprRedactionUtils.getRedactedException(e));
             // Will convert the CESecore exception to an EJBCA exception with the same error code
-            throw new EjbcaException(e.getErrorCode(), e);
+            throw new EjbcaException(e.getErrorCode(), GdprRedactionUtils.getRedactedException(e));
         } catch (CertificateExtensionException | RuntimeException e) { // EJBException, ClassCastException, ...
-            log.debug("EJBCA SSH enrollment error", e);
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage(), e);
+            log.debug("EJBCA SSH enrollment error", GdprRedactionUtils.getRedactedException(e));
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, GdprRedactionUtils.getRedactedMessage(e.getMessage()),
+                    GdprRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -2594,10 +2602,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (CesecoreException e) {
             log.debug("EJBCA WebService error", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
-            throw new EjbcaException(e.getErrorCode(), e);
+            throw new EjbcaException(e.getErrorCode(), GdprRedactionUtils.getRedactedException(e));
         } catch (CertificateExtensionException | RuntimeException e) { // EJBException, ClassCastException, ...
-            log.debug("EJBCA WebService error", e);
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage(), e);
+            log.debug("EJBCA WebService error", GdprRedactionUtils.getRedactedException(e));
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, GdprRedactionUtils.getRedactedMessage(e.getMessage()),
+                    GdprRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -2617,7 +2626,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     retValues.add(firstCert);
                     lastCert = firstCert.getCertificate();
                     if (log.isDebugEnabled()) {
-                        log.debug("Found certificate for user with subjectDN: "+CertTools.getSubjectDN(lastCert)+" and serialNo: "+CertTools.getSerialNumberAsString(lastCert));
+                        log.debug("Found certificate for user with subjectDN: " +
+                                GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(lastCert)) + " and serialNo: "
+                                + CertTools.getSerialNumberAsString(lastCert));
                     }
                     // If we added a certificate, we will also append the CA certificate chain
                     appendCaChain(retValues, lastCert);
@@ -2775,7 +2786,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         } catch (CesecoreException e) {
             // Convert cesecore exception to EjbcaException
-            throw new EjbcaException(e.getErrorCode(), e);
+            throw new EjbcaException(e.getErrorCode(), GdprRedactionUtils.getRedactedException(e));
         }
         return retValue;
     }
@@ -3172,7 +3183,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             return signSessionLocal.createCertificateWS(authenticationToken, username, password, req, reqType, responseType);
         } catch (ParseException | ConstructionException | NoSuchFieldException e) {
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
 
@@ -3437,10 +3448,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             endEntity = endEntityManagementSession.addUser(authenticationToken, endEntity, isClearPwd);
         } catch (CesecoreException e) {
             //Wrapping the CesecoreException.errorCode
-            throw new EjbcaException(e);
+            throw new EjbcaException(GdprRedactionUtils.getRedactedException(e));
         } catch (EndEntityProfileValidationException e) {
             //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
-            throw new EndEntityProfileValidationRaException(e);
+            throw new EndEntityProfileValidationRaException(GdprRedactionUtils.getRedactedException(e));
         }
         KeyStore keyStore;
         try {
@@ -3482,14 +3493,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
             } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
-                log.error(e); //should never happen if keyStore is valid object
+                log.error(GdprRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         } else {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 keyStore.store(outputStream, endEntity.getPassword().toCharArray());
                 return outputStream.toByteArray();
             } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
-                log.error(e); //should never happen if keyStore is valid object
+                log.error(GdprRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         }
         cleanupAfterFailure(endEntity);
@@ -3508,10 +3519,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             endEntityInformation = endEntityManagementSession.addUser(authenticationToken, endEntityInformation, isClearPwd);
         } catch (CesecoreException e) {
             //Wrapping the CesecoreException.errorCode
-            throw new EjbcaException(e);
+            throw new EjbcaException(GdprRedactionUtils.getRedactedException(e));
         } catch (EndEntityProfileValidationException e) {
             //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
-            throw new EndEntityProfileValidationRaException(e);
+            throw new EndEntityProfileValidationRaException(GdprRedactionUtils.getRedactedException(e));
         }
         try {
             final RequestMessage req = RequestMessageUtils.parseRequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
@@ -3536,9 +3547,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
                 | InvalidAlgorithmException | CertificateExtensionException e) {
             cleanupAfterFailure(endEntityInformation);
-            throw new EjbcaException(e);
+            throw new EjbcaException(GdprRedactionUtils.getRedactedException(e));
         } catch (CertificateParsingException | CertificateEncodingException e) {
-            throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage", e);
+            throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage",
+                    GdprRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -3552,8 +3564,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             endEntityManagementSession.deleteUser(new AlwaysAllowLocalAuthenticationToken("Failed Enrollment Cleanup"), endEntityInformation.getUsername());
         } catch (NoSuchEndEntityException | AuthorizationDeniedException | CouldNotRemoveEndEntityException | RuntimeException e) {
             // We don't want the admin to focus on this error, so we use lower log levels than normal
-            log.info("End entity could not be deleted after issuance failure: " + e.getMessage());
-            log.trace("Stack trace from cleanup", e);
+            log.info("End entity could not be deleted after issuance failure: " + GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+            log.trace("Stack trace from cleanup", GdprRedactionUtils.getRedactedException(e));
         }
     }
 
