@@ -45,6 +45,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
@@ -108,7 +109,7 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         assumeFalse("Skipping this test as it is not meant to run during system-wide redaction tests", 
-                                                    SystemTestsConfiguration.getEnableLogRedact());
+                          SystemTestsConfiguration.getEnableLogRedact() || GdprRedactionUtils.redactPii());
         
         setRedactEnfoced(false);
         EndEntityProfile profile = new EndEntityProfile();
