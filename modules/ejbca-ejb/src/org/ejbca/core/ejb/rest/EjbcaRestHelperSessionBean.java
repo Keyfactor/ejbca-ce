@@ -51,6 +51,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -226,7 +227,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             try {
                 subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
             } catch (ParseException | IllegalArgumentException e) {
-                throw new EjbcaException(ErrorCode.BAD_REQUEST, e.getMessage());
+                throw new EjbcaException(ErrorCode.BAD_REQUEST, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
             }
         }
         return subjectDirectoryAttributeString;

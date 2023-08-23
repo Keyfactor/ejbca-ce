@@ -46,6 +46,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -168,7 +169,8 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		            }
 		            ai.close();
 		        } catch (IOException e) {
-		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, GdprRedactionUtils.getRedactedMessage(e.getMessage()),
+							GdprRedactionUtils.getRedactedException(e)));
 		            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
 		        }
 		    } else {
