@@ -49,6 +49,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -198,7 +199,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(caid), certSerialNumber, username, details);
-                log.error(msg, e);
+                log.error(msg, GdprRedactionUtils.getRedactedException(e));
             }
             log.trace("<addKeyRecoveryData()");
             return returnval;
@@ -242,7 +243,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, certSerialNumber, username, details);
-            log.error(msg, e);
+            log.error(msg, GdprRedactionUtils.getRedactedException(e));
         }
         log.trace("<addKeyRecoveryDataInternal()");
         return returnval;
@@ -277,7 +278,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_REMOVEDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), hexSerial, null, details);
-            log.error(msg, e);
+            log.error(msg, GdprRedactionUtils.getRedactedException(e));
         }
         log.trace("<removeKeyRecoveryData()");
     }
@@ -343,7 +344,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                 auditSession.log(EjbcaEventTypes.KEYRECOVERY_SENT, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), caidString, certSerialNumber, username, details);
         	} catch (Exception e) {
         		String msg = intres.getLocalizedMessage("keyrecovery.errorsenddata", username);            	
-        		log.error(msg, e);
+        		log.error(msg, GdprRedactionUtils.getRedactedException(e));
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.KEYRECOVERY_SENT, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, username, details);
@@ -388,7 +389,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_SENT, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), caidString, certSerialNumber, username, details);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("keyrecovery.errorsenddata", username);             
-            log.error(msg, e);
+            log.error(msg, GdprRedactionUtils.getRedactedException(e));
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_SENT, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, username, details);
@@ -411,7 +412,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             ret = query.getResultList();
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
-                log.debug("If database does not support boolean (like Ingres) we would expect an Exception here. Trying to treat markedAsRecoverable as an Integer.", e);
+                log.debug("If database does not support boolean (like Ingres) we would expect an Exception here. Trying to treat markedAsRecoverable as an Integer.", GdprRedactionUtils.getRedactedException(e));
             }
             Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverableInt=1");
             query.setParameter("usermark", usermark);

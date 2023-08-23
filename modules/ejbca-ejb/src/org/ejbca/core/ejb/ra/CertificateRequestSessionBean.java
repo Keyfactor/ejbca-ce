@@ -62,6 +62,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.GdprRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -140,13 +141,14 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         RequestMessage requestMessage;
         try {
             requestMessage = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
-        } catch (InvalidKeyException | SignRequestSignatureException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
-                | IOException e) {
+        } catch (InvalidKeyException | SignRequestSignatureException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
+        } catch (IOException e) {
+            throw GdprRedactionUtils.getRedactedException(e);
         } catch (ParseException | ConstructionException | NoSuchFieldException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
+            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, GdprRedactionUtils.getRedactedException(e));
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
         if (cainfo.isUseUserStorage() && username != null) {
@@ -189,10 +191,19 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 }
                 retval = getCertResponseFromPublicKey(admin, requestMessage, responseType, userdata);
             }
-        } catch (CertificateExtensionException | CertificateException | EjbcaException | CesecoreException e) {
+        } catch (CertificateExtensionException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } 
+            throw GdprRedactionUtils.getRedactedException(e);
+        } catch (CertificateException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw GdprRedactionUtils.getRedactedException(e);
+        } catch (EjbcaException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw GdprRedactionUtils.getRedactedException(e);
+        } catch (CesecoreException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw GdprRedactionUtils.getRedactedException(e);
+        }
         return retval;
     }
 
@@ -238,7 +249,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             retval = signSession.createCertificate(admin, req, responseClass, userdata);
         } catch (EjbcaException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
+            throw GdprRedactionUtils.getRedactedException(e);
         } catch (CertificateExtensionException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
@@ -376,18 +387,18 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw e;
         } catch (IOException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(GdprRedactionUtils.getRedactedException(e));
         } catch (CertificateException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
+            throw GdprRedactionUtils.getRedactedException(e);
         } catch (InvalidAlgorithmParameterException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (RuntimeException e) {
-            throw e;
+            throw new RuntimeException(GdprRedactionUtils.getRedactedException(e));
         } catch (Exception e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new KeyStoreException(e);
+            throw new KeyStoreException(GdprRedactionUtils.getRedactedException(e));
         }
         return ret;
     }
