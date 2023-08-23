@@ -83,6 +83,7 @@ public class EnableGlobalPiiDataRedactionTest {
        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration)
                 globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
        if (globalCesecoreConfiguration.getRedactPiiEnforced()) {
+           log.error("Redaction is enabled already.");
            return;
        }
        
