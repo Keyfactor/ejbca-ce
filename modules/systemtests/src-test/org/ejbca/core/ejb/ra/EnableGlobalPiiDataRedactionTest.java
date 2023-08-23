@@ -89,6 +89,10 @@ public class EnableGlobalPiiDataRedactionTest {
        globalCesecoreConfiguration.setRedactPiiEnforced(true);
        globalConfigurationSession.saveConfiguration(admin, globalCesecoreConfiguration);
        
+       globalCesecoreConfiguration = (GlobalCesecoreConfiguration)
+               globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+       log.error("Redaction settings: " + globalCesecoreConfiguration.getRedactPiiEnforced());
+       
        // used to mark the start of SystemTest
        caAdminSession.customLog(admin, "check", null, admin.getUniqueId(), 
                null, CUSTOM_LOG_MESSAGE, EjbcaEventTypes.CUSTOMLOG_INFO);

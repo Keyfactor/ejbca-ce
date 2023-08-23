@@ -69,7 +69,7 @@ public class GdprRedactionUtils {
         StringBuilder regex = new StringBuilder(); 
         regex.append("(");
         for(String dnPart: dnParts) {
-            if (dnPart.equals("e") || dnPart.equals("t")) {
+            if (dnPart.equals("e") || dnPart.equals("t") || dnPart.equals("l") || dnPart.equals("o")) {
                 continue;
             }
             regex.append("(" + dnPart + "=)|");
