@@ -256,6 +256,7 @@
                         <h:panelGroup rendered="#{caGuiInfo.isDeltaCrlExpired()}">
                             <span id="alert3"><h:outputText
                                     value="#{web.text.EXPIRED} #{caGuiInfo.getDeltaCrlExpireDate()}"/></span>
+                            <h:outputText value=" #{web.text.NUMBER} #{caGuiInfo.deltacrlinfo.getLastCRLNumber()} "/>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlExpired()}">
                             <span id="alert4"><h:outputText
