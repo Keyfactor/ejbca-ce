@@ -33,11 +33,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -84,12 +82,14 @@ import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.pkcs.PBKDF2Params;
 import org.bouncycastle.asn1.pkcs.PBMAC1Params;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.MacCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -98,7 +98,6 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.model.InternalEjbcaResources;
-
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
@@ -538,6 +537,44 @@ public class CmpMessageHelper {
             LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
         } 
         return cresp;
+    }
+
+    public static CmpErrorResponseMessage createSignedErrorMessage(PKIHeader pkiHeader, FailInfo failInfo, String failText, List<Certificate> signCaChain, PrivateKey privateKey,
+            String provider ) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+        final CmpErrorResponseMessage errorMessage = new CmpErrorResponseMessage();
+            if (pkiHeader == null) {
+                pkiHeader = new PKIHeader(PKIHeader.CMP_2000, PKIHeader.NULL_NAME, PKIHeader.NULL_NAME);
+            }
+            // Create a failure message
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Creating a signed error message with failInfo=" + failInfo + ", failText=" + failText);
+            }
+            errorMessage.setSenderNonce(new String(Base64.encode(createSenderNonce())));
+            // Sender nonce is optional and might not always be included
+            if (pkiHeader.getSenderNonce() != null) {
+                errorMessage.setRecipientNonce(new String(Base64.encode(pkiHeader.getSenderNonce().getOctets())));
+            }
+            //Get sender:
+            X509Certificate cacert = (X509Certificate) signCaChain.iterator().next();
+            errorMessage.setSender(new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded())));
+            errorMessage.setRecipient(pkiHeader.getSender());
+            if (pkiHeader.getTransactionID() != null) {
+                errorMessage.setTransactionId(new String(Base64.encode(pkiHeader.getTransactionID().getOctets())));
+            } else {
+                // Choose a random transaction ID if the client did not provide one
+                errorMessage.setTransactionId(new String(Base64.encode(createSenderNonce())));
+            }
+            final AlgorithmIdentifier protectionAlgorithm = pkiHeader.getProtectionAlg();
+            if (protectionAlgorithm != null) {
+                errorMessage.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(protectionAlgorithm.getAlgorithm().getId()));
+            } else {
+                errorMessage.setPreferredDigestAlg(CMSSignedGenerator.DIGEST_SHA256);
+            }
+            errorMessage.setFailInfo(failInfo);
+            errorMessage.setFailText(failText);
+            errorMessage.setSignKeyInfo(signCaChain, privateKey, provider);
+            errorMessage.create();
+        return errorMessage;
     }
 
     /**
