@@ -25,17 +25,17 @@ import org.junit.Test;
 /** 
  * This test is meant to be used as "ant test:runone -Dtest.runone=" before all the systemtests run to test redacted log.<br>
  * We need to set "enable.log.redact=true" at systemtest.properties to allow the functionality.<br>
- * This ensures other systemtests especially the ones meant for testing audt log redaction are not affected.
+ * This ensures other systemtests especially the ones meant for testing audit log redaction are not affected.
  */
 public class EnableGlobalPiiDataRedactionTest {
     
-    private static final Logger log = Logger.getLogger(EndEntityManagementSessionAuditLogRedactTest.class);
+    private static final Logger log = Logger.getLogger(EnableGlobalPiiDataRedactionTest.class);
         
     protected static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);   
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("EnableGlobalPiiDataRedactionTest");
     
     @Test
-    public void setRedactEnfoced() throws Exception {
+    public void setRedactEnforced() throws Exception {
         if (!SystemTestsConfiguration.getEnableLogRedact()) {
             return;
         }
