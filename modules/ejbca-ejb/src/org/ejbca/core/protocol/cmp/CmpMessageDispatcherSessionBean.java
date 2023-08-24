@@ -93,7 +93,6 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias)
             throws NoSuchAliasException {
-
         final CmpConfiguration cmpConfiguration = (CmpConfiguration) this.globalConfigSession
                 .getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (!cmpConfiguration.aliasExists(cmpConfigurationAlias)) {
@@ -127,7 +126,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     private ResponseMessage dispatch(final AuthenticationToken authenticationToken, final PKIMessage pkiMessage, final PKIHeader pkiHeader,
             final CmpConfiguration cmpConfiguration, String cmpConfigurationAlias, final int levelOfNesting) {
         if (levelOfNesting > CmpMessageHelper.MAX_LEVEL_OF_NESTING) {
-            return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, "Rejected request due to unreasonable level of nesting.");
+                return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, "Rejected request due to unreasonable level of nesting.");
         }
         final boolean authenticated = levelOfNesting > 0;
         try {
@@ -204,12 +203,12 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getMessage();
                         log.info(errMsg, e);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, errMsg);
+                            return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, errMsg );
                     }
                 }
                 final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
                 log.info(errMsg);
-                return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, errMsg);
+                    return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, errMsg);
             default:
                 unknownMessageType = tagno;
                 log.info("Received an unknown message type, tagno=" + tagno);
@@ -227,7 +226,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 if (unknownMessageType > -1) {
                     final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", Integer.valueOf(unknownMessageType));
                     log.error(eMsg);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, eMsg);
+                        return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, eMsg);
                 }
                 throw new IllegalStateException("Something is null! Handler=" + handler + ", cmpMessage=" + cmpMessage);
             }

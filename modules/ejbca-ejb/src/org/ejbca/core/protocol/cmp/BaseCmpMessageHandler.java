@@ -13,21 +13,37 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Base class for CMP message handlers that require RA mode secret verification.
@@ -56,6 +72,7 @@ public class BaseCmpMessageHandler {
 	protected CaSessionLocal caSession;
 	protected EndEntityProfileSessionLocal endEntityProfileSession;
 	protected CertificateProfileSession certificateProfileSession;
+	protected CryptoTokenSessionLocal cryptoTokenSession;
 	protected CmpConfiguration cmpConfiguration;
 
 	protected BaseCmpMessageHandler() {
@@ -70,6 +87,7 @@ public class BaseCmpMessageHandler {
         this.caSession = ejbBridgeSession.getCaSession();
         this.endEntityProfileSession = ejbBridgeSession.getEndEntityProfileSession();
         this.certificateProfileSession = ejbBridgeSession.getCertificateProfileSession();
+        this.cryptoTokenSession = ejbBridgeSession.getCryptoTokenSession();
     }
 
 	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. */
@@ -174,5 +192,36 @@ public class BaseCmpMessageHandler {
 			throw new NotFoundException(msg);
 		}
 		return ret;
+	}
+
+	protected CmpErrorResponseMessage sendSignedErrorMessage(final BaseCmpMessage cmpMessage, FailInfo failInfo, String errmsg ){
+	    String caDn = cmpMessage.getHeader().getRecipient().getName().toString();
+	    if (caDn == null) {
+	        caDn = cmpConfiguration.getCMPDefaultCA(this.confAlias);
+	    }
+	    int errorResponseSigningCaId;
+	    errorResponseSigningCaId = CertTools.stringToBCDNString(caDn).hashCode();
+	    CACommon signCa = null;
+	    String aliasCertSign = null;
+	    PrivateKey signKey = null;
+	    String provider = null;
+	    List<Certificate> signCachain = null;
+	    try {
+	        signCa = caSession.getCA(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("cmpProtocolSignErrorResponse")), errorResponseSigningCaId);
+	        if (signCa != null) {
+	            signCachain = signCa.getCertificateChain();
+	        } else {
+	            return (CmpErrorResponseMessage) CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, failInfo, errmsg);
+	        }
+	        aliasCertSign = signCa.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+	        signKey = cryptoTokenSession.getCryptoToken(signCa.getCAToken().getCryptoTokenId()).getPrivateKey(aliasCertSign);
+	        provider = cryptoTokenSession.getCryptoToken(signCa.getCAToken().getCryptoTokenId()).getSignProviderName();
+	        return CmpMessageHelper.createSignedErrorMessage(cmpMessage.getHeader(), failInfo,  errmsg, signCachain, signKey, provider);
+	    } catch (AuthorizationDeniedException | CryptoTokenOfflineException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+	        if (LOG.isDebugEnabled()) {
+	            LOG.debug("Could not sign CmpErrorResponseMessage, creating unprotected message. " + e.getMessage());
+	        }
+	        return (CmpErrorResponseMessage) CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage.getHeader(), failInfo,  errmsg);
+	    }
 	}
 }
