@@ -65,6 +65,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.Log4jGdprRedactHandler;
@@ -382,6 +383,8 @@ public class StartupSingletonBean {
             } 
         }
 
+        log.debug(">startup loading node level redaction settings");
+        globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         log.debug(">startup checking for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database
         // operation and avoid a performance hit for the first request where this is checked.
