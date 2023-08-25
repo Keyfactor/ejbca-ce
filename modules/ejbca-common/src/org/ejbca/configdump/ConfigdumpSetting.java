@@ -42,6 +42,7 @@ public class ConfigdumpSetting implements Serializable {
     public enum ItemType {
 
         ACMECONFIG("acme-config", "ACMECONFIG"),
+        AUTOENROLLMENTCONFIG("autoenrollment-config","AUTOENROLLMENTCONFIG"),
         CA("certification-authorities", "CA"),
         CRYPTOTOKEN("crypto-tokens", "CRYPTOTOKEN"),
         PUBLISHER("publishers", "PUBLISHER"),
