@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.apache.log4j.Logger;
-import org.cesecore.configuration.GdprConfigurationCache;
+import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -99,7 +99,7 @@ public class GetErrorCodeTest {
     
     @Test
     public void testRedactException() {
-        GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
+        LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
         String exceptionMessageWithPii = "some message: CN=abcd,OU=xyz blah";
         
         try {

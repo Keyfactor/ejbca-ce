@@ -100,7 +100,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.configuration.GdprConfigurationCache;
+import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -377,7 +377,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
         issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
         try {
-            if (!GdprConfigurationCache.INSTANCE.
+            if (!LogRedactionConfigurationCache.INSTANCE.
                     getGdprConfiguration(endEntityInformation.getEndEntityProfileId()).isRedactPii()) {
                 issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
             }

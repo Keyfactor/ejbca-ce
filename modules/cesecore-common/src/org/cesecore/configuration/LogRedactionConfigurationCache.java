@@ -16,14 +16,14 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-public enum GdprConfigurationCache {
+public enum LogRedactionConfigurationCache {
     INSTANCE;
     
     // initialized with falsy values
     private static GdprConfiguration REDACT_DEFAULT = new GdprConfiguration(false);
     private static GdprConfiguration REDACT_ENFORCED = null;
 
-    private final Logger LOG = Logger.getLogger(GdprConfigurationCache.class);
+    private final Logger LOG = Logger.getLogger(LogRedactionConfigurationCache.class);
     
     /** Cache of mappings between profileId and configuration, most cases in EJBs */
     private volatile Map<Integer, GdprConfiguration> idToConfigCache = null;
