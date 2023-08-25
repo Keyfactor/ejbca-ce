@@ -36,14 +36,14 @@ public class Log4jGdprRedactHandler extends Handler {
         }
         
         // check for global setting
-        if (!GdprRedactionUtils.redactPii()) {
+        if (!LogRedactionUtils.redactPii()) {
             return;
         }
         
         // for ERROR and above + TRACE
-        logRecord.setMessage(GdprRedactionUtils.getRedactedMessage(logRecord.getMessage()));
+        logRecord.setMessage(LogRedactionUtils.getRedactedMessage(logRecord.getMessage()));
         if (logRecord.getThrown()!=null) {
-            logRecord.setThrown(GdprRedactionUtils.getRedactedThrowable(logRecord.getThrown()));
+            logRecord.setThrown(LogRedactionUtils.getRedactedThrowable(logRecord.getThrown()));
         }
                 
     }
