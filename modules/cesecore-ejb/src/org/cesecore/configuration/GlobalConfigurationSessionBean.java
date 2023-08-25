@@ -275,7 +275,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             }
             if (configId==GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID) {
                 GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) conf;
-                GdprConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(
+                LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(
                         globalCesecoreConfiguration.getRedactPiiByDefault(), globalCesecoreConfiguration.getRedactPiiEnforced());
             }
         }
