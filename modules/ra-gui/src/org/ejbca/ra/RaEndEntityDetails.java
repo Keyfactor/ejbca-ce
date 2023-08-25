@@ -46,7 +46,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SshCertificateUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -384,14 +384,14 @@ public class RaEndEntityDetails implements Serializable {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-                log.info("Token " + GdprRedactionUtils.getSubjectDnLogSafe(filename, eepId) + " could not be downloaded", GdprRedactionUtils.getRedactedThrowable(e, eepId));
+                log.info("Token " + LogRedactionUtils.getSubjectDnLogSafe(filename, eepId) + " could not be downloaded", LogRedactionUtils.getRedactedThrowable(e, eepId));
             callbacks.getRaLocaleBean().getMessage("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    throw new IllegalStateException("Failed to close outputstream", GdprRedactionUtils.getRedactedThrowable(e, eepId));
+                    throw new IllegalStateException("Failed to close outputstream", LogRedactionUtils.getRedactedThrowable(e, eepId));
                 }
             }
         }
