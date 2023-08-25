@@ -36,7 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.validation.ValidationResult;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -174,7 +174,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
             }
         }
         retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(GdprRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
 		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
         retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, newuserdata.getSubjectAltName()));
         String dirattrs = newuserdata.getExtendedInformation() != null ? newuserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
@@ -201,7 +201,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 			}
 		}
 		retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(GdprRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
 		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, newuserdata.getSubjectAltName()));
 		String dirattrs = newuserdata.getExtendedInformation() != null ? newuserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
@@ -248,7 +248,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 		final List<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME", orguserdata.getUsername(), true, false));
 		retval.add(new ApprovalDataText("PASSWORD", "NOTSHOWN", true, true));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(GdprRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
 		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.stringToBCDNString(orguserdata.getDN()), true, false));
 		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, orguserdata.getSubjectAltName()));
 		String dirattrs = orguserdata.getExtendedInformation() != null ? orguserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;

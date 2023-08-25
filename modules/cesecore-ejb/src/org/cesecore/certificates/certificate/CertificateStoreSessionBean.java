@@ -51,7 +51,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.CvcKeyTools;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.cvc.PublicKeyEC;
 
@@ -355,7 +355,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             try {
                 certificateData.setBase64Cert(new String(Base64.encode(certificate.getEncoded())));
             } catch (CertificateEncodingException e) {
-                log.error("Failed to encode certificate for fingerprint " + fingerprint, GdprRedactionUtils.getRedactedThrowable(e, certificateData.getEndEntityProfileId()));
+                log.error("Failed to encode certificate for fingerprint " + fingerprint, LogRedactionUtils.getRedactedThrowable(e, certificateData.getEndEntityProfileId()));
                 return false;
             }
         }
@@ -482,7 +482,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN +
-                      "' and subject DN(transformed) '" + GdprRedactionUtils.getSubjectDnLogSafe(transformedSubjectDN) + "'.");
+                      "' and subject DN(transformed) '" + LogRedactionUtils.getSubjectDnLogSafe(transformedSubjectDN) + "'.");
         }
 
         try {
@@ -546,7 +546,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN +
-                      "' and SubjectKeyId '" + sSubjectKeyId + "' OR subject DN(transformed) '" + GdprRedactionUtils.getSubjectDnLogSafe(transformedSubjectDN) + "'.");
+                      "' and SubjectKeyId '" + sSubjectKeyId + "' OR subject DN(transformed) '" + LogRedactionUtils.getSubjectDnLogSafe(transformedSubjectDN) + "'.");
         }
 
         try {
@@ -1697,7 +1697,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     // needs to call using "certificateStoreSession." in order to honor the transaction annotations
                     certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction(admin, cert2, userName, "fedcba9876543210", new Date().getTime());
                 } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
-                    log.info("certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction threw Throwable (normal if there is a unique issuerDN/serialNumber index): " + GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+                    log.info("certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction threw Throwable (normal if there is a unique issuerDN/serialNumber index): " + LogRedactionUtils.getRedactedMessage(e.getMessage()));
                     log.info("Unique index in CertificateData table for certificate serial number");
                     // Exception is thrown when unique index is working and a certificate with same serial number is in the database.
                     UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.TRUE);
@@ -1920,13 +1920,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      */
     private String getLogSafeSubjectDn(final String subjectDn, List<CertificateDataWrapper> certificateDataWrappers) {
         if (certificateDataWrappers.isEmpty()) {
-            return GdprRedactionUtils.getSubjectDnLogSafe(subjectDn);
+            return LogRedactionUtils.getSubjectDnLogSafe(subjectDn);
         }
 
         final CertificateDataWrapper latestCertificateDataWrapper = getLatestCertificateDataWrapper(certificateDataWrappers);
         final int eepId = latestCertificateDataWrapper.getCertificateData().getEndEntityProfileId();
 
-        return GdprRedactionUtils.getSubjectDnLogSafe(subjectDn, eepId);
+        return LogRedactionUtils.getSubjectDnLogSafe(subjectDn, eepId);
     }
 
     /**

@@ -36,7 +36,7 @@ import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 
 import com.keyfactor.util.CertTools;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 
 /**
  * Hold information needed to create OCSP responses without database lookups.
@@ -135,7 +135,7 @@ public enum OcspSigningCache {
             log.debug("Committing the following to OCSP cache:");
             for (final Integer key : staging.keySet()) {
                 final OcspSigningCacheEntry entry = staging.get(key);
-                log.debug(" KeyBindingId: " + key + ", SubjectDN '" + GdprRedactionUtils.getSubjectDnLogSafe(entry.getFullCertificateChain().get(0))
+                log.debug(" KeyBindingId: " + key + ", SubjectDN '" + LogRedactionUtils.getSubjectDnLogSafe(entry.getFullCertificateChain().get(0))
                         + "', IssuerDN '" + CertTools.getIssuerDN(entry.getFullCertificateChain().get(0)) + "', SerialNumber "
                         + entry.getFullCertificateChain().get(0).getSerialNumber().toString() + "/"
                         + entry.getFullCertificateChain().get(0).getSerialNumber().toString(16));
@@ -251,7 +251,7 @@ public enum OcspSigningCache {
     public static List<CertificateID> getCertificateIDFromCertificate(final X509Certificate certificate) {
         try {
             if (log.isTraceEnabled()) {
-                log.trace("Building CertificateId's from certificate with subjectDN '" + GdprRedactionUtils.getSubjectDnLogSafe(certificate) + "'.");
+                log.trace("Building CertificateId's from certificate with subjectDN '" + LogRedactionUtils.getSubjectDnLogSafe(certificate) + "'.");
             }
             List<CertificateID> ret = new ArrayList<>();
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));

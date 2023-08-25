@@ -52,7 +52,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * 3. boolean redactPii() may be used to retrieve node level configuration
  * 4. boolean isRedactPii(final int endEntityProfileId) may be used to retrieve EEP level settings. This method also combines node level settings as they supersede EEP level settings.
  */
-public class GdprRedactionUtils {
+public class LogRedactionUtils {
     
     public static final String REDACTED_CONTENT = "<redacted>";
     
@@ -149,13 +149,13 @@ public class GdprRedactionUtils {
 
     public static String getLogSafe(final String string, final String identifier, final int endEntityProfileId) {
         return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii() ?
-                string.replace(identifier, GdprRedactionUtils.REDACTED_CONTENT) : string;
+                string.replace(identifier, LogRedactionUtils.REDACTED_CONTENT) : string;
     }
 
     public static String getLogSafe(String string, final List<String> identifiers, final int endEntityProfileId) {
         if (GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
             for (String identifier : identifiers) {
-                string = string.replace(identifier, GdprRedactionUtils.REDACTED_CONTENT);
+                string = string.replace(identifier, LogRedactionUtils.REDACTED_CONTENT);
             }
         }
         return string;
@@ -293,12 +293,12 @@ public class GdprRedactionUtils {
 
     @SuppressWarnings("unchecked")
     public static <T extends Exception> T getRedactedException(T exception, final int endEntityProfileId) {
-        return (T) GdprRedactionUtils.getRedactedThrowable(exception, endEntityProfileId);
+        return (T) LogRedactionUtils.getRedactedThrowable(exception, endEntityProfileId);
     }
 
     @SuppressWarnings("unchecked")
     public static <T extends Exception> T getRedactedException(T exception) {
-        return (T) GdprRedactionUtils.getRedactedThrowable(exception);
+        return (T) LogRedactionUtils.getRedactedThrowable(exception);
     }
     
     public static Throwable getRedactedThrowable(Throwable thrownException, String endEntityProfileName) {
