@@ -25,7 +25,7 @@ import static org.cesecore.authorization.control.StandardRules.SYSTEMCONFIGURATI
 
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class InternalCertificateRestSessionBean implements InternalCertificateRestSessionLocal {
+public class InternalCertificateSessionBean implements InternalCertificateRestSessionLocal, InternalCertificateSessionRemote {
 
 	static final String ERROR_MESSAGE = "Unauthorized access to the resource. Token: %s. "
 			+ "Only the user with the \"/system_functionality/view_systemconfiguration/\" privilege "
