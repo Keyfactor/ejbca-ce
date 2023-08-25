@@ -943,7 +943,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
         if (endEntity == null) {
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-            String msg = GdprRedactionUtils.getRedactedMessage(intres.getLocalizedMessage("ra.wrongusernameorpassword")); // Don't leak whether it was the username or the password.
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword"); // Don't leak whether it was the username or the password.
             throw new NotFoundException(msg);
         }
         // Check CA exists and user is authorized to access it.
