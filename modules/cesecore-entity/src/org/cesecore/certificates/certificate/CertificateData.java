@@ -312,7 +312,11 @@ public class CertificateData extends BaseCertificateData implements Serializable
     
     @Transient
     public String getLogSafeSubjectAltName() {
-        return GdprRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull(), endEntityProfileId);
+        if (endEntityProfileId == null) {
+            return GdprRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull());
+        } else {
+            return GdprRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull(), endEntityProfileId);
+        }
     }
 
     @Override
