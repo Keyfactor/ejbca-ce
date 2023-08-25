@@ -22,7 +22,7 @@ import javax.persistence.EntityManager;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.GdprConfiguration;
-import org.cesecore.configuration.GdprConfigurationCache;
+import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -132,7 +132,7 @@ public enum EndEntityProfileCache {
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
         
-        GdprConfigurationCache.INSTANCE.updateGdprCache(idToGdprConfigCache, nameToGdprConfigCache);
+        LogRedactionConfigurationCache.INSTANCE.updateGdprCache(idToGdprConfigCache, nameToGdprConfigCache);
         
         if (LOG.isTraceEnabled()) {
             final long end = System.currentTimeMillis();
