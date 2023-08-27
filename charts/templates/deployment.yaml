@@ -27,8 +27,9 @@ spec:
       serviceAccountName: {{ include "ejbca-community-helm.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}  
-      {{- if .Values.nginx.enabled }}
+      {{- if or .Values.nginx.enabled .Values.ejbca.initContainers }}
       initContainers:
+        {{- if .Values.nginx.enabled }}
         - name: {{ .Chart.Name }}-init
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -58,6 +59,10 @@ spec:
           - name: ejbca-config-conf-files
             mountPath: /opt/keyfactor/ejbca/conf/
           {{- end }}
+        {{- end }}
+        {{- if .Values.ejbca.initContainers }}
+          {{- toYaml .Values.ejbca.initContainers | nindent 8 }}
+        {{- end }}
       {{- end }}
       containers:
         {{- if .Values.nginx.enabled }}
@@ -186,6 +191,12 @@ spec:
             - name: ejbca-config-configdump-initialize
               mountPath: /opt/keyfactor/configdump/initialize.d/
             {{- end }}
+            {{- if .Values.ejbca.volumeMounts }}
+              {{- toYaml .Values.ejbca.volumeMounts | nindent 12 }}
+            {{- end }}
+          {{- if .Values.ejbca.sidecarContainers }}
+            {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
+          {{- end }}
       volumes:
         {{- if .Values.ejbca.useH2Persistence }}
         - name: ejbca-h2-persistence
@@ -228,6 +239,9 @@ spec:
         - name: ejbca-config-configdump-initialize
           secret:
             secretName: {{ .Values.ejbca.configdumpInitializeSecret }}
+        {{- end }}
+        {{- if .Values.ejbca.volumes }}
+          {{- toYaml .Values.ejbca.volumes | nindent 8 }}
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

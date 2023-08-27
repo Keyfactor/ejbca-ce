@@ -212,6 +212,48 @@ ingress:
       secretName: ingress-tls
 ```
 
+### Using init containers and sidecar containers
+
+The init containers and sidecar containers can be used to customize the deployment (for example, if you need to run security module service as additional container, or do some extra validation before EJBCA startup). The following example shows how to use sidecar containers (init containers are configured the same way):
+
+```yaml
+ejbca:
+  sidecarContainers:
+    - name: hsm
+      image: hsm-image
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: config
+          mountPath: /opt/config
+          readOnly: true
+        - name: socket
+          mountPath: /opt/sockets
+```
+
+Additionally, sidecar containers can expose ports. The following example shows how to expose port to the sidecar container to in EJBCA deployment:
+
+```yaml
+service:
+  sidecarPorts:
+    - name: hsm-port
+      port: 1234
+      targetPort: 1234 
+```
+
+### Using additional volumes and volume mounts
+
+Additional volumes and volume mounts can be used to customize the deployment (for example, if you need to mount a volume with a custom configuration file, sockets, etc.). The following example shows how to use additional volumes and volume mounts:
+
+```yaml
+ejbca:
+  volumes:
+    - name: socket
+      emptyDir: {}
+  volumeMounts:
+    - name: socket
+      mountPath: /opt/sockets
+```
+
 ## Parameters
 
 ### EJBCA Deployment Parameters
@@ -232,6 +274,10 @@ ingress:
 | ejbca.superadminPasswordOverride | If a custom password should be set for the initial superadmin created at first deployment. Requires ejbca.env.TLS_SETUP_ENABLED "true" |         |
 | ejbca.env                        | Environment variables to pass to container                                                                                             |         |
 | ejbca.envRaw                     | Environment variables to pass to container in Kubernetes YAML format                                                                   |         |
+| ejbca.initContainers             | Extra init containers to be added to the deployment                                                                                    | []      |
+| ejbca.sidecarContainers          | Extra sidecar containers to be added to the deployment                                                                                 | []      |
+| ejbca.volumes                    | Extra volumes to be added to the deployment                                                                                            | []      |
+| ejbca.volumeMounts               | Extra volume mounts to be added to the deployment                                                                                      | []      |
 
 ### EJBCA Environment Variables
 

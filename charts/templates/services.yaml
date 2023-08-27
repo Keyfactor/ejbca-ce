@@ -22,6 +22,9 @@ spec:
       targetPort: https
       protocol: TCP
       name: https
+    {{- if and .Values.ejbca.sidecarContainers .Values.services.sidecarPorts }}
+      {{- toYaml .Values.services.sidecarPorts | nindent 4 }}
+    {{- end }}
   selector:
     {{- include "ejbca-community-helm.selectorLabels" . | nindent 4 }}
 {{- end }}
