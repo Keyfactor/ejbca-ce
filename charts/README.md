@@ -329,6 +329,7 @@ ejbca:
 | services.proxyHttp.bindIP     | IP to bind for proxy HTTP communication                                                              | 0.0.0.0   |
 | services.proxyHttp.httpPort   | Service port for proxy HTTP communication                                                            | 8081      |
 | services.proxyHttp.httpsPort  | Service port for proxy HTTP communication that accepts SSL_CLIENT_CERT header                        | 8082      |
+| services.sidecarPorts         | Additional ports to expose in sidecar containers                                                     | []        |
 
 ### NGINX Reverse Proxy Parameters
 
