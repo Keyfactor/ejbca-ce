@@ -324,7 +324,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  null,  authenticated);
         if (authenticationModule == null) {
             String errmsg = messageVerifyer.getErrorMessage();
-            LOG.info(errmsg);
+            LOG.info(GdprRedactionUtils.getRedactedMessage(errmsg, eeProfileId));
             return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
         }        
         // Create a username and password and register the new user in EJBCA

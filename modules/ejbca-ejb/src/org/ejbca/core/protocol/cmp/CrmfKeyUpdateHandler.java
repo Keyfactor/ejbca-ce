@@ -162,7 +162,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                             confAlias, cmpConfiguration, authenticated, caSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
                             endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                     if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
-                        LOG.info(eecmodule.getErrorMessage());
+                        LOG.info(GdprRedactionUtils.getRedactedMessage(eecmodule.getErrorMessage()));
                         return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
                     } else {
                         if(LOG.isDebugEnabled()) {

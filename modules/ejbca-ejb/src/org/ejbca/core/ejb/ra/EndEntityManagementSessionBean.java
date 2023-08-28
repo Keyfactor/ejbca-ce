@@ -1426,7 +1426,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (StringUtils.trimToNull(oldValue) == null && StringUtils.trimToNull(newValue) == null) {
                 continue;
             }
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() && !GdprRedactionUtils.redactPii()) {
                 log.debug("Key " + entry.getKey() + " has changed from '" + oldValue + "' to '" + newValue + "'. Will update end-entity");
             }
             changeMode = UserDataChangeMode.IF_NO_CONFLICT;
