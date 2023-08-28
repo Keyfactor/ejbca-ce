@@ -355,11 +355,6 @@ public class WebConfiguration {
         return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("sunp11.cryptotoken.enabled")); // default true
     }
 
-    /** @return true if we have P11NG Crypto Token enabled in the Admin GUI. */
-    public static boolean isP11NGEnabled(){
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("p11ng.cryptotoken.enabled"));
-    }
-
     /** @return true if we have P11NG Utimaco CP5 specific Crypto Token functions enabled in the Admin GUI. */
     public static boolean isP11NGUtimacoCP5Enabled(){
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("p11ng.utimacocp5.enabled"));
