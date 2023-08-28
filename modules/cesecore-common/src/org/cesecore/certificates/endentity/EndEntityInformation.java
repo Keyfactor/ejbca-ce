@@ -424,7 +424,7 @@ public class EndEntityInformation implements Serializable {
      * @return an information map about this end entity, listing all general fields.
      */
     public Map<String, String> getDetailMap() {
-        return getDetailMap(true); // TODO: EJBCAINTER-535 - use global redaction value
+        return getDetailMap(GdprRedactionUtils.redactPii());
     }
       
     /**
@@ -442,6 +442,10 @@ public class EndEntityInformation implements Serializable {
             StringBuilder extendedInformationDump = new StringBuilder("{");
             LinkedHashMap<Object, Object> rawData = extendedinformation.getRawData();
             for (Object key : rawData.keySet()) {
+                if (tryRedact && ( ExtendedInformation.CERTIFICATE_REQUEST.equals(key) || 
+                        ExtendedInformation.SCEP_CACHED_REQUEST.equals(key)) ) {
+                    continue;
+                }
                 if (rawData.get(key) != null) {
                     extendedInformationDump.append(", [").append((String) key).append(':').append(rawData.get(key)).append(']');
                 }
