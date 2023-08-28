@@ -177,9 +177,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
             } else if (certificate.getType().equalsIgnoreCase(SshCertificate.CERTIFICATE_TYPE)) {
                 setSubjectAltName(SshCertificateUtils.createSanForStorage((SshCertificate) certificate));
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Creating CertificateData, subjectDN=" + getLogSafeSubjectDn()  + ", subjectAltName=" + getLogSafeSubjectAltName() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp+", storeSubjectAltName="+storeSubjectAltName);
-            }
             setSerialNumber(CertTools.getSerialNumber(certificate).toString());
 
             setUsername(username);
@@ -201,6 +198,9 @@ public class CertificateData extends BaseCertificateData implements Serializable
             setCertificateProfileId(certprofileid);
             setEndEntityProfileId(endEntityProfileId);
             setCrlPartitionIndex(crlPartitionIndex);
+            if (log.isDebugEnabled()) {
+                log.debug("Creating CertificateData, subjectDN=" + getLogSafeSubjectDn()  + ", subjectAltName=" + getLogSafeSubjectAltName() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp+", storeSubjectAltName="+storeSubjectAltName);
+            }
             // Create a key identifier
             PublicKey pubk = certificate.getPublicKey();
             if (enrichedpubkey != null) {
