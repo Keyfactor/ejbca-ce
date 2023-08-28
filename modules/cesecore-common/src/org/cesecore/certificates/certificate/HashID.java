@@ -24,6 +24,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.util.GdprRedactionUtils;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -73,10 +74,12 @@ public class HashID {
 		final HashID id = new HashID(hashFromPrincipalDN(principal));
 		if ( id.isOK ) {
 			if ( log.isDebugEnabled() ) {
-				log.debug("The DN '"+principal.getName()+"' is identified by the Hash string '"+id.b64+"' when accessing the VA.");
+				log.debug("The DN '" + GdprRedactionUtils.getSubjectDnLogSafe(principal.getName()) + "' is identified by the Hash string '" +
+						id.b64 + "' when accessing the VA.");
 			}
 		} else {
-			log.error("The DN '"+principal.getName()+"' has a non valid Hash identification string: "+id.b64);
+			log.error("The DN '" + GdprRedactionUtils.getSubjectDnLogSafe(principal.getName()) +
+					"' has a non valid Hash identification string: " + id.b64);
 		}
 		return id;
 	}
@@ -130,10 +133,12 @@ public class HashID {
 		final HashID id  = new HashID( KeyTools.createSubjectKeyId(cert.getPublicKey()).getKeyIdentifier() );
 		if ( id.isOK ) {
 			if ( log.isDebugEnabled() ) {
-				log.debug("The certificate with subject DN '"+cert.getSubjectX500Principal().getName()+"' can be fetched with 'search.cgi?sKIDHash="+id.b64+"' from the VA.");
+				log.debug("The certificate with subject DN '" + GdprRedactionUtils.getSubjectDnLogSafe(cert.getSubjectX500Principal().getName()) +
+						"' can be fetched with 'search.cgi?sKIDHash=" + id.b64 + "' from the VA.");
 			}
 		} else {
-			log.error("The certificate with subject DN '"+cert.getSubjectX500Principal().getName()+"' gives a sKIDHash with a not valid format: "+id.b64);
+			log.error("The certificate with subject DN '" + GdprRedactionUtils.getSubjectDnLogSafe(cert.getSubjectX500Principal().getName()) +
+					"' gives a sKIDHash with a not valid format: " + id.b64);
 		}
 		return id;
 	}
