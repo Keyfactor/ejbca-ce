@@ -192,6 +192,10 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
 
     @Override
     public void validateProperty(String name, String value) throws PublisherException {
+        validate(name, value);
+    }
+
+    public static void validate(String name, String value) throws PublisherException {
         if (SSH_PORT.equals(name)) {
             parsePort(value);
         }
