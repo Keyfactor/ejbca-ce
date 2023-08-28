@@ -1972,7 +1972,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
             String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
-            log.info(errMsg); // No need to log the full exception here
+            log.info(GdprRedactionUtils.getRedactedMessage(errMsg)); // No need to log the full exception here
             // RFC 2560: responseBytes are not set on error.
             ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
             if (!isPreSigning && transactionLogger.isEnabled()) {
