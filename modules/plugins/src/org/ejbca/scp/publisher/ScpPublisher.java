@@ -544,6 +544,11 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         return new Destination(host, path, port);
     }
 
+    // used in ConfigDump
+    public Integer getSshPort() {
+        return sshPort;
+    }
+
     private static Integer parsePort(String portInput) throws PublisherException {
         if (portInput.matches("0*\\d{1,5}")) {
             int port = Integer.parseInt(portInput);
