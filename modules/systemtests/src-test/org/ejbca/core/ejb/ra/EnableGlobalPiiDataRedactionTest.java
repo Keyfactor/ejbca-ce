@@ -53,7 +53,7 @@ import org.junit.Test;
 /** 
  * This test is meant to be used as "ant test:runone -Dtest.runone=" before all the systemtests run to test redacted log.<br>
  * We need to set "enable.log.redact=true" at systemtest.properties to allow the functionality.<br>
- * This ensures other systemtests especially the ones meant for testing audt log redaction are not affected.
+ * This ensures other systemtests especially the ones meant for testing audit log redaction are not affected.
  */
 public class EnableGlobalPiiDataRedactionTest {
     
@@ -67,6 +67,13 @@ public class EnableGlobalPiiDataRedactionTest {
     private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static final String CUSTOM_LOG_MESSAGE = "EnableGlobalPiiDataRedactionTest_CustomLogMessage";
+    
+    // different params for server and audit log
+    // case insensitive: do not use 'CA' here as too short
+    private static final String[] IGNORED_ON_LOWERCASE_PREFIXES = 
+                        {"issuerdn", "issuer", "cadn", "keyalias", "keyid", "username"};
+    // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6
+    private static final int PREFIXES_SLACK = 10;
     
     @BeforeClass
     public static void isEnabledAuditLogRedactionTest() {
@@ -104,7 +111,7 @@ public class EnableGlobalPiiDataRedactionTest {
     public void testAuditLogPiiDataWithCompulsoryRedaction() throws Exception {
         
         String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern(),
-                GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIM]{1}[a-zA-Z0-9]{12}"};
+                GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIMH]{1}[a-zA-Z0-9]{12}"};
 //        matches all -> ".*MI[EIM]{1}[a-zA-Z0-9]{12}.*" for wildfly filter
 //        finds all -> "MI[EIM]{1}[a-zA-Z0-9]{12}" without .* at both end
 //        examples returning true:        
@@ -171,10 +178,23 @@ public class EnableGlobalPiiDataRedactionTest {
         
         
         for(AuditLogEntry auditEntry: auditLogsGenerated) {
+            
+            if (auditEntry.getEventTypeValue().equals(EventTypes.CERT_CTPRECERT_SUBMISSION)) {
+                continue;
+            }
+            
             String auditedAdditionalDetails = getAsString(auditEntry.getMapAdditionalDetails());
             for (Pattern p: compiledPatterns) {
                 Matcher m = p.matcher(auditedAdditionalDetails);
                 if(m.find()) {
+                    String wholePrefix = auditedAdditionalDetails.substring(0, m.start()).trim().toLowerCase();
+                    for (String str: IGNORED_ON_LOWERCASE_PREFIXES) {
+                        int detected = wholePrefix.lastIndexOf(str);
+                        if (detected > 0 && 
+                                (detected + str.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
+                            continue;
+                        }
+                    }
                     detectedEventTypes.add(auditEntry.getEventTypeValue().toString());
                     StringBuilder sb = new StringBuilder();
                     sb.append("type: " + auditEntry.getEventTypeValue().toString());
@@ -208,7 +228,7 @@ public class EnableGlobalPiiDataRedactionTest {
                 sb.append(key).append(':').append(content);
                 continue;
             }
-            if (((String)key).equalsIgnoreCase("publickey")) {
+            if (((String)key).equalsIgnoreCase("publickey") || ((String)key).equalsIgnoreCase("issuerdn")) {
                 continue;
             }
             sb.append(key).append(':').append(map.get(key));
