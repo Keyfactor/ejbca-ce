@@ -42,6 +42,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.GdprRedactionUtils;
+import org.ejbca.AuditLogCheckUtil;
 import org.ejbca.ServerLogCheckUtil;
 import org.ejbca.ServerLogCheckUtil.ServerLogRecord;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
@@ -67,14 +68,7 @@ public class EnableGlobalPiiDataRedactionTest {
     private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static final String CUSTOM_LOG_MESSAGE = "EnableGlobalPiiDataRedactionTest_CustomLogMessage";
-    
-    // different params for server and audit log
-    // case insensitive: do not use 'CA' here as too short
-    private static final String[] IGNORED_ON_LOWERCASE_PREFIXES = 
-                        {"issuerdn", "issuer", "cadn", "keyalias", "keyid", "username"};
-    // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6
-    private static final int PREFIXES_SLACK = 10;
-    
+        
     @BeforeClass
     public static void isEnabledAuditLogRedactionTest() {
         assertEquals("New cesecore audit event may need to tested for PII redaction.", EventTypes.values().length, 71);
@@ -166,75 +160,12 @@ public class EnableGlobalPiiDataRedactionTest {
                     break;
                 }
                 offset += 1000;
-                detectPiiLogging(auditLogsGenerated, detectedEventTypes, compiledPatterns);
+                AuditLogCheckUtil.detectPiiLogging(auditLogsGenerated, detectedEventTypes, compiledPatterns);
             }
         }
         
         assertTrue("Found audit logged PII data in: " + detectedEventTypes, detectedEventTypes.isEmpty());
-    }
-    
-    private void detectPiiLogging(List<? extends AuditLogEntry> auditLogsGenerated, 
-            Set<String> detectedEventTypes, List<Pattern> compiledPatterns) {
-        
-        
-        for(AuditLogEntry auditEntry: auditLogsGenerated) {
-            
-            if (auditEntry.getEventTypeValue().equals(EventTypes.CERT_CTPRECERT_SUBMISSION)) {
-                continue;
-            }
-            
-            String auditedAdditionalDetails = getAsString(auditEntry.getMapAdditionalDetails());
-            for (Pattern p: compiledPatterns) {
-                Matcher m = p.matcher(auditedAdditionalDetails);
-                if(m.find()) {
-                    String wholePrefix = auditedAdditionalDetails.substring(0, m.start()).trim().toLowerCase();
-                    for (String str: IGNORED_ON_LOWERCASE_PREFIXES) {
-                        int detected = wholePrefix.lastIndexOf(str);
-                        if (detected > 0 && 
-                                (detected + str.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
-                            continue;
-                        }
-                    }
-                    detectedEventTypes.add(auditEntry.getEventTypeValue().toString());
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("type: " + auditEntry.getEventTypeValue().toString());
-                    sb.append(", detail1: " + auditEntry.getSearchDetail1()); // may contain test name
-                    sb.append(", detail2: " + auditEntry.getSearchDetail2());
-                    sb.append(", additional_detail: " + auditedAdditionalDetails);
-                    sb.append(", matched with: " + p.toString().substring(0, 10) + ", at index: " + m.start() );
-                    log.error("PII logged: " + sb.toString());
-                    break;
-                }
-            }
-        }
-    }
-    
-    private static String getAsString(final Map<String,Object> map) {
-        final StringBuilder sb = new StringBuilder();
-        // we need to validate all keys as Log4jDevice logs all keys too
-        for (final Object key : map.keySet()) {
-            if (sb.length()!=0) {
-                sb.append("; ");
-            }
-            if (((String)key).equalsIgnoreCase("msg")) {
-                String content = (String) map.get(key);
-                content = content.toLowerCase();
-                if (content.contains("issuerdn")) {
-                    int issuerdnStartIndex = content.indexOf("'", content.indexOf("issuerdn"));
-                    int issuerdnEndIndex = content.indexOf("'", issuerdnStartIndex+1);
-                    content = content.substring(0, issuerdnStartIndex) + content.substring(issuerdnEndIndex, content.length());
-                }
-                content = content.replace("serialno", "serial:");
-                sb.append(key).append(':').append(content);
-                continue;
-            }
-            if (((String)key).equalsIgnoreCase("publickey") || ((String)key).equalsIgnoreCase("issuerdn")) {
-                continue;
-            }
-            sb.append(key).append(':').append(map.get(key));
-        }
-        return sb.toString();
-    }
+    }    
     
     @Test
     public void testServerLogPiiDataWithCompulsoryRedaction() throws Exception {
