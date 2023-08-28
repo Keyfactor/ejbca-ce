@@ -170,7 +170,8 @@ public class ServerLogCheckUtil {
         
         if (StringUtils.isEmpty(loggedLine) || loggedLine.length() < 15 
                 || loggedLine.contains("org.jboss")
-                || loggedLine.contains("org.wildfly")) {
+                || loggedLine.contains("org.wildfly")
+                || loggedLine.contains("org.xnio")) {
             return null;
         }
         
