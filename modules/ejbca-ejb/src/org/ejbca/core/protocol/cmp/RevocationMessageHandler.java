@@ -115,7 +115,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, errMsg);
         } catch (CADoesntExistsException e) {
             final String errMsg = "CA with DN '" + msg.getHeader().getRecipient().getName().toString() + "' is unknown";
-            LOG.info(errMsg);
+            LOG.info(GdprRedactionUtils.getRedactedMessage(errMsg));
             return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errMsg);
         } catch (AuthorizationDeniedException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
@@ -132,7 +132,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        authorizationSession, endEntityProfileSession, certificateProfileSession, authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
 		ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(msg.getMessage(), null, authenticated);
 		if(authenticationModule == null) {
-	          LOG.info(messageVerifyer.getErrorMessage());
+	          LOG.info(GdprRedactionUtils.getRedactedMessage(messageVerifyer.getErrorMessage()));
 	          return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, messageVerifyer.getErrorMessage());
 		}
 
