@@ -21,7 +21,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.configuration.GdprConfiguration;
+import org.cesecore.configuration.LogRedactionConfiguration;
 import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -106,8 +106,8 @@ public enum EndEntityProfileCache {
         final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
         
-        final Map<Integer, GdprConfiguration> idToGdprConfigCache = new HashMap<>();
-        final Map<String, GdprConfiguration> nameToGdprConfigCache = new HashMap<>();
+        final Map<Integer, LogRedactionConfiguration> idToGdprConfigCache = new HashMap<>();
+        final Map<String, LogRedactionConfiguration> nameToGdprConfigCache = new HashMap<>();
         
         try {
         	final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
@@ -120,7 +120,7 @@ public enum EndEntityProfileCache {
         		EndEntityProfile profile = next.getProfile();
         		profCache.put(id, profile);
         		
-        		GdprConfiguration gdprConfig = new GdprConfiguration(profile.isRedactPii());
+        		LogRedactionConfiguration gdprConfig = new LogRedactionConfiguration(profile.isRedactPii());
         		idToGdprConfigCache.put(id, gdprConfig);
         		nameToGdprConfigCache.put(profileName, gdprConfig);
         		
