@@ -120,9 +120,9 @@ public enum EndEntityProfileCache {
         		EndEntityProfile profile = next.getProfile();
         		profCache.put(id, profile);
         		
-        		LogRedactionConfiguration gdprConfig = new LogRedactionConfiguration(profile.isRedactPii());
-        		idToLogRedactionConfigCache.put(id, gdprConfig);
-        		nameToLogRedactionConfigCache.put(profileName, gdprConfig);
+        		LogRedactionConfiguration logRedactionConfig = new LogRedactionConfiguration(profile.isRedactPii());
+        		idToLogRedactionConfigCache.put(id, logRedactionConfig);
+        		nameToLogRedactionConfigCache.put(profileName, logRedactionConfig);
         		
         	}
         } catch (Exception e) {
