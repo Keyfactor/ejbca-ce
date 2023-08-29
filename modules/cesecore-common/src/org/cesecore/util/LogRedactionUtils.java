@@ -36,7 +36,7 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * Utility methods for handling/checking PII redaction based on End Entity Profile.
  * Log safe Subject DN and Subject Alt Name are used when logging PII that
- * should be redacted for GDPR purposes.
+ * should be redacted for Log Redaction purposes.
  *
  * Rule of thumb:
  * 1. For SubjectDn or SubjectAltName:
