@@ -27,7 +27,7 @@ public class LogRedactionConfiguration {
 
     @Override
     public String toString() {
-        return "GdprConfiguration [redactPii=" + redactPii + "]";
+        return "LogRedactionConfiguration [redactPii=" + redactPii + "]";
     }
     
 }
