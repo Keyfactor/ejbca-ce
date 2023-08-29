@@ -65,7 +65,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -144,7 +144,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         success = publisherResult.getSuccesses() > 0;
         if (success) {
             final int eepId = certificateStoreSession.getCertificateData(entity.getFingerprint()).getCertificateData().getEndEntityProfileId();
-            final String userDn = GdprRedactionUtils.getSubjectDnLogSafe(entity.getVolatileData().getUserDN(), eepId);
+            final String userDn = LogRedactionUtils.getSubjectDnLogSafe(entity.getVolatileData().getUserDN(), eepId);
 
             final String msg = intres.getLocalizedMessage("publisher.store", userDn, publisher.getName(), success);
             final Map<String, Object> details = new LinkedHashMap<>();
@@ -249,7 +249,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
 
-                details.put("error", GdprRedactionUtils.getRedactedMessage(((PublisherException) publisherResult).getMessage()));
+                details.put("error", LogRedactionUtils.getRedactedMessage(((PublisherException) publisherResult).getMessage()));
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
                         EjbcaServiceTypes.EJBCA, admin.toString(), null, certSerno, username, details);
                 if (publ.getUseQueueForCertificates()) {
@@ -358,7 +358,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                             final Map<String, Object> details = new LinkedHashMap<>();
                             details.put("msg", msg);
 
-                            details.put("error", GdprRedactionUtils.getRedactedMessage(pe.getMessage()));
+                            details.put("error", LogRedactionUtils.getRedactedMessage(pe.getMessage()));
                             auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                         }

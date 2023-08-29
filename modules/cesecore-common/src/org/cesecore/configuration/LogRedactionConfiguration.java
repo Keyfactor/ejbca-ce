@@ -13,11 +13,11 @@
 package org.cesecore.configuration;
 
 // To allow future expansion
-public class GdprConfiguration {
+public class LogRedactionConfiguration {
     
     private boolean redactPii;
 
-    public GdprConfiguration(boolean redactPii) {
+    public LogRedactionConfiguration(boolean redactPii) {
         this.redactPii = redactPii;
     }
 
@@ -27,7 +27,7 @@ public class GdprConfiguration {
 
     @Override
     public String toString() {
-        return "GdprConfiguration [redactPii=" + redactPii + "]";
+        return "LogRedactionConfiguration [redactPii=" + redactPii + "]";
     }
     
 }
