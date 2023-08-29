@@ -106,8 +106,8 @@ public enum EndEntityProfileCache {
         final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
         
-        final Map<Integer, LogRedactionConfiguration> idToGdprConfigCache = new HashMap<>();
-        final Map<String, LogRedactionConfiguration> nameToGdprConfigCache = new HashMap<>();
+        final Map<Integer, LogRedactionConfiguration> idToLogRedactionConfigCache = new HashMap<>();
+        final Map<String, LogRedactionConfiguration> nameToLogRedactionConfigCache = new HashMap<>();
         
         try {
         	final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
@@ -121,8 +121,8 @@ public enum EndEntityProfileCache {
         		profCache.put(id, profile);
         		
         		LogRedactionConfiguration gdprConfig = new LogRedactionConfiguration(profile.isRedactPii());
-        		idToGdprConfigCache.put(id, gdprConfig);
-        		nameToGdprConfigCache.put(profileName, gdprConfig);
+        		idToLogRedactionConfigCache.put(id, gdprConfig);
+        		nameToLogRedactionConfigCache.put(profileName, gdprConfig);
         		
         	}
         } catch (Exception e) {
@@ -132,7 +132,7 @@ public enum EndEntityProfileCache {
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
         
-        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionCache(idToGdprConfigCache, nameToGdprConfigCache);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionCache(idToLogRedactionConfigCache, nameToLogRedactionConfigCache);
         
         if (LOG.isTraceEnabled()) {
             final long end = System.currentTimeMillis();
