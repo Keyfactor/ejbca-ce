@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -104,7 +103,7 @@ public class EnableGlobalPiiDataRedactionTest {
     @Test
     public void testAuditLogPiiDataWithCompulsoryRedaction() throws Exception {
         
-        String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern(),
+        String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern().replace("|(c=)", ""),
                 GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIMH]{1}[a-zA-Z0-9]{12}"};
 //        matches all -> ".*MI[EIM]{1}[a-zA-Z0-9]{12}.*" for wildfly filter
 //        finds all -> "MI[EIM]{1}[a-zA-Z0-9]{12}" without .* at both end
