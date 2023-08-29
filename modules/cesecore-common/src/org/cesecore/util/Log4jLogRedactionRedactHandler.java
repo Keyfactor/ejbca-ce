@@ -16,7 +16,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-public class Log4jGdprRedactHandler extends Handler {
+public class Log4jLogRedactionRedactHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
