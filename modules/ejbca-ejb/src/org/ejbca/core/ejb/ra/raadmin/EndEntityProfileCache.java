@@ -132,7 +132,7 @@ public enum EndEntityProfileCache {
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
         
-        LogRedactionConfigurationCache.INSTANCE.updateGdprCache(idToGdprConfigCache, nameToGdprConfigCache);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionCache(idToGdprConfigCache, nameToGdprConfigCache);
         
         if (LOG.isTraceEnabled()) {
             final long end = System.currentTimeMillis();
