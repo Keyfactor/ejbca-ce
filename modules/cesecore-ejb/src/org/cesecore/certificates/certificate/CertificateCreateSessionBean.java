@@ -414,7 +414,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Audit log that we received the request
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("subjectdn", endEntityInformation.getLogSafeSubjectDn());
-        details.put("requestX500name", (request == null || request.getRequestX500Name() == null) ? "null" : request.getRequestX500Name().toString());
+        details.put("requestX500name", (request == null || request.getRequestX500Name() == null) ? "null" : 
+                        GdprRedactionUtils.getSubjectDnLogSafe(request.getRequestX500Name().toString(), endEntityInformation.getEndEntityProfileId()));
         details.put("subjectaltname", endEntityInformation.getLogSafeSubjectAltName());
         if (null != request) {
             details.put("requestaltname", GdprRedactionUtils.getSubjectAltNameLogSafe(request.getRequestAltNames(), endEntityInformation.getEndEntityProfileId()));
