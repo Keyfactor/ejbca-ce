@@ -38,19 +38,19 @@ public class LogRedactionUtilsTest {
     @Before
     public void setup() {
         
-        final Map<Integer, LogRedactionConfiguration> idToGdprConfigCache = new HashMap<>();
-        final Map<String, LogRedactionConfiguration> nameToGdprConfigCache = new HashMap<>();
+        final Map<Integer, LogRedactionConfiguration> idToLogRedactionConfigCache = new HashMap<>();
+        final Map<String, LogRedactionConfiguration> nameToLogRedactionConfigCache = new HashMap<>();
         
         LogRedactionConfiguration redact = new LogRedactionConfiguration(true);
         LogRedactionConfiguration logPlain = new LogRedactionConfiguration(false);
         
-        idToGdprConfigCache.put(EEP_REDACT_ID, redact);
-        idToGdprConfigCache.put(EEP_LOGPLAIN_ID, logPlain);
+        idToLogRedactionConfigCache.put(EEP_REDACT_ID, redact);
+        idToLogRedactionConfigCache.put(EEP_LOGPLAIN_ID, logPlain);
         
-        nameToGdprConfigCache.put(EEP_REDACT_NAME, redact);
-        nameToGdprConfigCache.put(EEP_LOGPLAIN_NAME, logPlain);
+        nameToLogRedactionConfigCache.put(EEP_REDACT_NAME, redact);
+        nameToLogRedactionConfigCache.put(EEP_LOGPLAIN_NAME, logPlain);
         
-        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionCache(idToGdprConfigCache, nameToGdprConfigCache);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionCache(idToLogRedactionConfigCache, nameToLogRedactionConfigCache);
     }
     
     @Test
