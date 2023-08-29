@@ -99,7 +99,7 @@ public class GetErrorCodeTest {
     
     @Test
     public void testRedactException() {
-        LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(true, false);
         String exceptionMessageWithPii = "some message: CN=abcd,OU=xyz blah";
         
         try {

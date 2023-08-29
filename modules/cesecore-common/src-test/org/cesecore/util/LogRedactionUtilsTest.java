@@ -50,7 +50,7 @@ public class LogRedactionUtilsTest {
         nameToGdprConfigCache.put(EEP_REDACT_NAME, redact);
         nameToGdprConfigCache.put(EEP_LOGPLAIN_NAME, logPlain);
         
-        LogRedactionConfigurationCache.INSTANCE.updateGdprCache(idToGdprConfigCache, nameToGdprConfigCache);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionCache(idToGdprConfigCache, nameToGdprConfigCache);
     }
     
     @Test
@@ -69,7 +69,7 @@ public class LogRedactionUtilsTest {
         assertEquals(LogRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_EMPTY_NAME), DUMMY_SDN);
         assertEquals(LogRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_EMPTY_ID), DUMMY_SAN);
         assertEquals(LogRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_EMPTY_NAME), DUMMY_SAN);
-        LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(true, false);
         assertEquals(LogRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_EMPTY_ID), LogRedactionUtils.REDACTED_CONTENT);
         assertEquals(LogRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_EMPTY_NAME), LogRedactionUtils.REDACTED_CONTENT);
         assertEquals(LogRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_EMPTY_ID), LogRedactionUtils.REDACTED_CONTENT);
@@ -84,7 +84,7 @@ public class LogRedactionUtilsTest {
         assertEquals(LogRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_LOGPLAIN_NAME), DUMMY_SDN);
         assertEquals(LogRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_LOGPLAIN_ID), DUMMY_SAN);
         assertEquals(LogRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_LOGPLAIN_NAME), DUMMY_SAN);
-        LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(false, true);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(false, true);
         assertEquals(LogRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_LOGPLAIN_ID), LogRedactionUtils.REDACTED_CONTENT);
         assertEquals(LogRedactionUtils.getSubjectDnLogSafe(DUMMY_SDN, EEP_LOGPLAIN_NAME), LogRedactionUtils.REDACTED_CONTENT);
         assertEquals(LogRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_LOGPLAIN_ID), LogRedactionUtils.REDACTED_CONTENT);
@@ -119,7 +119,7 @@ public class LogRedactionUtilsTest {
     
     @Test
     public void testRedactException() {
-        LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(true, false);
         
         try {
             throw new CesecoreException(DUMMY_MESSAGE_WITH_SDN);
@@ -222,7 +222,7 @@ public class LogRedactionUtilsTest {
         }
         
         // disable redaction
-        LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(false, false);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(false, false);
         try {
             throw new CesecoreException(DUMMY_MESSAGE_WITH_SDN);
         } catch (CesecoreException e) {
@@ -240,7 +240,7 @@ public class LogRedactionUtilsTest {
     
     @Test
     public void testRedactMessage() {
-        LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(true, false);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(true, false);
         
         assertEquals(LogRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), "some message: " + LogRedactionUtils.REDACTED_CONTENT);
         assertEquals(LogRedactionUtils.getRedactedMessage(null), null);
@@ -251,7 +251,7 @@ public class LogRedactionUtilsTest {
                 "some other message: " + LogRedactionUtils.REDACTED_CONTENT);
         
         // disable redaction
-        LogRedactionConfigurationCache.INSTANCE.updateGdprNodeLocalSettings(false, false);
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(false, false);
         assertEquals(LogRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), DUMMY_MESSAGE_WITH_SDN);
     }
 

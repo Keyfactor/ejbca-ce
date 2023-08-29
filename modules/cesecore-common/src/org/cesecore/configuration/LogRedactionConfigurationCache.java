@@ -32,15 +32,15 @@ public enum LogRedactionConfigurationCache {
     
     // only to be used from EndEntityProfileCache
     // Locking is handled at EndEntityProfileCache and whole map is updated in one go
-    public void updateGdprCache(Map<Integer, LogRedactionConfiguration> idToConfigCache,
-            Map<String, LogRedactionConfiguration> nameToConfigCache) {
+    public void updateLogRedactionCache(Map<Integer, LogRedactionConfiguration> idToConfigCache,
+                                        Map<String, LogRedactionConfiguration> nameToConfigCache) {
         this.idToConfigCache = idToConfigCache;
         this.nameToConfigCache = nameToConfigCache;
-        LOG.debug("Updated GdprConfigurationCache.");
+        LOG.debug("Updated LogRedactionConfigurationCache.");
     }
     
     // keeping these as boolean to keep it simple and updating them needs limited change
-    public void updateGdprNodeLocalSettings(boolean redactByDefaultUpdate, boolean redactEnforcedUpdate) {
+    public void updateLogRedactionNodeLocalSettings(boolean redactByDefaultUpdate, boolean redactEnforcedUpdate) {
         REDACT_DEFAULT = new LogRedactionConfiguration(redactByDefaultUpdate || redactEnforcedUpdate);
         if(redactEnforcedUpdate) {
             REDACT_ENFORCED = new LogRedactionConfiguration(true);
@@ -49,11 +49,11 @@ public enum LogRedactionConfigurationCache {
         }
     }
 
-    public LogRedactionConfiguration getGdprConfiguration() {
+    public LogRedactionConfiguration getLogRedactionConfiguration() {
         return REDACT_DEFAULT;
     }
 
-    public LogRedactionConfiguration getGdprConfiguration(int endEntityProfileId) {
+    public LogRedactionConfiguration getLogRedactionConfiguration(int endEntityProfileId) {
         if (REDACT_ENFORCED!=null) {
             return REDACT_ENFORCED;
         }
@@ -61,7 +61,7 @@ public enum LogRedactionConfigurationCache {
         return config != null ? config :  REDACT_DEFAULT;
     }
 
-    public LogRedactionConfiguration getGdprConfiguration(String endEntityProfileName) {
+    public LogRedactionConfiguration getLogRedactionConfiguration(String endEntityProfileName) {
         if (REDACT_ENFORCED!=null) {
             return REDACT_ENFORCED;
         }
