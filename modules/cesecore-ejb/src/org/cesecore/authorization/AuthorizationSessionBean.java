@@ -43,7 +43,7 @@ import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
 
 import com.keyfactor.util.CertTools;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -220,7 +220,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                             // but authorization is fetched from CA where the certificate is stored
 
                             final Integer eepId = getCertificateDataByCertificate(certificate).getEndEntityProfileId();
-                            final String redactedSubjectDN = GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate), eepId);
+                            final String redactedSubjectDN = LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate), eepId);
 
                             log.error("Authentication Certificate is revoked or expired: " + redactedSubjectDN);
 
