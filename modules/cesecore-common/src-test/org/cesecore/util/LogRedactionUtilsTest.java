@@ -10,7 +10,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.cesecore.configuration.GdprConfiguration;
+import org.cesecore.configuration.LogRedactionConfiguration;
 import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,11 +38,11 @@ public class LogRedactionUtilsTest {
     @Before
     public void setup() {
         
-        final Map<Integer, GdprConfiguration> idToGdprConfigCache = new HashMap<>();
-        final Map<String, GdprConfiguration> nameToGdprConfigCache = new HashMap<>();
+        final Map<Integer, LogRedactionConfiguration> idToGdprConfigCache = new HashMap<>();
+        final Map<String, LogRedactionConfiguration> nameToGdprConfigCache = new HashMap<>();
         
-        GdprConfiguration redact = new GdprConfiguration(true);
-        GdprConfiguration logPlain = new GdprConfiguration(false);
+        LogRedactionConfiguration redact = new LogRedactionConfiguration(true);
+        LogRedactionConfiguration logPlain = new LogRedactionConfiguration(false);
         
         idToGdprConfigCache.put(EEP_REDACT_ID, redact);
         idToGdprConfigCache.put(EEP_LOGPLAIN_ID, logPlain);
