@@ -30,7 +30,7 @@ public class AuditLogCheckUtil {
     // case insensitive: do not use 'CA' here as too short
     private static final String[] IGNORED_ON_LOWERCASE_PREFIXES = 
                         {"issuerdn", "issuer", "cadn", "keyalias", "keyid", "username", 
-                                "end entity", "nameconstraints_permitted", "nameconstraints_excluded",
+                                "end entity", 
                                 // edge cases from hell
                                 "o=anatom", "o=let's encrypt"};
     // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6
@@ -91,12 +91,30 @@ public class AuditLogCheckUtil {
                 sb.append(key).append(':').append(content);
                 continue;
             }
+            if (((String)key).equalsIgnoreCase("extendedInformation")) {
+                String content = (String) map.get(key);
+                content = content.toLowerCase();
+                if (content.contains("nameconstraints_permitted")) {
+                    content = removeFalsePositiveSubString("nameconstraints_permitted", "]", content);
+                }
+                if (content.contains("nameconstraints_excluded")) {
+                    content = removeFalsePositiveSubString("nameconstraints_excluded", "]", content);
+                }
+                sb.append(key).append(':').append(content);
+                continue;
+            }
             if (((String)key).equalsIgnoreCase("publickey") || ((String)key).equalsIgnoreCase("issuerdn")) {
                 continue;
             }
             sb.append(key).append(':').append(map.get(key));
         }
         return sb.toString();
+    }
+    
+    private static String removeFalsePositiveSubString(String prefix, String terminateOn, String content) {
+        int startIndex = content.indexOf(prefix);
+        int endIndex = content.indexOf(terminateOn, startIndex+1);
+        return content.substring(0, startIndex) + content.substring(endIndex, content.length());
     }
 
 }
