@@ -367,7 +367,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         ASN1PrintableString str = ASN1PrintableString.getInstance(values.nextElement());
                         transactionId = str.getString();
                         if (log.isDebugEnabled()) {
-                        	log.debug("transactionId = " + transactionId);
+                        	log.debug("transactionId = " + GdprRedactionUtils.getRedactedMessage(transactionId));
                         }
                     }
                     if (a.getAttrType().getId().equals(id_messageType)) {
@@ -495,7 +495,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
             if (log.isDebugEnabled()) {
-            	log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
+            	log.debug("Successfully extracted PKCS10:" + GdprRedactionUtils.getRedactedMessage(new String(Base64.encode(pkcs10.getEncoded()))));
             }
         } else if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
             ASN1InputStream derAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(decBytes));
