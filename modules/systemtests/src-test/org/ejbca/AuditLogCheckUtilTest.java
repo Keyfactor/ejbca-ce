@@ -22,13 +22,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
-import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ModuleTypes;
-import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.util.GdprRedactionUtils;
@@ -36,14 +33,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class AuditLogCheckUtilTest {
-    
-    private static final Logger log = Logger.getLogger(AuditLogCheckUtilTest.class);
-    
+        
     private static List<Pattern> compiledPatterns;
     
     @BeforeClass
     public static void setup() {
-        String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern(),
+        String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern().replace("|(c=)", ""),
                 GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIMH]{1}[a-zA-Z0-9]{12}"};
         compiledPatterns =  new ArrayList<>();
         for (String p: patternsToMatch) {
@@ -72,15 +67,29 @@ public class AuditLogCheckUtilTest {
                 100L, 100L, EventTypes.CERT_REVOKED, EventStatus.SUCCESS, 
                 "CN=abcd", ServiceTypes.CORE, ModuleTypes.CERTIFICATE, null, null, null, additionalDetails3);
         
+        Map<String, Object> additionalDetails4 = new HashMap<>();
+        additionalDetails4.put("extendedInformation", "[version:4.0], "
+                + "[type:0], [subjectdirattributes:], [maxfailedloginattempts:-1], [remainingloginattempts:-1], "
+                + "[nameconstraints_permitted:dNSName:exampleinc.com;rfc822Name:mail.example;rfc822Name:user@host.com;"
+                + "iPAddress:0a000000ff000000;iPAddress:20010db8000000000000000000000000ffffffff000000000000000000000000], "
+                + "[nameconstraints_excluded:dNSName:forbidden.example.com;rfc822Name:postmaster@mail.example;"
+                + "iPAddress:0a010000ffff0000;iPAddress:20050ac7000000000000000000000000ffffffffffffffff0000000000000000;"
+                + "directoryName:C=SE,O=PrimeKey,CN=example.com;directoryName:C=SE,CN=spacing], [customdata_ENDTIME:2y]};");
+        additionalDetails4.put("issuerdn", "CN=qwert");
+        AuditLogEntry auditLogEntry4 = new AuditRecordData("", 
+                100L, 100L, EventTypes.CERT_STORED, EventStatus.SUCCESS, 
+                "CN=abcd", ServiceTypes.CORE, ModuleTypes.CERTIFICATE, null, null, null, additionalDetails4);
+        
         List<AuditLogEntry> logEntries = new ArrayList<>();
         logEntries.add(auditLogEntry1);
         logEntries.add(auditLogEntry2);
         logEntries.add(auditLogEntry3);
+        logEntries.add(auditLogEntry4);
         
         Set<String> detectedEventTypes = new HashSet<>();
         
         AuditLogCheckUtil.detectPiiLogging(logEntries, detectedEventTypes, compiledPatterns);
-        assertTrue(detectedEventTypes.isEmpty());
+        assertTrue("Should not detect any false positive events.", detectedEventTypes.isEmpty());
         
         
     }
