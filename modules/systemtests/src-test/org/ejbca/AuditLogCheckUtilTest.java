@@ -80,11 +80,28 @@ public class AuditLogCheckUtilTest {
                 100L, 100L, EventTypes.CERT_STORED, EventStatus.SUCCESS, 
                 "CN=abcd", ServiceTypes.CORE, ModuleTypes.CERTIFICATE, null, null, null, additionalDetails4);
         
+        Map<String, Object> additionalDetails5 = new HashMap<>();
+        additionalDetails5.put("extendedInformation", "[version:4.0], [type:0], [subjectdirattributes:], "
+                + "[maxfailedloginattempts:-1], [remainingloginattempts:-1], [nameconstraints_excluded:dNSName:"
+                + "forbidden.example.com;rfc822Name:postmaster@mail.example;iPAddress:0a010000ffff0000;iPAddress:"
+                + "20050ac7000000000000000000000000ffffffffffffffff0000000000000000;directoryName:C=SE,O=PrimeKey,"
+                + "CN=example.com;directoryName:C=SE,CN=spacing], [customdata_ENDTIME:2y]} ->  [version:4.0], "
+                + "[type:0], [subjectdirattributes:], [maxfailedloginattempts:-1], [remainingloginattempts:-1], "
+                + "[nameconstraints_permitted:dNSName:addpermitted.check.com], [nameconstraints_excluded:rfc822Name"
+                + ":postmaster@mail.example;iPAddress:0a010000ffff0000;iPAddress:20050ac70000000000000000000000"
+                + "00ffffffffffffffff0000000000000000;directoryName:C=SE,O=PrimeKey,CN=example.com;directoryName"
+                + ":C=SE,CN=spacing;dNSName:addexclusion.check.com]}");
+        additionalDetails5.put("issuerdn", "CN=qwert");
+        AuditLogEntry auditLogEntry5 = new AuditRecordData("", 
+                100L, 100L, EventTypes.CERT_STORED, EventStatus.SUCCESS, 
+                "CN=abcd", ServiceTypes.CORE, ModuleTypes.CERTIFICATE, null, null, null, additionalDetails5);
+        
         List<AuditLogEntry> logEntries = new ArrayList<>();
         logEntries.add(auditLogEntry1);
         logEntries.add(auditLogEntry2);
         logEntries.add(auditLogEntry3);
         logEntries.add(auditLogEntry4);
+        logEntries.add(auditLogEntry5);
         
         Set<String> detectedEventTypes = new HashSet<>();
         
