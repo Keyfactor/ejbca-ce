@@ -40,7 +40,7 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.AuditLogCheckUtil;
 import org.ejbca.ServerLogCheckUtil;
 import org.ejbca.ServerLogCheckUtil.ServerLogRecord;
@@ -103,8 +103,8 @@ public class EnableGlobalPiiDataRedactionTest {
     @Test
     public void testAuditLogPiiDataWithCompulsoryRedaction() throws Exception {
         
-        String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern().replace("|(c=)", ""),
-                GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIMH]{1}[a-zA-Z0-9]{12}"};
+        String[] patternsToMatch = new String[] { LogRedactionUtils.getSubjectDnRedactionPattern().replace("|(c=)", ""),
+                LogRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIMH]{1}[a-zA-Z0-9]{12}"};
 //        matches all -> ".*MI[EIM]{1}[a-zA-Z0-9]{12}.*" for wildfly filter
 //        finds all -> "MI[EIM]{1}[a-zA-Z0-9]{12}" without .* at both end
 //        examples returning true:        

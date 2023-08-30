@@ -77,7 +77,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
@@ -331,7 +331,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         try {
 							signercert = CertTools.getCertfromByteArray(requestKeyInfo, X509Certificate.class);
 							if (log.isDebugEnabled()) {
-								log.debug("requestKeyInfo is SubjectDN: " + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(signercert)) +
+								log.debug("requestKeyInfo is SubjectDN: " + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(signercert)) +
 										", Serial=" + CertTools.getSerialNumberAsString(signercert) +
 										"; IssuerDN: "+ CertTools.getIssuerDN(signercert));								
 							}
@@ -632,7 +632,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 // For Cisco boxes they can sometimes send DN as SN instead of CN
                 String name = CertTools.getPartFromDN(getRequestDN(), "SN");
                 if (name == null) {
-                    log.error("No SN in DN: " + GdprRedactionUtils.getRedactedMessage(getRequestDN()));
+                    log.error("No SN in DN: " + LogRedactionUtils.getRedactedMessage(getRequestDN()));
                     return null;
                 }
                 // Special if the DN contains unstructuredAddress where it becomes: 
@@ -769,7 +769,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             log.error("Error in PKCS7:", e);
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<getRequestDN(): " + GdprRedactionUtils.getSubjectDnLogSafe(ret));
+        	log.trace("<getRequestDN(): " + LogRedactionUtils.getSubjectDnLogSafe(ret));
         }
         return ret;
     }

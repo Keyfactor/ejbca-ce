@@ -61,7 +61,7 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -377,7 +377,7 @@ public class ApprovalSessionTest extends CaTestCase {
        List<? extends AuditLogEntry> approvalRequestAuditLogs = getAuditLogs(addApprovalStartTime, EjbcaEventTypes.APPROVAL_ADD.toString());
 
        assertEquals("Only one AuditLog should be returned", 1, approvalRequestAuditLogs.size());
-       assertTrue("Should contain redaction placeholder", approvalRequestAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + GdprRedactionUtils.REDACTED_CONTENT));
+       assertTrue("Should contain redaction placeholder", approvalRequestAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + LogRedactionUtils.REDACTED_CONTENT));
 
        // Given that previous Approval Request is APPROVED
        final Approval addEndEntityApproval = createApproval("Add EE Approval");
@@ -392,7 +392,7 @@ public class ApprovalSessionTest extends CaTestCase {
        List<? extends AuditLogEntry> approvalAuditLogs = getAuditLogs(approvalStartTime, EjbcaEventTypes.APPROVAL_APPROVE.toString());
 
        assertEquals("Only one AuditLog should be returned", 1, approvalAuditLogs.size());
-       assertTrue("Should contain redaction placeholder", approvalAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + GdprRedactionUtils.REDACTED_CONTENT));
+       assertTrue("Should contain redaction placeholder", approvalAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + LogRedactionUtils.REDACTED_CONTENT));
 
        log.trace("<testAddApprovalRequestWithPiiRedaction");
    }
@@ -418,7 +418,7 @@ public class ApprovalSessionTest extends CaTestCase {
         List<? extends AuditLogEntry> approvalRequestAuditLogs = getAuditLogs(addApprovalStartTime, EjbcaEventTypes.APPROVAL_ADD.toString());
 
         assertEquals("Only one AuditLog should be returned", 1, approvalRequestAuditLogs.size());
-        assertTrue("Should contain redaction placeholder", approvalRequestAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + GdprRedactionUtils.REDACTED_CONTENT));
+        assertTrue("Should contain redaction placeholder", approvalRequestAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + LogRedactionUtils.REDACTED_CONTENT));
 
         // Given that previous Approval Request is REJECTED
         final Approval addEndEntityApproval = createApproval("Add EE Approval");
@@ -433,7 +433,7 @@ public class ApprovalSessionTest extends CaTestCase {
         List<? extends AuditLogEntry> approvalAuditLogs = getAuditLogs(rejectionStartTime, EjbcaEventTypes.APPROVAL_REJECT.toString());
 
         assertEquals("Only one AuditLog should be returned", 1, approvalAuditLogs.size());
-        assertTrue("Should contain redaction placeholder", approvalAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + GdprRedactionUtils.REDACTED_CONTENT));
+        assertTrue("Should contain redaction placeholder", approvalAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + LogRedactionUtils.REDACTED_CONTENT));
 
         log.trace("<testPiiRedactionWithAddApprovalRequestAndRejection");
     }

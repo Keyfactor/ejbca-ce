@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.validation.BlacklistEntry;
 
@@ -89,7 +89,7 @@ public class BlacklistData extends ProtectedData implements Serializable {
             // Redact DNS names and IPs.
             String valueToLog = entry.getValue();
             if (valueToLog != null && (StringTools.isIpAddress(valueToLog) || StringTools.isValidSanDnsName(valueToLog))) {
-                valueToLog = GdprRedactionUtils.REDACTED_CONTENT;
+                valueToLog = LogRedactionUtils.REDACTED_CONTENT;
             }
             log.debug("Setting BlacklistData '" + valueToLog + "' (" + entry.getID() + ")");
         }

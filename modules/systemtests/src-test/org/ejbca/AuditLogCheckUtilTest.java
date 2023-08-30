@@ -28,7 +28,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -38,8 +38,8 @@ public class AuditLogCheckUtilTest {
     
     @BeforeClass
     public static void setup() {
-        String[] patternsToMatch = new String[] { GdprRedactionUtils.getSubjectDnRedactionPattern().replace("|(c=)", ""),
-                GdprRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIMH]{1}[a-zA-Z0-9]{12}"};
+        String[] patternsToMatch = new String[] { LogRedactionUtils.getSubjectDnRedactionPattern().replace("|(c=)", ""),
+                LogRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIMH]{1}[a-zA-Z0-9]{12}"};
         compiledPatterns =  new ArrayList<>();
         for (String p: patternsToMatch) {
             compiledPatterns.add(Pattern.compile(p, Pattern.CASE_INSENSITIVE));

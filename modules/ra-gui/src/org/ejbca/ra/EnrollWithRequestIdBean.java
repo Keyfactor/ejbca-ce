@@ -22,12 +22,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -57,10 +53,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.util.GdprRedactionUtils;
-import org.ejbca.config.WebConfiguration;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -83,9 +77,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
@@ -477,7 +468,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                     log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
                 } else {
                     raLocaleBean.addMessageError(errorCode);
-                    log.info("Exception generating keystore. Error Code: " + errorCode, GdprRedactionUtils.getRedactedThrowable(e));
+                    log.info("Exception generating keystore. Error Code: " + errorCode, LogRedactionUtils.getRedactedThrowable(e));
                 }
             } else {
                 raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
