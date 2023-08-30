@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 
 /**
@@ -185,7 +185,7 @@ public class RestLoggingFilter implements Filter {
             
             String url = httpServletRequest.getRequestURL().toString();
             boolean logRequestAndResponseBody = true;
-            if(GdprRedactionUtils.redactPii() && // RA 
+            if(LogRedactionUtils.redactPii() && // RA
                     (url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getUrl()) ||
                      url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getUrl()) ||
                      url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getUrl()) ||

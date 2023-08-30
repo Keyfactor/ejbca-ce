@@ -373,7 +373,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      */
     private SingleResp getOCSPResponse(final String ocspurl, final OCSPReq ocspRequest, final Certificate cert, final byte[] nonce, int expectedOcspRespCode, int expectedHttpRespCode) {
         if(log.isDebugEnabled()) {
-            log.debug("Sending OCSP request to " + ocspurl + " regarding certificate with SubjectDN: " + GdprRedactionUtils.getSubjectDnLogSafe(cert)
+            log.debug("Sending OCSP request to " + ocspurl + " regarding certificate with SubjectDN: " + LogRedactionUtils.getSubjectDnLogSafe(cert)
                         + " - IssuerDN: " + CertTools.getIssuerDN(cert));
         }
         
