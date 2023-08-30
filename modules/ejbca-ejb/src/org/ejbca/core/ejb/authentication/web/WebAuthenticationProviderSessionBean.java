@@ -86,7 +86,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  *
- * @version $Id$
  * 
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "WebAuthenticationProviderSessionLocal")
@@ -165,8 +164,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public AuthenticationToken authenticateUsingOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken,
-            final String oauthIdToken) throws TokenExpiredException {
+    public AuthenticationToken authenticateUsingOAuthBearerToken(final OAuthConfiguration oauthConfiguration,  String encodedOauthBearerToken,
+             String oauthIdToken) throws TokenExpiredException {
         try {
             String keyFingerprint = null;
             if (oauthConfiguration == null || MapUtils.isEmpty(oauthConfiguration.getOauthKeys())) {
@@ -386,12 +385,13 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (keyId != null) {
                 for (final OAuthKeyInfo oAuthKeyInfo : availableKeys.values()) {
                     if (oAuthKeyInfo.getAllKeyIdentifiers() != null && oAuthKeyInfo.getAllKeyIdentifiers().contains(keyId)) {
+                        LOG.debug("Using trusted oauth provider with name: " + oAuthKeyInfo.getLabel());
                         return oAuthKeyInfo;
                     }
                 }
-            } else {
-                 return oauthConfiguration.getDefaultOauthKey();
             }
+            LOG.debug("Using default trusted oauth provider : " + oauthConfiguration.getDefaultOauthKey());
+            return oauthConfiguration.getDefaultOauthKey();
         }
         return null;
     }
