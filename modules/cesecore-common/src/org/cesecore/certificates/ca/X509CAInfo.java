@@ -51,6 +51,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.SimpleTime;
 
@@ -102,6 +103,15 @@ public class X509CAInfo extends CAInfo {
     /**
      * This constructor can be used when creating a CA.
      * This constructor uses defaults for the fields that are not specified.
+     * 
+     * @param subjectdn the Subject DN of the CA certificate
+     * @param name the name of the CA
+     * @param status a value from {@link CAConstantsn}
+     * @param certificateProfileId the certificate profile for the CA's certificate. May be a value from {@link CertificateProfileConstants}
+     * @param The validity, expressed in y, d, m, e.g: "365d"
+     * @param the ID of the CA signing this CA. CAInfo.SELFSIGNED for Root CAs.
+     * @param certificatechain the chain of CA certificates. May be null for a Root CA. 
+     * @param catoken the CAToken of this CA
      */
     public static X509CAInfo getDefaultX509CAInfo(final String subjectdn, final String name, final int status,
             final int certificateProfileId, final String encodedValidity, int signedby, final Collection<Certificate> certificatechain, final CAToken catoken) {

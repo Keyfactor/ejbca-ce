@@ -796,11 +796,24 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         
         // If this check failed, we need to investigate further what went wrong
         if (enforceUniqueDistinguishedName) {
-            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(ca.getSubjectDN(), subjectDN);
-            if (!users.isEmpty() && !users.contains(username)) {
-                final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", username,
-                        listUsers(users));
-                throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
+            final String issuerDn = ca.getSubjectDN();
+            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(issuerDn, subjectDN);
+            //See if any certificates exist for another user
+            if (!users.isEmpty() && !users.contains(username)) {                
+                //Check that not all of the certificates are Certificate Transparency pre-certificates.
+                for (Certificate certificate : certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDn, false)) {
+                    if (CertTools.getSubjectDN(certificate).equals(subjectDN)) {
+                        if (certificate instanceof X509Certificate) {
+                            X509Certificate x509Certificate = (X509Certificate) certificate;
+                            if (x509Certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID) == null) {
+                                //We found a cert that didn't contain the poison extension, i.e. not a pre-cert. 
+                                final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", username,
+                                        listUsers(users));
+                                throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
+                            }
+                        }
+                    }
+                }           
             }
         }
     }
