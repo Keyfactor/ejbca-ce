@@ -94,11 +94,15 @@ public class AuditLogCheckUtil {
             if (((String)key).equalsIgnoreCase("extendedInformation")) {
                 String content = (String) map.get(key);
                 content = content.toLowerCase();
-                if (content.contains("nameconstraints_permitted")) {
+                int i=0;
+                while (content.contains("nameconstraints_permitted") && i<2) {
                     content = removeFalsePositiveSubString("nameconstraints_permitted", "]", content);
+                    i++;
                 }
-                if (content.contains("nameconstraints_excluded")) {
+                i=0;
+                while (content.contains("nameconstraints_excluded") && i<2) {
                     content = removeFalsePositiveSubString("nameconstraints_excluded", "]", content);
+                    i++;
                 }
                 sb.append(key).append(':').append(content);
                 continue;
