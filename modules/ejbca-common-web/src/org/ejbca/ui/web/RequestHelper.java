@@ -41,7 +41,7 @@ import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CAReferenceField;
@@ -155,8 +155,8 @@ public class RequestHelper {
             log.debug("Created certificate (PKCS7) for " + username);
             if (debug != null) {
                 debug.print("<h4>Generated certificate:</h4>");
-                if (GdprRedactionUtils.redactPii()) {
-                    debug.printInsertLineBreaks(GdprRedactionUtils.REDACTED_CONTENT.getBytes());
+                if (LogRedactionUtils.redactPii()) {
+                    debug.printInsertLineBreaks(LogRedactionUtils.REDACTED_CONTENT.getBytes());
                 } else {
                     debug.printInsertLineBreaks(cert.toString().getBytes());
                 }
@@ -257,8 +257,8 @@ public class RequestHelper {
         out.flushBuffer();
         if (log.isDebugEnabled()) {
             log.debug("Sent reply to client");
-            if (GdprRedactionUtils.redactPii()) {
-                log.debug(GdprRedactionUtils.REDACTED_CONTENT);
+            if (LogRedactionUtils.redactPii()) {
+                log.debug(LogRedactionUtils.REDACTED_CONTENT);
             } else {
                 log.debug(new String(b64cert));
             }

@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
@@ -155,7 +155,7 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
     public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
         userDN = getUidCertSernoDN(incert, username, userDN);
         if (log.isDebugEnabled()) {
-            log.debug("storeCertificate: " + GdprRedactionUtils.getSubjectDnLogSafe(userDN));
+            log.debug("storeCertificate: " + LogRedactionUtils.getSubjectDnLogSafe(userDN));
         }
         return super.storeCertificate(admin, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
     }
@@ -182,7 +182,7 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
     public void revokeCertificate(AuthenticationToken admin, Certificate cert, String username, int reason, String userDN) throws PublisherException {
         userDN = getUidCertSernoDN(cert, username, userDN);
         if (log.isDebugEnabled()) {
-            log.debug("revokeCertificate: " + GdprRedactionUtils.getSubjectDnLogSafe(userDN));
+            log.debug("revokeCertificate: " + LogRedactionUtils.getSubjectDnLogSafe(userDN));
         }
         super.revokeCertificate(admin, cert, username, reason, userDN);
     }
