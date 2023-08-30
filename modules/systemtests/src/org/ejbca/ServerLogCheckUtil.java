@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -61,7 +61,7 @@ public class ServerLogCheckUtil {
         
         new ServerLogCheckUtil().loadWhiteListPiiConfiguration();
         
-        SUBJECT_DN_COMPONENTS = Pattern.compile(GdprRedactionUtils.getSubjectDnRedactionPattern(), Pattern.CASE_INSENSITIVE);
+        SUBJECT_DN_COMPONENTS = Pattern.compile(LogRedactionUtils.getSubjectDnRedactionPattern(), Pattern.CASE_INSENSITIVE);
     }
         
     public static class ServerLogRecord {

@@ -15,7 +15,7 @@ package org.ejbca.util.dn;
 import org.apache.log4j.Logger;
 
 import com.keyfactor.util.certificate.DnComponents;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -100,7 +100,7 @@ public class DistinguishedName extends LdapName {
         boolean useEntityEmailField = (dnMap == null ? false : (dnMap.size() > 0));
 
         if (log.isDebugEnabled()) {
-            log.debug("Trying to merge \n'" + GdprRedactionUtils.getSubjectDnLogSafe(this.toString()) + "'\n with \n'" + GdprRedactionUtils.getSubjectDnLogSafe(dn.toString()) + "': useEntityEmailField=" + useEntityEmailField);
+            log.debug("Trying to merge \n'" + LogRedactionUtils.getSubjectDnLogSafe(this.toString()) + "'\n with \n'" + LogRedactionUtils.getSubjectDnLogSafe(dn.toString()) + "': useEntityEmailField=" + useEntityEmailField);
         }
 
         // This list will enclose the resulting list of RDNs.
