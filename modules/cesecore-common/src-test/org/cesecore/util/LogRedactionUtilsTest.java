@@ -100,7 +100,7 @@ public class LogRedactionUtilsTest {
                 + "(unstructuredaddress=)|(unstructuredname=)|(emailaddress=)|(email=)|(dn=)|(uniqueidentifier=)|"
                 + "(uid=)|(pid=)|(vid=)|(cn=)|(name=)|(sn=)|(serialnumber=)|(gn=)|(givenname=)|(initials=)|(surname=)|"
                 + "(ou=)|(organizationidentifier=)|(st=)|(dc=)|(c=)).*");
-        assertEquals("SubjectAltName redaction pattern mismatch", GdprRedactionUtils.getSubjectAltNameRedactionPattern(), 
+        assertEquals("SubjectAltName redaction pattern mismatch", LogRedactionUtils.getSubjectAltNameRedactionPattern(), 
                 "((OTHERNAME=)|(RFC822NAME=)|(DNSNAME=)|(IPADDRESS=)|(X400ADDRESS=)|(DIRECTORYNAME=)|(EDIPARTYNAME=)|"
                 + "(UNIFORMRESOURCEID=)|(REGISTEREDID=)|(UPN=)|(GUID=)|(KRB5PRINCIPAL=)|(PERMANENTIDENTIFIER=)|(XMPPADDR=)|"
                 + "(SRVNAME=)|(SUBJECTIDENTIFICATIONMETHOD=)|(FASCN=)|(UNIFORMRESOURCEIDENTIFIER=)|(URI=)).*");
@@ -242,15 +242,15 @@ public class LogRedactionUtilsTest {
     public void testRedactMessage() {
         LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(true, false);
         
-        assertEquals(GdprRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), "some message: " + GdprRedactionUtils.REDACTED_CONTENT);
-        assertEquals(GdprRedactionUtils.getRedactedMessage(null), null);
-        assertEquals(GdprRedactionUtils.getRedactedMessage(""), "");
-        assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: uri=xyz.abc blah,dnsName=abcd.com"), 
-                "some other message: " + GdprRedactionUtils.REDACTED_CONTENT);
-        assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: dnsName=abcd.com,uri=xyz.abc blah"), 
-                "some other message: " + GdprRedactionUtils.REDACTED_CONTENT);
-        assertEquals(GdprRedactionUtils.getRedactedMessage("some other message: serialno=123456 subjectemail=asd@we.com"), 
-                "some other message: serialno=123456 subject" + GdprRedactionUtils.REDACTED_CONTENT);
+        assertEquals(LogRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), "some message: " + LogRedactionUtils.REDACTED_CONTENT);
+        assertEquals(LogRedactionUtils.getRedactedMessage(null), null);
+        assertEquals(LogRedactionUtils.getRedactedMessage(""), "");
+        assertEquals(LogRedactionUtils.getRedactedMessage("some other message: uri=xyz.abc blah,dnsName=abcd.com"), 
+                "some other message: " + LogRedactionUtils.REDACTED_CONTENT);
+        assertEquals(LogRedactionUtils.getRedactedMessage("some other message: dnsName=abcd.com,uri=xyz.abc blah"), 
+                "some other message: " + LogRedactionUtils.REDACTED_CONTENT);
+        assertEquals(LogRedactionUtils.getRedactedMessage("some other message: serialno=123456 subjectemail=asd@we.com"), 
+                "some other message: serialno=123456 subject" + LogRedactionUtils.REDACTED_CONTENT);
         
         // disable redaction
         LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(false, false);
