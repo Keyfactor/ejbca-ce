@@ -31,7 +31,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -113,7 +113,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
            	final int status = data.getStatus();
             if (isAllowedToEnroll(admin, username)) {
             	if (log.isDebugEnabled()) {
-            		log.debug("Trying to authenticate user: username="+username+", dn="+ GdprRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull())+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
+            		log.debug("Trying to authenticate user: username="+username+", dn="+ LogRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull())+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
             	}
                 if (!data.comparePassword(password)) {
                 	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
@@ -158,8 +158,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
         } catch (AuthStatusException | AuthLoginException se) {
             throw se;
         }  catch (Exception e) {
-            log.error(intres.getLocalizedMessage("error.unknown"), GdprRedactionUtils.getRedactedException(e));
-            throw new EJBException(GdprRedactionUtils.getRedactedException(e));
+            log.error(intres.getLocalizedMessage("error.unknown"), LogRedactionUtils.getRedactedException(e));
+            throw new EJBException(LogRedactionUtils.getRedactedException(e));
         }
     }
 

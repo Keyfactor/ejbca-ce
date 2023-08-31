@@ -48,7 +48,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
@@ -162,11 +162,11 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                             confAlias, cmpConfiguration, authenticated, caSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
                             endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                     if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
-                        LOG.info(GdprRedactionUtils.getRedactedMessage(eecmodule.getErrorMessage()));
+                        LOG.info(LogRedactionUtils.getRedactedMessage(eecmodule.getErrorMessage()));
                         return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
                     } else {
                         if(LOG.isDebugEnabled()) {
-                            LOG.debug("The CMP KeyUpdate request for SubjectDN '" + GdprRedactionUtils.getSubjectDnLogSafe(crmfreq.getSubjectDN()) +
+                            LOG.debug("The CMP KeyUpdate request for SubjectDN '" + LogRedactionUtils.getSubjectDnLogSafe(crmfreq.getSubjectDN()) +
                                     "' was verified successfully");
                         }
                     }
@@ -213,7 +213,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 
                 // Find the end entity that the certificate belongs to                
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Looking for an end entity with subjectDN: " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN));
+                    LOG.debug("Looking for an end entity with subjectDN: " + LogRedactionUtils.getSubjectDnLogSafe(subjectDN));
                 }
                 EndEntityInformation endEntityInformation = null;
                 if(issuerDN == null) {
@@ -224,7 +224,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if (!endEntityInformations.isEmpty()) {
                         endEntityInformation = endEntityInformations.get(0);
                         if (endEntityInformations.size() > 1) {
-                            LOG.warn("Multiple end entities with subject DN " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN)
+                            LOG.warn("Multiple end entities with subject DN " + LogRedactionUtils.getSubjectDnLogSafe(subjectDN)
                                     + " were found. This may lead to unexpected behavior.");
                         }
                     }
@@ -233,13 +233,13 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if (!endEntityInformations.isEmpty()) {
                         endEntityInformation = endEntityInformations.get(0);
                         if (endEntityInformations.size() > 1) {
-                            LOG.warn("Multiple end entities with subject DN " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) +
+                            LOG.warn("Multiple end entities with subject DN " + LogRedactionUtils.getSubjectDnLogSafe(subjectDN) +
                                     " and issuer DN" + issuerDN + " were found. This may lead to unexpected behavior.");
                         }
                     }
                 }
                 if(endEntityInformation == null) {
-                    final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", GdprRedactionUtils.getSubjectDnLogSafe(subjectDN));
+                    final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", LogRedactionUtils.getSubjectDnLogSafe(subjectDN));
                     LOG.info(errMsg);
                     return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                 }
@@ -255,7 +255,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                  */
                 if(certStoreSession.isRevoked(CertTools.getIssuerDN(oldCert), CertTools.getSerialNumber(oldCert))) {
                     String errorMessage = "Certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN "
-                            + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) + " is revoked. Unable to perform key update.";
+                            + LogRedactionUtils.getSubjectDnLogSafe(subjectDN) + " is revoked. Unable to perform key update.";
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(errorMessage);
                     }
@@ -265,7 +265,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     oldCert.checkValidity();
                 } catch (CertificateExpiredException e) {
                     String errorMessage = "Certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN "
-                            + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) + " is expired. Unable to perform key update.";
+                            + LogRedactionUtils.getSubjectDnLogSafe(subjectDN) + " is expired. Unable to perform key update.";
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(errorMessage);
                     }
@@ -331,13 +331,13 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 |  CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
                 | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
                 | CertificateRevokeException | NoSuchEndEntityException | EjbcaException | CertificateExtensionException | WaitingForApprovalException e) {
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
-            LOG.info(errMsg, GdprRedactionUtils.getRedactedException(e));
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()));
+            LOG.info(errMsg, LogRedactionUtils.getRedactedException(e));
             resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (InvalidKeyException | NoSuchProviderException | NoSuchAlgorithmException e) {
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()));
             LOG.info("Error while reading the public key of the extraCert attached to the CMP request");
-            LOG.info(errMsg, GdprRedactionUtils.getRedactedException(e));
+            LOG.info(errMsg, LogRedactionUtils.getRedactedException(e));
             resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
         }
 

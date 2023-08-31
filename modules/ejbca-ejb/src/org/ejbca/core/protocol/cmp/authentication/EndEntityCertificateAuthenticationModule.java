@@ -387,7 +387,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     }
                 } catch (CertificateExpiredException | CertificateNotYetValidException e) {
                     this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid when looking for Vendor CA - "
-                            + GdprRedactionUtils.getRedactedMessage(e.getMessage());
+                            + LogRedactionUtils.getRedactedMessage(e.getMessage());
                     if(log.isDebugEnabled()) {
                         log.debug(this.errorMessage);
                     }
@@ -463,7 +463,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 } catch (AuthorizationDeniedException | IllegalNameException | CADoesntExistsException | EndEntityProfileValidationException
                         | WaitingForApprovalException | CertificateSerialNumberException | ApprovalException | NoSuchEndEntityException | CustomFieldException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug(GdprRedactionUtils.getRedactedMessage(e.getLocalizedMessage()));
+                        log.debug(LogRedactionUtils.getRedactedMessage(e.getLocalizedMessage()));
                     }
                     this.errorMessage = e.getLocalizedMessage();
                     return false;
@@ -529,7 +529,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 if(certmsg == null) {
                     log.info("Error. Failed to parse CMP message novosec generated message. " + e.getLocalizedMessage());
                     if(log.isDebugEnabled()) {
-                        log.debug(GdprRedactionUtils.getRedactedException(e));
+                        log.debug(LogRedactionUtils.getRedactedException(e));
                     }
                     return null;
                 } else {
