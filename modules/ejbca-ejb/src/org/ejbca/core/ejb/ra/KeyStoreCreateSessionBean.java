@@ -36,7 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.PublicKeyWrapper;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -162,10 +162,10 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             throw e;
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
-                log.debug("Re-throw exception in RA master API: " + GdprRedactionUtils.getRedactedMessage(e.getMessage()),
-                        GdprRedactionUtils.getRedactedException(e));
+                log.debug("Re-throw exception in RA master API: " + LogRedactionUtils.getRedactedMessage(e.getMessage()),
+                        LogRedactionUtils.getRedactedException(e));
             }
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
 
