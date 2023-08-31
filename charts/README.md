@@ -65,11 +65,11 @@ Deploy `ejbca-community-helm` on the Kubernetes cluster with custom configuratio
 helm install ejbca keyfactor/ejbca-community-helm --namespace ejbca --create-namespace --values ejbca.yaml
 ```
 
-### Example Custom Deployment
+## Example Custom Deployments
 
 This section contains examples for how to customize the deployment for common scenarios.
 
-## Connecting EJBCA to an external database
+### Connecting EJBCA to an external database
 
 All serious deployments of EJBCA should use an external database for data persistence.
 EJBCA supports Microsoft SQL Server, MariaDB/MySQL, PostgreSQL and Oracle databases. 
