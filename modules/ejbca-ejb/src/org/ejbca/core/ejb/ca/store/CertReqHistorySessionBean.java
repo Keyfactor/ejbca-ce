@@ -33,7 +33,7 @@ import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 
@@ -71,7 +71,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
         	log.info(intres.getLocalizedMessage("store.storehistory", username));
         } catch (Exception e) {
         	log.error(intres.getLocalizedMessage("store.errorstorehistory", endEntityInformation.getUsername()));
-            throw new EJBException(GdprRedactionUtils.getRedactedException(e));
+            throw new EJBException(LogRedactionUtils.getRedactedException(e));
         }
     	if (log.isTraceEnabled()) {
     		log.trace("<addCertReqHistoryData()");

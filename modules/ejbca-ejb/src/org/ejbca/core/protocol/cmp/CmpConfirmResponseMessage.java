@@ -36,7 +36,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.util.CertTools;
 
@@ -144,7 +144,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
 				} catch (CertificateEncodingException | SecurityException | SignatureException e) {
-					log.error("Error creating CmpConfirmMessage: ", GdprRedactionUtils.getRedactedException(e));
+					log.error("Error creating CmpConfirmMessage: ", LogRedactionUtils.getRedactedException(e));
 				} 		
 			} else {
 				if (log.isDebugEnabled()) {

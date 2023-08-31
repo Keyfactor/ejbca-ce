@@ -53,7 +53,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
@@ -227,7 +227,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		                enrichWithServerGeneratedKeyOrThrow(crmfreq, endEntityInformation.getCertificateProfileId());
 		                resp = signSession.createCertificate(admin, crmfreq, CmpResponseMessage.class, endEntityInformation);
 					} else {
-						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", GdprRedactionUtils.getSubjectDnLogSafe(dn));
+						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", LogRedactionUtils.getSubjectDnLogSafe(dn));
 						LOG.info(errMsg);						
 		                // If we didn't find the entity return error message
 		                final String failText = INTRES.getLocalizedMessage("ra.wrongusernameorpassword");
@@ -265,13 +265,13 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_POP, e.getMessage());
         } catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | CesecoreException | EjbcaException | CertificateExtensionException e) {
             // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, GdprRedactionUtils.getRedactedMessage(e.getMessage()));
-            LOG.info(errMsg, GdprRedactionUtils.getRedactedException(e)); // info because this is something we should expect and we handle it
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()));
+            LOG.info(errMsg, LogRedactionUtils.getRedactedException(e)); // info because this is something we should expect and we handle it
             resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (EJBException e) {
 			// Fatal error
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
-			LOG.error(errMsg, GdprRedactionUtils.getRedactedException(e));			
+			LOG.error(errMsg, LogRedactionUtils.getRedactedException(e));			
 			resp = null;
 		}
         if (LOG.isTraceEnabled()) {
@@ -324,7 +324,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  null,  authenticated);
         if (authenticationModule == null) {
             String errmsg = messageVerifyer.getErrorMessage();
-            LOG.info(GdprRedactionUtils.getRedactedMessage(errmsg, eeProfileId));
+            LOG.info(LogRedactionUtils.getRedactedMessage(errmsg, eeProfileId));
             return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
         }        
         // Create a username and password and register the new user in EJBCA
@@ -357,7 +357,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                     this.responseProt);
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating username from base dn: " + GdprRedactionUtils.getSubjectDnLogSafe(dnname.toString(), eeProfileId));
+            LOG.debug("Creating username from base dn: " + LogRedactionUtils.getSubjectDnLogSafe(dnname.toString(), eeProfileId));
         }
         final String username = StringTools.stripUsername(gen.generateUsername(dnname.toString()));
         final String pwd;
@@ -484,15 +484,15 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.SYSTEM_UNAVAILABLE, e.getMessage(), requestId, requestType, null, keyId,
                     this.responseProt);
         } catch (EndEntityProfileValidationException e) {
-            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), GdprRedactionUtils.getRedactedException(e, eeProfileId));
+            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), LogRedactionUtils.getRedactedException(e, eeProfileId));
             resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId,
                     this.responseProt);
         } catch (ApprovalException | EndEntityExistsException e) {
-            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), GdprRedactionUtils.getRedactedException(e, eeProfileId));
+            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), LogRedactionUtils.getRedactedException(e, eeProfileId));
             resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId,
                     this.responseProt);
         } catch (CertificateExtensionException e) {
-            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), GdprRedactionUtils.getRedactedException(e, eeProfileId));
+            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), LogRedactionUtils.getRedactedException(e, eeProfileId));
             resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.BAD_REQUEST, e.getMessage(), requestId, requestType, verifyer, keyId,
                     this.responseProt);
         }
@@ -666,13 +666,13 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
     private EndEntityInformation getEndEntityByDn(String dn) throws AuthorizationDeniedException {
 	    EndEntityInformation endEntityInformation = null;
 	    if (LOG.isDebugEnabled()) {
-	        LOG.debug("looking for user with dn: "+ GdprRedactionUtils.getSubjectDnLogSafe(dn));
+	        LOG.debug("looking for user with dn: "+ LogRedactionUtils.getSubjectDnLogSafe(dn));
 	    }
 	    List<EndEntityInformation> endEntityInformations = endEntityAccessSession.findUserBySubjectDN(admin, dn);
 	    if (!endEntityInformations.isEmpty()) {
 	        endEntityInformation = endEntityInformations.get(0);
 	        if (endEntityInformations.size() > 1) {
-	            LOG.warn("Multiple end entities with subject DN " +  GdprRedactionUtils.getSubjectDnLogSafe(dn)
+	            LOG.warn("Multiple end entities with subject DN " +  LogRedactionUtils.getSubjectDnLogSafe(dn)
                         + " were found. This may lead to unexpected behavior.");
 	        }
 	    }

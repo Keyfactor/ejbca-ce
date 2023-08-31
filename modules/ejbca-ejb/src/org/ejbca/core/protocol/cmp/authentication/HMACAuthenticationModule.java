@@ -33,7 +33,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -208,23 +208,23 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                                 if (issuer == null) {
                                     if (LOG.isDebugEnabled()) {
                                         LOG.debug("Searching for an end entity with SubjectDN='" +
-                                                GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) + "'.");
+                                                LogRedactionUtils.getSubjectDnLogSafe(subjectDN) + "'.");
                                     }
                                     endEntityInformations = this.endEntityAccessSession.findUserBySubjectDN(authenticationToken, subjectDN);
                                     if (endEntityInformations.size() > 1) {
                                         LOG.warn("Multiple end entities with subject DN " +
-                                                GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) +
+                                                LogRedactionUtils.getSubjectDnLogSafe(subjectDN) +
                                                 " were found. This may lead to unexpected behavior.");
                                     }
                                 } else {
                                     final String issuerDN = issuer.toString();
                                     if (LOG.isDebugEnabled()) {
-                                        LOG.debug("Searching for an end entity with SubjectDN='" + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) +
+                                        LOG.debug("Searching for an end entity with SubjectDN='" + LogRedactionUtils.getSubjectDnLogSafe(subjectDN) +
                                                 "' and isserDN='" + issuerDN + "'");
                                     }
                                     endEntityInformations = endEntityAccessSession.findUserBySubjectAndIssuerDN(this.authenticationToken, subjectDN, issuerDN);
                                     if (endEntityInformations.size() > 1) {
-                                        LOG.warn("Multiple end entities with subject DN " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) +
+                                        LOG.warn("Multiple end entities with subject DN " + LogRedactionUtils.getSubjectDnLogSafe(subjectDN) +
                                                 " and issuer DN" + issuerDN + " were found. This may lead to unexpected behavior.");
                                     }
                                 }                    
@@ -239,7 +239,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 }
                 if (endEntityInformation == null) {
                     LOG.info(INTRES.getLocalizedMessage("ra.errorentitynotexist",
-                            StringUtils.isNotEmpty(username) ? username : GdprRedactionUtils.getSubjectDnLogSafe(subjectDN)));
+                            StringUtils.isNotEmpty(username) ? username : LogRedactionUtils.getSubjectDnLogSafe(subjectDN)));
                     this.errorMessage = INTRES.getLocalizedMessage("ra.wrongusernameorpassword");
                     return false;
                 }

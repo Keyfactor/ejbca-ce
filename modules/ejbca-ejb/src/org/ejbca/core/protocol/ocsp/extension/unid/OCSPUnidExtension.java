@@ -34,7 +34,7 @@ import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.certificates.ocsp.extension.OCSPExtensionType;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -114,7 +114,7 @@ public class OCSPUnidExtension implements OCSPExtension {
             fnr = unidfnrSession.fetchUnidFnrData(serialNumber);
         } else {
             String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn",
-                    GdprRedactionUtils.getSubjectDnLogSafe(cert.getSubjectDN().getName()));
+                    LogRedactionUtils.getSubjectDnLogSafe(cert.getSubjectDN().getName()));
             log.error(errMsg);
             errCode = UnidFnrOCSPExtensionCode.ERROR_NO_SERIAL_IN_DN.getValue();
             return null;

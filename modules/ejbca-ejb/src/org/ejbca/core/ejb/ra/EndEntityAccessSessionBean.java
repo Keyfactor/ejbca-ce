@@ -33,7 +33,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -129,23 +129,23 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     public List<EndEntityInformation> findUserBySubjectDN(final AuthenticationToken admin, final String subjectdn)
             throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace(">findUserBySubjectDN(" + GdprRedactionUtils.getSubjectDnLogSafe(subjectdn)+ ")");
+            log.trace(">findUserBySubjectDN(" + LogRedactionUtils.getSubjectDnLogSafe(subjectdn)+ ")");
         }
         // String used in SQL so strip it
         final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         if (log.isDebugEnabled()) {
-            log.debug("Looking for users with subjectdn: " + GdprRedactionUtils.getSubjectDnLogSafe(dn));
+            log.debug("Looking for users with subjectdn: " + LogRedactionUtils.getSubjectDnLogSafe(dn));
         }
         final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN", UserData.class);
         query.setParameter("subjectDN", dn);
         final List<UserData> dataList =  query.getResultList();
 
         if (dataList.isEmpty() && log.isDebugEnabled()) {
-            log.debug("Cannot find user with subjectdn: " + GdprRedactionUtils.getSubjectDnLogSafe(dn));
+            log.debug("Cannot find user with subjectdn: " + LogRedactionUtils.getSubjectDnLogSafe(dn));
         }
         final List<EndEntityInformation> result = getEndEntityInformation(admin, dataList);
         if (log.isTraceEnabled()) {
-            log.trace("<findUserBySubjectDN(" + GdprRedactionUtils.getSubjectDnLogSafe(subjectdn) + ")");
+            log.trace("<findUserBySubjectDN(" + LogRedactionUtils.getSubjectDnLogSafe(subjectdn) + ")");
         }
         return result;
     }
@@ -167,13 +167,13 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     public List<EndEntityInformation> findUserBySubjectAndIssuerDN(final AuthenticationToken admin, final String subjectdn, final String issuerdn)
             throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace(">findUserBySubjectAndIssuerDN(" + GdprRedactionUtils.getSubjectDnLogSafe(subjectdn) + ", " + issuerdn + ")");
+            log.trace(">findUserBySubjectAndIssuerDN(" + LogRedactionUtils.getSubjectDnLogSafe(subjectdn) + ", " + issuerdn + ")");
         }
         // String used in SQL so strip it
         final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         final String issuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerdn));
         if (log.isDebugEnabled()) {
-            log.debug("Looking for users with subjectdn: " + GdprRedactionUtils.getSubjectDnLogSafe(dn) + ", issuerdn : " + issuerDN);
+            log.debug("Looking for users with subjectdn: " + LogRedactionUtils.getSubjectDnLogSafe(dn) + ", issuerdn : " + issuerDN);
         }
 
         final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId", UserData.class);
@@ -181,11 +181,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         query.setParameter("caId", issuerDN.hashCode());
         final List<UserData> dataList = query.getResultList();
         if (dataList.isEmpty() && log.isDebugEnabled()) {
-            log.debug("Cannot find user with subjectdn: " + GdprRedactionUtils.getSubjectDnLogSafe(dn) + ", issuerdn : " + issuerDN);
+            log.debug("Cannot find user with subjectdn: " + LogRedactionUtils.getSubjectDnLogSafe(dn) + ", issuerdn : " + issuerDN);
         }
         final List<EndEntityInformation> result = getEndEntityInformation(admin, dataList);
         if (log.isTraceEnabled()) {
-            log.trace("<findUserBySubjectAndIssuerDN(" + GdprRedactionUtils.getSubjectDnLogSafe(subjectdn) + ", " + issuerDN + ")");
+            log.trace("<findUserBySubjectAndIssuerDN(" + LogRedactionUtils.getSubjectDnLogSafe(subjectdn) + ", " + issuerDN + ")");
         }
         return result;
     }
@@ -420,7 +420,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             returnval = query(admin, query, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
         } catch (IllegalQueryException e) {
             // Ignore ??
-            log.debug("Illegal query", GdprRedactionUtils.getRedactedException(e));
+            log.debug("Illegal query", LogRedactionUtils.getRedactedException(e));
             returnval = new ArrayList<>();
         }
         if (log.isDebugEnabled()) {
@@ -494,7 +494,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         // Finally order the return values
         sqlquery += " ORDER BY " + USERDATA_CREATED_COL + " DESC";
         if (log.isDebugEnabled()) {
-            log.debug("generated query: " + GdprRedactionUtils.getRedactedMessage(sqlquery));
+            log.debug("generated query: " + LogRedactionUtils.getRedactedMessage(sqlquery));
         }
             final javax.persistence.Query dbQuery = entityManager.createQuery("SELECT a FROM UserData a WHERE " + sqlquery);
             if (fetchsize > 0) {
@@ -553,7 +553,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 		String endEntityProfileStripped = StringTools.strip(endEntityProfile);
 
 		if (query != null && !query.isLegalQuery()) {
-			log.error("The following query: " + GdprRedactionUtils.getRedactedMessage(query.getQueryString()) + " appeared to be an illegal one");
+			log.error("The following query: " + LogRedactionUtils.getRedactedMessage(query.getQueryString()) + " appeared to be an illegal one");
 			throw new IllegalQueryException();
 		}
 
@@ -674,7 +674,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         try {
             returnval = query(admin, null, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
         } catch (IllegalQueryException e) {
-            log.debug("Query is illegal: " + GdprRedactionUtils.getRedactedException(e));
+            log.debug("Query is illegal: " + LogRedactionUtils.getRedactedException(e));
         }
         if (log.isTraceEnabled()) {
             log.trace("<findAllUsersWithLimit()");

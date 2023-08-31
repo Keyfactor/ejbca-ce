@@ -72,7 +72,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CompressedCollection;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 
 import com.keyfactor.CesecoreException;
@@ -504,7 +504,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                         for(Certificate renewedCertificate : renewedCertificateChain){
                             String renewedCertificateSubjectDN = CertTools.getSubjectDN(renewedCertificate);
                             if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
-                                log.info("Collecting revocation information for " + GdprRedactionUtils.getSubjectDnLogSafe(renewedCertificateSubjectDN) + " and merging them with ones for " + caCertSubjectDN);
+                                log.info("Collecting revocation information for " + LogRedactionUtils.getSubjectDnLogSafe(renewedCertificateSubjectDN) + " and merging them with ones for " + caCertSubjectDN);
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN,
                                         false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
@@ -697,7 +697,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
 
                             if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Collecting revocation information for renewed certificate '" + GdprRedactionUtils.getSubjectDnLogSafe(renewedCertificateSubjectDN) + "' and merging them with ones for " + caCertSubjectDN);
+                                    log.debug("Collecting revocation information for renewed certificate '" + LogRedactionUtils.getSubjectDnLogSafe(renewedCertificateSubjectDN) + "' and merging them with ones for " + caCertSubjectDN);
                                 }
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, false, 

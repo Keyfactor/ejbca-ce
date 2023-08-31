@@ -37,7 +37,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -228,7 +228,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 useEI = true;
             } catch (ParseException e) {
                 log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \""
-                        + GdprRedactionUtils.getRedactedMessage(userData.getSubjectDN()) + "\" and customStartTime was '" + customStartTime + "'.");
+                        + LogRedactionUtils.getRedactedMessage(userData.getSubjectDN()) + "\" and customStartTime was '" + customStartTime + "'.");
                 throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime");
             }
         }
@@ -253,7 +253,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 useEI = true;
             } catch (ParseException e) {
                 log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \""
-                        + GdprRedactionUtils.getSubjectDnLogSafe(userData.getSubjectDN()) + "\"");
+                        + LogRedactionUtils.getSubjectDnLogSafe(userData.getSubjectDN()) + "\"");
                 throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime.");
             }
         }
@@ -597,15 +597,15 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             // If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request
             if (log.isDebugEnabled()) {
                 log.debug("Certificate we try to verify outer signature with is not yet valid. SubjectDN: "
-                        + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(cert)));
+                        + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(cert)));
             }
-            throw GdprRedactionUtils.getRedactedException(e);
+            throw LogRedactionUtils.getRedactedException(e);
         } catch (CertificateExpiredException e) {
             if (log.isDebugEnabled()) {
                 log.debug("Certificate we try to verify outer signature with has expired. SubjectDN: "
-                        + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(cert)));
+                        + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(cert)));
             }
-            throw GdprRedactionUtils.getRedactedException(e);
+            throw LogRedactionUtils.getRedactedException(e);
         }
     }
 

@@ -81,7 +81,7 @@ import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.ClientX509KeyManager;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.KeyRenewalFailedException;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -250,7 +250,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         try {
             internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, signedCertificate.getEncoded());
         } catch (CertificateEncodingException | CertificateImportException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
-            throw new KeyRenewalFailedException(GdprRedactionUtils.getRedactedException(e));
+            throw new KeyRenewalFailedException(LogRedactionUtils.getRedactedException(e));
         }
         /*
          * Replace the alias and the chain at this step. If anything bad happened prior to this step the old alias and 
@@ -280,14 +280,14 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         try {
             users = ejbcaWS.findUser(match);
         } catch (Exception e) {
-            log.error("WS not working", GdprRedactionUtils.getRedactedException(e));
+            log.error("WS not working", LogRedactionUtils.getRedactedException(e));
             return null;
         }
         if (users == null || users.size() < 1) {
-            log.error(intres.getLocalizedMessage("ocsp.no.user.with.subject.dn", GdprRedactionUtils.getSubjectDnLogSafe(subjectDN)));
+            log.error(intres.getLocalizedMessage("ocsp.no.user.with.subject.dn", LogRedactionUtils.getSubjectDnLogSafe(subjectDN)));
             return null;
         }
-        log.debug("at least one user found for cert with DN: " + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) +
+        log.debug("at least one user found for cert with DN: " + LogRedactionUtils.getSubjectDnLogSafe(subjectDN) +
                 " Trying to match it with CA name: " + caName);
         UserDataVOWS result = null;
         for (UserDataVOWS userData : users) {
@@ -297,7 +297,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             }
         }
         if (result == null) {
-            log.error("No user found for certificate '" + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN) + "' on CA '" + caName + "'.");
+            log.error("No user found for certificate '" + LogRedactionUtils.getSubjectDnLogSafe(subjectDN) + "' on CA '" + caName + "'.");
             return null;
         }
         return result;
@@ -360,7 +360,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         final UserDataVOWS userData = getUserDataVOWS(ejbcaWS, ocspSigningCertificate, caId);
         if (userData == null) {
             final String msg = "User data for certificate with subject DN '" +
-                    GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(ocspSigningCertificate)) + "' was not found.";
+                    LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(ocspSigningCertificate)) + "' was not found.";
             log.error(msg);
             throw new KeyRenewalFailedException(msg);
         }
@@ -378,7 +378,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
                     new String(Base64.encode(pkcs10CertificationRequest)), null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
         } catch (Exception e) {
             //Way too many silly exceptions to handle, wrap instead.
-            throw new KeyRenewalFailedException(GdprRedactionUtils.getRedactedException(e));
+            throw new KeyRenewalFailedException(LogRedactionUtils.getRedactedException(e));
         }
         if (certificateResponse == null) {
             throw new KeyRenewalFailedException("Certificate Response was not received");
@@ -389,7 +389,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             certificates = (Collection<X509Certificate>) CertificateFactory.getInstance("X.509").generateCertificates(
                     new ByteArrayInputStream(Base64.decode(certificateResponse.getData())));
         } catch (CertificateException e) {
-            throw new KeyRenewalFailedException(GdprRedactionUtils.getRedactedException(e));
+            throw new KeyRenewalFailedException(LogRedactionUtils.getRedactedException(e));
         }
         final byte[] publicKeyBytes;
         try {
@@ -405,7 +405,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         final PublicKey caCertificatePublicKey = caCertificate.getPublicKey();
         for (X509Certificate certificate : certificates) {
             if (log.isDebugEnabled()) {
-                log.debug("Verifying certificate with SubjectDN : '" + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate)) +
+                log.debug("Verifying certificate with SubjectDN : '" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate)) +
                         "' using public key from CA certificate with subject '" + CertTools.getSubjectDN(caCertificate) +"'.");
             }
             try {

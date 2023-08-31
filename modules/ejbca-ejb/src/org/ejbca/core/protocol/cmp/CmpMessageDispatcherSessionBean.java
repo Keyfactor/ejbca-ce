@@ -39,7 +39,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -135,14 +135,14 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
             final int tagno = pkiBody.getType();
             if (log.isDebugEnabled()) {
                 final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" +
-                        GdprRedactionUtils.getRedactedMessage(pkiHeader.getSender().toString()) +
+                        LogRedactionUtils.getRedactedMessage(pkiHeader.getSender().toString()) +
                         ", recipient=" + pkiHeader.getRecipient().toString() + System.lineSeparator() +
                         "Cmp configuration alias: " + cmpConfigurationAlias + System.lineSeparator() +
                         "The CMP message is already authenticated: " + authenticated + System.lineSeparator() +
                         "Body is of type: " + tagno + System.lineSeparator() +
                         "Transaction ID: " + pkiHeader.getTransactionID();
                 log.debug(message);
-                if (log.isTraceEnabled() && !GdprRedactionUtils.redactPii()) {
+                if (log.isTraceEnabled() && !LogRedactionUtils.redactPii()) {
                     log.trace(ASN1Dump.dumpAsString(pkiMessage));
                 }
             }
@@ -204,7 +204,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         return dispatch(authenticationToken, nestedPkiMessage, pkiHeader, cmpConfiguration, cmpConfigurationAlias, levelOfNesting+1);
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getMessage();
-                        log.info(GdprRedactionUtils.getRedactedMessage(errMsg), GdprRedactionUtils.getRedactedException(e));
+                        log.info(LogRedactionUtils.getRedactedMessage(errMsg), LogRedactionUtils.getRedactedException(e));
                         return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, errMsg);
                     }
                 }
