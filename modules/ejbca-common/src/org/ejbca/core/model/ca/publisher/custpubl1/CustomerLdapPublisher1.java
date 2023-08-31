@@ -35,7 +35,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ExternalScriptsAllowlist;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -268,17 +268,17 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                     storeLog(LogInfo.LEVEL_INFO, true, "Successfully published certificate " + serial, null);
                 } catch (PublisherException ex) {
                     // Catching the log failure as we don't want the entry to be republished just because we could not log the success
-                    log.error("Failed to log the successful publishing for certiciate " + serial, GdprRedactionUtils.getRedactedException(ex));
+                    log.error("Failed to log the successful publishing for certiciate " + serial, LogRedactionUtils.getRedactedException(ex));
                 }
             } catch (PublisherException pex) {
-                PublisherException pex2 = new PublisherException(GdprRedactionUtils.getRedactedMessage(pex.getMessage()));
+                PublisherException pex2 = new PublisherException(LogRedactionUtils.getRedactedMessage(pex.getMessage()));
                 pex2.initCause(pex);
 
                 // Try to log the exception to LDAP
                 try {
                     storeLog(LogInfo.LEVEL_ERROR, false, "Publishing of certificate " + serial + " failed", pex);
                 } catch (PublisherException ex) {
-                    log.error("Failed to log the failed publishing for certificate " + serial, GdprRedactionUtils.getRedactedException(ex));
+                    log.error("Failed to log the failed publishing for certificate " + serial, LogRedactionUtils.getRedactedException(ex));
                 }
 
                 // Pass through the exception so that the failed publising can be put in the publishing queue
@@ -314,7 +314,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             }
             return true;
         } catch (PublisherException pex) {
-            PublisherException pex2 = new PublisherException(GdprRedactionUtils.getRedactedMessage(pex.getMessage()));
+            PublisherException pex2 = new PublisherException(LogRedactionUtils.getRedactedMessage(pex.getMessage()));
             pex2.initCause(pex);
 
             // Try to log the exception to LDAP
@@ -383,11 +383,11 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                     .toString();
             
             if (log.isDebugEnabled()) {
-                log.debug("LDAP DN for user " + username + " is '" + GdprRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'");
+                log.debug("LDAP DN for user " + username + " is '" + LogRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'");
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
-            log.error(msg, GdprRedactionUtils.getRedactedException(e));
+            log.error(msg, LogRedactionUtils.getRedactedException(e));
             throw new PublisherException(msg);
         }
 
@@ -410,13 +410,13 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             attributeSet.add(new LDAPAttribute(CERTIFICATE_ATTRIBUTE, incert.getEncoded()));
         } catch (CertificateEncodingException e) {
             String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
-            log.error(msg, GdprRedactionUtils.getRedactedException(e));
+            log.error(msg, LogRedactionUtils.getRedactedException(e));
             throw new PublisherException(msg);
         }
         
         // Finally write the object
         if (log.isDebugEnabled()) {
-            log.debug("Adding certificate to user entry: " + username + ": " + GdprRedactionUtils.getSubjectDnLogSafe(ldapDN));
+            log.debug("Adding certificate to user entry: " + username + ": " + LogRedactionUtils.getSubjectDnLogSafe(ldapDN));
         }
         final LDAPEntry newEntry = new LDAPEntry(ldapDN, attributeSet);
         writeCertEntryToLDAP(lc, oldEntry, newEntry, checksum);
@@ -446,7 +446,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                     .toString();
         } catch (CRLException e) {
             String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "CRL");
-            log.error(msg, GdprRedactionUtils.getRedactedException(e));
+            log.error(msg, LogRedactionUtils.getRedactedException(e));
             throw new PublisherException(msg);
         }
 
@@ -618,20 +618,20 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                 try {
                     // try to read the old object
                     if (log.isDebugEnabled()) {
-                        log.debug("Searching for old entry with DN '" + GdprRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'");
+                        log.debug("Searching for old entry with DN '" + LogRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'");
                     }
                     result = lc.read(ldapDN, ldapSearchConstraints);
                     if (log.isDebugEnabled()) {
                         if (result != null) {
-                            log.debug("Found an old entry with DN '" + GdprRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'");
+                            log.debug("Found an old entry with DN '" + LogRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'");
                         } else {
-                            log.debug("Did not find an old entry with DN '" + GdprRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'");
+                            log.debug("Did not find an old entry with DN '" + LogRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'");
                         }
                     }
                 } catch (LDAPException ex) {
                     if (ex.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
                         if (log.isDebugEnabled()) {
-                            log.debug("No old entry exist for '" + GdprRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'.");
+                            log.debug("No old entry exist for '" + LogRedactionUtils.getSubjectDnLogSafe(ldapDN) + "'.");
                         }
                     } else {
                         throw ex;
@@ -667,21 +667,21 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                     // Delete old entry if existing
                     if (oldEntry != null) {
                         lc.delete(oldEntry.getDN(), ldapStoreConstraints);
-                        String msg = intres.getLocalizedMessage("publisher.ldapremove", GdprRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
+                        String msg = intres.getLocalizedMessage("publisher.ldapremove", LogRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
                         log.info(msg);
                     }
                     
                     // Add the entry
                     if (log.isDebugEnabled()) {
-                        log.debug("Adding DN: " + GdprRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()));
+                        log.debug("Adding DN: " + LogRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()));
                     }
                     lc.add(newEntry, ldapStoreConstraints);
-                    String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", GdprRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()));
+                    String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", LogRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()));
                     log.info(msg);
                 } catch (LDAPException ex) {
                     if (ex.getResultCode() == LDAPException.ATTRIBUTE_OR_VALUE_EXISTS) {
-                        final String msg = intres.getLocalizedMessage("publisher.certalreadyexists", certFingerprint, GdprRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()),
-                                                                      GdprRedactionUtils.getRedactedMessage(ex.getMessage()));
+                        final String msg = intres.getLocalizedMessage("publisher.certalreadyexists", certFingerprint, LogRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()),
+                                                                      LogRedactionUtils.getRedactedMessage(ex.getMessage()));
                         log.info(msg);
                     } else {
                         throw ex;
@@ -692,8 +692,8 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             @Override
             public void failed(final LDAPException ex) throws PublisherException {
                 String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", CERTIFICATE_ATTRIBUTE, Arrays.toString(dscObjectClasses),
-                                                        GdprRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()), GdprRedactionUtils.getRedactedMessage(ex.getMessage()));
-                log.error(msg, GdprRedactionUtils.getRedactedException(ex));
+                                                        LogRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()), LogRedactionUtils.getRedactedMessage(ex.getMessage()));
+                log.error(msg, LogRedactionUtils.getRedactedException(ex));
                 throw new PublisherException(msg);
             }
         });
@@ -706,21 +706,21 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                 // Delete old entry if existing
                 if (oldEntry != null) {
                     lc.delete(oldEntry.getDN(), ldapStoreConstraints);
-                    String msg = intres.getLocalizedMessage("publisher.ldapremove", GdprRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
+                    String msg = intres.getLocalizedMessage("publisher.ldapremove", LogRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
                     log.info(msg);
                 }
 
                 // Add new entry
                 lc.add(newEntry, ldapStoreConstraints);
-                String msg = intres.getLocalizedMessage("publisher.ldapadd", "CRL", GdprRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()));
+                String msg = intres.getLocalizedMessage("publisher.ldapadd", "CRL", LogRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()));
                 log.info(msg);
                 return null;
             }
             @Override
             public void failed(final LDAPException ex) throws PublisherException {
                 String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", CRL_ATTRIBUTE, Arrays.toString(crlObjectClasses),
-                                                        GdprRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()), GdprRedactionUtils.getRedactedMessage(ex.getMessage()));
-                log.error(msg, GdprRedactionUtils.getRedactedException(ex));
+                                                        LogRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()), LogRedactionUtils.getRedactedMessage(ex.getMessage()));
+                log.error(msg, LogRedactionUtils.getRedactedException(ex));
                 throw new PublisherException(msg);
             }
         });
@@ -732,17 +732,17 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             public Void performAction(final LDAPConnection lc) throws LDAPException {
                 // Add the entry
                 lc.add(newEntry, ldapStoreConstraints);
-                String msg = intres.getLocalizedMessage("publisher.ldapadd", "log", GdprRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()));
+                String msg = intres.getLocalizedMessage("publisher.ldapadd", "log", LogRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()));
                 log.info(msg);
                 return null;
             }
             @Override
             public void failed(final LDAPException ex) throws PublisherException {
                 String msg = intres.getLocalizedMessage("publisher.errorldapstore", "log", newEntry.getAttributeSet(), newEntry.getAttribute("objectclass"),
-                                                        GdprRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()), GdprRedactionUtils.getRedactedMessage(ex.getMessage()));
-                log.error(msg, GdprRedactionUtils.getRedactedException(ex));
+                                                        LogRedactionUtils.getSubjectDnLogSafe(newEntry.getDN()), LogRedactionUtils.getRedactedMessage(ex.getMessage()));
+                log.error(msg, LogRedactionUtils.getRedactedException(ex));
                 final PublisherException pe = new PublisherException();
-                pe.initCause(GdprRedactionUtils.getRedactedException(ex));
+                pe.initCause(LogRedactionUtils.getRedactedException(ex));
                 throw pe;
             }
         });
