@@ -18,17 +18,18 @@ import java.util.HashMap;
 /**
  * SSH Certificate Type.
  *
- * @version $Id$
  */
 public enum SshCertificateType implements Serializable{
     USER(1, "User"),
     HOST(2, "Host");
 
     private static final HashMap<Integer, SshCertificateType> typeMap = new HashMap<>();
+    private static final HashMap<String, SshCertificateType> typeFromStringMap = new HashMap<>();
 
     static {
         for(SshCertificateType sshCertificateType : SshCertificateType.values()) {
             typeMap.put(sshCertificateType.getType(), sshCertificateType);
+            typeFromStringMap.put(sshCertificateType.getLabel(), sshCertificateType);
         }
     }
 
@@ -50,5 +51,8 @@ public enum SshCertificateType implements Serializable{
 
     public static SshCertificateType fromInt(final int type) {
         return typeMap.get(type);
+    }
+    public static SshCertificateType fromString(final String type) {
+        return typeFromStringMap.get(type);
     }
 }
