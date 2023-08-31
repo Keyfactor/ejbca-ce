@@ -1378,9 +1378,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      * */
     @SuppressWarnings("unchecked")
     private List<CertificateData> findAllNonRevokedCertificates(String issuerDN, int firstResult, int maxRows) {
-        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status <> :status");
+        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status  NOT IN (:statusExcluded) AND " +
+                " a.expireDate > :currentTime");
         query.setParameter("issuerDN", issuerDN);
-        query.setParameter("status", CertificateConstants.CERT_REVOKED);
+        query.setParameter("statusExcluded", Arrays.asList(CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_REVOKED));
+        query.setParameter("currentTime", System.currentTimeMillis());
         query.setFirstResult(firstResult);
         query.setMaxResults(maxRows);
         return query.getResultList();

@@ -1696,10 +1696,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private void importLogoFromImageFile() throws IOException {
         String contentType = raLogoFile.getContentType();
         if (!contentType.equals("image/jpeg") && !contentType.equals("image/png")) {
-            addErrorMessage("LOGOIMPORTIGNORE", raLogoFile.getName());
+            addErrorMessage("LOGOIMPORTIGNORE", raLogoFile.getSubmittedFileName());
             return;
         }
-        logoName = raLogoFile.getName();
+        logoName = raLogoFile.getSubmittedFileName();
         logoBytes = IOUtils.toByteArray(raLogoFile.getInputStream(), raLogoFile.getSize());     
         addInfoMessage("LOGOIMPORTSUCCESS", logoName);
     }
@@ -1720,10 +1720,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 .stream()
                 .map(unpackedFile -> new RaCssInfo(unpackedFile.getContentAsBytes(), unpackedFile.getFileName()))
                 .collect(Collectors.toMap(RaCssInfo::getCssName, Function.identity()));
-        if (raCssInfosMap.isEmpty() && raCssFile.getName().endsWith(".css")) {
+        if (raCssInfosMap.isEmpty() && raCssFile.getSubmittedFileName().endsWith(".css")) {
             // Single file selected (not zip)
-            raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(fileBuffer, raCssFile.getName()));
-            importedFiles.add(raCssFile.getName());
+            raCssInfosMap.put(raCssFile.getSubmittedFileName(), new RaCssInfo(fileBuffer, raCssFile.getSubmittedFileName()));
+            importedFiles.add(raCssFile.getSubmittedFileName());
         } else if (raCssInfosMap.isEmpty()) {
             addErrorMessage("CANNOT_PROCESS_ZIP_FILE");
             return;

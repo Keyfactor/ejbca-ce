@@ -1857,7 +1857,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 addNonTranslatedErrorMessage("CITS CA updating imported certificate is not supported yet.");
                 return EditCaUtil.MANAGE_CA_NAV;
             }
-            importCACertUpdate(caid, fileBuffer);
+            importCACertUpdate(caid, fileBuffer, fileRecieveFileImportRenewal.getSubmittedFileName());
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (final Exception e) {
@@ -1866,16 +1866,23 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    private void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException,
+    private void importCACertUpdate(int caId, byte[] certbytes, String fileName) throws CertificateParsingException,
             AuthorizationDeniedException, CertificateImportException, CmsCertificatePathMissingException {
-        Collection<Certificate> certs = null;
+        Collection<Certificate> certs;
         try {
             certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
         } catch (CertificateException e) {
             log.debug("Input stream is not PEM certificate(s): " + e.getMessage());
             // See if it is a single binary certificate
+            Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
+            if (cert == null) {
+                throw new CertificateParsingException(fileName + " does not contain a certificate to import");
+            }
             certs = new ArrayList<>();
-            certs.add(CertTools.getCertfromByteArray(certbytes, Certificate.class));
+            certs.add(cert);
+        }
+        if (certs.isEmpty()) {
+            throw new CertificateImportException("No certificates to import found in " + fileName);
         }
         caAdminSession.updateCACertificate(administrator, caId, EJBTools.wrapCertCollection(certs));
     }

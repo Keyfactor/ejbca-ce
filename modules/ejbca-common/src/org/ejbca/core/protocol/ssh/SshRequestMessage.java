@@ -62,7 +62,8 @@ public class SshRequestMessage implements RequestMessage {
     private String username;
     private transient String serialNumber;
     private String password;
-
+    private Date notAfter;
+    private Date notBefore;
 
     public SshRequestMessage(final PublicKey publicKey, final String keyId, List<String> principals, final Map<String, byte[]> additionalExtensions,
             final Map<String, String> criticalOptions, final String comment) {
@@ -185,12 +186,12 @@ public class SshRequestMessage implements RequestMessage {
 
     @Override
     public Date getRequestValidityNotBefore() {
-        return null;
+        return notBefore;
     }
 
     @Override
     public Date getRequestValidityNotAfter() {
-        return null;
+        return notAfter;
     }
 
     @Override
@@ -218,6 +219,8 @@ public class SshRequestMessage implements RequestMessage {
         private String username;
         private transient String serialNumber;
         private String password;
+        private Date notAfter;
+        private Date notBefore;
 
         public Builder keyId(String keyId) {
             this.keyId = keyId;
@@ -263,9 +266,22 @@ public class SshRequestMessage implements RequestMessage {
             this.password = password;
             return this;
         }
+        
+        public Builder notBefore(Date notBefore) {
+            this.notBefore = notBefore;
+            return this;
+        }
+        
+        public Builder notAfter(Date notAfter) {
+            this.notAfter = notAfter;
+            return this;
+        }
 
         public SshRequestMessage build() {
-            return new SshRequestMessage(this);
+            SshRequestMessage msg = new SshRequestMessage(this);
+            msg.notBefore = notBefore;
+            msg.notAfter = notAfter;
+            return msg;
         }
     }
 
