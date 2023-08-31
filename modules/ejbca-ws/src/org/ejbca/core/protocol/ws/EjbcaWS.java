@@ -84,7 +84,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
@@ -465,11 +465,11 @@ public class EjbcaWS implements IEjbcaWS {
 		        retValues.add(new Certificate(wrapper.getCertificate()));
 		    }
 		} catch (EjbcaException e) {
-		    logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), GdprRedactionUtils.getRedactedMessage(e.toString()));
+		    logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), LogRedactionUtils.getRedactedMessage(e.toString()));
 		    throw e;
         } catch (CertificateEncodingException | RuntimeException e) {	// EJBException ...
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-            throw new EjbcaException((Exception) GdprRedactionUtils.getRedactedThrowable(e));
+            throw new EjbcaException((Exception) LogRedactionUtils.getRedactedThrowable(e));
         } finally {
             logger.writeln();
             logger.flush();
@@ -2605,7 +2605,7 @@ public class EjbcaWS implements IEjbcaWS {
     	            loglevel = Level.ERROR;
     	        }
 	        }
-	        log.log(loglevel, "EJBCA WebService error", GdprRedactionUtils.getRedactedThrowable(e, endEntityProfileName));
+	        log.log(loglevel, "EJBCA WebService error", LogRedactionUtils.getRedactedThrowable(e, endEntityProfileName));
 	        throw e;
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ... (if related to the RA connection, or if not caught by the RA)
             throw getEjbcaException(e, logger, null, Level.ERROR);
@@ -2805,11 +2805,11 @@ public class EjbcaWS implements IEjbcaWS {
     }
     
     private static EjbcaException getEjbcaException(Throwable t, IPatternLogger logger) {
-        return getEjbcaException( t, logger, ErrorCode.INTERNAL_ERROR, Level.ERROR, GdprRedactionUtils.redactPii());
+        return getEjbcaException( t, logger, ErrorCode.INTERNAL_ERROR, Level.ERROR, LogRedactionUtils.redactPii());
     }
     
     private static EjbcaException getEjbcaException(Throwable t, IPatternLogger logger, int endEntityProfileId) {
-        return getEjbcaException( t, logger, ErrorCode.INTERNAL_ERROR, Level.ERROR, GdprRedactionUtils.isRedactPii(endEntityProfileId));
+        return getEjbcaException( t, logger, ErrorCode.INTERNAL_ERROR, Level.ERROR, LogRedactionUtils.isRedactPii(endEntityProfileId));
     }
     
     private static EjbcaException getEjbcaExceptionUnredacted(Throwable t, final IPatternLogger logger, final ErrorCode errorCode, final Level level) {
@@ -2817,12 +2817,12 @@ public class EjbcaWS implements IEjbcaWS {
     }
     
     private static EjbcaException getEjbcaException(Throwable t, final IPatternLogger logger, final ErrorCode errorCode, final Level level) {
-        return getEjbcaException( t, logger, errorCode, level, GdprRedactionUtils.redactPii());
+        return getEjbcaException( t, logger, errorCode, level, LogRedactionUtils.redactPii());
     }
         
     private static EjbcaException getEjbcaException(Throwable t, final IPatternLogger logger, final ErrorCode errorCode, final Level level, final boolean redactPii) {
         if (redactPii) {
-            t = GdprRedactionUtils.getRedactedThrowable(t);
+            t = LogRedactionUtils.getRedactedThrowable(t);
         }
         if (level !=null ) {
             log.log(level, "EJBCA WebService error", t);
@@ -2838,12 +2838,12 @@ public class EjbcaWS implements IEjbcaWS {
     }
     
     private static EjbcaException getEjbcaException(final String s, final IPatternLogger logger, final ErrorCode errorCode, final Level level) {
-        return getEjbcaException(s, logger, errorCode, level, GdprRedactionUtils.redactPii());
+        return getEjbcaException(s, logger, errorCode, level, LogRedactionUtils.redactPii());
     }
     
     private static EjbcaException getEjbcaException(String s, final IPatternLogger logger, final ErrorCode errorCode, final Level level, final boolean redactPii) {
         if (redactPii) {
-            s = GdprRedactionUtils.getRedactedMessage(s);
+            s = LogRedactionUtils.getRedactedMessage(s);
         }
         if (level !=null) {
             log.log(level, s);
