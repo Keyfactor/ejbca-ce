@@ -482,6 +482,13 @@
 		<path refid="lib.bouncycastle-util.classpath"/>
 	</path>
 
+	<path id="lib.hibernate.validator">
+		<fileset dir="${ejbca.home}/lib/hibernate">
+			<include name="hibernate-validator-6.2.5.Final.jar"/>
+		</fileset>
+		<fileset dir="${ejbca.home}/lib" includes="el-impl-2.2.jar"/>
+	</path>
+
 	<path id="lib.jpa.classpath">
         <fileset dir="${ejbca.home}/lib/hibernate">
             <include name="antlr-*.jar"/>
