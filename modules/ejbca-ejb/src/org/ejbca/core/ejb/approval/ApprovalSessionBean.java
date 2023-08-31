@@ -53,7 +53,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ValueExtractor;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -182,7 +182,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("type", approvalRequest.getApprovalType());
-                details.put("Error", GdprRedactionUtils.getRedactedMessage(e1.getMessage()));
+                details.put("Error", LogRedactionUtils.getRedactedMessage(e1.getMessage()));
 
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
@@ -243,7 +243,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.error(msg, e);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
-            details.put("Error", GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+            details.put("Error", LogRedactionUtils.getRedactedMessage(e.getMessage()));
 
             auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
@@ -298,7 +298,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
 
-            details.put("error", GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+            details.put("error", LogRedactionUtils.getRedactedMessage(e.getMessage()));
             auditSession.log(EjbcaEventTypes.APPROVAL_REMOVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
             log.error("Error removing approval request", e);

@@ -16,7 +16,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-public class Log4jGdprRedactHandler extends Handler {
+public class Log4jLogRedactionRedactHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
@@ -36,14 +36,14 @@ public class Log4jGdprRedactHandler extends Handler {
         }
         
         // check for global setting
-        if (!GdprRedactionUtils.redactPii()) {
+        if (!LogRedactionUtils.redactPii()) {
             return;
         }
         
         // for ERROR and above + TRACE
-        logRecord.setMessage(GdprRedactionUtils.getRedactedMessage(logRecord.getMessage()));
+        logRecord.setMessage(LogRedactionUtils.getRedactedMessage(logRecord.getMessage()));
         if (logRecord.getThrown()!=null) {
-            logRecord.setThrown(GdprRedactionUtils.getRedactedThrowable(logRecord.getThrown()));
+            logRecord.setThrown(LogRedactionUtils.getRedactedThrowable(logRecord.getThrown()));
         }
                 
     }

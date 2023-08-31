@@ -65,9 +65,10 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
-import org.cesecore.util.Log4jGdprRedactHandler;
+import org.cesecore.util.Log4jLogRedactionRedactHandler;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -205,9 +206,9 @@ public class StartupSingletonBean {
         //
         // Run all "safe" initializations first, 
         // i.e. those that does not depend on other running beans, components etc
-        LogManager.getLogManager().getLogger("com.keyfactor").addHandler(new Log4jGdprRedactHandler());
-        LogManager.getLogManager().getLogger("org.ejbca").addHandler(new Log4jGdprRedactHandler());
-        LogManager.getLogManager().getLogger("org.cesecore").addHandler(new Log4jGdprRedactHandler());
+        LogManager.getLogManager().getLogger("com.keyfactor").addHandler(new Log4jLogRedactionRedactHandler());
+        LogManager.getLogManager().getLogger("org.ejbca").addHandler(new Log4jLogRedactionRedactHandler());
+        LogManager.getLogManager().getLogger("org.cesecore").addHandler(new Log4jLogRedactionRedactHandler());
         
         // Log a startup message
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
@@ -382,6 +383,8 @@ public class StartupSingletonBean {
             } 
         }
 
+        log.debug(">startup loading node level redaction settings");
+        globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         log.debug(">startup checking for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database
         // operation and avoid a performance hit for the first request where this is checked.
