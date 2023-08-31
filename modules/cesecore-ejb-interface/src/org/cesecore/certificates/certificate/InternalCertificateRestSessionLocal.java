@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 
 import javax.ejb.Local;
 
@@ -22,14 +20,6 @@ import javax.ejb.Local;
  * As an example the count of the total or active certificates etc.
  */
 @Local
-public interface InternalCertificateRestSessionLocal {
+public interface InternalCertificateRestSessionLocal extends InternalCertificateSession {
 
-	/**
-	 * Returns the number of total or active certificates.
-	 *
-	 * @param adminToken an admin authentication token.
-	 * @param isActive if true then returns the number of active certificates only.
-	 * @return certificate quantity.
-	 */
-	Long getCertificateCount(AuthenticationToken adminToken, Boolean isActive) throws AuthorizationDeniedException;
 }

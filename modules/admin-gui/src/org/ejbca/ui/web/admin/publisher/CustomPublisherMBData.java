@@ -91,9 +91,9 @@ public final class CustomPublisherMBData implements Serializable {
                     }
                 }
             }
-            publisher.setPropertyData(sb.toString());
+            publisher.assignPropertyData(sb.toString());
         } else {
-            publisher.setPropertyData(customPublisherPropertyData);
+            publisher.assignPropertyData(customPublisherPropertyData);
         }
     }
     
