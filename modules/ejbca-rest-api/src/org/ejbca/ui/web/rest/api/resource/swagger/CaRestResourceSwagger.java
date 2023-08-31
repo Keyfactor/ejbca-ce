@@ -19,7 +19,6 @@ import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.SwaggerDefinition.Scheme;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CreateCrlRestResponse;
@@ -41,7 +40,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.security.cert.CertificateEncodingException;
 
 /**
@@ -64,6 +62,7 @@ public class CaRestResourceSwagger extends CaRestResource {
         return super.status();
     }
 
+    @Override
     @GET
     @Path("/{subject_dn}/certificate/download")
     @Produces(MediaType.WILDCARD)
@@ -74,6 +73,7 @@ public class CaRestResourceSwagger extends CaRestResource {
         return super.getCertificateAsPem(requestContext, subjectDn);
     }
 
+    @Override
     @GET
     @ApiOperation(value = "Returns the Response containing the list of CAs with general information per CA as Json",
             notes = "Returns the Response containing the list of CAs with general information per CA as Json",
@@ -83,6 +83,7 @@ public class CaRestResourceSwagger extends CaRestResource {
         return super.listCas(httpServletRequest);
     }
 
+    @Override
     @GET
     @Path("/{issuer_dn}/getLatestCrl")
     @ApiOperation(value = "Returns the latest CRL issued by this CA",
@@ -93,10 +94,11 @@ public class CaRestResourceSwagger extends CaRestResource {
                                  @QueryParam("deltaCrl") boolean deltaCrl,
                                  @ApiParam(value = "the CRL partition index", required = false, defaultValue = "0")
                                  @QueryParam("crlPartitionIndex") int crlPartitionIndex
-    ) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
+    ) throws AuthorizationDeniedException, RestException, CADoesntExistsException {
         return super.getLatestCrl(httpServletRequest, issuerDn, deltaCrl, crlPartitionIndex);
     }
 
+    @Override
     @POST
     @Path("/{issuer_dn}/createcrl")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -105,10 +107,11 @@ public class CaRestResourceSwagger extends CaRestResource {
                               @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
                               @ApiParam(value = "true to also create the deltaCRL, false to only create the base CRL", required = false, defaultValue = "false")
                               @QueryParam("deltacrl") boolean deltacrl
-    ) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
+    ) throws AuthorizationDeniedException, RestException, CADoesntExistsException {
         return super.createCrl(httpServletRequest, issuerDn, deltacrl);
     }
 
+    @Override
     @POST
     @Path("/{issuer_dn}/importcrl")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -121,9 +124,8 @@ public class CaRestResourceSwagger extends CaRestResource {
     )
     public Response importCrl(@Context final HttpServletRequest httpServletRequest,
                               @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
-                              @ApiParam("CRL file in DER format") @FormParam("crlFile") final File crlFile,
                               @ApiParam("CRL partition index") @DefaultValue("0") @FormParam("crlPartitionIndex") int crlPartitionIndex
     ) throws AuthorizationDeniedException, RestException {
-        return super.importCrl(httpServletRequest, issuerDn, crlFile, crlPartitionIndex);
+        return super.importCrl(httpServletRequest, issuerDn, crlPartitionIndex);
     }
 }
