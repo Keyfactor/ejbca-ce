@@ -72,7 +72,8 @@ public class SearchCertificatesRestResponseV2UnitTest {
     final String tag = "tag";
     final Integer type = CertificateConstants.CERTTYPE_ENDENTITY;
     final Long updateTime = System.currentTimeMillis();
-    final String username = "testuser";        
+    final String username = "testuser";
+    final Long invalidityDate = -1L;
     
     final CertificateData cd = new CertificateData(certificate, certificate.getPublicKey(), 
             username, caFingerprint, null, status, type, 
@@ -187,6 +188,7 @@ public class SearchCertificatesRestResponseV2UnitTest {
             assertEquals("Update time does not match.", updateTime, payload.getUpdateTime());
             assertArrayEquals("Certificate does not match.", Base64.encode(certificate.getEncoded()), payload.getCertificate());
             assertEquals("Username does not match.", username, payload.getUsername());
+            assertEquals("Invalidity date does not match.", invalidityDate, payload.getInvalidityDate());
         }
     }
 
