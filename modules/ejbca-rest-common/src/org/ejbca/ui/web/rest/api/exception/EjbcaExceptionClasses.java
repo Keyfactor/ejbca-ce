@@ -17,6 +17,7 @@ import java.util.IdentityHashMap;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
@@ -34,6 +35,7 @@ public enum EjbcaExceptionClasses {
     // 400
     ApprovalException(ApprovalException.class),
     KeyStoreGeneralRaException(KeyStoreGeneralRaException.class),
+    PublisherException(PublisherException.class),
     // 403
     AuthLoginException(AuthLoginException.class),
     AuthStatusException(AuthStatusException.class),

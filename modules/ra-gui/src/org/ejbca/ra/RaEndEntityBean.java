@@ -12,29 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.annotation.ManagedProperty;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
+import com.keyfactor.util.certificate.DnComponents;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -67,7 +45,27 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
-import com.keyfactor.util.certificate.DnComponents;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.annotation.ManagedProperty;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Backing bean for end entity details view.
@@ -151,6 +149,12 @@ public class RaEndEntityBean implements Serializable {
     private String psd2NcaId;
     private List<String> selectedPsd2PspRoles;
     private String cabfOrganizationIdentifier;
+    private String certValidityStartTime;
+    private String certValidityEndTime;
+    private boolean useCertValidityStartTime;
+    private boolean isCertValidityStartTimeModifiable;
+    private boolean useCertValidityEndTime;
+    private boolean isCertValidityEndTimeModifiable;
 
     // SSH fields
     private String sshKeyId;
@@ -215,7 +219,13 @@ public class RaEndEntityBean implements Serializable {
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
-                extensionData = raEndEntityDetails.getExtensionData(endEntityInformation.getExtendedInformation());
+
+                ExtendedInformation extendedInformation =
+                        checkIfExtendedInfoIsNull(endEntityInformation.getExtendedInformation());
+                extensionData = raEndEntityDetails.getExtensionData(extendedInformation);
+                certValidityStartTime = extendedInformation.getCertificateStartTime();
+                certValidityEndTime = extendedInformation.getCertificateEndTime();
+
                 keyRecoverable = raEndEntityDetails.getEndEntityInformation().getKeyRecoverable();
                 resetMaxFailedLogins();
                 email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
@@ -234,6 +244,10 @@ public class RaEndEntityBean implements Serializable {
                     sshCriticalOptionsSourceAddress = raEndEntityDetails.getSshSourceAddress();
                     sshCriticalOptionsVerifyRequired = raEndEntityDetails.getSshVerifyRequired();
                 }
+                useCertValidityStartTime = getEndEntityProfile().isValidityStartTimeUsed();
+                isCertValidityStartTimeModifiable = getEndEntityProfile().isValidityStartTimeModifiable();
+                useCertValidityEndTime = getEndEntityProfile().isValidityEndTimeUsed();
+                isCertValidityEndTimeModifiable = getEndEntityProfile().isValidityEndTimeModifiable();
             }
         }
         issuedCerts = null;
@@ -243,7 +257,14 @@ public class RaEndEntityBean implements Serializable {
         clearCsrChecked = false;
         resetRemainingLoginAttempts = false;
     }
-    
+
+    private ExtendedInformation checkIfExtendedInfoIsNull(ExtendedInformation extendedInformation) {
+        if (extendedInformation == null) {
+            extendedInformation = new ExtendedInformation();
+        }
+        return extendedInformation;
+    }
+
     public boolean isAuthorized() {
         return authorized;
     }
@@ -311,20 +332,21 @@ public class RaEndEntityBean implements Serializable {
         EndEntityInformation endEntityInformation = new EndEntityInformation(raEndEntityDetails.getEndEntityInformation());
         ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
 
+        if (extendedInformation == null) {
+            extendedInformation = new ExtendedInformation();
+        }
+
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
             // A new status was selected. When status changed to generated, no enrollment code is needed.
-            if ((endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW) || verifyEnrollmentCodes()) {
+            if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW) {
                 // Change the End Entity's status and set the new password without validation
-                endEntityInformation.setStatus(selectedStatus);
-                endEntityInformation.setPassword(enrollmentCode);
-                endEntityInformation.setTokenType(getNewTokenTypeValue(selectedTokenType, endEntityInformation));
-                changed = true;
-            } else if (selectedStatus == EndEntityConstants.STATUS_NEW && isPasswordAutogenerated() && isAutogeneratedPasswordChecked()) {
-                endEntityInformation.setStatus(selectedStatus);
-                endEntityInformation.setPassword(eep.makeAutoGeneratedPassword());
-                endEntityInformation.setTokenType(getNewTokenTypeValue(selectedTokenType, endEntityInformation));
-                changed = true;
+                changed = setMandatoryFields(endEntityInformation, selectedStatus, enrollmentCode, selectedTokenType);
+            }else if (selectedStatus == EndEntityConstants.STATUS_NEW && isPasswordAutogenerated() && isAutogeneratedPasswordChecked()){
+                changed = setMandatoryFields(endEntityInformation, selectedStatus, eep.makeAutoGeneratedPassword(), selectedTokenType);
                 //verify the enrollment codes for status changes other than generated
+            } else if (verifyEnrollmentCodes()) {
+                // Change the End Entity's status and set the new password
+                changed = setMandatoryFields(endEntityInformation, selectedStatus, enrollmentCode, selectedTokenType);
             }
         } else if (!StringUtils.isEmpty(enrollmentCode)
                 || !StringUtils.isEmpty(enrollmentCodeConfirm)) {
@@ -343,8 +365,8 @@ public class RaEndEntityBean implements Serializable {
             }
         }
         if (clearCsrChecked) {
-            if (endEntityInformation.getExtendedInformation() != null) {
-                endEntityInformation.getExtendedInformation().setCertificateRequest(null);
+            if (extendedInformation != null) {
+                extendedInformation.setCertificateRequest(null);
             }            
             changed = true;
         }
@@ -385,7 +407,7 @@ public class RaEndEntityBean implements Serializable {
         if (subjectDirectoryAttributes == null) {
             if (extendedInformation != null) {
                 if (StringUtils.isNotBlank(extendedInformation.getSubjectDirectoryAttributes())) {
-                    endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(null);
+                    extendedInformation.setSubjectDirectoryAttributes(null);
                     changed = true;
                 }
             }
@@ -394,11 +416,11 @@ public class RaEndEntityBean implements Serializable {
             if (extendedInformation == null) {
                 if (StringUtils.isNotBlank(subjectDa)) {
                     endEntityInformation.setExtendedInformation(new ExtendedInformation());
-                    endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
+                    extendedInformation.setSubjectDirectoryAttributes(subjectDa);
                     changed = true;
                 }
-            } else if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
-                endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
+            } else if (!subjectDa.equals(extendedInformation.getSubjectDirectoryAttributes())) {
+                extendedInformation.setSubjectDirectoryAttributes(subjectDa);
                 changed = true;
             }
         }
@@ -408,11 +430,11 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
         if (extendedInformation != null && maxFailedLogins != extendedInformation.getMaxLoginAttempts()) {
-            endEntityInformation.getExtendedInformation().setMaxLoginAttempts(maxFailedLogins);
+            extendedInformation.setMaxLoginAttempts(maxFailedLogins);
             changed = true;
         }
         if (extendedInformation != null && resetRemainingLoginAttempts) {
-            endEntityInformation.getExtendedInformation().setRemainingLoginAttempts(maxFailedLogins);
+            extendedInformation.setRemainingLoginAttempts(maxFailedLogins);
             changed = true;
         }
         if (eep.isEmailUsed()) {
@@ -453,13 +475,13 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
         if(nameConstraintsPermittedUpdateStatus==1) {
-            endEntityInformation.getExtendedInformation().setNameConstraintsPermitted(nameConstraintsPermitted);
+            extendedInformation.setNameConstraintsPermitted(nameConstraintsPermitted);
             changed = true;
         } else if(nameConstraintsPermittedUpdateStatus<0) {
             return;
         }
         if(nameConstraintsExcludedUpdateStatus==1) {
-            endEntityInformation.getExtendedInformation().setNameConstraintsExcluded(nameConstraintsExcluded);
+            extendedInformation.setNameConstraintsExcluded(nameConstraintsExcluded);
             changed = true;
         } else if(nameConstraintsExcludedUpdateStatus<0) {
             return;
@@ -469,15 +491,15 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
         if (eep.isPsd2QcStatementUsed()){
-            if (endEntityInformation.getExtendedInformation() == null){
+            if (extendedInformation == null){
                 endEntityInformation.setExtendedInformation(new ExtendedInformation());
             }
-            if (!StringUtils.equals(psd2NcaName, endEntityInformation.getExtendedInformation().getQCEtsiPSD2NCAName())) {
-                endEntityInformation.getExtendedInformation().setQCEtsiPSD2NcaName(StringUtils.trimToNull(psd2NcaName));
+            if (!StringUtils.equals(psd2NcaName, extendedInformation.getQCEtsiPSD2NCAName())) {
+                extendedInformation.setQCEtsiPSD2NcaName(StringUtils.trimToNull(psd2NcaName));
                 changed = true;
             }
-            if (!StringUtils.equals(psd2NcaId, endEntityInformation.getExtendedInformation().getQCEtsiPSD2NCAId())) {
-                endEntityInformation.getExtendedInformation().setQCEtsiPSD2NcaId(StringUtils.trimToNull(psd2NcaId));
+            if (!StringUtils.equals(psd2NcaId, extendedInformation.getQCEtsiPSD2NCAId())) {
+                extendedInformation.setQCEtsiPSD2NcaId(StringUtils.trimToNull(psd2NcaId));
                 changed = true;
             }
             if (psd2PspRoleSelectionChanged()) {
@@ -485,7 +507,7 @@ public class RaEndEntityBean implements Serializable {
                 for (String role : selectedPsd2PspRoles) {
                     psd2RoleOfPSPStatements.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid(role), role));
                 }
-                endEntityInformation.getExtendedInformation().setQCEtsiPSD2RolesOfPSP(psd2RoleOfPSPStatements);
+                extendedInformation.setQCEtsiPSD2RolesOfPSP(psd2RoleOfPSPStatements);
                 changed = true;
             }
         }
@@ -493,11 +515,11 @@ public class RaEndEntityBean implements Serializable {
             if (!verifyCabfOrganizationIdentifier()) {
                 return;
             }
-            if (endEntityInformation.getExtendedInformation() == null){
+            if (extendedInformation == null){
                 endEntityInformation.setExtendedInformation(new ExtendedInformation());
             }
-            if (!StringUtils.equals(cabfOrganizationIdentifier, endEntityInformation.getExtendedInformation().getCabfOrganizationIdentifier())){
-                endEntityInformation.getExtendedInformation().setCabfOrganizationIdentifier(StringUtils.trimToNull(cabfOrganizationIdentifier));
+            if (!StringUtils.equals(cabfOrganizationIdentifier, extendedInformation.getCabfOrganizationIdentifier())){
+                extendedInformation.setCabfOrganizationIdentifier(StringUtils.trimToNull(cabfOrganizationIdentifier));
                 changed = true;
             }
         }
@@ -527,7 +549,7 @@ public class RaEndEntityBean implements Serializable {
                     || !sshCriticalOptionsSourceAddress.equals(raEndEntityDetails.getSshSourceAddress())
                     || sshCriticalOptionsVerifyRequired != raEndEntityDetails.getSshVerifyRequired()) {
                 changed = true;
-                final Map<String, String> criticalOptions = endEntityInformation.getExtendedInformation().getSshCriticalOptions();
+                final Map<String, String> criticalOptions = extendedInformation.getSshCriticalOptions();
                 criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, sshCriticalOptionsForceCommand);
                 criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, sshCriticalOptionsSourceAddress);
                 if (sshCriticalOptionsVerifyRequired) {
@@ -535,14 +557,34 @@ public class RaEndEntityBean implements Serializable {
                 } else {
                     criticalOptions.remove(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
                 }
-                endEntityInformation.getExtendedInformation().setSshCriticalOptions(criticalOptions);
+                extendedInformation.setSshCriticalOptions(criticalOptions);
             }
         }
 
+        changed = setCertificateValidity(extendedInformation, changed);
+        endEntityInformation.setExtendedInformation(extendedInformation);
+        editIfChangesMade(changed, endEntityInformation, isClearPwd, newUsername);
+        editEditEndEntityCancel();
+    }
+
+    private boolean setCertificateValidity(ExtendedInformation extendedInformation, boolean changed) {
+        if (!certValidityStartTime.equals(extendedInformation.getCertificateStartTime())) {
+            extendedInformation.setCertificateStartTime(certValidityStartTime);
+            changed = true;
+        }
+        if (!certValidityEndTime.equals(extendedInformation.getCertificateEndTime())) {
+            extendedInformation.setCertificateEndTime(certValidityEndTime);
+            changed = true;
+        }
+        return changed;
+    }
+
+    private void editIfChangesMade(boolean changed, EndEntityInformation endEntityInformation,
+            boolean isClearPwd, String newUsername) {
         if (changed) {
-            // Edit the End Entity if changes were made
             try {
-                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, isClearPwd, newUsername);
+                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(),
+                        endEntityInformation, isClearPwd, newUsername);
                 if (result) {
                     raLocaleBean.addMessageError("editendentity_success");
                 } else {
@@ -564,7 +606,14 @@ public class RaEndEntityBean implements Serializable {
                 raLocaleBean.addMessageError("editendentity_failure");
             }
         }
-        editEditEndEntityCancel();
+    }
+
+    private boolean setMandatoryFields(EndEntityInformation endEntityInformation, int selectedStatus,
+            String enrollmentCode, int selectedTokenType) {
+        endEntityInformation.setStatus(selectedStatus);
+        endEntityInformation.setPassword(enrollmentCode);
+        endEntityInformation.setTokenType(getNewTokenTypeValue(selectedTokenType, endEntityInformation));
+        return true;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -1321,7 +1370,7 @@ public class RaEndEntityBean implements Serializable {
     }
     
     public boolean isNameConstraintsPermittedRequired() {
-        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsPermittedRequired();
+        return getEndEntityProfile().isNameConstraintsPermittedRequired();
     }
     
     /**
@@ -1354,7 +1403,7 @@ public class RaEndEntityBean implements Serializable {
     }
     
     public boolean isNameConstraintsExcludedRequired() {
-        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsExcludedRequired();
+        return getEndEntityProfile().isNameConstraintsExcludedRequired();
     }
     
     /**
@@ -1460,21 +1509,58 @@ public class RaEndEntityBean implements Serializable {
      * @return true if CA/B Forum Organization Identifier in required in the selected End Entity profile
      */
     public boolean isCabfOrganizationIdentifierRequired() {
-        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isCabfOrganizationIdentifierRequired();
+        return getEndEntityProfile().isCabfOrganizationIdentifierRequired();
     }
 
     /**
      * @return true if CA/B Forum Organization Identifier field can be modified in the selected End Entity profile
      */
     public boolean isCabfOrganizationIdentifierModifiable() {
-        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isCabfOrganizationIdentifierModifiable();
+        return getEndEntityProfile().isCabfOrganizationIdentifierModifiable();
     }
+
 
     /**
      * @return validation regex for the CA/B Forum Organization Identifier field
      */
     public String getCabfOrganizationIdentifierRegex() {
         return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
+
+    public String getCertValidityStartTime() {
+        return certValidityStartTime;
+    }
+
+    public void setCertValidityStartTime(String certValidityStartTime) {
+        this.certValidityStartTime = certValidityStartTime;
+    }
+
+    public String getCertValidityEndTime() {
+        return certValidityEndTime;
+    }
+
+    public void setCertValidityEndTime(String certValidityEndTime) {
+        this.certValidityEndTime = certValidityEndTime;
+    }
+
+    public boolean isValidityStartTimeUsed() {
+        return useCertValidityStartTime;
+    }
+
+    public boolean isCertValidityStartTimeModifiable() {
+        return isCertValidityStartTimeModifiable;
+    }
+
+    public boolean isValidityEndTimeUsed() {
+        return useCertValidityEndTime;
+    }
+
+    public boolean isCertValidityEndTimeModifiable() {
+        return isCertValidityEndTimeModifiable;
+    }
+
+    private EndEntityProfile getEndEntityProfile() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId);
     }
 
     public String getSshKeyId() {

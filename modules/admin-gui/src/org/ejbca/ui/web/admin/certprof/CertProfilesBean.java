@@ -501,7 +501,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             if (FileTools.isEmptyZipFile(filebuffer)) {
                 printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
             } else {
-                String msg = uploadFile.getName() + " is not a zip file.";
+                String msg = uploadFile.getSubmittedFileName() + " is not a zip file.";
                 log.info(msg);
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
             }
@@ -590,7 +590,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
      * @param ignoredFiles the files in the archive that were ignored
      */
     private void printImportMessage(int nrOfFiles, String importedFiles, String ignoredFiles) {
-        String msg = uploadFile.getName() + " contained " + nrOfFiles + " files. ";
+        String msg = uploadFile.getSubmittedFileName() + " contained " + nrOfFiles + " files. ";
         log.info(msg);
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
 

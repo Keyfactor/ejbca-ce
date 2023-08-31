@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.cesecore.authorization.control.StandardRules.SYSTEMCONFIGURATION_VIEW;
-import static org.cesecore.certificates.certificate.InternalCertificateRestSessionBean.ERROR_MESSAGE;
+import static org.cesecore.certificates.certificate.InternalCertificateSessionBean.ERROR_MESSAGE;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 /**
- * The unit test for {@link InternalCertificateRestSessionBean}.
+ * The unit test for {@link InternalCertificateSessionBean}.
  */
 @RunWith(EasyMockRunner.class)
 public class InternalCertificateRestSessionBeanUnitTest {
@@ -44,7 +44,7 @@ public class InternalCertificateRestSessionBeanUnitTest {
 	private AuthorizationSessionLocal authorizationSession;
 
 	@TestSubject
-	private final InternalCertificateRestSessionBean certificateRestSessionBean = new InternalCertificateRestSessionBean();
+	private final InternalCertificateSessionBean certificateRestSessionBean = new InternalCertificateSessionBean();
 
 	@Test
 	public void shouldReturnQuantityOfAllCertificates() throws AuthorizationDeniedException {

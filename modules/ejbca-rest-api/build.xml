@@ -60,6 +60,8 @@
 		<path refid="lib.easymock.classpath"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
+		<path refid="lib.hibernate.validator"/>
+		<path refid="lib.test.powermock.classpath"/>
 	</path>
 
 	<path id="test.classpath">
@@ -75,6 +77,11 @@
     </target>
 
     <target name="build" description="Build this module" depends="compile">
+
+		<copy file="${ejbca-rest-api.resources.dir}/WEB-INF/ValidationMessages.properties" tofile="${ejbca-rest-api.build.dir}/WEB-INF/classes/ValidationMessages.properties"/>
+		<copy file="${ejbca-rest-api.resources.dir}/META-INF/validation.xml" tofile="${ejbca-rest-api.build.dir}/META-INF/validation.xml"/>
+		<copy file="${ejbca-rest-api.resources.dir}/META-INF/validation-mapping.xml" tofile="${ejbca-rest-api.build.dir}/META-INF/validation-mapping.xml"/>
+
 		<war destfile="${mod.ejbca-rest-api.war}" webxml="${ejbca-rest-api.resources.dir}/WEB-INF/web.xml" basedir="${ejbca-rest-api.build.dir}">
             <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
 			<lib file="${mod.ejbca-rest-common.lib}"/>
@@ -92,7 +99,7 @@
 	<target name="compile" depends="setup">
         <javac srcdir="${ejbca-rest-api.src.dir}" destdir="${ejbca-rest-api.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
-    </target>
+	</target>
 
 	<target name="setup">
 		<mkdir dir="${ejbca-rest-api.build.dir}/WEB-INF/classes"/>

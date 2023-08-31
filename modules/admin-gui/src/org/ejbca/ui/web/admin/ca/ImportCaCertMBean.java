@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -33,6 +34,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.kfenroll.ProxyCa;
+import org.cesecore.keybind.CertificateImportException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -124,7 +126,7 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     public String importCaCertificate() {       
         try {
             final byte[] fileBuffer = IOUtils.toByteArray(uploadedFile.getInputStream(), uploadedFile.getSize());
-            if(uploadedFile.getName().endsWith(".oer")) {
+            if(uploadedFile.getSubmittedFileName().endsWith(".oer")) {
                 caAdminSession.importItsCACertificate(getAdmin(), importCaCertName, fileBuffer);
                 return EditCaUtil.MANAGE_CA_NAV;
             }
@@ -135,8 +137,14 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
                 log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
                 // See if it is a single binary certificate
                 Certificate cert = CertTools.getCertfromByteArray(fileBuffer, Certificate.class);
+                if (cert == null) {
+                    throw new CertificateParsingException(uploadedFile.getSubmittedFileName() + " does not contain a certificate to import");
+                }
                 certs = new ArrayList<>();
                 certs.add(cert);
+            }
+            if (certs.isEmpty()) {
+                throw new CertificateImportException("No certificates to import found in " + uploadedFile.getSubmittedFileName());
             }
             if(this.keyFactorCa) {
                 Certificate cert = (Certificate) certs.toArray()[0];
