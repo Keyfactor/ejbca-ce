@@ -35,7 +35,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -196,7 +196,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         } catch (ApprovalRequestExecutionException e) {
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", intres.getLocalizedMessage("approval.errorexecuting", approvalData.getId()));
-            details.put("error", GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+            details.put("error", LogRedactionUtils.getRedactedMessage(e.getMessage()));
 
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);
@@ -204,7 +204,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         } catch (EndEntityExistsException e) {
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", intres.getLocalizedMessage("approval.duplicateusername", approvalData.getId()));
-            details.put("error", GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+            details.put("error", LogRedactionUtils.getRedactedMessage(e.getMessage()));
 
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalData.getCaid()), null, null, details);

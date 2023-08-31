@@ -97,7 +97,7 @@ import org.bouncycastle.pkcs.jcajce.JcePBMac1CalculatorBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 import com.keyfactor.util.Base64;
@@ -463,7 +463,7 @@ public class CmpMessageHelper {
             }
             // Create a failure message
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Creating an unprotected error message with failInfo=" + failInfo + ", failText=" + GdprRedactionUtils.getRedactedMessage(failText));
+                LOG.debug("Creating an unprotected error message with failInfo=" + failInfo + ", failText=" + LogRedactionUtils.getRedactedMessage(failText));
             }
             resp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
             // Sender nonce is optional and might not always be included
