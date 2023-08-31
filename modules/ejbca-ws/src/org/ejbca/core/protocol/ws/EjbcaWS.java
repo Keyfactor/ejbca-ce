@@ -359,7 +359,7 @@ public class EjbcaWS implements IEjbcaWS {
     @Action(input="http://ws.protocol.core.ejbca.org/findUser")
 	public List<UserDataVOWS> findUser(UserMatch usermatch)
             throws AuthorizationDeniedException, IllegalQueryException, EjbcaException {
-    	if (log.isDebugEnabled() && !GdprRedactionUtils.redactPii()) {
+    	if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
             log.debug("Find user with match '"+usermatch.getMatchvalue()+"'.");
     	}
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -415,7 +415,7 @@ public class EjbcaWS implements IEjbcaWS {
                     result.add(new Certificate( cert));
                 }
             } catch (CertificateEncodingException e) { // Should never happen!
-                log.info("Certificate found for " + username + " could not be encoded: " + GdprRedactionUtils.getRedactedMessage(e.getMessage()));
+                log.info("Certificate found for " + username + " could not be encoded: " + LogRedactionUtils.getRedactedMessage(e.getMessage()));
             }
         } catch (RuntimeException e) {  // EJBException ...
             throw getEjbcaException(e, logger);
