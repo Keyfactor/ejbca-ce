@@ -15,7 +15,7 @@ package org.ejbca.ui.web.admin.configuration;
 
 import java.security.cert.CertificateParsingException;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -127,7 +127,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             return intervalStart;
         }
         public Date getIntervalStartAsDate() {
-            return Date.from(intervalStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            return Date.from(intervalStart.atStartOfDay(ZoneOffset.UTC).toInstant());
         }
 
         public void setIntervalStart(LocalDate intervalStart) {
@@ -140,7 +140,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         
 
         public Date getIntervalEndAsDate() {
-            return Date.from(intervalEnd.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            return Date.from(intervalEnd.atStartOfDay(ZoneOffset.UTC).toInstant());
         }
 
         public void setIntervalEnd(LocalDate intervalEnd) {
@@ -161,9 +161,9 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             this.expirationYearRequired = ctLog.getExpirationYearRequired() == null ?
                     String.valueOf(Calendar.getInstance().get(Calendar.YEAR)) : String.valueOf(ctLog.getExpirationYearRequired());
             this.useIntervalAcception = ctLog.getIntervalStart() != null;
-            this.intervalEnd = (ctLog.getIntervalEnd() != null ? LocalDate.ofInstant(ctLog.getIntervalEnd().toInstant(), ZoneId.systemDefault())
+            this.intervalEnd = (ctLog.getIntervalEnd() != null ? LocalDate.ofInstant(ctLog.getIntervalEnd().toInstant(), ZoneOffset.UTC)
                     : null);
-            this.intervalStart = (ctLog.getIntervalStart() != null ? LocalDate.ofInstant(ctLog.getIntervalStart().toInstant(), ZoneId.systemDefault())
+            this.intervalStart = (ctLog.getIntervalStart() != null ? LocalDate.ofInstant(ctLog.getIntervalStart().toInstant(), ZoneOffset.UTC)
                     : null);
         }
 

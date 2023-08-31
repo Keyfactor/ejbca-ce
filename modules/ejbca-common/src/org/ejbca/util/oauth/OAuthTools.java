@@ -17,7 +17,11 @@ import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import com.nimbusds.jose.jwk.KeyType;
 import org.apache.log4j.Logger;
 
 import com.keyfactor.util.CertTools;
@@ -25,6 +29,7 @@ import com.keyfactor.util.keys.KeyTools;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.AsymmetricJWK;
 import com.nimbusds.jose.jwk.JWK;
+import org.cesecore.authentication.oauth.OAuthPublicKey;
 
 /**
  * Class containing static helper methods for OAuth operations
@@ -86,6 +91,18 @@ public class OAuthTools {
             }
             return null;
         }
+    }
+
+    public static Collection<OAuthPublicKey> parseKeys(List<JWK> jwkKeys) throws JOSEException {
+        Collection<OAuthPublicKey> result = new ArrayList<>();
+        for (JWK jwk : jwkKeys) {
+            if (jwk.getKeyType().equals(KeyType.RSA)) {
+                final PublicKey publicKey = jwk.toRSAKey().toPublicKey();
+                final byte[] encoded = publicKey.getEncoded();
+                result.add(new OAuthPublicKey(encoded, jwk.getKeyID()));
+            }
+        }
+        return result;
     }
 
 }
