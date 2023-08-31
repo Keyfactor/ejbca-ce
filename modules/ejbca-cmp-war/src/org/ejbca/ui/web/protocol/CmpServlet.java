@@ -60,6 +60,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ConcurrentCache;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -169,8 +170,8 @@ public class CmpServlet extends HttpServlet {
                 }
                 final PKIHeader header = pkiMessage.getHeader();
                 String messageInformation = "CMP message: pvno = " + header.getPvno() +
-                        ", sender = " + header.getSender().toString() +
-                        ", recipient = " + header.getRecipient().toString() +
+                        ", sender = " + LogRedactionUtils.getRedactedMessage(header.getSender().toString()) + // GeneralName
+                        ", recipient = " + LogRedactionUtils.getRedactedMessage(header.getRecipient().toString()) +
                         ", transactionID = " + header.getTransactionID();
                 log.info("Validating CMP message: " + messageInformation);
                 if (pkiMessage.getProtection() == null) {
