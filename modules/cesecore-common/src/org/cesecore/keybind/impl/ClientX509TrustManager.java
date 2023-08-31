@@ -15,7 +15,7 @@ package org.cesecore.keybind.impl;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.pinning.TrustEntry;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 
 import com.keyfactor.util.CertTools;
@@ -58,11 +58,11 @@ public class ClientX509TrustManager implements X509TrustManager {
         final List<Collection<X509Certificate>> trustedCertificateChains = getTrustedCertificateChains(leafCertificate);
         if (log.isDebugEnabled()) {
             if (trustedCertificateChains == null) {
-                log.debug("Verifying the leaf certificate '" + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(leafCertificate)) + "' with no trusted certificate chains.");
+                log.debug("Verifying the leaf certificate '" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(leafCertificate)) + "' with no trusted certificate chains.");
             } else {
-                log.debug("Verifying the leaf certificate '" + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(leafCertificate)) + "' with trusted certificate chains "
+                log.debug("Verifying the leaf certificate '" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(leafCertificate)) + "' with trusted certificate chains "
                         + trustedCertificateChains.stream()
-                            .map(chain -> chain.stream().map(x -> GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(x))).collect(Collectors.toList()))
+                            .map(chain -> chain.stream().map(x -> LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(x))).collect(Collectors.toList()))
                             .collect(Collectors.toList()));
             }
         }

@@ -84,7 +84,7 @@ import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import org.ejbca.config.CmpConfiguration;
@@ -310,7 +310,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
                     stagingState.usercommonname = dn.getField(DNFieldExtractor.CN, 0);
                     if (log.isDebugEnabled()) {
-                        log.debug("Verifying authorization of '" + GdprRedactionUtils.getSubjectDnLogSafe(userdn) + "'");
+                        log.debug("Verifying authorization of '" + LogRedactionUtils.getSubjectDnLogSafe(userdn) + "'");
                     }
                     final String issuerDN = CertTools.getIssuerDN(certificate);
                     final String sernostr = CertTools.getSerialNumberAsString(certificate);
