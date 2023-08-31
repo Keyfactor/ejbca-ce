@@ -26,7 +26,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
@@ -181,7 +181,7 @@ public class EndEntityManagementTest extends CaTestCase {
                     admin, IntegrityProtectedDevice.class.getSimpleName(), 0, 100,
                     "a.timeStamp >= ?0 AND a.eventType = ?1", "a.timeStamp DESC", params);
 
-            final String redactedSanChange = "subjectAltName=" + GdprRedactionUtils.REDACTED_CONTENT + " -> " + GdprRedactionUtils.REDACTED_CONTENT;
+            final String redactedSanChange = "subjectAltName=" + LogRedactionUtils.REDACTED_CONTENT + " -> " + LogRedactionUtils.REDACTED_CONTENT;
             assertEquals("Only one AuditLog should be returned", 1, auditLogsGenerated.size());
             assertTrue("Should not contain SAN", !auditLogsGenerated.get(0).getMapAdditionalDetails().toString().contains(san));
             assertTrue("Should contain redaction placeholder", auditLogsGenerated.get(0).getMapAdditionalDetails().toString().contains(redactedSanChange));
