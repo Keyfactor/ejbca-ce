@@ -100,7 +100,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.configuration.GdprConfigurationCache;
+import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -108,7 +108,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.Base64;
@@ -377,8 +377,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
         issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
         try {
-            if (!GdprConfigurationCache.INSTANCE.
-                    getGdprConfiguration(endEntityInformation.getEndEntityProfileId()).isRedactPii()) {
+            if (!LogRedactionConfigurationCache.INSTANCE.
+                getLogRedactionConfiguration(endEntityInformation.getEndEntityProfileId()).isRedactPii()) {
                 issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
             }
         } catch (IOException e) {
@@ -418,7 +418,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                         GdprRedactionUtils.getSubjectDnLogSafe(request.getRequestX500Name().toString(), endEntityInformation.getEndEntityProfileId()));
         details.put("subjectaltname", endEntityInformation.getLogSafeSubjectAltName());
         if (null != request) {
-            details.put("requestaltname", GdprRedactionUtils.getSubjectAltNameLogSafe(request.getRequestAltNames(), endEntityInformation.getEndEntityProfileId()));
+            details.put("requestaltname", LogRedactionUtils.getSubjectAltNameLogSafe(request.getRequestAltNames(), endEntityInformation.getEndEntityProfileId()));
         }
         details.put("certprofile", endEntityInformation.getCertificateProfileId());
         details.put("keyusage", keyusage);
@@ -652,7 +652,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // get a CreateException here if we would happen to generate a certificate with the same serialNumber
                     // as one already existing certificate.
 
-                    final CertificateSerialNumberException redactedCSNException = GdprRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId());
+                    final CertificateSerialNumberException redactedCSNException = LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId());
 
                     if (retrycounter + 1 < maxRetrys) {
                         log.info("Can not store certificate with serNo (" + serialNo + "), will retry (retrycounter=" + retrycounter +
@@ -669,7 +669,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     throw new CustomCertificateSerialNumberException(msg);
                 }
 
-                final CertificateSerialNumberException redactedCSNException = GdprRedactionUtils.getRedactedException(storeEx, endEntityInformation.getEndEntityProfileId());
+                final CertificateSerialNumberException redactedCSNException = LogRedactionUtils.getRedactedException(storeEx, endEntityInformation.getEndEntityProfileId());
 
                 log.error("Can not store certificate in database in 5 tries, aborting: ", redactedCSNException);
                 throw redactedCSNException;
@@ -677,7 +677,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
             if (ctLogException != null) {
                 // Keep the stored certificate data. We need it to publish the pre-certificate later on.
-                final CTLogException redactedCTLogException = GdprRedactionUtils.getRedactedException(ctLogException, endEntityInformation.getEndEntityProfileId());
+                final CTLogException redactedCTLogException = LogRedactionUtils.getRedactedException(ctLogException, endEntityInformation.getEndEntityProfileId());
                 redactedCTLogException.setPreCertificate(result);
 
                 log.info("CTlog Exception: " + redactedCTLogException.getMessage());
@@ -704,7 +704,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 log.debug("Generated certificate with SerialNumber '" + serialNo + "' for user '" + endEntityInformation.getUsername() + "', with revocation reason="
                         + revreason);
 
-                if (!GdprRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+                if (!LogRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
                     log.debug(cert.toString());
                 }
             }
@@ -715,7 +715,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
             issuedetails.put("issuancerevocationreason", revreason);
             try {
-                if (!GdprRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+                if (!LogRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
                     issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
                 }
             } catch (CertificateEncodingException e) {
@@ -731,8 +731,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             return result;
             // We need to catch and re-throw all of these exception just because we need to audit log all failures
         } catch (CustomCertificateSerialNumberException | AuthorizationDeniedException | CertificateCreateException e) {
-            log.info(GdprRedactionUtils.getRedactedMessage(e.getMessage(), endEntityInformation.getEndEntityProfileId()));
-            auditFailure(admin, GdprRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            log.info(LogRedactionUtils.getRedactedMessage(e.getMessage(), endEntityInformation.getEndEntityProfileId()));
+            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
         } catch(CryptoTokenOfflineException e) {
             final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
@@ -740,20 +740,20 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             auditFailure(admin, e, e.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
         } catch (CAOfflineException | InvalidAlgorithmException | IllegalValidityException e) {
-            log.error("Error creating certificate", GdprRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
-            auditFailure(admin, GdprRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            log.error("Error creating certificate", LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
+            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
         } catch (CertificateExtensionException e) {
-            final CertificateExtensionException redactedCEException = GdprRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId());
+            final CertificateExtensionException redactedCEException = LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId());
             log.error("Error creating certificate", redactedCEException);
             auditFailure(admin, redactedCEException, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             // Rollback
             throw new CertificateCreateException(ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR, redactedCEException);
         } catch (OperatorCreationException | IOException | SignatureException e) {
-            log.error("Error creating certificate", GdprRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
-            auditFailure(admin, GdprRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            log.error("Error creating certificate", LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
+            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             // Rollback
-            throw new CertificateCreateException(GdprRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
+            throw new CertificateCreateException(LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
         }
     }
 
@@ -779,13 +779,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
                     issuedetails.put("ctprecert", true);
                     issuedetails.put("msg", intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
-                    // Precertificate submission can not be used with GDPR log redaction as pre-certificate can always be used to get subjectDn or SAN
+                    // Precertificate submission can not be used with log redaction as pre-certificate can always be used to get subjectDn or SAN
                     issuedetails.put("subjectdn", CertTools.getSubjectDN(precert));
                     issuedetails.put("certprofile", subject.getCertificateProfileId());
                     try {
                         issuedetails.put("cert", new String(Base64.encode(precert.getEncoded(), false)));
                     } catch (CertificateEncodingException e) {
-                        log.warn("Could not encode cert", GdprRedactionUtils.getRedactedThrowable(e, subject.getEndEntityProfileId()));
+                        log.warn("Could not encode cert", LogRedactionUtils.getRedactedThrowable(e, subject.getEndEntityProfileId()));
                     }
                     logSession.log(EventTypes.CERT_CTPRECERT_SUBMISSION, success ? EventStatus.SUCCESS : EventStatus.FAILURE,
                             ModuleTypes.CERTIFICATE, ServiceTypes.CORE, authTokenName, String.valueOf(issuer.getCAId()),

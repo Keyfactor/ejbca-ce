@@ -101,7 +101,7 @@ import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.keys.validation.ValidationResult;
 import org.cesecore.roles.member.RoleMemberData;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
@@ -427,7 +427,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         authenticationToken, caId, null, username,
                         SecurityEventProperties.builder()
                                 .withMsg(intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileName, 
-                                        GdprRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileName), e.getMessage()))
+                                        LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileName), e.getMessage()))
                                 .build()
                 );
                 throw e;
@@ -962,7 +962,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         authenticationToken, caId, null, username,
                         SecurityEventProperties.builder()
                                 .withMsg(intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileId, 
-                                        GdprRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId), e.getMessage()))
+                                        LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId), e.getMessage()))
                                 .build()
                 );
                 throw e;
@@ -1123,11 +1123,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
                 // Redact PII if checked in the EEP, so it is not logged in the audit log.
                 if (key.equalsIgnoreCase("subjectDn")) {
-                    change = GdprRedactionUtils.getSubjectDnLogSafe(diff.get(key)[0], endEntityProfileId) + " -> " +
-                             GdprRedactionUtils.getSubjectDnLogSafe(diff.get(key)[1], endEntityProfileId);
+                    change = LogRedactionUtils.getSubjectDnLogSafe(diff.get(key)[0], endEntityProfileId) + " -> " +
+                             LogRedactionUtils.getSubjectDnLogSafe(diff.get(key)[1], endEntityProfileId);
                 } else if (key.equalsIgnoreCase("subjectAltName")) {
-                    change = GdprRedactionUtils.getSubjectAltNameLogSafe(diff.get(key)[0], endEntityProfileId) + " -> " +
-                             GdprRedactionUtils.getSubjectAltNameLogSafe(diff.get(key)[1], endEntityProfileId);
+                    change = LogRedactionUtils.getSubjectAltNameLogSafe(diff.get(key)[0], endEntityProfileId) + " -> " +
+                             LogRedactionUtils.getSubjectAltNameLogSafe(diff.get(key)[1], endEntityProfileId);
                 }
                 else {
                     change = diff.get(key)[0] + " -> " + diff.get(key)[1];
@@ -1228,7 +1228,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             );
         } catch (Exception e) {
             final String msg = intres.getLocalizedMessage("ra.errorremoveentity", trimmedUsername);
-            final String errorMessage = GdprRedactionUtils.getRedactedMessage(e.getMessage());
+            final String errorMessage = LogRedactionUtils.getRedactedMessage(e.getMessage());
             logAuditEvent(
                     EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE,
                     authenticationToken, caId, null, trimmedUsername,
@@ -1663,7 +1663,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     profile.doesPasswordFulfillEndEntityProfile(password, true);
                 } catch (EndEntityProfileValidationException e) {
                     // TODO
-                    final String dn = GdprRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull(), data.getEndEntityProfileId());
+                    final String dn = LogRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull(), data.getEndEntityProfileId());
                     auditSession.log(
                             EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE,
                             EjbcaModuleTypes.RA, ServiceTypes.CORE,
