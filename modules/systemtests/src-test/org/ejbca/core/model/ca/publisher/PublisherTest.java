@@ -30,7 +30,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
@@ -404,7 +404,7 @@ public class PublisherTest extends RoleUsingTestCase {
 			assertEquals("Only one AuditLog should be returned", 1, auditLogsGenerated.size());
 
 			assertTrue("Should not contain Subject DN", !auditLogsGenerated.get(0).getMapAdditionalDetails().toString().contains(subjectDN));
-			assertTrue("Should contain redaction placeholder", auditLogsGenerated.get(0).getMapAdditionalDetails().toString().contains(GdprRedactionUtils.REDACTED_CONTENT));
+			assertTrue("Should contain redaction placeholder", auditLogsGenerated.get(0).getMapAdditionalDetails().toString().contains(LogRedactionUtils.REDACTED_CONTENT));
 		} finally {
 			endEntityProfileSession.removeEndEntityProfile(internalAdmin, eepName);
 		}

@@ -46,7 +46,7 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
@@ -135,7 +135,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
             }
             String name = CertTools.getPartFromDN(getRequestDN(), component);
             if (name == null) {
-                log.error("No component " + component + " in DN: " + GdprRedactionUtils.getSubjectDnLogSafe(getRequestDN()));
+                log.error("No component " + component + " in DN: " + LogRedactionUtils.getSubjectDnLogSafe(getRequestDN()));
             } else {
                 ret = name;
             }
@@ -233,7 +233,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
             ret = CertTools.stringToBCDNString(name.toString());
         }
         if (log.isDebugEnabled()) {
-            log.debug("Request DN is: " + GdprRedactionUtils.getSubjectDnLogSafe(ret));
+            log.debug("Request DN is: " + LogRedactionUtils.getSubjectDnLogSafe(ret));
         }
         return ret;
     }
@@ -246,7 +246,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
             name = X500Name.getInstance(new CeSecoreNameStyle(), name);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Request X500Name is: " + GdprRedactionUtils.getSubjectDnLogSafe(name.toString()));
+            log.debug("Request X500Name is: " + LogRedactionUtils.getSubjectDnLogSafe(name.toString()));
         }
         return name;
     }
@@ -270,7 +270,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
             requestAltName = CertTools.getAltNameStringFromExtension(sanExtension);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Request altName is: " + GdprRedactionUtils.getSubjectAltNameLogSafe(requestAltName));
+            log.debug("Request altName is: " + LogRedactionUtils.getSubjectAltNameLogSafe(requestAltName));
         }
         return requestAltName;
     }

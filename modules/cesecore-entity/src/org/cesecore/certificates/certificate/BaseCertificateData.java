@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectedData;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
@@ -376,7 +376,7 @@ public abstract class BaseCertificateData extends ProtectedData {
                     " found with fingerprint " + 
                     getFingerprint() + 
                     " for '" + 
-                    GdprRedactionUtils.getSubjectDnLogSafe(getSubjectDN()) +
+                    LogRedactionUtils.getSubjectDnLogSafe(getSubjectDN()) +
                     "' issued by '" +  
                     getIssuerDN() + 
                     "'.";
@@ -470,7 +470,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     
     @Transient
     public String getLogSafeSubjectDn() {
-        return GdprRedactionUtils.getSubjectDnLogSafe(getSubjectDnNeverNull(), getEndEntityProfileIdOrZero());
+        return LogRedactionUtils.getSubjectDnLogSafe(getSubjectDnNeverNull(), getEndEntityProfileIdOrZero());
     }
     
     /**

@@ -29,7 +29,7 @@ import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.XmlSerializer;
 
@@ -200,7 +200,7 @@ public class EndEntityInformation implements Serializable {
         if (StringUtils.isEmpty(getDN())) {
             return "";
         }
-        return GdprRedactionUtils.getSubjectDnLogSafe(getDN(), endentityprofileid);
+        return LogRedactionUtils.getSubjectDnLogSafe(getDN(), endentityprofileid);
     }
 
     /** User DN as stored in the database. If the registered DN has unused DN fields the empty ones are kept, i.e.
@@ -219,7 +219,7 @@ public class EndEntityInformation implements Serializable {
         if (StringUtils.isEmpty(subjectAltName)) {
             return "";
         }
-        return GdprRedactionUtils.getSubjectAltNameLogSafe(subjectAltName, endentityprofileid);
+        return LogRedactionUtils.getSubjectAltNameLogSafe(subjectAltName, endentityprofileid);
     }
     
     public void setEmail(String email) {this.subjectEmail = StringTools.putBase64String(email);}

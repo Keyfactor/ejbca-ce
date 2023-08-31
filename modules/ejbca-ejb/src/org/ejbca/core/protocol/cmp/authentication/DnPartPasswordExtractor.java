@@ -19,7 +19,7 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 
@@ -64,7 +64,7 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         }
         
         if(log.isDebugEnabled()) {
-            log.debug("Extracting password from SubjectDN '" +  GdprRedactionUtils.getSubjectDnLogSafe(dnString) + "' and DN part '" + dnPart + "'");
+            log.debug("Extracting password from SubjectDN '" +  LogRedactionUtils.getSubjectDnLogSafe(dnString) + "' and DN part '" + dnPart + "'");
         }
         if (dnString != null) {
             password = CertTools.getPartFromDN(dnString, dnPart);

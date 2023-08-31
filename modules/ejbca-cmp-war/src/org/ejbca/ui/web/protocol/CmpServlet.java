@@ -60,7 +60,6 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ConcurrentCache;
-import org.cesecore.util.GdprRedactionUtils;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
