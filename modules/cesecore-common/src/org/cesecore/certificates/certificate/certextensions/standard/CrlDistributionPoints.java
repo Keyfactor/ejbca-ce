@@ -40,13 +40,13 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
 import com.keyfactor.util.StringTools;
+import org.cesecore.util.LogRedactionUtils;
 
 /** 
  * 
  * Class for standard X509 certificate extension. 
  * See rfc3280 or later for spec of this extension.      
- * 
- * @version $Id$
+ *
  */
 public class CrlDistributionPoints extends StandardCertificateExtension {
     private static final long serialVersionUID = 1L;
@@ -73,7 +73,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 		}
 		final int crlPartitionIndex = CrlPartitionIndexGeneratorRandom.INSTANCE.generateCrlPartitionIndex(caInfo);
 		if (log.isDebugEnabled() && caInfo.getUsePartitionedCrl()) {
-            log.debug("Certificate '" + subject.getCertificateDN() + "' was assigned to CRL partition " + crlPartitionIndex);
+            log.debug("Certificate '" + LogRedactionUtils.getSubjectDnLogSafe(subject.getCertificateDN()) + "' was assigned to CRL partition " + crlPartitionIndex);
         }
 		// Multiple CDPs are separated with the ';' sign        	         	 
 		final ArrayList<DistributionPointName> dpns = new ArrayList<>();
