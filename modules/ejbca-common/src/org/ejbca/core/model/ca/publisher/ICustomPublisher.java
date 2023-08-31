@@ -89,4 +89,14 @@ public interface ICustomPublisher {
      */
     boolean isReadOnly();
 
+    /**
+     * Validates value of given property identified by its name.
+     *
+     * @param name the name of the validated property
+     * @param value the value of the property to validate
+     * @throws PublisherException if value shall be considered invalid
+     */
+    default void validateProperty(String name, String value) throws PublisherException {
+    }
+
 }
