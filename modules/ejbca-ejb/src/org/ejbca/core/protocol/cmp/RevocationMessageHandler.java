@@ -46,7 +46,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -115,7 +115,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, errMsg);
         } catch (CADoesntExistsException e) {
             final String errMsg = "CA with DN '" + msg.getHeader().getRecipient().getName().toString() + "' is unknown";
-            LOG.info(GdprRedactionUtils.getRedactedMessage(errMsg));
+            LOG.info(LogRedactionUtils.getRedactedMessage(errMsg));
             return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errMsg);
         } catch (AuthorizationDeniedException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
@@ -132,7 +132,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        authorizationSession, endEntityProfileSession, certificateProfileSession, authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
 		ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(msg.getMessage(), null, authenticated);
 		if(authenticationModule == null) {
-	          LOG.info(GdprRedactionUtils.getRedactedMessage(messageVerifyer.getErrorMessage()));
+	          LOG.info(LogRedactionUtils.getRedactedMessage(messageVerifyer.getErrorMessage()));
 	          return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, messageVerifyer.getErrorMessage());
 		}
 
@@ -169,8 +169,8 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		            }
 		            ai.close();
 		        } catch (IOException e) {
-		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, GdprRedactionUtils.getRedactedMessage(e.getMessage()),
-							GdprRedactionUtils.getRedactedException(e)));
+		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()),
+							LogRedactionUtils.getRedactedException(e)));
 		            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
 		        }
 		    } else {
