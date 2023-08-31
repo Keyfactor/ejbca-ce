@@ -16,8 +16,10 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
@@ -26,16 +28,18 @@ import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
-import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIStatus;
 import org.bouncycastle.asn1.cmp.PKIStatusInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * A very simple error message, no protection, or PBE protection
@@ -61,6 +65,10 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
     private FailInfo failInfo = null;
     private int requestId = 0;
 	private int requestType = 23; // 23 is general error message
+	private PrivateKey messageSigningKey = null;
+	private Collection<Certificate> signCerts = null;
+	private String provider = null;
+	private String digestAlg = CMSSignedGenerator.DIGEST_SHA256;
 
 
 	@Override
@@ -119,15 +127,12 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 		if(pbeProtected) {
 		    myPKIHeaderBuilder.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
 		}
-		final PKIHeader myPKIHeader = myPKIHeaderBuilder.build();
-		
 		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection);
 		if(failInfo != null && failText != null) {
 		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)), CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
 		} else if(failText != null) {
 		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)));
 		}
-		
 		PKIBody myPKIBody = null;
 		if (log.isDebugEnabled()) {
 		    log.debug("Create error message from requestType: " + requestType);
@@ -138,17 +143,46 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 			ErrorMsgContent myErrorContent = new ErrorMsgContent(myPKIStatusInfo);
 			myPKIBody = new PKIBody(23, myErrorContent); // 23 = error						
 		}
-		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
 		if (pbeProtected) {
-			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(),
+			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(new PKIMessage(myPKIHeaderBuilder.build(), myPKIBody), getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(),
 					getPbeIterationCount());
 		} else if (pbmac1Protected) {
-			responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, getPbmac1KeyId(),
+			responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(new PKIMessage(myPKIHeaderBuilder.build(), myPKIBody), getPbmac1KeyId(),
 					getPbmac1Key(), getPbmac1MacAlg(), getPbmac1IterationCount(), getPbmac1DkLen(), getPbmac1PrfAlg()));
-		} else {
-			responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);			
+		}
+		else if ((this.messageSigningKey != null) && (this.signCerts != null)) {
+		    myPKIHeaderBuilder.setSenderKID(CertTools.getSubjectKeyId(signCerts.iterator().next()));
+		    PKIMessage myPKIMessage = new PKIMessage(myPKIHeaderBuilder.build(), myPKIBody);
+		    try {
+		        responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, this.signCerts, this.messageSigningKey, this.digestAlg, this.provider);
+		    } catch (InvalidKeyException | CertificateEncodingException | NoSuchProviderException | NoSuchAlgorithmException | SecurityException
+		              | SignatureException e) {
+		        responseMessage = checkAndSendResponseMessage(responseMessage, myPKIHeaderBuilder, myPKIBody, e);
+		    }
+		    responseMessage = checkAndSendResponseMessage(responseMessage, myPKIHeaderBuilder, myPKIBody, null);
+		}
+		else {
+			responseMessage = CmpMessageHelper.pkiMessageToByteArray(new PKIMessage(myPKIHeaderBuilder.build(), myPKIBody));
 		}
 		return true;		
+	}
+
+	private byte[] checkAndSendResponseMessage(byte[] message, PKIHeaderBuilder myPKIHeaderBuilder, PKIBody myPKIBody, Exception exception) {
+	    if ((exception != null) || (message == null)) {
+	        if (log.isDebugEnabled()) {
+	            log.debug(constructLogMessage(exception));
+	        }
+	        return responseMessage = CmpMessageHelper.pkiMessageToByteArray(new PKIMessage(myPKIHeaderBuilder.build(), myPKIBody));
+	    }
+	    return message;
+	}
+
+	private String constructLogMessage(Exception exception) {
+	    String logMessage = "Could not sign CmpErrorResponseMessage, creating unprotected error message. ";
+	    if (exception == null) {
+	        return logMessage;
+	    }
+	    return logMessage + exception.getMessage();
 	}
 
 	@Override
@@ -159,6 +193,9 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 	@Override
 	public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key,
 			String provider) {
+	    this.messageSigningKey = key;
+	    this.signCerts = certs;
+	    this.provider = provider;
 	}
 
 	@Override
@@ -167,6 +204,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 
 	@Override
 	public void setPreferredDigestAlg(String digest) {
+	    this.digestAlg = digest;
 	}
 
 	@Override

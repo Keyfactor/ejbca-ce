@@ -112,14 +112,14 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
         } catch (EndEntityProfileNotFoundException e) {
             final String errMsg = (INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()));
             LOG.info(errMsg, e);
-            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, errMsg);
+            return sendSignedErrorMessage(msg, FailInfo.INCORRECT_DATA, errMsg);
         } catch (CADoesntExistsException e) {
             final String errMsg = "CA with DN '" + msg.getHeader().getRecipient().getName().toString() + "' is unknown";
             LOG.info(LogRedactionUtils.getRedactedMessage(errMsg));
-            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errMsg);
+            return sendSignedErrorMessage(msg, FailInfo.BAD_REQUEST, errMsg);
         } catch (AuthorizationDeniedException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
+            return sendSignedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
         }
 		
 		// if version == 1 it is cmp1999 and we should not return a message back
@@ -133,7 +133,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(msg.getMessage(), null, authenticated);
 		if(authenticationModule == null) {
 	          LOG.info(LogRedactionUtils.getRedactedMessage(messageVerifyer.getErrorMessage()));
-	          return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, messageVerifyer.getErrorMessage());
+              return sendSignedErrorMessage(msg, FailInfo.BAD_REQUEST, messageVerifyer.getErrorMessage());
 		}
 
 		// If authentication was correct, we will now try to find the certificate to revoke
@@ -171,7 +171,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        } catch (IOException e) {
 		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()),
 							LogRedactionUtils.getRedactedException(e)));
-		            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
+		            return sendSignedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
 		        }
 		    } else {
 		        if (LOG.isDebugEnabled()) {
@@ -341,5 +341,5 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             throw new CADoesntExistsException("CA with ID " + caId + " does not exist.");
         }
         return ca;
-    }  
+    }
 }
