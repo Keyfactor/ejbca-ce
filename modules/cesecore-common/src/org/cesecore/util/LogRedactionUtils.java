@@ -27,7 +27,7 @@ import com.keyfactor.util.CertTools;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.protocol.HttpContext;
 
-import org.cesecore.configuration.GdprConfigurationCache;
+import org.cesecore.configuration.LogRedactionConfigurationCache;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
@@ -36,7 +36,7 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * Utility methods for handling/checking PII redaction based on End Entity Profile.
  * Log safe Subject DN and Subject Alt Name are used when logging PII that
- * should be redacted for GDPR purposes.
+ * should be redacted for Log Redaction purposes.
  *
  * Rule of thumb:
  * 1. For SubjectDn or SubjectAltName:
@@ -52,7 +52,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * 3. boolean redactPii() may be used to retrieve node level configuration
  * 4. boolean isRedactPii(final int endEntityProfileId) may be used to retrieve EEP level settings. This method also combines node level settings as they supersede EEP level settings.
  */
-public class GdprRedactionUtils {
+public class LogRedactionUtils {
     
     public static final String REDACTED_CONTENT = "<redacted>";
     
@@ -100,7 +100,7 @@ public class GdprRedactionUtils {
     }
 
     public static String getSubjectDnLogSafe(String subjectDn, int endEntityProfileId) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
+        if(LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return subjectDn;
@@ -108,7 +108,7 @@ public class GdprRedactionUtils {
     }
 
     public static String getSubjectDnLogSafe(String subjectDn, String endEntityProfileName) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii()) {
+        if(LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileName).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return subjectDn;
@@ -132,7 +132,7 @@ public class GdprRedactionUtils {
     }
 
     public static String getSubjectAltNameLogSafe(String san, int endEntityProfileId) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
+        if(LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return san;
@@ -140,7 +140,7 @@ public class GdprRedactionUtils {
     }
     
     public static String getSubjectAltNameLogSafe(String san, String endEntityProfileName) {
-        if(GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii()) {
+        if(LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileName).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return san;
@@ -148,14 +148,14 @@ public class GdprRedactionUtils {
     }
 
     public static String getLogSafe(final String string, final String identifier, final int endEntityProfileId) {
-        return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii() ?
-                string.replace(identifier, GdprRedactionUtils.REDACTED_CONTENT) : string;
+        return LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii() ?
+                string.replace(identifier, LogRedactionUtils.REDACTED_CONTENT) : string;
     }
 
     public static String getLogSafe(String string, final List<String> identifiers, final int endEntityProfileId) {
-        if (GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii()) {
+        if (LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii()) {
             for (String identifier : identifiers) {
-                string = string.replace(identifier, GdprRedactionUtils.REDACTED_CONTENT);
+                string = string.replace(identifier, LogRedactionUtils.REDACTED_CONTENT);
             }
         }
         return string;
@@ -213,15 +213,15 @@ public class GdprRedactionUtils {
     }
 
     public static boolean isRedactPii(final int endEntityProfileId) {
-        return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii();
+        return LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii();
     }
     
     public static boolean isRedactPii(final String endEntityProfileName) {
-        return GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii();
+        return LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileName).isRedactPii();
     }
     
     public static boolean redactPii() {
-        return GdprConfigurationCache.INSTANCE.getGdprConfiguration().isRedactPii();
+        return LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration().isRedactPii();
     }
     
     /**
@@ -238,12 +238,12 @@ public class GdprRedactionUtils {
     
     public static String getRedactedMessage(String message, int endEntityProfileId) {
         return getRedactedMessage(message, 
-                GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
+                LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii());
     }
     
     public static String getRedactedMessage(String message, String endEntityProfileName) {
         return getRedactedMessage(message, 
-                GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii());
+                LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileName).isRedactPii());
     }
     
     public static String getRedactedMessage(String message, boolean redactPii) {
@@ -285,7 +285,7 @@ public class GdprRedactionUtils {
     public static Throwable getRedactedThrowable(Throwable thrownException, int endEntityProfileId) {
         try {
             return getRedactedThrowable(thrownException,
-                    GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileId).isRedactPii());
+                    LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii());
         } catch (Exception e) {
             return thrownException; // fallback in case something goes wrong
         }
@@ -293,18 +293,18 @@ public class GdprRedactionUtils {
 
     @SuppressWarnings("unchecked")
     public static <T extends Exception> T getRedactedException(T exception, final int endEntityProfileId) {
-        return (T) GdprRedactionUtils.getRedactedThrowable(exception, endEntityProfileId);
+        return (T) LogRedactionUtils.getRedactedThrowable(exception, endEntityProfileId);
     }
 
     @SuppressWarnings("unchecked")
     public static <T extends Exception> T getRedactedException(T exception) {
-        return (T) GdprRedactionUtils.getRedactedThrowable(exception);
+        return (T) LogRedactionUtils.getRedactedThrowable(exception);
     }
     
     public static Throwable getRedactedThrowable(Throwable thrownException, String endEntityProfileName) {
         try {
             return getRedactedThrowable(thrownException, 
-                    GdprConfigurationCache.INSTANCE.getGdprConfiguration(endEntityProfileName).isRedactPii());
+                    LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileName).isRedactPii());
         } catch (Exception e) {
             return thrownException; // fallback in case something goes wrong
         }

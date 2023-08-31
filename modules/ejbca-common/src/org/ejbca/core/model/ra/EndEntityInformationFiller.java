@@ -32,7 +32,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
@@ -421,7 +421,7 @@ public class EndEntityInformationFiller {
         mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
         mergedDn = unEscapeSpecialChars(mergedDn);
 
-        log.debug("merged dn: " + GdprRedactionUtils.getSubjectDnLogSafe(mergedDn));
+        log.debug("merged dn: " + LogRedactionUtils.getSubjectDnLogSafe(mergedDn));
         
         return mergedDn;
     }
@@ -447,7 +447,7 @@ public class EndEntityInformationFiller {
         mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
         mergedDn = unEscapeSpecialChars(mergedDn);
 
-        log.debug("merged dn: " + GdprRedactionUtils.getSubjectDnLogSafe(mergedDn));
+        log.debug("merged dn: " + LogRedactionUtils.getSubjectDnLogSafe(mergedDn));
         
         return mergedDn;
     }

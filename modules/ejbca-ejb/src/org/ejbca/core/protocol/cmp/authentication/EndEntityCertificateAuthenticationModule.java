@@ -65,7 +65,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -311,7 +311,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             log.debug("CMP message already been authenticated: " + authenticated);
             log.debug("Omitting some verifications: " + omitVerifications);
             log.debug("CMP message (claimed to be) signed by (cert from extraCerts): SubjectDN '" + 
-                   GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(extraCert))+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
+                   LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(extraCert))+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
         }
 
         //----------------------------------------------------------------------------------------
@@ -563,7 +563,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 userdata = userdataList.get(0);
                 if (log.isDebugEnabled()) {
                     log.debug("Received a CMP KeyUpdateRequest for an endentity with SubjectDN '"
-                            + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN, userdata.getEndEntityProfileId()) + "' and issuerDN '"
+                            + LogRedactionUtils.getSubjectDnLogSafe(subjectDN, userdata.getEndEntityProfileId()) + "' and issuerDN '"
                             + issuerDN
                             + "'");
                 }
@@ -577,7 +577,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 userdata = userdataList.get(0);
                 if (log.isDebugEnabled()) {
                     log.debug("Received a CMP KeyUpdateRequest for an endentity with SubjectDN '"
-                            + GdprRedactionUtils.getSubjectDnLogSafe(subjectDN, userdata.getEndEntityProfileId()) + "' and issuerDN '"
+                            + LogRedactionUtils.getSubjectDnLogSafe(subjectDN, userdata.getEndEntityProfileId()) + "' and issuerDN '"
                             + issuerDN
                             + "'");
                 }
@@ -891,12 +891,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         } catch (CertPathValidatorException e) {
             this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid - " + getCertPathValidatorExceptionMessage(e);
             if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + ": SubjectDN=" + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(endentitycert)));
+                log.debug(this.errorMessage + ": SubjectDN=" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(endentitycert)));
             }
         } catch (CertPathBuilderException e) {
             this.errorMessage = "The certificate chain attached to the PKIMessage in the extraCert field is not valid - " + e.getMessage();
             if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + ": SubjectDN=" + GdprRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(endentitycert)));
+                log.debug(this.errorMessage + ": SubjectDN=" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(endentitycert)));
             }
             log.warn("CertPathBuilderException", e);
         } catch (NoSuchProviderException e) {
