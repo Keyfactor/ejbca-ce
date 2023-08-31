@@ -2293,7 +2293,7 @@
           "type": "integer",
           "format": "int32",
           "example": -1,
-          "description": "Revocation reson",
+          "description": "Revocation reason",
           "readOnly": true,
           "enum": [
             -1,
@@ -2383,6 +2383,24 @@
           "format": "int32",
           "example": 1,
           "description": "CRL partition index",
+          "readOnly": true
+        },
+        "invalidity_date": {
+          "type": "integer",
+          "format": "int64",
+          "example": -1,
+          "description": "Invalidity date"
+        },
+        "certificate_profile": {
+          "type": "string",
+          "example": "ENDUSER",
+          "description": "Certificate Profile Name",
+          "readOnly": true
+        },
+        "end_entity_profile": {
+          "type": "string",
+          "example": "EMPTY",
+          "description": "End Entity Profile Name",
           "readOnly": true
         }
       }
