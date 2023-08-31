@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.admin.services.servicetypes;
 
 import org.cesecore.util.PropertyTools;
-import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorker;
+import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorkerConstants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,16 +27,17 @@ public class DatabaseMaintenanceWorkerType extends BaseWorkerType {
     private static final long serialVersionUID = 1L;
 
     public static final String NAME = "DATABASEMAINTENANCEWORKER";
+
     private static final String WORKER_SUB_PAGE = "databasemaintenanceworker.xhtml";
 
-    private String delayTimeUnit  = DatabaseMaintenanceWorker.DEFAULT_DELAY_TIMEUNIT;
-    private int delayTimeValue = DatabaseMaintenanceWorker.DEFAULT_DELAY_TIMEVALUE;
+    private String delayTimeUnit  = DatabaseMaintenanceWorkerConstants.DEFAULT_DELAY_TIMEUNIT;
+    private int delayTimeValue = DatabaseMaintenanceWorkerConstants.DEFAULT_DELAY_TIMEVALUE;
     private boolean deleteExpiredCertificates = true;
     private boolean deleteExpiredCrls = true;
-    private int batchSize = DatabaseMaintenanceWorker.DEFAULT_BATCH_SIZE;
+    private int batchSize = DatabaseMaintenanceWorkerConstants.DEFAULT_BATCH_SIZE;
 
     public DatabaseMaintenanceWorkerType() {
-        super(WORKER_SUB_PAGE, NAME, true, DatabaseMaintenanceWorker.class.getName());
+        super(WORKER_SUB_PAGE, NAME, true, DatabaseMaintenanceWorkerConstants.WORKER_CLASS);
         // No action available for this worker
         deleteAllCompatibleActionTypes();
         addCompatibleActionTypeName(NoActionType.NAME);
@@ -47,22 +48,22 @@ public class DatabaseMaintenanceWorkerType extends BaseWorkerType {
     @Override
     public Properties getProperties(final ArrayList<String> errorMessages) throws IOException {
         Properties ret = super.getProperties(errorMessages);
-        ret.setProperty(DatabaseMaintenanceWorker.PROP_DELAY_TIMEUNIT, delayTimeUnit);
-        ret.setProperty(DatabaseMaintenanceWorker.PROP_DELAY_TIMEVALUE, Integer.toString(delayTimeValue));
-        ret.setProperty(DatabaseMaintenanceWorker.PROP_DELETE_EXPIRED_CERTIFICATES, Boolean.toString(deleteExpiredCertificates));
-        ret.setProperty(DatabaseMaintenanceWorker.PROP_DELETE_EXPIRED_CRLS, Boolean.toString(deleteExpiredCrls));
-        ret.setProperty(DatabaseMaintenanceWorker.PROP_BATCH_SIZE, Integer.toString(batchSize));
+        ret.setProperty(DatabaseMaintenanceWorkerConstants.PROP_DELAY_TIMEUNIT, delayTimeUnit);
+        ret.setProperty(DatabaseMaintenanceWorkerConstants.PROP_DELAY_TIMEVALUE, Integer.toString(delayTimeValue));
+        ret.setProperty(DatabaseMaintenanceWorkerConstants.PROP_DELETE_EXPIRED_CERTIFICATES, Boolean.toString(deleteExpiredCertificates));
+        ret.setProperty(DatabaseMaintenanceWorkerConstants.PROP_DELETE_EXPIRED_CRLS, Boolean.toString(deleteExpiredCrls));
+        ret.setProperty(DatabaseMaintenanceWorkerConstants.PROP_BATCH_SIZE, Integer.toString(batchSize));
         return ret;
     }
 
     @Override
     public void setProperties(final Properties properties) throws IOException {
         super.setProperties(properties);
-        delayTimeValue = PropertyTools.get(properties, DatabaseMaintenanceWorker.PROP_DELAY_TIMEVALUE, delayTimeValue);
-        delayTimeUnit = properties.getProperty(DatabaseMaintenanceWorker.PROP_DELAY_TIMEUNIT, delayTimeUnit);
-        deleteExpiredCertificates = PropertyTools.get(properties, DatabaseMaintenanceWorker.PROP_DELETE_EXPIRED_CERTIFICATES, deleteExpiredCertificates);
-        deleteExpiredCrls = PropertyTools.get(properties, DatabaseMaintenanceWorker.PROP_DELETE_EXPIRED_CRLS, deleteExpiredCrls);
-        batchSize = PropertyTools.get(properties, DatabaseMaintenanceWorker.PROP_BATCH_SIZE, batchSize);
+        delayTimeValue = PropertyTools.get(properties, DatabaseMaintenanceWorkerConstants.PROP_DELAY_TIMEVALUE, delayTimeValue);
+        delayTimeUnit = properties.getProperty(DatabaseMaintenanceWorkerConstants.PROP_DELAY_TIMEUNIT, delayTimeUnit);
+        deleteExpiredCertificates = PropertyTools.get(properties, DatabaseMaintenanceWorkerConstants.PROP_DELETE_EXPIRED_CERTIFICATES, deleteExpiredCertificates);
+        deleteExpiredCrls = PropertyTools.get(properties, DatabaseMaintenanceWorkerConstants.PROP_DELETE_EXPIRED_CRLS, deleteExpiredCrls);
+        batchSize = PropertyTools.get(properties, DatabaseMaintenanceWorkerConstants.PROP_BATCH_SIZE, batchSize);
     }
 
     public String getDelayTimeUnit() {
