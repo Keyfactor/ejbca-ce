@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
-import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorker;
+import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorkerConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
@@ -67,7 +67,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		for (Integer id : availableServicesIds) {
             ServiceConfiguration serviceConfig = ejb.getServiceSession().getServiceConfiguration(id);
             String serviceName = ejb.getServiceSession().getServiceName(id);
-			if (!isAuthorizedToDbMaintenanceService && DatabaseMaintenanceWorker.class.getName().equals(serviceConfig.getWorkerClassPath())) {
+			if (!isAuthorizedToDbMaintenanceService && DatabaseMaintenanceWorkerConstants.WORKER_CLASS.equals(serviceConfig.getWorkerClassPath())) {
 				continue;
 			}
             String hidden = "";

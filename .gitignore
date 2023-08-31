@@ -1,7 +1,8 @@
 out/
 /p12/
 dist/
-build*/
+build/
+build-*/
 tmp/
 conf/*.properties
 velocity.log
