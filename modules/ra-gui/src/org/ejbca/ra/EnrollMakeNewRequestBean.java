@@ -1708,7 +1708,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public void actionUpdateCsrInfoFields() {
-        String fileName = uploadFile.getName();
+        String fileName = uploadFile.getSubmittedFileName();
 
         csrFileName = fileName;
         byte[] fileContents;

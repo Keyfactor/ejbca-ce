@@ -1408,7 +1408,7 @@ Content-Type: text/html; charset=iso-8859-1
         
         ASN1EncodableVector algVec = new ASN1EncodableVector();
         algVec.add(X9ObjectIdentifiers.ecdsa_with_SHA256);
-        algVec.add(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        algVec.add(PKCSObjectIdentifiers.sha256WithRSAEncryption);
         ASN1Sequence algSeq = new DERSequence(algVec);
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         // RFC 6960: id-pkix-ocsp-pref-sig-algs   OBJECT IDENTIFIER ::= { id-pkix-ocsp 8 } 
@@ -1424,7 +1424,7 @@ Content-Type: text/html; charset=iso-8859-1
         
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
-        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response.getSignatureAlgOID());
+        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response.getSignatureAlgOID());
         
         
         // Try sending a request where the preferred signature algorithm is not compatible with the signing key, but 
@@ -1447,7 +1447,7 @@ Content-Type: text/html; charset=iso-8859-1
         
         response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
-        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response.getSignatureAlgOID());
+        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response.getSignatureAlgOID());
     }
 
     /** This test tests that the OCSP response contains is signed by the preferred signature algorithm specified in the request. */
@@ -1487,7 +1487,7 @@ Content-Type: text/html; charset=iso-8859-1
         Map<String,String> map = new HashMap<>();
         map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         helper.alterConfig(map);
-        final ASN1Sequence preferredSignatureAlgorithms = getPreferredSignatureAlgorithms(X9ObjectIdentifiers.ecdsa_with_SHA256, PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        final ASN1Sequence preferredSignatureAlgorithms = getPreferredSignatureAlgorithms(X9ObjectIdentifiers.ecdsa_with_SHA256, PKCSObjectIdentifiers.sha256WithRSAEncryption);
         final ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
         // RFC 6960: id-pkix-ocsp-pref-sig-algs   OBJECT IDENTIFIER ::= { id-pkix-ocsp 8 } 
         extensionsGenerator.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"), false, preferredSignatureAlgorithms);
@@ -1502,7 +1502,7 @@ Content-Type: text/html; charset=iso-8859-1
         BasicOCSPResp response1 = helper.sendOCSPGet(ocspRequest.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response1);
         // We requested SHA1WithRSA in the request, and it is allowed, so we should expect that.
-        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response1.getSignatureAlgOID());
+        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response1.getSignatureAlgOID());
 
         // Try not requesting any specific algorithm
         ocspReqBuilder = new OCSPReqBuilder();
@@ -1512,8 +1512,8 @@ Content-Type: text/html; charset=iso-8859-1
         log.debug("base64 encoded request: " + new String(Base64.encode(ocspRequest.getEncoded(), false)));
         response1 = helper.sendOCSPGet(ocspRequest.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response1);
-        // We didn't request any specific signature algorithm in the request, so we should expect the first suitable one, SHA256WithRSA.
-        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response1.getSignatureAlgOID());
+        // We didn't request any specific signature algorithm in the request, so we expect the algorithm to be coming from CA.
+        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response1.getSignatureAlgOID());
         
         // Test requesting SHA1WithRSA, but not having that as an available signature algorithm
         map = new HashMap<>();
@@ -1538,7 +1538,7 @@ Content-Type: text/html; charset=iso-8859-1
         log.trace(">testSigAlgExtensionNewMismatch");
         loadUserCert(caid);
         final Map<String,String> map = new HashMap<>();
-        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         helper.alterConfig(map);
         // Try sending a request where the preferred signature algorithm is not compatible with the signing key, but 
         // the configured algorithm is. Expected a response signed using the first configured algorithm
@@ -1555,7 +1555,8 @@ Content-Type: text/html; charset=iso-8859-1
         log.debug("base64 encoded request: " + new String(Base64.encode(ocspRequest.getEncoded(), false)));
         final BasicOCSPResp response2 = helper.sendOCSPGet(ocspRequest.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response2);
-        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response2.getSignatureAlgOID());
+        // CA uses SIGALG_SHA1_WITH_RSA
+        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response2.getSignatureAlgOID());
     }
 
     /** @return a RFC 6960 PreferredSignatureAlgorithms object. */
