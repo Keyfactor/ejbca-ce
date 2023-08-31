@@ -154,7 +154,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                         String errmsg = "EndEntityCertificate authentication module is not configured. For a KeyUpdate request to be authentication in RA mode, EndEntityCertificate " +
                         		"authentication module has to be set and configured";
                         LOG.info(errmsg);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
+                        return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
                     }
                     // Check PKIMessage authentication
                     String authparameter = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, confAlias);
@@ -163,7 +163,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                             endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                     if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
                         LOG.info(LogRedactionUtils.getRedactedMessage(eecmodule.getErrorMessage()));
-                        return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
+                        return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
                     } else {
                         if(LOG.isDebugEnabled()) {
                             LOG.debug("The CMP KeyUpdate request for SubjectDN '" + LogRedactionUtils.getSubjectDnLogSafe(crmfreq.getSubjectDN()) +
@@ -197,7 +197,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                             endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                     if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
                         LOG.info(eecmodule.getErrorMessage());
-                        return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
+                        return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
                     }
                     oldCert = (X509Certificate) eecmodule.getExtraCert();
                     
@@ -208,7 +208,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 if(subjectDN == null) {
                     final String errMsg = "Cannot find a SubjectDN in the request";
                     LOG.info(errMsg);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errMsg);
+                    return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errMsg);
                 }
                 
                 // Find the end entity that the certificate belongs to                
@@ -241,7 +241,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 if(endEntityInformation == null) {
                     final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", LogRedactionUtils.getSubjectDnLogSafe(subjectDN));
                     LOG.info(errMsg);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                    return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                 }
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Found user '" + endEntityInformation.getUsername() + "'");
@@ -259,7 +259,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(errorMessage);
                     }
-                    return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errorMessage);
+                    return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errorMessage);
                 }
                 try {
                     oldCert.checkValidity();
@@ -269,7 +269,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(errorMessage);
                     }
-                    return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errorMessage);
+                    return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errorMessage);
                 } catch(CertificateNotYetValidException e) {
                     //A not yet valid certificate is still valid for update according to the RFC. 
                 }
@@ -309,7 +309,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if(certPublicKey.equals(requestPublicKey)) {
                         final String errMsg = "Invalid key. The public key in the KeyUpdateRequest is the same as the public key in the existing end entity certificate";
                         LOG.info(errMsg);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                        return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                     }
                 }
 
@@ -319,12 +319,12 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 if (resp == null) {
                     final String errMsg = INTRES.getLocalizedMessage("cmp.errornullresp");
                     LOG.info(errMsg);
-                    resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                    resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                 }
             } else {
                 final String errMsg = INTRES.getLocalizedMessage("cmp.errornocmrfreq");
                 LOG.info(errMsg);
-                resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_MESSAGE_CHECK, errMsg);
             }
 
         } catch (AuthorizationDeniedException | CADoesntExistsException | EndEntityProfileValidationException | InvalidAlgorithmException | CAOfflineException | IllegalValidityException | CertificateSerialNumberException
@@ -333,12 +333,12 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 | CertificateRevokeException | NoSuchEndEntityException | EjbcaException | CertificateExtensionException | WaitingForApprovalException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()));
             LOG.info(errMsg, LogRedactionUtils.getRedactedException(e));
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (InvalidKeyException | NoSuchProviderException | NoSuchAlgorithmException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()));
             LOG.info("Error while reading the public key of the extraCert attached to the CMP request");
             LOG.info(errMsg, LogRedactionUtils.getRedactedException(e));
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
         }
 
         if (LOG.isTraceEnabled()) {

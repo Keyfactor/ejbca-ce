@@ -19,18 +19,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
@@ -40,7 +44,15 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
@@ -51,6 +63,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -71,6 +84,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparencyImpl;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -109,7 +124,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Tests creating certificate with extended key usage.
  * 
- * @version $Id$
  */
 public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
@@ -120,16 +134,19 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     private static final String X509CADN = "CN=CertificateCreateSessionTest";
     private CA testx509ca;
 
+    private BlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
     private static CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
-    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private InternalCertificateCreateSessionRemote internalCertificateCreateSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateCreateSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
-    private BlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CertificateCreateSessionTest"));
@@ -174,7 +191,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void test01CodeSigningExtKeyUsage() throws Exception {
+    public void testCodeSigningExtKeyUsage() throws Exception {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         list.add("1.3.6.1.4.1.311.2.1.21"); // MS individual code signing
@@ -214,7 +231,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void test02SSHExtKeyUsage() throws Exception {
+    public void testSSHExtKeyUsage() throws Exception {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         certprof.setExtendedKeyUsage(list);
@@ -397,7 +414,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void test27IssuanceRevocationReason() throws Exception {
+    public void testIssuanceRevocationReason() throws Exception {
 
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         String fp1 = null;
@@ -475,7 +492,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void test38UniqueSubjectDN() throws Exception {
+    public void testUniqueSubjectDN() throws Exception {
         // Make sure that the CA requires unique subject DN
         CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
         boolean enforceuniquesubjectdn = cainfo.isDoEnforceUniqueDistinguishedName();
@@ -565,6 +582,63 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             internalCertStoreSession.removeCertificate(fp1);
             internalCertStoreSession.removeCertificate(fp2);
         }
+    }
+    
+    /**
+     * This is a special case of testing for subject DN uniqueness. When an issuance using CT fails, the end entity is rolled back but the pre-cert remains
+     * in CertificateData table in order to ensure that the serial number doesn't get reused. Normally this is not an issue, unless somebody decides to switch the username
+     * (or the original username was randomly generated and then lost), which nixes this Subject DN for future use, in spite of a certificte never being issued. 
+     */
+    @Test
+    public void testUniqueSubjectDnAgainstCtPrecert() throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateParsingException, IOException {
+        //Create a CAInfo Object with unique subject dn constraint 
+        final String caName = "testUniqueSubjectDnAgainstCtPrecertCa";
+        final String caDn = "CN=" + caName;
+        final String subjectDn = "CN=testUniqueSubjectDnAgainstCtPrecert";
+        
+        final String username1 = "testUniqueSubjectDnAgainstCtPrecert_user1";
+        final String username2 = "testUniqueSubjectDnAgainstCtPrecert_user2";
+
+        // Issuer info
+        final KeyPair caKeyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        //Generate a pre-cert with the poison extension
+        final CertificateTransparency ct = new CertificateTransparencyImpl();
+        final KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final X500Name issuerName = CertTools.stringToBcX500Name(caDn);
+        final X500Name subjectName = CertTools.stringToBcX500Name(subjectDn);
+        final Date notBefore = new GregorianCalendar(2000, 1, 1).getTime();
+        final Date notAfter = new GregorianCalendar(2000, 1, 2).getTime();
+        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(keypair.getPublic().getEncoded());
+
+        // Generate and store a pre-certificate
+        final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerName, new BigInteger("12345678"), notBefore, notAfter,
+                subjectName, pkinfo);
+        ct.addPreCertPoison(certbuilder);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caKeyPair.getPrivate()), 20480);
+        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        final X509Certificate preCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+        final String preCertificateFingerprint = CertTools.getFingerprintAsString(preCertificate);
+        final long now = System.currentTimeMillis();
+        try {
+            //Create the situation where we have a previously failed issuance attempt in CertificateData, but nothing in UserData
+            internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, preCertificate, username1, preCertificateFingerprint,
+                    CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
+                    EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, null, now);
+            //Now let's see if we can enroll for the same subject DN using a different username
+            CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo(caDn, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, null);
+            caInfo.setDoEnforceUniqueDistinguishedName(true);
+            EndEntityInformation endInformation = new EndEntityInformation(username2, subjectDn, 0, null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, 0, null);
+            try {
+                internalCertificateCreateSession.assertSubjectEnforcements(caInfo, endInformation);
+            } catch (CertificateCreateException e) {
+                fail("The existence of a CT Pre-cert triggered a subject DN uniqueness check.");
+            }
+        } finally {
+            internalCertStoreSession.removeCertificatesBySubject(subjectDn);
+        }
+
     }
     
     @Test
