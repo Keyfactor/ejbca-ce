@@ -40,7 +40,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
 import com.keyfactor.util.StringTools;
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 
 /** 
  * 
@@ -73,7 +73,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 		}
 		final int crlPartitionIndex = CrlPartitionIndexGeneratorRandom.INSTANCE.generateCrlPartitionIndex(caInfo);
 		if (log.isDebugEnabled() && caInfo.getUsePartitionedCrl()) {
-            log.debug("Certificate '" + GdprRedactionUtils.getSubjectDnLogSafe(subject.getCertificateDN()) + "' was assigned to CRL partition " + crlPartitionIndex);
+            log.debug("Certificate '" + LogRedactionUtils.getSubjectDnLogSafe(subject.getCertificateDN()) + "' was assigned to CRL partition " + crlPartitionIndex);
         }
 		// Multiple CDPs are separated with the ';' sign        	         	 
 		final ArrayList<DistributionPointName> dpns = new ArrayList<>();
