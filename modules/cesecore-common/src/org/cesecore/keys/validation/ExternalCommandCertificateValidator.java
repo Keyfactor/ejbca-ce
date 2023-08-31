@@ -190,7 +190,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         if (log.isDebugEnabled()) {
             log.debug("Validating certificate with external command: " + getExternalCommand());
         }
-        if (log.isDebugEnabled() && LogRedactionUtils.redactPii()) {
+        if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
             log.debug("Validating certificate with external command (cert):" + certificate);
         }
         // Add CA certificate chain, that may be processed.
