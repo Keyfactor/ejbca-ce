@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.util.approval;
 
-import org.cesecore.util.GdprRedactionUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.approval.ApprovalDataText;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class ApprovalUtil {
 
         for (ApprovalDataText text : texts) {
             if (text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_DN) || text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_ALT_NAME)) {
-                map.put(text.getHeader(), redactPii ? GdprRedactionUtils.REDACTED_CONTENT : text.getData());
+                map.put(text.getHeader(), redactPii ? LogRedactionUtils.REDACTED_CONTENT : text.getData());
             } else {
                 map.put(text.getHeader(), text.getData());
             }
