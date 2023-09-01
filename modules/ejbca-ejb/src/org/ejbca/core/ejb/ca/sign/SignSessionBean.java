@@ -891,7 +891,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     try {
                         publicKey = CvcKeyTools.getECPublicKeyWithParams(publicKey, cvcaCertificate.getPublicKey());
                     } catch (InvalidKeySpecException e) {
-                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate)),
+                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", LogRedactionUtils.getSubjectDnLogSafe(certificate),
                                 LogRedactionUtils.getRedactedMessage(e.getMessage()));
                         log.warn(msg, LogRedactionUtils.getRedactedException(e));
                     }
