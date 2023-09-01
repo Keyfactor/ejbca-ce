@@ -830,7 +830,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                                 //We found a cert that didn't contain the poison extension, i.e. not a pre-cert. 
                                 final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", username,
                                         listUsers(users));
-                                throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
+                                throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, LogRedactionUtils.getRedactedMessage(msg));
                             }
                         }
                     }
