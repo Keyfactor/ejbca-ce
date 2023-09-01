@@ -43,7 +43,6 @@ import javax.inject.Named;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
@@ -58,6 +57,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
@@ -99,23 +99,21 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         private final String name;
         private final int caId;
         private final String subjectdn;
-        private final List<Certificate> certificatechain;
+        private final List<CertificateChainElement> certificatechain;
         private final List<CRLGuiInfo> crlinfo;
         private final CRLInfo deltacrlinfo;
         private final Boolean deltaPeriodEnabled;
         private final Boolean caStatusActive;
-        private final Boolean rootExists;
-        private final boolean showJksDownloadForm[];
+        private final boolean[] showJksDownloadForm;
         private final String caType;
 
-        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<Certificate> certificatechain, final List<CRLGuiInfo> crlinfo,
+        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<CertificateChainElement> certificatechain, final List<CRLGuiInfo> crlinfo,
                          final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive, final String caType) {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
             this.certificatechain = certificatechain != null ? new ArrayList<>(certificatechain) : new ArrayList<>();
             Collections.reverse(this.certificatechain);
-            this.rootExists = this.certificatechain.isEmpty() ? false : isRoot(this.certificatechain.get(0));
             this.crlinfo = crlinfo;
             this.deltacrlinfo = deltacrlinfo;
             this.deltaPeriodEnabled = deltaPeriodEnabled;
@@ -128,8 +126,8 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return name;
         }
 
-        public String getEscapedName() throws UnsupportedEncodingException {
-            return URLEncoder.encode(name, StandardCharsets.UTF_8.toString());
+        public String getEscapedName() {
+            return URLEncoder.encode(name, StandardCharsets.UTF_8);
         }
 
         public int getCaId() {
@@ -140,11 +138,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return subjectdn;
         }
 
-        public String getEscapedSubjectDn() throws UnsupportedEncodingException {
-            return URLEncoder.encode(subjectdn, StandardCharsets.UTF_8.toString());
+        public String getEscapedSubjectDn() {
+            return URLEncoder.encode(subjectdn, StandardCharsets.UTF_8);
         }
 
-        public List<Certificate> getCertificatechain() {
+        public List<CertificateChainElement> getCertificatechain() {
             return certificatechain;
         }
 
@@ -196,10 +194,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return caStatusActive;
         }
 
-        public Boolean getRootExists() {
-            return rootExists;
-        }
-
         public String getCaType() {
             return caType;
         }
@@ -210,6 +204,36 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
         public boolean isCrlSupported() {
             return "X.509".equals(getCaType());
+        }
+
+    }
+
+    public class CertificateChainElement {
+        private final Certificate cert;
+        private final String subjectDN;
+
+        public CertificateChainElement(Certificate cert, String subjectDN) {
+            this.cert = cert;
+            this.subjectDN = subjectDN;
+        }
+
+        public Certificate getCertificate() {
+            return cert;
+        }
+
+        public String getSubjectDN() {
+            return CertTools.getUnescapedRdnValue(subjectDN);
+        }
+
+        public boolean isCertExists() {
+            return Objects.nonNull(cert);
+        }
+
+        public boolean isRoot() {
+            return Objects.nonNull(cert)
+                    && StringUtils.isNotEmpty(CertTools.getIssuerDN(cert))
+                    && StringUtils.isNotEmpty(CertTools.getSubjectDN(cert))
+                    && CertTools.isSelfSigned(cert);
         }
 
     }
@@ -245,8 +269,8 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return subjectDn;
         }
 
-        public String getURLEncodedSubjectDn() throws UnsupportedEncodingException {
-            return URLEncoder.encode(subjectDn, StandardCharsets.UTF_8.toString());
+        public String getURLEncodedSubjectDn() {
+            return URLEncoder.encode(subjectDn, StandardCharsets.UTF_8);
         }
 
         public int getLastCrlNumber() {
@@ -299,16 +323,18 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
             final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(),
-                    cainfo.getCAType() != CAInfo.CATYPE_PROXY ? getCertificateChain(cainfo) : null,
+                    cainfo.getCAType() != CAInfo.CATYPE_PROXY
+                            ? getCertificateChain(cainfo.getCertificateChain())
+                            : null,
                     crlInfos, deltacrlinfo, cainfo.getDeltaCRLPeriod() > 0,
                     cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
             caGuiInfos.add(caGuiInfo);
         }
     }
 
-    private List<Certificate> getCertificateChain(CAInfo cainfo) {
+    private List<CertificateChainElement> getCertificateChain(final List<Certificate> originalChain) {
         final Set<Certificate> missingChainCerts = new HashSet<>();
-        final Set<Certificate> certificates = new HashSet<>(cainfo.getCertificateChain());
+        final Set<Certificate> certificates = new HashSet<>(originalChain);
 
         certificates.stream()
                 .filter(Objects::nonNull)
@@ -321,9 +347,24 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         certificates.addAll(missingChainCerts);
 
         try {
-            return CertTools.createCertChain(certificates);
+
+            List<Certificate> chain = certificates.size() == 1 ? new ArrayList<>(certificates) : CertTools.createCertChain(certificates);
+            final List<CertificateChainElement> uiChain = new ArrayList<>();
+            boolean needToAddAliasToParent = !isRoot(chain.get(chain.size() - 1));
+            chain.forEach(cert -> uiChain.add(new CertificateChainElement(cert, CertTools.getSubjectDN(cert))));
+
+            //Add last because this list will be reverted
+            if (needToAddAliasToParent) {
+                uiChain.add(new CertificateChainElement(null, CertTools.getIssuerDN(chain.get(chain.size() - 1))));
+            }
+            return uiChain;
+
         } catch (Exception e) {
-            return new ArrayList<>(cainfo.getCertificateChain());
+            log.info("Could not build valid chain, displaying original one, size = " + originalChain.size() + ", error = " + e.getMessage());
+            return originalChain
+                    .stream()
+                    .map(cert -> new CertificateChainElement(cert, CertTools.getSubjectDN(cert)))
+                    .collect(Collectors.toList());
         }
     }
 
@@ -331,10 +372,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return StringUtils.isNotEmpty(CertTools.getIssuerDN(certificate))
                 && StringUtils.isNotEmpty(CertTools.getSubjectDN(certificate))
                 && CertTools.isSelfSigned(certificate);
-    }
-
-    public String getUnescapedRdnValue(final Certificate certificate) {
-        return CertTools.getUnescapedRdnValue(CertTools.getSubjectDN(certificate));
     }
 
     public String getCertificatePopupLink(final int caid) {
