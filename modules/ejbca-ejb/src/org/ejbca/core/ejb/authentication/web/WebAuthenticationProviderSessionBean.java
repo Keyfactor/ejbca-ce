@@ -422,7 +422,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         try {
             certificate.checkValidity();
         } catch (Exception e) {
-            logAuthenticationFailure(intres.getLocalizedMessage("authentication.certexpired", LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate)), CertTools.getNotAfter(certificate).toString()));
+            logAuthenticationFailure(intres.getLocalizedMessage("authentication.certexpired", LogRedactionUtils.getSubjectDnLogSafe(certificate), CertTools.getNotAfter(certificate).toString()));
             return null;
         }
         // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
@@ -432,13 +432,13 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             // The certificate is present in the database.
             if (!(status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
                 // The certificate is neither active, nor active (but user is notified of coming revocation)
-                logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate))));
+                logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", LogRedactionUtils.getSubjectDnLogSafe(certificate)));
                 return null;
             }
         } else {
             // The certificate is not present in the database.
             if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate))));
+                logAuthenticationFailure(intres.getLocalizedMessage("authentication.revokedormissing", LogRedactionUtils.getSubjectDnLogSafe(certificate)));
                 return null;
             }
             // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status

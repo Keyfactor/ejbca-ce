@@ -360,7 +360,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         final UserDataVOWS userData = getUserDataVOWS(ejbcaWS, ocspSigningCertificate, caId);
         if (userData == null) {
             final String msg = "User data for certificate with subject DN '" +
-                    LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(ocspSigningCertificate)) + "' was not found.";
+                    LogRedactionUtils.getSubjectDnLogSafe(ocspSigningCertificate) + "' was not found.";
             log.error(msg);
             throw new KeyRenewalFailedException(msg);
         }
@@ -405,7 +405,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         final PublicKey caCertificatePublicKey = caCertificate.getPublicKey();
         for (X509Certificate certificate : certificates) {
             if (log.isDebugEnabled()) {
-                log.debug("Verifying certificate with SubjectDN : '" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate)) +
+                log.debug("Verifying certificate with SubjectDN : '" + LogRedactionUtils.getSubjectDnLogSafe(certificate) +
                         "' using public key from CA certificate with subject '" + CertTools.getSubjectDN(caCertificate) +"'.");
             }
             try {
