@@ -422,7 +422,7 @@ public class CertificateRestResponseV2 {
             return this;
         }
 
-        public CertificateRestResponseBuilderV2 setInvalidityDate(Long millis) {
+        public CertificateRestResponseBuilderV2 setInvalidityDate(long millis) {
             this.invalidityDate = millis;
             return this;
         }
