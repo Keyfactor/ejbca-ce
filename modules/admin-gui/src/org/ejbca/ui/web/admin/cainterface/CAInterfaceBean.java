@@ -889,7 +889,7 @@ public class CAInterfaceBean implements Serializable {
         } else {
             //Only positive relative times allowed.
             try {
-                if (SimpleTime.parseMillies(validityString) <= 0) {
+                if (SimpleTime.parseMillis(validityString) <= 0) {
                     return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND");
                 }
             } catch (NumberFormatException e) {

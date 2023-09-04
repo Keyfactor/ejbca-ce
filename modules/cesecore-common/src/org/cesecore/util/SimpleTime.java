@@ -111,7 +111,7 @@ public class SimpleTime {
 	 * @throws Exception if unable to parse a String
 	 */
 	private SimpleTime(String time) throws Exception {
-	    setTime(parseMillies(time));
+	    setTime(parseMillis(time));
 	}
 
 	/**
@@ -123,7 +123,7 @@ public class SimpleTime {
 		if (time == null || time.trim().length()==0) {
 			time = defaultTime;
 		}
-		setTime(parseMillies(time));
+		setTime(parseMillis(time));
 	}
 	
 	/**
@@ -234,7 +234,7 @@ public class SimpleTime {
         return SimpleTime.getMilliSecondsFormat().format(millis, MILLISECONDS_FACTOR, zeroType);
     }
     
-    public static final long parseMillies(String time) throws NumberFormatException {
+    public static final long parseMillis(String time) throws NumberFormatException {
         return SimpleTime.getMilliSecondsFormat().parseMillis(time);
     }
     
