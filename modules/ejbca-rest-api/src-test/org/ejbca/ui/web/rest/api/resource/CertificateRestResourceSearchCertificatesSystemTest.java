@@ -867,7 +867,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final String username = "revokedInvalidityDateTestUser";
         final X509Certificate certificate = createCertificate(username, "CN=" + username);
         certificates.add(certificate);
-        CaTestUtils.allowInvalidityDate(INTERNAL_ADMIN_TOKEN, TEST_CA_NAME, true);
+        CaTestUtils.setAllowInvalidityDate(INTERNAL_ADMIN_TOKEN, TEST_CA_NAME, true);
         setCertificateRevokeStatus(certificate, new Date(), new Date(expectedInvalidityDateTimestamp), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 
         //when
