@@ -127,7 +127,7 @@ public class CertificateRestResource extends BaseRestResource {
                     authenticationToken,
                     EnrollCertificateRestRequest.converter().toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest)
             );
-            final X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
             final List<Certificate> certificateChain = enrollCertificateRestRequest.getIncludeChain()
                     ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest.getCertificateAuthorityName())
                     .stream()
