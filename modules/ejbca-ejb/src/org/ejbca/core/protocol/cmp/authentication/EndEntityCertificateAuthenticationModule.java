@@ -891,12 +891,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         } catch (CertPathValidatorException e) {
             this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid - " + getCertPathValidatorExceptionMessage(e);
             if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + ": SubjectDN=" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(endentitycert)));
+                log.debug(this.errorMessage + ": SubjectDN=" + LogRedactionUtils.getSubjectDnLogSafe(endentitycert));
             }
         } catch (CertPathBuilderException e) {
             this.errorMessage = "The certificate chain attached to the PKIMessage in the extraCert field is not valid - " + e.getMessage();
             if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + ": SubjectDN=" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(endentitycert)));
+                log.debug(this.errorMessage + ": SubjectDN=" + LogRedactionUtils.getSubjectDnLogSafe(endentitycert));
             }
             log.warn("CertPathBuilderException", e);
         } catch (NoSuchProviderException e) {
