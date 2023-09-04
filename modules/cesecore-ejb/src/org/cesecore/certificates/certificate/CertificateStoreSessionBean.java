@@ -865,7 +865,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // First make a DN in our well-known format
         final String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
         if (log.isDebugEnabled()) {
-            log.debug("Looking for cert with (transformed)DN: " + dn);
+            log.debug("Looking for cert with (transformed)DN: " + LogRedactionUtils.getSubjectDnLogSafe(dn));
         }
         final Collection<CertificateData> coll = certificateDataSession.findByIssuerDNSerialNumber(dn, serno);
         Certificate ret = null;
@@ -898,7 +898,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
         final List<CertificateData> certs = certificateDataSession.findByIssuerDNSerialNumber(dn, serno.toString());
         if (log.isDebugEnabled()) {
-            log.debug("Found "+certs.size()+" cert(s) with (transformed) DN: " + dn + " serialNumber: " + serno.toString());
+            log.debug("Found "+certs.size()+" cert(s) with (transformed) DN: " + LogRedactionUtils.getSubjectDnLogSafe(dn) + " serialNumber: " + serno.toString());
         }
         if (certs.size() > 1) {
             log.error(INTRES.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16)));
@@ -1378,9 +1378,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      * */
     @SuppressWarnings("unchecked")
     private List<CertificateData> findAllNonRevokedCertificates(String issuerDN, int firstResult, int maxRows) {
-        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status <> :status");
+        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status  NOT IN (:statusExcluded) AND " +
+                " a.expireDate > :currentTime");
         query.setParameter("issuerDN", issuerDN);
-        query.setParameter("status", CertificateConstants.CERT_REVOKED);
+        query.setParameter("statusExcluded", Arrays.asList(CertificateConstants.CERT_ARCHIVED, CertificateConstants.CERT_REVOKED));
+        query.setParameter("currentTime", System.currentTimeMillis());
         query.setFirstResult(firstResult);
         query.setMaxResults(maxRows);
         return query.getResultList();

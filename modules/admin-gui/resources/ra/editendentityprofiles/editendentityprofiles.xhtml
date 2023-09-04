@@ -44,8 +44,8 @@
 				    	<h:column>  
 							<h:commandButton 
 								id="editButton" 
-								action="#{endEntityProfilesMBean.actionEdit}" 
-								value="#{web.text.EDITENDENTITYPROFILE}" 
+								action="#{endEntityProfilesMBean.actionEdit}"
+								value="#{endEntityProfilesMBean.authorizedToEdit ? web.text.EDITENDENTITYPROFILE : web.text.VIEWENDENTITYPROFILE}"
 								rendered="#{not endEntityProfilesMBean.deleteInProgress}"/>
 						</h:column>
                         <h:column>
