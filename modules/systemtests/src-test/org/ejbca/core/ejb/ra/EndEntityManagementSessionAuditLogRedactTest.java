@@ -106,7 +106,7 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         
-        setRedactEnfoced(false);
+        setRedactEnforced(false);
         EndEntityProfile profile = new EndEntityProfile();
         profile.removeField(DnComponents.COMMONNAME, 0);
         profile.addField(DnComponents.COMMONNAME);
@@ -165,7 +165,7 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
         
     }
     
-    private static void setRedactEnfoced(boolean enforceRedaction) throws Exception {
+    private static void setRedactEnforced(boolean enforceRedaction) throws Exception {
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration)
                 globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
        globalCesecoreConfiguration.setRedactPiiEnforced(enforceRedaction);
@@ -184,21 +184,21 @@ public class EndEntityManagementSessionAuditLogRedactTest extends CaTestCase {
     
     @Test
     public void testRedactEndEntityRedactEnforced() throws Exception {
-        setRedactEnfoced(true);
+        setRedactEnforced(true);
         try {
             testRedactEndEntity(redactedEepId, true);
         } finally {
-            setRedactEnfoced(false);
+            setRedactEnforced(false);
         }
     }
     
     @Test
     public void testNonRedactEndEntityRedactEnforced() throws Exception {
-        setRedactEnfoced(true);
+        setRedactEnforced(true);
         try {
             testRedactEndEntity(nonRedactedEepId, true);
         } finally {
-            setRedactEnfoced(false);
+            setRedactEnforced(false);
         }
     } 
     

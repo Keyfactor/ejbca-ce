@@ -360,8 +360,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         
         if (log.isTraceEnabled()) {
-            log.trace(">addUser(" + endEntity.getUsername() + ", password, " + endEntity.getDN() + ", " + originalDN + ", " + endEntity.getSubjectAltName()
-                    + ", " + endEntity.getEmail() + ", profileId: " + endEntityProfileId + ")");
+            log.trace(">addUser(" + endEntity.getUsername() + ", password, " + endEntity.getLogSafeSubjectDn() + ", " + originalDN + ", "
+                    + endEntity.getLogSafeSubjectAltName() + ", " + endEntity.getEmail() + ", profileId: " + endEntityProfileId + ")");
         }
 
         final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
@@ -373,11 +373,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         try {
             altName =  RFC4683Tools.generateSimForInternalSanFormat(altName);
         } catch(Exception e) {
-            log.info("Could not generate SIM string for SAN: " + altName, e);
-            throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: " + e.getMessage(), e);
+            log.info("Could not generate SIM string for SAN: " + endEntity.getLogSafeSubjectAltName(),
+                    LogRedactionUtils.getRedactedException(e, endEntityProfileId));
+            throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: "
+                    + LogRedactionUtils.getRedactedMessage(e.getMessage(), endEntityProfileId),
+                    LogRedactionUtils.getRedactedException(e, endEntityProfileId));
         }
         if (log.isTraceEnabled()) {
-            log.trace("addUser(calculated SIM: " + altName + ")");
+            log.trace("addUser(calculated SIM: " + LogRedactionUtils.getSubjectAltNameLogSafe(altName, endEntityProfileId) + ")");
         }
         final String email = endEntity.getEmail();
         final EndEntityType type = endEntity.getType();
@@ -433,7 +436,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                                         LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileName), e.getMessage()))
                                 .build()
                 );
-                throw e;
+                throw LogRedactionUtils.getRedactedException(e, endEntityProfileId);
             }
         }
         // Get CAInfo, to be able to read configuration
@@ -466,7 +469,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 CABase.checkNameConstraints(caCert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
                 e.setErrorCode(ErrorCode.NAMECONSTRAINT_VIOLATION);
-                throw e;
+                throw LogRedactionUtils.getRedactedException(e, endEntityProfileId);
             }
         }
         
@@ -573,19 +576,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw e;
             } catch (Exception e) {
                 final String msg = intres.getLocalizedMessage("ra.erroraddentity", username);
-                log.error(msg, e);
+                log.error(msg, LogRedactionUtils.getRedactedException(e, endEntityProfileId));
                 logAuditEvent(
                         EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE,
                         authenticationToken, caId, null, username,
                         SecurityEventProperties.builder().withMsg(msg).withError(e.getMessage(), endEntityProfileId).build()
                 );
-                throw new EJBException(e);
+                throw new EJBException(LogRedactionUtils.getRedactedException(e, endEntityProfileId));
             }
         } else if (log.isDebugEnabled()) {
             log.debug("User storage disabled on CA '"+caInfo.getName()+"', user with username '"+username+"' is not stored.");
         }
         if (log.isTraceEnabled()) {
-            log.trace("<addUser(" + username + ", password, " + dn + ", " + email + ")");
+            log.trace("<addUser(" + username + ", password, " + LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId) + ", " + email + ")");
         }
         return endEntity;
     }
@@ -622,7 +625,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private boolean isSubjectDnSerialnumberUnique(final int caId, final String subjectDN, final String username) {
         final String serialnumber = CertTools.getPartFromDN(subjectDN, "SN");
         if (log.isDebugEnabled()) {
-            log.debug("subjectDN=" + subjectDN + " extracted SN=" + serialnumber);
+            log.debug("subjectDN=" + LogRedactionUtils.getSubjectDnLogSafe(subjectDN)+ " extracted SN=" + serialnumber);
         }
         // We treat the lack of a serialnumber field as unique
         if (serialnumber == null) {
@@ -863,16 +866,20 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         String dn = CertTools.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
         String altName = endEntityInformation.getSubjectAltName();
         if (log.isTraceEnabled()) {
-            log.trace(">changeUser(" + username + ", " + dn + ", " + endEntityInformation.getEmail() + ")");
+            log.trace(">changeUser(" + username + ", " + LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId) + ", "
+                    + endEntityInformation.getEmail() + ")");
         }
         try {
             altName =  RFC4683Tools.generateSimForInternalSanFormat(altName);
         } catch(Exception e) {
-             log.info("Could not generate SIM string for SAN: " + altName, e);
-             throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: " + e.getMessage(), e);
+             log.info("Could not generate SIM string for SAN: " + LogRedactionUtils.getSubjectAltNameLogSafe(altName, endEntityProfileId),
+                    LogRedactionUtils.getRedactedException(e));
+             throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: "
+                    + LogRedactionUtils.getRedactedMessage(e.getMessage(), endEntityProfileId),
+                    LogRedactionUtils.getRedactedException(e, endEntityProfileId));
         }
         if (log.isTraceEnabled()) {
-            log.trace(">changeUser(calculated SIM: " + altName + ")");
+            log.trace(">changeUser(calculated SIM: " + LogRedactionUtils.getSubjectAltNameLogSafe(altName, endEntityProfileId) + ")");
         }
         UserData userData = endEntityAccessSession.findByUsername(username);
         if (userData == null) {
@@ -899,7 +906,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
+                    log.debug("Invalid Subject DN when merging '" + LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId) + "' with '"
+                            + LogRedactionUtils.getSubjectAltNameLogSafe(userData.getSubjectDnNeverNull(), endEntityProfileId)
+                            + "'. Setting it to empty. Exception was: " + LogRedactionUtils.getRedactedMessage(e.getMessage()));
                 }
                 dn = "";
             }
@@ -916,7 +925,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 altName = EndEntityInformationFiller.getDnEntriesUniqueOnly(altName, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME);
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
+                    log.debug("Invalid Subject AN when merging '" + LogRedactionUtils.getSubjectAltNameLogSafe(altName, endEntityProfileId)
+                    + "' with '" + userData.getSubjectAltNameNeverNull() + "'. Setting it to empty. Exception was: "
+                    + LogRedactionUtils.getRedactedMessage(e.getMessage()));
                 }
                 altName = "";
             }
@@ -968,7 +979,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                                         LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId), e.getMessage()))
                                 .build()
                 );
-                throw e;
+                throw LogRedactionUtils.getRedactedException(e);
             }
         }
         // Check name constraints
@@ -1001,7 +1012,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 CABase.checkNameConstraints(cacert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
                 e.setErrorCode(ErrorCode.NAMECONSTRAINT_VIOLATION);
-                throw e;
+                throw LogRedactionUtils.getRedactedException(e, endEntityProfileId);
             }
         }
         if(!force) {
@@ -1168,11 +1179,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             .withError(e.getMessage(), endEntityProfileId) // uses updated end entity profile value
                             .build()
             );
-            log.error("ChangeUser:", e);
-            throw new EJBException(e);
+            log.error("ChangeUser:", LogRedactionUtils.getRedactedException(e, endEntityProfileId));
+            throw new EJBException(LogRedactionUtils.getRedactedException(e, endEntityProfileId));
         }
         if (log.isTraceEnabled()) {
-            log.trace("<changeUser(" + username + ", password, " + dn + ", " + endEntityInformation.getEmail() + ")");
+            log.trace("<changeUser(" + username + ", password, " + LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId) + ", "
+                    + endEntityInformation.getEmail() + ")");
         }
     }
 
@@ -1417,7 +1429,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (StringUtils.trimToNull(oldValue) == null && StringUtils.trimToNull(newValue) == null) {
                 continue;
             }
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
                 log.debug("Key " + entry.getKey() + " has changed from '" + oldValue + "' to '" + newValue + "'. Will update end-entity");
             }
             changeMode = UserDataChangeMode.IF_NO_CONFLICT;
@@ -1673,7 +1685,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             authenticationToken.toString(), String.valueOf(caId), null, username,
                             intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileId, dn, e.getMessage())
                     );
-                    throw e;
+                    throw LogRedactionUtils.getRedactedException(e, endEntityProfileId);
                 }
             }
             // Check if administrator is authorized to edit user.
@@ -2095,7 +2107,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     if (invalidityDate != null && !(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
                         invalidityDate = new Date(certificateData.getInvalidityDate());
                         final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
-                        log.info(msg);;
+                        log.info(msg);
                         throw new AlreadyRevokedException(msg);
                     }
                 }
@@ -2103,7 +2115,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     revocationDate = new Date(certificateData.getRevocationDate());
                     if (!cainfo.isAllowInvalidityDate()) {
                         final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
-                        log.info(msg);;
+                        log.info(msg);
                         throw new AlreadyRevokedException(msg);
                     }
                 }

@@ -182,6 +182,7 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
@@ -960,7 +961,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             ocspRequest = new OCSPReq(request);
         } catch (IOException e) {
-            throw new MalformedRequestException("Could not form OCSP request", e);
+            throw new MalformedRequestException("Could not form OCSP request", LogRedactionUtils.getRedactedException(e));
         }
         if (ocspRequest.getRequestorName() == null) {
             if (log.isDebugEnabled()) {
@@ -971,11 +972,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 final X500Name requestorDirectoryName = (X500Name) ocspRequest.getRequestorName().getName();
                 final String requestor = CertTools.stringToBCDNString(requestorDirectoryName.toString());
                 final String requestorRaw = GeneralName.directoryName + ": " + X500Name.getInstance(CeSecoreNameStyle.INSTANCE, requestorDirectoryName).toString();
-                if (transactionLogger.isEnabled()) {
+                if (transactionLogger.isEnabled() && !LogRedactionUtils.redactPii()) {
                     transactionLogger.paramPut(TransactionLogger.REQ_NAME, requestor);
                     transactionLogger.paramPut(TransactionLogger.REQ_NAME_RAW, requestorRaw);
                 }
-                if (log.isDebugEnabled()) {
+                if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
                     log.debug("Requestor name is: '" + requestor + "' Raw: '" + requestorRaw + "'");
                 }
             }
@@ -1914,7 +1915,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 try {
                     responseExtensions.put(extendedRevokedOID, new Extension(extendedRevokedOID, false, DERNull.INSTANCE.getEncoded() ));
                 } catch (IOException e) {
-                    throw new IllegalStateException("Could not get encoding from DERNull.", e);
+                    throw new IllegalStateException("Could not get encoding from DERNull.", LogRedactionUtils.getRedactedException(e));
                 }
             }
             if (ocspSigningCacheEntry != null) {
@@ -1988,7 +1989,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
             String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
-            log.info(errMsg); // No need to log the full exception here
+            log.info(LogRedactionUtils.getRedactedMessage(errMsg)); // No need to log the full exception here
             // RFC 2560: responseBytes are not set on error.
             ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
             if (!isPreSigning && transactionLogger.isEnabled()) {
@@ -2038,7 +2039,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         } catch (IOException e) {
-            log.error("Unexpected IOException caught.", e);
+            log.error("Unexpected IOException caught.", LogRedactionUtils.getRedactedException(e));
             if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.writeln();
                 transactionLogger.flush();
@@ -2125,7 +2126,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         } catch (final IOException e) {
-            throw new IllegalStateException("An error occurred when constructing the id-pkix-ocsp-archive-cutoff extension.", e);
+            throw new IllegalStateException("An error occurred when constructing the id-pkix-ocsp-archive-cutoff extension.",
+                    LogRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -2326,10 +2328,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             req = gen.build();
             getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true, issueFinalResponse, includeExpiredCertificates);
         } catch (Throwable e) {
-            final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+            final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", LogRedactionUtils.getRedactedMessage(e.getMessage()));
             log.info(errMsg);
             if (log.isDebugEnabled()) {
-                log.debug(errMsg, e);
+                log.debug(errMsg, LogRedactionUtils.getRedactedThrowable(e));
             }
         }
         
@@ -2597,7 +2599,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     createInternalKeyBindings(authenticationToken, p11CryptoTokenId, cachingKeyStoreWrapper.getKeyStore(), trustDefaults);
                 }
             } catch (Exception e) {
-                log.error("", e);
+                log.error("", LogRedactionUtils.getRedactedException(e));
             }
         }
         if (OcspConfiguration.getSoftKeyDirectoryName() != null && (OcspConfiguration.getStorePassword() != null || activationPassword != null)) {
@@ -2643,7 +2645,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             keyStore = makeKeysOnlyP12(keyStore, passwordChars);
         } catch (Exception e) {
-            throw new RuntimeException("failed to convert keystore to P12 during keybindings upgrade", e);
+            throw new RuntimeException("failed to convert keystore to P12 during keybindings upgrade", LogRedactionUtils.getRedactedException(e));
         }
         
         final String name = file.getName();
@@ -2834,7 +2836,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             
                         } catch (CertificateEncodingException e) {
-                           throw new IllegalStateException("Could not process certificate", e);
+                           throw new IllegalStateException("Could not process certificate", LogRedactionUtils.getRedactedException(e));
                         }
                     }                    
                 } else {
