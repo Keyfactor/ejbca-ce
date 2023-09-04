@@ -253,7 +253,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 useEI = true;
             } catch (ParseException e) {
                 log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \""
-                        + userData.getSubjectDN() + "\"");
+                        + LogRedactionUtils.getSubjectDnLogSafe(userData.getSubjectDN()) + "\"");
                 throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime.");
             }
         }
@@ -596,14 +596,16 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         } catch (CertificateNotYetValidException e) {
             // If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request
             if (log.isDebugEnabled()) {
-                log.debug("Certificate we try to verify outer signature with is not yet valid. SubjectDN: " + CertTools.getSubjectDN(cert));
+                log.debug("Certificate we try to verify outer signature with is not yet valid. SubjectDN: "
+                        + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(cert)));
             }
-            throw e;
+            throw LogRedactionUtils.getRedactedException(e);
         } catch (CertificateExpiredException e) {
             if (log.isDebugEnabled()) {
-                log.debug("Certificate we try to verify outer signature with has expired. SubjectDN: " + CertTools.getSubjectDN(cert));
+                log.debug("Certificate we try to verify outer signature with has expired. SubjectDN: "
+                        + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(cert)));
             }
-            throw e;
+            throw LogRedactionUtils.getRedactedException(e);
         }
     }
 
