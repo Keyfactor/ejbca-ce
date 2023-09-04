@@ -27,11 +27,9 @@ import com.keyfactor.util.certificate.DnComponents;
 /** 
  * UI representation of a certificate preview to be confirmed before enrollment.
  * 
- * @version $Id$
  */
 public class RaRequestPreview {
     
-    //private static final Logger log = Logger.getLogger(RaRequestPreview.class);
     private String issuerDn = "";
     private String subjectDn = "";
     private String publicKeyAlgorithm = "";

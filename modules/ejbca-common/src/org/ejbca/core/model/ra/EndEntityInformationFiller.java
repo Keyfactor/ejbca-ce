@@ -32,15 +32,15 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
-/** This class gives facilities to populate user data with default values from profile.
- *
- * @version $Id: EndEntityInformationFiller.java 34943 2020-04-29 12:12:05Z anatom $
+/**
+ * This class gives facilities to populate user data with default values from profile.
  */
 public class EndEntityInformationFiller {
 
@@ -420,7 +420,8 @@ public class EndEntityInformationFiller {
         String mergedDn = result.toString();
         mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
         mergedDn = unEscapeSpecialChars(mergedDn);
-        log.debug("merged dn: " + mergedDn);
+
+        log.debug("merged dn: " + LogRedactionUtils.getSubjectDnLogSafe(mergedDn));
         
         return mergedDn;
     }
@@ -445,7 +446,8 @@ public class EndEntityInformationFiller {
         String mergedDn = result.toString();
         mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
         mergedDn = unEscapeSpecialChars(mergedDn);
-        log.debug("merged dn: " + mergedDn);
+
+        log.debug("merged dn: " + LogRedactionUtils.getSubjectDnLogSafe(mergedDn));
         
         return mergedDn;
     }

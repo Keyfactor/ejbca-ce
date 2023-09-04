@@ -44,7 +44,6 @@ import com.keyfactor.util.CertTools;
 /**
  * A very simple error message, no protection, or PBE protection
  *
- * @version $Id$
  */
 public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseMessage {
 
@@ -135,7 +134,9 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)));
 		}
 		PKIBody myPKIBody = null;
-		log.debug("Create error message from requestType: "+requestType);
+		if (log.isDebugEnabled()) {
+		    log.debug("Create error message from requestType: " + requestType);
+		}
 		if (requestType==0 || requestType==2) {
 			myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIStatusInfo, requestId, requestType);
 		} else {

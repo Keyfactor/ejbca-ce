@@ -283,7 +283,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         String key = alias + "." + CONFIG_AUTHENTICATIONMODULE;
         setValue(key, authModule, alias);
     }
-    public void setAuthenticationProperties(String alias, ArrayList<String> authmodules, ArrayList<String> authparams) {
+    public void setAuthenticationProperties(String alias, List<String> authmodules, List<String> authparams) {
         if(authmodules.isEmpty()) {
             if(log.isDebugEnabled()) {
                 log.debug("Did not update CMP Authentication modules or parameters because no Authentication module was specified");
@@ -319,7 +319,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         setValue(key, getEncryptedValue(authParams), alias);
     }
     
-    public void setAuthenticationParameters(String alias, ArrayList<String> authparameters) {
+    public void setAuthenticationParameters(String alias, List<String> authparameters) {
         String authparam = "";
         for (String p : authparameters) {
             authparam += ";" + p;

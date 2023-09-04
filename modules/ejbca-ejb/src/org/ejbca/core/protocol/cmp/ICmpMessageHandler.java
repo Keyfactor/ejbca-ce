@@ -18,7 +18,6 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 /**
  * Interface for message handler handling a specific CMP message
  * @author tomas
- * @version $Id$
  */
 public interface ICmpMessageHandler {
 	

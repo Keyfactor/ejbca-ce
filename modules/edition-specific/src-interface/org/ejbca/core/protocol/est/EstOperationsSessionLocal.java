@@ -24,9 +24,6 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
-/**
- * @version $Id$
- */
 @Local
 public interface EstOperationsSessionLocal extends EstOperationsSession {
 

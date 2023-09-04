@@ -30,6 +30,7 @@ import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -42,6 +43,7 @@ import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
 
 import com.keyfactor.util.CertTools;
+import org.cesecore.util.LogRedactionUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -208,16 +210,20 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                 X509CertificateAuthenticationToken x509Token = (X509CertificateAuthenticationToken) authenticationToken;
                 if(!x509Token.getNestedAuthenticationTokens().isEmpty()) {
                     Certificate certificate = x509Token.getCertificate();
-                    final int status = 
-                            certificateStoreSession.getFirstStatusByIssuerAndSerno(
-                                    CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+                    final int status = certificateStoreSession.getFirstStatusByIssuerAndSerno(CertTools.getIssuerDN(certificate),
+                                                                                              CertTools.getSerialNumber(certificate));
                     if (status != -1) {
                         // The certificate is present in the database.
                         if (!(status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
                             // The certificate is neither active, nor active (but user is notified of coming revocation)
                             // authentication token is created in RA/VA with web.reqcertinddb = false 
                             // but authorization is fetched from CA where the certificate is stored
-                            log.error("Authentication Certificate is revoked or expired: " + CertTools.getSubjectDN(certificate));
+
+                            final Integer eepId = getCertificateDataByCertificate(certificate).getEndEntityProfileId();
+                            final String redactedSubjectDN = LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(certificate), eepId);
+
+                            log.error("Authentication Certificate is revoked or expired: " + redactedSubjectDN);
+
                             return new AuthorizationResult(new HashMap<String, Boolean>(), accessTreeUpdateSession.getAccessTreeUpdateNumber());
                         }
                     }
@@ -323,5 +329,16 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             log.error(e.getMessage(), e);
             throw new AuditRecordStorageException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Return the CertificateData of a given certificate.
+     *
+     * @param certificate   Certificate
+     * @return  Relevant CertificateData
+     */
+    private CertificateData getCertificateDataByCertificate(Certificate certificate) {
+        return certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(certificate))
+                                      .getCertificateData();
     }
 }

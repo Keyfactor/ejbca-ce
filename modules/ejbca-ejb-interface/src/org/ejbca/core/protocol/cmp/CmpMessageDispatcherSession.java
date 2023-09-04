@@ -12,8 +12,5 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-/**
- * @version $Id$
- */
 public interface CmpMessageDispatcherSession {
 }

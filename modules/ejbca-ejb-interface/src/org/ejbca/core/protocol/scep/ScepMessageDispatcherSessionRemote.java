@@ -15,11 +15,7 @@ package org.ejbca.core.protocol.scep;
 
 import javax.ejb.Remote;
 
-/**
- * 
- * @version $Id$
- *
- */
+
 @Remote
 public interface ScepMessageDispatcherSessionRemote extends ScepMessageDispatcherSession {
 

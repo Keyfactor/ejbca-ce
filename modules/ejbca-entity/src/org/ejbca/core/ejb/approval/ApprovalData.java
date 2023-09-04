@@ -40,8 +40,6 @@ import com.keyfactor.util.Base64;
 
 /**
  * Representation of approval request data used to control request and their approvals.
- * 
- * @version $Id$
  */
 @Entity
 @Table(name="ApprovalData")
@@ -68,9 +66,6 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private int rowVersion = 0;
 	private String rowProtection;
 		
-
-	
-
     /**
 	 * Entity holding data of a approval data.
 	 * 
@@ -80,7 +75,9 @@ public class ApprovalData extends ProtectedData implements Serializable {
 		setId(id);
 		setStatus(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);        
 		setRequestdate(System.currentTimeMillis());
-		log.debug("Created approval with ID " + id);
+		if (log.isDebugEnabled()) {
+		    log.debug("Created approval with ID " + id);
+		}
 	}
 
 	public ApprovalData() { 
