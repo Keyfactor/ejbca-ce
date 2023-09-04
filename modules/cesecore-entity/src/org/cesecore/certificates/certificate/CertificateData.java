@@ -38,6 +38,7 @@ import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SshCertificateUtils;
 
 import com.keyfactor.util.Base64;
@@ -176,9 +177,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
             } else if (certificate.getType().equalsIgnoreCase(SshCertificate.CERTIFICATE_TYPE)) {
                 setSubjectAltName(SshCertificateUtils.createSanForStorage((SshCertificate) certificate));
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Creating CertificateData, subjectDN=" + getSubjectDnNeverNull() + ", subjectAltName=" + getSubjectAltNameNeverNull() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp+", storeSubjectAltName="+storeSubjectAltName);
-            }
             setSerialNumber(CertTools.getSerialNumber(certificate).toString());
 
             setUsername(username);
@@ -200,6 +198,9 @@ public class CertificateData extends BaseCertificateData implements Serializable
             setCertificateProfileId(certprofileid);
             setEndEntityProfileId(endEntityProfileId);
             setCrlPartitionIndex(crlPartitionIndex);
+            if (log.isDebugEnabled()) {
+                log.debug("Creating CertificateData, subjectDN=" + getLogSafeSubjectDn()  + ", subjectAltName=" + getLogSafeSubjectAltName() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp+", storeSubjectAltName="+storeSubjectAltName);
+            }
             // Create a key identifier
             PublicKey pubk = certificate.getPublicKey();
             if (enrichedpubkey != null) {
@@ -307,6 +308,15 @@ public class CertificateData extends BaseCertificateData implements Serializable
     public String getSubjectAltNameNeverNull() {
         final String subjectAltName = getSubjectAltName();
         return subjectAltName == null ? "" : subjectAltName;
+    }
+    
+    @Transient
+    public String getLogSafeSubjectAltName() {
+        if (endEntityProfileId != null) {
+            return LogRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull(), endEntityProfileId);
+        } else {
+            return LogRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull());
+        }
     }
 
     @Override

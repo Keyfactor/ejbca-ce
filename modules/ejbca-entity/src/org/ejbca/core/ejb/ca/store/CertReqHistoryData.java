@@ -42,6 +42,7 @@ import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -56,8 +57,6 @@ import com.keyfactor.util.StringTools;
  * the information is currently used to:
  * - list request history for a user
  * - find issuing User DN (EndEntityInformation) when republishing a certificate (in case the userDN for the user changed)
- * 
- * @version $Id$
  */ 
 @SuppressWarnings("deprecation")
 @Entity
@@ -102,11 +101,10 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 			try (final XMLEncoder encoder = new XMLEncoder(baos)) {
 			    encoder.writeObject(endEntityInformation);
 			}
-			final String s = baos.toString("UTF-8");
 			if (log.isDebugEnabled()) {
-				log.debug(printEndEntityInformationXML("endEntityInformation:",s));
+			    log.debug(printEndEntityInformationXML("endEntityInformation:", endEntityInformation));
 			}
-			setUserDataVO(s);
+			setUserDataVO(baos.toString("UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			log.error("", e);
 			throw new RuntimeException(e);    	                                              
@@ -304,9 +302,11 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 					throw new NotPossibleToFixXML();
 				}
 				storeEndEntityInformation(endEntityInformation); // store it right so it does not have to be repaired again.
+				// Old and most probably unused code. Do not redact here. 
 				log.warn(printEndEntityInformationXML("XML has been repaired. Trailing tags fixed. DB updated with correct XML.", sXML));
 				return endEntityInformation;
 			} catch ( NotPossibleToFixXML e ) {
+			    // Old and most probably unused code. Do not redact here.
 				log.error(printEndEntityInformationXML("Not possible to decode EndEntityInformation. No way to fix the XML.", sXML), t);
 				return null;
 			}
@@ -322,11 +322,13 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 		 */
 		return endEntityInformation;
 	}
+    
 	private String printEndEntityInformationXML(String sComment, String sXML) {
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new PrintWriter(sw);
 		pw.println(sComment);
 		pw.println("XMLDATA start on next line:");
+		// Nothing to redact in the XML data.
 		pw.print(sXML);
 		pw.println("| end of XMLDATA. The char before '|' was the last XML.");
 		pw.println();
@@ -337,6 +339,29 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 		pw.println();
 		return sw.toString();
 	}
+	
+	private String printEndEntityInformationXML(final String sComment, final EndEntityInformation endEntityInformation) throws UnsupportedEncodingException {
+        
+        final EndEntityInformation eeiToLog;
+        if (LogRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+            eeiToLog = new EndEntityInformation(endEntityInformation);
+            // Set to null, for <redacted> an IndexOutOfBoundsException is thrown.
+            eeiToLog.setDN(null);
+            eeiToLog.setSubjectAltName(LogRedactionUtils.REDACTED_CONTENT);
+            if (eeiToLog.getExtendedInformation() != null) {
+                eeiToLog.getExtendedInformation().setCertificateRequest(new byte[] {});
+            }
+        } else {
+            eeiToLog = endEntityInformation;
+        }
+        
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(eeiToLog);
+        }
+        
+        return printEndEntityInformationXML(sComment, baos.toString("UTF-8"));
+    }
 
     //
     // Start Database integrity protection methods
