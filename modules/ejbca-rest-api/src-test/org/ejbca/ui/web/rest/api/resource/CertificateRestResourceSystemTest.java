@@ -1038,6 +1038,11 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertNotNull(base64cert);
         byte[] certBytes = Base64.decode(base64cert.getBytes());
         Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
+        if (cvc) {
+            assertEquals("Cert type should be CVC", cert.getType(), "CVC");
+        } else {
+            assertEquals("Cert type should be X.509", cert.getType(), "X.509");            
+        }
         final String issuer = (cvc == true ? "CN=CAREF001,C=SE" : CertTools.stringToBCDNString(testIssuerDn));
         assertEquals("Returned certificate contained unexpected issuer", issuer, CertTools.getIssuerDN(cert));
         final String subject = (cvc == true ? "CN=RESTCVC01,C=SE" : CertTools.stringToBCDNString("C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6"));
