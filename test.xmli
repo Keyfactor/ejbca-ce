@@ -169,7 +169,6 @@
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
-					<include name="modules/ejbca-rest-common/src-test/**/${test.runone}.java" />
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins-ee/src-test/**/${test.runone}.java" />
@@ -251,9 +250,6 @@
     	</condition>
     	<condition property="module" value="modules/ejbca-rest-api">
             <matches string="${test-fullname}" pattern="^modules/ejbca-rest-api/.*$"/>
-        </condition>
-    	<condition property="module" value="modules/ejbca-rest-common">
-            <matches string="${test-fullname}" pattern="^modules/ejbca-rest-common/.*$"/>
         </condition>
         <condition property="module" value="modules/admin-gui">
             <matches string="${test-fullname}" pattern="^modules/admin-gui/.*$"/>
