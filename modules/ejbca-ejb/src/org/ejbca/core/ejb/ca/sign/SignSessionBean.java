@@ -129,6 +129,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.ECAUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -179,8 +180,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Creates and signs certificates.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SignSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -300,7 +299,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
             final Map<String, Object> details = new LinkedHashMap<>();
             if (cert != null) {
-                details.put("leafSubject", CertTools.getSubjectDN(cert));
+                final String logSafeSubjectDN = certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(cert))
+                                                                       .getCertificateData().getLogSafeSubjectDn();
+
+                details.put("leafSubject", logSafeSubjectDN);
                 details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
             }
             details.put("includeChain", Boolean.toString(includeChain));
@@ -530,7 +532,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
                     final String failText = intres.getLocalizedMessage("signsession.nosuchuser", req.getUsername());
-                    log.info(failText, e);
+                    log.info(failText, LogRedactionUtils.getRedactedException(e));
                     throw new NoSuchEndEntityException(failText, e);
                 }
             }
@@ -590,7 +592,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // Authorize user and get DN
         final EndEntityInformation data = authUser(admin, username, password);
         if (log.isDebugEnabled()) {
-            log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
+            log.debug("Authorized user " + username + " with DN='" + LogRedactionUtils.getSubjectDnLogSafe(data.getDN()) + "'." + " with CA=" + data.getCAId());
         }
         if (certificateprofileid != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             if (log.isDebugEnabled()) {
@@ -889,8 +891,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     try {
                         publicKey = CvcKeyTools.getECPublicKeyWithParams(publicKey, cvcaCertificate.getPublicKey());
                     } catch (InvalidKeySpecException e) {
-                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(certificate), e.getMessage());
-                        log.warn(msg, e);
+                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", LogRedactionUtils.getSubjectDnLogSafe(certificate),
+                                LogRedactionUtils.getRedactedMessage(e.getMessage()));
+                        log.warn(msg, LogRedactionUtils.getRedactedException(e));
                     }
                 }
             }
@@ -1009,7 +1012,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.warn(msg, ctoe);
             throw ctoe;
         } catch (CertificateEncodingException e) {
-            log.error("There was a problem extracting the certificate information.", e);
+            log.error("There was a problem extracting the certificate information.", LogRedactionUtils.getRedactedException(e));
         } catch (CRLException e) {
             log.error("There was a problem extracting the CRL information.", e);
         }
@@ -1136,7 +1139,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error(msg, ctoe);
             throw ctoe;
         } catch (CertificateEncodingException e) {
-            log.error("There was a problem extracting the certificate information.", e);
+            log.error("There was a problem extracting the certificate information.", LogRedactionUtils.getRedactedException(e));
         }
         if (log.isTraceEnabled()) {
             log.trace("<getCRL(IRequestMessage)");
@@ -1342,7 +1345,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 // Publish pre-certificate and abort issuance
                 postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true, certGenParams);
             }
-            throw new CertificateCreateException(e);
+            throw new CertificateCreateException(LogRedactionUtils.getRedactedException(e));
         }
         postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {

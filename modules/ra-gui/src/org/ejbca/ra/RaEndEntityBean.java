@@ -535,18 +535,18 @@ public class RaEndEntityBean implements Serializable {
         }
 
         if (endEntityInformation.isSshEndEntity()) {
-            if (sshKeyId != raEndEntityDetails.getSshKeyId()) {
+            if (!sshKeyId.equals(raEndEntityDetails.getSshKeyId())) {
                 changed = true;
                 endEntityInformation.setDN("CN=" + sshKeyId);
             }
-            if (sshComment != raEndEntityDetails.getSshComment()
-                    || raEndEntityDetails.getSshPrincipals() != sshPrincipalFieldsToString(getSshPrincipals())) {
+            if (!sshComment.equals(raEndEntityDetails.getSshComment())
+                    || !raEndEntityDetails.getSshPrincipals().equals(sshPrincipalFieldsToString(getSshPrincipals()))) {
                 changed = true;
-                endEntityInformation.setSubjectAltName(
-                        SshCertificateUtils.createSanForStorage(sshPrincipalFieldsToString(getSshPrincipals()), sshComment, sshCriticalOptionsSourceAddress));
+                endEntityInformation.setSubjectAltName(SshCertificateUtils.createSanForStorage(sshPrincipalFieldsToString(getSshPrincipals()),
+                        sshComment, sshCriticalOptionsSourceAddress));
             }
-            if (sshCriticalOptionsForceCommand != raEndEntityDetails.getSshForceCommand()
-                    || sshCriticalOptionsSourceAddress != raEndEntityDetails.getSshSourceAddress()
+            if (!sshCriticalOptionsForceCommand.equals(raEndEntityDetails.getSshForceCommand())
+                    || !sshCriticalOptionsSourceAddress.equals(raEndEntityDetails.getSshSourceAddress())
                     || sshCriticalOptionsVerifyRequired != raEndEntityDetails.getSshVerifyRequired()) {
                 changed = true;
                 final Map<String, String> criticalOptions = extendedInformation.getSshCriticalOptions();

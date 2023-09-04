@@ -18,6 +18,7 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ValueExtractor;
@@ -585,7 +586,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
 
         final String queryString = sb.toString();
         if (log.isTraceEnabled()) {
-            log.trace("findOldCertificates query: " + queryString);
+            log.trace("findOldCertificates query: " + LogRedactionUtils.getRedactedMessage(queryString));
         }
         final Query query = entityManager.createNativeQuery(queryString, "CertificateInfoSubset");
         query.setParameter("expiredBefore", expiredBefore.getTime());

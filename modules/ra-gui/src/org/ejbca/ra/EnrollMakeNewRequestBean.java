@@ -27,7 +27,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -92,8 +91,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.WebConfiguration;
@@ -116,8 +115,6 @@ import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -961,10 +958,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     private void populateRequestFields(final RequestFieldType type, final String subject, final Collection<FieldInstance> fieldInstances) {
         final List<String> subjectFieldsFromParsedCsr = CertTools.getX500NameComponents(subject);
+        
+        final int eepId = getEndEntityInformation().getEndEntityProfileId();
+        
         bothLoops:
         for (final String subjectField : subjectFieldsFromParsedCsr) {
             if (log.isDebugEnabled()) {
-                log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
+                if (RequestFieldType.DN.equals(type)) {
+                    log.debug("Parsing the subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId) + "'...");
+                } else if (RequestFieldType.AN.equals(type)) {
+                    log.debug("Parsing the subject " + type + " field '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId) + "'...");
+                } else {
+                    log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
+                }
             }
             final String[] nameValue = subjectField.split("=");
             if (nameValue != null && nameValue.length == 2) {
@@ -989,23 +995,25 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         if (DnComponents.profileIdToDnId(fieldInstance.getProfileId()) == dnId.intValue()) {
                             if (fieldInstance.isModifiable()) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
+                                    logRedactedInfo(type, eepId, fieldInstance);
                                 }
                                 if (StringUtils.isEmpty(fieldInstance.getValue()) || fieldInstance.getValue().equals(fieldInstance.getDefaultValue())) {
                                     fieldInstance.setValue(nameValue[1]);
                                     if (log.isDebugEnabled()) {
-                                        log.debug("Modifiable subject field '" + subjectField + "' successfully parsed from CSR");
+                                        log.debug("Modifiable subject field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+                                                + "' successfully parsed from CSR");
                                     }
                                     continue bothLoops;
                                 }
                             } else if (fieldInstance.isSelectable()) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
+                                    logRedactedInfo(type, eepId, fieldInstance);
                                 }
                                 if (fieldInstance.getSelectableValues().contains(nameValue[1])) {
                                     fieldInstance.setValue(nameValue[1]);
                                     if (log.isDebugEnabled()) {
-                                        log.debug("Selectable subject field '" + subjectField + "' successfully parsed from CSR");
+                                        log.debug("Modifiable subject field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+                                                + "' successfully parsed from CSR");
                                     }
                                     continue bothLoops;
                                 }
@@ -1019,9 +1027,29 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
             }
             if (log.isDebugEnabled()) {
-                log.debug("Unparsable subject " + type + " field '" + subjectField +
-                        "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                if (RequestFieldType.DN.equals(type)) {
+                    log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+                            + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                } else if (RequestFieldType.AN.equals(type)) {
+                    log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId)
+                            + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                } else {
+                    log.debug("Unparsable subject " + type + " field '" + subjectField
+                            + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                }
             }
+        }
+    }
+
+    private void logRedactedInfo(final RequestFieldType type, final int eepId, final FieldInstance fieldInstance) {
+        if (RequestFieldType.DN.equals(type)) {
+            log.debug(" fieldInstance.value=" + LogRedactionUtils.getSubjectDnLogSafe(fieldInstance.getValue(), eepId)
+                    + " fieldInstance.defaultValue=" + LogRedactionUtils.getSubjectDnLogSafe(fieldInstance.getDefaultValue(), eepId));
+        } else if (RequestFieldType.AN.equals(type)) {
+            log.debug(" fieldInstance.value=" + LogRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getValue(), eepId)
+                    + " fieldInstance.defaultValue=" + LogRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getDefaultValue(), eepId));
+        } else {
+            log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
         }
     }
 
@@ -1272,7 +1300,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             endEntityInformation.setExtendedInformation(getProcessedExtendedInformation());
         } catch(CertificateExtensionException e) {
             reportGenericError(null, e);
-            return null;
+            return new byte[0];
         }
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
@@ -1323,7 +1351,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 endEntityInformation.getExtendedInformation().setCertificateRequest(getCertificateRequestBytes());
             } catch (IOException e) {
                 raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
-                return null;
+                return new byte[0];
             }
         }
 
@@ -1384,19 +1412,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
             log.info("Request with ID " + requestId + " is still waiting for approval");
         } catch (EjbcaException e) {
             errorCode = EjbcaException.getErrorCode(e);
+
             if (errorCode != null) {
+                final int eepId = endEntityInformation.getEndEntityProfileId();
                 if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
                     raLocaleBean.addMessageError(ENROLL_USERNAME_ALREADY_EXISTS, endEntityInformation.getUsername());
                     log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
                 } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                     raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
-                    log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
+                    
+                    log.info("Subject DN " + LogRedactionUtils.getSubjectDnLogSafe(subjectDn.getValue(), eepId) + " already exists for another user",
+                            LogRedactionUtils.getRedactedThrowable(e, eepId));
                 } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
                     raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e));
-                    log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
+                    log.info("End entity information does not fulfill profile: " + LogRedactionUtils.getRedactedThrowable(e, eepId).getMessage() + ", " + errorCode);
                 } else if (errorCode.equals(ErrorCode.NAMECONSTRAINT_VIOLATION)) {
                     raLocaleBean.addMessageError("enroll_invalid_name_constraint_violation", e.getMessage().replaceFirst("^[^:]*Exception: ", ""));
-                    log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
+                    log.info("End entity information does not fulfill profile: " + LogRedactionUtils.getRedactedThrowable(e, eepId).getMessage() + ", " + errorCode);
                 }
                 
                 else {
@@ -1459,7 +1491,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             sb.append(", ");
             sb.append(errorCode);
         }
-        log.info(sb.toString(), exception);
+        log.info(sb.toString(), LogRedactionUtils.getRedactedThrowable(exception, getEndEntityInformation().getEndEntityProfileId()));
     }
 
     /** Removes exception name so it's not shown to the user. */
@@ -1475,7 +1507,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Send a file to the client if token parameter is not set to null
      */
     private void downloadToken(byte[] token, String responseContentType, String fileExtension) {
-        if (token == null) {
+        if (token == null || token.length == 0) {
             return;
         }
         //Download the token
@@ -1485,6 +1517,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
         final String fileName = getFileName();
+        final int eepId = getEndEntityInformation().getEndEntityProfileId();
         ec.setResponseHeader("Content-Disposition",
                 "attachment; filename=\"" + fileName + fileExtension + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         try (final OutputStream output = ec.getResponseOutputStream()) {
@@ -1493,7 +1526,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
             raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", fileName), e);
-            log.info("Token " + fileName + " could not be downloaded", e);
+            log.info("Token " + LogRedactionUtils.getSubjectDnLogSafe(fileName, eepId) + " could not be downloaded", LogRedactionUtils.getRedactedThrowable(e, eepId));
         }
     }
 
@@ -1597,20 +1630,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Update the current state of the EE-holder and validate the subject DN via the RA API.
      */
     public final void checkSubjectDn() {
+        final EndEntityInformation eEInformation = getEndEntityInformation();
+        final int eepId = eEInformation.getEndEntityProfileId();
         try {
-            final EndEntityInformation endEntityInformation = getEndEntityInformation();
-            endEntityInformation.setCAId(getCAInfo().getCAId());
+            eEInformation.setCAId(getCAInfo().getCAId());
             if (log.isDebugEnabled()) {
-                log.debug("checkSubjectDn: '" + subjectDn.getUpdatedValue() + "'");
+                log.debug("checkSubjectDn: '" + LogRedactionUtils.getSubjectDnLogSafe(subjectDn.getUpdatedValue(), eepId) + "'");
             }
-            endEntityInformation.setDN(subjectDn.getUpdatedValue());
-            raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            eEInformation.setDN(subjectDn.getUpdatedValue());
+            raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), eEInformation);
         } catch (AuthorizationDeniedException e) {
             log.error(e);
         } catch (EjbcaException e) {
             if (ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode())) {
-                FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists", subjectDn.getValue()), null));
+                FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(),
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists",
+                                subjectDn.getUpdatedValue()), null));
             } else {
                 FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(),
                         new FacesMessage(FacesMessage.SEVERITY_WARN, raLocaleBean.getErrorCodeMessage(e.getErrorCode()), null));
@@ -1653,7 +1688,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             final UIComponent domainField = (UIComponent) components.findComponent("upnRfcDomain");
             if (domainField != null && domainField.isRendered()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Validate SAN rfc822name e-mail user part: " + value);
+                    log.debug("Validate SAN rfc822name e-mail user part: " + LogRedactionUtils.getRedactedMessage(value));
                 }
                 if (!StringTools.isValidEmailUserPart(value)) {
                     fc.addMessage(field.getClientId(fc), raLocaleBean.getFacesMessage("enroll_san_email_user_part_invalid"));
@@ -1661,7 +1696,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Validate SAN rfc822name e-mail: " + value);
+                    log.debug("Validate SAN rfc822name e-mail: " + LogRedactionUtils.getRedactedMessage(value));
                 }
                 if (!StringTools.isValidEmail(value)) {
                     field.setValue(value);
@@ -2835,16 +2870,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Split the clientId on ':', the second to last substring is the loop index
             String[] split = emailInput.getClientId().split(":");
             index = Integer.parseInt(split[split.length - 2]);
-            // log.debug("Index " + index + " for clientId '" + emailInput.getClientId() + "'.");
         }
         if (emailInput != null && emailInput.getValue() != null) {
             email = emailInput.getValue().toString();
-            log.debug("Index " + index + " mail part '" + email + "'.");
+            if (!LogRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+                log.debug("Index " + index + " mail part '" + email + "'.");
+            }
         }
         String domain = "";
         if (domainInput != null && domainInput.getValue() != null) {
             domain = domainInput.getValue().toString();
-            log.debug("Index " + index + " domain part '" + domain + "'.");
+            if (!LogRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+                log.debug("Index " + index + " domain part '" + domain + "'."); 
+            }
         }
         String concatenated = "";
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
@@ -2867,7 +2905,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 fi.get(index).setValue(concatenated);
             }
         }
-        log.debug("Index " + index + " set to rfc822mail '" + email + "' / domain '" + domain + "' / conc. " + concatenated + ".");
+        log.debug("Index " + index + " set to rfc822mail '" + LogRedactionUtils.getRedactedMessage(email) + "' / domain '" + LogRedactionUtils.getRedactedMessage(domain) + "' / conc. " + concatenated + ".");
     }
 
     /**
@@ -2904,7 +2942,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 if (log.isTraceEnabled()) {
                     String namespaces = String.join(",", eabNamespaces);
                     log.trace("Result set for EAB ID auto complete for namespaces '" + namespaces + "': "
-                            + eabIdAutoCompleteSelectItems.stream().map(e -> e.getValue()).toArray());
+                            + eabIdAutoCompleteSelectItems.stream().map(SelectItem::getValue).toArray());
                 }
             }
         }
@@ -3209,22 +3247,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private byte[] enrollSshCertificate() {
         
         if(StringUtils.isEmpty(getEndEntityInformation().getUsername())) {
-            return null;
+            return new byte[0];
         }
         
         if(sshPublicKey==null && getSelectedKeyPairGenerationEnum()!=KeyPairGeneration.POSTPONE) {
             raLocaleBean.addMessageError(ENROLL_INVALID_SSH_PUB_KEY);
-            return null;
+            return new byte[0];
         }
         
         if(StringUtils.isEmpty(getSshKeyId())) {
             raLocaleBean.addMessageError("enroll_ssh_keyid_required");
-            return null;
+            return new byte[0];
         }
         
         final Properties additionalExtensionDataParser = new Properties();
-        Map<String, String> criticalOptionsToAdd = new HashMap<String, String>();
-        Map<String, byte[]> additionalExtensionsToAdd = new HashMap<String, byte[]>();
+        Map<String, String> criticalOptionsToAdd = new HashMap<>();
+        Map<String, byte[]> additionalExtensionsToAdd = new HashMap<>();
 
         if(StringUtils.isNotEmpty(getCriticalOptionsForceCommand())) {
             criticalOptionsToAdd.put(
@@ -3297,7 +3335,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 raLocaleBean.addMessageInfo("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername());
                 //TODO approval
-                return null;
+                return new byte[0];
             }
         } catch (AuthorizationDeniedException e) {
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
@@ -3310,8 +3348,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
                 } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                     // TODO update error messages
+                    final int eepId = endEntityInformation.getEndEntityProfileId();
                     raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
-                    log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
+                    log.info("Subject DN " + LogRedactionUtils.getSubjectDnLogSafe(subjectDn.getValue(), eepId) + " already exists for another user",
+                           LogRedactionUtils.getRedactedThrowable(e, eepId));
                 } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
                     raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e));
                     log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
@@ -3327,7 +3367,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             endEntityInformation.setUsername(StringUtils.EMPTY);
         }
         
-        return null;
+        return new byte[0];
     }
     
 }
