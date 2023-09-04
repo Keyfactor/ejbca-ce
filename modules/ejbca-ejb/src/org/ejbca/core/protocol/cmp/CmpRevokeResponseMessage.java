@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.util.CertTools;
 
@@ -190,7 +191,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 	        mout.close();
 	        resp = baos.toByteArray();
 	    } catch (IOException e) {
-	        log.error(e.getLocalizedMessage(), e);
+	        log.error(LogRedactionUtils.getRedactedMessage(e.getLocalizedMessage()), LogRedactionUtils.getRedactedException(e));
 	    }
 	    return resp;
 	}
