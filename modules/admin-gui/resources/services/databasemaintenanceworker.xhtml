@@ -44,6 +44,7 @@
             size="10" disabled="#{not editService.hasEditRights}">
             <f:selectItems
                 value="#{editService.availableCAs}" />
+            <f:validator validatorId="nonEmptySelectItemsValidator"/>
         </h:selectManyListbox>
     </h:panelGroup>
 

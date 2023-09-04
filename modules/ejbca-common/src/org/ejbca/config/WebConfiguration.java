@@ -185,13 +185,6 @@ public class WebConfiguration {
 	}
 	
 	/**
-	 * Whether self-registration (with admin approval) is enabled in public web
-	 */
-	public static boolean getSelfRegistrationEnabled() {
-		return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString("web.selfreg.enabled"));
-	}
-	
-	/**
 	 * The request browser certificate renewal web application is deployed
 	 */
 	public static boolean getRenewalEnabled() {
@@ -353,11 +346,6 @@ public class WebConfiguration {
     /** @return true if we have SunP11 Crypto Token enabled in the Admin GUI. */
     public static boolean isSunP11Enabled(){
         return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("sunp11.cryptotoken.enabled")); // default true
-    }
-
-    /** @return true if we have P11NG Crypto Token enabled in the Admin GUI. */
-    public static boolean isP11NGEnabled(){
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("p11ng.cryptotoken.enabled"));
     }
 
     /** @return true if we have P11NG Utimaco CP5 specific Crypto Token functions enabled in the Admin GUI. */

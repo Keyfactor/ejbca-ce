@@ -27,7 +27,8 @@ public class KeyBindingFileUploadValidator implements Validator<Object> {
 
     private static final Logger log = Logger.getLogger(KeyBindingFileUploadValidator.class);
 
-    private static final int MAX_FILE_SIZE = 10000000; // In bytes
+    private static final int MAX_FILE_SIZE_MEGABYTES = 10; // In megabytes
+    private static final int MAX_FILE_SIZE = MAX_FILE_SIZE_MEGABYTES * 1024 * 1024; // In bytes
     private static final int MAX_FILE_NAME_LENGTH = 256;
 
     @Override
@@ -44,15 +45,15 @@ public class KeyBindingFileUploadValidator implements Validator<Object> {
                 if (log.isDebugEnabled()) {
                     log.debug("Null, empty or mallformed certificate file uploaded.");
                 }
-            } else if (uploadedFile.getName().length() > MAX_FILE_NAME_LENGTH) {
-                errorMessage = new FacesMessage("Selected file name too long. Allowed file name is less than or equal to 256 characters.");
+            } else if (uploadedFile.getSubmittedFileName().length() > MAX_FILE_NAME_LENGTH) {
+                errorMessage = new FacesMessage("Selected file name too long. Allowed file name is less than or equal to " + MAX_FILE_NAME_LENGTH + " characters.");
                 if (log.isDebugEnabled()) {
-                    log.debug("Certificate file uploaded has a name longer than allowed length (256 characters).");
+                    log.debug("Certificate file uploaded has a name longer than allowed length (" + MAX_FILE_NAME_LENGTH + " characters).");
                 }
             } else if (uploadedFile.getSize() > MAX_FILE_SIZE) {
-                errorMessage = new FacesMessage("Selected file is too big. Allowed file size is less than or equal to 10 MB.");
+                errorMessage = new FacesMessage("Selected file is too big. Allowed file size is less than or equal to " + MAX_FILE_SIZE_MEGABYTES + " MB.");
                 if (log.isDebugEnabled()) {
-                    log.debug("Certificate file uploaded is bigger than allowed max size (10 MB).");
+                    log.debug("Certificate file uploaded is bigger than allowed max size (" + MAX_FILE_SIZE_MEGABYTES + " MB).");
                 }
             }
 

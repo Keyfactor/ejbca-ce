@@ -37,6 +37,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -227,7 +228,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 useEI = true;
             } catch (ParseException e) {
                 log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \""
-                        + userData.getSubjectDN() + "\" and customStartTime was '" + customStartTime + "'.");
+                        + LogRedactionUtils.getRedactedMessage(userData.getSubjectDN()) + "\" and customStartTime was '" + customStartTime + "'.");
                 throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime");
             }
         }

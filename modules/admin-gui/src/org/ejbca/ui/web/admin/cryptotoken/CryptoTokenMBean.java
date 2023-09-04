@@ -12,6 +12,20 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -47,21 +61,6 @@ import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
-
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
-import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -1323,12 +1322,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName()) && !WebConfiguration.isSunP11Enabled()) {
                     if (log.isDebugEnabled()) {
                         log.debug("SunP11 Crypto Token support is not enabled in GUI. See web.properties for enabling Sun PKCS#11.");
-                    }
-                    continue;                    
-                }
-                if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.JACKNJI_NAME) && !WebConfiguration.isP11NGEnabled()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("P11NG Crypto Token support is not enabled in GUI. See web.properties for enabling PKCS#11 NG.");
                     }
                     continue;                    
                 }

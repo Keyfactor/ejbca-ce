@@ -205,7 +205,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                         if (authenticationModule == null) {
                             String errmsg = messageVerifyer.getErrorMessage();
                             LOG.error(errmsg);
-                            return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
+                            return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
                         }
 						
                         p10CrReq.setPassword(authenticationModule.getAuthenticationString());
@@ -234,20 +234,20 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
 		} catch (AuthorizationDeniedException | AuthLoginException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e);	
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.NOT_AUTHORIZED, e.getMessage());
+            resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.NOT_AUTHORIZED, e.getMessage());
 		} catch (CADoesntExistsException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it	
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.WRONG_AUTHORITY, e.getMessage());
+			resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.WRONG_AUTHORITY, e.getMessage());
 		} catch (SignRequestSignatureException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_POP, e.getMessage());
+			resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_POP, e.getMessage());
         } catch (CesecoreException | EjbcaException | CertificateExtensionException e) {
             // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e); // info because this is something we should expect and we handle it
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (EJBException e) {
 			// Fatal error
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
@@ -305,7 +305,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
         if (authenticationModule == null) {
             String errmsg = messageVerifyer.getErrorMessage();
             LOG.info(errmsg);
-            return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
+            return sendSignedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
         }        
         // Create a username and password and register the new user in EJBCA
         final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);      
@@ -360,7 +360,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
             //This should not run since an error would have occurred earlier if the authentication module was unknown 
             final String errMsg = "Unknown authentication module.";
             LOG.error(errMsg);
-            return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+            return sendSignedErrorMessage(crmfreq, FailInfo.BAD_MESSAGE_CHECK, errMsg);
         }
         // AltNames may be in the request template
         final String altNames = req.getRequestAltNames();
