@@ -21,4 +21,15 @@ entries:
     urls:
     - ejbca-community-helm-1.0.1.tgz
     version: 1.0.1
-generated: "2023-08-16T11:20:25.601342999+02:00"
+  signserver-community-helm:
+  - apiVersion: v2
+    appVersion: 6.0.0.1
+    created: "2023-09-04T10:56:00.887923722+02:00"
+    description: A Helm chart for running SignServer in Kubernetes
+    digest: e531b80db7901b39da4dd021176589530b34a07c3380125a921d57b94e1100ab
+    name: signserver-community-helm
+    type: application
+    urls:
+    - signserver-community-helm-1.0.0.tgz
+    version: 1.0.0
+generated: "2023-09-04T10:56:00.87476183+02:00"
