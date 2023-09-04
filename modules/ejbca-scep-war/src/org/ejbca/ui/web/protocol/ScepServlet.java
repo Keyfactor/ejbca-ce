@@ -37,6 +37,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -76,7 +77,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id$
  */
 public class ScepServlet extends HttpServlet {
     private static final long serialVersionUID = -6776853218419335240L;
@@ -178,7 +178,7 @@ public class ScepServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">SCEP doGet()");
         if (log.isDebugEnabled()) {
-            log.debug("query string=" + request.getQueryString());
+            log.debug("query string=" + LogRedactionUtils.getRedactedMessage(request.getQueryString()));
         }
         final boolean isProtocolAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raScepAuthCheckToken,
                 AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP);
@@ -239,7 +239,7 @@ public class ScepServlet extends HttpServlet {
             final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("ScepServlet", remoteAddr));
             if (log.isDebugEnabled()) {
                 log.debug("Got request '" + operation + "'");
-                log.debug("Message: " + message);
+                log.debug("Message: " + LogRedactionUtils.getRedactedMessage(message));
             }
             String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
             log.info(iMsg);

@@ -53,6 +53,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SimpleTime;
 
 import com.keyfactor.util.CertTools;
@@ -1234,13 +1235,13 @@ public class X509CAInfo extends CAInfo {
                     certlist.add(crt);
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Certlist already contains certificate with subject "+CertTools.getSubjectDN(crt)+", not adding to list");
+                        log.debug("Certlist already contains certificate with subject " + LogRedactionUtils.getSubjectDnLogSafe(crt) + ", not adding to list");
                     }
                 }
             } else {
                 rootcert = (X509Certificate)crt;
                 if (log.isDebugEnabled()) {
-                    log.debug("Using certificate with subject "+CertTools.getSubjectDN(crt)+", as trust anchor, removing from certlist if it is there");
+                    log.debug("Using certificate with subject " + LogRedactionUtils.getSubjectDnLogSafe(crt) + ", as trust anchor, removing from certlist if it is there");
                 }
                 // Don't have the trust anchor in the cert path, remove doesn't do anything if rootcert doesn't exist in certlist
                 certlist.remove(rootcert);

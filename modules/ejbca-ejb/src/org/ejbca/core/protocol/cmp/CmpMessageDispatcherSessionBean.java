@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +39,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -133,14 +133,15 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
             final PKIBody pkiBody = pkiMessage.getBody();
             final int tagno = pkiBody.getType();
             if (log.isDebugEnabled()) {
-                final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" + pkiHeader.getSender().toString() +
+                final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" +
+                        LogRedactionUtils.getRedactedMessage(pkiHeader.getSender().toString()) +
                         ", recipient=" + pkiHeader.getRecipient().toString() + System.lineSeparator() +
                         "Cmp configuration alias: " + cmpConfigurationAlias + System.lineSeparator() +
                         "The CMP message is already authenticated: " + authenticated + System.lineSeparator() +
                         "Body is of type: " + tagno + System.lineSeparator() +
                         "Transaction ID: " + pkiHeader.getTransactionID();
                 log.debug(message);
-                if (log.isTraceEnabled()) {
+                if (log.isTraceEnabled() && !LogRedactionUtils.redactPii()) {
                     log.trace(ASN1Dump.dumpAsString(pkiMessage));
                 }
             }
@@ -202,8 +203,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         return dispatch(authenticationToken, nestedPkiMessage, pkiHeader, cmpConfiguration, cmpConfigurationAlias, levelOfNesting+1);
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getMessage();
-                        log.info(errMsg, e);
-                            return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, errMsg );
+                        log.info(LogRedactionUtils.getRedactedMessage(errMsg), LogRedactionUtils.getRedactedException(e));
+                        return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, errMsg );
                     }
                 }
                 final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
@@ -306,7 +307,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 try {
                     cainfo = caSession.getCAInfo(admin, caId);
                     if (cainfo != null && CollectionUtils.isNotEmpty(cainfo.getCertificateChain())) {
-                        cacert = (X509Certificate) cainfo.getCertificateChain().get(0);
+                        cacert = cainfo.getCertificateChain().get(0);
                         if (!result.contains(cacert)) {
                             result.add(cacert);
                         }

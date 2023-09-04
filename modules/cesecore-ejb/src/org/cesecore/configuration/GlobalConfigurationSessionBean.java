@@ -42,6 +42,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -271,6 +272,11 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         public void updateConfiguration(final ConfigurationBase conf, final String configId) {
             if (caches.get(configId) != null) {
                 caches.get(configId).updateConfiguration(conf);
+            }
+            if (configId==GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID) {
+                GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) conf;
+                LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(
+                        globalCesecoreConfiguration.getRedactPiiByDefault(), globalCesecoreConfiguration.getRedactPiiEnforced());
             }
         }
 
