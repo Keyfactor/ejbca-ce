@@ -357,18 +357,18 @@ public class CertificateRestResponseV2 {
             return this;
         }
         
-        public CertificateRestResponseBuilderV2 setNotBefore(Long millies) {
-            this.notBefore = millies;
+        public CertificateRestResponseBuilderV2 setNotBefore(Long millis) {
+            this.notBefore = millis;
             return this;
         }
         
-        public CertificateRestResponseBuilderV2 setExpireDate(Long millies) {
-            this.expireDate = millies;
+        public CertificateRestResponseBuilderV2 setExpireDate(Long millis) {
+            this.expireDate = millis;
             return this;
         }
         
-        public CertificateRestResponseBuilderV2 setRevocationDate(Long millies) {
-            this.revocationDate = millies;
+        public CertificateRestResponseBuilderV2 setRevocationDate(Long millis) {
+            this.revocationDate = millis;
             return this;
         }
         
@@ -397,8 +397,8 @@ public class CertificateRestResponseV2 {
             return this;
         }
         
-        public CertificateRestResponseBuilderV2 setUpdateTime(Long millies) {
-            this.updateTime = millies;
+        public CertificateRestResponseBuilderV2 setUpdateTime(Long millis) {
+            this.updateTime = millis;
             return this;
         }
 
@@ -422,8 +422,8 @@ public class CertificateRestResponseV2 {
             return this;
         }
 
-        public CertificateRestResponseBuilderV2 setInvalidityDate(Long millies) {
-            this.invalidityDate = millies;
+        public CertificateRestResponseBuilderV2 setInvalidityDate(Long millis) {
+            this.invalidityDate = millis;
             return this;
         }
         
