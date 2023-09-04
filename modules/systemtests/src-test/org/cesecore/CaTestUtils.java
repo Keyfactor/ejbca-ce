@@ -631,7 +631,7 @@ public abstract class CaTestUtils {
      * @param caName              Name of the CA
      * @param allowInvalidityDate True if invalidity date usage should be allowed
      */
-    public static void allowInvalidityDate(final AuthenticationToken authenticationToken, final String caName, final boolean allowInvalidityDate)
+    public static void setAllowInvalidityDate(final AuthenticationToken authenticationToken, final String caName, final boolean allowInvalidityDate)
             throws AuthorizationDeniedException, CaMsCompatibilityIrreversibleException,
             InternalKeyBindingNonceConflictException, CADoesntExistsException {
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
