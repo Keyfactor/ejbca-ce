@@ -3,7 +3,17 @@ entries:
   ejbca-community-helm:
   - apiVersion: v2
     appVersion: 8.0.0
-    created: "2023-08-16T11:20:25.612823307+02:00"
+    created: "2023-09-05T13:50:07.522296689+02:00"
+    description: A Helm chart for running EJBCA in Kubernetes
+    digest: 429f1c221453e49e88709bef473dab1eaa89a19820c523f82278ea658d018856
+    name: ejbca-community-helm
+    type: application
+    urls:
+    - ejbca-community-helm-1.0.3.tgz
+    version: 1.0.3
+  - apiVersion: v2
+    appVersion: 8.0.0
+    created: "2023-09-05T13:50:07.521747602+02:00"
     description: A Helm chart for running EJBCA in Kubernetes
     digest: 0bb37c558f8e8e6c95534764c7b5d21f93410411aeaa8014ea14b390cb57b285
     name: ejbca-community-helm
@@ -13,7 +23,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 7.11.0
-    created: "2023-08-16T11:20:25.602927289+02:00"
+    created: "2023-09-05T13:50:07.521206479+02:00"
     description: A Helm chart for running EJBCA in Kubernetes
     digest: 1ac95e899d6e04a95766d379d64f7c89f3c5bcbc27ac4a2db1bb62891f609244
     name: ejbca-community-helm
@@ -24,7 +34,7 @@ entries:
   signserver-community-helm:
   - apiVersion: v2
     appVersion: 6.0.0.1
-    created: "2023-09-04T10:56:00.887923722+02:00"
+    created: "2023-09-05T13:50:07.522794677+02:00"
     description: A Helm chart for running SignServer in Kubernetes
     digest: e531b80db7901b39da4dd021176589530b34a07c3380125a921d57b94e1100ab
     name: signserver-community-helm
@@ -32,4 +42,4 @@ entries:
     urls:
     - signserver-community-helm-1.0.0.tgz
     version: 1.0.0
-generated: "2023-09-04T10:56:00.87476183+02:00"
+generated: "2023-09-05T13:50:07.520033888+02:00"
