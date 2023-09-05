@@ -69,7 +69,7 @@
 						<h:commandButton id="deleteButton"
 							action="#{listServicesManagedBean.deleteService}"
 							value="#{web.text.DELETESERVICE}"
-							onclick="return confirm('#{web.text.AREYOUSURE}');"
+							onclick="if (checkSelectionMade('services:listServices')) return confirm('#{web.text.AREYOUSURE}');"
 							rendered="#{listServicesManagedBean.hasEditRights}" />
 					</h:panelGroup>
 				</h:panelGrid>
