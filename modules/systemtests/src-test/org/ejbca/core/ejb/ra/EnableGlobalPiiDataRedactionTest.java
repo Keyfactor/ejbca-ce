@@ -78,8 +78,10 @@ public class EnableGlobalPiiDataRedactionTest {
     }
         
     @Test
-    public void setRedactEnfoced() throws Exception {
-        
+    public void setRedactEnforced() throws Exception {
+        if (!SystemTestsConfiguration.getEnableLogRedact()) {
+            return;
+        }
        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration)
                 globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
        if (globalCesecoreConfiguration.getRedactPiiEnforced()) {
