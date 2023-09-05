@@ -115,7 +115,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             return sendSignedErrorMessage(msg, FailInfo.INCORRECT_DATA, errMsg);
         } catch (CADoesntExistsException e) {
             final String errMsg = "CA with DN '" + msg.getHeader().getRecipient().getName().toString() + "' is unknown";
-            LOG.info(errMsg);
+            LOG.info(LogRedactionUtils.getRedactedMessage(errMsg));
             return sendSignedErrorMessage(msg, FailInfo.BAD_REQUEST, errMsg);
         } catch (AuthorizationDeniedException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
@@ -169,7 +169,8 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		            }
 		            ai.close();
 		        } catch (IOException e) {
-		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()),
+							LogRedactionUtils.getRedactedException(e)));
 		            return sendSignedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
 		        }
 		    } else {
