@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.config;
 
+import javax.ejb.EJBException;
+import javax.el.ELException;
+import javax.faces.FacesException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -35,6 +38,8 @@ import org.ejbca.ui.web.rest.api.io.response.ExceptionInfoRestResponse.Exception
 
 import com.keyfactor.CesecoreException;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * General JAX-RS Exception handler to catch an Exception and create its appropriate response with error's status and error's message.
  */
@@ -51,7 +56,9 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
     HttpServletRequest requestContext;
     
     @Override
-    public Response toResponse(Exception exception) {
+    public Response toResponse(Exception rootException) {
+        Throwable exception = unwrap(rootException);
+
         ExceptionErrorRestResponse exceptionErrorRestResponse = null;
         if (logger.isTraceEnabled()) {
             logger.trace("toResponse(" + exception.getClass().getName() + " exception)");
@@ -99,8 +106,49 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
         return getExceptionResponse(exceptionErrorRestResponse);
     }
 
+    private Throwable unwrap(Throwable throwable) {
+        if (throwable instanceof InvocationTargetException) {
+            throwable = ((InvocationTargetException) throwable).getTargetException();
+
+            return unwrap(throwable);
+        }
+
+        if (isCauseWrapped(throwable)) {
+            do {
+                throwable = throwable.getCause();
+            } while (isCauseWrapped(throwable));
+
+            return unwrap(throwable);
+        }
+
+        return throwable;
+    }
+
+    private static boolean isCauseWrapped(Throwable throwable) {
+        return throwable instanceof FacesException
+                || throwable instanceof EJBException
+                || throwable instanceof ELException
+                || isRuntimeLoophole(throwable)
+                ;
+    }
+
+    private static boolean isRuntimeLoophole(Throwable throwable) {
+        // IllegalStateException & RuntimeException without a message are just wrappers
+        return throwable != null &&
+                (
+                        (IllegalStateException.class.equals(throwable.getClass()) || RuntimeException.class.equals(throwable.getClass()))
+                                && wasInitiatedWithoutMessage(throwable)
+                );
+    }
+
+    private static boolean wasInitiatedWithoutMessage(Throwable throwable) {
+        return throwable.getMessage() == null
+                || throwable.getCause() == null
+                || throwable.getMessage().equals(throwable.getCause().toString());
+    }
+
     // Map managed exceptions (not of error nature)
-    private ExceptionInfoRestResponse mapManagedException(final Exception exception) {
+    private ExceptionInfoRestResponse mapManagedException(final Throwable exception) {
         switch (ExceptionClasses.fromClass(exception.getClass())) {
             // 202
             case WaitingForApprovalException:
@@ -135,6 +183,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             // 400
             case ApprovalException:
             case KeyStoreGeneralRaException:
+            case PublisherException:
                 return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.BAD_REQUEST.getStatusCode())
                         .errorMessage(ejbcaException.getMessage())
@@ -224,7 +273,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
         }
     }
 
-    private ExceptionErrorRestResponse mapException(final Exception exception) {
+    private ExceptionErrorRestResponse mapException(final Throwable exception) {
         switch (ExceptionClasses.fromClass(exception.getClass())) {
             // 400
             case ApprovalRequestExecutionException:

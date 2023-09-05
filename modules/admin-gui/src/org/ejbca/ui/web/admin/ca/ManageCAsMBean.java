@@ -442,6 +442,10 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String deleteCA() {
+        if (selectedCaId == 0) {
+            addErrorMessage("YOUMUSTSELECTCA");
+            return EditCaUtil.MANAGE_CA_NAV;
+        }
         try {
             if (!removeCA(selectedCaId)) {
                 addErrorMessage("COULDNTDELETECA");
