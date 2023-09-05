@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import com.keyfactor.util.CertTools;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
 
@@ -102,6 +103,12 @@ public @interface ValidAddEndEntityRestRequest {
             }
             final String subjectDn = addEndEntityRestRequest.getSubjectDn();
             if (StringUtils.isEmpty(subjectDn)) {
+                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.nullOrEmpty}");
+                return false;
+            }
+            try{
+                CertTools.stringToBCDNString(subjectDn);
+            }catch (Exception e){
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.nullOrEmpty}");
                 return false;
             }

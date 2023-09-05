@@ -31,6 +31,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -2162,7 +2163,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if(log.isDebugEnabled()) {
             log.debug("SSH principals count: " + field.getInstances().size());
             log.debug("SSH principals required: " + requiredFields);
-            log.debug("SSH subjectAlternateName(pseudo): " + subjectAlternateName);
+            log.debug("SSH subjectAlternateName(pseudo): " + LogRedactionUtils.getSubjectAltNameLogSafe(subjectAlternateName));
         }
         if(StringUtils.isNotBlank(subjectAlternateName) && subjectAlternateName.startsWith("dnsName=")) {
             subjectAlternateName = subjectAlternateName.substring("dnsName=".length());

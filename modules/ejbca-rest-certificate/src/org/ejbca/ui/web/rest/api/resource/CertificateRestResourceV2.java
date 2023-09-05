@@ -33,6 +33,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
@@ -84,10 +85,10 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      */
     public Response searchCertificates(
             final HttpServletRequest requestContext,
-            final SearchCertificatesRestRequestV2 searchCertificatesRestRequest
+            @Valid final SearchCertificatesRestRequestV2 searchCertificatesRestRequest
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException, CertificateParsingException {
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
-        validateObject(searchCertificatesRestRequest);
+
         Map<Integer, String> availableEndEntityProfiles = 
                 CertificateRestResourceUtil.loadAuthorizedEndEntityProfiles(authenticationToken, raMasterApi);
         Map<Integer, String> availableCertificateProfiles = 

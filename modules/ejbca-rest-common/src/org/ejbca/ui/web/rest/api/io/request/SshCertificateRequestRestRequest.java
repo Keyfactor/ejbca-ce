@@ -18,13 +18,18 @@ import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.certificates.certificate.ssh.SshPublicKey;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
+import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSshCertificateRestRequest;
 
 import java.io.IOException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * A class representing the input for SSH certificate request REST method.
@@ -54,13 +59,18 @@ public class SshCertificateRequestRestRequest {
     private String username;
     @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(hidden = true)  // Support in future
-    private String serialNumber;
+    @ApiModelProperty(value = "Valid notBefore date", example = "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'")
+    private String notBefore;
+    @ApiModelProperty(value = "Valid notAfter date", example = "ISO 8601 Date string, eg. '2024-06-15T14:07:09Z'")
+    private String notAfter;
 
     public SshCertificateRequestRestRequest() {
     }
 
-    public SshCertificateRequestRestRequest(String endEntityProfile, String certificateProfile, String certificateAuthority, String keyId, String comment, String publicKey, List<String> principals, SshCriticalOptions criticalOptions, Map<String, byte[]> additionalExtensions, String username, String serialNumber, String password) {
+    public SshCertificateRequestRestRequest(String endEntityProfile, String certificateProfile, 
+            String certificateAuthority, String keyId, String comment, String publicKey, 
+            List<String> principals, SshCriticalOptions criticalOptions, Map<String, byte[]> additionalExtensions, 
+            String username, String serialNumber, String password, String notBefore, String notAfter) {
         this.endEntityProfile = endEntityProfile;
         this.certificateProfile = certificateProfile;
         this.certificateAuthority = certificateAuthority;
@@ -71,8 +81,9 @@ public class SshCertificateRequestRestRequest {
         this.criticalOptions = criticalOptions;
         this.additionalExtensions = additionalExtensions;
         this.username = username;
-        this.serialNumber = serialNumber;
         this.password = password;
+        this.notBefore = notBefore;
+        this.notAfter = notAfter;
     }
 
     public String getEndEntityProfile() {
@@ -155,20 +166,28 @@ public class SshCertificateRequestRestRequest {
         this.username = username;
     }
 
-    public String getSerialNumber() {
-        return serialNumber;
-    }
-
-    public void setSerialNumber(String serialNumber) {
-        this.serialNumber = serialNumber;
-    }
-
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
+    }
+    
+    public String getNotBefore() {
+        return notBefore;
+    }
+
+    public void setNotBefore(String notBefore) {
+        this.notBefore = notBefore;
+    }
+
+    public String getNotAfter() {
+        return notAfter;
+    }
+
+    public void setNotAfter(String notAfter) {
+        this.notAfter = notAfter;
     }
 
     /**
@@ -191,8 +210,10 @@ public class SshCertificateRequestRestRequest {
          * @param sshCertificateRequestRestRequest input.
          *
          * @return SshRequestMessage instance.
+         * @throws RestException 
          */
-        public SshRequestMessage toSshRequestMessage(final SshCertificateRequestRestRequest sshCertificateRequestRestRequest) throws IOException, SshKeyException, InvalidKeySpecException {
+        public SshRequestMessage toSshRequestMessage(final SshCertificateRequestRestRequest sshCertificateRequestRestRequest) 
+                throws IOException, SshKeyException, InvalidKeySpecException, RestException {
             SshPublicKey pubKey = SshKeyFactory.INSTANCE.extractSshPublicKeyFromFile(sshCertificateRequestRestRequest.getPublicKey().getBytes());
             final byte[] sshPublicKey = pubKey.encode();
 
@@ -216,9 +237,22 @@ public class SshCertificateRequestRestRequest {
                 .criticalOptions(criticalOptionsMsg)
                 .additionalExtensions(sshCertificateRequestRestRequest.getAdditionalExtensions())
                 .username(sshCertificateRequestRestRequest.getUsername())
-                .serialNumber(sshCertificateRequestRestRequest.getSerialNumber())
                 .password(sshCertificateRequestRestRequest.getPassword())
+                .notBefore(getValidatedDate(sshCertificateRequestRestRequest.getNotBefore()))
+                .notAfter(getValidatedDate(sshCertificateRequestRestRequest.getNotAfter()))
                 .build();
         }
+    }
+    
+    private static Date getValidatedDate(String sDate) throws RestException {
+        Date date = null;
+        if (sDate != null) {
+            try {
+                date = DatatypeConverter.parseDateTime(sDate).getTime();
+            } catch (IllegalArgumentException e) {
+                throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), sDate + " is not a valid ISO8601 date. Example of a valid date: 2022-06-07T23:55:59+02:00");
+            }
+        }
+        return date;
     }
 }

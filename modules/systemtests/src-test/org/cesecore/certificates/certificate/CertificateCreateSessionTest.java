@@ -109,7 +109,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Tests creating certificate with extended key usage.
  * 
- * @version $Id$
  */
 public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
@@ -120,16 +119,19 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     private static final String X509CADN = "CN=CertificateCreateSessionTest";
     private CA testx509ca;
 
+    private BlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
     private static CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
-    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private InternalCertificateCreateSessionRemote internalCertificateCreateSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateCreateSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
-    private BlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CertificateCreateSessionTest"));
@@ -174,7 +176,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void test01CodeSigningExtKeyUsage() throws Exception {
+    public void testCodeSigningExtKeyUsage() throws Exception {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         list.add("1.3.6.1.4.1.311.2.1.21"); // MS individual code signing
@@ -214,7 +216,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void test02SSHExtKeyUsage() throws Exception {
+    public void testSSHExtKeyUsage() throws Exception {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         certprof.setExtendedKeyUsage(list);
@@ -397,7 +399,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void test27IssuanceRevocationReason() throws Exception {
+    public void testIssuanceRevocationReason() throws Exception {
 
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         String fp1 = null;
@@ -475,7 +477,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void test38UniqueSubjectDN() throws Exception {
+    public void testUniqueSubjectDN() throws Exception {
         // Make sure that the CA requires unique subject DN
         CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
         boolean enforceuniquesubjectdn = cainfo.isDoEnforceUniqueDistinguishedName();

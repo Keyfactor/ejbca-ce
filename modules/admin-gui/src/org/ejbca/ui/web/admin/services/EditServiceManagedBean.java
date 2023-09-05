@@ -45,7 +45,7 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.CRLDownloadWorker;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
-import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorker;
+import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorkerConstants;
 import org.ejbca.core.model.services.workers.HsmKeepAliveWorker;
 import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
@@ -288,7 +288,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
         if ((cp != null) && cp.equals(PreCertificateRevocationWorkerConstants.WORKER_CLASS)) {
             ret = PreCertificateRevocationWorkerType.NAME;
         }
-        if ((cp != null) && cp.equals(DatabaseMaintenanceWorker.class.getName())) {
+        if ((cp != null) && cp.equals(DatabaseMaintenanceWorkerConstants.WORKER_CLASS)) {
             ret = DatabaseMaintenanceWorkerType.NAME;
         }
         if (ret == null) {

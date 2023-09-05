@@ -312,7 +312,11 @@ public class CertificateData extends BaseCertificateData implements Serializable
     
     @Transient
     public String getLogSafeSubjectAltName() {
-        return LogRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull(), endEntityProfileId);
+        if (endEntityProfileId != null) {
+            return LogRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull(), endEntityProfileId);
+        } else {
+            return LogRedactionUtils.getSubjectAltNameLogSafe(getSubjectAltNameNeverNull());
+        }
     }
 
     @Override

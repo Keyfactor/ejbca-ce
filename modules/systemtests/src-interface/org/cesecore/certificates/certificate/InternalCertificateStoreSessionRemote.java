@@ -14,7 +14,6 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +29,6 @@ import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
  * It allows removal of certificates, and may be used only for functional tests to clean up after
  * themselves.
  * 
- * @version $Id$
  */
 @Remote
 public interface InternalCertificateStoreSessionRemote {

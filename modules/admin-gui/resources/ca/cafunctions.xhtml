@@ -1,269 +1,296 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <ui:remove>
-	<!--
-	/*************************************************************************
-	*                                                                       *
-	*  EJBCA: The OpenSource Certificate Authority                          *
-	*                                                                       *
-	*  This software is free software; you can redistribute it and/or       *
-	*  modify it under the terms of the GNU Lesser General Public           *
-	*  License as published by the Free Software Foundation; either         *
-	*  version 2.1 of the License, or any later version.                    *
-	*                                                                       *
-	*  See terms of license at gnu.org.                                     *
-	*                                                                       *
-	*************************************************************************/
+    <!--
+    /*************************************************************************
+    *                                                                       *
+    *  EJBCA: The OpenSource Certificate Authority                          *
+    *                                                                       *
+    *  This software is free software; you can redistribute it and/or       *
+    *  modify it under the terms of the GNU Lesser General Public           *
+    *  License as published by the Free Software Foundation; either         *
+    *  version 2.1 of the License, or any later version.                    *
+    *                                                                       *
+    *  See terms of license at gnu.org.                                     *
+    *                                                                       *
+    *************************************************************************/
 
-	$Id$
-	-->
+    $Id$
+    -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{cAFunctionsMBean}" />
-	<ui:define name="content">
-		<h1><h:outputText value="#{web.text.CASTRUCTUREANDCRL}"/></h1>
-		<h:panelGroup rendered="#{cAFunctionsMBean.extCaNameList.size()>0}">
-			<h2><h:outputText value="#{web.text.IMPORTCRL_TITLE}"/></h2>
-			<h:form id="importCrl" enctype='multipart/form-data'>
+    <ui:param name="resourceBean" value="#{cAFunctionsMBean}"/>
+    <ui:define name="content">
+        <h1>
+            <h:outputText value="#{web.text.CASTRUCTUREANDCRL}"/>
+        </h1>
+        <h:panelGroup rendered="#{cAFunctionsMBean.extCaNameList.size()>0}">
+            <h2>
+                <h:outputText value="#{web.text.IMPORTCRL_TITLE}"/>
+            </h2>
+            <h:form id="importCrl" enctype='multipart/form-data'>
 
-				<h:outputText value="#{web.text.IMPORTCRL_FUNCTION}"/>
-				<input type="hidden" name='action' value='actionimportcrl'/>
-				<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
-					<tr>
-						<td width="20%" valign="top" align="right"><h:outputText
-								value="#{web.text.IMPORTCRL_FUNCTION}"/></td>
+                <h:outputText value="#{web.text.IMPORTCRL_FUNCTION}"/>
+                <input type="hidden" name='action' value='actionimportcrl'/>
+                <table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
+                    <tr>
+                        <td width="20%" valign="top" align="right">
+                            <h:outputText
+                                    value="#{web.text.IMPORTCRL_FUNCTION}"/>
+                        </td>
 
-						<td width="35%" valign="top">
-							<h:inputFile id="fileimportcrl" value="#{cAFunctionsMBean.uploadFile}"/>
-						</td>
-						<td width="35%" valign="top">
-							<h:selectOneMenu id="selectcaimportcrl"
-											 value="#{cAFunctionsMBean.crlImportCaName}">
-								<f:selectItems value="#{cAFunctionsMBean.extCaNameSeletItemList}" />
-							</h:selectOneMenu>
-						</td>
+                        <td width="35%" valign="top">
+                            <h:inputFile id="fileimportcrl" value="#{cAFunctionsMBean.uploadFile}"/>
+                        </td>
+                        <td width="35%" valign="top">
+                            <h:selectOneMenu id="selectcaimportcrl"
+                                             value="#{cAFunctionsMBean.crlImportCaName}">
+                                <f:selectItems value="#{cAFunctionsMBean.extCaNameSeletItemList}"/>
+                            </h:selectOneMenu>
+                        </td>
 
-						<td width="10%" valign="top">
-							<h:commandButton name="buttonimportcrl" action="#{cAFunctionsMBean.uploadCrlFile}"
-											 value="#{web.text.IMPORT}">
-							</h:commandButton>
-						</td>
-					</tr>
-				</table>
-			</h:form>
+                        <td width="10%" valign="top">
+                            <h:commandButton name="buttonimportcrl" action="#{cAFunctionsMBean.uploadCrlFile}"
+                                             value="#{web.text.IMPORT}">
+                            </h:commandButton>
+                        </td>
+                    </tr>
+                </table>
+            </h:form>
 
-		</h:panelGroup>
-		<h2><h:outputText value="#{web.text.BASICFUNCTIONS_TITLE}"/></h2>
-		<h:dataTable layout="block" styleClass="collapsableSection jsSectionContent" rowClasses="Row0,Row1"
-				value="#{cAFunctionsMBean.getCaInfos()}" var="caGuiInfo" 
-				columnClasses="column1-cafunctions,column2-cafunctions,column3-cafunctions"
-				headerClass="actCaStructsCRLsHeader">
-				<h:column>
-					<f:facet name="header" >
-						<h:outputText value="#{web.text.CANAME}"/>
-					</f:facet> 
+        </h:panelGroup>
+        <h2>
+            <h:outputText value="#{web.text.BASICFUNCTIONS_TITLE}"/>
+        </h2>
+        <h:dataTable layout="block" styleClass="collapsableSection jsSectionContent" rowClasses="Row0,Row1"
+                     value="#{cAFunctionsMBean.getCaInfos()}" var="caGuiInfo"
+                     columnClasses="column1-cafunctions,column2-cafunctions,column3-cafunctions"
+                     headerClass="actCaStructsCRLsHeader">
+            <h:column>
+                <f:facet name="header">
+                    <h:outputText value="#{web.text.CANAME}"/>
+                </f:facet>
 
-					<h3 style="text-align: center">
-						<h:outputText value="#{caGuiInfo.name}"/> 
-					</h3>
-					<br />
-					
-					<h:panelGroup>
-					<h:commandButton id="viewcacert"
-									 onclick="window.open('#{cAFunctionsMBean.getCertificatePopupLink(caGuiInfo.caId)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
-									 value="#{web.text.VIEW_CERTIFICATE}"
-									 title="#{web.text.VIEW_CACERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}"/>
-					<br />
-					<br />				 
-					<h:commandButton id="viewcainfo" action="#{cAFunctionsMBean.openCertificateInfoPopup}"
-									 onclick="window.open('#{cAFunctionsMBean.openCertificateInfoPopup(caGuiInfo.caId)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
-									 value="#{web.text.VIEW_INFORMATION}"
-									 title="#{web.text.VIEW_CAINFORMATION_TITLE} #{web.text.POPUP_WINDOW}"/>
-					</h:panelGroup>
-				</h:column>
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.CERTIFICATECHAINDETAILS_TITLE}"/>
-					</f:facet> 
-				
-				<h:dataTable value="#{caGuiInfo.certificatechain}" var="certificatechain" binding="#{table}"
-							 styleClass="outline-buttons-table" rowClasses="RowAlt0,RowAlt1">
-					<h:column>
-						<h:panelGroup rendered="#{table.rowIndex == 0}">
-							<h:panelGrid columns="2">
-								<h:outputText value="#{web.text.ROOTCA}: "/>
-								<h:outputText value="#{cAFunctionsMBean.getUnescapedRdnValue(certificatechain)}"/>
-							</h:panelGrid>
-							<h:panelGrid columns="6">
-								<h:outputText/>
-								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
-									<h:outputText value="#{web.text.DOWNLOADIE}"/>
-								</h:outputLink>
-								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
-									<h:outputText value="#{web.text.DOWNLOADNS}"/>
-								</h:outputLink>
-								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
-									<h:outputText value="#{web.text.DOWNLOADPEM}"/>
-								</h:outputLink>
-								<h:form>
-									<h:commandLink action="#{cAFunctionsMBean.showJksDownloadForm(caGuiInfo, (table.rowCount - table.rowIndex - 1))}"
-												   value="#{web.text.DOWNLOADJKS}"/>
-								</h:form>
-								<h:outputLink
-										value="#{cAFunctionsMBean.getSshPublicKeyLink()}?level=#{table.rowCount - table.rowIndex - 1}&amp;name=#{caGuiInfo.escapedName}"
-										rendered="#{caGuiInfo.caType == 'SSHCA'}">		
-									<h:outputText value="#{web.text.DOWNLOADSSH}"/>
-								</h:outputLink>
-							</h:panelGrid>
-						</h:panelGroup>
-						<h:panelGroup rendered="#{table.rowIndex != 0}">
-							<h:panelGrid columns="2" >
-								<h:outputText value="#{web.text.SUBORDINATECA} #{table.rowIndex}: "/>
-								<h:outputText value="#{cAFunctionsMBean.getUnescapedRdnValue(certificatechain)}"/>
-							</h:panelGrid>
-							<h:panelGrid columns="5" >
-								<h:outputText />
-								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
-									<h:outputText value="#{web.text.DOWNLOADIE}"/>
-								</h:outputLink>
-								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
-									<h:outputText value="#{web.text.DOWNLOADNS}"/>
-								</h:outputLink>
-								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
-									<h:outputText value="#{web.text.DOWNLOADPEM}"/>
-								</h:outputLink>
-								<h:form>
-									<h:commandLink action="#{cAFunctionsMBean.showJksDownloadForm(caGuiInfo, (table.rowCount - table.rowIndex -1))}"
-												   value="#{web.text.DOWNLOADJKS}"/>
-								</h:form>
-							</h:panelGrid>
-						</h:panelGroup>
-						<h:panelGroup rendered="#{caGuiInfo.isShowJksDownloadForm(table.rowCount - table.rowIndex - 1)}">
-							<form method="post" action="#{cAFunctionsMBean.getDownloadCertificateLink()}">
-								<input type="hidden" name="cmd" value="jkscert"/>
-								<input type="hidden" name="level" value="#{table.rowCount - table.rowIndex - 1}"/>
-								<input type="hidden" name="issuer" value="#{caGuiInfo.subjectdn}"/>
-								<h:outputText value="#{web.text.JKSPASSWORD}"/>
-								<input type="password" name="password" value=""/>
-								<input type="submit"  value="#{web.text.DOWNLOADJKS}"/>
-							</form>
-						</h:panelGroup>
-					</h:column>
-				</h:dataTable>
-				</h:column>
-				
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.CRL_DETAILS}"/>
-					</f:facet>
-					
-					<!-- Full CRLs -->
-					<h:outputText value="#{web.text.NOCRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.isCrlInfoEmpty()}"/>
-					<h4 style="text-align: left">
-						<h:outputText value="#{web.text.LATESTCRL}:" rendered="#{!caGuiInfo.isCrlInfoEmpty()}"/> 
-					</h4>
-					<h:dataTable value="#{caGuiInfo.getCrlinfo()}" var="crlInfo" 
-						headerClass="actCaStructsCRLsHeader" rendered="#{!caGuiInfo.isCrlInfoEmpty()}">
-						<h:column>
-							<f:facet name="header" >
-								<h:outputText value="#{web.text.CREATED}"/>
-							</f:facet>
-							<h:outputText value="#{crlInfo.crlCreateDate}"/>
-						</h:column>
-						<h:column>
-							<f:facet name="header" >
-								<h:outputText value="#{web.text.EXPIRES}"/>
-							</f:facet>
-							<h:panelGroup rendered="#{crlInfo.crlExpired}">
-								<span id="alert"><h:outputText value=" #{crlInfo.crlExpireDate}" /></span>
-							</h:panelGroup>
-							<h:panelGroup rendered="#{!crlInfo.crlExpired}">
-								<span id="alert2"><h:outputText value=" #{crlInfo.crlExpireDate}" /></span>
-							</h:panelGroup>
-						</h:column>
-						<h:column>
-							<f:facet name="header" >
-								<h:outputText value="#{web.text.PARTITION}"/>
-							</f:facet>
-							<h:outputText value="#{crlInfo.partitionIndex}" />
-						</h:column>
-						<h:column>
-							<f:facet name="header" >
-								<h:outputText value="#{web.text.NUMBER}"/>
-							</f:facet>
-							<h:outputText value=" #{crlInfo.lastCrlNumber}" />
-						</h:column>
-						<h:column>
-							<h:outputLink rendered="#{!caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.URLEncodedSubjectDn}">
-								<h:outputText value=" #{web.text.GETCRL}"/>
-							</h:outputLink>
-							<h:outputLink rendered="#{caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.URLEncodedSubjectDn}&amp;partition=#{crlInfo.partitionIndex}">
-								<h:outputText value=" #{web.text.GETCRL}"/>
-							</h:outputLink>
-						</h:column>
-						<br />
-					</h:dataTable>
-					
-					<!-- Delta CRLs-->
-					<br />
-					<h:panelGroup rendered="#{caGuiInfo.isDeltaCrlInfoEmpty()}">
-						<h:outputText value="#{web.text.NODELTACRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.getDeltaPeriodEnabled()}"/>
-						<h:outputText value="#{web.text.DELTACRLSNOTENABLED}" rendered="#{!caGuiInfo.getDeltaPeriodEnabled()}"/>
-					</h:panelGroup>
-					
-					<h4 style="text-align: left">
-						<h:outputText value="#{web.text.LATESTDELTACRL}:" rendered="#{!caGuiInfo.isDeltaCrlInfoEmpty()}"/> 
-					</h4>
-					
-					<h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlInfoEmpty()}">
-						<h:outputText value=" #{web.text.CREATED} #{caGuiInfo.getDeltaCrlCreateDate()}"/>
-						<h:panelGroup rendered="#{caGuiInfo.isDeltaCrlExpired()}">
-							<span id="alert3"><h:outputText value="#{web.text.EXPIRED} #{caGuiInfo.getDeltaCrlExpireDate()}" /></span>
-						</h:panelGroup>
-						<h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlExpired()}">
-							<span id="alert4"><h:outputText value="#{web.text.EXPIRES} #{caGuiInfo.getDeltaCrlExpireDate()}" /></span>
-						<h:outputText value=" #{web.text.NUMBER} #{caGuiInfo.deltacrlinfo.getLastCRLNumber()} " />
-						<h:outputLink
-								value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=deltacrl&amp;issuer=#{caGuiInfo.subjectdn}">
-							<h:outputText value="#{web.text.GETDELTACRL}"/>
-						</h:outputLink>
-						</h:panelGroup>
-					</h:panelGroup>
-					<br />
-					<br />
-					<!--Display createcrl if admin is authorized-->
-					<h:form>
-					<h:panelGroup rendered="#{cAFunctionsMBean.hasCreatecrlrights()}">
-						<h:outputText value="#{web.text.CREATENEWCRL} : "/>
-						<h:commandButton name="buttoncreatecrl"
-										 value="#{web.text.CREATECRL}"
-										 rendered="#{caGuiInfo.caStatusActive}" action="#{cAFunctionsMBean.createNewCrl(caGuiInfo.caId)}"/>
-						<h:outputText value="#{web.text.CAISNTACTIVE}" rendered="#{!caGuiInfo.caStatusActive}"/>
-						<br/>
-						<h:panelGroup rendered="#{caGuiInfo.deltaPeriodEnabled}">
-							<h:outputText value="#{web.text.CREATENEWDELTACRL} : "/>
-							<h:commandButton name="buttoncreatecrl"
-											 value="#{web.text.CREATECRL}"
-											 rendered="#{caGuiInfo.caStatusActive}" action="#{cAFunctionsMBean.createNewDeltaCrl(caGuiInfo.caId)}"/>
-							<h:outputText value="#{web.text.CAISNTACTIVE}" rendered="#{!caGuiInfo.caStatusActive}"/>
+                <h3 style="text-align: center">
+                    <h:outputText value="#{caGuiInfo.name}"/>
+                </h3>
+                <br/>
 
-						</h:panelGroup>
-					</h:panelGroup>
-				</h:form>
-				</h:column>
-		</h:dataTable>
-	</ui:define>
+                <h:panelGroup>
+                    <h:commandButton id="viewcacert"
+                                     onclick="window.open('#{cAFunctionsMBean.getCertificatePopupLink(caGuiInfo.caId)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
+                                     value="#{web.text.VIEW_CERTIFICATE}"
+                                     title="#{web.text.VIEW_CACERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}"/>
+                    <br/>
+                    <br/>
+                    <h:commandButton id="viewcainfo" action="#{cAFunctionsMBean.openCertificateInfoPopup}"
+                                     onclick="window.open('#{cAFunctionsMBean.openCertificateInfoPopup(caGuiInfo.caId)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
+                                     value="#{web.text.VIEW_INFORMATION}"
+                                     title="#{web.text.VIEW_CAINFORMATION_TITLE} #{web.text.POPUP_WINDOW}"/>
+                </h:panelGroup>
+            </h:column>
+            <h:column>
+                <f:facet name="header">
+                    <h:outputText value="#{web.text.CERTIFICATECHAINDETAILS_TITLE}"/>
+                </f:facet>
+
+                <h:dataTable value="#{caGuiInfo.certificatechain}" var="certificatechain" binding="#{table}"
+                             styleClass="outline-buttons-table" rowClasses="RowAlt0,RowAlt1">
+                    <h:column>
+                        <h:panelGroup>
+                            <h:panelGrid columns="2">
+                                <h:outputText value="#{web.text.ROOTCA}:" rendered="#{certificatechain.isRoot() and table.rowIndex == 0}"/>
+                                <h:outputText value="#{web.text.ISSUINGCA}:" rendered="#{!certificatechain.isRoot() and table.rowIndex == 0}"/>
+                                <h:outputText value="#{web.text.SUBORDINATECA} #{table.rowIndex}: " rendered="#{table.rowIndex > 0}"/>
+                                <h:outputText value="#{certificatechain.getSubjectDN()}"/>
+                            </h:panelGrid>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{table.rowIndex == 0}">
+                            <h:panelGrid columns="6" rendered="#{certificatechain.certExists}">
+                                <h:outputText/>
+                                <h:outputLink
+                                        value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
+                                    <h:outputText value="#{web.text.DOWNLOADIE}"/>
+                                </h:outputLink>
+                                <h:outputLink
+                                        value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
+                                    <h:outputText value="#{web.text.DOWNLOADNS}"/>
+                                </h:outputLink>
+                                <h:outputLink
+                                        value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
+                                    <h:outputText value="#{web.text.DOWNLOADPEM}"/>
+                                </h:outputLink>
+                                <h:form>
+                                    <h:commandLink
+                                            action="#{cAFunctionsMBean.showJksDownloadForm(caGuiInfo, (table.rowCount - table.rowIndex - 1))}"
+                                            value="#{web.text.DOWNLOADJKS}"/>
+                                </h:form>
+                                <h:outputLink
+                                        value="#{cAFunctionsMBean.getSshPublicKeyLink()}?level=#{table.rowCount - table.rowIndex - 1}&amp;name=#{caGuiInfo.escapedName}"
+                                        rendered="#{caGuiInfo.caType == 'SSHCA'}">
+                                    <h:outputText value="#{web.text.DOWNLOADSSH}"/>
+                                </h:outputLink>
+                            </h:panelGrid>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{table.rowIndex != 0}">
+                            <h:panelGrid columns="5">
+                                <h:outputText/>
+                                <h:outputLink
+                                        value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
+                                    <h:outputText value="#{web.text.DOWNLOADIE}"/>
+                                </h:outputLink>
+                                <h:outputLink
+                                        value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
+                                    <h:outputText value="#{web.text.DOWNLOADNS}"/>
+                                </h:outputLink>
+                                <h:outputLink
+                                        value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
+                                    <h:outputText value="#{web.text.DOWNLOADPEM}"/>
+                                </h:outputLink>
+                                <h:form>
+                                    <h:commandLink
+                                            action="#{cAFunctionsMBean.showJksDownloadForm(caGuiInfo, (table.rowCount - table.rowIndex -1))}"
+                                            value="#{web.text.DOWNLOADJKS}"/>
+                                </h:form>
+                            </h:panelGrid>
+                        </h:panelGroup>
+                        <h:panelGroup
+                                rendered="#{caGuiInfo.isShowJksDownloadForm(table.rowCount - table.rowIndex - 1)}">
+                            <form method="post" action="#{cAFunctionsMBean.getDownloadCertificateLink()}">
+                                <input type="hidden" name="cmd" value="jkscert"/>
+                                <input type="hidden" name="level" value="#{table.rowCount - table.rowIndex - 1}"/>
+                                <input type="hidden" name="issuer" value="#{caGuiInfo.subjectdn}"/>
+                                <h:outputText value="#{web.text.JKSPASSWORD}"/>
+                                <input type="password" name="password" value=""/>
+                                <input type="submit" value="#{web.text.DOWNLOADJKS}"/>
+                            </form>
+                        </h:panelGroup>
+                    </h:column>
+                </h:dataTable>
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">
+                    <h:outputText value="#{web.text.CRL_DETAILS}"/>
+                </f:facet>
+
+                <ui:fragment rendered="#{!caGuiInfo.isCrlSupported()}">
+                    <h:outputText value="#{web.text.CRL_UNSUPPORTED}"/>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{caGuiInfo.isCrlSupported()}">
+                    <!-- Full CRLs -->
+                    <h:outputText value="#{web.text.NOCRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.isCrlInfoEmpty()}"/>
+                    <h4 style="text-align: left">
+                        <h:outputText value="#{web.text.LATESTCRL}:" rendered="#{!caGuiInfo.isCrlInfoEmpty()}"/>
+                    </h4>
+                    <h:dataTable value="#{caGuiInfo.getCrlinfo()}" var="crlInfo"
+                                 headerClass="actCaStructsCRLsHeader" rendered="#{!caGuiInfo.isCrlInfoEmpty()}">
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{web.text.CREATED}"/>
+                            </f:facet>
+                            <h:outputText value="#{crlInfo.crlCreateDate}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{web.text.EXPIRES}"/>
+                            </f:facet>
+                            <h:panelGroup rendered="#{crlInfo.crlExpired}">
+                                <span id="alert"><h:outputText value=" #{crlInfo.crlExpireDate}"/></span>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{!crlInfo.crlExpired}">
+                                <span id="alert2"><h:outputText value=" #{crlInfo.crlExpireDate}"/></span>
+                            </h:panelGroup>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{web.text.PARTITION}"/>
+                            </f:facet>
+                            <h:outputText value="#{crlInfo.partitionIndex}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{web.text.NUMBER}"/>
+                            </f:facet>
+                            <h:outputText value=" #{crlInfo.lastCrlNumber}"/>
+                        </h:column>
+                        <h:column>
+                            <h:outputLink rendered="#{!caGuiInfo.displayPartitions}"
+                                          value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.URLEncodedSubjectDn}">
+                                <h:outputText value=" #{web.text.GETCRL}"/>
+                            </h:outputLink>
+                            <h:outputLink rendered="#{caGuiInfo.displayPartitions}"
+                                          value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.URLEncodedSubjectDn}&amp;partition=#{crlInfo.partitionIndex}">
+                                <h:outputText value=" #{web.text.GETCRL}"/>
+                            </h:outputLink>
+                        </h:column>
+                        <br/>
+                    </h:dataTable>
+
+                    <!-- Delta CRLs-->
+                    <br/>
+                    <h:panelGroup rendered="#{caGuiInfo.isDeltaCrlInfoEmpty()}">
+                        <h:outputText value="#{web.text.NODELTACRLHAVEBEENGENERATED}"
+                                      rendered="#{caGuiInfo.getDeltaPeriodEnabled()}"/>
+                        <h:outputText value="#{web.text.DELTACRLSNOTENABLED}"
+                                      rendered="#{!caGuiInfo.getDeltaPeriodEnabled()}"/>
+                    </h:panelGroup>
+
+                    <h4 style="text-align: left">
+                        <h:outputText value="#{web.text.LATESTDELTACRL}:"
+                                      rendered="#{!caGuiInfo.isDeltaCrlInfoEmpty()}"/>
+                    </h4>
+
+                    <h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlInfoEmpty()}">
+                        <h:outputText value=" #{web.text.CREATED} #{caGuiInfo.getDeltaCrlCreateDate()}"/>
+                        <h:panelGroup rendered="#{caGuiInfo.isDeltaCrlExpired()}">
+                            <span id="alert3"><h:outputText
+                                    value="#{web.text.EXPIRED} #{caGuiInfo.getDeltaCrlExpireDate()}"/></span>
+                            <h:outputText value=" #{web.text.NUMBER} #{caGuiInfo.deltacrlinfo.getLastCRLNumber()} "/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlExpired()}">
+                            <span id="alert4"><h:outputText
+                                    value="#{web.text.EXPIRES} #{caGuiInfo.getDeltaCrlExpireDate()}"/></span>
+                            <h:outputText value=" #{web.text.NUMBER} #{caGuiInfo.deltacrlinfo.getLastCRLNumber()} "/>
+                            <h:outputLink
+                                    value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=deltacrl&amp;issuer=#{caGuiInfo.subjectdn}">
+                                <h:outputText value="#{web.text.GETDELTACRL}"/>
+                            </h:outputLink>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <br/>
+                    <br/>
+                    <!--Display createcrl if admin is authorized-->
+                    <h:form>
+                        <h:panelGroup rendered="#{cAFunctionsMBean.hasCreatecrlrights()}">
+                            <h:outputText value="#{web.text.CREATENEWCRL} : "/>
+                            <h:commandButton name="buttoncreatecrl"
+                                             value="#{web.text.CREATECRL}"
+                                             rendered="#{caGuiInfo.caStatusActive}"
+                                             action="#{cAFunctionsMBean.createNewCrl(caGuiInfo.caId)}"/>
+                            <h:outputText value="#{web.text.CAISNTACTIVE}" rendered="#{!caGuiInfo.caStatusActive}"/>
+                            <br/>
+                            <h:panelGroup rendered="#{caGuiInfo.deltaPeriodEnabled}">
+                                <h:outputText value="#{web.text.CREATENEWDELTACRL} : "/>
+                                <h:commandButton name="buttoncreatecrl"
+                                                 value="#{web.text.CREATECRL}"
+                                                 rendered="#{caGuiInfo.caStatusActive}"
+                                                 action="#{cAFunctionsMBean.createNewDeltaCrl(caGuiInfo.caId)}"/>
+                                <h:outputText value="#{web.text.CAISNTACTIVE}" rendered="#{!caGuiInfo.caStatusActive}"/>
+
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:form>
+                </ui:fragment>
+            </h:column>
+        </h:dataTable>
+    </ui:define>
 </ui:composition>
 </html>

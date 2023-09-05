@@ -117,6 +117,7 @@ public enum OcspSigningCache {
                             stagedDefaultResponder.getCaCertificateChain(), stagedDefaultResponder.getOcspSigningCertificate(),
                             stagedDefaultResponder.getPrivateKey(), stagedDefaultResponder.getSignatureProviderName(),
                             stagedDefaultResponder.getOcspKeyBinding(), stagedDefaultResponder.getResponderIdType());
+                    entry.setCrlSigningAlgorithm(stagedDefaultResponder.getCrlSigningAlgorithm());
                     modifiedEntries.put(key, entry);
                 } else {
                     //If no default responder is defined, remove placeholder. 
