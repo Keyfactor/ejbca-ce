@@ -28,6 +28,7 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.cesecore.util.LogRedactionUtils;
 import org.ietf.ldap.LDAPDN;
 
 import com.keyfactor.util.CeSecoreNameStyle;
@@ -257,7 +258,7 @@ public class DNFieldExtractor implements Serializable {
                         // No need to waste time on this if we didn't have any multi values, we spent enough time above already
                         final X500Name x500Name = nameBuilder.build();
                         dn = x500Name.toString();
-                        if (log.isDebugEnabled()) {
+                        if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
                             log.debug("Exploded DN with multi-value RDN from '"+dninput+"' to '"+dn+"'.");
                         }
                     }

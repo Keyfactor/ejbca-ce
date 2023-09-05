@@ -158,8 +158,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
         } catch (AuthStatusException | AuthLoginException se) {
             throw se;
         }  catch (Exception e) {
-            log.error(intres.getLocalizedMessage("error.unknown"), e);
-            throw new EJBException(e);
+            log.error(intres.getLocalizedMessage("error.unknown"), LogRedactionUtils.getRedactedException(e));
+            throw new EJBException(LogRedactionUtils.getRedactedException(e));
         }
     }
 

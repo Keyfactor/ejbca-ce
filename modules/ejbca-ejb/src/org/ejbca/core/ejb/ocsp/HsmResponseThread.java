@@ -27,6 +27,7 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
+import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.util.CertTools;
 
@@ -56,7 +57,7 @@ public class HsmResponseThread implements Callable<BasicOCSPResp> {
         try {
             this.chain = CertTools.convertToX509CertificateHolder(chain);
         } catch (CertificateEncodingException e) {
-            throw new OcspFailureException(e);
+            throw new OcspFailureException(LogRedactionUtils.getRedactedException(e));
         }
     }
 

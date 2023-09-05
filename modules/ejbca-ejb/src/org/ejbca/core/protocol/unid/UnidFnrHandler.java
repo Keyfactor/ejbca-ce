@@ -26,6 +26,7 @@ import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
@@ -58,7 +59,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	public RequestMessage processRequestMessage(RequestMessage req, final String certificateProfileName) {
 	    final X500Name dn = req.getRequestX500Name();
 	    if (LOG.isDebugEnabled()) {
-			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
+			LOG.debug(">processRequestMessage:'"+ LogRedactionUtils.getSubjectDnLogSafe(dn.toString()) +"' and '" + certificateProfileName + "'");
 		}
 		final String unidPrefix = getPrefixFromCertProfileName(certificateProfileName);
 		if ( unidPrefix==null ) {
