@@ -72,8 +72,8 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     public static final String CERT_SCP_DESTINATION_PROPERTY_NAME = "cert.scp.destination";
     public static final String SCP_PRIVATE_KEY_PASSWORD_NAME = "scp.privatekey.password";
     public static final String SCP_PRIVATE_KEY_PROPERTY_NAME = "scp.privatekey";
-
     public static final String SCP_KNOWN_HOSTS_PROPERTY_NAME = "scp.knownhosts";
+    public static final int DEFAULT_SSH_PORT_NUMBER = 22;
 
     private static final String EKU_PKIX_OCSPSIGNING = "1.3.6.1.5.5.7.3.9";
 
