@@ -50,8 +50,6 @@ import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * Imports a keystore and creates a new X509 CA from it
- *
- * @version $Id$
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
 
@@ -68,6 +66,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     private static final String CA_TOKEN_CLASSPATH_KEY = "--cp";
     private static final String CA_TOKEN_PASSWORD_KEY = "--ctpassword";
     private static final String CA_TOKEN_PROPERTIES_FILE_KEY = "--prop";
+    private static final String TOKEN_NAME_KEY = "--tokenname";
     private static final String CA_CERTIFICATE_FILE_KEY = "--cert";
 
     {
@@ -95,6 +94,13 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 ParameterMode.ARGUMENT,
                 "(PKCS#11) A file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in admin GUI."));
         registerParameter(new Parameter(
+                TOKEN_NAME_KEY,
+                "Name of Crypto Token",
+                MandatoryMode.OPTIONAL,
+                StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Specifies an existing Crypto Token to create the CA with, either this or " + CA_TOKEN_CLASSPATH_KEY + " must be set, but not both."));
+        registerParameter(new Parameter(
                 CA_CERTIFICATE_FILE_KEY,
                 "CA Certificate File",
                 MandatoryMode.OPTIONAL,
@@ -114,6 +120,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
         CryptoProviderTools.installBCProvider();
         String caName = parameters.get(CA_NAME_KEY);
         boolean importHsmToken = parameters.get(HARD_SWITCH_KEY) != null;
+        final String catokenname = parameters.get(TOKEN_NAME_KEY);
         if (!importHsmToken) {
             // Import soft keystore
             log.info("Importing soft token.");
@@ -221,14 +228,14 @@ public class CaImportCACommand extends BaseCaAdminCommand {
             Certificate[] cacertarray = cacerts.toArray(new Certificate[cacerts.size()]);
             try {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).importCAFromHSM(getAuthenticationToken(), caName, cacertarray,
-                        tokenpwd, tokenclasspath, catokenproperties);
+                        tokenpwd, tokenclasspath, catokenname, catokenproperties);
                 return CommandResult.SUCCESS;
             } catch (CryptoTokenOfflineException e) {
                 log.error("Crypto Token was offline. Make sure the P11 library " + tokenclasspath + " is accessible.");
             } catch (CryptoTokenAuthenticationFailedException e) {
                 log.error("Authentication to the crypto token failed. Make sure the authentication code is correct.");
             } catch (IllegalCryptoTokenException e) {
-                log.error("The certificate chain was incomplete." + System.lineSeparator() + e.getMessage());
+                log.error("The crypto token can not be created, does not exist or certificate chain was incomplete." + System.lineSeparator() + e.getMessage());
             } catch (CAExistsException e) {
                 log.error("CA already exists in database.");
             } catch (CAOfflineException e) {
