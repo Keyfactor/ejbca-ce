@@ -73,9 +73,8 @@ public class ServiceTypeManager implements Serializable {
         registerServiceType(new RolloverWorkerType());
         registerServiceType(new PublishQueueWorkerType());
         registerServiceType(new HsmKeepAliveWorkerType());
-        registerServiceType(new DatabaseMaintenanceWorkerType());
         // Enterprise Edition workers that don't use the custom worker framework
-        final ServiceType[] eeWorkerTypes = { new PreCertificateRevocationWorkerType() };
+        final ServiceType[] eeWorkerTypes = { new PreCertificateRevocationWorkerType(), new DatabaseMaintenanceWorkerType() };
         for (final ServiceType eeWorkerType : eeWorkerTypes) {
             final String classpath = eeWorkerType.getClassPath();
             try {

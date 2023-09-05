@@ -150,6 +150,15 @@ public class LogRedactionUtils {
         }
     }
 
+    public static String getLogSafe(String string, final List<String> identifiers) {
+        if (redactPii()) {
+            for (String identifier : identifiers) {
+                string = string.replace(identifier, LogRedactionUtils.REDACTED_CONTENT);
+            }
+        }
+        return string;
+    }
+    
     public static String getLogSafe(final String string, final String identifier, final int endEntityProfileId) {
         return LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii() ?
                 string.replace(identifier, LogRedactionUtils.REDACTED_CONTENT) : string;
