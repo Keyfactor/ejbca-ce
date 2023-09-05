@@ -16,6 +16,7 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -323,7 +324,10 @@ public class CustomPublisherContainer extends BasePublisher {
                 log.error("Publisher configured incorrectly, a number in configuration contains illegal characters.");
                 return null;
             } catch (ReflectiveOperationException iae) {
-                throw new IllegalStateException(iae);
+                Throwable throwable = iae instanceof InvocationTargetException
+                        ? ((InvocationTargetException) iae).getTargetException()
+                        : iae;
+                throw new IllegalStateException(throwable);
             } 
 		}
 		
