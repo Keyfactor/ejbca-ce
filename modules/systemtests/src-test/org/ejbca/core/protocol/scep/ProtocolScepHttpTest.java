@@ -670,7 +670,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         assertTrue(respBytes.length > 0);
         cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
         // Check that we got the right cert back
-        assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        assertEquals(rootCaCert.getSubjectDN().getName(), cert.getSubjectDN().getName());
 
     }
         
