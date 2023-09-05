@@ -28,8 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSSignedData;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -268,27 +266,7 @@ public class RequestHelper {
         RequestHelper.sendNewB64File(b64cert, out, "cert.pem", beginKey, endKey);
     } // sendNewB64Cert
 
-    /**
-     * Sends back CA-certificate as binary file (application/x-x509-ca-cert)
-     *
-     * @param cert DER encoded certificate to be returned
-     * @param out output stream to send to
-     *
-     * @throws IOException on error
-     */
-    public static void sendNewX509CaCert(byte[] cert, HttpServletResponse out)
-            throws IOException {
-        // First we must know if this is a single cert or a CMS structure
-        try {
-            new CMSSignedData(cert);
-            log.debug("Returning CMS with certificates as application/x-x509-ca-ra-cert");
-            sendBinaryBytes(cert, out, "application/x-x509-ca-ra-cert", null);
-        } catch (CMSException e) {
-            // It was a cert, not a CMS
-            log.debug("Returning X.509 certificate as application/x-x509-ca-cert");
-            sendBinaryBytes(cert, out, "application/x-x509-ca-cert", null);
-        }    
-    } // sendNewX509CaCert
+
 
     /**
      * Sends back a number of bytes
