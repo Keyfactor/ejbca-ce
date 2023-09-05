@@ -213,7 +213,7 @@ public class DistinguishedName extends LdapName {
         // reverse order between the string and List<Rdn> constructors
         Collections.reverse(localRdns);
         final DistinguishedName ret = new DistinguishedName(localRdns);
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
             log.debug("result :\n" + ret.toString());
         }
         return ret;
