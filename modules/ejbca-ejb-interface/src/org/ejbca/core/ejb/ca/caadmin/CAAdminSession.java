@@ -438,9 +438,10 @@ public interface CAAdminSession {
      * @param admin              Administrator
      * @param caname             the CA-name (human readable) the newly created CA will get
      * @param signatureCertChain chain of certificates, this CAs certificate first.
-     * @param catokenpassword    used to unlock the HSM keys.
-     * @param catokenclasspath   classpath to one of the HardToken classes, for example
-     *                           org.cesecore.keys.token.PKCS11CryptoToken.
+     * @param catokenpassword    used to activate the crypto token.
+     * @param catokenclasspath   classpath to one of the CryptoTokenToken class for creating a new Crypto Token, for example
+     *                           org.cesecore.keys.token.PKCS11CryptoToken, or null, only one of catokenclasspath or cryptoTokenName should be specified
+     * @param cryptoTokenName    name of an existing crypto token, or null, only one of catokenclasspath or cryptoTokenName should be specified
      * @param catokenproperties  the catoken properties, same as usually entered in the
      *                           adminGUI for hard token CAs.
      * @throws AuthorizationDeniedException             if imported CA was signed by a CA user does not have authorization to.
@@ -452,7 +453,7 @@ public interface CAAdminSession {
      * @throws IllegalCryptoTokenException              the certificate chain is incomplete
      */
     void importCAFromHSM(AuthenticationToken admin, String caname, Certificate[] signatureCertChain, String catokenpassword,
-                         String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+                         String catokenclasspath, String cryptoTokenName, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             IllegalCryptoTokenException, CAExistsException, AuthorizationDeniedException, CAOfflineException,
             NoSuchSlotException;
 
