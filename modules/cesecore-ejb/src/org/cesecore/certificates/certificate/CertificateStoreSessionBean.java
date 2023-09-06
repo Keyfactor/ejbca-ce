@@ -1926,9 +1926,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
 
         final CertificateDataWrapper latestCertificateDataWrapper = getLatestCertificateDataWrapper(certificateDataWrappers);
-        final int eepId = latestCertificateDataWrapper.getCertificateData().getEndEntityProfileId();
+        
+        Integer eepId = null;
+        if (latestCertificateDataWrapper != null) {
+            eepId = latestCertificateDataWrapper.getCertificateData().getEndEntityProfileId();
+        } 
 
-        return LogRedactionUtils.getSubjectDnLogSafe(subjectDn, eepId);
+        return LogRedactionUtils.getSubjectDnLogSafe(subjectDn, eepId == null ? 0 : eepId);
     }
 
     /**
