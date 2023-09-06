@@ -3057,7 +3057,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return new ArrayList<>(getSshExtensionsMap().keySet());
     }
 
-    public void setSshExtensions(Map<String, byte[]> extensions) {
+    public void setSshExtensionsMap(Map<String, byte[]> extensions) {
         data.put(SSH_EXTENSIONS, extensions);
     }
 
