@@ -135,7 +135,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     @Override
     public void revokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers,
             Date revocationDate, Date invalidityDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
-    	final boolean waschanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(cdw, revocationDate, reason), invalidityDate, reason);
+    	final boolean waschanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(admin, cdw, revocationDate, reason), invalidityDate, reason);
     	// Only publish the revocation if it was actually performed
     	if (waschanged) {
     	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
@@ -147,7 +147,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     			// unrevocation, -1L as revocationDate
     		    final boolean published = publisherSession.storeCertificate(admin, publishers, cdw, password, userDataDN, null);
         		if (published) {
-        			log.info(intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason)));
+        			log.info(intres.getLocalizedMessage("store.republishunrevokedcert", reason));
         		} else {
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
                     Map<Integer, BasePublisher> all = publisherSession.getAllPublishers();
@@ -216,8 +216,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 data.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
               continue;
             }
-                    
-            wasChanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(
+
+            wasChanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(admin,
                     cdw, new Date(data.getRevocationDate()), reason), new Date(data.getInvalidityDate()), reason);
             
             // Only publish the revocation if it was actually performed
@@ -231,7 +231,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                     // unrevocation, -1L as revocationDate
                     final boolean published = publisherSession.storeCertificate(admin, publishers, cdw, password, data.getSubjectDN(), null);
                     if (published) {
-                        log.info(intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason)));
+                        log.info(intres.getLocalizedMessage("store.republishunrevokedcert", reason));
                     } else {
                         final String serialNumber = certificateData.getSerialNumberHex();
                         // If it is not possible, only log error but continue the operation of not revoking the certificate
@@ -308,13 +308,15 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     }
 
     /** @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
-    private Date getRevocationDate(final CertificateDataWrapper cdw, final Date revocationDate, final int reason) {
-        if (revocationDate == null || (reason != RevokedCertInfo.NOT_REVOKED && reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ||
+    private Date getRevocationDate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revocationDate, final int reason) throws AuthorizationDeniedException {
+        final String issuerDN = cdw.getBaseCertificateData().getIssuerDN();
+        CAInfo caInfo = caSession.getCAInfo(admin, issuerDN.hashCode());
+        if (revocationDate == null || caInfo.getDeltaCRLPeriod() <= 0
+                || (reason != RevokedCertInfo.NOT_REVOKED && reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ||
                 (cdw.getBaseCertificateData().getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
             return revocationDate; // return unmodified
         }
-        
-        final String issuerDN = cdw.getBaseCertificateData().getIssuerDN();
+
         final CRLInfo baseCrlInfo = crlStoreSession.getLastCRLInfo(issuerDN, cdw.getBaseCertificateData().getCrlPartitionIndex(), false);
         if (baseCrlInfo == null || baseCrlInfo.getCreateDate().before(revocationDate)) { // if not on base CRL
             return null;
