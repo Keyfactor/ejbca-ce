@@ -39,8 +39,12 @@ public class ServerLogCheckUtil {
                         {"issuerdn", "issuer", "cadn", "admin", "administrator"};
     // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6
     private static final int PREFIXES_SLACK = 10;
+    private static final String[] REPLACE_BEFORE_PROCESSING = {"C=SE,CN="}; 
     
     private static Pattern SUBJECT_DN_COMPONENTS;
+    private static Pattern SUBJECT_ALT_NAME_COMPONENTS;
+    private static Pattern BASE64_ENCODED_LOGS;
+    
     public static List<String> whiteListedPackages;
     public static List<String> whiteListedClasses;
     // class -> method, beware of whitelisting methods with same name
@@ -62,7 +66,14 @@ public class ServerLogCheckUtil {
         
         new ServerLogCheckUtil().loadWhiteListPiiConfiguration();
         
-        SUBJECT_DN_COMPONENTS = Pattern.compile(LogRedactionUtils.getSubjectDnRedactionPattern(), Pattern.CASE_INSENSITIVE);
+        SUBJECT_DN_COMPONENTS = Pattern.compile(
+                LogRedactionUtils.getSubjectDnRedactionPattern()
+                            .replace("|(c=)", "").replace("|(dn=)", "").replace("|(name=)", ""), Pattern.CASE_INSENSITIVE);
+        
+        SUBJECT_ALT_NAME_COMPONENTS = Pattern.compile(
+                LogRedactionUtils.getSubjectAltNameRedactionPattern(), Pattern.CASE_INSENSITIVE);
+        
+        BASE64_ENCODED_LOGS = Pattern.compile("MI[EIMH]{1}[a-zA-Z0-9]{12}", Pattern.CASE_INSENSITIVE);
     }
         
     public static class ServerLogRecord {
@@ -127,11 +138,36 @@ public class ServerLogCheckUtil {
             }
             
             // check if says issuerDn with lower
-            Matcher m = SUBJECT_DN_COMPONENTS.matcher(message);
-            if(m.find()) { // always true if Wildfly filter is enabled
-                int foundOn = m.start();
-                String wholePrefix = message.substring(0, foundOn).trim().toLowerCase();
-                for (String p: IGNORED_ON_LOWERCASE_PREFIXES) {
+            Matcher m1 = SUBJECT_DN_COMPONENTS.matcher(message);
+            Matcher m2 = SUBJECT_ALT_NAME_COMPONENTS.matcher(message);
+            Matcher m3 = BASE64_ENCODED_LOGS.matcher(message);
+            int foundOn = -1;
+            boolean subjectDnLogging = false;
+            if (m1.find()) {
+                foundOn = m1.start();
+                subjectDnLogging = true;
+            } else if(m2.find()) {
+                foundOn = m2.start();
+            } else if(m3.find()) {
+                foundOn = m3.start();
+            } else {
+                // if Wildfly filter is absent
+                isWhiteListed = true;
+                return isWhiteListed;
+            }
+            // always true if Wildfly filter is enabled
+            String wholePrefix = message.substring(0, foundOn).trim().toLowerCase();
+            for (String p: IGNORED_ON_LOWERCASE_PREFIXES) {
+                int detected = wholePrefix.lastIndexOf(p);
+                if (detected > 0 && 
+                        (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
+                    isWhiteListed = true;
+                    return isWhiteListed;
+                }
+            }
+            
+            if (whiteListedConditionalMethods.containsKey(classSimpleName + ":" +  methodName)) {
+                for (String p: whiteListedConditionalMethods.get(classSimpleName + ":" +  methodName)) {
                     int detected = wholePrefix.lastIndexOf(p);
                     if (detected > 0 && 
                             (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
@@ -139,17 +175,12 @@ public class ServerLogCheckUtil {
                         return isWhiteListed;
                     }
                 }
-                
-                if (whiteListedConditionalMethods.containsKey(classSimpleName + ":" +  methodName)) {
-                    for (String p: whiteListedConditionalMethods.get(classSimpleName + ":" +  methodName)) {
-                        int detected = wholePrefix.lastIndexOf(p);
-                        if (detected > 0 && 
-                                (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
-                            isWhiteListed = true;
-                            return isWhiteListed;
-                        }
-                    }
-                }                
+            }       
+            
+            if(!subjectDnLogging) { // subjectAltName or certificate logging                
+                log.error("Not whitelisted: " + toString());
+                isWhiteListed = false;
+                return isWhiteListed;
             }
             
             // a bit expensive but we only create in average 3 CAs for each class and
@@ -161,12 +192,12 @@ public class ServerLogCheckUtil {
                 message = message.replace(s, "");
             }
             
-            m = SUBJECT_DN_COMPONENTS.matcher(message);
+            Matcher m = SUBJECT_DN_COMPONENTS.matcher(message);
             if(!m.find()) { // false positives should be gone now
                 isWhiteListed = true;
                 return isWhiteListed;
             }
-            
+                        
             log.error("Not whitelisted: " + toString());
             isWhiteListed = false;
             return isWhiteListed;
