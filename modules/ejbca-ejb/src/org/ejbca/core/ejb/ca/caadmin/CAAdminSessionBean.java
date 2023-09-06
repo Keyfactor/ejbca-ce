@@ -2885,7 +2885,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Get the Id of an existing crypto token
             Integer id = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
             if (id == null) {
-                throw new IllegalCryptoTokenException("Crypto token does not exists, trying to import CA: " + cryptoTokenName);                
+                throw new IllegalCryptoTokenException("Crypto token " + cryptoTokenName + " does not exists when trying to import CA " + caname);                
             }
             cryptoTokenId = id;
             if (!cryptoTokenManagementSession.isCryptoTokenStatusActive(cryptoTokenId)) {
