@@ -2868,14 +2868,30 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void importCAFromHSM(AuthenticationToken authenticationToken, String caname, Certificate[] signatureCertChain, String catokenpassword,
-                                String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+                                String catokenclasspath, String cryptoTokenName, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             IllegalCryptoTokenException, AuthorizationDeniedException, CAExistsException, CAOfflineException, NoSuchSlotException {
         Certificate cacert = signatureCertChain[0];
         int caId = StringTools.strip(CertTools.getSubjectDN(cacert)).hashCode();
         Properties caTokenProperties = CAToken.getPropertiesFromString(catokenproperties);
-        // Create the CryptoToken
-        int cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken" + caId, catokenclasspath,
-                caTokenProperties, null, catokenpassword.toCharArray());
+        if ((catokenclasspath != null && cryptoTokenName != null) || (catokenclasspath == null && cryptoTokenName == null)) {
+            throw new IllegalCryptoTokenException("One, and only one, of catokenclasspath or cryptoTokenName must be specified");
+        }
+        final int cryptoTokenId;
+        if (catokenclasspath != null) {
+            // Create the CryptoToken
+            cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken" + caId, catokenclasspath,
+                    caTokenProperties, null, catokenpassword.toCharArray());
+        } else {
+            // Get the Id of an existing crypto token
+            Integer id = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+            if (id == null) {
+                throw new IllegalCryptoTokenException("Crypto token " + cryptoTokenName + " does not exists when trying to import CA " + caname);                
+            }
+            cryptoTokenId = id;
+            if (!cryptoTokenManagementSession.isCryptoTokenStatusActive(cryptoTokenId)) {
+                cryptoTokenManagementSession.activate(authenticationToken, cryptoTokenId, catokenpassword.toCharArray());
+            }
+        }
         final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
         // Set a lot of properties on the crypto token
 
