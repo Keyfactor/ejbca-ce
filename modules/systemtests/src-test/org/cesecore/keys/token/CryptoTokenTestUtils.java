@@ -16,6 +16,13 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Properties;
 
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -23,18 +30,13 @@ import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * Utility methods for creating CAs and CryptoTokens for tests. Both soft and PKCS#11 tokens.
@@ -55,21 +57,34 @@ public class CryptoTokenTestUtils {
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
-      return createTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED);
+      return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED, false);
     }
     
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy) throws Exception {
+        return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, signedBy, false);
+    }
+
+    public static CvcCA createTestCVCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
+        return (CvcCA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED, true);
+      }
+
+    private static CA internalCreateTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy, boolean cvc) throws Exception {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        X509CA x509ca = CaTestUtils.createTestX509CA(dN, SOFT_TOKEN_PIN, SoftCryptoToken.class.getName(), signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
-                + X509KeyUsage.cRLSign);
+        final CA ca;
+        if (cvc) {
+            ca = CaTestUtils.createTestCVCCA(dN, SOFT_TOKEN_PIN, false);            
+        } else {
+            ca = CaTestUtils.createTestX509CA(dN, SOFT_TOKEN_PIN, SoftCryptoToken.class.getName(), signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
+                    + X509KeyUsage.cRLSign);            
+        }
         // Remove any lingering test CA before starting the tests
-        CAInfo oldCaInfo = caSession.getCAInfo(authenticationToken, x509ca.getCAId());
+        CAInfo oldCaInfo = caSession.getCAInfo(authenticationToken, ca.getCAId());
         if (oldCaInfo != null) {
             CaTestUtils.removeCa(authenticationToken, oldCaInfo);
         }
         // Now add the test CA so it is available in the tests
-        caSession.addCA(authenticationToken, x509ca);
-        return x509ca;
+        caSession.addCA(authenticationToken, ca);
+        return ca;
     }
 
     /** Create CryptoToken and generate CA's keys */

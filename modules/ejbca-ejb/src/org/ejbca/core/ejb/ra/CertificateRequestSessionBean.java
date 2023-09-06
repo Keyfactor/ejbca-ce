@@ -23,6 +23,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -34,6 +35,10 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -82,10 +87,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
-
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
@@ -324,15 +325,23 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         byte[] retval = null;
         Class<X509ResponseMessage> respClass = X509ResponseMessage.class;
         ResponseMessage resp = signSession.createCertificate(admin, msg, respClass, userData);
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         if (responseType == CertificateConstants.CERT_RES_TYPE_CERTIFICATE) {
             retval = cert.getEncoded();
         }
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7) {
-            retval = signSession.createPKCS7(admin, cert, false);
+            if (!"X.509".equals(cert.getType())) {
+                log.info("Certificate response type PKCS7 can only be used with X.509 certificates, not " + cert.getType());
+            } else {
+                retval = signSession.createPKCS7(admin, (X509Certificate)cert, false);
+            }
         }
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN) {
-            retval = signSession.createPKCS7(admin, cert, true);
+            if (!"X.509".equals(cert.getType())) {
+                log.info("Certificate response type PKCS7_WITH_CHAIN can only be used with X.509 certificates, not " + cert.getType());
+            } else {
+                retval = signSession.createPKCS7(admin, (X509Certificate)cert, true);
+            }
         }
         return retval;
     }
