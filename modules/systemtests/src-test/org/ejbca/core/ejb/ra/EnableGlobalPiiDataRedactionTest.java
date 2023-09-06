@@ -70,7 +70,7 @@ public class EnableGlobalPiiDataRedactionTest {
     private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static final String CUSTOM_LOG_MESSAGE = "EnableGlobalPiiDataRedactionTest_CustomLogMessage";
-    private static final String CA_CREATED_WITH_DN_MARKER = "Created CA with subject DN: ";
+    private static final String CA_CREATED_WITH_DN_MARKER = "Created CA with subject DN:";
     private static final Set<String> ADMIN_DN_LIST = new HashSet<>();
         
     @BeforeClass
@@ -208,7 +208,8 @@ public class EnableGlobalPiiDataRedactionTest {
                 if (logRecord!=null && logRecord.getMessage()!=null 
                         && logRecord.getMessage().contains(CA_CREATED_WITH_DN_MARKER)) {
                     String issuerDn = logRecord.getMessage().substring(
-                            logRecord.getMessage().indexOf(CA_CREATED_WITH_DN_MARKER)).strip();
+                            logRecord.getMessage().indexOf(CA_CREATED_WITH_DN_MARKER) 
+                            + CA_CREATED_WITH_DN_MARKER.length() + 1).strip();
                     issuerDns.add(issuerDn);
                 }
                 if (logRecord==null || logRecord.isWhiteListed(issuerDns, ADMIN_DN_LIST)) {
