@@ -48,13 +48,16 @@ import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /** 
  * This test is meant to be used as "ant test:runone -Dtest.runone=" before all the systemtests run to test redacted log.<br>
  * We need to set "enable.log.redact=true" at systemtest.properties to allow the functionality.<br>
  * This ensures other systemtests especially the ones meant for testing audit log redaction are not affected.
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EnableGlobalPiiDataRedactionTest {
     
     private static final Logger log = Logger.getLogger(EnableGlobalPiiDataRedactionTest.class);
@@ -67,6 +70,8 @@ public class EnableGlobalPiiDataRedactionTest {
     private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static final String CUSTOM_LOG_MESSAGE = "EnableGlobalPiiDataRedactionTest_CustomLogMessage";
+    private static final String CA_CREATED_WITH_DN_MARKER = "Created CA with subject DN: ";
+    private static final Set<String> ADMIN_DN_LIST = new HashSet<>();
         
     @BeforeClass
     public static void isEnabledAuditLogRedactionTest() {
@@ -161,6 +166,7 @@ public class EnableGlobalPiiDataRedactionTest {
                     break;
                 }
                 offset += 1000;
+                auditLogsGenerated.forEach(a -> ADMIN_DN_LIST.add(a.getAuthToken()));
                 AuditLogCheckUtil.detectPiiLogging(auditLogsGenerated, detectedEventTypes, compiledPatterns);
             }
         }
@@ -177,6 +183,7 @@ public class EnableGlobalPiiDataRedactionTest {
         int linesReadCesecore = 0;
         int linesReadKeyFactor = 0;
         Map<String, Set<String>> loggedPiiLines = new HashMap<>();
+        List<String> issuerDns = new ArrayList<>();
         
         BufferedReader reader;
         try {
@@ -197,7 +204,14 @@ public class EnableGlobalPiiDataRedactionTest {
                 line = reader.readLine();
                 
                 ServerLogRecord logRecord = ServerLogCheckUtil.parseServerLogRecord(line);
-                if (logRecord==null || logRecord.isWhiteListed()) {
+                
+                if (logRecord!=null && logRecord.getMessage()!=null 
+                        && logRecord.getMessage().contains(CA_CREATED_WITH_DN_MARKER)) {
+                    String issuerDn = logRecord.getMessage().substring(
+                            logRecord.getMessage().indexOf(CA_CREATED_WITH_DN_MARKER)).strip();
+                    issuerDns.add(issuerDn);
+                }
+                if (logRecord==null || logRecord.isWhiteListed(issuerDns, ADMIN_DN_LIST)) {
                     continue;
                 }
                 
@@ -217,6 +231,8 @@ public class EnableGlobalPiiDataRedactionTest {
         log.error("processed log lines from keyfactor packages: " + linesReadKeyFactor);
         log.error("processed log lines from cesecore packages: " + linesReadCesecore);
         log.error("processed log lines from ejbca packages: " + linesReadEjbca);
+        log.error("processed issuer dn: " + issuerDns);
+        log.error("processed admin dn: " + ADMIN_DN_LIST);
         
         StringBuilder sb = new StringBuilder();
         for (String key: loggedPiiLines.keySet()) {
@@ -225,8 +241,14 @@ public class EnableGlobalPiiDataRedactionTest {
                 sb.append("        " + entry + "\n");
             }
         }
+        
         String piiLogged = sb.toString();
         if (!piiLogged.isEmpty()) {
+            if (issuerDns.isEmpty()) {
+                // please do not delete
+                // CaSessionBean.addCA: log.info("Created CA with subject DN: " + ca.getSubjectDN());
+                log.error("Detected no logged issuer DNs. Expected log from CaSessionBean with message: " + CA_CREATED_WITH_DN_MARKER);
+            }
             log.error("Detected PII instances: ");
             log.error(piiLogged);
         } else {

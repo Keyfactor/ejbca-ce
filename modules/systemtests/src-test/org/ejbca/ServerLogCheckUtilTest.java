@@ -14,6 +14,11 @@ package org.ejbca;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.ejbca.ServerLogCheckUtil.ServerLogRecord;
 import org.junit.BeforeClass;
@@ -56,7 +61,10 @@ public class ServerLogCheckUtilTest {
             + "[0m[0m08:39:13,947 DEBUG  [org.cesecore.certificates.dummy.CertificateCreateSessionBean] (default task-2) [getLastCRL] [312] Retrieved CRL from issuer 'CN=CaRestResourceSystemTest11619651981-440507607', with CRL number 1.\n"
             + "[0m[0m07:07:00,224 INFO  [org.ejbca.ui.web.rest.api.config.RestLoggingFilter] (default task-1) [doFilter] [152] PUT https://localhost:8443/ejbca/ejbca-rest-api/v1/certificate/C=SE,CN=CertificateRestSystemTestCa-34960277/3A4C385638892A21E0EBC29CF57E83E7022030AA/revoke/ received from 127.0.0.1  X-Forwarded-For: null\n"
             + "[0m[0m07:06:38,366 INFO  [org.ejbca.ui.web.rest.api.config.RestLoggingFilter] (default task-2) [doFilter] [152] GET https://localhost:8443/ejbca/ejbca-rest-api/v1/ca/CN=CertificateRestSystemTestCa-1054553211,C=SE/getLatestCrl received from 127.0.0.1  X-Forwarded-For: null\n"
-            + "[0m[0m07:09:26,037 INFO  [org.ejbca.ui.web.rest.api.resource.EndEntityRestResource] (default task-2) [setstatus] [173] End entity 'EndEntityRestResourceSystemTest2m3nQUcB' successfully edited by administrator CN=RestApiTestUser\n";
+            + "[0m[0m07:09:26,037 INFO  [org.ejbca.ui.web.rest.api.resource.EndEntityRestResource] (default task-2) [setstatus] [173] End entity 'EndEntityRestResourceSystemTest2m3nQUcB' successfully edited by administrator CN=RestApiTestUser\n"
+            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.SomeImaginaryBean] (default task-2) [isAuthorizedForSomething] [312] Checking 'CN=SomeCaDn7890' for something.\n"
+            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Dreams of issuer 'CN=HopefulIssuer', is not present.\n"
+            ;
     
     @BeforeClass
     public static void init() {
@@ -79,11 +87,16 @@ public class ServerLogCheckUtilTest {
     
     @Test
     public void testWhitelist() {
-        boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true};
+        boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true, true, true};
         String[] logLines = LOG_SNIPPET_WHITELIST.split("\n");
+        List<String> issuerDns = new ArrayList<>();
+        issuerDns.add("CN=HopefulIssuer");
+        Set<String> adminDns = new HashSet<>();
+        adminDns.add("CN=SomeCaDn7890");
         for (int i=0; i<expectedWhiteListed.length; i++) {
             ServerLogRecord logRecord = ServerLogCheckUtil.parseServerLogRecord(logLines[i]);
-            assertEquals("logRecord is whitelisted incorrectly: " + logRecord, logRecord.isWhiteListed(), expectedWhiteListed[i]);
+            assertEquals("logRecord is whitelisted incorrectly: " + logRecord, 
+                    logRecord.isWhiteListed(issuerDns, adminDns), expectedWhiteListed[i]);
         }
     }
 

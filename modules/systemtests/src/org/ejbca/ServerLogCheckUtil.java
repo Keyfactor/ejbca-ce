@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,7 +109,7 @@ public class ServerLogCheckUtil {
             return message;
         }
 
-        public Boolean isWhiteListed() {
+        public Boolean isWhiteListed(List<String> issuerDns, Set<String> adminDns) {
             
             if (isWhiteListed!=null) {
                 return isWhiteListed;
@@ -128,7 +129,8 @@ public class ServerLogCheckUtil {
             // check if says issuerDn with lower
             Matcher m = SUBJECT_DN_COMPONENTS.matcher(message);
             if(m.find()) { // always true if Wildfly filter is enabled
-                String wholePrefix = message.substring(0, m.start()).trim().toLowerCase();
+                int foundOn = m.start();
+                String wholePrefix = message.substring(0, foundOn).trim().toLowerCase();
                 for (String p: IGNORED_ON_LOWERCASE_PREFIXES) {
                     int detected = wholePrefix.lastIndexOf(p);
                     if (detected > 0 && 
@@ -147,7 +149,22 @@ public class ServerLogCheckUtil {
                             return isWhiteListed;
                         }
                     }
-                }
+                }                
+            }
+            
+            // a bit expensive but we only create in average 3 CAs for each class and
+            for (String s: issuerDns) {
+                message = message.replace(s, "");
+            }
+            
+            for (String s: adminDns) {
+                message = message.replace(s, "");
+            }
+            
+            m = SUBJECT_DN_COMPONENTS.matcher(message);
+            if(!m.find()) { // false positives should be gone now
+                isWhiteListed = true;
+                return isWhiteListed;
             }
             
             isWhiteListed = false;
