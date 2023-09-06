@@ -216,6 +216,10 @@ public class EnableGlobalPiiDataRedactionTest {
                     issuerDns.add(issuerDn);
                     String transformedIssuerDn = CertTools.stringToBCDNString(StringTools.strip(issuerDn));
                     issuerDns.add(transformedIssuerDn);
+                    if(issuerDn.endsWith("C=SE")) {
+                        issuerDn = "C=SE," + issuerDn.replace(",C=SE", "");
+                        issuerDns.add(issuerDn);
+                    }
                 }
                 if (logRecord==null || logRecord.isWhiteListed(issuerDns, ADMIN_DN_LIST)) {
                     continue;
