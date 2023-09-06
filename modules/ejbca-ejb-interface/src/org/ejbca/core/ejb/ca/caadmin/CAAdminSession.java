@@ -433,17 +433,39 @@ public interface CAAdminSession {
 
     /**
      * Method that is used to create a new CA from keys on an HSM and
-     * certificates in a file.
+     * certificates in a file. This method will either create a new crypto token named 'ImportedCryptoToken+caid' 
+     * if catokenclasspath is provided, or use an existing crypto token if cryptoTokenName is provided. 
+     * Therefore catokenclasspath and cryptoTokenName are mutually exclusive and one should be null. In either case, all the 
+     * keys defined in catokenproperties must exist on the HSM backing the new or existing crypto token.
      *
-     * @param admin              Administrator
+     * When cryptoTokenName is used, catokenproperties are like:
+     * <pre>
+     * defaultKey rsa3072
+     * certSignKey p256
+     * crlSignKey p256
+     * testKey rsa2048
+     * </pre>
+     * 
+     * When catokenclasspath is used, catokenproperties are like:
+     * <pre>
+     * defaultKey rsa3072
+     * certSignKey p256
+     * crlSignKey p256
+     * testKey rsa2048
+     * sharedLibrary /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+     * slotLabelType=SLOT_NUMBER
+     * slotLabelValue=0
+     * </pre>
+     * 
+     * @param admin              Administrator with privileges to create new CAs and crypto tokens
      * @param caname             the CA-name (human readable) the newly created CA will get
      * @param signatureCertChain chain of certificates, this CAs certificate first.
      * @param catokenpassword    used to activate the crypto token.
      * @param catokenclasspath   classpath to one of the CryptoTokenToken class for creating a new Crypto Token, for example
      *                           org.cesecore.keys.token.PKCS11CryptoToken, or null, only one of catokenclasspath or cryptoTokenName should be specified
      * @param cryptoTokenName    name of an existing crypto token, or null, only one of catokenclasspath or cryptoTokenName should be specified
-     * @param catokenproperties  the catoken properties, same as usually entered in the
-     *                           adminGUI for hard token CAs.
+     * @param catokenproperties  the catoken properties, defining at least the CAs certSignKey, crlSignKey, defaultKey, testKey, 
+     *                           and sharedLibrary, slotLabelType and slotLabelValue in case a new crypto token should be created. 
      * @throws AuthorizationDeniedException             if imported CA was signed by a CA user does not have authorization to.
      * @throws CAExistsException                        if the CA already exists
      * @throws CAOfflineException                       if CRLs can not be generated because imported CA did not manage to get online
