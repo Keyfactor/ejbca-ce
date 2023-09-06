@@ -1015,14 +1015,14 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     private void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(String email, boolean cvc) throws Exception {
         // Create CSR REST request
-        final String testCA = (cvc == true ? testCaNameCVC : testCaName);
+        final String testCA = (cvc ? testCaNameCVC : testCaName);
         EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
                 certificateAuthorityName(testCA).
                 certificateProfileName("ENDUSER").
                 endEntityProfileName("EMPTY").
                 username(testUsername).
                 password("foo123").email(email).
-                certificateRequest(cvc==true ? CSRForCVC : CSR).build();
+                certificateRequest(cvc ? CSRForCVC : CSR).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
@@ -1043,9 +1043,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         } else {
             assertEquals("Cert type should be X.509", cert.getType(), "X.509");            
         }
-        final String issuer = (cvc == true ? "CN=CAREF001,C=SE" : CertTools.stringToBCDNString(testIssuerDn));
+        final String issuer = (cvc ? "CN=CAREF001,C=SE" : CertTools.stringToBCDNString(testIssuerDn));
         assertEquals("Returned certificate contained unexpected issuer", issuer, CertTools.getIssuerDN(cert));
-        final String subject = (cvc == true ? "CN=RESTCVC01,C=SE" : CertTools.stringToBCDNString("C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6"));
+        final String subject = (cvc ? "CN=RESTCVC01,C=SE" : CertTools.stringToBCDNString("C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6"));
         assertEquals("Returned certificate contained unexpected subject DN", subject, CertTools.getSubjectDN(cert));
 
         EndEntityInformation userData = endEntityAccessSession.findUser(INTERNAL_ADMIN_TOKEN, testUsername);
