@@ -89,7 +89,7 @@ public class ServerLogCheckUtilTest {
     public void testWhitelist() {
         boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true, true, true};
         String[] logLines = LOG_SNIPPET_WHITELIST.split("\n");
-        List<String> issuerDns = new ArrayList<>();
+        Set<String> issuerDns = new HashSet<>();
         issuerDns.add("CN=HopefulIssuer");
         Set<String> adminDns = new HashSet<>();
         adminDns.add("CN=SomeCaDn7890");
