@@ -120,7 +120,6 @@ public class CaImportCACommand extends BaseCaAdminCommand {
         CryptoProviderTools.installBCProvider();
         String caName = parameters.get(CA_NAME_KEY);
         boolean importHsmToken = parameters.get(HARD_SWITCH_KEY) != null;
-        final String catokenname = parameters.get(TOKEN_NAME_KEY);
         if (!importHsmToken) {
             // Import soft keystore
             log.info("Importing soft token.");
@@ -206,8 +205,13 @@ public class CaImportCACommand extends BaseCaAdminCommand {
             // Import HSM keystore
             // "Usage2: CA importca <CA name> <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>\n" +
             log.info("Importing HSM token.");
-            String tokenclasspath = parameters.get(CA_TOKEN_CLASSPATH_KEY);
-            String tokenpwd = parameters.get(CA_TOKEN_PASSWORD_KEY);
+            final String tokenclasspath = parameters.get(CA_TOKEN_CLASSPATH_KEY);
+            final String catokenname = parameters.get(TOKEN_NAME_KEY);
+            if (tokenclasspath != null && catokenname != null) {
+                log.error(CA_TOKEN_CLASSPATH_KEY + " and " + TOKEN_NAME_KEY + " may not be defined concurrently. Please only define one.");
+                return CommandResult.FUNCTIONAL_FAILURE;                
+            }
+            final String tokenpwd = parameters.get(CA_TOKEN_PASSWORD_KEY);
             String catokenproperties;
             try {
                 catokenproperties = new String(FileTools.readFiletoBuffer(parameters.get(CA_TOKEN_PROPERTIES_FILE_KEY)));
