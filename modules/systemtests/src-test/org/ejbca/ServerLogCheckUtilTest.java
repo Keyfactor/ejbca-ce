@@ -64,7 +64,8 @@ public class ServerLogCheckUtilTest {
             + "[0m[0m07:09:26,037 INFO  [org.ejbca.ui.web.rest.api.resource.EndEntityRestResource] (default task-2) [setstatus] [173] End entity 'EndEntityRestResourceSystemTest2m3nQUcB' successfully edited by administrator CN=RestApiTestUser\n"
             + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.SomeImaginaryBean] (default task-2) [isAuthorizedForSomething] [312] Checking 'CN=SomeCaDn7890' for something.\n"
             + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Dreams of issuer 'CN=HopefulIssuer', is not present.\n"
-            ;
+            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Creating CertificateData, subjectDN=<redacted>, subjectAltName=<redacted>, issuer=, fingerprint=bb1dab93e596d7dcc9953cbd2fbe794f00fd3198, storeSubjectAltName=true\n"
+            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Merging crypto token to database: CaTestUtils.createTestX509CA.CN=CaRestResourceSystemTest21533841461";
     
     @BeforeClass
     public static void init() {
@@ -87,10 +88,11 @@ public class ServerLogCheckUtilTest {
     
     @Test
     public void testWhitelist() {
-        boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true, true, true};
+        boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true, true, true, true, true};
         String[] logLines = LOG_SNIPPET_WHITELIST.split("\n");
         Set<String> issuerDns = new HashSet<>();
         issuerDns.add("CN=HopefulIssuer");
+        issuerDns.add("CN=CaRestResourceSystemTest21533841461");
         Set<String> adminDns = new HashSet<>();
         adminDns.add("CN=SomeCaDn7890");
         for (int i=0; i<expectedWhiteListed.length; i++) {
