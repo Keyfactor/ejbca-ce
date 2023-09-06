@@ -109,7 +109,7 @@ public class ServerLogCheckUtil {
             return message;
         }
 
-        public Boolean isWhiteListed(List<String> issuerDns, Set<String> adminDns) {
+        public Boolean isWhiteListed(Set<String> issuerDns, Set<String> adminDns) {
             
             if (isWhiteListed!=null) {
                 return isWhiteListed;
@@ -167,6 +167,7 @@ public class ServerLogCheckUtil {
                 return isWhiteListed;
             }
             
+            log.error("Not whitelisted: " + toString());
             isWhiteListed = false;
             return isWhiteListed;
         }
