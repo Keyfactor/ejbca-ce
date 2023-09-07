@@ -12,6 +12,36 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
+import java.security.cert.X509Certificate;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CeSecoreNameStyle;
@@ -19,6 +49,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -32,6 +63,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -78,34 +110,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.cert.X509CRL;
-import java.security.cert.X509CRLEntry;
-import java.security.cert.X509Certificate;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import static org.cesecore.certificates.crl.RevocationReasons.AACOMPROMISE;
 import static org.cesecore.certificates.crl.RevocationReasons.AFFILIATIONCHANGED;
@@ -157,6 +161,10 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private String testCertProfileName = "CertificateRestSystemTestCertProfile";
     private String testEeProfileName = "CertificateRestSystemTestEeProfile";
 
+    private CvcCA cvcTestCa = null; // Don't create this for every test
+    private String testCaNameCVC = "TESTCVC";
+    private String testCVCIssuerDn = "C=SE,CN=CAREF001";
+
     private static final String CSR = "-----BEGIN CERTIFICATE REQUEST-----\n"
             + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
             + "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\n"
@@ -176,6 +184,24 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             + "xQux6UsxQabuaTrHpExMgYjwJsekEVe13epUq5OiEh7xTJaSnsZm+Ja+MV2pn0gF\n"
             + "3V1hMBajTMGN9emWLR6pfj5P7QpVR4hkv3LvgCPf474pWA9l/4WiKBzrI76T5yz1\n"
             + "KoobCZQ2UrqnKFGEbdoNFchb2CDgdLnFu6Tbf6MW5zO5ypOIUih61Zf9Qyo=\n"
+            + "-----END CERTIFICATE REQUEST-----\n";
+
+    // A PKCS#10 request with a CN of max 9 characters to fit into a CVC Mnemonic. 
+    // Subject: C = SE, CN = RESTCVC01
+    private static final String CSRForCVC = "-----BEGIN CERTIFICATE REQUEST-----\n"
+            + "MIICZjCCAU4CAQAwITELMAkGA1UEBhMCU0UxEjAQBgNVBAMMCVJFU1RDVkMwMTCC\n"
+            + "ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKwSr/BRjyNpdZWfRnRYbA/7\n"
+            + "CwYpehZglkdJyruafcs0QOMed9wXeuVCVUbIO413XdBV89TzM0zqadOwnJoSIC2X\n"
+            + "Nq6c++Lkg0bi9q/ZDtAN2OIhYQ7n+gww8MDdi9UfOyuaD97LBh87vXpi+0BEuP2c\n"
+            + "IbbIckSlvYf3ZTarx1sLdFF1PfnHleoczCKONGVSax+PFvDROqUVq79hM+yn1cAP\n"
+            + "Pnnl+1oJsPUbKgX8974ZqjUQDkIWP1y2thrqDDlrbHh0xYIEAwkU55zzbPX0Zw19\n"
+            + "GWFzQ01nhnyhJ9urbFvJpOOge4KZe0TKzz0Mo7tnqrsjO+GP7kDRgHZ9UNNkEZMC\n"
+            + "AwEAAaAAMA0GCSqGSIb3DQEBCwUAA4IBAQB3TuQNy1Xn2bJc1rnOLFcgBvDpHmdI\n"
+            + "NSGCL8xJdvI5G5268uZy1I3l8Jgwi33y3wltBLR0DK4ry0u5S3NxLPpU+0XwwWE7\n"
+            + "p+oCBDziRUQeUGptSAsUJ2qZZtyzPbcT5IYitiyrfHFE9LkDOa9cOajFuny+dQsO\n"
+            + "yJ6fzt0/CozD1WehsukRBe78X2M0Il5TPa0WcaPr8KmN0MFnuH+hEyg8LyLfOlo4\n"
+            + "Om5wKtLQTrVIxwQhRuUDRKZ33k0+IsYSGf6E/sG340MpYgouYgckOim7u2s/zr0w\n"
+            + "dNYMlBxLD8HH+SfOVVqQ3mITkw/WOPDGoBe28E5TJoWAA+yu9I7lLQ7d\n"
             + "-----END CERTIFICATE REQUEST-----\n";
 
     @BeforeClass
@@ -204,6 +230,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void tearDown() throws AuthorizationDeniedException {
         if (x509TestCa != null) {
             CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
+        }
+        if (cvcTestCa != null) {
+            CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, cvcTestCa.getCAInfo());
         }
         try {
             endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, testUsername);
@@ -970,23 +999,30 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutEmail() throws Exception {
-        enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null);
+        enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null, false);
     }
     
     @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithEmail() throws Exception {
-        enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer("random@samp.de");
+        enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer("random@samp.de", false);
     }
 
-    public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(String email) throws Exception {
+    @Test
+    public void enrollPkcs10ExpectCertificateResponseWithCVC() throws Exception {
+        cvcTestCa = CryptoTokenTestUtils.createTestCVCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testCVCIssuerDn);
+        enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null, true);
+    }
+
+    private void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(String email, boolean cvc) throws Exception {
         // Create CSR REST request
+        final String testCA = (cvc ? testCaNameCVC : testCaName);
         EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
-                certificateAuthorityName(testCaName).
+                certificateAuthorityName(testCA).
                 certificateProfileName("ENDUSER").
                 endEntityProfileName("EMPTY").
                 username(testUsername).
                 password("foo123").email(email).
-                certificateRequest(CSR).build();
+                certificateRequest(cvc ? CSRForCVC : CSR).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
@@ -1001,9 +1037,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String base64cert = (String) actualJsonObject.get("certificate");
         assertNotNull(base64cert);
         byte[] certBytes = Base64.decode(base64cert.getBytes());
-        X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
-        assertEquals("Returned certificate contained unexpected issuer", testIssuerDn, cert.getIssuerDN().getName());
-        assertEquals("Returned certificate contained unexpected subject DN", "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", cert.getSubjectDN().getName());
+        Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
+        if (cvc) {
+            assertEquals("Cert type should be CVC", cert.getType(), "CVC");
+        } else {
+            assertEquals("Cert type should be X.509", cert.getType(), "X.509");            
+        }
+        final String issuer = (cvc ? "CN=CAREF001,C=SE" : CertTools.stringToBCDNString(testIssuerDn));
+        assertEquals("Returned certificate contained unexpected issuer", issuer, CertTools.getIssuerDN(cert));
+        final String subject = (cvc ? "CN=RESTCVC01,C=SE" : CertTools.stringToBCDNString("C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6"));
+        assertEquals("Returned certificate contained unexpected subject DN", subject, CertTools.getSubjectDN(cert));
 
         EndEntityInformation userData = endEntityAccessSession.findUser(INTERNAL_ADMIN_TOKEN, testUsername);
         assertEquals("Created user does not have expected email.", email, userData.getEmail());
