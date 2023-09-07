@@ -114,7 +114,7 @@ public class EnableGlobalPiiDataRedactionTest {
     public void testAuditLogPiiDataWithCompulsoryRedaction() throws Exception {
         
         String[] patternsToMatch = new String[] { LogRedactionUtils.getSubjectDnRedactionPattern().replace("|(c=)", ""),
-                LogRedactionUtils.getSubjectAltNameRedactionPattern(), "MI[EIMH]{1}[a-zA-Z0-9]{12}"};
+                LogRedactionUtils.getSubjectAltNameRedactionPattern(), ServerLogCheckUtil.BASE64_LOGGINGS_PATTERN};
 //        matches all -> ".*MI[EIM]{1}[a-zA-Z0-9]{12}.*" for wildfly filter
 //        finds all -> "MI[EIM]{1}[a-zA-Z0-9]{12}" without .* at both end
 //        examples returning true:        
