@@ -47,10 +47,6 @@
       "ignoredMethods": ["getCAFromRequest"]
     },
     {
-      "class": "KeyTools",
-      "ignoredMethods": ["getCertChain"]
-    },
-    {
       "class": "CmpServlet",
       "ignoredMethods": ["getIssuerCertificateByCaId"]
     },
