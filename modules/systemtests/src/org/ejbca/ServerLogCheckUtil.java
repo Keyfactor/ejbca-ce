@@ -33,17 +33,20 @@ public class ServerLogCheckUtil {
 
     private static final Logger log = Logger.getLogger(ServerLogCheckUtil.class);
     private static final String[] LOG_LEVELS = {"INFO", "DEBUG", "ERROR", "TRACE", "WARN", "FATAL"};
+    public static final String BASE64_LOGGINGS_PATTERN = "MI[EIMH]{1}[a-zA-Z0-9]{12}";
     
     // case insensitive: do not use 'CA' here as too short
     private static final String[] IGNORED_ON_LOWERCASE_PREFIXES = 
-                        {"issuerdn", "issuer", "cadn", "admin", "administrator"};
+                        {"issuerdn", "issuer", "cadn", "admin", "administrator", 
+                                "issued by", "issuer dn(transformed)", "TrustAnchor",
+                                "user", "username", "end entity", "public key", "publickey",
+                                "self signed"};
     // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6
     private static final int PREFIXES_SLACK = 10;
-    private static final String[] REPLACE_BEFORE_PROCESSING = {"C=SE,CN="}; 
     
     private static Pattern SUBJECT_DN_COMPONENTS;
     private static Pattern SUBJECT_ALT_NAME_COMPONENTS;
-    private static Pattern BASE64_ENCODED_LOGS;
+    private static Pattern BASE64_LOGGINGS;
     
     public static List<String> whiteListedPackages;
     public static List<String> whiteListedClasses;
@@ -68,12 +71,14 @@ public class ServerLogCheckUtil {
         
         SUBJECT_DN_COMPONENTS = Pattern.compile(
                 LogRedactionUtils.getSubjectDnRedactionPattern()
-                            .replace("|(c=)", "").replace("|(dn=)", "").replace("|(name=)", ""), Pattern.CASE_INSENSITIVE);
+                            .replace("|(c=)", "").replace("|(dn=)", "")
+                            .replace("|(name=)", "").replace("|(serialnumber=)", ""), Pattern.CASE_INSENSITIVE);
         
         SUBJECT_ALT_NAME_COMPONENTS = Pattern.compile(
                 LogRedactionUtils.getSubjectAltNameRedactionPattern(), Pattern.CASE_INSENSITIVE);
         
-        BASE64_ENCODED_LOGS = Pattern.compile("MI[EIMH]{1}[a-zA-Z0-9]{12}", Pattern.CASE_INSENSITIVE);
+        BASE64_LOGGINGS = Pattern.compile(BASE64_LOGGINGS_PATTERN); // case sensitive to reduce false positive
+        
     }
         
     public static class ServerLogRecord {
@@ -140,7 +145,7 @@ public class ServerLogCheckUtil {
             // check if says issuerDn with lower
             Matcher m1 = SUBJECT_DN_COMPONENTS.matcher(message);
             Matcher m2 = SUBJECT_ALT_NAME_COMPONENTS.matcher(message);
-            Matcher m3 = BASE64_ENCODED_LOGS.matcher(message);
+            Matcher m3 = BASE64_LOGGINGS.matcher(message);
             int foundOn = -1;
             boolean subjectDnLogging = false;
             if (m1.find()) {
@@ -159,7 +164,7 @@ public class ServerLogCheckUtil {
             String wholePrefix = message.substring(0, foundOn).trim().toLowerCase();
             for (String p: IGNORED_ON_LOWERCASE_PREFIXES) {
                 int detected = wholePrefix.lastIndexOf(p);
-                if (detected > 0 && 
+                if (detected >= 0 && 
                         (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
                     isWhiteListed = true;
                     return isWhiteListed;
@@ -169,7 +174,7 @@ public class ServerLogCheckUtil {
             if (whiteListedConditionalMethods.containsKey(classSimpleName + ":" +  methodName)) {
                 for (String p: whiteListedConditionalMethods.get(classSimpleName + ":" +  methodName)) {
                     int detected = wholePrefix.lastIndexOf(p);
-                    if (detected > 0 && 
+                    if (detected >= 0 && 
                             (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
                         isWhiteListed = true;
                         return isWhiteListed;

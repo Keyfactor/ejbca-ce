@@ -14,9 +14,7 @@ package org.ejbca;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -65,7 +63,11 @@ public class ServerLogCheckUtilTest {
             + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.SomeImaginaryBean] (default task-2) [isAuthorizedForSomething] [312] Checking 'CN=SomeCaDn7890' for something.\n"
             + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Dreams of issuer 'CN=HopefulIssuer', is not present.\n"
             + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Creating CertificateData, subjectDN=<redacted>, subjectAltName=<redacted>, issuer=, fingerprint=bb1dab93e596d7dcc9953cbd2fbe794f00fd3198, storeSubjectAltName=true\n"
-            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Merging crypto token to database: CaTestUtils.createTestX509CA.CN=CaRestResourceSystemTest21533841461";
+            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Merging crypto token to database: CaTestUtils.createTestX509CA.CN=CaRestResourceSystemTest21533841461\n"
+            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] Some base64 logging MIIasdaklkjkaw81783nandkqw=\n"
+            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] user CN=EverythingIncludedIsNonMatter\n"
+            + "[0m[0m08:39:13,947 DEBUG  [org.ejbca.dummy.AnotherImaginaryBean] (default task-2) [getDreams] [421] issuer Dn(transformed) 'CN=EverythingIncludedIsNonMatter'\n";
+    
     
     @BeforeClass
     public static void init() {
@@ -88,7 +90,7 @@ public class ServerLogCheckUtilTest {
     
     @Test
     public void testWhitelist() {
-        boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true, true, true, true, true};
+        boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true, true, true, true, true, false, true, true};
         String[] logLines = LOG_SNIPPET_WHITELIST.split("\n");
         Set<String> issuerDns = new HashSet<>();
         issuerDns.add("CN=HopefulIssuer");
