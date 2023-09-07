@@ -65,6 +65,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RAMODE_OLD = "ra.createOrEditUser";
     public static final String SCEP_OPERATIONMODE = "operationmode";
     public static final String SCEP_INCLUDE_CA = "includeca";
+    public static final String SCEP_CHAIN_ROOT_FIRST = "rootFirst";
     public static final String SCEP_RETURN_CA_CHAIN_IN_GETCACERT = "returnCaChainInGetCaCert";
     public static final String SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM = "allowLegacyDigestAlgorithm";
     public static final String SCEP_RA_CERTPROFILE = "ra.certificateProfile";
@@ -103,13 +104,14 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
  
     // Default Values
-    public static final float LATEST_VERSION = 6f;
+    public static final float LATEST_VERSION = 7f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
     public static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
     public static final String DEFAULT_OPERATION_MODE = Mode.CA.getResource();
     public static final String DEFAULT_INCLUDE_CA = Boolean.TRUE.toString();
+    public static final String DEFAULT_CHAIN_ROOT_FIRST = Boolean.TRUE.toString();
     public static final String DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM = Boolean.FALSE.toString();
     public static final String DEFAULT_CLIENT_CERTIFICATE_RENEWAL = Boolean.FALSE.toString();
     public static final String DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = Boolean.FALSE.toString();
@@ -141,6 +143,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         alias += ".";
         data.put(alias + SCEP_OPERATIONMODE, DEFAULT_OPERATION_MODE);
         data.put(alias + SCEP_INCLUDE_CA, DEFAULT_INCLUDE_CA);
+        data.put(alias + SCEP_CHAIN_ROOT_FIRST, DEFAULT_CHAIN_ROOT_FIRST);
         data.put(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT, DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT);
         data.put(alias + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
         data.put(alias + SCEP_RA_CERTPROFILE, DEFAULT_RA_CERTPROFILE);
@@ -176,6 +179,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         Set<String> keys = new LinkedHashSet<String>();
         keys.add(alias + SCEP_OPERATIONMODE);
         keys.add(alias + SCEP_INCLUDE_CA);
+        keys.add(alias + SCEP_CHAIN_ROOT_FIRST);
         keys.add(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT);
         keys.add(alias + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM);
         keys.add(alias + SCEP_RA_CERTPROFILE);
@@ -301,6 +305,17 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public void setReturnCaChainInGetCaCert(String alias, boolean returnCaChainInGetCaCert) {
         String key = alias + "." + SCEP_RETURN_CA_CHAIN_IN_GETCACERT;
         setValue(key, Boolean.toString(returnCaChainInGetCaCert), alias);
+    } 
+    
+    public boolean getCaChainRootFirstOrder(final String alias) {
+        String key = alias + "." + SCEP_CHAIN_ROOT_FIRST;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+    }
+    
+    public void setCaChainRootFirstOrder(String alias, boolean caChainRootFirstOrder) {
+        String key = alias + "." + SCEP_CHAIN_ROOT_FIRST;
+        setValue(key, Boolean.toString(caChainRootFirstOrder), alias);
     } 
 
     
@@ -839,6 +854,10 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 }
                 if (data.get(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT) == null) {
                     data.put(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT, Boolean.FALSE.toString());
+                }
+                //Root first was the default behavior prior to this setting
+                if(data.get(alias + SCEP_CHAIN_ROOT_FIRST) == null) {
+                    data.put(alias + SCEP_CHAIN_ROOT_FIRST, Boolean.TRUE.toString());
                 }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));         
