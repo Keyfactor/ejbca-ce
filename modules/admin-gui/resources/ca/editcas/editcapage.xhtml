@@ -1951,7 +1951,7 @@
 						value="#{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}"
 						escape="false" styleClass="helpReference"/>
                     <br />
-                    <h:outputText value="#{web.text.RENEWCA_HELP}" styleClass="smallHelp" />
+                    <h:outputText value="#{web.text.RENEWCA_HELP}" styleClass="warning" />
 				</h:panelGroup>
 
 
@@ -2079,7 +2079,14 @@
 					style="font-weight: bold;" />
 				<h:panelGroup id="externallysignedcacreaterenew" />
 
-				<h:panelGroup />
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.RENEWCA}" />
+                    <h:outputText
+                        value="#{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}"
+                        escape="false" styleClass="helpReference"/>
+                    <br />
+                    <h:outputText value="#{web.text.RENEWCA_HELP}" styleClass="warning" />
+                </h:panelGroup>
 
 				<h:panelGroup>
 					<h:panelGrid columns="2" columnClasses="column-editca,editColumn2">
