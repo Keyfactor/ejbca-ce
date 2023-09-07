@@ -85,6 +85,10 @@
     {
       "class": "KeyStoreTools",
       "ignoredMethods": ["generateKeyPair"]
+    },
+    {
+      "class": "AcmeReplayNonceFilter",
+      "ignoredMethods": ["doFilter"]
     }
   ]
 }

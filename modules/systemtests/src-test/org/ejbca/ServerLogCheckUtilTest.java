@@ -90,7 +90,8 @@ public class ServerLogCheckUtilTest {
     
     @Test
     public void testWhitelist() {
-        boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true, true, true, true, true, false, true, true};
+        boolean[] expectedWhiteListed = {true, true, false, true, true, false, true, true, true, 
+                true, true, true, false, true, true};
         String[] logLines = LOG_SNIPPET_WHITELIST.split("\n");
         Set<String> issuerDns = new HashSet<>();
         issuerDns.add("CN=HopefulIssuer");
