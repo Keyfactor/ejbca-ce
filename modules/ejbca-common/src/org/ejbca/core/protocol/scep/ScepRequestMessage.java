@@ -494,7 +494,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
-            if (log.isDebugEnabled() && LogRedactionUtils.redactPii()) {
+            if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
             	log.debug("Successfully extracted PKCS10:" + new String(Base64.encode(pkcs10.getEncoded())));
             }
         } else if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
