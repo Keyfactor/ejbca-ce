@@ -59,7 +59,13 @@
 		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
 		
 		<h:outputLabel for="cachain" value="#{web.text.SCEP_CA_CHAIN}" />
-		<h:selectBooleanCheckbox id="cachain" value="#{scepConfigMBean.currentAlias.returnCaChainInGetCaCert}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
+		<h:selectBooleanCheckbox id="cachain" value="#{scepConfigMBean.currentAlias.returnCaChainInGetCaCert}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+		</h:selectBooleanCheckbox>
+		
+		<h:outputLabel for="caChainOrder" value="#{web.text.SCEP_CA_CHAIN_ORDER}" />
+		<h:selectOneMenu id="caChainOrder" value="#{scepConfigMBean.currentAlias.rootFirst}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+			<f:selectItems value="#{scepConfigMBean.chainOrderOptions}"/>
+		</h:selectOneMenu>
 		
 		<h:panelGroup id="legacydigestalgorithm">
 		    <h:outputLabel for="allowlegacydigestalgorithm" value="#{web.text.SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM}" />

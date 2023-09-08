@@ -257,8 +257,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         log.debug("Creating certs-only CMS message as response for GetCACert for CA chain: " + caname);
                     }
                     List<X509Certificate> certList = CertTools.convertCertificateChainToX509Chain(certs);
-                    // TODO: test workaround for certificate order, MS likes it reverse?
-                    Collections.reverse(certList);
+                    // CA chain order is not well defined in the drafts/RFC and implementation varies between clients. Historically we've delivered 
+                    // root first, but the alias contains a setting for running root last. 
+                    if (scepConfig.getCaChainRootFirstOrder(scepConfigurationAlias)) {
+                        Collections.reverse(certList);
+                    }
                     final byte[] resp = CertTools.createCertsOnlyCMS(certList);
                     if (log.isDebugEnabled()) {
                         log.debug("Sent certificates-only CMS for CA '" + caname + "' to SCEP client.");

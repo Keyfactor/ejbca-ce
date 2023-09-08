@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -314,7 +316,7 @@ public class ScepServlet extends HttpServlet {
                 // For example: "Content-Type:application/x-x509-ca-cert\n\n"<BER-encoded X509>
                 if (scepResponse != null) {
                     log.debug("Sent CA certificate to SCEP client.");
-                    RequestHelper.sendNewX509CaCert(scepResponse, response);
+                    sendNewX509CaCert(scepResponse, response);
                     iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
                     log.info(iMsg);
                 } else {
@@ -434,6 +436,28 @@ public class ScepServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
+    
+    /**
+     * Sends back CA-certificate as binary file (application/x-x509-ca-cert)
+     *
+     * @param cert DER encoded certificate to be returned
+     * @param out output stream to send to
+     *
+     * @throws IOException on error
+     */
+    private void sendNewX509CaCert(byte[] cert, HttpServletResponse out)
+            throws IOException {
+        // First we must know if this is a single cert or a CMS structure
+        try {
+            new CMSSignedData(cert);
+            log.debug("Returning CMS with certificates as application/x-x509-ca-ra-cert");
+            RequestHelper.sendBinaryBytes(cert, out, "application/x-x509-ca-ra-cert", null);
+        } catch (CMSException e) {
+            // It was a cert, not a CMS
+            log.debug("Returning X.509 certificate as application/x-x509-ca-cert");
+            RequestHelper.sendBinaryBytes(cert, out, "application/x-x509-ca-cert", null);
+        }    
+    } // sendNewX509CaCert
     
     public static String getAlias(String pathInfo) {
         // PathInfo contains the alias used for SCEP configuration. 
