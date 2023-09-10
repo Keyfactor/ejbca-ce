@@ -309,12 +309,16 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
 
     /** @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
     private Date getRevocationDate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revocationDate, final int reason) throws AuthorizationDeniedException {
-        final String issuerDN = cdw.getBaseCertificateData().getIssuerDN();
-        CAInfo caInfo = caSession.getCAInfo(admin, issuerDN.hashCode());
-        if (revocationDate == null || caInfo.getDeltaCRLPeriod() <= 0
+        if (revocationDate == null
                 || (reason != RevokedCertInfo.NOT_REVOKED && reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ||
                 (cdw.getBaseCertificateData().getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
             return revocationDate; // return unmodified
+        }
+        final String issuerDN = cdw.getBaseCertificateData().getIssuerDN();
+        CAInfo caInfo = caSession.getCAInfo(admin, issuerDN.hashCode());
+        boolean isDeltaCrlEnabled = caInfo.getDeltaCRLPeriod() > 0;
+        if (!isDeltaCrlEnabled) {
+            return revocationDate;
         }
 
         final CRLInfo baseCrlInfo = crlStoreSession.getLastCRLInfo(issuerDN, cdw.getBaseCertificateData().getCrlPartitionIndex(), false);
