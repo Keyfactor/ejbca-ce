@@ -1,0 +1,15 @@
+{
+  "packages": ["org.cesecore.certificates.ca", "org.cesecore.keybind"],
+  "classes": ["CertificateProfileSessionBean", "CAAdminSessionBean", "CrlStoreSessionBean"],
+  "methods": [
+    {
+      "class": "CertificateCreateSessionBean",
+      "ignoredMethods": ["createItsCertificate"]
+    },
+    {
+      "class": "RestLoggingFilter",
+      "ignoredMethods": ["doFilter"],
+      "prefixes": ["ca/"]
+    }
+  ]
+}
