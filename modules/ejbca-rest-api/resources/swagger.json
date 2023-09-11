@@ -33,6 +33,9 @@
     },
     {
       "name": "v1/ssh"
+    },
+    {
+      "name": "v1/system"    
     }
   ],
   "schemes": [
@@ -1773,6 +1776,36 @@
           }
         }
       }
+    },
+    "/v1/system/service/{service_name}/run": {
+      "put": {
+        "tags": [
+          "v1/system"
+          ],
+        "summary": "Run service worker",
+        "description": "Runs specified service worker.",
+        "operationId": "runService",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "path",
+            "description": "Name of the service to run",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK Successful request",
+            "schema": {
+              "$ref": "#/definitions/RunServiceRestResponse"
+            }
+          }
+        }
+      }  
     }
   },
   "definitions": {
@@ -3108,6 +3141,16 @@
           "description": "Response format"
         }
       }
+    },
+    "RunServiceRestResponse": {
+      "type": "object",
+      "properties": {
+        "service_name": {
+          "type": "string",
+          "example": "Running service: SERVICE_NAME",
+          "description": "The name of the service triggered"
+        },        
+      }
     }
-  }
+
 }
