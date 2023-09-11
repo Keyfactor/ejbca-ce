@@ -63,6 +63,7 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-camanagement/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-endentity/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-ssh/src"/>
+	<classpathentry kind="src" path="modules/ejbca-rest-system/src"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webdist-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src"/>
