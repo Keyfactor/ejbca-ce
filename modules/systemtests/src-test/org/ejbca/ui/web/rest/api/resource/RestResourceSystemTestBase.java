@@ -105,6 +105,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -144,6 +145,7 @@ public class RestResourceSystemTestBase {
     protected static final EndEntityAuthenticationSessionRemote endEntityAuthenticationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
     protected static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     protected static final RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    protected static final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     //
     protected static final ObjectMapperContextResolver objectMapperContextResolver = new ObjectMapperContextResolver();
     //
@@ -176,6 +178,7 @@ public class RestResourceSystemTestBase {
     protected static final int HTTP_STATUS_CODE_BAD_REQUEST = 400;    
     protected static final int HTTP_STATUS_CODE_OK = 200;
     protected static final int HTTP_STATUS_CODE_ACCEPTED = 202;
+    protected static final int HTTP_STATUS_CODE_NOT_FOUND = 404;
 
     static {
         clearLoginCertificateSetup(); // Always make sure we start with a clean environment
@@ -259,6 +262,7 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CONFIGDUMP.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_SSH_V1.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_SYSTEM_V1.getName(), true);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
     
@@ -274,6 +278,7 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CONFIGDUMP.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_SSH_V1.getName(), false);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_SYSTEM_V1.getName(), false);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
     
