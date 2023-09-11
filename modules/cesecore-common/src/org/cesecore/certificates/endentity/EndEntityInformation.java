@@ -424,7 +424,7 @@ public class EndEntityInformation implements Serializable {
      * @return an information map about this end entity, listing all general fields.
      */
     public Map<String, String> getDetailMap() {
-        return getDetailMap(LogRedactionUtils.redactPii());
+        return getDetailMap(LogRedactionUtils.isRedactPii(endentityprofileid));
     }
       
     /**
