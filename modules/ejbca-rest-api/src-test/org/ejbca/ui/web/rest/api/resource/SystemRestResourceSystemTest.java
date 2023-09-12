@@ -27,7 +27,7 @@ import org.junit.Test;
 /**
  * A test class for SystemRestResourceTest to test running a specified existing service.
  */
-public class SystemRestResourceTest extends RestResourceSystemTestBase {
+public class SystemRestResourceSystemTest extends RestResourceSystemTestBase {
         
     private static final String SERVICE_NAME = "TestService";
     private ServiceSessionRemote serviceSession; 
