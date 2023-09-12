@@ -135,7 +135,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
             if (log.isDebugEnabled()) {
                 final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" +
                         LogRedactionUtils.getRedactedMessage(pkiHeader.getSender().toString()) +
-                        ", recipient=" + pkiHeader.getRecipient().toString() + System.lineSeparator() +
+                        ", recipient=" + LogRedactionUtils.getRedactedMessage(pkiHeader.getRecipient().toString()) 
+                        + System.lineSeparator() +
                         "Cmp configuration alias: " + cmpConfigurationAlias + System.lineSeparator() +
                         "The CMP message is already authenticated: " + authenticated + System.lineSeparator() +
                         "Body is of type: " + tagno + System.lineSeparator() +
