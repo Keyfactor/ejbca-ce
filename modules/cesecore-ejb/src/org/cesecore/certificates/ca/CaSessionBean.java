@@ -1006,7 +1006,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 // Since getCAData has already run upgradeAndMergeToDatabase we can just get the CA here..
                 final CACommon ca = caData.getCA();
                 if (ca != null) {
-                    // CaCache.INSTANCE.removeEntry(caId); // TODO: remove later
                     // Note that we store using the "real" CAId in the cache.
                     CaCache.INSTANCE.updateWith(caData.getCaId(), digest, ca.getName(), ca);
                 }
