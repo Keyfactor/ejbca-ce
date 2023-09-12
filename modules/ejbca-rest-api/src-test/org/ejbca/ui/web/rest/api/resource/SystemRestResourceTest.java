@@ -109,8 +109,6 @@ public class SystemRestResourceTest extends RestResourceSystemTestBase {
         }
         config.setWorkerClassPath(UserPasswordExpireWorker.class.getName());
         Properties workerprop = new Properties();
-        workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "FALSE");
-        workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "FALSE");
         workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(CaTestUtils.getCaIdByName(INTERNAL_ADMIN_TOKEN, caName)));
         workerprop.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, "5");
         workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
