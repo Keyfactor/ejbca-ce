@@ -26,6 +26,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
@@ -631,6 +633,81 @@ public class CertificateProfileTest {
         cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
     } 
+    
+    /**
+     * Simple smoke test to just verify that the values associated with alternative keys and signatures kan be stored and retrieved.
+     */
+    @Test
+    public void testAlternativeBitLengthsCRUD() {
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        certificateProfile.setAlternativeAvailableBitLengths(new int[] { 1, 2, 3 });
+        assertTrue(
+                "Available bit lengths could not be saved/retrieved, was: " + Arrays.toString(certificateProfile.getAlternativeAvailableBitLengths()),
+                Arrays.equals(certificateProfile.getAlternativeAvailableBitLengths(), new int[] { 1, 2, 3 }));
+        certificateProfile.setAlternativeAvailableBitLengthsAsList(Arrays.asList(4, 5, 6));
+        assertEquals(
+                "Available bit lengths could not be saved/retrieved as a list, was: " + certificateProfile.getAlternativeAvailableBitLengthsAsList(),
+                CollectionUtils.subtract(certificateProfile.getAlternativeAvailableBitLengthsAsList(), Arrays.asList(4, 5, 6)),
+                Collections.EMPTY_LIST);
+
+        assertEquals("Minimum alternative bit length was not calculated", 4, certificateProfile.getAlternativeMinimumAvailableBitLength());
+        assertEquals("Maximum alternative bit length was not calculated", 6, certificateProfile.getAlternativeMaximumAvailableBitLength());
+    }
+
+    /**
+     * Simple smoke test to just verify that the values associated with alternative keys and signatures kan be stored and retrieved.
+     */
+    @Test
+    public void testAlternativeECCurvesCRUD() {
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        certificateProfile.setAlternativeAvailableEcCurves(new String[] { "foo" });
+        assertTrue("Available EC curves could not be saved/retrieved, was: " + Arrays.toString(certificateProfile.getAlternativeAvailableEcCurves()),
+                Arrays.equals(certificateProfile.getAlternativeAvailableEcCurves(), new String[] { "foo" }));
+        certificateProfile.setAlternativeAvailableEcCurvesAsList(Arrays.asList("bar"));
+        assertEquals("Available EC curves could not be saved/retrieved as a list, was: " + certificateProfile.getAlternativeAvailableEcCurvesAsList(),
+                CollectionUtils.subtract(certificateProfile.getAlternativeAvailableEcCurvesAsList(), Arrays.asList("bar")), Collections.EMPTY_LIST);
+    }
+    
+    /**
+     * Simple smoke test to just verify that the values associated with alternative keys and signatures kan be stored and retrieved.
+     */
+    @Test
+    public void testAlternativeKeyAlgorithmsCRUD() {
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(new String[] { "foo" });
+        assertTrue(
+                "Available key algorithms could not be saved/retrieved, was: "
+                        + Arrays.toString(certificateProfile.getAlternativeAvailableKeyAlgorithms()),
+                Arrays.equals(certificateProfile.getAlternativeAvailableKeyAlgorithms(), new String[] { "foo" }));
+        certificateProfile.setAlternativeAvailableKeyAlgorithmsAsList(Arrays.asList("bar"));
+        assertEquals(
+                "Available key algorithms could not be saved/retrieved as a list, was: "
+                        + certificateProfile.getAlternativeAvailableKeyAlgorithmsAsList(),
+                CollectionUtils.subtract(certificateProfile.getAlternativeAvailableKeyAlgorithmsAsList(), Arrays.asList("bar")),
+                Collections.EMPTY_LIST);
+
+    }
+    
+    /**
+     * Simple smoke test to just verify that the values associated with alternative keys and signatures kan be stored and retrieved.
+     */
+    @Test
+    public void testAlternativeSecurityLevelsCRUD() {
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        certificateProfile.setAlternativeAvailableSecurityLevels(new int[] { 1, 2, 3 });
+        assertTrue(
+                "Available key algorithms could not be saved/retrieved, was: "
+                        + Arrays.toString(certificateProfile.getAlternativetAvailableSecurityLevels()),
+                Arrays.equals(certificateProfile.getAlternativetAvailableSecurityLevels(), new int[] { 1, 2, 3 }));
+        certificateProfile.setAlternativeAvailableSecurityLevelsAsList(Arrays.asList(4, 5, 6));
+        assertEquals(
+                "Available security keveks could not be saved/retrieved as a list, was: "
+                        + certificateProfile.getAlternativeAvailableSecurityLevelsAsList(),
+                CollectionUtils.subtract(certificateProfile.getAlternativeAvailableSecurityLevelsAsList(), Arrays.asList(4, 5, 6)),
+                Collections.EMPTY_LIST);
+
+    }
+    
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
