@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.util.KeyedLock;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -30,6 +31,7 @@ public class SystemRestResource extends BaseRestResource {
     @EJB
     private ServiceSessionLocal serviceSession;
     private static final Logger log = Logger.getLogger(SystemRestResource.class);
+    private static final KeyedLock<String> lock = new KeyedLock<>();
 
     public Response runServiceWorker(
             final HttpServletRequest requestContext,
@@ -40,8 +42,12 @@ public class SystemRestResource extends BaseRestResource {
             log.info(exception);
             throw new RestException(Status.NOT_FOUND.getStatusCode(),  exception);
         }
-        serviceSession.runService(id);
-
+        if (lock.tryLock(serviceName)) {
+            serviceSession.runService(id);
+        } else {
+            throw new RestException(Status.PRECONDITION_FAILED.getStatusCode(),  serviceName + "already running");
+        }
+        lock.release(serviceName);
         return Response.ok(RunServiceRestResponse.builder()
                 .message("Running service: " + serviceName)
                 .build()
