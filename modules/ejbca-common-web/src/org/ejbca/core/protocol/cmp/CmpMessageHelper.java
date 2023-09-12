@@ -548,7 +548,8 @@ public class CmpMessageHelper {
             }
             // Create a failure message
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Creating a signed error message with failInfo=" + failInfo + ", failText=" + failText);
+                LOG.debug("Creating a signed error message with failInfo=" + failInfo + 
+                                ", failText=" + LogRedactionUtils.getRedactedMessage(failText));
             }
             errorMessage.setSenderNonce(new String(Base64.encode(createSenderNonce())));
             // Sender nonce is optional and might not always be included
