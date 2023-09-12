@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,14 +33,21 @@ public class ServerLogCheckUtil {
 
     private static final Logger log = Logger.getLogger(ServerLogCheckUtil.class);
     private static final String[] LOG_LEVELS = {"INFO", "DEBUG", "ERROR", "TRACE", "WARN", "FATAL"};
+    public static final String BASE64_LOGGINGS_PATTERN = "MI[EIMH]{1}[a-zA-Z0-9]{12}";
     
     // case insensitive: do not use 'CA' here as too short
     private static final String[] IGNORED_ON_LOWERCASE_PREFIXES = 
-                        {"issuerdn", "issuer", "cadn", "admin", "administrator"};
+                        {"issuerdn", "issuer", "cadn", "admin", "administrator", 
+                                "issued by", "issuer dn(transformed)", "TrustAnchor",
+                                "user", "username", "end entity", "public key", "publickey",
+                                "self signed"};
     // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6
     private static final int PREFIXES_SLACK = 10;
     
     private static Pattern SUBJECT_DN_COMPONENTS;
+    private static Pattern SUBJECT_ALT_NAME_COMPONENTS;
+    private static Pattern BASE64_LOGGINGS;
+    
     public static List<String> whiteListedPackages;
     public static List<String> whiteListedClasses;
     // class -> method, beware of whitelisting methods with same name
@@ -61,7 +69,16 @@ public class ServerLogCheckUtil {
         
         new ServerLogCheckUtil().loadWhiteListPiiConfiguration();
         
-        SUBJECT_DN_COMPONENTS = Pattern.compile(LogRedactionUtils.getSubjectDnRedactionPattern(), Pattern.CASE_INSENSITIVE);
+        SUBJECT_DN_COMPONENTS = Pattern.compile(
+                LogRedactionUtils.getSubjectDnRedactionPattern()
+                            .replace("|(c=)", "").replace("|(dn=)", "")
+                            .replace("|(name=)", "").replace("|(serialnumber=)", ""), Pattern.CASE_INSENSITIVE);
+        
+        SUBJECT_ALT_NAME_COMPONENTS = Pattern.compile(
+                LogRedactionUtils.getSubjectAltNameRedactionPattern(), Pattern.CASE_INSENSITIVE);
+        
+        BASE64_LOGGINGS = Pattern.compile(BASE64_LOGGINGS_PATTERN); // case sensitive to reduce false positive
+        
     }
         
     public static class ServerLogRecord {
@@ -108,7 +125,7 @@ public class ServerLogCheckUtil {
             return message;
         }
 
-        public Boolean isWhiteListed() {
+        public Boolean isWhiteListed(Set<String> issuerDns, Set<String> adminDns) {
             
             if (isWhiteListed!=null) {
                 return isWhiteListed;
@@ -126,30 +143,67 @@ public class ServerLogCheckUtil {
             }
             
             // check if says issuerDn with lower
-            Matcher m = SUBJECT_DN_COMPONENTS.matcher(message);
-            if(m.find()) { // always true if Wildfly filter is enabled
-                String wholePrefix = message.substring(0, m.start()).trim().toLowerCase();
-                for (String p: IGNORED_ON_LOWERCASE_PREFIXES) {
+            Matcher m1 = SUBJECT_DN_COMPONENTS.matcher(message);
+            Matcher m2 = SUBJECT_ALT_NAME_COMPONENTS.matcher(message);
+            Matcher m3 = BASE64_LOGGINGS.matcher(message);
+            int foundOn = -1;
+            boolean subjectDnLogging = false;
+            if (m1.find()) {
+                foundOn = m1.start();
+                subjectDnLogging = true;
+            } else if(m2.find()) {
+                foundOn = m2.start();
+            } else if(m3.find()) {
+                foundOn = m3.start();
+            } else {
+                // if Wildfly filter is absent
+                isWhiteListed = true;
+                return isWhiteListed;
+            }
+            // always true if Wildfly filter is enabled
+            String wholePrefix = message.substring(0, foundOn).trim().toLowerCase();
+            for (String p: IGNORED_ON_LOWERCASE_PREFIXES) {
+                int detected = wholePrefix.lastIndexOf(p);
+                if (detected >= 0 && 
+                        (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
+                    isWhiteListed = true;
+                    return isWhiteListed;
+                }
+            }
+            
+            if (whiteListedConditionalMethods.containsKey(classSimpleName + ":" +  methodName)) {
+                for (String p: whiteListedConditionalMethods.get(classSimpleName + ":" +  methodName)) {
                     int detected = wholePrefix.lastIndexOf(p);
-                    if (detected > 0 && 
+                    if (detected >= 0 && 
                             (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
                         isWhiteListed = true;
                         return isWhiteListed;
                     }
                 }
-                
-                if (whiteListedConditionalMethods.containsKey(classSimpleName + ":" +  methodName)) {
-                    for (String p: whiteListedConditionalMethods.get(classSimpleName + ":" +  methodName)) {
-                        int detected = wholePrefix.lastIndexOf(p);
-                        if (detected > 0 && 
-                                (detected + p.length() + PREFIXES_SLACK > wholePrefix.length()) ) {
-                            isWhiteListed = true;
-                            return isWhiteListed;
-                        }
-                    }
-                }
+            }       
+            
+            if(!subjectDnLogging) { // subjectAltName or certificate logging                
+                log.error("Not whitelisted: " + toString());
+                isWhiteListed = false;
+                return isWhiteListed;
             }
             
+            // a bit expensive but we only create in average 3 CAs for each class and
+            for (String s: issuerDns) {
+                message = message.replace(s, "");
+            }
+            
+            for (String s: adminDns) {
+                message = message.replace(s, "");
+            }
+            
+            Matcher m = SUBJECT_DN_COMPONENTS.matcher(message);
+            if(!m.find()) { // false positives should be gone now
+                isWhiteListed = true;
+                return isWhiteListed;
+            }
+                        
+            log.error("Not whitelisted: " + toString());
             isWhiteListed = false;
             return isWhiteListed;
         }
