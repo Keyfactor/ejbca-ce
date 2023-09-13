@@ -92,23 +92,12 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         }
         
         public static String getContextPathByName(String name) {
-            return reverseLookupMap.get(name);
-        }
-
-        /**
-         * Returns protocol URLs that should be shown on configuration page.
-         * Method is used to hide the /ca REST endpoint from configuration page while
-         * only a subset of Certificate Management APIs are rolled out to Community edition.
-         * @param name Protocol name
-         * @param isEnterprise true/false depending on whether EE version is running
-         * @return Protocol paths
-         */
-        public static String getContextPathByName(String name, boolean isEnterprise) {
-            if (isEnterprise && REST_CERTIFICATE_MANAGEMENT.name.equals(name)) {
+            if (REST_CERTIFICATE_MANAGEMENT.name.equals(name)) {
                 return REST_CERTIFICATE_MANAGEMENT_PROTOCOL_EE_ONLY_PATH + "<br/>" + reverseLookupMap.get(name);
             }
             return reverseLookupMap.get(name);
         }
+
     }
 
     /** Initializes the configuration */
