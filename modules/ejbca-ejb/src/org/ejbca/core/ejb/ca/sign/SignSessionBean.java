@@ -963,14 +963,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // CertificateCreateSessionBean.createCertificate call which is called in the end
         final RequestMessage requestMessage = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
         if (requestMessage != null) {
-            result = getCertResponseFromPublicKeyWS(authenticationToken, requestMessage, responseType);
+            result = getCertResponseFromPublicKeyWS(authenticationToken, requestMessage, responseType, endEntity.getEndEntityProfileId());
         }
         return result;
     }
 
     // Tbd re-factor: CertificateHelper from WS package causes cyclic module dependency.
-    private byte[] getCertResponseFromPublicKeyWS(final AuthenticationToken admin, final RequestMessage msg, final String responseType) 
-            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
+    private byte[] getCertResponseFromPublicKeyWS(final AuthenticationToken admin, final RequestMessage msg, final String responseType,
+            final int eepId) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
             CertificateExtensionException, CertificateParsingException {
         byte[] result = null;
         final ResponseMessage response = createCertificate(admin, msg, X509ResponseMessage.class, null);
@@ -978,9 +978,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
             result = certificate.getEncoded();
         } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
-            result = createPKCS7(admin, (X509Certificate) certificate, false);
+            result = createPKCS7(admin, (X509Certificate) certificate, false, eepId);
         } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
-            result = createPKCS7(admin, (X509Certificate) certificate, true);
+            result = createPKCS7(admin, (X509Certificate) certificate, true, eepId);
         }
         return result;
     }
