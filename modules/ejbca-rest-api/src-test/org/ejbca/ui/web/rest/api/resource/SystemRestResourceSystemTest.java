@@ -59,7 +59,7 @@ public class SystemRestResourceSystemTest extends RestResourceSystemTestBase {
     }
  
     @Test
-    public void add_and_run_service_test() throws Exception {
+    public void shouldReturn200WhenServiceTriggered() throws Exception {
         if (serviceSession == null) {
           serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
         }
@@ -80,7 +80,7 @@ public class SystemRestResourceSystemTest extends RestResourceSystemTestBase {
     }
 
     @Test
-    public void remove_and_run_service_test() throws Exception {
+    public void shouldReturn404WhenServiceNotFound() throws Exception {
         if (serviceSession == null) {
             serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
           }
