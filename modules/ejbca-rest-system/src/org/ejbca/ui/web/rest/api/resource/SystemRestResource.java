@@ -10,12 +10,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.util.KeyedLock;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceData;
 import org.ejbca.core.ejb.services.ServiceDataSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.RunServiceRestResponse;
 
@@ -26,14 +23,13 @@ import org.ejbca.ui.web.rest.api.io.response.RunServiceRestResponse;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 
 public class SystemRestResource extends BaseRestResource {
-    @EJB
-    private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-    @EJB
-    private RaMasterApiProxyBeanLocal raMasterApiProxy;
+    
     @EJB
     private ServiceSessionLocal serviceSession;
+    
     @EJB
     private ServiceDataSessionLocal serviceDataSession;
+    
     private static final Logger log = Logger.getLogger(SystemRestResource.class);
 
     public Response runServiceWorker(
