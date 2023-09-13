@@ -123,6 +123,14 @@ public class LogRedactionUtils {
         }
     }
 
+    public static String getSubjectDnLogSafe(final Certificate cert, final int endEntityProfileId) {
+        if (LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return CertTools.getSubjectDN(cert);
+        }
+    }
+
     public static String getSubjectAltNameLogSafe(String san) {
         if(redactPii()) {
             return REDACTED_CONTENT;
