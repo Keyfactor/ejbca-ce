@@ -95,6 +95,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
@@ -781,7 +782,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             assertEquals("'Not Before' should be limited by the CA not before date.", cacert.getNotBefore(), cert.getNotBefore());
             assertEquals("Wrong 'Not After' date.", notAfter, cert.getNotAfter());
             String altNames = CertTools.getSubjectAlternativeName(cert);
-            assertContains("Subject Alt Name", altNames, "upn=fooupn@bar.com");
+            assertContains("Subject Alt Name", altNames, DnComponents.UPN + "=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, "rfc822name=fooemail@bar.com");
             if (SANTest) {
                 assertContains("Subject Alt Name", altNames, "directoryName=c=SE\\,cn=foobar");
