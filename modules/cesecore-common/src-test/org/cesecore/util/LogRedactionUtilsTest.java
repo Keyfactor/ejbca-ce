@@ -97,10 +97,10 @@ public class LogRedactionUtilsTest {
         assertEquals("SubjectDN redaction pattern mismatch", LogRedactionUtils.getSubjectDnRedactionPattern(),
                 "((certificationid=)|(description=)|(jurisdictioncountry=)|(jurisdictionstate=)|(jurisdictionlocality=)|"
                 + "(role=)|(street=)|(pseudonym=)|(telephonenumber=)|(postaladdress=)|(businesscategory=)|(postalcode=)|"
-                + "(unstructuredaddress=)|(unstructuredname=)|(emailaddress=)|(e=)|(email=)|(dn=)|(uniqueidentifier=)|"
+                + "(unstructuredaddress=)|(unstructuredname=)|(emailaddress=)|(email=)|(dn=)|(uniqueidentifier=)|"
                 + "(uid=)|(pid=)|(vid=)|(cn=)|(name=)|(sn=)|(serialnumber=)|(gn=)|(givenname=)|(initials=)|(surname=)|"
-                + "(t=)|(ou=)|(organizationidentifier=)|(o=)|(l=)|(st=)|(dc=)|(c=)).*");
-        assertEquals("SubjectAltName redaction pattern mismatch", LogRedactionUtils.getSubjectAltNameRedactionPattern(),
+                + "(ou=)|(organizationidentifier=)|(st=)|(dc=)|(c=)).*");
+        assertEquals("SubjectAltName redaction pattern mismatch", LogRedactionUtils.getSubjectAltNameRedactionPattern(), 
                 "((OTHERNAME=)|(RFC822NAME=)|(DNSNAME=)|(IPADDRESS=)|(X400ADDRESS=)|(DIRECTORYNAME=)|(EDIPARTYNAME=)|"
                 + "(UNIFORMRESOURCEID=)|(REGISTEREDID=)|(UPN=)|(GUID=)|(KRB5PRINCIPAL=)|(PERMANENTIDENTIFIER=)|(XMPPADDR=)|"
                 + "(SRVNAME=)|(SUBJECTIDENTIFICATIONMETHOD=)|(FASCN=)|(UNIFORMRESOURCEIDENTIFIER=)|(URI=)).*");
@@ -245,10 +245,12 @@ public class LogRedactionUtilsTest {
         assertEquals(LogRedactionUtils.getRedactedMessage(DUMMY_MESSAGE_WITH_SDN), "some message: " + LogRedactionUtils.REDACTED_CONTENT);
         assertEquals(LogRedactionUtils.getRedactedMessage(null), null);
         assertEquals(LogRedactionUtils.getRedactedMessage(""), "");
-        assertEquals(LogRedactionUtils.getRedactedMessage("some other message: uri=xyz.abc blah,dnsName=abcd.com"),
+        assertEquals(LogRedactionUtils.getRedactedMessage("some other message: uri=xyz.abc blah,dnsName=abcd.com"), 
                 "some other message: " + LogRedactionUtils.REDACTED_CONTENT);
-        assertEquals(LogRedactionUtils.getRedactedMessage("some other message: dnsName=abcd.com,uri=xyz.abc blah"),
+        assertEquals(LogRedactionUtils.getRedactedMessage("some other message: dnsName=abcd.com,uri=xyz.abc blah"), 
                 "some other message: " + LogRedactionUtils.REDACTED_CONTENT);
+        assertEquals(LogRedactionUtils.getRedactedMessage("some other message: serialno=123456 subjectemail=asd@we.com"), 
+                "some other message: serialno=123456 subject" + LogRedactionUtils.REDACTED_CONTENT);
         
         // disable redaction
         LogRedactionConfigurationCache.INSTANCE.updateLogRedactionNodeLocalSettings(false, false);

@@ -240,6 +240,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 }
             }
             logSession.log(EventTypes.CA_CREATION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), null, null, details);
+            log.info("Created CA with subject DN: " + ca.getSubjectDN());
         } else {
             log.debug("Trying to add null CA, nothing done.");
         }
