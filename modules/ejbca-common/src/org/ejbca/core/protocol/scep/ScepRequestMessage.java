@@ -494,8 +494,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
-            if (log.isDebugEnabled()) {
-            	log.debug("Successfully extracted PKCS10:" + LogRedactionUtils.getRedactedMessage(new String(Base64.encode(pkcs10.getEncoded()))));
+            if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
+            	log.debug("Successfully extracted PKCS10:" + new String(Base64.encode(pkcs10.getEncoded())));
             }
         } else if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
             ASN1InputStream derAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(decBytes));
@@ -513,7 +513,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             issuerDN = X500Name.getInstance(derSequence.getObjectAt(0)).toString();                     
             getCertInitialSubject = X500Name.getInstance(derSequence.getObjectAt(1)).toString();
             if (log.isDebugEnabled()) {
-                log.debug("Successfully extracted IssuerAndName: '" + issuerDN + "', '" + getCertInitialSubject + "'.");
+                log.debug("Successfully extracted issuerdn: '" + issuerDN + "', '" + getCertInitialSubject + "'.");
             }
         }
         if (log.isTraceEnabled()) {

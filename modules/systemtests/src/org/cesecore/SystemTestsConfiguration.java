@@ -51,6 +51,8 @@ public abstract class SystemTestsConfiguration {
     public static final String TESTSERVERS_HOSTNAME = "testservers.hostname";
     
     public static final String ENABLE_LOG_REDACTON = "enable.log.redact";
+    public static final String SERVER_LOG_PATH = "server.log.path";
+    private static final String SERVER_LOG_PATH_DEFAULT = "/opt/wildfly/standalone/log/server.log";
 
     private static final String[] COMMON_PKCS11_PATHS = {
         "/etc/utimaco/libcs2_pkcs11.so", // Utimaco (Linux)
@@ -102,6 +104,10 @@ public abstract class SystemTestsConfiguration {
     
     public static boolean getEnableLogRedact() {
         return Boolean.parseBoolean(StringUtils.trim(getProperties().getProperty(ENABLE_LOG_REDACTON, "false")));
+    }
+    
+    public static String getServerLogFilePath() {
+        return StringUtils.trim(getProperties().getProperty(SERVER_LOG_PATH, SERVER_LOG_PATH_DEFAULT));
     }
 
     /** @return the HTTPS port of the host that the test should access for protocols (e.g. the HTTPS port of an http proxy in front of EJBCA)*/

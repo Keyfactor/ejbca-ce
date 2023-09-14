@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -75,7 +76,7 @@ public class UsernameGenerator {
 	
 	public String generateUsername(String name) {
 	    if (log.isDebugEnabled()) {
-	        log.debug(">generateUsername: "+name);
+	        log.debug(">generateUsername: " + LogRedactionUtils.getSubjectDnLogSafe(name));
 	    }
 		String str = name;
 		switch (params.getMode()) {
