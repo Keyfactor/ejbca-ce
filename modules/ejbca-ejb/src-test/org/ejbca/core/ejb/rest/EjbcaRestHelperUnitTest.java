@@ -427,7 +427,7 @@ public class EjbcaRestHelperUnitTest {
     public void shouldParseCorrectAn() {
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
         String actualResult = testClass.getSubjectAltName(pkcs10CertificateRequest);
-        String expectedResult = DnComponents.DNSNAME + "=somedns.com, " + DnComponents.IPADDRESS + "=192.168.1.7, " + DnComponents.DNSNAME + "=some.other.dns.com, " + DnComponents.DIRECTORYNAME + "=CN=Test\\,L=XX";
+        String expectedResult = DnComponents.DNS + "=somedns.com, " + DnComponents.IPADDR + "=192.168.1.7, " + DnComponents.DNS+ "=some.other.dns.com, " + DnComponents.DIRECTORYNAME + "=CN=Test\\,L=XX";
         assertEquals("Subject AN got incorrectly parsed from pkcs10 certificate request", expectedResult, actualResult);
     }
 }
