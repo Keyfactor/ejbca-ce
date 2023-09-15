@@ -408,7 +408,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             String altNames = CertTools.getSubjectAlternativeName(cert);
-            assertContains("Subject Alt Name", altNames, "upn=fooupn@bar.com");
+            assertContains("Subject Alt Name", altNames, DnComponents.UPN + "=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, "rfc822name=fooemail@bar.com");
 
             // Ignore sending a confirm message to the CA, it will not care anyhow
