@@ -519,7 +519,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             String altNames = CertTools.getSubjectAlternativeName(cert);
-            assertContains("Subject Alt Name", altNames, "upn=fooupn@bar.com");
+            assertContains("Subject Alt Name", altNames, DnComponents.UPN + "=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, "rfc822name=fooemail@bar.com");
             final String cdpfromcert1 = CertTools.getCrlDistributionPoint(cert);
             assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp1, cdpfromcert1);
