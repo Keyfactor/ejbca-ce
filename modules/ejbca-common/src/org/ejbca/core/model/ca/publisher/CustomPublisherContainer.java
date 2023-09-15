@@ -20,11 +20,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -128,41 +126,29 @@ public class CustomPublisherContainer extends BasePublisher {
      *  Sets the propertyData used to configure this custom publisher.
      */
     private void setPropertyData(String propertyData, boolean validate) throws PublisherException {
-        final ICustomPublisher publisher = getCustomPublisher();
+        if (isCustomUiRenderingSupported()) {
+            CustomPublisherUiSupport publisher = (CustomPublisherUiSupport) getCustomPublisher();
 
-        if (publisher != null) {
-            final Properties properties = buildProperties(propertyData, "Properties could not be loaded.");
-            final Set<String> propertyNames = properties.keySet().stream().map(Object::toString).collect(Collectors.toSet());
+            Properties properties = buildProperties(propertyData, "Properties could not be loaded.");
 
-            final Set<String> declaredPropertyNames = publisher.getDeclaredPropertyNames();
-            if (!declaredPropertyNames.containsAll(propertyNames)) {
-                final Set<String> extraPropertyNames = new HashSet<>(propertyNames);
-                extraPropertyNames.removeAll(declaredPropertyNames);
+            StringBuilder rawPropertyData = new StringBuilder();
+            List<String> propertyNames = properties.keySet().stream().map(Object::toString).collect(Collectors.toUnmodifiableList());
 
-                throw new PublisherException("Unsupported properties: " + String.join(", ", extraPropertyNames));
-            }
+            for (String propertyName : propertyNames) {
+                int propertyType = publisher.getPropertyType(propertyName);
+                String propertyValue = properties.getProperty(propertyName);
+                String value = parsePropertyValue(propertyType, propertyName, propertyValue);
 
-            if (isCustomUiRenderingSupported()) {
-                final StringBuilder rawPropertyData = new StringBuilder();
-
-                for (String propertyName : propertyNames) {
-                    final int propertyType = ((CustomPublisherUiSupport) publisher).getPropertyType(propertyName);
-                    final String propertyValue = properties.getProperty(propertyName);
-                    final String value = parsePropertyValue(propertyType, propertyName, propertyValue);
-
-                    if (validate) {
-                        validateProperty(propertyName, propertyValue);
-                    }
-
-                    rawPropertyData.append(propertyName).append("=").append(value).append("\n");
+                if (validate) {
+                    validateProperty(propertyName, propertyValue);
                 }
 
-                data.put(PROPERTYDATA, rawPropertyData.toString());
-                return;
+                rawPropertyData.append(propertyName).append("=").append(value).append("\n");
             }
+            data.put(PROPERTYDATA, rawPropertyData.toString());
+        } else {
+            data.put(PROPERTYDATA, propertyData);
         }
-
-        data.put(PROPERTYDATA, propertyData);
     }
 
     private static Properties buildProperties(String propertyData, String errorMessage) {

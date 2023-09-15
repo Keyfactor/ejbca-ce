@@ -13,12 +13,10 @@
 package org.ejbca.core.model.ca.publisher;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 
@@ -45,13 +43,6 @@ public abstract class CustomPublisherUiBase extends CustomPublisherContainer imp
     @Override
     public List<CustomPublisherProperty> getCustomUiPropertyList(AuthenticationToken authenticationToken) {
         return new ArrayList<>(properties.values());
-    }
-
-    @Override
-    public Set<String> getDeclaredPropertyNames() {
-        // TODO: the method should be generally removed to use default empty set from the mixin
-        //       and all publishers should properly define their property names for validation purposes
-        return new HashSet<>(properties.keySet());
     }
 
     @Override
