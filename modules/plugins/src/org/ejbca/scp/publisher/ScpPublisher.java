@@ -55,7 +55,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * This class is used for publishing certificates and CRLs to a remote destination over scp. 
@@ -147,22 +146,6 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 new CustomPublisherProperty(SCP_KNOWN_HOSTS_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, scpKnownHosts));
 
     }
-
-    @Override
-    public Set<String> getDeclaredPropertyNames() {
-        return Set.of(
-                SIGNING_CA_PROPERTY_NAME,
-                ANONYMIZE_CERTIFICATES_PROPERTY_NAME,
-                SSH_USERNAME,
-                SSH_PORT,
-                CRL_SCP_DESTINATION_PROPERTY_NAME,
-                CERT_SCP_DESTINATION_PROPERTY_NAME,
-                SCP_PRIVATE_KEY_PROPERTY_NAME,
-                SCP_PRIVATE_KEY_PASSWORD_NAME,
-                SCP_KNOWN_HOSTS_PROPERTY_NAME
-        );
-    }
-
 
     private String decryptPassword(String encryptedPassword) throws PublisherException {
         // Password is encrypted on the database, using the key password.encryption.key
