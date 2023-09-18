@@ -95,7 +95,6 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
@@ -407,7 +406,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
-            String altNames = CertTools.getSubjectAlternativeName(cert);
+            String altNames = DnComponents.getSubjectAlternativeName(cert);
             assertContains("Subject Alt Name", altNames, DnComponents.UPN + "=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, "rfc822name=fooemail@bar.com");
 
@@ -518,7 +517,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
-            String altNames = CertTools.getSubjectAlternativeName(cert);
+            String altNames = DnComponents.getSubjectAlternativeName(cert);
             assertContains("Subject Alt Name", altNames, DnComponents.UPN + "=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, "rfc822name=fooemail@bar.com");
             final String cdpfromcert1 = CertTools.getCrlDistributionPoint(cert);
@@ -543,7 +542,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
-            altNames = CertTools.getSubjectAlternativeName(cert);
+            altNames = DnComponents.getSubjectAlternativeName(cert);
             assertNull(altNames);
             final String cdpfromcert2 = CertTools.getCrlDistributionPoint(cert);
             assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp2, cdpfromcert2);            
@@ -781,7 +780,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Check that validity override works
             assertEquals("'Not Before' should be limited by the CA not before date.", cacert.getNotBefore(), cert.getNotBefore());
             assertEquals("Wrong 'Not After' date.", notAfter, cert.getNotAfter());
-            String altNames = CertTools.getSubjectAlternativeName(cert);
+            String altNames = DnComponents.getSubjectAlternativeName(cert);
             assertContains("Subject Alt Name", altNames, DnComponents.UPN + "=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, DnComponents.EMAIL + "=fooemail@bar.com");
             if (SANTest) {
