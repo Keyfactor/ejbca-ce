@@ -783,7 +783,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             assertEquals("Wrong 'Not After' date.", notAfter, cert.getNotAfter());
             String altNames = CertTools.getSubjectAlternativeName(cert);
             assertContains("Subject Alt Name", altNames, DnComponents.UPN + "=fooupn@bar.com");
-            assertContains("Subject Alt Name", altNames, DnComponents.RFC822NAME + "=fooemail@bar.com");
+            assertContains("Subject Alt Name", altNames, DnComponents.EMAIL + "=fooemail@bar.com");
             if (SANTest) {
                 assertContains("Subject Alt Name", altNames, DnComponents.DIRECTORYNAME + "=c=SE\\,cn=foobar");
             }
