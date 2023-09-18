@@ -65,7 +65,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 50.0;
+    public static final float LATEST_VERSION = (float) 51.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -3590,12 +3590,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if (data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER) == null) {
                 setUseTruncatedSubjectKeyIdentifier(false);
             }
-            
+
+            upgradeCpDataToVersion51();
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
     }
-    
+
+    private void upgradeCpDataToVersion51() {
+        //  NTRU algorithm requires defined security Levels
+        if (isKeyAlgorithmsRequireSecurityLevel()) {
+            setAvailableSecurityLevelsAsList(new ArrayList<>(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU));
+        }
+    }
+
     /**
      * Determine if the certificate profile supports Elliptic Curve Cryptography (ECC).
      *
