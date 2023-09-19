@@ -45,16 +45,21 @@ public final class CATokenConstants {
 	/** The CAs previous/next default key, if any exists - relevant only for ITS */
 	public static final int CAKEYPURPOSE_DEFAULT_PREVIOUS   = 8;
     public static final int CAKEYPURPOSE_DEFAULT_NEXT       = 9;
+    
+    public static final int CAKEYPUPROSE_ALTERNATIVE_CERTSIGN = 10;
+    public static final int CAKEYPUPROSE_ALTERNATIVE_CERTSIGN_NEXT = 11;
 
     public final static int[] ALL_KEY_PURPOSES = new int[] {
-        CATokenConstants.CAKEYPURPOSE_CERTSIGN,
-        CATokenConstants.CAKEYPURPOSE_CRLSIGN,
-        CATokenConstants.CAKEYPURPOSE_KEYENCRYPT,
-        CATokenConstants.CAKEYPURPOSE_KEYTEST,
-        CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT,
-        CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS,
-        CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT,
-        CATokenConstants.CAKEYPURPOSE_DEFAULT_NEXT
+        CAKEYPURPOSE_CERTSIGN,
+        CAKEYPURPOSE_CRLSIGN,
+        CAKEYPURPOSE_KEYENCRYPT,
+        CAKEYPURPOSE_KEYTEST,
+        CAKEYPURPOSE_HARDTOKENENCRYPT,
+        CAKEYPURPOSE_CERTSIGN_PREVIOUS,
+        CAKEYPURPOSE_CERTSIGN_NEXT,
+        CAKEYPURPOSE_DEFAULT_NEXT,
+        CAKEYPUPROSE_ALTERNATIVE_CERTSIGN,
+        CAKEYPUPROSE_ALTERNATIVE_CERTSIGN_NEXT
     };
 
 	/** Key strings for token properties matching the above constants, i.e. when doing getPrivateKey(1)
@@ -64,6 +69,7 @@ public final class CATokenConstants {
 	final static public String CAKEYPURPOSE_KEYENCRYPT_STRING = "keyEncryptKey";
 	final static public String CAKEYPURPOSE_TESTKEY_STRING = "testKey";
 	final static public String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
+	final static public String CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING = "alternativeCertSignKey";
 	
 	private static final Map<Integer,String> purposeConstantToString = new HashMap<>();
 	static {
@@ -72,6 +78,7 @@ public final class CATokenConstants {
 	    purposeConstantToString.put(CAKEYPURPOSE_KEYENCRYPT, CAKEYPURPOSE_KEYENCRYPT_STRING);
 	    purposeConstantToString.put(CAKEYPURPOSE_KEYTEST, CAKEYPURPOSE_TESTKEY_STRING);
 	    purposeConstantToString.put(CAKEYPURPOSE_DEFAULT, CAKEYPURPOSE_DEFAULT_STRING);
+	    purposeConstantToString.put(CAKEYPUPROSE_ALTERNATIVE_CERTSIGN, CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING);
 	}
 	
 	@Deprecated
