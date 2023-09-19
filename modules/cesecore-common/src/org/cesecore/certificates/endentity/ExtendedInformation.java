@@ -138,10 +138,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static String REVOKE_EE_APPROVAL_REQUEST_IDS = "REVOKE_EE_APPROVAL_REQUEST_IDS";
 
     /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */
-    private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
+    public static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
 
     /** If using SCEP in RA mode with approvals, the incoming enrollment request together with the transactions need to be cached for later use. */
-    private static String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
+    public static String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
     /** If using SCEP in RA mode with approvals, the incoming approval type (add or edit) needs to be cached. */
     private static String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
     // ** External account binding id

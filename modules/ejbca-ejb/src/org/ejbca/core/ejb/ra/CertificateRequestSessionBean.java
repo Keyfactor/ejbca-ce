@@ -333,14 +333,14 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             if (!"X.509".equals(cert.getType())) {
                 log.info("Certificate response type PKCS7 can only be used with X.509 certificates, not " + cert.getType());
             } else {
-                retval = signSession.createPKCS7(admin, (X509Certificate)cert, false);
+                retval = signSession.createPKCS7(admin, (X509Certificate)cert, false, userData.getEndEntityProfileId());
             }
         }
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN) {
             if (!"X.509".equals(cert.getType())) {
                 log.info("Certificate response type PKCS7_WITH_CHAIN can only be used with X.509 certificates, not " + cert.getType());
             } else {
-                retval = signSession.createPKCS7(admin, (X509Certificate)cert, true);
+                retval = signSession.createPKCS7(admin, (X509Certificate)cert, true, userData.getEndEntityProfileId());
             }
         }
         return retval;

@@ -75,6 +75,9 @@ public class LogRedactionUtils {
         StringBuilder regex = new StringBuilder(); 
         regex.append("(");
         for(String dnPart: dnParts) {
+            if (dnPart.equals("e") || dnPart.equals("t") || dnPart.equals("l") || dnPart.equals("o")) {
+                continue;
+            }
             regex.append("(" + dnPart + "=)|");
         }
         regex.deleteCharAt(regex.length()-1);
@@ -83,11 +86,11 @@ public class LogRedactionUtils {
     }
     
     // only for testing
-    protected static String getSubjectDnRedactionPattern() {
+    public static String getSubjectDnRedactionPattern() {
         return SUBJECT_DN_COMPONENTS.toString();
     }
     
-    protected static String getSubjectAltNameRedactionPattern() {
+    public static String getSubjectAltNameRedactionPattern() {
         return SUBJECT_ALT_NAME_COMPONENTS.toString();
     }
 
@@ -117,6 +120,14 @@ public class LogRedactionUtils {
 
     public static String getSubjectDnLogSafe(final Certificate cert) {
         if(redactPii()) {
+            return REDACTED_CONTENT;
+        } else {
+            return CertTools.getSubjectDN(cert);
+        }
+    }
+
+    public static String getSubjectDnLogSafe(final Certificate cert, final int endEntityProfileId) {
+        if (LogRedactionConfigurationCache.INSTANCE.getLogRedactionConfiguration(endEntityProfileId).isRedactPii()) {
             return REDACTED_CONTENT;
         } else {
             return CertTools.getSubjectDN(cert);
