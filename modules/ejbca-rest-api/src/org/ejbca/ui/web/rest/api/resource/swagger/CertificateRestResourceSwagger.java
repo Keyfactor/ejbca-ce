@@ -120,8 +120,8 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             code = 201)
     public Response certificateRequest(@Context HttpServletRequest requestContext,
                                        final CertificateRequestRestRequest certificateRequestRestRequest)
-            throws RestException, AuthorizationDeniedException, CesecoreException, IOException, SignatureException,
-            ConstructionException, NoSuchFieldException {
+            throws RestException, AuthorizationDeniedException, CesecoreException, IOException,
+            SignatureException, NoSuchFieldException {
         return super.certificateRequest(requestContext, certificateRequestRestRequest);
     }
 

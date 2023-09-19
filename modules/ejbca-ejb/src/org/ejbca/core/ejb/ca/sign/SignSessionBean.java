@@ -259,14 +259,21 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     public byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain)
             throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
         Integer caid = Integer.valueOf(CertTools.getIssuerDN(cert).hashCode());
-        return createPKCS7(admin, caid.intValue(), cert, includeChain);
+        return createPKCS7(admin, caid.intValue(), cert, includeChain, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+    }
+
+    @Override
+    public byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain, final int eepId)
+            throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+        Integer caid = Integer.valueOf(CertTools.getIssuerDN(cert).hashCode());
+        return createPKCS7(admin, caid.intValue(), cert, includeChain, eepId);
     }
 
     @Override
     public byte[] createPKCS7(AuthenticationToken admin, int caId, boolean includeChain)
             throws CADoesntExistsException, AuthorizationDeniedException {
         try {
-            return createPKCS7(admin, caId, null, includeChain);
+            return createPKCS7(admin, caId, null, includeChain, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         } catch (SignRequestSignatureException e) {
             String msg = intres.getLocalizedMessage("error.unknown");
             log.error(msg, e);
@@ -281,12 +288,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param caId  CA for which we want a PKCS7 certificate chain.
      * @param cert  client certificate which we want encapsulated in a PKCS7 together with
      *              certificate chain, or null
+     * @param eepId used for accurate redaction. If EEP is unknown, pass {@link EndEntityConstants.EMPTY_END_ENTITY_PROFILE} to use default setting.
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid certificate
      * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA
      * @throws SignRequestSignatureException if the certificate wasn't issued by the CA defined by caid
      */
-    private byte[] createPKCS7(AuthenticationToken admin, int caId, X509Certificate cert, boolean includeChain)
+    private byte[] createPKCS7(AuthenticationToken admin, int caId, X509Certificate cert, boolean includeChain, final int eepId)
             throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
@@ -299,10 +307,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
             final Map<String, Object> details = new LinkedHashMap<>();
             if (cert != null) {
-                final String logSafeSubjectDN = certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(cert))
-                                                                       .getCertificateData().getLogSafeSubjectDn();
-
-                details.put("leafSubject", logSafeSubjectDN);
+                details.put("leafSubject", LogRedactionUtils.getSubjectDnLogSafe(cert, eepId));
                 details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
             }
             details.put("includeChain", Boolean.toString(includeChain));
@@ -958,14 +963,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // CertificateCreateSessionBean.createCertificate call which is called in the end
         final RequestMessage requestMessage = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
         if (requestMessage != null) {
-            result = getCertResponseFromPublicKeyWS(authenticationToken, requestMessage, responseType);
+            result = getCertResponseFromPublicKeyWS(authenticationToken, requestMessage, responseType, endEntity.getEndEntityProfileId());
         }
         return result;
     }
 
     // Tbd re-factor: CertificateHelper from WS package causes cyclic module dependency.
-    private byte[] getCertResponseFromPublicKeyWS(final AuthenticationToken admin, final RequestMessage msg, final String responseType) 
-            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
+    private byte[] getCertResponseFromPublicKeyWS(final AuthenticationToken admin, final RequestMessage msg, final String responseType,
+            final int eepId) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
             CertificateExtensionException, CertificateParsingException {
         byte[] result = null;
         final ResponseMessage response = createCertificate(admin, msg, X509ResponseMessage.class, null);
@@ -973,9 +978,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
             result = certificate.getEncoded();
         } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
-            result = createPKCS7(admin, (X509Certificate) certificate, false);
+            result = createPKCS7(admin, (X509Certificate) certificate, false, eepId);
         } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
-            result = createPKCS7(admin, (X509Certificate) certificate, true);
+            result = createPKCS7(admin, (X509Certificate) certificate, true, eepId);
         }
         return result;
     }
