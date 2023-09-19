@@ -376,7 +376,7 @@ public class PublisherTest extends RoleUsingTestCase {
 			endEntityProfileSession.addEndEntityProfile(admin, eepName, profile);
 			final int profileId = endEntityProfileSession.getEndEntityProfileId(eepName);
 
-			final ArrayList<Integer> publishers = new ArrayList();
+			final ArrayList<Integer> publishers = new ArrayList<>();
 			publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
 
 			// When a certificate is stored via publisher
