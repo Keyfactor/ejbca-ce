@@ -217,7 +217,7 @@ public class ValidityDate {
 	public static Date getDate(final String encodedValidity, final Date firstDate, final boolean notAfterIsInclusive) {
 	    try {
 	        // We think this is the most common, so try this first, it's fail-fast
-	        final long millis = SimpleTime.parseMillies(encodedValidity);
+	        final long millis = SimpleTime.parseMillis(encodedValidity);
 	        final long endSecond = notAfterIsInclusive ? NOT_AFTER_INCLUSIVE_OFFSET: 0;
 	        final Date endDate = new Date(firstDate.getTime() + millis - endSecond);
 	        return endDate;

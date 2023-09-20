@@ -1291,7 +1291,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean accessAnyCpAvailable, final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
         final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
         final boolean countOnly = request.getPageNumber() == -1;
-        final Query query = createQuery(authenticationToken, request, countOnly, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);;
+        final Query query = createQuery(authenticationToken, request, countOnly, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
         int maxResults = -1;
         int offset = -1;
         if (!countOnly) {
