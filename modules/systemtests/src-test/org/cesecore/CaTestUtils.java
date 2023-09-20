@@ -49,6 +49,7 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -59,6 +60,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
@@ -622,4 +624,19 @@ public abstract class CaTestUtils {
         }
     }
 
+    /**
+     * Enables/Disables the "Allow Invalidity Date" setting for a CA
+     *
+     * @param authenticationToken Authentication token
+     * @param caName              Name of the CA
+     * @param allowInvalidityDate True if invalidity date usage should be allowed
+     */
+    public static void setAllowInvalidityDate(final AuthenticationToken authenticationToken, final String caName, final boolean allowInvalidityDate)
+            throws AuthorizationDeniedException, CaMsCompatibilityIrreversibleException,
+            InternalKeyBindingNonceConflictException, CADoesntExistsException {
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        final CAInfo caInfo = caSession.getCAInfo(authenticationToken, caName);
+        caInfo.setAllowInvalidityDate(allowInvalidityDate);
+        caSession.editCA(authenticationToken, caInfo);
+    }
 }

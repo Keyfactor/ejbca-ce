@@ -95,11 +95,12 @@ public interface InternalCertificateStoreSessionRemote {
     /**
      * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
      *
-     * @param admin      AuthenticationToken performing the operation
-     * @param issuerdn   Issuer of certificate to be removed.
-     * @param serno      the serno of certificate to revoke.
-     * @param revokeDate when it was revoked
-     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
+     * @param admin          AuthenticationToken performing the operation
+     * @param issuerdn       Issuer of certificate to be removed.
+     * @param serno          the serno of certificate to revoke.
+     * @param revokedDate    when it was revoked
+     * @param invalidityDate the date when certificate became invalid
+     * @param reason         the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
@@ -109,10 +110,11 @@ public interface InternalCertificateStoreSessionRemote {
     /**
      * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
      *
-     * @param admin      AuthenticationToken performing the operation
-     * @param certificate the certificate to revoke or activate.
-     * @param revokeDate when it was revoked
-     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
+     * @param admin          AuthenticationToken performing the operation
+     * @param certificate    the certificate to revoke or activate.
+     * @param revokedDate    when it was revoked
+     * @param invalidityDate the date when certificate became invalid
+     * @param reason         the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
