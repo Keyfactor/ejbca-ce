@@ -117,6 +117,13 @@ public class CryptoTokenInfo implements Named, Serializable {
     public String getAWSKMSRegion() {
         return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_REGION);        
     }
+
+    public AwsKmsAuthenticationType getAWSKMSAuthenticationType() {
+        String authenticationTypeString = cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE);
+        return authenticationTypeString == null ? AwsKmsAuthenticationType.KEY_ID_AND_SECRET
+                : AwsKmsAuthenticationType.valueOf(authenticationTypeString);
+    }
+    
     public String getAWSKMSAccessKeyID() {
         return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID);
     }
@@ -137,9 +144,14 @@ public class CryptoTokenInfo implements Named, Serializable {
     }
 
     /**
-     * False if this is an Azure Key Vault Token using key binding or managed identity authentication.
+     * False if this is an Azure Key Vault Token using key binding or managed identity authentication 
+     * or a AWS KMS Key Vault Token using service credentials.
      */
     public boolean requiresSecretToActivate() {
-        return !getType().equals(AzureCryptoToken.class.getSimpleName()) || getAzureAuthenticationType() == AzureAuthenticationType.APP_ID_AND_SECRET;
+        if (getType().equals(AzureCryptoToken.class.getSimpleName()) && getAzureAuthenticationType() != AzureAuthenticationType.APP_ID_AND_SECRET)
+            return false;
+        if (getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && getAWSKMSAuthenticationType() != AwsKmsAuthenticationType.KEY_ID_AND_SECRET)
+            return false;
+        return true;
     }
 }
