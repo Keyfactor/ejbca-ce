@@ -24,122 +24,125 @@ import io.swagger.annotations.ApiModelProperty;
 @JsonPropertyOrder({ "fingerprint", "cAFingerprint", "certificateProfileId", "endEntityProfileId", 
     "expireDate", "issuerDN", "notBefore", "revocationDate", "revocationReason", "serialNumber", 
     "status", "subjectAltName", "subjectDN", "subjectKeyId", "tag", "type", "updateTime", "username", 
-    "certificate", "certificateRequest", "crlPartitionIndex" })
+    "certificate", "certificateRequest", "crlPartitionIndex", "invalidityDate" })
 public class CertificateRestResponseV2 {
 
     @ApiModelProperty(value = "Certificate fingerprint", example = "123abc456def789ghi123klm456nop789qrs123t")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("fingerprint")
+    @JsonProperty("fingerprint") // ECA-11791
     private String fingerprint;
 
     @ApiModelProperty(value = "Certificate Authority fingerprint", example = "abc123def456ghi789klm123nop456qrs789tvx1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("cAFingerprint")
+    @JsonProperty("cAFingerprint") // ECA-11791
     private String caFingerprint;
 
     @ApiModelProperty(value = "Issuer Distinguished Name", example = "CN=ExampleCA")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("issuerDN")
+    @JsonProperty("issuerDN") // ECA-11791
     private String issuerDN;
 
     @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("subjectDN")
+    @JsonProperty("subjectDN") // ECA-11791
     private String subjectDN;
 
     @ApiModelProperty(value = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("subjectAltName")
+    @JsonProperty("subjectAltName") // ECA-11791
     private String subjectAltName;
 
     @ApiModelProperty(value = "Subject Key Identifier", example = "z123abc456def789ghi123klm456nop789qrs123")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("subjectKeyId")
+    @JsonProperty("subjectKeyId") // ECA-11791
     private String subjectKeyId;
 
     @ApiModelProperty(value = "Certificate Profile Identifier", example = "1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("certificateProfileId")
+    @JsonProperty("certificateProfileId") // ECA-11791
     private Integer certificateProfileId;
 
     @ApiModelProperty(value = "End Entity Profile Identifier", example = "1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("endEntityProfileId")
+    @JsonProperty("endEntityProfileId") // ECA-11791
     private Integer endEntityProfileId;
     
     @ApiModelProperty(value = "Certificate Profile Name", example = "ENDUSER")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("certificateProfile")
+    @JsonProperty("certificateProfile") // ECA-11791
     private String certificateProfile;
 
     @ApiModelProperty(value = "End Entity Profile Name", example = "EMPTY")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("endEntityProfile")
+    @JsonProperty("endEntityProfile") // ECA-11791
     private String endEntityProfile;
 
     @ApiModelProperty(value = "Date at which certificate became valid", example = "1659952800011")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("notBefore")
+    @JsonProperty("notBefore") // ECA-11791
     private Long notBefore;
 
     @ApiModelProperty(value = "Date after which certificate should be considered expired", example = "2147483647000")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("expireDate")
+    @JsonProperty("expireDate") // ECA-11791
     private Long expireDate;
 
     @ApiModelProperty(value = "Revocation date", example = "-1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("revocationDate")
+    @JsonProperty("revocationDate") // ECA-11791
     private Long revocationDate = -1L;
 
-    @ApiModelProperty(value = "Revocation reson", example = "-1", allowableValues = "-1, 0, 1, 2, 3, 4, 5, 6, 8, 9, 10")
+    @ApiModelProperty(value = "Revocation reason", example = "-1", allowableValues = "-1, 0, 1, 2, 3, 4, 5, 6, 8, 9, 10")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("revocationReason")
+    @JsonProperty("revocationReason") // ECA-11791
     private Integer revocationReason = -1;
 
     @ApiModelProperty(value = "Hex Serial Number", example = "1234567890ABCDEF")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("serialNumber")
+    @JsonProperty("serialNumber") // ECA-11791
     private String serialNumber;
 
     @ApiModelProperty(value = "Certificate status", example = "20")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("status")
+    @JsonProperty("status") // ECA-11791
     private Integer status;
     
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("tag")
+    @JsonProperty("tag") // ECA-11791
     private String tag;
     
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("type")
+    @JsonProperty("type") // ECA-11791
     private Integer type;
 
     @ApiModelProperty(value = "Update time", example = "1659967133000")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("udpateTime")
+    @JsonProperty("udpateTime") // ECA-11791
     private Long updateTime;
 
     @ApiModelProperty(value = "Username", example = "JohnDoe")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("username")
+    @JsonProperty("username") // ECA-11791
     private String username;
 
     @ApiModelProperty(value = "Base64 encoded certificate", example = "TUlJR...t2A==")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("base64Cert")
+    @JsonProperty("base64Cert") // ECA-11791
     private byte[] certificate;
 
     @ApiModelProperty(value = "Certificate request", example = "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("certificateRequest")
+    @JsonProperty("certificateRequest") // ECA-11791
     private String certificateRequest;
 
     @ApiModelProperty(value = "CRL partition index", example = "1")
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("crlPartitionIndex")
+    @JsonProperty("crlPartitionIndex") // ECA-11791
     private Integer crlPartitionIndex;
+
+    @ApiModelProperty(value = "Invalidity date", example = "-1")
+    private Long invalidityDate;
 
     private CertificateRestResponseV2(final CertificateRestResponseBuilderV2 builder) {
         this.fingerprint = builder.fingerprint;
@@ -165,6 +168,7 @@ public class CertificateRestResponseV2 {
         this.certificate = builder.certificate;
         this.certificateRequest = builder.certificateRequest;
         this.crlPartitionIndex = builder.crlPartitionIndex;
+        this.invalidityDate = builder.invalidityDate;
     }
 
     /**
@@ -268,6 +272,10 @@ public class CertificateRestResponseV2 {
     public String getSerialNumber() {
         return serialNumber;
     }
+
+    public Long getInvalidityDate() {
+        return invalidityDate;
+    }
     
     public static class CertificateRestResponseBuilderV2 {
         
@@ -294,6 +302,7 @@ public class CertificateRestResponseV2 {
         private byte[] certificate;
         private String certificateRequest;
         private Integer crlPartitionIndex;
+        private Long invalidityDate;
         
         private CertificateRestResponseBuilderV2() {
         }
@@ -348,18 +357,18 @@ public class CertificateRestResponseV2 {
             return this;
         }
         
-        public CertificateRestResponseBuilderV2 setNotBefore(Long millies) {
-            this.notBefore = millies;
+        public CertificateRestResponseBuilderV2 setNotBefore(Long millis) {
+            this.notBefore = millis;
             return this;
         }
         
-        public CertificateRestResponseBuilderV2 setExpireDate(Long millies) {
-            this.expireDate = millies;
+        public CertificateRestResponseBuilderV2 setExpireDate(Long millis) {
+            this.expireDate = millis;
             return this;
         }
         
-        public CertificateRestResponseBuilderV2 setRevocationDate(Long millies) {
-            this.revocationDate = millies;
+        public CertificateRestResponseBuilderV2 setRevocationDate(Long millis) {
+            this.revocationDate = millis;
             return this;
         }
         
@@ -388,8 +397,8 @@ public class CertificateRestResponseV2 {
             return this;
         }
         
-        public CertificateRestResponseBuilderV2 setUpdateTime(Long millies) {
-            this.updateTime = millies;
+        public CertificateRestResponseBuilderV2 setUpdateTime(Long millis) {
+            this.updateTime = millis;
             return this;
         }
 
@@ -410,6 +419,11 @@ public class CertificateRestResponseV2 {
         
         public CertificateRestResponseBuilderV2 setCrlPartitionIndex(Integer index) {
             this.crlPartitionIndex = index;
+            return this;
+        }
+
+        public CertificateRestResponseBuilderV2 setInvalidityDate(long millis) {
+            this.invalidityDate = millis;
             return this;
         }
         
