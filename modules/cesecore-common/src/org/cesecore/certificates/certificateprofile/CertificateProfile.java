@@ -382,27 +382,30 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** Constants holding the use properties for certificate extensions */
     protected static final Map<String, String> useStandardCertificateExtensions = new LinkedHashMap<>();
     {
-        useStandardCertificateExtensions.put(USEBASICCONSTRAINTS, Extension.basicConstraints.getId());
-        useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
-        useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, Extension.subjectKeyIdentifier.getId());
-        useStandardCertificateExtensions.put(USEAUTHORITYKEYIDENTIFIER, Extension.authorityKeyIdentifier.getId());
-        useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME, Extension.subjectAlternativeName.getId());
-        useStandardCertificateExtensions.put(USEISSUERALTERNATIVENAME, Extension.issuerAlternativeName.getId());
-        useStandardCertificateExtensions.put(USECRLDISTRIBUTIONPOINT, Extension.cRLDistributionPoints.getId());
-        useStandardCertificateExtensions.put(USEFRESHESTCRL, Extension.freshestCRL.getId());
-        useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
-        useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, Extension.extendedKeyUsage.getId());
+        // Please keep the cert extensions ordered in this order
+        // in order to not break assumptions made by clients/other software.
+        // (This used to be a plain HashMap, hence the strange ordering)
         useStandardCertificateExtensions.put(USEDOCUMENTTYPELIST, "2.23.136.1.1.6.2");
-        useStandardCertificateExtensions.put(USEQCSTATEMENT, Extension.qCStatements.getId());
-        useStandardCertificateExtensions.put(USENAMECONSTRAINTS, Extension.nameConstraints.getId());
-        useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES, Extension.subjectDirectoryAttributes.getId());
+        useStandardCertificateExtensions.put(USEBASICCONSTRAINTS, Extension.basicConstraints.getId());
+        useStandardCertificateExtensions.put(USEAUTHORITYKEYIDENTIFIER, Extension.authorityKeyIdentifier.getId());
         useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS, Extension.authorityInfoAccess.getId());
-        useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
-        useStandardCertificateExtensions.put(USEOCSPNOCHECK, OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
-        useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
-        useStandardCertificateExtensions.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT);
+        useStandardCertificateExtensions.put(USEFRESHESTCRL, Extension.freshestCRL.getId());
+        useStandardCertificateExtensions.put(USEISSUERALTERNATIVENAME, Extension.issuerAlternativeName.getId());
         useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
+        useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME, Extension.subjectAlternativeName.getId());
+        useStandardCertificateExtensions.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT);
+        useStandardCertificateExtensions.put(USENAMECONSTRAINTS, Extension.nameConstraints.getId());
+        useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
+        useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES, Extension.subjectDirectoryAttributes.getId());
+        useStandardCertificateExtensions.put(USEOCSPNOCHECK, OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
+        useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, Extension.extendedKeyUsage.getId());
+        useStandardCertificateExtensions.put(USEQCSTATEMENT, Extension.qCStatements.getId());
         useStandardCertificateExtensions.put(USECABFORGANIZATIONIDENTIFIER, CabForumOrganizationIdentifier.OID);
+        useStandardCertificateExtensions.put(USECRLDISTRIBUTIONPOINT, Extension.cRLDistributionPoints.getId());
+        useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
+        useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, Extension.subjectKeyIdentifier.getId());
+        useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
+        useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
     }
 
     // Old values used to upgrade from v22 to v23
