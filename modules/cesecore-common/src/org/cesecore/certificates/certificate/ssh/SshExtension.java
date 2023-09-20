@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.ssh;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Standard SSH Extensions as defined in https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys?annotate=HEAD
  *
@@ -24,6 +29,15 @@ public enum SshExtension {
     PERMIT_PORT_FORWARDING("permit-port-forwarding", new byte[0]),
     PERMIT_PTY("permit-pty", new byte[0]),
     PERMIT_USER_RC("permit-user-rc", new byte[0]);
+
+    public static final Map<String,String> EXTENSIONS_MAP;
+    static {
+        final Map<String,String> extensions = new LinkedHashMap<>();
+        for (final SshExtension sshExtension : values()) {
+            extensions.put(sshExtension.getLabel(), new String(sshExtension.getValue(), StandardCharsets.UTF_8));
+        }
+        EXTENSIONS_MAP = Collections.unmodifiableMap(extensions);
+    }
 
     private final String label;
     private final byte[] value;
