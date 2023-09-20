@@ -26,6 +26,8 @@ public final class CryptoTokenConstants {
      */
     public static final String AWSKMS_REGION = "kmsRegion";
     
+    public static final String AWSKMS_AUTHENTICATION_TYPE = "kmsAuthenticationType";
+    
     /** Property for storing the accessKeyID used to access the AWS KMS, in the crypto token properties.
      */ 
     public static final String AWSKMS_ACCESSKEYID = "kmsSignInAccessKeyID";
