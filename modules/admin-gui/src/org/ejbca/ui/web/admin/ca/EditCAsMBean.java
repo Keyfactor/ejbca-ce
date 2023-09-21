@@ -1055,7 +1055,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             resultList.add(new SelectItem(current, current, ""));
         }
 
-        // "0" is the first "Create a new Crypto Token..." option in the select list.
+        // "0" is a dummy option in the select list.
         // There is no information to filter signing algorithms by.
         if (!StringUtils.isEmpty(cryptoTokenIdParam) && !cryptoTokenIdParam.equals("0")) {
             try {
@@ -1122,7 +1122,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isCryptoTokenNeedExistingOrGen() {
-        return (isCryptoTokenIdParamNull() && !isCaUninitialized);
+        return (isCryptoTokenIdParamNull() || "0".equals(caInfoDto.getCryptoTokenIdParam())) && !isCaUninitialized;
     }
 
     public boolean isCryptoTokenIdParamNull() {
@@ -1249,7 +1249,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         return false;
     }
-
     public String getSelectedCryptoTokenCertSignKey() {
         return caInfoDto.getCryptoTokenCertSignKey();
     }
