@@ -20,17 +20,14 @@ public class AvailableProtocolsConfigurationTest {
 
     /**
      * Verifies protocol path lookup.
+     * Path is the same in EE and CE! See ECA-11827
      */
     @Test
     public void testGetContextPathByName() {
-        String commonPath = "/ejbca/ejbca-rest-api/v1/certificate";
-        String eeOnlyPaths = "/ejbca/ejbca-rest-api/v1/ca<br/>" + commonPath;
-
-        assertEquals("Unexpected protocol path", commonPath,
+        
+        String fullPaths = "/ejbca/ejbca-rest-api/v1/ca<br/>" + "/ejbca/ejbca-rest-api/v1/certificate";
+        
+        assertEquals("Unexpected protocol path", fullPaths,
                 AvailableProtocolsConfiguration.AvailableProtocols.getContextPathByName(AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()));
-        assertEquals("Unexpected protocol path", commonPath,
-                AvailableProtocolsConfiguration.AvailableProtocols.getContextPathByName(AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), false));
-        assertEquals("Unexpected protocol path", eeOnlyPaths,
-                AvailableProtocolsConfiguration.AvailableProtocols.getContextPathByName(AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), true));
     }
 }
