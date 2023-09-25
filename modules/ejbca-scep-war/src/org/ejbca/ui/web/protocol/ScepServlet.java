@@ -179,8 +179,8 @@ public class ScepServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">SCEP doGet()");
-        if (log.isDebugEnabled()) {
-            log.debug("query string=" + LogRedactionUtils.getRedactedMessage(request.getQueryString()));
+        if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
+            log.debug("query string=" + request.getQueryString());
         }
         final boolean isProtocolAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raScepAuthCheckToken,
                 AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP);
@@ -239,9 +239,9 @@ public class ScepServlet extends HttpServlet {
                 }
             }
             final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("ScepServlet", remoteAddr));
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
                 log.debug("Got request '" + operation + "'");
-                log.debug("Message: " + LogRedactionUtils.getRedactedMessage(message));
+                log.debug("Message: " + message);
             }
             String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
             log.info(iMsg);

@@ -16,6 +16,7 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.CesecoreConfiguration;
@@ -89,8 +90,9 @@ public class RaAvailableAlgorithmsTool {
             if (WebConfiguration.isPQCEnabled()) {
                 for (String algorithm : availableKeyAlgorithms) {
                     if (AlgorithmTools.isPQC(algorithm)) {
-                        if (algorithm.equals(AlgorithmConstants.KEYALGORITHM_NTRU)) {
-                            for (int level : certificateProfile.getAvailableSecurityLevelsAsList()){
+                        if (algorithm.equals(AlgorithmConstants.KEYALGORITHM_NTRU) &&
+                                certificateProfile.getAvailableSecurityLevelsAsList() != null) {
+                            for (int level : certificateProfile.getAvailableSecurityLevelsAsList()) {
                                 availableAlgorithmSelectItems.add(new SelectItem(algorithm+ "_" + level,
                                         algorithm + " " + level));
                             }

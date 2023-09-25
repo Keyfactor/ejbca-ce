@@ -181,6 +181,7 @@ public class X509CAInfo extends CAInfo {
                 .setCrlPartitions(0)
                 .setSuspendedCrlPartitions(0)
                 .setRequestPreProcessor(null)
+                .setExternalCrlDistPoint(null)
                 ;
          return caInfoBuilder.build();
     }
@@ -202,7 +203,8 @@ public class X509CAInfo extends CAInfo {
                       final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand, final boolean acceptRevocationNonExistingEntry, 
                       final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId, 
                       final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions, 
-                      final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains) {
+                      final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains,
+                      final String externalCDP) {
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
         this.description = description;
@@ -221,6 +223,7 @@ public class X509CAInfo extends CAInfo {
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
         this.usecrlnumber = usecrlnumber;
         this.crlnumbercritical = crlnumbercritical;
+        this.externalCdp = externalCDP;
         this.defaultcrldistpoint = defaultcrldistpoint;
         this.defaultcrlissuer = defaultcrlissuer;
         this.defaultocsplocator = defaultocspservicelocator;
@@ -668,6 +671,7 @@ public class X509CAInfo extends CAInfo {
         private boolean authorityKeyIdentifierCritical = false;
         private boolean useCrlNumber = true;
         private boolean crlNumberCritical = false;
+        private String externalCrlDistPoint = null;
         private String defaultCrlDistPoint = null;
         private String defaultCrlIssuer = null;
         private String defaultOcspCerviceLocator = null;
@@ -948,7 +952,11 @@ public class X509CAInfo extends CAInfo {
 
         /**
          * @param defaultCrlDistPoint the URI of the default CRL distribution point
-         */
+         */ 
+        public X509CAInfoBuilder setExternalCrlDistPoint(String externalCrlDistPoint) {
+            this.externalCrlDistPoint = externalCrlDistPoint;
+            return this;
+        }
         public X509CAInfoBuilder setDefaultCrlDistPoint(String defaultCrlDistPoint) {
             this.defaultCrlDistPoint = defaultCrlDistPoint;
             return this;
@@ -1161,7 +1169,7 @@ public class X509CAInfo extends CAInfo {
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
                                                acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, 
-                                               requestPreProcessor, msCaCompatible, alternateCertificateChains);
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setSubjectDN(subjectDn);
             caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
             caInfo.setName(name);
@@ -1200,7 +1208,7 @@ public class X509CAInfo extends CAInfo {
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
                                                acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, 
-                                               requestPreProcessor, msCaCompatible, alternateCertificateChains);
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);
             caInfo.setSubjectAltName(subjectAltName);

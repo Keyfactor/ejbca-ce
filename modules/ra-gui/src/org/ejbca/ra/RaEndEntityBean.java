@@ -568,11 +568,11 @@ public class RaEndEntityBean implements Serializable {
     }
 
     private boolean setCertificateValidity(ExtendedInformation extendedInformation, boolean changed) {
-        if (!certValidityStartTime.equals(extendedInformation.getCertificateStartTime())) {
+        if (certValidityStartTime != null && !certValidityStartTime.equals(extendedInformation.getCertificateStartTime())) {
             extendedInformation.setCertificateStartTime(certValidityStartTime);
             changed = true;
         }
-        if (!certValidityEndTime.equals(extendedInformation.getCertificateEndTime())) {
+        if (certValidityEndTime != null && !certValidityEndTime.equals(extendedInformation.getCertificateEndTime())) {
             extendedInformation.setCertificateEndTime(certValidityEndTime);
             changed = true;
         }

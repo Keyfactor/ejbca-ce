@@ -92,6 +92,22 @@ public interface SignSession {
             SignRequestSignatureException, AuthorizationDeniedException;
 
     /**
+     * Creates a signed PKCS7 message containing the whole certificate chain, including the
+     * provided client certificate.
+     *
+     * @param admin Information about the administrator or admin performing the event.
+     * @param cert  client certificate which we want encapsulated in a PKCS7 together with
+     *              certificate chain.
+     * @param eepId End Entity Profile ID to provide accurate log redaction
+     * @return The DER-encoded PKCS7 message.
+     * @throws CADoesntExistsException       if the CA does not exist or is expired, or has an invalid cert
+     * @throws SignRequestSignatureException if the certificate is not signed by the CA
+     * @throws AuthorizationDeniedException
+     */
+    byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain, int eepId) throws CADoesntExistsException,
+            SignRequestSignatureException, AuthorizationDeniedException;
+
+    /**
      * Creates a signed PKCS7 message containing the whole certificate chain of the specified CA.
      *
      * @param admin Information about the administrator or admin performing the event.
