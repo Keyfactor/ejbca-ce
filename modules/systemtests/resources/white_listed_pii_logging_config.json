@@ -1,0 +1,90 @@
+{
+  "packages": ["org.cesecore.certificates.ca", "org.cesecore.keybind"],
+  "classes": [
+  		"CertificateProfileSessionBean", 
+  		"CAAdminSessionBean", 
+  		"CrlStoreSessionBean", 
+  		"AuthenticationKeyBinding",
+  		"RoleMemberSessionBean",
+  		"PeerConnectorServlet",
+  		"PeerPublishMessageListener",
+  		"KeyValidatorSessionBean",
+  		"OcspKeyBinding",
+  		"OcspSigningCache",
+  		"OcspKeyRenewalProxySessionBean",
+  		"RoleInitializationSessionBean",
+  		"RoleSessionBean",
+  		"StatedumpSessionBean",
+  		"PublishingCrlSessionBean",
+  		"CmpConfiguration",
+  		"X509TrustManagerAcceptAll",
+  		"AuthorizationSessionBean",
+  		"CachingKeyStoreWrapper",
+  		"CryptoTokenSessionBean",
+  		"OcspKeyRenewalSessionBean",
+  		"HashID",
+  		"BaseCryptoToken",
+  		"OcspResponseGeneratorSessionBean",
+  		"KeyStoreTools",
+  		"UsernameGenerator",
+  		"ClientX509KeyManager"],
+  "methods": [
+    {
+      "class": "CertificateCreateSessionBean",
+      "ignoredMethods": ["createItsCertificate"]
+    },
+    {
+      "class": "CertificateStoreSessionBean",
+      "ignoredMethods": ["findCertificatesByIssuerAndSernos", "findUsernamesByIssuerDNAndSubjectKeyId", "findCertificatesByIssuerAndSernos"]
+    },
+    {
+      "class": "RestLoggingFilter",
+      "ignoredMethods": ["doFilter"],
+      "prefixes": ["ca/"]
+    },
+    {
+      "class": "SignSessionBean",
+      "ignoredMethods": ["getCAFromRequest"]
+    },
+    {
+      "class": "CmpServlet",
+      "ignoredMethods": ["getIssuerCertificateByCaId"]
+    },
+    {
+      "class": "P10CrCertificationRequestMessage",
+      "ignoredMethods": ["getUsername"]
+    },
+    {
+      "class": "RevocationMessageHandler",
+      "ignoredMethods": ["getRecipientCA"]
+    },
+    {
+      "class": "EndEntityCertificateAuthenticationModule",
+      "ignoredMethods": ["isAuthorizedAdmin"]
+    },
+    {
+      "class": "EndEntityCertificateAuthenticationModule",
+      "ignoredMethods": ["isAuthorizedAdmin"]
+    },
+    {
+      "class": "RaMasterApiSessionBean",
+      "ignoredMethods": ["getGlobalConfiguration"]
+    },
+    {
+      "class": "ConfirmationMessageHandler",
+      "ignoredMethods": ["getCAInfo"]
+    },
+    {
+      "class": "CrmfRequestMessage",
+      "ignoredMethods": ["getUsername"]
+    },
+    {
+      "class": "KeyStoreTools",
+      "ignoredMethods": ["generateKeyPair"]
+    },
+    {
+      "class": "AcmeReplayNonceFilter",
+      "ignoredMethods": ["doFilter"]
+    }
+  ]
+}
