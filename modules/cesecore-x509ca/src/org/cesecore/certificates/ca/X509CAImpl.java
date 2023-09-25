@@ -169,7 +169,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation according to the X509 standard.
  */
-public class X509CAImpl extends CABase implements Serializable, X509CA, HybridCa {
+public class X509CAImpl extends CABase implements Serializable, X509CA {
     
     private static final long serialVersionUID = -2882572653108530258L;
 
@@ -1092,7 +1092,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA, HybridCa
                 final PublicKey previousCaPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final PrivateKey previousCaPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final String provider = cryptoToken.getSignProviderName();
-                SigningPackage caSigningPackage = new SigningPackage(previousCaPublicKey, previousCaPrivateKey, provider);
+                SigningKeyContainer caSigningPackage = new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, provider);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
                         certProfile, null, caSigningPackage, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
@@ -1155,19 +1155,43 @@ public class X509CAImpl extends CABase implements Serializable, X509CA, HybridCa
         final PublicKey caPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(purpose));
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(purpose));
         final String provider = cryptoToken.getSignProviderName();
-        final SigningPackage caSigningPackage;
+        final SigningKeyContainer caSigningPackage;
         if(catoken.getAlternativeCryptoTokenId() == CAToken.NO_ALTERNATIVE_CRYPTOTOKEN_CONFIGURED) {
-            caSigningPackage = new SigningPackage(caPublicKey, caPrivateKey, provider);           
+            caSigningPackage = new SigningKeyContainer(caPublicKey, caPrivateKey, provider);           
         } else {
+            if(alternativeCryptoToken == null) {
+                throw new CryptoTokenOfflineException("Use of alternative keys was defined, but no crypto token for them was defined.");
+            }
+            
             final int alternativeKeyPurpose = getUseNextCACert(request) ? CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN_NEXT : CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN;
             final PublicKey alternativeCaPublicKey = alternativeCryptoToken.getPublicKey(catoken.getAliasFromPurpose(alternativeKeyPurpose));
             final PrivateKey alternativeCaPrivateKey = alternativeCryptoToken.getPrivateKey(catoken.getAliasFromPurpose(alternativeKeyPurpose));
             final String alternativeProvider = alternativeCryptoToken.getSignProviderName();
-            caSigningPackage = new SigningPackage(caPublicKey, caPrivateKey, provider, alternativeCaPublicKey, alternativeCaPrivateKey, alternativeProvider);     
+            caSigningPackage = new SigningKeyContainer(caPublicKey, caPrivateKey, provider, alternativeCaPublicKey, alternativeCaPrivateKey, alternativeProvider);     
         }
         
         return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, caSigningPackage,
                 certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
+    }
+    
+    @Override
+    public Certificate generateCertificate(CryptoToken cryptoToken, CryptoToken alternativeCryptoToken, EndEntityInformation subject,
+            PublicKey publicKey, int keyusage, Date notBefore, String encodedValidity, CertificateProfile certProfile, String sequence,
+            AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+        // Calculate the notAfter date
+        if (notBefore == null) {
+            notBefore = new Date();
+        }
+        final Date notAfter;
+        if (StringUtils.isNotBlank(encodedValidity)) {
+            notAfter = ValidityDate.getDate(encodedValidity, notBefore, getCAInfo().isExpirationInclusive());
+        } else {
+            notAfter = null;
+        }
+        return generateCertificate(cryptoToken,alternativeCryptoToken, subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence, null,
+                cceConfig);
     }
 
     /**
@@ -1193,7 +1217,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA, HybridCa
      */
     protected Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
-                                            final SigningPackage caSigningPackage,
+                                            final SigningKeyContainer caSigningPackage,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException {
@@ -1782,20 +1806,20 @@ public class X509CAImpl extends CABase implements Serializable, X509CA, HybridCa
         if (caSigningPackage.getAlternativePrivateKey() == null) {
             certHolder = certbuilder.build(signer);
         } else {
-            final String altProv;
-            if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getAlternativeProvider())) {
-                altProv = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
-            } else {
-                altProv = caSigningPackage.getAlternativeProvider();
-            }
             final String alternativeSigningAlgorithm; 
-            
             if (certProfile.getAlternativeSignatureAlgorithm() == null) {
                 alternativeSigningAlgorithm = getCAToken().getAlternativeSignatureAlgorithm();
             } else {
                 alternativeSigningAlgorithm = certProfile.getAlternativeSignatureAlgorithm();
             }
             
+            final String altProv;
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getAlternativeProvider())) {
+                altProv = CryptoProviderTools.getProviderNameFromAlg(alternativeSigningAlgorithm);
+            } else {
+                altProv = caSigningPackage.getAlternativeProvider();
+            }
+  
             ContentSigner alternativeSigner = new JcaContentSignerBuilder(alternativeSigningAlgorithm).setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey());
             certHolder = certbuilder.build(signer, false, alternativeSigner);
         }
@@ -2479,59 +2503,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA, HybridCa
     public String getCaImplType() {
         return CA_TYPE;
     }
-    
-    private static class SigningPackage {
-        private final PublicKey primaryPublicKey;
-        private final PrivateKey primaryPrivateKey;
-        private final PublicKey alternativePublicKey;
-        private final PrivateKey alternativePrivateKey;
-        private final String primaryProvider;
-        private final String alternativeProvider;
-
-        public SigningPackage(final PublicKey primaryPublicKey, final PrivateKey primaryPrivateKey, final String primaryProvider) {
-            this.primaryPublicKey = primaryPublicKey;
-            this.primaryPrivateKey = primaryPrivateKey;
-            this.primaryProvider = primaryProvider;
-            this.alternativePublicKey = null;
-            this.alternativePrivateKey = null;
-            this.alternativeProvider = null;
-        }
-        
-        public SigningPackage(final PublicKey primaryPublicKey, final PrivateKey primaryPrivateKey, final String primaryProvider,
-                final PublicKey alternativePublicKey, final PrivateKey alternativePrivateKey, final String alternativeProvider) {
-            this.primaryPublicKey = primaryPublicKey;
-            this.primaryPrivateKey = primaryPrivateKey;
-            this.primaryProvider = primaryProvider;
-            this.alternativePublicKey = alternativePublicKey;
-            this.alternativePrivateKey = alternativePrivateKey;
-            this.alternativeProvider = alternativeProvider;
-        }
-
-        public PublicKey getPrimaryPublicKey() {
-            return primaryPublicKey;
-        }
-
-        public PrivateKey getPrimaryPrivateKey() {
-            return primaryPrivateKey;
-        }
-
-        public PublicKey getAlternativePublicKey() {
-            return alternativePublicKey;
-        }
 
 
-        public PrivateKey getAlternativePrivateKey() {
-            return alternativePrivateKey;
-        }
-
-        public String getPrimaryProvider() {
-            return primaryProvider;
-        }
-
-        public String getAlternativeProvider() {
-            return alternativeProvider;
-        }
-    }
 
 
 
