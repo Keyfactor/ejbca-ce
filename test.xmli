@@ -177,6 +177,7 @@
                     <include name="modules/ssh/src-test/**/${test.runone}.java" />
                     <include name="modules/msae/src-test/**/${test.runone}.java" />
                     <include name="modules/cits/src-test/**/${test.runone}.java" />
+                    <include name="modules/cesecore-x509ca/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -271,6 +272,9 @@
         </condition>
         <condition property="module" value="modules/cits">
             <matches string="${test-fullname}" pattern="^modules/cits/.*$"/>
+        </condition>
+        <condition property="module" value="modules/cesecore-x509ca">
+            <matches string="${test-fullname}" pattern="^modules/cesecore-x509ca/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>

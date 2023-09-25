@@ -75,6 +75,8 @@ public class CAToken extends UpgradeableDataHashMap {
     /** These aliases were changed in EJBCA 6.4.1 */
     private static final String OLDPRIVATESIGNKEYALIAS = "privatesignkeyalias";   
     protected static final String OLDPRIVATEDECKEYALIAS = "privatedeckeyalias";
+    
+    public static final String ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS = "alternateSignKey";
 
     /** A sequence for the keys, updated when keys are re-generated */
     public static final String SEQUENCE = "sequence";
@@ -87,7 +89,7 @@ public class CAToken extends UpgradeableDataHashMap {
     //The crypto token containing the alternative key for a hybrid certificate. May be the same as the above, but may be different as well. 
     private static final String ALTERNATIVE_CRYPTOTOKEN_ID = "alternativeCryptoTokenId";
     //For quantum safe keys the signature alg is derived from the key type, but ISO 15118 allows non-quantum safe keys to be used as the alternative key
-    private static final String ALTERNATIVE_SIGNATURE_ALGORITHMS = "alternativeSignatureAlgorithm";
+    private static final String ALTERNATIVE_SIGNATURE_ALGORITHM = "alternativeSignatureAlgorithm";
     
 
     private int cryptoTokenId;
@@ -368,17 +370,17 @@ public class CAToken extends UpgradeableDataHashMap {
 
     /** Sets the alternative SignatureAlgoritm */
     public void setSignatureAlgorithm(String signaturealgoritm) {
-        data.put(CAToken.ALTERNATIVE_SIGNATURE_ALGORITHMS, signaturealgoritm);
+        data.put(CAToken.SIGNATUREALGORITHM, signaturealgoritm);
     }
     
     /** @return the alternative SignatureAlgoritm, or null if none is set */
     public String getAlternativeSignatureAlgorithm() {
-        return (String) data.get(CAToken.ALTERNATIVE_SIGNATURE_ALGORITHMS);
+        return (String) data.get(CAToken.ALTERNATIVE_SIGNATURE_ALGORITHM);
     }
 
     /** Sets the SignatureAlgoritm */
     public void setAlternativeSignatureAlgorithm(String signaturealgoritm) {
-        data.put(CAToken.SIGNATUREALGORITHM, signaturealgoritm);
+        data.put(CAToken.ALTERNATIVE_SIGNATURE_ALGORITHM, signaturealgoritm);
     }
 
     /** Returns the EncryptionAlgoritm */
