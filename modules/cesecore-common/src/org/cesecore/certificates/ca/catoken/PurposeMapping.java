@@ -60,6 +60,7 @@ public final class PurposeMapping {
      * 
      * @param properties key string properties
      */
+    @SuppressWarnings("deprecation")
     public PurposeMapping(final Properties properties) {
     	/** Map of keypurpose integer (CATokenConstants.CAKEYPURPOSE_CERTSIGN) and alias string as defined in Properties */
     	map = new HashMap<>();
@@ -95,6 +96,9 @@ public final class PurposeMapping {
                     properties);            
             addKey(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT,
                     CATokenConstants.CAKEYPURPOSE_DEFAULT_NEXT,
+                    properties); 
+            addKey(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING,
+                    CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN,
                     properties); 
     	}
     	defaultKeyAlias = defaultKeyAliasTmp!=null ? defaultKeyAliasTmp.trim() : null;
