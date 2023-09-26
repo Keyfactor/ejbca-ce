@@ -175,9 +175,24 @@ public class HealthCheckServlet extends HttpServlet {
         
     }
     
+    /**
+     * Fetch a boolean query parameter from request, returning defaultValue if not present.
+     */
+    static private boolean safeGetParameter(HttpServletRequest request, String name, boolean defaultValue) {
+        String value = request.getParameter(name);
+        if (value == null)
+            return defaultValue;
+        return Boolean.parseBoolean(value);
+    }
+    
     public String doAllHealthChecks(HttpServletRequest request) {
+        boolean checkCas = safeGetParameter(request, "ca", true);
+        boolean checkOcsp = safeGetParameter(request, "ocsp", true);
+        boolean checkPublishers = safeGetParameter(request, "publishers", EjbcaConfiguration.getHealthCheckPublisherConnections());
+        
         if (log.isDebugEnabled()) {
             log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
+            log.debug(String.format("Checking cas=%b ocsp=%b publishers=%b", checkCas, checkOcsp, checkPublishers));
         }
         // Start by checking if we are in maintenance mode
         final Properties maintenanceProperties = getMaintenanceProperties();
@@ -209,20 +224,24 @@ public class HealthCheckServlet extends HttpServlet {
             if (minfreememory >= currentFreeMemory) {
                 sb.append("\nMEM: Error Virtual Memory is about to run out, currently free memory :").append(String.valueOf(Runtime.getRuntime().freeMemory()));    
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Checking CAs.");
+            if (checkCas) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Checking CAs.");
+                }
+                sb.append(caAdminSession.healthCheck());
             }
-            sb.append(caAdminSession.healthCheck());
-            if (EjbcaConfiguration.getHealthCheckPublisherConnections()) {
+            if (checkPublishers) {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking publishers.");
                 }
                 sb.append(publisherSession.testAllConnections());
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Checking OcspKeyBindings.");
+            if (checkOcsp) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Checking OcspKeyBindings.");
+                }
+                sb.append(ocspResponseGeneratorSession.healthCheck());
             }
-            sb.append(ocspResponseGeneratorSession.healthCheck());
             try {
                 if(log.isDebugEnabled()) {
                     log.debug("Perfoming health check on audit logs.");
