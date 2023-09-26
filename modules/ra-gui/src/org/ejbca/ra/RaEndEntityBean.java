@@ -60,6 +60,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -425,7 +426,7 @@ public class RaEndEntityBean implements Serializable {
             }
         }
 
-        if (extendedInformation != null && extensionData != null) {
+        if (hasExtensionDataChanged(extendedInformation, extensionData)) {
             editExtensionData(extendedInformation);
             changed = true;
         }
@@ -616,25 +617,31 @@ public class RaEndEntityBean implements Serializable {
         return true;
     }
 
+    private Properties getExtensionDataAsProperties(final String extensionData) {
+        final Properties properties = new Properties();
+        if (StringUtils.isNotBlank(extensionData)) {
+            try {
+                properties.load(new StringReader(extensionData));
+            } catch (IOException ex) {
+                // Should not happen as we are only reading from a String.
+                throw new RuntimeException(ex);
+            }
+        }
+        return properties;
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void editExtensionData(ExtendedInformation extendedInformation) {
-        Properties properties = new Properties();
-        try {
-            properties.load(new StringReader(extensionData));
-        } catch (IOException ex) {
-            // Should not happen as we are only reading from a String.
-            throw new RuntimeException(ex);
-        }
-
+        final Properties properties = getExtensionDataAsProperties(extensionData);
         // Remove old extensiondata
-        Map data = (Map) extendedInformation.getData();
+        final Map data = (Map) extendedInformation.getData();
         // We have to use an iterator in order to remove an item while iterating, if we try to remove an object from
         // the map while looping over keys we will get a ConcurrentModificationException
-        Iterator it = data.keySet().iterator();
+        final Iterator it = data.keySet().iterator();
         while (it.hasNext()) {
-            Object o = it.next();
+            final Object o = it.next();
             if (o instanceof String) {
-                String key = (String) o;
+                final String key = (String) o;
                 if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
                     //it.remove() will delete the item from the map
                     it.remove();
@@ -645,13 +652,45 @@ public class RaEndEntityBean implements Serializable {
         // Add new extensiondata
         for (Object o : properties.keySet()) {
             if (o instanceof String) {
-                String key = (String) o;
+                final String key = (String) o;
                 data.put(ExtendedInformation.EXTENSIONDATA + key, properties.getProperty(key));
             }
         }
 
         // Updated ExtendedInformation to use the new data
         extendedInformation.loadData(data);
+    }
+
+    /**
+     * @return true if extension data was edited
+     */
+    @SuppressWarnings({"unchecked"})
+    private boolean hasExtensionDataChanged(final ExtendedInformation extendedInformation, final String extensionData) {
+        if (extendedInformation == null) {
+            return StringUtils.isNotBlank(extensionData);
+        }
+
+        final Map<String, Object> savedExtendedInformationData = (LinkedHashMap<String, Object>) extendedInformation.getData();
+        final Properties editedExtensionData = getExtensionDataAsProperties(extensionData);
+
+        // compare count of saved and new extension data entries
+        final long countOfSavedExtensionDataEntries = savedExtendedInformationData.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(ExtendedInformation.EXTENSIONDATA))
+                .count();
+
+        if (countOfSavedExtensionDataEntries != editedExtensionData.size()) {
+            return true;
+        }
+
+        // compare values of saved and new extension data entries
+        return editedExtensionData.keySet().stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .anyMatch(key -> {
+                    final String currentValue = extendedInformation.getExtensionData(key);
+                    final String editedValue = editedExtensionData.getProperty(key);
+                    return !StringUtils.equals(editedValue, currentValue);
+                });
     }
 
     /**
