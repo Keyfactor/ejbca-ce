@@ -1800,9 +1800,6 @@
         "responses": {
           "200": {
             "description": "OK Successful request",
-            "schema": {
-              "$ref": "#/definitions/RunServiceRestResponse"
-            }
           }
         }
       }  
@@ -3140,16 +3137,6 @@
           "example": "BYTE",
           "description": "Response format"
         }
-      }
-    },
-    "RunServiceRestResponse": {
-      "type": "object",
-      "properties": {
-        "service_name": {
-          "type": "string",
-          "example": "Running service: SERVICE_NAME",
-          "description": "The name of the service triggered"
-        },        
       }
     }
   }
