@@ -10,11 +10,10 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.ejb.services.ServiceData;
 import org.ejbca.core.ejb.services.ServiceDataSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
-import org.ejbca.ui.web.rest.api.io.response.RunServiceRestResponse;
 
 /**
  * JAX-RS resource handling System related requests.
@@ -41,12 +40,11 @@ public class SystemRestResource extends BaseRestResource {
             log.info(exception);
             throw new RestException(Status.NOT_FOUND.getStatusCode(),  exception);
         }
-        final ServiceData serviceData = serviceDataSession.findById(serviceId);
-        serviceSession.runService(serviceId);
-        final long lastRun = serviceData.getRunTimeStamp();
-        return Response.ok(RunServiceRestResponse.builder()
-                .message("Running service: " + serviceName + ". Last run timestamp:  " + lastRun)
-                .build()
-                ).build();
+        try {
+            serviceSession.runServiceNoTimer(serviceId);
+        } catch (ServiceExecutionFailedException e) {
+            throw new RestException(Status.PRECONDITION_FAILED.getStatusCode(), e.getMessage());
+        }
+        return Response.ok().build();
     }
 }
