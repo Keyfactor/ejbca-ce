@@ -43,7 +43,14 @@ public interface ServiceSessionLocal extends ServiceSession {
      * IInterval.DONT_EXECUTE if it could not be found.
      */
 	long getServiceInterval(final Integer serviceId);
-
+ 
+	   /**
+     * Returns worker regardless of service configurations.
+     * Timestamps, apart from the runeTimeStamp, are not updated.
+     * @param serviceId the ID of the service to check
+     * @param nextTimeout the next time the service should run, in this case now.
+     * @return IWorker if it can run, null otherwise
+     */
     IWorker getWorkerAndRunService(final Integer serviceId, final long nextTimeout);
     
 	/**
