@@ -91,6 +91,16 @@ public class HealthCheckSystemTest {
         return connection;
     }
 
+    private HttpURLConnection performHealthCheckGetRequestWithFalseFlag(String flagName) throws IOException {
+        final URL url = new URL(HTTP_REQ_PATH + "?" + flagName + "=false");
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.getDoOutput();
+        connection.connect();
+        connection.disconnect();
+        return connection;
+    }
+    
     /**
      * This is a basic happy-path test of the health check servlet.
      */
@@ -100,6 +110,30 @@ public class HealthCheckSystemTest {
         assertEquals("Response code was not 200", 200, response.getResponseCode());
         final String responseStr = Streams.asString(response.getInputStream());
         assertTrue("Response did not contain OK, was: " + responseStr, responseStr.contains("ALLOK"));
+    }
+
+    /**
+     * This test creates a CA with a non-auto activated crypto token, sets it offline then verifies that healthcheck doesn't care when "ca=false"
+     */
+    @Test
+    public void testHealthCheckWithCaCheckDisabled() throws Exception {
+        final String caName = "testCaHealthCheck";
+        CaTestCase.createTestCA(caName);
+        CAInfo caInfo = CA_SESSION.getCAInfo(admin, caName);
+        try {
+            // Remove auto activate
+            final CryptoToken cryptoToken = CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.getCryptoToken(caInfo.getCAToken().getCryptoTokenId());
+            final Properties props = cryptoToken.getProperties();
+            props.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+            cryptoToken.setProperties(props);
+            CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.mergeCryptoToken(cryptoToken);
+            // Set CA's crypto token offline
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.deactivate(admin, caInfo.getCAToken().getCryptoTokenId());
+            final HttpURLConnection response = performHealthCheckGetRequestWithFalseFlag("ca");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+        } finally {
+            CaTestCase.removeTestCA(caName);
+        }
     }
 
     /**
@@ -127,7 +161,7 @@ public class HealthCheckSystemTest {
             CaTestCase.removeTestCA(caName);
         }
     }
-
+    
     @Test
     public void testPublisherHealthCheck() throws Exception {
         // Make sure that publishers are checked by health check
@@ -158,6 +192,35 @@ public class HealthCheckSystemTest {
         }
     }
 
+    @Test
+    public void testHealthCheckWithPublisherCheckDisabled() throws Exception {
+        // Make sure that publishers are not checked by health check when disabled
+        String originalValue = CONFIG_SESSION.getProperty(KEY_HEALTHCHECK_PUBLISHERCONNECTIONS);
+        if (!"true".equals(originalValue)) {
+            CONFIG_SESSION.updateProperty(KEY_HEALTHCHECK_PUBLISHERCONNECTIONS, "true");
+        }
+        // Create a random publisher that's not connected to anything.
+        final LdapPublisher ldapPublisher = new LdapPublisher();
+        ldapPublisher.setHostnames("nowhere");
+        final String publisherName = "testPublisherHealthCheck";
+        int publisherId = PUBLISHER_PROXY_SESSION.addPublisher(admin, publisherName, ldapPublisher);
+        final String caName = "testPublisherHealthCheck";
+        CaTestCase.createTestCA(caName);
+        final CAInfo caInfo = CA_SESSION.getCAInfo(admin, caName);
+        caInfo.setCRLPublishers(Collections.singletonList(publisherId));
+        CA_SESSION.editCA(admin, caInfo);
+        try {
+            final HttpURLConnection response = performHealthCheckGetRequestWithFalseFlag("publishers");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+            final String responseStr = Streams.asString(response.getInputStream());
+            assertTrue("Response did not contain correct error message, was: " + responseStr, responseStr.contains("ALLOK"));
+        } finally {
+            PUBLISHER_PROXY_SESSION.removePublisherInternal(admin, publisherName);
+            CaTestCase.removeTestCA(caName);
+            CONFIG_SESSION.updateProperty(KEY_HEALTHCHECK_PUBLISHERCONNECTIONS, originalValue);
+        }
+    }
+    
     @Test
     public void testAuditLogHealthCheck() throws Exception {
         Assume.assumeTrue("This test does not support Community Edition", ENTERPRISE_EJB_BRIDGE_SESSION.isRunningEnterprise());
