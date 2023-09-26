@@ -1784,7 +1784,7 @@
           ],
         "summary": "Run service worker",
         "description": "Runs specified service worker.",
-        "operationId": "runService",
+        "operationId": "runServiceNoTimer",
         "produces": [
           "application/json"
         ],
