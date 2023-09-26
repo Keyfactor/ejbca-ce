@@ -12,20 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import com.keyfactor.util.StringTools;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -39,9 +26,23 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 /**
  * Backing bean for edit EST alias view.
- *
  */
 @Named
 @ViewScoped
@@ -51,8 +52,8 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     private static final String HIDDEN_PWD = "**********";
 
     // UniqueIdentifier is left out, because we don't want people to use that
-    private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
-            "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
+    private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title",
+            "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress",
             "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF", "VID", "PID", "CertificationID");
 
     private String selectedRaNameSchemeDnPart;
@@ -65,13 +66,13 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
 
     @Inject
     private EstConfigMBean estConfigMBean;
-    EstAliasGui estAliasGui = null;
+    private EstAliasGui estAliasGui = null;
 
     @PostConstruct
     public void initialize() {
         getEjbcaWebBean().clearEstConfigClone();
-        caIdToNameMap = (TreeMap<Integer, String>) caSession.getAuthorizedCaIdsToNames(getAdmin());
-        caNameToIdMap = (TreeMap<String, Integer>) caSession.getAuthorizedCaNamesToIds(getAdmin());
+        caIdToNameMap = caSession.getAuthorizedCaIdsToNames(getAdmin());
+        caNameToIdMap = caSession.getAuthorizedCaNamesToIds(getAdmin());
     }
 
     public class EstAliasGui {
@@ -91,11 +92,13 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         private boolean vendorMode;
         private boolean allowChangeSubjectName;
         private String extDnPartPwdComponent;
-        
         private boolean usesProxyCa;
         private boolean serverKeyGenEnabled;
-        
-        
+        private String raNameGenPrefix;
+        private String raNameGenPostfix;
+        private String raNameGenParams;
+        private String raNameGenScheme;
+
         public String getName() {
             return name;
         }
@@ -159,71 +162,70 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         public void setAllowSameKey(Boolean allowSameKey) {
             this.allowSameKey = allowSameKey;
         }
-        
+
         public String getOperationMode() {
             return operationmode;
         }
-        
+
         public void setOperationMode(String operationmode) {
             this.operationmode = operationmode;
         }
-        
+
         public void setVendorMode(boolean vendorMode) {
             this.vendorMode = vendorMode;
         }
-        
-        public  boolean getVendorMode() {
+
+        public boolean getVendorMode() {
             return this.vendorMode;
         }
-        
+
         public void setAllowChangeSubjectName(boolean allowChangeSubjectName) {
             this.allowChangeSubjectName = allowChangeSubjectName;
         }
-        
-        public  boolean getAllowChangeSubjectName() {
+
+        public boolean getAllowChangeSubjectName() {
             return this.allowChangeSubjectName;
         }
-        
+
         public void setSelectedVendorCa(String selectedVendorCa) {
             this.selectedVendorCa = selectedVendorCa;
         }
-        
-        public  String getSelectedVendorCa() {
-            return selectedVendorCa == null ? String.valueOf(getVendorCaSelectItems().get(0).getValue()) : selectedVendorCa;
+
+        public String getSelectedVendorCa() {
+            return selectedVendorCa == null
+                    ? String.valueOf(getVendorCaSelectItems().get(0).getValue())
+                    : selectedVendorCa;
         }
-        
+
         public void setVendorCas(String vendorCas) {
             this.vendorCas = vendorCas;
         }
-        
-        
-        public  String getVendorCas() {
+
+
+        public String getVendorCas() {
             return vendorCas == null ? "" : vendorCas;
         }
-        
+
         public void setAuthenticationModule(final String authModule) {
             this.authModule = authModule;
         }
-        
+
         public String getAuthenticationModule() {
             return this.authModule;
         }
-        
+
         public String getExtDnPartPwdComponent() {
             return extDnPartPwdComponent;
         }
-        
+
         public void setExtDnPartPwdComponent(String extDnPartPwdComponent) {
             this.extDnPartPwdComponent = extDnPartPwdComponent;
         }
-        
+
         public boolean getDnPartPwdSelected() {
-            if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD)) {
-                return true;  
-            }
-            return false;
+            return getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD);
         }
-        
+
         public void setDnPartPwdSelected(boolean dnPartPwdSelected) {
             if (dnPartPwdSelected) {
                 setAuthenticationModule(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD);
@@ -245,12 +247,9 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         }
 
         public boolean getChallengePwdSelected() {
-            if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD)) {
-                return true;  
-            }
-            return false;
+            return getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
         }
-        
+
         public void setChallengePwdSelected(boolean challengePwdSelected) {
             if (challengePwdSelected) {
                 setAuthenticationModule(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
@@ -258,11 +257,11 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
                 setAuthenticationModule("");
             }
         }
-        
+
         public void setExtUsernameComponent(String extUsernameComponent) {
             this.extUsernameComponent = extUsernameComponent;
         }
-        
+
         public String getExtUsernameComponent() {
             return extUsernameComponent;
         }
@@ -274,7 +273,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         public void setUsesProxyCa(boolean usesProxyCa) {
             this.usesProxyCa = usesProxyCa;
         }
-        
+
         public boolean isServerKeyGenEnabled() {
             return serverKeyGenEnabled;
         }
@@ -282,75 +281,144 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         public void setServerKeyGenEnabled(boolean serverKeyGenEnabled) {
             this.serverKeyGenEnabled = serverKeyGenEnabled;
         }
-        
+
+        public void setRaNameGenPrefix(final String raNameGenPrefix) {
+            this.raNameGenPrefix = raNameGenPrefix;
+        }
+
+        public String getRaNameGenPrefix() {
+            return raNameGenPrefix;
+        }
+
+        public void setRaNameGenPostfix(final String raNameGenPostfix) {
+            this.raNameGenPostfix = raNameGenPostfix;
+        }
+
+        public String getRaNameGenPostfix() {
+            return raNameGenPostfix;
+        }
+
+        public void setRaNameGenParams(final String raNameGenParams) {
+            this.raNameGenParams = raNameGenParams;
+        }
+
+        public String getRaNameGenParams() {
+            return raNameGenParams;
+        }
+
+        public void setRaNameGenScheme(final String raNameGenScheme) {
+            this.raNameGenScheme = raNameGenScheme;
+        }
+
+        public String getRaNameGenScheme() {
+            return raNameGenScheme;
+        }
     }
 
-    public EstAliasGui getEstAlias() throws NumberFormatException, AuthorizationDeniedException {
-        if (estAliasGui == null) {
-            EstAliasGui estAliasGui = new EstAliasGui();
-            String aliasName = estConfigMBean.getSelectedAlias();
-            estAliasGui.setName(aliasName);
-            EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfiguration();
-            estAliasGui.setCaId(estConfiguration.getDefaultCAID(aliasName));
-            estAliasGui.setEndEntityProfileId(String.valueOf(estConfiguration.getEndEntityProfileID(aliasName)));
-            String certProfileID = estConfiguration.getCertProfileID(aliasName);
-            // If we had the old type, EJBCA 6.11 of CP, which is the name, convert it to ID
-            if (certProfileID != null && !NumberUtils.isNumber(certProfileID)) {
-                Map<String, Integer> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
-                if (certificateProfiles.get(certProfileID) != null) {
-                    certProfileID = String.valueOf(certificateProfiles.get(certProfileID));
-                }
+    protected EstAliasGui getDefaultEstAliasGui() {
+        EstAliasGui estAliasGui = new EstAliasGui();
+        estAliasGui.setCaId(EstConfiguration.DEFAULT_DEFAULTCA);
+        estAliasGui.setCertificateProfileId(EstConfiguration.DEFAULT_CERTPROFILE);
+        estAliasGui.setEndEntityProfileId(EstConfiguration.DEFAULT_EEPROFILE);
+        estAliasGui.setCertificateRequired(Boolean.valueOf(EstConfiguration.DEFAULT_REQCERT));
+        estAliasGui.setUserName(EstConfiguration.DEFAULT_REQUSERNAME);
+        estAliasGui.setPassword(EstConfiguration.DEFAULT_REQPASSWORD);
+        estAliasGui.setAllowSameKey(Boolean.valueOf(EstConfiguration.DEFAULT_ALLOWUPDATEWITHSAMEKEY));
+        estAliasGui.setRaNameGenScheme(EstConfiguration.DEFAULT_RA_USERNAME_GENERATION_SCHEME);
+        estAliasGui.setRaNameGenParams(EstConfiguration.DEFAULT_RA_USERNAME_GENERATION_PARAMS);
+        estAliasGui.setRaNameGenPrefix(EstConfiguration.DEFAULT_RA_USERNAME_GENERATION_PREFIX);
+        estAliasGui.setRaNameGenPostfix(EstConfiguration.DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
+        estAliasGui.setVendorMode(Boolean.valueOf(EstConfiguration.DEFAULT_VENDOR_CERTIFICATE_MODE));
+        estAliasGui.setVendorCas(EstConfiguration.DEFAULT_VENDOR_CA_IDS);
+        estAliasGui.setOperationMode(EstConfiguration.OPERATION_MODE_RA);
+        estAliasGui.setExtUsernameComponent(EstConfiguration.DEFAULT_EXTRACT_USERNAME_COMPONENT);
+        estAliasGui.setExtDnPartPwdComponent(EstConfiguration.DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
+        estAliasGui.setAuthenticationModule(EstConfiguration.DEFAULT_CLIENT_AUTHENTICATION_MODULE);
+        estAliasGui.setAllowChangeSubjectName(Boolean.valueOf(EstConfiguration.DEFAULT_ALLOW_CHANGESUBJECTNAME));
+        estAliasGui.setUsesProxyCa(Boolean.valueOf(EstConfiguration.DEFAULT_SUPPORT_PROXY_CA));
+        estAliasGui.setServerKeyGenEnabled(Boolean.valueOf(EstConfiguration.DEFAULT_SERVER_KEYGEN_ENABLED));
+        return estAliasGui;
+    }
+
+    protected EstAliasGui readEstAliasGui(final String aliasName) {
+        EstAliasGui estAliasGui = new EstAliasGui();
+        estAliasGui.setName(aliasName);
+        EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfiguration();
+        estAliasGui.setCaId(estConfiguration.getDefaultCAID(aliasName));
+        estAliasGui.setEndEntityProfileId(String.valueOf(estConfiguration.getEndEntityProfileID(aliasName)));
+        String certProfileID = estConfiguration.getCertProfileID(aliasName);
+        // If we had the old type, EJBCA 6.11 of CP, which is the name, convert it to ID
+        if (certProfileID != null && !NumberUtils.isNumber(certProfileID)) {
+            Map<String, Integer> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
+            if (certificateProfiles.get(certProfileID) != null) {
+                certProfileID = String.valueOf(certificateProfiles.get(certProfileID));
             }
-            estAliasGui.setCertificateProfileId(certProfileID);
-            estAliasGui.setCertificateRequired(estConfiguration.getCert(aliasName));
-            estAliasGui.setUserName(estConfiguration.getUsername(aliasName));
-            estAliasGui.setPassword(EditEstConfigMBean.HIDDEN_PWD);
-            estAliasGui.setAllowSameKey(estConfiguration.getKurAllowSameKey(aliasName));
-            estAliasGui.setServerKeyGenEnabled(estConfiguration.getServerKeyGenerationEnabled(aliasName));
-            estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
-            estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
-            estAliasGui.setVendorMode(estConfiguration.getVendorMode(aliasName));
-            estAliasGui.setAuthenticationModule(estConfiguration.getAuthenticationModule(aliasName));
-            estAliasGui.setChallengePwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD));
-            estAliasGui.setDnPartPwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD));
-            estAliasGui.setExtDnPartPwdComponent(estConfiguration.getExtractDnPwdComponent(aliasName));
-            estAliasGui.setAllowChangeSubjectName(estConfiguration.getAllowChangeSubjectName(aliasName));
-            String vendorCaIds = estConfiguration.getVendorCaIds(aliasName);
-            ArrayList<String> vendorCaNames = new ArrayList<>();
-            if (!StringUtils.isEmpty(vendorCaIds)) {
-                for (String vendorCaId : vendorCaIds.split(";")) {
-                    String caName = caIdToNameMap.get(Integer.parseInt(vendorCaId));
-                    vendorCaNames.add(caName);
-                }
-                estAliasGui.setVendorCas(StringUtils.join(vendorCaNames, ";"));
-            } else {
-                estAliasGui.setVendorCas("");
-            }
-            estAliasGui.setUsesProxyCa(estConfiguration.getSupportProxyCa(aliasName));
-            this.estAliasGui = estAliasGui;
         }
+        estAliasGui.setCertificateProfileId(certProfileID);
+        estAliasGui.setCertificateRequired(estConfiguration.getCert(aliasName));
+        estAliasGui.setUserName(estConfiguration.getUsername(aliasName));
+        estAliasGui.setPassword(EditEstConfigMBean.HIDDEN_PWD);
+        estAliasGui.setAllowSameKey(estConfiguration.getKurAllowSameKey(aliasName));
+        estAliasGui.setServerKeyGenEnabled(estConfiguration.getServerKeyGenerationEnabled(aliasName));
+        estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
+        estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
+        estAliasGui.setVendorMode(estConfiguration.getVendorMode(aliasName));
+        estAliasGui.setAuthenticationModule(estConfiguration.getAuthenticationModule(aliasName));
+        estAliasGui.setChallengePwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD));
+        estAliasGui.setDnPartPwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD));
+        estAliasGui.setExtDnPartPwdComponent(estConfiguration.getExtractDnPwdComponent(aliasName));
+        estAliasGui.setAllowChangeSubjectName(estConfiguration.getAllowChangeSubjectName(aliasName));
+        estAliasGui.setRaNameGenPrefix(estConfiguration.getRANameGenPrefix(aliasName));
+        estAliasGui.setRaNameGenPostfix(estConfiguration.getRANameGenPostfix(aliasName));
+        estAliasGui.setRaNameGenParams(estConfiguration.getRANameGenParams(aliasName));
+        estAliasGui.setRaNameGenScheme(estConfiguration.getRANameGenScheme(aliasName));
+
+        String vendorCaIds = estConfiguration.getVendorCaIds(aliasName);
+        ArrayList<String> vendorCaNames = new ArrayList<>();
+        if (!StringUtils.isEmpty(vendorCaIds)) {
+            for (String vendorCaId : vendorCaIds.split(";")) {
+                String caName = caIdToNameMap.get(Integer.parseInt(vendorCaId));
+                vendorCaNames.add(caName);
+            }
+            estAliasGui.setVendorCas(StringUtils.join(vendorCaNames, ";"));
+        } else {
+            estAliasGui.setVendorCas("");
+        }
+        estAliasGui.setUsesProxyCa(estConfiguration.getSupportProxyCa(aliasName));
         return estAliasGui;
     }
 
 
+    public EstAliasGui getEstAlias() throws NumberFormatException {
+        String aliasName = estConfigMBean.getSelectedAlias();
+        if (estAliasGui == null) {
+            if (StringUtils.isEmpty(aliasName)) {
+                this.estAliasGui = getDefaultEstAliasGui();
+            } else {
+                this.estAliasGui = readEstAliasGui(aliasName);
+            }
+        }
+        return estAliasGui;
+    }
+
     public boolean isViewOnly() {
         return estConfigMBean.isViewOnly();
     }
-    
+
     public boolean isRaMode() {
         return estAliasGui.getOperationMode().equals("ra");
     }
-    
+
     public boolean isVendorMode() {
-       return estAliasGui.getVendorMode();
+        return estAliasGui.getVendorMode();
     }
-       
+
     public List<SelectItem> getExtUsernameComponentSelectItems() {
-        final List<SelectItem> selectItems = getDnFieldSelectItems(); 
+        final List<SelectItem> selectItems = getDnFieldSelectItems();
         selectItems.add(0, new SelectItem("DN"));
         return selectItems;
     }
-    
+
     public List<SelectItem> getCaItemList() throws NumberFormatException, AuthorizationDeniedException {
         final List<SelectItem> ret = new ArrayList<>();
         if (StringUtils.isEmpty(getEstAlias().getCaId())) {
@@ -390,7 +458,49 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         return "done";
     }
 
+    public boolean renameOrAddAlias() throws AuthorizationDeniedException {
+
+        String oldAlias = estConfigMBean.getSelectedAlias();
+        String newAlias = estAliasGui.getName();
+
+        if (StringUtils.isNotEmpty(oldAlias) && Objects.equals(oldAlias, newAlias)) {
+            return true;
+        }
+
+        if (StringUtils.isEmpty(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        }
+
+        if (!StringTools.checkFieldForLegalChars(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        }
+
+        if (estConfigMBean.getEstConfiguration().aliasExists(newAlias)) {
+            addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
+            return false;
+        }
+
+        if (StringUtils.isEmpty(oldAlias)) {
+            getEjbcaWebBean().addEstAlias(newAlias);
+        } else {
+            getEjbcaWebBean().renameEstAlias(oldAlias, newAlias);
+        }
+
+        estAliasGui.setName(newAlias);
+        estConfigMBean.setSelectedAlias(newAlias);
+        getEjbcaWebBean().clearEstConfigClone();
+        getEjbcaWebBean().reloadEstConfiguration();
+        return true;
+    }
+
     public String save() throws AuthorizationDeniedException {
+
+        if (!renameOrAddAlias()) {
+            return null;
+        }
+
         String alias = estAliasGui.getName();
         EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
         if (StringUtils.isEmpty(estAliasGui.getCaId())) {
@@ -418,6 +528,11 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         estConfiguration.setVendorMode(alias, estAliasGui.getVendorMode());
         estConfiguration.setAuthenticationModule(alias, estAliasGui.getAuthenticationModule());
         estConfiguration.setAllowChangeSubjectName(alias, estAliasGui.getAllowChangeSubjectName());
+        estConfiguration.setRANameGenPrefix(alias, estAliasGui.getRaNameGenPrefix());
+        estConfiguration.setRANameGenPostfix(alias, estAliasGui.getRaNameGenPostfix());
+        estConfiguration.setRANameGenParams(alias, estAliasGui.getRaNameGenParams());
+        estConfiguration.setRANameGenScheme(alias, estAliasGui.getRaNameGenScheme());
+
         final String currentVendorCas = getCurrentVendorCas();
         if (StringUtils.isEmpty(currentVendorCas)) {
             estConfiguration.setVendorCaIds(alias, "");
@@ -436,13 +551,12 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         reset();
         return "done";
     }
-    
-    
+
     public void actionAddVendorCa() {
         final String currentVendorCas = getCurrentVendorCas();
         List<String> currentVendorCaList = new ArrayList<>();
         if (StringUtils.isNotBlank(currentVendorCas)) {
-            currentVendorCaList = new ArrayList<>(Arrays.asList(currentVendorCas.split(";"))); 
+            currentVendorCaList = new ArrayList<>(Arrays.asList(currentVendorCas.split(";")));
         }
         if (!currentVendorCaList.contains(estAliasGui.getSelectedVendorCa())) {
             currentVendorCaList.add(estAliasGui.getSelectedVendorCa());
@@ -450,7 +564,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         setCurrentVendorCas(StringUtils.join(currentVendorCaList, ";"));
         updateSupportProxyCa();
     }
-    
+
     public void actionRemoveVendorCa() {
         final String currentVendorCas = getCurrentVendorCas();
         if (StringUtils.isNotBlank(currentVendorCas)) {
@@ -461,12 +575,12 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             }
         }
     }
-    
+
     private void updateSupportProxyCa() {
         final AuthenticationToken authenticationToken = getAdmin();
         final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
         estAliasGui.setUsesProxyCa(false); //default, repeated for remove action
-        
+
         if (!isRaMode() && isVendorMode() && StringUtils.isNotBlank(getCurrentVendorCas())) {
             List<String> currentVendorCaList = new ArrayList<>(Arrays.asList(getCurrentVendorCas().split(";")));
             for (String caName : currentVendorCaList) {
@@ -477,7 +591,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
                     }
                 } catch (AuthorizationDeniedException e) {
                     // should not happen
-                    throw new IllegalStateException("Vendor CA is not authhorized.");
+                    throw new IllegalStateException("Vendor CA is not authorized.");
                 }
             }
         }
@@ -489,91 +603,61 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
                 }
             } catch (AuthorizationDeniedException e) {
                 // should not happen
-                throw new IllegalStateException("RA CA is not authhorized.");
+                throw new IllegalStateException("RA CA is not authorized.");
             }
         }
     }
-    
+
     public List<SelectItem> getVendorCaSelectItems() {
-        final List<SelectItem> selectItems = new ArrayList<>();
-        for (Integer caId : caIdToNameMap.keySet()) {
-            selectItems.add(new SelectItem(caIdToNameMap.get(caId)));
-        }
-        return selectItems;
+        return caIdToNameMap.values().stream().map(SelectItem::new).collect(Collectors.toList());
     }
-    
+
     private String vendorCas;
-    
+
     public String getCurrentVendorCas() {
-        return vendorCas == null? estAliasGui.getVendorCas(): vendorCas;
+        return vendorCas == null ? estAliasGui.getVendorCas() : vendorCas;
     }
-    
+
     public void setCurrentVendorCas(String vendorCas) {
         this.vendorCas = vendorCas;
     }
-           
+
     /**
      * Add DN field to name generation parameter
-     *
      */
     public void actionAddRaNameSchemeDnPart() {
-    	String alias = estAliasGui.getName();
-    	EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        String currentNameGenParam = estConfiguration.getRANameGenParams(getSelectedEstAlias());
+        String currentNameGenParam = estAliasGui.getRaNameGenParams();
         String[] params = currentNameGenParam == null ? new String[0] : currentNameGenParam.split(";");
         // Verify that current param is instance of DN fields
-        if((params.length > 0) && ( dnfields.contains(params[0]) )) {
-            if(!ArrayUtils.contains(params, getSelectedRaNameSchemeDnPart())) {
+        if ((params.length > 0) && (dnfields.contains(params[0]))) {
+            if (!ArrayUtils.contains(params, getSelectedRaNameSchemeDnPart())) {
                 currentNameGenParam += ";" + getSelectedRaNameSchemeDnPart();
             }
         } else {
-                currentNameGenParam = getSelectedRaNameSchemeDnPart();
+            currentNameGenParam = getSelectedRaNameSchemeDnPart();
         }
-        estConfiguration.setRANameGenParams(getSelectedEstAlias(), currentNameGenParam);
+        estAliasGui.setRaNameGenParams(currentNameGenParam);
     }
 
     /**
      * Remove DN field from name generation parameter
-     *
-     */    
+     */
     public void actionRemoveRaNameSchemeDnPart() {
-    	String alias = estAliasGui.getName();
-    	EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        String currentNameGenParam = estConfiguration.getRANameGenParams(getSelectedEstAlias());
-        if(StringUtils.contains(currentNameGenParam, getSelectedRaNameSchemeDnPart())) {
+        String currentNameGenParam = estAliasGui.getRaNameGenParams();
+        if (StringUtils.contains(currentNameGenParam, getSelectedRaNameSchemeDnPart())) {
             String[] params = currentNameGenParam.split(";");
-            if(params.length == 1) {
+            if (params.length == 1) {
                 currentNameGenParam = "";
             } else {
-                if(StringUtils.equals(params[0], getSelectedRaNameSchemeDnPart())) {
+                if (StringUtils.equals(params[0], getSelectedRaNameSchemeDnPart())) {
                     currentNameGenParam = StringUtils.remove(currentNameGenParam, getSelectedRaNameSchemeDnPart() + ";");
                 } else {
                     currentNameGenParam = StringUtils.remove(currentNameGenParam, ";" + getSelectedRaNameSchemeDnPart());
                 }
             }
-            estConfiguration.setRANameGenParams(getSelectedEstAlias(), currentNameGenParam);
+            estAliasGui.setRaNameGenParams(currentNameGenParam);
         }
     }
-
-    /**
-     * Set the name generation scheme: DN/RANDOM/FIXED/USERNAME
-     *
-     */ 
-    public void setRaNameGenScheme(final String scheme) {
-    	String alias = estAliasGui.getName();
-    	EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        estConfiguration.setRANameGenScheme(getSelectedEstAlias(), scheme);
-    }
-    
-    /**
-     * Get the name generation scheme: DN/RANDOM/FIXED/USERNAME
-     *
-     */     
-    public String getRaNameGenScheme() {
-    	String alias = estAliasGui.getName();
-    	EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        return estConfiguration.getRANameGenScheme(getSelectedEstAlias());
-    }    
 
     public String getSelectedEstAlias() {
         return estConfigMBean.getSelectedAlias();
@@ -581,105 +665,30 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
 
     /**
      * Get the available RA name generation schemes for radio buttons
-     *
-     */ 
+     */
     public List<SelectItem> getAvailableRaNameGenSchemes() {
-        List<SelectItem> selectItems = new ArrayList<>();
-        selectItems.add(new SelectItem(UsernameGeneratorParams.DN));
-        selectItems.add(new SelectItem(UsernameGeneratorParams.RANDOM));
-        selectItems.add(new SelectItem(UsernameGeneratorParams.FIXED));
-        selectItems.add(new SelectItem(UsernameGeneratorParams.USERNAME));
-        return selectItems;
-    }
-
-    /**
-     * Set the name generation parameters
-     * Semicolon delimited DN Fields
-     *
-     */ 
-    public void setRaNameGenParams(final String params) {
-    	String alias = estAliasGui.getName();
-    	EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        estConfiguration.setRANameGenParams(getSelectedEstAlias(), params);
-    }
-
-    /**
-     * Get the name generation parameters
-     * Semicolon delimited DN Fields
-     *
-     */     
-    public String getRaNameGenParams() {
-    	String alias = estAliasGui.getName();
-    	EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        return estConfiguration.getRANameGenParams(getSelectedEstAlias());
+        return UsernameGeneratorParams.modeList.stream().map(SelectItem::new).collect(Collectors.toList());
     }
 
     /**
      * Get the selected name generation DN part for addition or removal
-     *
-     */ 
+     */
     public String getSelectedRaNameSchemeDnPart() {
         return selectedRaNameSchemeDnPart == null ? dnfields.get(0) : selectedRaNameSchemeDnPart;
     }
 
     /**
      * Set the selected name generation DN part for addition or removal
-     *
-     */ 
+     */
     public void setSelectedRaNameSchemeDnPart(final String selectedRaNameSchemeDnPart) {
         this.selectedRaNameSchemeDnPart = selectedRaNameSchemeDnPart;
     }
 
     /**
      * Get the DN field select items. Full list of available DN fields.
-     *
-     */ 
+     */
     public List<SelectItem> getDnFieldSelectItems() {
-        final List<SelectItem> selectItems = new ArrayList<>();
-        for (String  dnField : dnfields) {
-            selectItems.add(new SelectItem(dnField));
-        }
-        return selectItems;
-    }
-
-    /**
-     * Set the RA name generation prefix
-     *
-     */ 
-    public void setRaNameGenPrefix(final String prefix) {
-        String alias = estAliasGui.getName();
-        EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        estConfiguration.setRANameGenPrefix(getSelectedEstAlias(), prefix);
-    }
-
-    /**
-     * Get the RA name generation prefix
-     *
-     */     
-    public String getRaNameGenPrefix() {
-        String alias = estAliasGui.getName();
-        EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        return estConfiguration.getRANameGenPrefix(getSelectedEstAlias());
-    }
-
-    /**
-     * Set the RA name generation postfix
-     *
-     */ 
-    public void setRaNameGenPostfix(final String prefix) {
-        String alias = estAliasGui.getName();
-        EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        estConfiguration.setRANameGenPostfix(getSelectedEstAlias(), prefix);
-    }
-
-    /**
-     * Get the RA name generation postfix
-     *
-     */     
-    public String getRaNameGenPostfix() {
-        String alias = estAliasGui.getName();
-        EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
-        return estConfiguration.getRANameGenPostfix(getSelectedEstAlias());
+        return dnfields.stream().map(SelectItem::new).collect(Collectors.toList());
     }
 
     private void reset() {
