@@ -37,7 +37,7 @@ public class SystemRestResourceSwagger extends SystemRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Runs a specified service", notes = "Run service with the provided name")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK Successful request")})
-    public Response runService(
+    public Response runServiceNoTimer(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Name of the service to run")
             @PathParam("service_name") String serviceName) throws AuthorizationDeniedException, RestException {

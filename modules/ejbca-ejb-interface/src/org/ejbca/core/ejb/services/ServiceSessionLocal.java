@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.services;
 
 import org.ejbca.core.model.services.IWorker;
+import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 import javax.ejb.Local;
 import javax.ejb.Timer;
@@ -43,7 +44,9 @@ public interface ServiceSessionLocal extends ServiceSession {
      */
 	long getServiceInterval(final Integer serviceId);
 
-    /**
+    IWorker getWorkerAndRunService(final Integer serviceId, final long nextTimeout);
+    
+	/**
      * Reads the current timeStamp values and tries to update them in a single transaction.
      * If the database commit is successful the method returns the worker, otherwise null.
      * Could throw a runtime exception if there are database errors, so these should be caught.
@@ -85,4 +88,12 @@ public interface ServiceSessionLocal extends ServiceSession {
 	 * @param serviceId the ID of the service
 	 */
 	void runService(int serviceId);
+	
+    /**
+     * Run a service with the given service ID regardless of it being active or not.
+     *
+     * @param serviceId the ID of the service
+     */
+    void runServiceNoTimer (int serviceId) throws ServiceExecutionFailedException;
+   
 }

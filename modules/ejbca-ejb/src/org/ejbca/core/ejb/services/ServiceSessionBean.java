@@ -618,12 +618,40 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         timerConfig.setInfo(serviceId);
         timerService.createSingleActionTimer(1, timerConfig);
     }
+    
+    @Override
+    public void runServiceNoTimer(int serviceId) throws ServiceExecutionFailedException {
+        final long runTime = System.currentTimeMillis();
+        IWorker worker = getWorkerAndRunService(serviceId, runTime);
+        if (!canWorkerRun(worker)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Service was deemed unable to run, timer interval left unchanged");
+            }
+            throw new ServiceExecutionFailedException("Service could not run.");
+        }
+        executeServiceInNoTransaction(worker, getServiceName(serviceId));
+    }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public IWorker getWorkerAndRunService(final Integer serviceId, final long nextTimeout) {
+        IWorker worker = null;
+        ServiceData serviceData = serviceDataSession.findById(serviceId);
+        ServiceConfiguration serviceConfiguration = serviceData.getServiceConfiguration();
+        worker = getWorker(serviceConfiguration, getServiceName(serviceId), serviceData.getRunTimeStamp(), nextTimeout);
+        long oldRunTimeStamp = serviceData.getRunTimeStamp();
+        long oldNextRunTimeStamp = serviceData.getNextRunTimeStamp();
+        final Date runDateCheck = new Date(nextTimeout); 
+        serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), oldNextRunTimeStamp);
+        return worker;
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout) {
         return getWorkerIfItShouldRun(serviceId, nextTimeout, false);
     }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout, final boolean testRunOnOtherNode) {
