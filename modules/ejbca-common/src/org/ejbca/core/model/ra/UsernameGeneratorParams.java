@@ -40,7 +40,7 @@ public class UsernameGeneratorParams {
 	public static final String DN = "DN";
 	public static final String FIXED = "FIXED";
 	
-	private static final List<String> modeList = Arrays.asList(RANDOM, USERNAME, DN, FIXED);
+	public static final List<String> modeList = List.of(DN, RANDOM, FIXED, USERNAME);
 
 	// Generator configuration parameters, with good default values
 	private int mode = MODE_RANDOM;

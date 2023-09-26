@@ -91,26 +91,26 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
 
     // Default values
     private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
-    private static final String DEFAULT_DEFAULTCA = "";
+    public static final String DEFAULT_DEFAULTCA = "";
     public static final String DEFAULT_EEPROFILE = String.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-    private static final String DEFAULT_CERTPROFILE = String.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-    private static final String DEFAULT_REQCERT = "true";
-    private static final String DEFAULT_REQUSERNAME = "";
-    private static final String DEFAULT_REQPASSWORD = "";
-    private static final String DEFAULT_ALLOWUPDATEWITHSAMEKEY = "true";
-    private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.DN;
-    private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
-    private static final String DEFAULT_RA_USERNAME_GENERATION_PREFIX = "";
-    private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
-    private static final String DEFAULT_VENDOR_CERTIFICATE_MODE = "false";
-    private static final String DEFAULT_VENDOR_CA_IDS = "";
+    public static final String DEFAULT_CERTPROFILE = String.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+    public static final String DEFAULT_REQCERT = "true";
+    public static final String DEFAULT_REQUSERNAME = "";
+    public static final String DEFAULT_REQPASSWORD = "";
+    public static final String DEFAULT_ALLOWUPDATEWITHSAMEKEY = "true";
+    public static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.DN;
+    public static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
+    public static final String DEFAULT_RA_USERNAME_GENERATION_PREFIX = "";
+    public static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
+    public static final String DEFAULT_VENDOR_CERTIFICATE_MODE = "false";
+    public static final String DEFAULT_VENDOR_CA_IDS = "";
     private static final String DEFAULT_OPERATION_MODE = EstConfiguration.OPERATION_MODE_RA; // Use what we had before EJBCA 7.5.0 as default
-    private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
-    private static final String DEFAULT_EXTRACTDNPARTPWD_COMPONENT = "DN";
-    private static final String DEFAULT_ALLOW_CHANGESUBJECTNAME = "false";
-    private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = "";
-    private static final String DEFAULT_SUPPORT_PROXY_CA = "false";
-    private static final String DEFAULT_SERVER_KEYGEN_ENABLED = "false";
+    public static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
+    public static final String DEFAULT_EXTRACTDNPARTPWD_COMPONENT = "DN";
+    public static final String DEFAULT_ALLOW_CHANGESUBJECTNAME = "false";
+    public static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = "";
+    public static final String DEFAULT_SUPPORT_PROXY_CA = "false";
+    public static final String DEFAULT_SERVER_KEYGEN_ENABLED = "false";
         
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> EST_BOOLEAN_KEYS = Arrays.asList(CONFIG_REQCERT, CONFIG_ALLOWUPDATEWITHSAMEKEY);
