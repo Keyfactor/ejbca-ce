@@ -60,6 +60,8 @@ import com.keyfactor.util.StringTools;
 @ViewScoped
 public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     
+    private static final String SZOID_KP_CA_EXCHANGE = "1.3.6.1.4.1.311.21.5";
+
     @Inject
     private AutoenrollmentConfigMBean autoenrollmentConfigMBean;
     
@@ -111,7 +113,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     private String selectedTemplateOid;
     private String selectedCertificateProfileName;
+    private String kECCertificateProfileName;
+    
     private Integer selectedCertificateProfileId;
+
     private String selectedEndEntityProfileName;
     private Integer selectedEndEntityProfileId;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
@@ -164,6 +169,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             authKeyBinding = autoEnrollmentConfiguration.getAuthKeyBinding(currentAlias);
 
             caName = autoEnrollmentConfiguration.getCaName(currentAlias);
+            
+            kECCertificateProfileName = autoEnrollmentConfiguration.getExchangeCertProfileName(currentAlias);
 
             mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings(currentAlias);
         }
@@ -359,6 +366,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     public void setSelectedCertificateProfileName(String selectedCertificateProfileName) {
         this.selectedCertificateProfileName = selectedCertificateProfileName;
     }
+    
+    public String getSelectedKECCertificateProfileName() {
+        return kECCertificateProfileName;
+    }
+
+    public void setSelectedKECCertificateProfileName(String selectedKECCertificateProfileName) {
+        this.kECCertificateProfileName = selectedKECCertificateProfileName;
+    }
 
     public Integer getSelectedCertificateProfileId() {
         return selectedCertificateProfileId;
@@ -535,7 +550,20 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         return availableCertificateProfiles;
     }
+    
+    public List<SelectItem> getAvailableKECCertificateProfiles() {
+        List<SelectItem> availableKECCertificateProfiles = new ArrayList<>();
 
+        availableKECCertificateProfiles.add(new SelectItem(-1, SELECT_CEP));
+
+        for (final Integer id : authorizedCertificateProfiles.idKeySet()) {
+            if (authorizedCertificateProfiles.get(id).getValue().getExtendedKeyUsageOids().contains(SZOID_KP_CA_EXCHANGE)) {
+                availableKECCertificateProfiles.add(new SelectItem(String.valueOf(id), authorizedCertificateProfiles.get(id).getName()));
+            }
+        }
+        return availableKECCertificateProfiles;
+    }
+    
 
     /**
      * Return the available End Entity Profile id and names.
@@ -821,6 +849,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             // MS Servlet Settings
             autoEnrollmentConfiguration.setCaName(currentAlias, caName);
+            
+            autoEnrollmentConfiguration.setExchangeCertProfileName(currentAlias, kECCertificateProfileName);
 
             // MS Template Settings
             updateMappedTemplates();
