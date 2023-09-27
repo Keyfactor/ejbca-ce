@@ -570,9 +570,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         } catch (KeyStoreException | CryptoTokenOfflineException e) {
-            throw new IllegalStateException(e);
+            System.out.println(e.getMessage());
         }
-        throw new IllegalStateException("No key matching Subject Key Id '" + new String(Hex.encode(certificateSubjectKeyId)) + "' found.");
+        log.warn("No key matching Subject Key Id '" + new String(Hex.encode(certificateSubjectKeyId)) + "' found.");
+        return null;
     }
     
     private void generateOcspSigningCacheEntries(List<X509Certificate> caCertificateChain, String signatureProviderName, PrivateKey privateKey,
