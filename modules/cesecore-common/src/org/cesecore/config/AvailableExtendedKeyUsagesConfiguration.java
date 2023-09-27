@@ -82,6 +82,8 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
        addExtKeyUsage("1.3.6.1.4.1.311.10.3.4", "EKU_MS_EFSCRYPTO");
        // Microsoft Encrypted File System Recovery (szOID_EFS_RECOVERY)
        addExtKeyUsage("1.3.6.1.4.1.311.10.3.4.1", "EKU_MS_EFSRECOVERY");
+       // Microsoft Key Exchange Certificate (szOID_KP_CA_EXCHANGE)
+       addExtKeyUsage("1.3.6.1.4.1.311.21.5", "EKU_MS_CA_EXCHANGE");
        // -- Intel extended key usages
        // Intel AMT (out of band) network management
        addExtKeyUsage("2.16.840.1.113741.1.2.3", "EKU_INTEL_AMT");
