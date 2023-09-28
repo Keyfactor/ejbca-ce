@@ -28,6 +28,8 @@ import org.bouncycastle.asn1.cmc.TaggedAttribute;
 import org.bouncycastle.asn1.cmc.TaggedCertificationRequest;
 import org.bouncycastle.asn1.cmc.TaggedContentInfo;
 import org.bouncycastle.asn1.cmc.TaggedRequest;
+import org.bouncycastle.asn1.cms.Attribute;
+import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.cms.EncryptedContentInfo;
@@ -48,6 +50,7 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSTypedData;
+import org.bouncycastle.cms.SimpleAttributeTableGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
@@ -59,6 +62,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.junit.Test;
@@ -167,10 +171,10 @@ public class PKCS10RequestMessageTest {
         // create the inner encapInfo
         ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIData, pkiData); // step 3
         
-        msg = new CMSProcessableByteArray(envelopedPrivKey.getEncoded()); // step 2
+        msg = new CMSProcessableByteArray(encapInfo.getEncoded()); // step 2
         
         // creating SignedData and signerInfo -not done----------------------------
-        SignerIdentifier signerId = new SignerIdentifier(DEROctetString.fromByteArray(subjectKeyIdentifier.getEncoded()));
+        //SignerIdentifier signerId = new SignerIdentifier(DEROctetString.fromByteArray(subjectKeyIdentifier.getEncoded()));
         
         CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
         ContentSigner sha256Signer = new JcaContentSignerBuilder("SHA256WithRSA").setProvider("BC").build(eeKeyPair.getPrivate());
@@ -179,17 +183,23 @@ public class PKCS10RequestMessageTest {
                 new JcaDigestCalculatorProviderBuilder().setProvider("BC").build());
         
         String szOID_ARCHIVED_KEY_ATTR = "1.3.6.1.4.1.311.21.13";
-        signerInfobuilder.setUnsignedAttributeGenerator(null);
+        Attribute archivedAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_ARCHIVED_KEY_ATTR), 
+                                new DERSet(envelopedPrivKey.toASN1Structure()));
+        AttributeTable attrTable = new AttributeTable(archivedAttribute);
+        signerInfobuilder.setUnsignedAttributeGenerator(new SimpleAttributeTableGenerator(attrTable));
                 
         gen.addSignerInfoGenerator(signerInfobuilder.build(sha256Signer, subjectKeyIdentifier.getEncoded())); // used subjectKeyIdentifier
 
         CMSSignedData sigData = gen.generate(msg, false);
         SignedData signedData = null;
+        ContentInfo info = sigData.toASN1Structure();
+        
+        System.out.println(Base64.toBase64String(info.getEncoded()));
         // ----------------------------------
         
         // outermost layer
         String szOID_RSA_signedData = "1.2.840.113549.1.7.2";
-        ContentInfo info = new ContentInfo(PKCSObjectIdentifiers.signedData, signedData);
+        //ContentInfo info = new ContentInfo(PKCSObjectIdentifiers.signedData, signedData);
         
     }
 }
