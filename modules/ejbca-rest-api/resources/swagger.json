@@ -1799,7 +1799,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK Successful request",
+            "description": "OK Successful request"
           }
         }
       }  
