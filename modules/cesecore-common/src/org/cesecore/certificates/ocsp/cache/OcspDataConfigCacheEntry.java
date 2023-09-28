@@ -17,7 +17,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.bouncycastle.cert.ocsp.CertificateID;
-import org.cesecore.certificates.util.cert.CertificateUtils;
 
 /**
  * OCSP Cache entry mapping CertificateId to CA Id for faster lookups of CA configuration 
@@ -32,7 +31,7 @@ public class OcspDataConfigCacheEntry {
     private final boolean isMsCaCompatible;
 
     public OcspDataConfigCacheEntry(X509Certificate issuerCertificate, int caId, boolean preProductionEnabled, boolean storeResponseOnDemand, boolean isMsCaCompatible) {
-        certificateID = CertificateUtils.getIdFromCertificate(issuerCertificate);
+        certificateID = OcspDataConfigCache.getCertificateIdFromCertificate(issuerCertificate);
         this.caId = caId;
         this.preProductionEnabled = preProductionEnabled;
         this.storeResponsesOnDemand = storeResponseOnDemand;
