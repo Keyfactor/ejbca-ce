@@ -33,23 +33,6 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
 
     String healthCheck();
 
-    /**
-     * Returns the OCSP response with the latest 'nextUpdate' given CA and serial number.
-     *
-     * @param caId of the CA which signed the OCSP response
-     * @param serialNumber of the certificate which the OCSP response represents
-     * @return OCSP data for the caId and serialNubmer, null if no such data.
-     */
-    boolean isOcspExists(Integer caId, String serialNumber);
-
-    /**
-     * Deletes all the OCSP data from table corresponding to caId and serialNumber.
-     *
-     * @param caId certificate authority identifier.
-     * @param serialNumber of the certificate which the OCSP response represents
-     */
-    void deleteOcspDataByCaIdSerialNumber(final int caId, final String serialNumber);
-
     /** @see org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache#flush() */
     void clearOcspRequestSignerRevocationStatusCache();
 
