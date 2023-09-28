@@ -816,6 +816,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             persistedTemplate.setIncludeSPNInSubjectSAN(newTemplateSettings.isIncludeSPNInSubjectSAN());
             persistedTemplate.setIncludeUPNInSubjectSAN(newTemplateSettings.isIncludeUPNInSubjectSAN());
             persistedTemplate.setPublishToActiveDirectory(newTemplateSettings.isPublishToActiveDirectory());
+            persistedTemplate.setArchivePrivateKey(newTemplateSettings.isArchivePrivateKey());
         }
     }
     
@@ -882,6 +883,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setAutoenrollmentConfigMBean(AutoenrollmentConfigMBean autoenrollmentConfigMBean) {
         this.autoenrollmentConfigMBean = autoenrollmentConfigMBean;
+    }
+    
+    public boolean isKeyArchivalEnabledInMappedTemplates() {
+        return mappedMsTemplates.stream().anyMatch(template -> template.isArchivePrivateKey());
     }
     
 }
