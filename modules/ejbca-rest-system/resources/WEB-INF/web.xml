@@ -12,9 +12,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
- version: $Id: web.xml 31685 2019-03-04 21:13:08Z jeklund $
- -->
+-->
 <web-app version="3.1" id="ejbca-rest-system"
     metadata-complete="false"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
