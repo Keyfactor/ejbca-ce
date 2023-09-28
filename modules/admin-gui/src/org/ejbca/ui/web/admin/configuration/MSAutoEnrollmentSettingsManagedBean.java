@@ -170,7 +170,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             caName = autoEnrollmentConfiguration.getCaName(currentAlias);
             
-            kECCertificateProfileName = autoEnrollmentConfiguration.getExchangeCertProfileName(currentAlias);
+            kECCertificateProfileName = autoEnrollmentConfiguration.getKeyExchangeCertProfileName(currentAlias);
 
             mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings(currentAlias);
         }
@@ -851,7 +851,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             // MS Servlet Settings
             autoEnrollmentConfiguration.setCaName(currentAlias, caName);
             
-            autoEnrollmentConfiguration.setExchangeCertProfileName(currentAlias, kECCertificateProfileName);
+            autoEnrollmentConfiguration.setKeyExchangeCertProfileName(currentAlias, kECCertificateProfileName);
 
             // MS Template Settings
             updateMappedTemplates();
