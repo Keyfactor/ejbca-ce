@@ -13,14 +13,27 @@
 
 package org.cesecore.certificates.ocsp.cache;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.cert.ocsp.CertificateID;
-
 import java.math.BigInteger;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
+import org.cesecore.certificates.ocsp.exception.OcspFailureException;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Cache holding performance sensitive CA configuration required by OCSP lookups
@@ -71,7 +84,27 @@ public enum OcspDataConfigCache {
         isCaModeCompatiblePresent = isCaModeCompatibleStagingValue;
         isCaModeCompatibleStagingValue = false;
     }
-
+    
+    /**
+     * We currently support SHA1 and SHA256 AlgorithmIdentifiers. Hence the list.
+     * @return the CertificateID's based on the provided certificate. 
+     */
+    static List<CertificateID> getCertificateIdFromCertificate(final X509Certificate certificate) {
+        try {
+            if (log.isTraceEnabled()) {
+                log.trace("Building CertificateId's from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
+            }
+            final List<CertificateID> ret = new ArrayList<>();
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha384)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha512)), certificate, certificate.getSerialNumber()));
+            return ret;
+        } catch (OCSPException | CertificateEncodingException | OperatorCreationException e) {
+            throw new OcspFailureException(e);
+        }
+    }
+    
     /** @return Cache identifier based on the provided CertificateID. */
     private static int getCacheIdFromCertificateID(final CertificateID certID) {
         // Use bitwise XOR of the hashcodes for IssuerNameHash and IssuerKeyHash to produce the integer.
