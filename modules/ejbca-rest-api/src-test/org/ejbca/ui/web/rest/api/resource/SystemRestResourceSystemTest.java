@@ -52,8 +52,6 @@ public class SystemRestResourceSystemTest extends RestResourceSystemTestBase {
     public void tearDown() throws AuthorizationDeniedException {
         // remove CA
         CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, cryptoTokenName, caName);
-        CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, cryptoTokenName, caName);
-        
         // remove cryptotoken
         CryptoTokenTestUtils.removeCryptoToken(INTERNAL_ADMIN_TOKEN, cryptoTokenName);
     }
