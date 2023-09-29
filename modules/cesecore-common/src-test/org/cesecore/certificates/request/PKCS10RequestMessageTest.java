@@ -81,6 +81,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.novell.ldap.asn1.ASN1Sequence;
 
@@ -290,6 +291,7 @@ public class PKCS10RequestMessageTest {
             // got the CSR
             final PKCS10RequestMessage pkcs10 = new PKCS10RequestMessage(tcr.getCertificationRequest().getEncoded());
             pkcs10.verify();
+            
             // repeating the pkcs10 testSerilaizeDeserialize
             try (final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
                 try (final ObjectOutputStream oos = new ObjectOutputStream(byteArrayOutputStream)) {
@@ -314,6 +316,7 @@ public class PKCS10RequestMessageTest {
             for (ASN1Encodable x: asnset) { // szOID_ENCRYPTED_KEY_HASH(first) + szOID_REQUEST_CLIENT_INFO(optional)
                 Attribute attr = Attribute.getInstance(x);
                 System.out.println(attr.getAttrType());
+                System.out.println(Hex.toHexString(attr.getAttributeValues()[0].toASN1Primitive().getEncoded()));
             }
         }
         
@@ -343,6 +346,10 @@ public class PKCS10RequestMessageTest {
                 byte[] attrValue = attr.getAttributeValues()[0].toASN1Primitive().getEncoded();
                 System.out.println("attr: " + attr.getAttrType() + " : " + // szOID_ARCHIVED_KEY_ATTR
                                Hex.toHexString(attrValue)); // private key encrypted and enveloped
+                
+                final MessageDigest md = MessageDigest.getInstance("SHA1"); // hard coding
+                final byte[] envelopedPrivKeyHash = md.digest(attrValue);
+                System.out.println(Hex.toHexString(envelopedPrivKeyHash));
                 
                 // we can parse and decrypt the DES3 key manually and then get the private key by decrypting wth DES3
                 // or with BC wrapper CMSEnvelopedDataParser, 
