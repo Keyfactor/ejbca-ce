@@ -90,6 +90,7 @@ public final class CertificateConstants {
     public static final int CERT_REQ_TYPE_SPKAC     = 2;
     public static final int CERT_REQ_TYPE_PUBLICKEY = 3;
     public static final int CERT_REQ_TYPE_CVC       = 4;
+    public static final int CERT_REQ_TYPE_MS_KEY_ARCHIVAL    = 5;
 
     // Certificate response types
     public static final int CERT_RES_TYPE_CERTIFICATE    = 0;
