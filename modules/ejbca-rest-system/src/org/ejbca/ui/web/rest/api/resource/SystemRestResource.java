@@ -33,7 +33,12 @@ public class SystemRestResource extends BaseRestResource {
 
     public Response runServiceWorker(
             final HttpServletRequest requestContext,
-            final String serviceName) throws AuthorizationDeniedException, RestException{
+            final String serviceName)throws RestException{
+        try {
+            getAdmin(requestContext, false);
+        } catch (AuthorizationDeniedException e) {
+            throw new RestException(Status.UNAUTHORIZED.getStatusCode(), e.getMessage());
+        }
         final Integer serviceId = serviceSession.getServiceId(serviceName);
         if (serviceId == 0) {
             String exception = "The following service could not be found: " + serviceName;
@@ -42,9 +47,11 @@ public class SystemRestResource extends BaseRestResource {
         }
         try {
             serviceSession.runServiceNoTimer(serviceId);
-        } catch (ServiceExecutionFailedException e) {
-            throw new RestException(Status.PRECONDITION_FAILED.getStatusCode(), e.getMessage());
+        } catch (ServiceExecutionFailedException exception) {
+            String message = "The service could not run or was already running: " + serviceName;
+            log.info(exception.getMessage());
+            throw new RestException(Status.CONFLICT.getStatusCode(), message );            
         }
-        return Response.ok().build();
+        return Response.status(Status.OK).build();
     }
 }
