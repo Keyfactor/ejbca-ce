@@ -625,7 +625,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         IWorker worker = getWorkerAndRunService(serviceId, runTime);
         if (!canWorkerRun(worker)) {
             if (log.isDebugEnabled()) {
-                log.debug("Service was deemed unable to run, timer interval let unchanged");
+                log.debug("Service was deemed unable to run, timer interval left unchanged");
             }
             throw new ServiceExecutionFailedException("Service could not run.");
         }
