@@ -1055,9 +1055,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             resultList.add(new SelectItem(current, current, ""));
         }
 
-        // "0" is the first "Create a new Crypto Token..." option in the select list.
         // There is no information to filter signing algorithms by.
-        if (!StringUtils.isEmpty(cryptoTokenIdParam) && !cryptoTokenIdParam.equals("0")) {
+        if (!StringUtils.isEmpty(cryptoTokenIdParam) && !cryptoTokenIdParam.equals(CAInterfaceBean.PLACEHOLDER_CRYPTO_TOKEN_ID + "")) {
             try {
                 final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), Integer.parseInt(cryptoTokenIdParam));
                 return resultList.stream()
@@ -2470,7 +2469,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
             for (final Entry<String, String> entry : availableCryptoTokens) {
                 // Ensure that we have a default for the next section
-                if (isCryptoTokenIdParamNull() || caInfoDto.getCryptoTokenIdParam().length() == 0) {
+                if (isCryptoTokenIdParamNull() || caInfoDto.getCryptoTokenIdParam().isEmpty()) {
                     caInfoDto.setCryptoTokenIdParam(entry.getKey());
                 }
 
@@ -2479,7 +2478,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 if (currentCryptoTokenId == 0 || selectCurrent) {
                     currentCryptoTokenId = Integer.parseInt(entry.getKey());
                 }
-                resultList.add(new SelectItem(entry.getKey(), entry.getValue(), ""));
+                final boolean itemSelectionDisabled = currentCryptoTokenId == CAInterfaceBean.PLACEHOLDER_CRYPTO_TOKEN_ID;
+                resultList.add(new SelectItem(entry.getKey(), entry.getValue(), "", itemSelectionDisabled));
             }
 
             if (numSelected == 0) {
